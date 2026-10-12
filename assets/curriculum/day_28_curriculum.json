@@ -91,7 +91,7 @@
           "hi": "ഗുളിക",
           "ta": "ഗുളിക"
         },
-        "example": "Could you point out a tablet for me?"
+        "example": "We learned about tablet in today's lesson."
       },
       {
         "word": "syrup",
@@ -100,7 +100,7 @@
           "hi": "സിറപ്പ്",
           "ta": "സിറപ്പ്"
         },
-        "example": "Could you point out a syrup for me?"
+        "example": "We learned about syrup in today's lesson."
       },
       {
         "word": "pharmacy",
@@ -109,7 +109,7 @@
           "hi": "മെഡിക്കൽ ഷോപ്പ്",
           "ta": "മെഡിക്കൽ ഷോപ്പ്"
         },
-        "example": "Could you point out a pharmacy for me?"
+        "example": "We learned about pharmacy in today's lesson."
       },
       {
         "word": "dose",
@@ -118,7 +118,7 @@
           "hi": "അളവ്",
           "ta": "അളവ്"
         },
-        "example": "Could you point out a dose for me?"
+        "example": "We learned about dose in today's lesson."
       },
       {
         "word": "prescription",
@@ -127,7 +127,7 @@
           "hi": "കുറിപ്പടി",
           "ta": "കുറിപ്പടി"
         },
-        "example": "Could you point out a prescription for me?"
+        "example": "We learned about prescription in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d28_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'എടുക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "prepare",
+            "finish",
+            "take"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "take",
+          "explanation": "take എന്നാൽ എടുക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d28_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'prescribe'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has prescribe",
+            "prescribed",
+            "prescribeing",
+            "prescribes"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "prescribed",
+          "explanation": "prescribe ന്റെ ഭൂതകാല രൂപം prescribed ആണ്."
         },
         {
           "id": "trap_d28_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഗുളിക'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "partner",
+            "airport",
+            "tablet"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "tablet",
+          "explanation": "ഗുളിക എന്നാൽ ഇംഗ്ലീഷിൽ tablet."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'take':",
           "options": [
-            "ഭക്ഷണം",
             "യാത്ര",
             "സന്തോഷം",
+            "ഭക്ഷണം",
             "എടുക്കുക"
           ],
           "answer": "എടുക്കുക"
@@ -417,40 +417,40 @@
         {
           "q": "Complete the sentence: '_____ this after food.'",
           "options": [
-            "were take",
-            "is take",
             "take",
-            "takeing"
+            "takeing",
+            "is take",
+            "were take"
           ],
           "answer": "take"
         },
         {
           "q": "What is the past form (V2) of 'prescribe'?",
           "options": [
-            "prescribeedx",
+            "prescribed",
             "prescribes",
             "None",
-            "prescribed"
+            "prescribeedx"
           ],
           "answer": "prescribed"
         },
         {
           "q": "Which English word means 'ഗുളിക'?",
           "options": [
+            "tablet",
             "journey",
-            "courage",
             "success",
-            "tablet"
+            "courage"
           ],
           "answer": "tablet"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not take yesterday.",
             "Take this after food.",
             "We was take tomorrow.",
-            "I am take every time wrongly."
+            "I am take every time wrongly.",
+            "He do not take yesterday."
           ],
           "answer": "Take this after food."
         }

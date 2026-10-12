@@ -91,7 +91,7 @@
           "hi": "കോഫി",
           "ta": "കോഫി"
         },
-        "example": "Could you point out a coffee for me?"
+        "example": "We learned about coffee in today's lesson."
       },
       {
         "word": "weekend",
@@ -100,7 +100,7 @@
           "hi": "വാരാന്ത്യം",
           "ta": "വാരാന്ത്യം"
         },
-        "example": "Could you point out a weekend for me?"
+        "example": "We learned about weekend in today's lesson."
       },
       {
         "word": "project",
@@ -109,7 +109,7 @@
           "hi": "പ്രോജക്ട്",
           "ta": "പ്രോജക്ട്"
         },
-        "example": "Could you point out a project for me?"
+        "example": "We learned about project in today's lesson."
       },
       {
         "word": "break",
@@ -118,7 +118,7 @@
           "hi": "ഇടവേള",
           "ta": "ഇടവേള"
         },
-        "example": "Could you point out a break for me?"
+        "example": "We learned about break in today's lesson."
       },
       {
         "word": "colleague",
@@ -127,7 +127,7 @@
           "hi": "സഹപ്രവർത്തകൻ",
           "ta": "സഹപ്രവർത്തകൻ"
         },
-        "example": "Could you point out a colleague for me?"
+        "example": "We learned about colleague in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d76_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കുടിക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "decide",
+            "remember",
+            "grab"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "grab",
+          "explanation": "grab എന്നാൽ കുടിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d76_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'catch up'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "catch uping",
+            "caught up",
+            "catch ups",
+            "has catch up"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "caught up",
+          "explanation": "catch up ന്റെ ഭൂതകാല രൂപം caught up ആണ്."
         },
         {
           "id": "trap_d76_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കോഫി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "partner",
+            "progress",
+            "coffee",
+            "schedule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "coffee",
+          "explanation": "കോഫി എന്നാൽ ഇംഗ്ലീഷിൽ coffee."
         }
       ],
       "description": {
@@ -409,28 +409,28 @@
           "options": [
             "കുടിക്കുക",
             "സന്തോഷം",
-            "ഭക്ഷണം",
-            "യാത്ര"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "കുടിക്കുക"
         },
         {
           "q": "Complete the sentence: 'Let's _____ a coffee.'",
           "options": [
-            "grabing",
-            "were grab",
             "is grab",
-            "grab"
+            "grab",
+            "were grab",
+            "grabing"
           ],
           "answer": "grab"
         },
         {
           "q": "What is the past form (V2) of 'catch up'?",
           "options": [
-            "caught up",
-            "catch ups",
+            "None",
             "catch upedx",
-            "None"
+            "catch ups",
+            "caught up"
           ],
           "answer": "caught up"
         },
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "He do not grab yesterday.",
             "We was grab tomorrow.",
-            "Let's grab a coffee.",
             "I am grab every time wrongly.",
-            "He do not grab yesterday."
+            "Let's grab a coffee."
           ],
           "answer": "Let's grab a coffee."
         }

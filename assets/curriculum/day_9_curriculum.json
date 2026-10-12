@@ -91,7 +91,7 @@
           "hi": "നിറം",
           "ta": "നിറം"
         },
-        "example": "Could you point out a color for me?"
+        "example": "We learned about color in today's lesson."
       },
       {
         "word": "red",
@@ -100,7 +100,7 @@
           "hi": "ചുവപ്പ്",
           "ta": "ചുവപ്പ്"
         },
-        "example": "Could you point out a red for me?"
+        "example": "We learned about red in today's lesson."
       },
       {
         "word": "blue",
@@ -109,7 +109,7 @@
           "hi": "നീല",
           "ta": "നീല"
         },
-        "example": "Could you point out a blue for me?"
+        "example": "We learned about blue in today's lesson."
       },
       {
         "word": "green",
@@ -118,7 +118,7 @@
           "hi": "പച്ച",
           "ta": "പച്ച"
         },
-        "example": "Could you point out a green for me?"
+        "example": "We learned about green in today's lesson."
       },
       {
         "word": "black",
@@ -127,7 +127,7 @@
           "hi": "കറുപ്പ്",
           "ta": "കറുപ്പ്"
         },
-        "example": "Could you point out a black for me?"
+        "example": "We learned about black in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d9_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'നോക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "look",
+            "arrive",
+            "finish",
+            "borrow"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "look",
+          "explanation": "look എന്നാൽ നോക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d9_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'wear'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "wearing",
+            "wore",
+            "has wear",
+            "wears"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "wore",
+          "explanation": "wear ന്റെ ഭൂതകാല രൂപം wore ആണ്."
         },
         {
           "id": "trap_d9_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'നിറം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "color",
+            "station",
+            "airport",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "color",
+          "explanation": "നിറം എന്നാൽ ഇംഗ്ലീഷിൽ color."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'look':",
           "options": [
+            "നോക്കുക",
             "ഭക്ഷണം",
             "സന്തോഷം",
-            "നോക്കുക",
             "യാത്ര"
           ],
           "answer": "നോക്കുക"
@@ -417,9 +417,9 @@
         {
           "q": "Complete the sentence: '_____ at the red bird.'",
           "options": [
-            "were look",
-            "looking",
             "look",
+            "looking",
+            "were look",
             "is look"
           ],
           "answer": "look"
@@ -427,9 +427,9 @@
         {
           "q": "What is the past form (V2) of 'wear'?",
           "options": [
+            "wore",
             "wears",
             "None",
-            "wore",
             "wearedx"
           ],
           "answer": "wore"
@@ -437,20 +437,20 @@
         {
           "q": "Which English word means 'നിറം'?",
           "options": [
-            "color",
-            "success",
+            "knowledge",
             "courage",
-            "knowledge"
+            "success",
+            "color"
           ],
           "answer": "color"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "We was look tomorrow.",
             "He do not look yesterday.",
             "I am look every time wrongly.",
-            "Look at the red bird.",
-            "We was look tomorrow."
+            "Look at the red bird."
           ],
           "answer": "Look at the red bird."
         }

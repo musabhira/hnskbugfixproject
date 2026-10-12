@@ -91,7 +91,7 @@
           "hi": "ആര്",
           "ta": "ആര്"
         },
-        "example": "Could you point out a who for me?"
+        "example": "We learned about who in today's lesson."
       },
       {
         "word": "which",
@@ -100,7 +100,7 @@
           "hi": "ഏത്",
           "ta": "ഏത്"
         },
-        "example": "Could you point out a which for me?"
+        "example": "We learned about which in today's lesson."
       },
       {
         "word": "person",
@@ -109,7 +109,7 @@
           "hi": "വ്യക്തി",
           "ta": "വ്യക്തി"
         },
-        "example": "Could you point out a person for me?"
+        "example": "We learned about person in today's lesson."
       },
       {
         "word": "choice",
@@ -118,7 +118,7 @@
           "hi": "തിരഞ്ഞെടുപ്പ്",
           "ta": "തിരഞ്ഞെടുപ്പ്"
         },
-        "example": "Could you point out a choice for me?"
+        "example": "We learned about choice in today's lesson."
       },
       {
         "word": "item",
@@ -127,7 +127,7 @@
           "hi": "വസ്തു",
           "ta": "വസ്തു"
         },
-        "example": "Could you point out an item for me?"
+        "example": "We learned about item in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d23_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കണ്ടുമുട്ടുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "meet",
+            "discover",
+            "listen",
+            "create"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "meet",
+          "explanation": "meet എന്നാൽ കണ്ടുമുട്ടുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d23_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'pick'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "picked",
+            "picking",
+            "picks",
+            "has pick"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "picked",
+          "explanation": "pick ന്റെ ഭൂതകാല രൂപം picked ആണ്."
         },
         {
           "id": "trap_d23_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ആര്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "who",
+            "courage",
+            "knowledge"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "who",
+          "explanation": "ആര് എന്നാൽ ഇംഗ്ലീഷിൽ who."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'meet':",
           "options": [
+            "ഭക്ഷണം",
             "കണ്ടുമുട്ടുക",
             "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
+            "യാത്ര"
           ],
           "answer": "കണ്ടുമുട്ടുക"
         },
         {
           "q": "Complete the sentence: 'Who did you _____?'",
           "options": [
+            "meet",
             "were meet",
             "meeting",
-            "is meet",
-            "meet"
+            "is meet"
           ],
           "answer": "meet"
         },
         {
           "q": "What is the past form (V2) of 'pick'?",
           "options": [
-            "picked",
-            "picks",
+            "None",
             "pickedx",
-            "None"
+            "picks",
+            "picked"
           ],
           "answer": "picked"
         },
         {
           "q": "Which English word means 'ആര്'?",
           "options": [
+            "partner",
             "progress",
             "who",
-            "schedule",
-            "partner"
+            "schedule"
           ],
           "answer": "who"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am meet every time wrongly.",
-            "Who did you meet?",
             "We was meet tomorrow.",
-            "He do not meet yesterday."
+            "He do not meet yesterday.",
+            "I am meet every time wrongly.",
+            "Who did you meet?"
           ],
           "answer": "Who did you meet?"
         }

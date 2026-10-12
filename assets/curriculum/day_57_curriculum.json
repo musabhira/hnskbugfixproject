@@ -91,7 +91,7 @@
           "hi": "ലക്ഷണം",
           "ta": "ലക്ഷണം"
         },
-        "example": "Could you point out a symptom for me?"
+        "example": "We learned about symptom in today's lesson."
       },
       {
         "word": "clinic",
@@ -100,7 +100,7 @@
           "hi": "ക്ലിനിക്ക്",
           "ta": "ക്ലിനിക്ക്"
         },
-        "example": "Could you point out a clinic for me?"
+        "example": "We learned about clinic in today's lesson."
       },
       {
         "word": "infection",
@@ -109,7 +109,7 @@
           "hi": "അണുബാധ",
           "ta": "അണുബാധ"
         },
-        "example": "Could you point out an infection for me?"
+        "example": "We learned about infection in today's lesson."
       },
       {
         "word": "rest",
@@ -118,7 +118,7 @@
           "hi": "വിശ്രമം",
           "ta": "വിശ്രമം"
         },
-        "example": "Could you point out a rest for me?"
+        "example": "We learned about rest in today's lesson."
       },
       {
         "word": "health",
@@ -127,7 +127,7 @@
           "hi": "ആരോഗ്യം",
           "ta": "ആരോഗ്യം"
         },
-        "example": "Could you point out a health for me?"
+        "example": "We learned about health in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d57_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പരിശോധിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "arrive",
+            "decide",
+            "examine"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "examine",
+          "explanation": "examine എന്നാൽ പരിശോധിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d57_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'suffer'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "suffers",
+            "suffering",
+            "has suffer",
+            "suffered"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "suffered",
+          "explanation": "suffer ന്റെ ഭൂതകാല രൂപം suffered ആണ്."
         },
         {
           "id": "trap_d57_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ലക്ഷണം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "symptom",
+            "progress",
+            "partner",
+            "station"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "symptom",
+          "explanation": "ലക്ഷണം എന്നാൽ ഇംഗ്ലീഷിൽ symptom."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'examine':",
           "options": [
-            "സന്തോഷം",
-            "പരിശോധിക്കുക",
             "ഭക്ഷണം",
-            "യാത്ര"
+            "യാത്ര",
+            "സന്തോഷം",
+            "പരിശോധിക്കുക"
           ],
           "answer": "പരിശോധിക്കുക"
         },
@@ -427,18 +427,18 @@
         {
           "q": "What is the past form (V2) of 'suffer'?",
           "options": [
-            "suffered",
+            "None",
             "sufferedx",
             "suffers",
-            "None"
+            "suffered"
           ],
           "answer": "suffered"
         },
         {
           "q": "Which English word means 'ലക്ഷണം'?",
           "options": [
-            "symptom",
             "airport",
+            "symptom",
             "success",
             "journey"
           ],
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "Doctor examined my chest.",
-            "I am examine every time wrongly.",
             "He do not examine yesterday.",
-            "We was examine tomorrow."
+            "We was examine tomorrow.",
+            "Doctor examined my chest.",
+            "I am examine every time wrongly."
           ],
           "answer": "Doctor examined my chest."
         }

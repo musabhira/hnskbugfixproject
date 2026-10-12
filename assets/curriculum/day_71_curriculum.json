@@ -91,7 +91,7 @@
           "hi": "സാധ്യത",
           "ta": "സാധ്യത"
         },
-        "example": "Could you point out a probability for me?"
+        "example": "We learned about probability in today's lesson."
       },
       {
         "word": "guess",
@@ -100,7 +100,7 @@
           "hi": "ഊഹം",
           "ta": "ഊഹം"
         },
-        "example": "Could you point out a guess for me?"
+        "example": "We learned about guess in today's lesson."
       },
       {
         "word": "chance",
@@ -109,7 +109,7 @@
           "hi": "അവസരം",
           "ta": "അവസരം"
         },
-        "example": "Could you point out a chance for me?"
+        "example": "We learned about chance in today's lesson."
       },
       {
         "word": "doubt",
@@ -118,7 +118,7 @@
           "hi": "സംശയം",
           "ta": "സംശയം"
         },
-        "example": "Could you point out a doubt for me?"
+        "example": "We learned about doubt in today's lesson."
       },
       {
         "word": "weather",
@@ -127,7 +127,7 @@
           "hi": "കാലാവസ്ഥ",
           "ta": "കാലാവസ്ഥ"
         },
-        "example": "Could you point out a weather for me?"
+        "example": "We learned about weather in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d71_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പെയ്യുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "rain",
+            "borrow",
+            "listen",
+            "forget"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "rain",
+          "explanation": "rain എന്നാൽ പെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d71_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'visit'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has visit",
+            "visiting",
+            "visited",
+            "visits"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "visited",
+          "explanation": "visit ന്റെ ഭൂതകാല രൂപം visited ആണ്."
         },
         {
           "id": "trap_d71_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സാധ്യത'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "probability",
+            "journey",
+            "courage",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "probability",
+          "explanation": "സാധ്യത എന്നാൽ ഇംഗ്ലീഷിൽ probability."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'rain':",
           "options": [
-            "യാത്ര",
-            "സന്തോഷം",
             "ഭക്ഷണം",
-            "പെയ്യുക"
+            "പെയ്യുക",
+            "സന്തോഷം",
+            "യാത്ര"
           ],
           "answer": "പെയ്യുക"
         },
         {
           "q": "Complete the sentence: 'It might _____ this evening.'",
           "options": [
-            "rain",
+            "were rain",
             "raining",
-            "is rain",
-            "were rain"
+            "rain",
+            "is rain"
           ],
           "answer": "rain"
         },
         {
           "q": "What is the past form (V2) of 'visit'?",
           "options": [
-            "visitedx",
+            "visited",
             "visits",
-            "None",
-            "visited"
+            "visitedx",
+            "None"
           ],
           "answer": "visited"
         },
         {
           "q": "Which English word means 'സാധ്യത'?",
           "options": [
-            "routine",
-            "schedule",
+            "probability",
             "knowledge",
-            "probability"
+            "routine",
+            "schedule"
           ],
           "answer": "probability"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am rain every time wrongly.",
             "It might rain this evening.",
-            "He do not rain yesterday.",
-            "We was rain tomorrow."
+            "I am rain every time wrongly.",
+            "We was rain tomorrow.",
+            "He do not rain yesterday."
           ],
           "answer": "It might rain this evening."
         }

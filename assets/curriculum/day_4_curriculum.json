@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d4_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഉണരുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "wake",
+            "create",
+            "discover",
+            "remember"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "wake",
+          "explanation": "wake എന്നാൽ ഉണരുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d4_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'wash'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has wash",
+            "washed",
+            "washing",
+            "washs"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "washed",
+          "explanation": "wash ന്റെ ഭൂതകാല രൂപം washed ആണ്."
         },
         {
           "id": "trap_d4_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'രാവിലെ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "morning",
+            "knowledge",
+            "schedule",
+            "routine"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "morning",
+          "explanation": "രാവിലെ എന്നാൽ ഇംഗ്ലീഷിൽ morning."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'wake':",
           "options": [
-            "യാത്ര",
-            "ഭക്ഷണം",
+            "ഉണരുക",
             "സന്തോഷം",
-            "ഉണരുക"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "ഉണരുക"
         },
@@ -427,30 +427,30 @@
         {
           "q": "What is the past form (V2) of 'wash'?",
           "options": [
+            "washed",
             "None",
-            "washedx",
             "washs",
-            "washed"
+            "washedx"
           ],
           "answer": "washed"
         },
         {
           "q": "Which English word means 'രാവിലെ'?",
           "options": [
-            "station",
             "morning",
-            "partner",
-            "progress"
+            "progress",
+            "station",
+            "partner"
           ],
           "answer": "morning"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not wake yesterday.",
+            "We was wake tomorrow.",
             "I wake up at 6 AM.",
-            "I am wake every time wrongly.",
-            "We was wake tomorrow."
+            "He do not wake yesterday.",
+            "I am wake every time wrongly."
           ],
           "answer": "I wake up at 6 AM."
         }

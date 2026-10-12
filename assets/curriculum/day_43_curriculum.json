@@ -91,7 +91,7 @@
           "hi": "ബസ്",
           "ta": "ബസ്"
         },
-        "example": "Could you point out a bus for me?"
+        "example": "We learned about bus in today's lesson."
       },
       {
         "word": "train",
@@ -100,7 +100,7 @@
           "hi": "ട്രെയിൻ",
           "ta": "ട്രെയിൻ"
         },
-        "example": "Could you point out a train for me?"
+        "example": "We learned about train in today's lesson."
       },
       {
         "word": "platform",
@@ -109,7 +109,7 @@
           "hi": "പ്ലാറ്റ്ഫോം",
           "ta": "പ്ലാറ്റ്ഫോം"
         },
-        "example": "Could you point out a platform for me?"
+        "example": "We learned about platform in today's lesson."
       },
       {
         "word": "seat",
@@ -118,7 +118,7 @@
           "hi": "സീറ്റ്",
           "ta": "സീറ്റ്"
         },
-        "example": "Could you point out a seat for me?"
+        "example": "We learned about seat in today's lesson."
       },
       {
         "word": "station",
@@ -127,7 +127,7 @@
           "hi": "സ്റ്റേഷൻ",
           "ta": "സ്റ്റേഷൻ"
         },
-        "example": "Could you point out a station for me?"
+        "example": "We learned about station in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d43_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കയറുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "discover",
+            "create",
+            "listen",
+            "board"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "board",
+          "explanation": "board എന്നാൽ കയറുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d43_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'alight'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "alighting",
+            "has alight",
+            "alights",
+            "alighted"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "alighted",
+          "explanation": "alight ന്റെ ഭൂതകാല രൂപം alighted ആണ്."
         },
         {
           "id": "trap_d43_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ബസ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "courage",
+            "knowledge",
+            "bus"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "bus",
+          "explanation": "ബസ് എന്നാൽ ഇംഗ്ലീഷിൽ bus."
         }
       ],
       "description": {
@@ -407,18 +407,18 @@
         {
           "q": "Choose the correct meaning for 'board':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
             "സന്തോഷം",
-            "കയറുക"
+            "കയറുക",
+            "ഭക്ഷണം",
+            "യാത്ര"
           ],
           "answer": "കയറുക"
         },
         {
           "q": "Complete the sentence: '_____ train at platform 2.'",
           "options": [
-            "boarding",
             "is board",
+            "boarding",
             "were board",
             "board"
           ],
@@ -427,18 +427,18 @@
         {
           "q": "What is the past form (V2) of 'alight'?",
           "options": [
-            "alights",
-            "alightedx",
+            "alighted",
             "None",
-            "alighted"
+            "alights",
+            "alightedx"
           ],
           "answer": "alighted"
         },
         {
           "q": "Which English word means 'ബസ്'?",
           "options": [
-            "bus",
             "partner",
+            "bus",
             "schedule",
             "progress"
           ],
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "Board train at platform 2.",
-            "I am board every time wrongly.",
             "He do not board yesterday.",
-            "We was board tomorrow."
+            "We was board tomorrow.",
+            "I am board every time wrongly.",
+            "Board train at platform 2."
           ],
           "answer": "Board train at platform 2."
         }

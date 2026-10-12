@@ -91,7 +91,7 @@
           "hi": "സൈസ്",
           "ta": "സൈസ്"
         },
-        "example": "Could you point out a size for me?"
+        "example": "We learned about size in today's lesson."
       },
       {
         "word": "shirt",
@@ -100,7 +100,7 @@
           "hi": "ഷർട്ട്",
           "ta": "ഷർട്ട്"
         },
-        "example": "Could you point out a shirt for me?"
+        "example": "We learned about shirt in today's lesson."
       },
       {
         "word": "dress",
@@ -109,7 +109,7 @@
           "hi": "വസ്ത്രം",
           "ta": "വസ്ത്രം"
         },
-        "example": "Could you point out a dress for me?"
+        "example": "We learned about dress in today's lesson."
       },
       {
         "word": "trial",
@@ -118,7 +118,7 @@
           "hi": "ട്രയൽ",
           "ta": "ട്രയൽ"
         },
-        "example": "Could you point out a trial for me?"
+        "example": "We learned about trial in today's lesson."
       },
       {
         "word": "discount",
@@ -127,7 +127,7 @@
           "hi": "കിഴിവ്",
           "ta": "കിഴിവ്"
         },
-        "example": "Could you point out a discount for me?"
+        "example": "We learned about discount in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d41_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പാകമാകുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "fit",
+            "borrow",
+            "listen",
+            "forget"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "fit",
+          "explanation": "fit എന്നാൽ പാകമാകുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d41_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'try'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "trys",
+            "trying",
+            "has try",
+            "tried"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "tried",
+          "explanation": "try ന്റെ ഭൂതകാല രൂപം tried ആണ്."
         },
         {
           "id": "trap_d41_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സൈസ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "size",
+            "courage",
+            "journey",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "size",
+          "explanation": "സൈസ് എന്നാൽ ഇംഗ്ലീഷിൽ size."
         }
       ],
       "description": {
@@ -408,29 +408,29 @@
           "q": "Choose the correct meaning for 'fit':",
           "options": [
             "യാത്ര",
-            "സന്തോഷം",
             "പാകമാകുക",
-            "ഭക്ഷണം"
+            "ഭക്ഷണം",
+            "സന്തോഷം"
           ],
           "answer": "പാകമാകുക"
         },
         {
           "q": "Complete the sentence: 'Does this shirt _____ you?'",
           "options": [
-            "were fit",
             "is fit",
             "fiting",
-            "fit"
+            "fit",
+            "were fit"
           ],
           "answer": "fit"
         },
         {
           "q": "What is the past form (V2) of 'try'?",
           "options": [
-            "None",
-            "tryedx",
             "trys",
-            "tried"
+            "tried",
+            "tryedx",
+            "None"
           ],
           "answer": "tried"
         },
@@ -439,8 +439,8 @@
           "options": [
             "routine",
             "knowledge",
-            "schedule",
-            "size"
+            "size",
+            "schedule"
           ],
           "answer": "size"
         },
@@ -448,9 +448,9 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "We was fit tomorrow.",
-            "He do not fit yesterday.",
             "I am fit every time wrongly.",
-            "Does this shirt fit you?"
+            "Does this shirt fit you?",
+            "He do not fit yesterday."
           ],
           "answer": "Does this shirt fit you?"
         }

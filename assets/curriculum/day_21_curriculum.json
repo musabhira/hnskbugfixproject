@@ -91,7 +91,7 @@
           "hi": "എന്ത്",
           "ta": "എന്ത്"
         },
-        "example": "Could you point out a what for me?"
+        "example": "We learned about what in today's lesson."
       },
       {
         "word": "where",
@@ -100,7 +100,7 @@
           "hi": "എവിടെ",
           "ta": "എവിടെ"
         },
-        "example": "Could you point out a where for me?"
+        "example": "We learned about where in today's lesson."
       },
       {
         "word": "place",
@@ -109,7 +109,7 @@
           "hi": "സ്ഥലം",
           "ta": "സ്ഥലം"
         },
-        "example": "Could you point out a place for me?"
+        "example": "We learned about place in today's lesson."
       },
       {
         "word": "address",
@@ -118,7 +118,7 @@
           "hi": "മേൽവിലാസം",
           "ta": "മേൽവിലാസം"
         },
-        "example": "Could you point out an address for me?"
+        "example": "We learned about address in today's lesson."
       },
       {
         "word": "map",
@@ -127,7 +127,7 @@
           "hi": "മാപ്പ്",
           "ta": "മാപ്പ്"
         },
-        "example": "Could you point out a map for me?"
+        "example": "We learned about map in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d21_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ചോദിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "ask",
+            "borrow",
+            "forget",
+            "listen"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "ask",
+          "explanation": "ask എന്നാൽ ചോദിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d21_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'search'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "searched",
+            "searching",
+            "searchs",
+            "has search"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "searched",
+          "explanation": "search ന്റെ ഭൂതകാല രൂപം searched ആണ്."
         },
         {
           "id": "trap_d21_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'എന്ത്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "journey",
+            "what",
+            "courage",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "what",
+          "explanation": "എന്ത് എന്നാൽ ഇംഗ്ലീഷിൽ what."
         }
       ],
       "description": {
@@ -407,30 +407,30 @@
         {
           "q": "Choose the correct meaning for 'ask':",
           "options": [
-            "സന്തോഷം",
-            "ചോദിക്കുക",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "ചോദിക്കുക"
           ],
           "answer": "ചോദിക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ a question.'",
           "options": [
-            "ask",
-            "asking",
+            "were ask",
             "is ask",
-            "were ask"
+            "asking",
+            "ask"
           ],
           "answer": "ask"
         },
         {
           "q": "What is the past form (V2) of 'search'?",
           "options": [
-            "None",
-            "searchedx",
             "searchs",
-            "searched"
+            "searched",
+            "searchedx",
+            "None"
           ],
           "answer": "searched"
         },
@@ -438,8 +438,8 @@
           "q": "Which English word means 'എന്ത്'?",
           "options": [
             "what",
-            "knowledge",
             "schedule",
+            "knowledge",
             "routine"
           ],
           "answer": "what"
@@ -447,9 +447,9 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am ask every time wrongly.",
             "We was ask tomorrow.",
             "He do not ask yesterday.",
+            "I am ask every time wrongly.",
             "Ask a question."
           ],
           "answer": "Ask a question."

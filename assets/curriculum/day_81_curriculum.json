@@ -100,7 +100,7 @@
           "hi": "അഭ്യർത്ഥി",
           "ta": "അഭ്യർത്ഥി"
         },
-        "example": "Could you point out a candidate for me?"
+        "example": "We learned about candidate in today's lesson."
       },
       {
         "word": "pitch",
@@ -109,7 +109,7 @@
           "hi": "വിവരണം",
           "ta": "വിവരണം"
         },
-        "example": "Could you point out a pitch for me?"
+        "example": "We learned about pitch in today's lesson."
       },
       {
         "word": "passion",
@@ -118,7 +118,7 @@
           "hi": "താൽപര്യം",
           "ta": "താൽപര്യം"
         },
-        "example": "Could you point out a passion for me?"
+        "example": "We learned about passion in today's lesson."
       },
       {
         "word": "opportunity",
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d81_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പരിചയപ്പെടുത്തുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "forget",
+            "borrow",
+            "introduce"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "introduce",
+          "explanation": "introduce എന്നാൽ പരിചയപ്പെടുത്തുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d81_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'graduate'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "graduated",
+            "graduateing",
+            "graduates",
+            "has graduate"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "graduated",
+          "explanation": "graduate ന്റെ ഭൂതകാല രൂപം graduated ആണ്."
         },
         {
           "id": "trap_d81_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഇന്റർവ്യൂ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "interview",
+            "journey",
+            "courage",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "interview",
+          "explanation": "ഇന്റർവ്യൂ എന്നാൽ ഇംഗ്ലീഷിൽ interview."
         }
       ],
       "description": {
@@ -407,30 +407,30 @@
         {
           "q": "Choose the correct meaning for 'introduce':",
           "options": [
-            "പരിചയപ്പെടുത്തുക",
             "യാത്ര",
             "ഭക്ഷണം",
-            "സന്തോഷം"
+            "സന്തോഷം",
+            "പരിചയപ്പെടുത്തുക"
           ],
           "answer": "പരിചയപ്പെടുത്തുക"
         },
         {
           "q": "Complete the sentence: 'Allow me to _____ myself.'",
           "options": [
+            "were introduce",
             "introduce",
-            "introduceing",
             "is introduce",
-            "were introduce"
+            "introduceing"
           ],
           "answer": "introduce"
         },
         {
           "q": "What is the past form (V2) of 'graduate'?",
           "options": [
-            "graduateedx",
-            "None",
             "graduated",
-            "graduates"
+            "graduates",
+            "graduateedx",
+            "None"
           ],
           "answer": "graduated"
         },
@@ -438,19 +438,19 @@
           "q": "Which English word means 'ഇന്റർവ്യൂ'?",
           "options": [
             "knowledge",
-            "schedule",
             "interview",
-            "routine"
+            "routine",
+            "schedule"
           ],
           "answer": "interview"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "We was introduce tomorrow.",
             "He do not introduce yesterday.",
-            "Allow me to introduce myself.",
             "I am introduce every time wrongly.",
-            "We was introduce tomorrow."
+            "Allow me to introduce myself."
           ],
           "answer": "Allow me to introduce myself."
         }

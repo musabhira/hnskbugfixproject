@@ -91,7 +91,7 @@
           "hi": "സ്വപ്നം",
           "ta": "സ്വപ്നം"
         },
-        "example": "Could you point out a dream for me?"
+        "example": "We learned about dream in today's lesson."
       },
       {
         "word": "imagination",
@@ -100,7 +100,7 @@
           "hi": "സങ്കൽപ്പം",
           "ta": "സങ്കൽപ്പം"
         },
-        "example": "Could you point out an imagination for me?"
+        "example": "We learned about imagination in today's lesson."
       },
       {
         "word": "wish",
@@ -109,7 +109,7 @@
           "hi": "ആഗ്രഹം",
           "ta": "ആഗ്രഹം"
         },
-        "example": "Could you point out a wish for me?"
+        "example": "We learned about wish in today's lesson."
       },
       {
         "word": "world",
@@ -118,7 +118,7 @@
           "hi": "ലോകം",
           "ta": "ലോകം"
         },
-        "example": "Could you point out a world for me?"
+        "example": "We learned about world in today's lesson."
       },
       {
         "word": "freedom",
@@ -127,7 +127,7 @@
           "hi": "സ്വാതന്ത്ര്യം",
           "ta": "സ്വാതന്ത്ര്യം"
         },
-        "example": "Could you point out a freedom for me?"
+        "example": "We learned about freedom in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d70_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'യാത്ര ചെയ്യുമായിരുന്നു'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "forget",
+            "travel",
+            "finish"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "travel",
+          "explanation": "travel എന്നാൽ യാത്ര ചെയ്യുമായിരുന്നു എന്നർത്ഥം."
         },
         {
           "id": "trap_d70_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'buy'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "bought",
+            "buys",
+            "has buy",
+            "buying"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "bought",
+          "explanation": "buy ന്റെ ഭൂതകാല രൂപം bought ആണ്."
         },
         {
           "id": "trap_d70_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സ്വപ്നം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "success",
+            "journey",
+            "airport",
+            "dream"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "dream",
+          "explanation": "സ്വപ്നം എന്നാൽ ഇംഗ്ലീഷിൽ dream."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'travel':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
+            "യാത്ര ചെയ്യുമായിരുന്നു",
             "സന്തോഷം",
-            "യാത്ര ചെയ്യുമായിരുന്നു"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "യാത്ര ചെയ്യുമായിരുന്നു"
         },
@@ -427,30 +427,30 @@
         {
           "q": "What is the past form (V2) of 'buy'?",
           "options": [
-            "bought",
-            "buyedx",
             "None",
-            "buys"
+            "bought",
+            "buys",
+            "buyedx"
           ],
           "answer": "bought"
         },
         {
           "q": "Which English word means 'സ്വപ്നം'?",
           "options": [
-            "dream",
-            "knowledge",
             "routine",
-            "courage"
+            "knowledge",
+            "courage",
+            "dream"
           ],
           "answer": "dream"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "If I had time, I would travel.",
-            "I am travel every time wrongly.",
             "He do not travel yesterday.",
-            "We was travel tomorrow."
+            "We was travel tomorrow.",
+            "If I had time, I would travel.",
+            "I am travel every time wrongly."
           ],
           "answer": "If I had time, I would travel."
         }

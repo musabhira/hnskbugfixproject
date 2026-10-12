@@ -91,7 +91,7 @@
           "hi": "ഭൂതകാലം",
           "ta": "ഭൂതകാലം"
         },
-        "example": "Could you point out a past for me?"
+        "example": "We learned about past in today's lesson."
       },
       {
         "word": "state",
@@ -100,7 +100,7 @@
           "hi": "അവസ്ഥ",
           "ta": "അവസ്ഥ"
         },
-        "example": "Could you point out a state for me?"
+        "example": "We learned about state in today's lesson."
       },
       {
         "word": "mood",
@@ -109,7 +109,7 @@
           "hi": "മനോഭാവം",
           "ta": "മനോഭാവം"
         },
-        "example": "Could you point out a mood for me?"
+        "example": "We learned about mood in today's lesson."
       },
       {
         "word": "feeling",
@@ -118,7 +118,7 @@
           "hi": "വികാരം",
           "ta": "വികാരം"
         },
-        "example": "Could you point out a feeling for me?"
+        "example": "We learned about feeling in today's lesson."
       },
       {
         "word": "memory",
@@ -127,7 +127,7 @@
           "hi": "ഓർമ്മ",
           "ta": "ഓർമ്മ"
         },
-        "example": "Could you point out a memory for me?"
+        "example": "We learned about memory in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d31_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ആയിരിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "be",
+            "borrow",
+            "forget"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "be",
+          "explanation": "be എന്നാൽ ആയിരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d31_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'feel'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "feels",
+            "has feel",
+            "felt",
+            "feeling"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "felt",
+          "explanation": "feel ന്റെ ഭൂതകാല രൂപം felt ആണ്."
         },
         {
           "id": "trap_d31_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഭൂതകാലം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "courage",
+            "past",
+            "journey",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "past",
+          "explanation": "ഭൂതകാലം എന്നാൽ ഇംഗ്ലീഷിൽ past."
         }
       ],
       "description": {
@@ -408,48 +408,48 @@
           "q": "Choose the correct meaning for 'be':",
           "options": [
             "ഭക്ഷണം",
-            "യാത്ര",
+            "ആയിരിക്കുക",
             "സന്തോഷം",
-            "ആയിരിക്കുക"
+            "യാത്ര"
           ],
           "answer": "ആയിരിക്കുക"
         },
         {
           "q": "Complete the sentence: 'I was at home.'",
           "options": [
-            "were be",
             "be",
             "being",
-            "is be"
+            "is be",
+            "were be"
           ],
           "answer": "be"
         },
         {
           "q": "What is the past form (V2) of 'feel'?",
           "options": [
-            "None",
-            "feeledx",
             "feels",
-            "felt"
+            "felt",
+            "feeledx",
+            "None"
           ],
           "answer": "felt"
         },
         {
           "q": "Which English word means 'ഭൂതകാലം'?",
           "options": [
-            "past",
+            "routine",
             "knowledge",
-            "schedule",
-            "routine"
+            "past",
+            "schedule"
           ],
           "answer": "past"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am be every time wrongly.",
-            "I was at home.",
             "He do not be yesterday.",
+            "I was at home.",
+            "I am be every time wrongly.",
             "We was be tomorrow."
           ],
           "answer": "I was at home."

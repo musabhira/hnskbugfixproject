@@ -91,7 +91,7 @@
           "hi": "വൈരുദ്ധ്യം",
           "ta": "വൈരുദ്ധ്യം"
         },
-        "example": "Could you point out a contrast for me?"
+        "example": "We learned about contrast in today's lesson."
       },
       {
         "word": "challenge",
@@ -100,7 +100,7 @@
           "hi": "വെല്ലുവിളി",
           "ta": "വെല്ലുവിളി"
         },
-        "example": "Could you point out a challenge for me?"
+        "example": "We learned about challenge in today's lesson."
       },
       {
         "word": "effort",
@@ -109,7 +109,7 @@
           "hi": "ശ്രമം",
           "ta": "ശ്രമം"
         },
-        "example": "Could you point out an effort for me?"
+        "example": "We learned about effort in today's lesson."
       },
       {
         "word": "victory",
@@ -118,7 +118,7 @@
           "hi": "വിജയം",
           "ta": "വിജയം"
         },
-        "example": "Could you point out a victory for me?"
+        "example": "We learned about victory in today's lesson."
       },
       {
         "word": "fact",
@@ -127,7 +127,7 @@
           "hi": "വസ്തുത",
           "ta": "വസ്തുത"
         },
-        "example": "Could you point out a fact for me?"
+        "example": "We learned about fact in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d68_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ശ്രമിച്ചു'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "prepare",
+            "finish",
+            "try"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "try",
+          "explanation": "try എന്നാൽ ശ്രമിച്ചു എന്നർത്ഥം."
         },
         {
           "id": "trap_d68_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'continue'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "continueing",
+            "continues",
+            "has continue",
+            "continued"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "continued",
+          "explanation": "continue ന്റെ ഭൂതകാല രൂപം continued ആണ്."
         },
         {
           "id": "trap_d68_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വൈരുദ്ധ്യം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "airport",
+            "contrast",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "contrast",
+          "explanation": "വൈരുദ്ധ്യം എന്നാൽ ഇംഗ്ലീഷിൽ contrast."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'try':",
           "options": [
-            "ഭക്ഷണം",
+            "ശ്രമിച്ചു",
             "സന്തോഷം",
             "യാത്ര",
-            "ശ്രമിച്ചു"
+            "ഭക്ഷണം"
           ],
           "answer": "ശ്രമിച്ചു"
         },
         {
           "q": "Complete the sentence: 'Although he tried, it was hard.'",
           "options": [
-            "were try",
-            "try",
+            "is try",
             "trying",
-            "is try"
+            "try",
+            "were try"
           ],
           "answer": "try"
         },
         {
           "q": "What is the past form (V2) of 'continue'?",
           "options": [
-            "None",
-            "continueedx",
+            "continued",
             "continues",
-            "continued"
+            "continueedx",
+            "None"
           ],
           "answer": "continued"
         },
         {
           "q": "Which English word means 'വൈരുദ്ധ്യം'?",
           "options": [
-            "contrast",
-            "journey",
+            "courage",
             "success",
-            "courage"
+            "contrast",
+            "journey"
           ],
           "answer": "contrast"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was try tomorrow.",
             "I am try every time wrongly.",
+            "Although he tried, it was hard.",
             "He do not try yesterday.",
-            "Although he tried, it was hard."
+            "We was try tomorrow."
           ],
           "answer": "Although he tried, it was hard."
         }

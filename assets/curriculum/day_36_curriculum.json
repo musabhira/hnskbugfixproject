@@ -91,7 +91,7 @@
           "hi": "കുട്ടിക്കാലം",
           "ta": "കുട്ടിക്കാലം"
         },
-        "example": "Could you point out a childhood for me?"
+        "example": "We learned about childhood in today's lesson."
       },
       {
         "word": "school",
@@ -100,7 +100,7 @@
           "hi": "സ്കൂൾ",
           "ta": "സ്കൂൾ"
         },
-        "example": "Could you point out a school for me?"
+        "example": "We learned about school in today's lesson."
       },
       {
         "word": "village",
@@ -118,7 +118,7 @@
           "hi": "കളി",
           "ta": "കളി"
         },
-        "example": "Could you point out a game for me?"
+        "example": "We learned about game in today's lesson."
       },
       {
         "word": "memory",
@@ -127,7 +127,7 @@
           "hi": "ഓർമ്മ",
           "ta": "ഓർമ്മ"
         },
-        "example": "Could you point out a memory for me?"
+        "example": "We learned about memory in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d36_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കളിക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "decide",
+            "play",
+            "remember"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "play",
+          "explanation": "play എന്നാൽ കളിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d36_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'live'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "lived",
+            "liveing",
+            "lives",
+            "has live"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "lived",
+          "explanation": "live ന്റെ ഭൂതകാല രൂപം lived ആണ്."
         },
         {
           "id": "trap_d36_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കുട്ടിക്കാലം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "progress",
+            "schedule",
+            "childhood",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "childhood",
+          "explanation": "കുട്ടിക്കാലം എന്നാൽ ഇംഗ്ലീഷിൽ childhood."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'play':",
           "options": [
-            "ഭക്ഷണം",
-            "കളിക്കുക",
             "സന്തോഷം",
-            "യാത്ര"
+            "കളിക്കുക",
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "കളിക്കുക"
         },
@@ -419,27 +419,27 @@
           "options": [
             "were play",
             "is play",
-            "playing",
-            "play"
+            "play",
+            "playing"
           ],
           "answer": "play"
         },
         {
           "q": "What is the past form (V2) of 'live'?",
           "options": [
-            "lived",
-            "None",
+            "liveedx",
             "lives",
-            "liveedx"
+            "lived",
+            "None"
           ],
           "answer": "lived"
         },
         {
           "q": "Which English word means 'കുട്ടിക്കാലം'?",
           "options": [
-            "station",
             "journey",
             "airport",
+            "station",
             "childhood"
           ],
           "answer": "childhood"
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "He do not play yesterday.",
             "I used to play cricket.",
-            "I am play every time wrongly.",
             "We was play tomorrow.",
-            "He do not play yesterday."
+            "I am play every time wrongly."
           ],
           "answer": "I used to play cricket."
         }

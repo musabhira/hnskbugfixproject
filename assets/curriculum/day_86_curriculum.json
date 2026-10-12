@@ -91,7 +91,7 @@
           "hi": "ശൈലി",
           "ta": "ശൈലി"
         },
-        "example": "Could you point out an idiom for me?"
+        "example": "We learned about idiom in today's lesson."
       },
       {
         "word": "expression",
@@ -100,7 +100,7 @@
           "hi": "പ്രയോഗം",
           "ta": "പ്രയോഗം"
         },
-        "example": "Could you point out an expression for me?"
+        "example": "We learned about expression in today's lesson."
       },
       {
         "word": "meaning",
@@ -109,7 +109,7 @@
           "hi": "അർത്ഥം",
           "ta": "അർത്ഥം"
         },
-        "example": "Could you point out a meaning for me?"
+        "example": "We learned about meaning in today's lesson."
       },
       {
         "word": "flow",
@@ -118,7 +118,7 @@
           "hi": "ഒഴുക്ക്",
           "ta": "ഒഴുക്ക്"
         },
-        "example": "Could you point out a flow for me?"
+        "example": "We learned about flow in today's lesson."
       },
       {
         "word": "native",
@@ -127,7 +127,7 @@
           "hi": "നേറ്റീവ്",
           "ta": "നേറ്റീവ്"
         },
-        "example": "Could you point out a native for me?"
+        "example": "We learned about native in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d86_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'തകർക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "decide",
+            "remember",
+            "break"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "break",
+          "explanation": "break എന്നാൽ തകർക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d86_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'bite'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "bit",
+            "has bite",
+            "biteing",
+            "bites"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "bit",
+          "explanation": "bite ന്റെ ഭൂതകാല രൂപം bit ആണ്."
         },
         {
           "id": "trap_d86_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ശൈലി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "schedule",
+            "idiom",
+            "partner",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "idiom",
+          "explanation": "ശൈലി എന്നാൽ ഇംഗ്ലീഷിൽ idiom."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'break':",
           "options": [
-            "തകർക്കുക",
-            "സന്തോഷം",
+            "ഭക്ഷണം",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "സന്തോഷം",
+            "തകർക്കുക"
           ],
           "answer": "തകർക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ the ice with a smile.'",
           "options": [
-            "break",
-            "breaking",
             "is break",
-            "were break"
+            "were break",
+            "breaking",
+            "break"
           ],
           "answer": "break"
         },
@@ -428,29 +428,29 @@
           "q": "What is the past form (V2) of 'bite'?",
           "options": [
             "biteedx",
-            "None",
             "bites",
-            "bit"
+            "bit",
+            "None"
           ],
           "answer": "bit"
         },
         {
           "q": "Which English word means 'ശൈലി'?",
           "options": [
-            "station",
             "idiom",
+            "airport",
             "journey",
-            "airport"
+            "station"
           ],
           "answer": "idiom"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "Break the ice with a smile.",
             "I am break every time wrongly.",
+            "We was break tomorrow.",
             "He do not break yesterday.",
-            "We was break tomorrow."
+            "Break the ice with a smile."
           ],
           "answer": "Break the ice with a smile."
         }

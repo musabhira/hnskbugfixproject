@@ -91,7 +91,7 @@
           "hi": "എങ്ങനെ",
           "ta": "എങ്ങനെ"
         },
-        "example": "Could you point out a how for me?"
+        "example": "We learned about how in today's lesson."
       },
       {
         "word": "distance",
@@ -100,7 +100,7 @@
           "hi": "ദൂരം",
           "ta": "ദൂരം"
         },
-        "example": "Could you point out a distance for me?"
+        "example": "We learned about distance in today's lesson."
       },
       {
         "word": "weight",
@@ -109,7 +109,7 @@
           "hi": "ഭാരം",
           "ta": "ഭാരം"
         },
-        "example": "Could you point out a weight for me?"
+        "example": "We learned about weight in today's lesson."
       },
       {
         "word": "speed",
@@ -118,7 +118,7 @@
           "hi": "വേഗത",
           "ta": "വേഗത"
         },
-        "example": "Could you point out a speed for me?"
+        "example": "We learned about speed in today's lesson."
       },
       {
         "word": "cost",
@@ -127,7 +127,7 @@
           "hi": "ചെലവ്",
           "ta": "ചെലവ്"
         },
-        "example": "Could you point out a cost for me?"
+        "example": "We learned about cost in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d24_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിലയാകുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "cost",
+            "create",
+            "discover",
+            "remember"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "cost",
+          "explanation": "cost എന്നാൽ വിലയാകുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d24_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'measure'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "measured",
+            "measureing",
+            "measures",
+            "has measure"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "measured",
+          "explanation": "measure ന്റെ ഭൂതകാല രൂപം measured ആണ്."
         },
         {
           "id": "trap_d24_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'എങ്ങനെ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "schedule",
+            "routine",
+            "knowledge",
+            "how"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "how",
+          "explanation": "എങ്ങനെ എന്നാൽ ഇംഗ്ലീഷിൽ how."
         }
       ],
       "description": {
@@ -407,18 +407,18 @@
         {
           "q": "Choose the correct meaning for 'cost':",
           "options": [
-            "വിലയാകുക",
-            "സന്തോഷം",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "വിലയാകുക"
           ],
           "answer": "വിലയാകുക"
         },
         {
           "q": "Complete the sentence: 'How much does it _____?'",
           "options": [
-            "costing",
             "cost",
+            "costing",
             "is cost",
             "were cost"
           ],
@@ -437,18 +437,18 @@
         {
           "q": "Which English word means 'എങ്ങനെ'?",
           "options": [
-            "progress",
-            "how",
             "station",
-            "partner"
+            "partner",
+            "progress",
+            "how"
           ],
           "answer": "how"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was cost tomorrow.",
             "He do not cost yesterday.",
+            "We was cost tomorrow.",
             "I am cost every time wrongly.",
             "How much does it cost?"
           ],

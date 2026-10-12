@@ -91,7 +91,7 @@
           "hi": "സംവാദം",
           "ta": "സംവാദം"
         },
-        "example": "Could you point out a debate for me?"
+        "example": "We learned about debate in today's lesson."
       },
       {
         "word": "diplomacy",
@@ -100,7 +100,7 @@
           "hi": "നയതന്ത്രം",
           "ta": "നയതന്ത്രം"
         },
-        "example": "Could you point out a diplomacy for me?"
+        "example": "We learned about diplomacy in today's lesson."
       },
       {
         "word": "argument",
@@ -109,7 +109,7 @@
           "hi": "വാദം",
           "ta": "വാദം"
         },
-        "example": "Could you point out an argument for me?"
+        "example": "We learned about argument in today's lesson."
       },
       {
         "word": "respect",
@@ -118,7 +118,7 @@
           "hi": "ബഹുമാനം",
           "ta": "ബഹുമാനം"
         },
-        "example": "Could you point out a respect for me?"
+        "example": "We learned about respect in today's lesson."
       },
       {
         "word": "consensus",
@@ -127,7 +127,7 @@
           "hi": "യോജിപ്പ്",
           "ta": "യോജിപ്പ്"
         },
-        "example": "Could you point out a consensus for me?"
+        "example": "We learned about consensus in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d79_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിയോജിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "disagree",
+            "arrive",
+            "finish",
+            "borrow"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "disagree",
+          "explanation": "disagree എന്നാൽ വിയോജിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d79_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'appreciate'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has appreciate",
+            "appreciated",
+            "appreciateing",
+            "appreciates"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "appreciated",
+          "explanation": "appreciate ന്റെ ഭൂതകാല രൂപം appreciated ആണ്."
         },
         {
           "id": "trap_d79_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സംവാദം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "debate",
+            "journey",
+            "station",
+            "airport"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "debate",
+          "explanation": "സംവാദം എന്നാൽ ഇംഗ്ലീഷിൽ debate."
         }
       ],
       "description": {
@@ -408,9 +408,9 @@
           "q": "Choose the correct meaning for 'disagree':",
           "options": [
             "ഭക്ഷണം",
-            "യാത്ര",
+            "വിയോജിക്കുക",
             "സന്തോഷം",
-            "വിയോജിക്കുക"
+            "യാത്ര"
           ],
           "answer": "വിയോജിക്കുക"
         },
@@ -418,8 +418,8 @@
           "q": "Complete the sentence: 'I respectfully _____.'",
           "options": [
             "disagree",
-            "is disagree",
             "disagreeing",
+            "is disagree",
             "were disagree"
           ],
           "answer": "disagree"
@@ -438,8 +438,8 @@
           "q": "Which English word means 'സംവാദം'?",
           "options": [
             "knowledge",
-            "courage",
             "debate",
+            "courage",
             "success"
           ],
           "answer": "debate"
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was disagree tomorrow.",
-            "He do not disagree yesterday.",
+            "I respectfully disagree.",
             "I am disagree every time wrongly.",
-            "I respectfully disagree."
+            "He do not disagree yesterday.",
+            "We was disagree tomorrow."
           ],
           "answer": "I respectfully disagree."
         }

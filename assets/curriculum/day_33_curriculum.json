@@ -91,7 +91,7 @@
           "hi": "ചോദ്യം",
           "ta": "ചോദ്യം"
         },
-        "example": "Could you point out a question for me?"
+        "example": "We learned about question in today's lesson."
       },
       {
         "word": "answer",
@@ -100,7 +100,7 @@
           "hi": "ഉത്തരം",
           "ta": "ഉത്തരം"
         },
-        "example": "Could you point out an answer for me?"
+        "example": "We learned about answer in today's lesson."
       },
       {
         "word": "news",
@@ -109,7 +109,7 @@
           "hi": "വാർത്ത",
           "ta": "വാർത്ത"
         },
-        "example": "Could you point out a news for me?"
+        "example": "We learned about news in today's lesson."
       },
       {
         "word": "call",
@@ -118,7 +118,7 @@
           "hi": "കോൾ",
           "ta": "കോൾ"
         },
-        "example": "Could you point out a call for me?"
+        "example": "We learned about call in today's lesson."
       },
       {
         "word": "match",
@@ -127,7 +127,7 @@
           "hi": "കളി",
           "ta": "കളി"
         },
-        "example": "Could you point out a match for me?"
+        "example": "We learned about match in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d33_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കാണുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "create",
+            "discover",
+            "see"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "see",
+          "explanation": "see എന്നാൽ കാണുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d33_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'hear'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "hearing",
+            "heard",
+            "has hear",
+            "hears"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "heard",
+          "explanation": "hear ന്റെ ഭൂതകാല രൂപം heard ആണ്."
         },
         {
           "id": "trap_d33_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ചോദ്യം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "routine",
+            "courage",
+            "question"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "question",
+          "explanation": "ചോദ്യം എന്നാൽ ഇംഗ്ലീഷിൽ question."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'see':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
+            "കാണുക",
             "സന്തോഷം",
-            "കാണുക"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "കാണുക"
         },
@@ -418,39 +418,39 @@
           "q": "Complete the sentence: 'Did you _____ the match?'",
           "options": [
             "is see",
-            "seeing",
+            "were see",
             "see",
-            "were see"
+            "seeing"
           ],
           "answer": "see"
         },
         {
           "q": "What is the past form (V2) of 'hear'?",
           "options": [
-            "heard",
+            "hearedx",
             "hears",
             "None",
-            "hearedx"
+            "heard"
           ],
           "answer": "heard"
         },
         {
           "q": "Which English word means 'ചോദ്യം'?",
           "options": [
-            "question",
-            "schedule",
+            "partner",
             "progress",
-            "partner"
+            "schedule",
+            "question"
           ],
           "answer": "question"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was see tomorrow.",
-            "He do not see yesterday.",
+            "Did you see the match?",
             "I am see every time wrongly.",
-            "Did you see the match?"
+            "He do not see yesterday.",
+            "We was see tomorrow."
           ],
           "answer": "Did you see the match?"
         }

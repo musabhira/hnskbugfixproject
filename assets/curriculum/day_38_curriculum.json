@@ -91,7 +91,7 @@
           "hi": "സംഭവം",
           "ta": "സംഭവം"
         },
-        "example": "Could you point out an incident for me?"
+        "example": "We learned about incident in today's lesson."
       },
       {
         "word": "story",
@@ -100,7 +100,7 @@
           "hi": "കഥ",
           "ta": "കഥ"
         },
-        "example": "Could you point out a story for me?"
+        "example": "We learned about story in today's lesson."
       },
       {
         "word": "shock",
@@ -109,7 +109,7 @@
           "hi": "ഞെട്ടൽ",
           "ta": "ഞെട്ടൽ"
         },
-        "example": "Could you point out a shock for me?"
+        "example": "We learned about shock in today's lesson."
       },
       {
         "word": "crowd",
@@ -118,7 +118,7 @@
           "hi": "ആളുകൾ",
           "ta": "ആളുകൾ"
         },
-        "example": "Could you point out a crowd for me?"
+        "example": "We learned about crowd in today's lesson."
       },
       {
         "word": "end",
@@ -127,7 +127,7 @@
           "hi": "അവസാനം",
           "ta": "അവസാനം"
         },
-        "example": "Could you point out an end for me?"
+        "example": "We learned about end in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d38_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സംഭവിക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "happen",
+            "arrive",
+            "finish"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "happen",
+          "explanation": "happen എന്നാൽ സംഭവിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d38_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'shout'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "shouts",
+            "shouting",
+            "has shout",
+            "shouted"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "shouted",
+          "explanation": "shout ന്റെ ഭൂതകാല രൂപം shouted ആണ്."
         },
         {
           "id": "trap_d38_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സംഭവം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "incident",
+            "station",
+            "airport",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "incident",
+          "explanation": "സംഭവം എന്നാൽ ഇംഗ്ലീഷിൽ incident."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'happen':",
           "options": [
-            "ഭക്ഷണം",
             "സംഭവിക്കുക",
             "സന്തോഷം",
-            "യാത്ര"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "സംഭവിക്കുക"
         },
@@ -418,18 +418,18 @@
           "q": "Complete the sentence: 'What _____ed suddenly?'",
           "options": [
             "is happen",
+            "were happen",
             "happening",
-            "happen",
-            "were happen"
+            "happen"
           ],
           "answer": "happen"
         },
         {
           "q": "What is the past form (V2) of 'shout'?",
           "options": [
-            "shoutedx",
             "shouts",
             "None",
+            "shoutedx",
             "shouted"
           ],
           "answer": "shouted"
@@ -437,20 +437,20 @@
         {
           "q": "Which English word means 'സംഭവം'?",
           "options": [
-            "courage",
             "success",
-            "incident",
-            "journey"
+            "courage",
+            "journey",
+            "incident"
           ],
           "answer": "incident"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was happen tomorrow.",
-            "He do not happen yesterday.",
             "I am happen every time wrongly.",
-            "What happened suddenly?"
+            "What happened suddenly?",
+            "We was happen tomorrow.",
+            "He do not happen yesterday."
           ],
           "answer": "What happened suddenly?"
         }

@@ -91,7 +91,7 @@
           "hi": "ഇടത്",
           "ta": "ഇടത്"
         },
-        "example": "Could you point out a left for me?"
+        "example": "We learned about left in today's lesson."
       },
       {
         "word": "right",
@@ -100,7 +100,7 @@
           "hi": "വലത്",
           "ta": "വലത്"
         },
-        "example": "Could you point out a right for me?"
+        "example": "We learned about right in today's lesson."
       },
       {
         "word": "straight",
@@ -109,7 +109,7 @@
           "hi": "നേരെ",
           "ta": "നേരെ"
         },
-        "example": "Could you point out a straight for me?"
+        "example": "We learned about straight in today's lesson."
       },
       {
         "word": "signal",
@@ -118,7 +118,7 @@
           "hi": "സിഗ്നൽ",
           "ta": "സിഗ്നൽ"
         },
-        "example": "Could you point out a signal for me?"
+        "example": "We learned about signal in today's lesson."
       },
       {
         "word": "junction",
@@ -127,7 +127,7 @@
           "hi": "കവല",
           "ta": "കവല"
         },
-        "example": "Could you point out a junction for me?"
+        "example": "We learned about junction in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d26_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'തിരിയുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "decide",
+            "remember",
+            "turn"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "turn",
+          "explanation": "turn എന്നാൽ തിരിയുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d26_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'cross'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "crosss",
+            "crossing",
+            "crossed",
+            "has cross"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "crossed",
+          "explanation": "cross ന്റെ ഭൂതകാല രൂപം crossed ആണ്."
         },
         {
           "id": "trap_d26_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഇടത്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "partner",
+            "progress",
+            "schedule",
+            "left"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "left",
+          "explanation": "ഇടത് എന്നാൽ ഇംഗ്ലീഷിൽ left."
         }
       ],
       "description": {
@@ -407,40 +407,40 @@
         {
           "q": "Choose the correct meaning for 'turn':",
           "options": [
-            "യാത്ര",
             "തിരിയുക",
-            "ഭക്ഷണം",
-            "സന്തോഷം"
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "തിരിയുക"
         },
         {
           "q": "Complete the sentence: '_____ left at the signal.'",
           "options": [
-            "turn",
             "is turn",
             "turning",
-            "were turn"
+            "were turn",
+            "turn"
           ],
           "answer": "turn"
         },
         {
           "q": "What is the past form (V2) of 'cross'?",
           "options": [
-            "None",
-            "crossedx",
             "crosss",
-            "crossed"
+            "crossed",
+            "crossedx",
+            "None"
           ],
           "answer": "crossed"
         },
         {
           "q": "Which English word means 'ഇടത്'?",
           "options": [
-            "airport",
-            "journey",
+            "left",
             "station",
-            "left"
+            "journey",
+            "airport"
           ],
           "answer": "left"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "Turn left at the signal.",
-            "I am turn every time wrongly.",
             "We was turn tomorrow.",
+            "I am turn every time wrongly.",
             "He do not turn yesterday."
           ],
           "answer": "Turn left at the signal."

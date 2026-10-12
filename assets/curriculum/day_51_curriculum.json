@@ -91,7 +91,7 @@
           "hi": "കാരണം",
           "ta": "കാരണം"
         },
-        "example": "Could you point out an excuse for me?"
+        "example": "We learned about excuse in today's lesson."
       },
       {
         "word": "regret",
@@ -100,7 +100,7 @@
           "hi": "വിഷമം",
           "ta": "വിഷമം"
         },
-        "example": "Could you point out a regret for me?"
+        "example": "We learned about regret in today's lesson."
       },
       {
         "word": "thanks",
@@ -109,7 +109,7 @@
           "hi": "നന്ദി",
           "ta": "നന്ദി"
         },
-        "example": "Could you point out a thanks for me?"
+        "example": "We learned about thanks in today's lesson."
       },
       {
         "word": "chance",
@@ -118,7 +118,7 @@
           "hi": "അവസരം",
           "ta": "അവസരം"
         },
-        "example": "Could you point out a chance for me?"
+        "example": "We learned about chance in today's lesson."
       },
       {
         "word": "next time",
@@ -127,7 +127,7 @@
           "hi": "അടുത്ത തവണ",
           "ta": "അടുത്ത തവണ"
         },
-        "example": "Could you point out a next time for me?"
+        "example": "We learned about next time in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d51_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സ്വീകരിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "forget",
+            "borrow",
+            "accept"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "accept",
+          "explanation": "accept എന്നാൽ സ്വീകരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d51_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'decline'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has decline",
+            "declines",
+            "declineing",
+            "declined"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "declined",
+          "explanation": "decline ന്റെ ഭൂതകാല രൂപം declined ആണ്."
         },
         {
           "id": "trap_d51_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കാരണം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "courage",
+            "success",
+            "excuse",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "excuse",
+          "explanation": "കാരണം എന്നാൽ ഇംഗ്ലീഷിൽ excuse."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'accept':",
           "options": [
+            "ഭക്ഷണം",
             "സന്തോഷം",
             "സ്വീകരിക്കുക",
-            "ഭക്ഷണം",
             "യാത്ര"
           ],
           "answer": "സ്വീകരിക്കുക"
@@ -417,10 +417,10 @@
         {
           "q": "Complete the sentence: 'I happily _____.'",
           "options": [
-            "accept",
             "accepting",
-            "is accept",
-            "were accept"
+            "accept",
+            "were accept",
+            "is accept"
           ],
           "answer": "accept"
         },
@@ -428,8 +428,8 @@
           "q": "What is the past form (V2) of 'decline'?",
           "options": [
             "declineedx",
-            "declines",
             "None",
+            "declines",
             "declined"
           ],
           "answer": "declined"
@@ -439,18 +439,18 @@
           "options": [
             "excuse",
             "knowledge",
-            "schedule",
-            "routine"
+            "routine",
+            "schedule"
           ],
           "answer": "excuse"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I happily accept.",
             "We was accept tomorrow.",
+            "He do not accept yesterday.",
             "I am accept every time wrongly.",
-            "He do not accept yesterday."
+            "I happily accept."
           ],
           "answer": "I happily accept."
         }

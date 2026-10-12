@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d3_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സ്നേഹിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "discover",
+            "create",
+            "love"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "love",
+          "explanation": "love എന്നാൽ സ്നേഹിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d3_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'help'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "helped",
+            "helping",
+            "helps",
+            "has help"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "helped",
+          "explanation": "help ന്റെ ഭൂതകാല രൂപം helped ആണ്."
         },
         {
           "id": "trap_d3_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'അച്ഛൻ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "courage",
+            "father",
+            "routine"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "father",
+          "explanation": "അച്ഛൻ എന്നാൽ ഇംഗ്ലീഷിൽ father."
         }
       ],
       "description": {
@@ -409,40 +409,40 @@
         {
           "q": "Choose the correct meaning for 'love':",
           "options": [
-            "സ്നേഹിക്കുക",
-            "സന്തോഷം",
+            "ഭക്ഷണം",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "സന്തോഷം",
+            "സ്നേഹിക്കുക"
           ],
           "answer": "സ്നേഹിക്കുക"
         },
         {
           "q": "Complete the sentence: 'I _____ my family.'",
           "options": [
-            "love",
             "were love",
+            "is love",
             "loveing",
-            "is love"
+            "love"
           ],
           "answer": "love"
         },
         {
           "q": "What is the past form (V2) of 'help'?",
           "options": [
-            "helpedx",
-            "helps",
             "None",
-            "helped"
+            "helps",
+            "helped",
+            "helpedx"
           ],
           "answer": "helped"
         },
         {
           "q": "Which English word means 'അച്ഛൻ'?",
           "options": [
-            "schedule",
             "father",
-            "partner",
-            "progress"
+            "schedule",
+            "progress",
+            "partner"
           ],
           "answer": "father"
         },

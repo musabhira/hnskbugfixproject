@@ -91,7 +91,7 @@
           "hi": "പ്രവൃത്തി",
           "ta": "പ്രവൃത്തി"
         },
-        "example": "Could you point out an action for me?"
+        "example": "We learned about action in today's lesson."
       },
       {
         "word": "result",
@@ -100,7 +100,7 @@
           "hi": "ഫലം",
           "ta": "ഫലം"
         },
-        "example": "Could you point out a result for me?"
+        "example": "We learned about result in today's lesson."
       },
       {
         "word": "completion",
@@ -109,7 +109,7 @@
           "hi": "പൂർത്തീകരണം",
           "ta": "പൂർത്തീകരണം"
         },
-        "example": "Could you point out a completion for me?"
+        "example": "We learned about completion in today's lesson."
       },
       {
         "word": "task",
@@ -118,7 +118,7 @@
           "hi": "ജോലി",
           "ta": "ജോലി"
         },
-        "example": "Could you point out a task for me?"
+        "example": "We learned about task in today's lesson."
       },
       {
         "word": "status",
@@ -127,7 +127,7 @@
           "hi": "അവസ്ഥ",
           "ta": "അവസ്ഥ"
         },
-        "example": "Could you point out a status for me?"
+        "example": "We learned about status in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d61_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'തീർക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "finish",
+            "listen",
+            "forget"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "finish",
+          "explanation": "finish എന്നാൽ തീർക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d61_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'eat'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "eats",
+            "eating",
+            "ate",
+            "has eat"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "ate",
+          "explanation": "eat ന്റെ ഭൂതകാല രൂപം ate ആണ്."
         },
         {
           "id": "trap_d61_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പ്രവൃത്തി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "courage",
+            "action",
+            "journey",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "action",
+          "explanation": "പ്രവൃത്തി എന്നാൽ ഇംഗ്ലീഷിൽ action."
         }
       ],
       "description": {
@@ -407,8 +407,8 @@
         {
           "q": "Choose the correct meaning for 'finish':",
           "options": [
-            "യാത്ര",
             "സന്തോഷം",
+            "യാത്ര",
             "ഭക്ഷണം",
             "തീർക്കുക"
           ],
@@ -418,17 +418,17 @@
           "q": "Complete the sentence: 'I have _____ed my work.'",
           "options": [
             "were finish",
-            "is finish",
             "finishing",
-            "finish"
+            "finish",
+            "is finish"
           ],
           "answer": "finish"
         },
         {
           "q": "What is the past form (V2) of 'eat'?",
           "options": [
-            "eats",
             "ate",
+            "eats",
             "eatedx",
             "None"
           ],
@@ -437,20 +437,20 @@
         {
           "q": "Which English word means 'പ്രവൃത്തി'?",
           "options": [
+            "routine",
             "schedule",
-            "action",
             "knowledge",
-            "routine"
+            "action"
           ],
           "answer": "action"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I have finished my work.",
-            "I am finish every time wrongly.",
             "He do not finish yesterday.",
-            "We was finish tomorrow."
+            "We was finish tomorrow.",
+            "I am finish every time wrongly.",
+            "I have finished my work."
           ],
           "answer": "I have finished my work."
         }

@@ -100,7 +100,7 @@
           "hi": "ലെവൽ",
           "ta": "ലെവൽ"
         },
-        "example": "Could you point out a level for me?"
+        "example": "We learned about level in today's lesson."
       },
       {
         "word": "milestone",
@@ -109,7 +109,7 @@
           "hi": "മൈൽസ്റ്റോൺ",
           "ta": "മൈൽസ്റ്റോൺ"
         },
-        "example": "Could you point out a milestone for me?"
+        "example": "We learned about milestone in today's lesson."
       },
       {
         "word": "exam",
@@ -118,7 +118,7 @@
           "hi": "പരീക്ഷ",
           "ta": "പരീക്ഷ"
         },
-        "example": "Could you point out an exam for me?"
+        "example": "We learned about exam in today's lesson."
       },
       {
         "word": "success",
@@ -127,7 +127,7 @@
           "hi": "വിജയം",
           "ta": "വിജയം"
         },
-        "example": "Could you point out a success for me?"
+        "example": "We learned about success in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d60_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കീഴടക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "finish",
+            "forget",
+            "conquer"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "conquer",
+          "explanation": "conquer എന്നാൽ കീഴടക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d60_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'celebrate'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "celebrates",
+            "celebrated",
+            "celebrateing",
+            "has celebrate"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "celebrated",
+          "explanation": "celebrate ന്റെ ഭൂതകാല രൂപം celebrated ആണ്."
         },
         {
           "id": "trap_d60_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ട്രോഫി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "success",
+            "trophy",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "trophy",
+          "explanation": "ട്രോഫി എന്നാൽ ഇംഗ്ലീഷിൽ trophy."
         }
       ],
       "description": {
@@ -405,66 +405,54 @@
       "passScore": 70,
       "examQuestions": [
         {
-          "assessmentType": "listening_discrimination",
-          "audioPrompt": "Listen: “I missed the bus, so I took a taxi.”",
-          "q": "Choose the sentence you hear.",
+          "q": "Choose the correct meaning for 'conquer':",
           "options": [
-            "I missed the bus, so I took a taxi.",
-            "I miss the bus, so I take a taxi.",
-            "I missed the bus, so I take a taxi.",
-            "I was miss the bus, so I took taxi."
+            "യാത്ര",
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "കീഴടക്കുക"
           ],
-          "answer": "I missed the bus, so I took a taxi."
+          "answer": "കീഴടക്കുക"
         },
         {
-          "assessmentType": "repair_correction",
-          "q": "Choose the corrected sentence.",
+          "q": "Complete the sentence: '_____ House 2.'",
           "options": [
-            "She did not buy anything yesterday.",
-            "She did not bought anything yesterday.",
-            "She did not buys anything yesterday.",
-            "She not buy anything yesterday."
+            "conquering",
+            "were conquer",
+            "conquer",
+            "is conquer"
           ],
-          "answer": "She did not buy anything yesterday."
+          "answer": "conquer"
         },
         {
-          "assessmentType": "pragmatic_response",
-          "q": "Choose the most appropriate spoken response.",
+          "q": "What is the past form (V2) of 'celebrate'?",
           "options": [
-            "Could you please tell me when the next train leaves?",
-            "Tell me next train when leave.",
-            "When next train leaving?",
-            "You tell next train."
+            "None",
+            "celebrated",
+            "celebrates",
+            "celebrateedx"
           ],
-          "answer": "Could you please tell me when the next train leaves?"
+          "answer": "celebrated"
         },
         {
-          "assessmentType": "spoken_response",
-          "responseMode": "speech",
-          "q": "Tell a short story about yesterday: where you went, what happened, and what you will do next time.",
+          "q": "Which English word means 'ട്രോഫി'?",
           "options": [
-            "Record my response",
-            "Skip speaking",
-            "Read silently",
-            "Use a translation app"
+            "trophy",
+            "knowledge",
+            "routine",
+            "courage"
           ],
-          "answer": "Record my response",
-          "expectedElements": [
-            "clear complete sentences",
-            "relevant details",
-            "intelligible speech"
-          ]
+          "answer": "trophy"
         },
         {
-          "assessmentType": "cumulative_grammar",
-          "q": "Choose the grammatically correct sentence.",
+          "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am going to call the doctor tomorrow.",
-            "I going to call the doctor tomorrow.",
-            "I am go to call the doctor tomorrow.",
-            "I will going call the doctor tomorrow."
+            "We was conquer tomorrow.",
+            "Conquer House 2.",
+            "He do not conquer yesterday.",
+            "I am conquer every time wrongly."
           ],
-          "answer": "I am going to call the doctor tomorrow."
+          "answer": "Conquer House 2."
         }
       ],
       "description": {

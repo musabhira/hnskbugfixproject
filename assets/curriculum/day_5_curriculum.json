@@ -91,7 +91,7 @@
           "hi": "ഇത്",
           "ta": "ഇത്"
         },
-        "example": "Could you point out a this for me?"
+        "example": "We learned about this in today's lesson."
       },
       {
         "word": "that",
@@ -100,7 +100,7 @@
           "hi": "അത്",
           "ta": "അത്"
         },
-        "example": "Could you point out a that for me?"
+        "example": "We learned about that in today's lesson."
       },
       {
         "word": "these",
@@ -109,7 +109,7 @@
           "hi": "ഇവ",
           "ta": "ഇവ"
         },
-        "example": "Could you point out a these for me?"
+        "example": "We learned about these in today's lesson."
       },
       {
         "word": "those",
@@ -118,7 +118,7 @@
           "hi": "അവ",
           "ta": "അവ"
         },
-        "example": "Could you point out a those for me?"
+        "example": "We learned about those in today's lesson."
       },
       {
         "word": "thing",
@@ -127,7 +127,7 @@
           "hi": "വസ്തു",
           "ta": "വസ്തു"
         },
-        "example": "Could you point out a thing for me?"
+        "example": "We learned about thing in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d5_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ചൂണ്ടിക്കാണിക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "remember",
+            "discover",
+            "decide",
+            "point"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "point",
+          "explanation": "point എന്നാൽ ചൂണ്ടിക്കാണിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d5_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'take'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "takeing",
+            "has take",
+            "takes",
+            "took"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "took",
+          "explanation": "take ന്റെ ഭൂതകാല രൂപം took ആണ്."
         },
         {
           "id": "trap_d5_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഇത്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "this",
+            "routine",
+            "schedule",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "this",
+          "explanation": "ഇത് എന്നാൽ ഇംഗ്ലീഷിൽ this."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'point':",
           "options": [
+            "ഭക്ഷണം",
             "യാത്ര",
             "സന്തോഷം",
-            "ഭക്ഷണം",
             "ചൂണ്ടിക്കാണിക്കുക"
           ],
           "answer": "ചൂണ്ടിക്കാണിക്കുക"
@@ -427,10 +427,10 @@
         {
           "q": "What is the past form (V2) of 'take'?",
           "options": [
+            "None",
             "took",
             "takes",
-            "takeedx",
-            "None"
+            "takeedx"
           ],
           "answer": "took"
         },
@@ -447,8 +447,8 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was point tomorrow.",
             "He do not point yesterday.",
+            "We was point tomorrow.",
             "I am point every time wrongly.",
             "Point to that car."
           ],

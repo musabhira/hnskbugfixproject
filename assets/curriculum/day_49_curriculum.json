@@ -91,7 +91,7 @@
           "hi": "ഉപദേശം",
           "ta": "ഉപദേശം"
         },
-        "example": "Could you point out an advice for me?"
+        "example": "We learned about advice in today's lesson."
       },
       {
         "word": "health",
@@ -100,7 +100,7 @@
           "hi": "ആരോഗ്യം",
           "ta": "ആരോഗ്യം"
         },
-        "example": "Could you point out a health for me?"
+        "example": "We learned about health in today's lesson."
       },
       {
         "word": "diet",
@@ -109,7 +109,7 @@
           "hi": "ഭക്ഷണരീതി",
           "ta": "ഭക്ഷണരീതി"
         },
-        "example": "Could you point out a diet for me?"
+        "example": "We learned about diet in today's lesson."
       },
       {
         "word": "habit",
@@ -118,7 +118,7 @@
           "hi": "ശീലം",
           "ta": "ശീലം"
         },
-        "example": "Could you point out a habit for me?"
+        "example": "We learned about habit in today's lesson."
       },
       {
         "word": "tip",
@@ -127,7 +127,7 @@
           "hi": "നുറുങ്ങുവിദ്യ",
           "ta": "നുറുങ്ങുവിദ്യ"
         },
-        "example": "Could you point out a tip for me?"
+        "example": "We learned about tip in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d49_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഉപദേശിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "finish",
+            "arrive",
+            "advise",
+            "borrow"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "advise",
+          "explanation": "advise എന്നാൽ ഉപദേശിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d49_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'exercise'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "exercises",
+            "exerciseing",
+            "exercised",
+            "has exercise"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "exercised",
+          "explanation": "exercise ന്റെ ഭൂതകാല രൂപം exercised ആണ്."
         },
         {
           "id": "trap_d49_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഉപദേശം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "journey",
+            "airport",
+            "station",
+            "advice"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "advice",
+          "explanation": "ഉപദേശം എന്നാൽ ഇംഗ്ലീഷിൽ advice."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'advise':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
             "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം",
             "ഉപദേശിക്കുക"
           ],
           "answer": "ഉപദേശിക്കുക"
@@ -417,40 +417,40 @@
         {
           "q": "Complete the sentence: 'Doctor _____d rest.'",
           "options": [
-            "adviseing",
             "advise",
-            "were advise",
-            "is advise"
+            "adviseing",
+            "is advise",
+            "were advise"
           ],
           "answer": "advise"
         },
         {
           "q": "What is the past form (V2) of 'exercise'?",
           "options": [
-            "exercised",
-            "exercises",
+            "None",
             "exerciseedx",
-            "None"
+            "exercised",
+            "exercises"
           ],
           "answer": "exercised"
         },
         {
           "q": "Which English word means 'ഉപദേശം'?",
           "options": [
-            "knowledge",
             "courage",
             "success",
-            "advice"
+            "advice",
+            "knowledge"
           ],
           "answer": "advice"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not advise yesterday.",
             "We was advise tomorrow.",
+            "Doctor advised rest.",
             "I am advise every time wrongly.",
-            "Doctor advised rest."
+            "He do not advise yesterday."
           ],
           "answer": "Doctor advised rest."
         }

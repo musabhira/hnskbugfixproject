@@ -91,7 +91,7 @@
           "hi": "വൈകുന്നേരം",
           "ta": "വൈകുന്നേരം"
         },
-        "example": "Could you point out an evening for me?"
+        "example": "We learned about evening in today's lesson."
       },
       {
         "word": "tea",
@@ -100,7 +100,7 @@
           "hi": "ചായ",
           "ta": "ചായ"
         },
-        "example": "Could you point out a tea for me?"
+        "example": "We learned about tea in today's lesson."
       },
       {
         "word": "news",
@@ -109,7 +109,7 @@
           "hi": "വാർത്ത",
           "ta": "വാർത്ത"
         },
-        "example": "Could you point out a news for me?"
+        "example": "We learned about news in today's lesson."
       },
       {
         "word": "music",
@@ -118,7 +118,7 @@
           "hi": "സംഗീതം",
           "ta": "സംഗീതം"
         },
-        "example": "Could you point out a music for me?"
+        "example": "We learned about music in today's lesson."
       },
       {
         "word": "rest",
@@ -127,7 +127,7 @@
           "hi": "വിശ്രമം",
           "ta": "വിശ്രമം"
         },
-        "example": "Could you point out a rest for me?"
+        "example": "We learned about rest in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d12_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'തിരികെ എത്തുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "return",
+            "forget",
+            "listen",
+            "create"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "return",
+          "explanation": "return എന്നാൽ തിരികെ എത്തുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d12_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'relax'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "relaxed",
+            "relaxing",
+            "has relax",
+            "relaxs"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "relaxed",
+          "explanation": "relax ന്റെ ഭൂതകാല രൂപം relaxed ആണ്."
         },
         {
           "id": "trap_d12_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വൈകുന്നേരം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "success",
+            "evening",
+            "courage",
+            "knowledge"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "evening",
+          "explanation": "വൈകുന്നേരം എന്നാൽ ഇംഗ്ലീഷിൽ evening."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'return':",
           "options": [
-            "തിരികെ എത്തുക",
-            "സന്തോഷം",
             "ഭക്ഷണം",
-            "യാത്ര"
+            "യാത്ര",
+            "സന്തോഷം",
+            "തിരികെ എത്തുക"
           ],
           "answer": "തിരികെ എത്തുക"
         },
         {
           "q": "Complete the sentence: '_____ home at 6.'",
           "options": [
-            "were return",
-            "is return",
+            "return",
             "returning",
-            "return"
+            "is return",
+            "were return"
           ],
           "answer": "return"
         },
@@ -428,9 +428,9 @@
           "q": "What is the past form (V2) of 'relax'?",
           "options": [
             "None",
+            "relaxedx",
             "relaxed",
-            "relaxs",
-            "relaxedx"
+            "relaxs"
           ],
           "answer": "relaxed"
         },
@@ -438,19 +438,19 @@
           "q": "Which English word means 'വൈകുന്നേരം'?",
           "options": [
             "schedule",
-            "progress",
+            "routine",
             "evening",
-            "routine"
+            "progress"
           ],
           "answer": "evening"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "Return home at 6.",
             "We was return tomorrow.",
+            "He do not return yesterday.",
             "I am return every time wrongly.",
-            "He do not return yesterday."
+            "Return home at 6."
           ],
           "answer": "Return home at 6."
         }

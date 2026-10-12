@@ -91,7 +91,7 @@
           "hi": "ഉദ്ദേശ്യം",
           "ta": "ഉദ്ദേശ്യം"
         },
-        "example": "Could you point out an intention for me?"
+        "example": "We learned about intention in today's lesson."
       },
       {
         "word": "preparation",
@@ -100,7 +100,7 @@
           "hi": "ഒരുക്കം",
           "ta": "ഒരുക്കം"
         },
-        "example": "Could you point out a preparation for me?"
+        "example": "We learned about preparation in today's lesson."
       },
       {
         "word": "ticket",
@@ -109,7 +109,7 @@
           "hi": "ടിക്കറ്റ്",
           "ta": "ടിക്കറ്റ്"
         },
-        "example": "Could you point out a ticket for me?"
+        "example": "We learned about ticket in today's lesson."
       },
       {
         "word": "goal",
@@ -118,7 +118,7 @@
           "hi": "ലക്ഷ്യം",
           "ta": "ലക്ഷ്യം"
         },
-        "example": "Could you point out a goal for me?"
+        "example": "We learned about goal in today's lesson."
       },
       {
         "word": "target",
@@ -127,7 +127,7 @@
           "hi": "ടാർഗെറ്റ്",
           "ta": "ടാർഗെറ്റ്"
         },
-        "example": "Could you point out a target for me?"
+        "example": "We learned about target in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d40_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പ്ലാൻ ചെയ്യുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "forget",
+            "borrow",
+            "finish",
+            "plan"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "plan",
+          "explanation": "plan എന്നാൽ പ്ലാൻ ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d40_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'start'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has start",
+            "starts",
+            "starting",
+            "started"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "started",
+          "explanation": "start ന്റെ ഭൂതകാല രൂപം started ആണ്."
         },
         {
           "id": "trap_d40_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഉദ്ദേശ്യം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "intention",
+            "airport",
+            "journey",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "intention",
+          "explanation": "ഉദ്ദേശ്യം എന്നാൽ ഇംഗ്ലീഷിൽ intention."
         }
       ],
       "description": {
@@ -407,19 +407,19 @@
         {
           "q": "Choose the correct meaning for 'plan':",
           "options": [
-            "യാത്ര",
             "പ്ലാൻ ചെയ്യുക",
-            "ഭക്ഷണം",
-            "സന്തോഷം"
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "പ്ലാൻ ചെയ്യുക"
         },
         {
           "q": "Complete the sentence: 'I am going to buy a car.'",
           "options": [
-            "were plan",
             "is plan",
             "planing",
+            "were plan",
             "plan"
           ],
           "answer": "plan"
@@ -427,30 +427,30 @@
         {
           "q": "What is the past form (V2) of 'start'?",
           "options": [
+            "None",
             "started",
             "starts",
-            "startedx",
-            "None"
+            "startedx"
           ],
           "answer": "started"
         },
         {
           "q": "Which English word means 'ഉദ്ദേശ്യം'?",
           "options": [
+            "routine",
             "intention",
             "courage",
-            "knowledge",
-            "routine"
+            "knowledge"
           ],
           "answer": "intention"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was plan tomorrow.",
-            "He do not plan yesterday.",
             "I am plan every time wrongly.",
-            "I am going to buy a car."
+            "He do not plan yesterday.",
+            "I am going to buy a car.",
+            "We was plan tomorrow."
           ],
           "answer": "I am going to buy a car."
         }

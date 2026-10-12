@@ -91,7 +91,7 @@
           "hi": "സഹായം",
           "ta": "സഹായം"
         },
-        "example": "Could you point out a favor for me?"
+        "example": "We learned about favor in today's lesson."
       },
       {
         "word": "message",
@@ -100,7 +100,7 @@
           "hi": "സന്ദേശം",
           "ta": "സന്ദേശം"
         },
-        "example": "Could you point out a message for me?"
+        "example": "We learned about message in today's lesson."
       },
       {
         "word": "request",
@@ -109,7 +109,7 @@
           "hi": "അഭ്യർത്ഥന",
           "ta": "അഭ്യർത്ഥന"
         },
-        "example": "Could you point out a request for me?"
+        "example": "We learned about request in today's lesson."
       },
       {
         "word": "file",
@@ -118,7 +118,7 @@
           "hi": "ഫയൽ",
           "ta": "ഫയൽ"
         },
-        "example": "Could you point out a file for me?"
+        "example": "We learned about file in today's lesson."
       },
       {
         "word": "link",
@@ -127,7 +127,7 @@
           "hi": "ലിങ്ക്",
           "ta": "ലിങ്ക്"
         },
-        "example": "Could you point out a link for me?"
+        "example": "We learned about link in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d18_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിജയിക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "finish",
+            "pass",
+            "prepare",
+            "arrive"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "pass",
+          "explanation": "pass എന്നാൽ വിജയിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d18_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'repeat'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has repeat",
+            "repeated",
+            "repeating",
+            "repeats"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "repeated",
+          "explanation": "repeat ന്റെ ഭൂതകാല രൂപം repeated ആണ്."
         },
         {
           "id": "trap_d18_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സഹായം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "partner",
+            "favor",
+            "station",
+            "airport"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "favor",
+          "explanation": "സഹായം എന്നാൽ ഇംഗ്ലീഷിൽ favor."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'pass':",
           "options": [
-            "സന്തോഷം",
             "ഭക്ഷണം",
-            "യാത്ര",
-            "വിജയിക്കുക"
+            "വിജയിക്കുക",
+            "സന്തോഷം",
+            "യാത്ര"
           ],
           "answer": "വിജയിക്കുക"
         },
@@ -419,18 +419,18 @@
           "options": [
             "pass",
             "passing",
-            "were pass",
-            "is pass"
+            "is pass",
+            "were pass"
           ],
           "answer": "pass"
         },
         {
           "q": "What is the past form (V2) of 'repeat'?",
           "options": [
-            "None",
             "repeated",
-            "repeatedx",
-            "repeats"
+            "repeats",
+            "None",
+            "repeatedx"
           ],
           "answer": "repeated"
         },
@@ -438,19 +438,19 @@
           "q": "Which English word means 'സഹായം'?",
           "options": [
             "favor",
-            "journey",
             "courage",
-            "success"
+            "success",
+            "journey"
           ],
           "answer": "favor"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "Could you pass the salt?",
             "We was pass tomorrow.",
-            "He do not pass yesterday.",
             "I am pass every time wrongly.",
-            "Could you pass the salt?"
+            "He do not pass yesterday."
           ],
           "answer": "Could you pass the salt?"
         }

@@ -91,7 +91,7 @@
           "hi": "ഇന്ന്",
           "ta": "ഇന്ന്"
         },
-        "example": "Could you point out a today for me?"
+        "example": "We learned about today in today's lesson."
       },
       {
         "word": "tomorrow",
@@ -100,7 +100,7 @@
           "hi": "നാളെ",
           "ta": "നാളെ"
         },
-        "example": "Could you point out a tomorrow for me?"
+        "example": "We learned about tomorrow in today's lesson."
       },
       {
         "word": "yesterday",
@@ -109,7 +109,7 @@
           "hi": "ഇന്നലെ",
           "ta": "ഇന്നലെ"
         },
-        "example": "Could you point out a yesterday for me?"
+        "example": "We learned about yesterday in today's lesson."
       },
       {
         "word": "week",
@@ -118,7 +118,7 @@
           "hi": "ആഴ്ച",
           "ta": "ആഴ്ച"
         },
-        "example": "Could you point out a week for me?"
+        "example": "We learned about week in today's lesson."
       },
       {
         "word": "hour",
@@ -127,7 +127,7 @@
           "hi": "മണിക്കൂർ",
           "ta": "മണിക്കൂർ"
         },
-        "example": "Could you point out a hour for me?"
+        "example": "We learned about hour in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d10_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ആരംഭിക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "forget",
+            "borrow",
+            "finish",
+            "start"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "start",
+          "explanation": "start എന്നാൽ ആരംഭിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d10_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'finish'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has finish",
+            "finishs",
+            "finishing",
+            "finished"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "finished",
+          "explanation": "finish ന്റെ ഭൂതകാല രൂപം finished ആണ്."
         },
         {
           "id": "trap_d10_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഇന്ന്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "success",
+            "airport",
+            "today",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "today",
+          "explanation": "ഇന്ന് എന്നാൽ ഇംഗ്ലീഷിൽ today."
         }
       ],
       "description": {
@@ -408,8 +408,8 @@
           "q": "Choose the correct meaning for 'start':",
           "options": [
             "യാത്ര",
-            "സന്തോഷം",
             "ആരംഭിക്കുക",
+            "സന്തോഷം",
             "ഭക്ഷണം"
           ],
           "answer": "ആരംഭിക്കുക"
@@ -418,17 +418,17 @@
           "q": "Complete the sentence: '_____ at 9 AM.'",
           "options": [
             "were start",
-            "start",
+            "is start",
             "starting",
-            "is start"
+            "start"
           ],
           "answer": "start"
         },
         {
           "q": "What is the past form (V2) of 'finish'?",
           "options": [
-            "finishedx",
             "None",
+            "finishedx",
             "finishs",
             "finished"
           ],
@@ -438,17 +438,17 @@
           "q": "Which English word means 'ഇന്ന്'?",
           "options": [
             "today",
-            "routine",
             "courage",
-            "knowledge"
+            "knowledge",
+            "routine"
           ],
           "answer": "today"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "Start at 9 AM.",
             "I am start every time wrongly.",
+            "Start at 9 AM.",
             "He do not start yesterday.",
             "We was start tomorrow."
           ],

@@ -91,7 +91,7 @@
           "hi": "ചോറ്",
           "ta": "ചോറ്"
         },
-        "example": "Could you point out a rice for me?"
+        "example": "We learned about rice in today's lesson."
       },
       {
         "word": "curry",
@@ -100,7 +100,7 @@
           "hi": "കറി",
           "ta": "കറി"
         },
-        "example": "Could you point out a curry for me?"
+        "example": "We learned about curry in today's lesson."
       },
       {
         "word": "milk",
@@ -109,7 +109,7 @@
           "hi": "പാൽ",
           "ta": "പാൽ"
         },
-        "example": "Could you point out a milk for me?"
+        "example": "We learned about milk in today's lesson."
       },
       {
         "word": "sugar",
@@ -118,7 +118,7 @@
           "hi": "പഞ്ചസാര",
           "ta": "പഞ്ചസാര"
         },
-        "example": "Could you point out a sugar for me?"
+        "example": "We learned about sugar in today's lesson."
       },
       {
         "word": "salt",
@@ -127,7 +127,7 @@
           "hi": "ഉപ്പ്",
           "ta": "ഉപ്പ്"
         },
-        "example": "Could you point out a salt for me?"
+        "example": "We learned about salt in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d15_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'രുചിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "taste",
+            "discover",
+            "remember",
+            "decide"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "taste",
+          "explanation": "taste എന്നാൽ രുചിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d15_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'drink'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "drank",
+            "drinking",
+            "has drink",
+            "drinks"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "drank",
+          "explanation": "drink ന്റെ ഭൂതകാല രൂപം drank ആണ്."
         },
         {
           "id": "trap_d15_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ചോറ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "rice",
+            "routine",
+            "schedule",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "rice",
+          "explanation": "ചോറ് എന്നാൽ ഇംഗ്ലീഷിൽ rice."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'taste':",
           "options": [
-            "യാത്ര",
+            "രുചിക്കുക",
             "സന്തോഷം",
-            "ഭക്ഷണം",
-            "രുചിക്കുക"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "രുചിക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ this curry.'",
           "options": [
-            "taste",
-            "tasteing",
+            "were taste",
             "is taste",
-            "were taste"
+            "tasteing",
+            "taste"
           ],
           "answer": "taste"
         },
@@ -429,18 +429,18 @@
           "options": [
             "drinks",
             "None",
-            "drank",
-            "drinkedx"
+            "drinkedx",
+            "drank"
           ],
           "answer": "drank"
         },
         {
           "q": "Which English word means 'ചോറ്'?",
           "options": [
-            "station",
-            "airport",
+            "rice",
             "partner",
-            "rice"
+            "station",
+            "airport"
           ],
           "answer": "rice"
         },

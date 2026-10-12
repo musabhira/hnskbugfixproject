@@ -91,7 +91,7 @@
           "hi": "അപ്പോയിന്റ്മെന്റ്",
           "ta": "അപ്പോയിന്റ്മെന്റ്"
         },
-        "example": "Could you point out an appointment for me?"
+        "example": "We learned about appointment in today's lesson."
       },
       {
         "word": "meeting",
@@ -109,7 +109,7 @@
           "hi": "കലണ്ടർ",
           "ta": "കലണ്ടർ"
         },
-        "example": "Could you point out a calendar for me?"
+        "example": "We learned about calendar in today's lesson."
       },
       {
         "word": "reminder",
@@ -118,7 +118,7 @@
           "hi": "ഓർമ്മപ്പെടുത്തൽ",
           "ta": "ഓർമ്മപ്പെടുത്തൽ"
         },
-        "example": "Could you point out a reminder for me?"
+        "example": "We learned about reminder in today's lesson."
       },
       {
         "word": "time",
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d46_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സമയം നിശ്ചയിക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "prepare",
+            "schedule",
+            "remember",
+            "decide"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "schedule",
+          "explanation": "schedule എന്നാൽ സമയം നിശ്ചയിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d46_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'confirm'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "confirmed",
+            "confirming",
+            "has confirm",
+            "confirms"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "confirmed",
+          "explanation": "confirm ന്റെ ഭൂതകാല രൂപം confirmed ആണ്."
         },
         {
           "id": "trap_d46_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'അപ്പോയിന്റ്മെന്റ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "partner",
+            "appointment",
+            "schedule",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "appointment",
+          "explanation": "അപ്പോയിന്റ്മെന്റ് എന്നാൽ ഇംഗ്ലീഷിൽ appointment."
         }
       ],
       "description": {
@@ -407,28 +407,28 @@
         {
           "q": "Choose the correct meaning for 'schedule':",
           "options": [
+            "സമയം നിശ്ചയിക്കുക",
             "സന്തോഷം",
             "യാത്ര",
-            "ഭക്ഷണം",
-            "സമയം നിശ്ചയിക്കുക"
+            "ഭക്ഷണം"
           ],
           "answer": "സമയം നിശ്ചയിക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ a meeting.'",
           "options": [
+            "were schedule",
             "is schedule",
             "scheduleing",
-            "schedule",
-            "were schedule"
+            "schedule"
           ],
           "answer": "schedule"
         },
         {
           "q": "What is the past form (V2) of 'confirm'?",
           "options": [
-            "confirms",
             "confirmed",
+            "confirms",
             "confirmedx",
             "None"
           ],
@@ -437,10 +437,10 @@
         {
           "q": "Which English word means 'അപ്പോയിന്റ്മെന്റ്'?",
           "options": [
-            "journey",
-            "airport",
+            "appointment",
             "station",
-            "appointment"
+            "airport",
+            "journey"
           ],
           "answer": "appointment"
         },

@@ -91,7 +91,7 @@
           "hi": "പല്ലുകൾ",
           "ta": "പല്ലുകൾ"
         },
-        "example": "Could you point out a teeth for me?"
+        "example": "We learned about teeth in today's lesson."
       },
       {
         "word": "soap",
@@ -100,7 +100,7 @@
           "hi": "സോപ്പ്",
           "ta": "സോപ്പ്"
         },
-        "example": "Could you point out a soap for me?"
+        "example": "We learned about soap in today's lesson."
       },
       {
         "word": "water",
@@ -118,7 +118,7 @@
           "hi": "വസ്ത്രങ്ങൾ",
           "ta": "വസ്ത്രങ്ങൾ"
         },
-        "example": "Could you point out a clothes for me?"
+        "example": "We learned about clothes in today's lesson."
       },
       {
         "word": "bag",
@@ -127,7 +127,7 @@
           "hi": "ബാഗ്",
           "ta": "ബാഗ്"
         },
-        "example": "Could you point out a bag for me?"
+        "example": "We learned about bag in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d11_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പല്ല് തേക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "forget",
+            "listen",
+            "borrow",
+            "brush"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "brush",
+          "explanation": "brush എന്നാൽ പല്ല് തേക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d11_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'bath'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "baths",
+            "bathing",
+            "bathed",
+            "has bath"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "bathed",
+          "explanation": "bath ന്റെ ഭൂതകാല രൂപം bathed ആണ്."
         },
         {
           "id": "trap_d11_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പല്ലുകൾ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "courage",
+            "success",
+            "journey",
+            "teeth"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "teeth",
+          "explanation": "പല്ലുകൾ എന്നാൽ ഇംഗ്ലീഷിൽ teeth."
         }
       ],
       "description": {
@@ -407,28 +407,28 @@
         {
           "q": "Choose the correct meaning for 'brush':",
           "options": [
+            "യാത്ര",
             "പല്ല് തേക്കുക",
             "സന്തോഷം",
-            "ഭക്ഷണം",
-            "യാത്ര"
+            "ഭക്ഷണം"
           ],
           "answer": "പല്ല് തേക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ twice daily.'",
           "options": [
-            "brush",
-            "brushing",
             "were brush",
-            "is brush"
+            "is brush",
+            "brushing",
+            "brush"
           ],
           "answer": "brush"
         },
         {
           "q": "What is the past form (V2) of 'bath'?",
           "options": [
-            "None",
             "bathedx",
+            "None",
             "baths",
             "bathed"
           ],
@@ -437,8 +437,8 @@
         {
           "q": "Which English word means 'പല്ലുകൾ'?",
           "options": [
-            "teeth",
             "knowledge",
+            "teeth",
             "routine",
             "schedule"
           ],
@@ -448,9 +448,9 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "We was brush tomorrow.",
-            "Brush twice daily.",
+            "He do not brush yesterday.",
             "I am brush every time wrongly.",
-            "He do not brush yesterday."
+            "Brush twice daily."
           ],
           "answer": "Brush twice daily."
         }

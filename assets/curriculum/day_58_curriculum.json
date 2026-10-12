@@ -91,7 +91,7 @@
           "hi": "വേഗത",
           "ta": "വേഗത"
         },
-        "example": "Could you point out a speed for me?"
+        "example": "We learned about speed in today's lesson."
       },
       {
         "word": "reflex",
@@ -100,7 +100,7 @@
           "hi": "പ്രതികരണം",
           "ta": "പ്രതികരണം"
         },
-        "example": "Could you point out a reflex for me?"
+        "example": "We learned about reflex in today's lesson."
       },
       {
         "word": "fluency",
@@ -109,7 +109,7 @@
           "hi": "ഒഴുക്ക്",
           "ta": "ഒഴുക്ക്"
         },
-        "example": "Could you point out a fluency for me?"
+        "example": "We learned about fluency in today's lesson."
       },
       {
         "word": "habit",
@@ -118,7 +118,7 @@
           "hi": "ശീലം",
           "ta": "ശീലം"
         },
-        "example": "Could you point out a habit for me?"
+        "example": "We learned about habit in today's lesson."
       },
       {
         "word": "confidence",
@@ -127,7 +127,7 @@
           "hi": "ആത്മവിശ്വാസം",
           "ta": "ആത്മവിശ്വാസം"
         },
-        "example": "Could you point out a confidence for me?"
+        "example": "We learned about confidence in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d58_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പ്രതികരിക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "finish",
+            "prepare",
+            "arrive",
+            "react"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "react",
+          "explanation": "react എന്നാൽ പ്രതികരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d58_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'speak'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "spoke",
+            "speaking",
+            "speaks",
+            "has speak"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "spoke",
+          "explanation": "speak ന്റെ ഭൂതകാല രൂപം spoke ആണ്."
         },
         {
           "id": "trap_d58_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വേഗത'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "speed",
+            "airport",
+            "station",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "speed",
+          "explanation": "വേഗത എന്നാൽ ഇംഗ്ലീഷിൽ speed."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'react':",
           "options": [
-            "പ്രതികരിക്കുക",
-            "സന്തോഷം",
+            "ഭക്ഷണം",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "സന്തോഷം",
+            "പ്രതികരിക്കുക"
           ],
           "answer": "പ്രതികരിക്കുക"
         },
@@ -419,8 +419,8 @@
           "options": [
             "react",
             "reacting",
-            "is react",
-            "were react"
+            "were react",
+            "is react"
           ],
           "answer": "react"
         },
@@ -429,8 +429,8 @@
           "options": [
             "None",
             "speaks",
-            "speakedx",
-            "spoke"
+            "spoke",
+            "speakedx"
           ],
           "answer": "spoke"
         },
@@ -439,8 +439,8 @@
           "options": [
             "journey",
             "courage",
-            "success",
-            "speed"
+            "speed",
+            "success"
           ],
           "answer": "speed"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "React within 3 seconds.",
-            "I am react every time wrongly.",
             "He do not react yesterday.",
+            "I am react every time wrongly.",
             "We was react tomorrow."
           ],
           "answer": "React within 3 seconds."

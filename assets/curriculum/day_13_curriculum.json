@@ -91,7 +91,7 @@
           "hi": "ശീലം",
           "ta": "ശീലം"
         },
-        "example": "Could you point out a habit for me?"
+        "example": "We learned about habit in today's lesson."
       },
       {
         "word": "routine",
@@ -100,7 +100,7 @@
           "hi": "പതിവ്",
           "ta": "പതിവ്"
         },
-        "example": "Could you point out a routine for me?"
+        "example": "We learned about routine in today's lesson."
       },
       {
         "word": "duty",
@@ -109,7 +109,7 @@
           "hi": "കടമ",
           "ta": "കടമ"
         },
-        "example": "Could you point out a duty for me?"
+        "example": "We learned about duty in today's lesson."
       },
       {
         "word": "job",
@@ -118,7 +118,7 @@
           "hi": "ജോലി",
           "ta": "ജോലി"
         },
-        "example": "Could you point out a job for me?"
+        "example": "We learned about job in today's lesson."
       },
       {
         "word": "skill",
@@ -127,7 +127,7 @@
           "hi": "കഴിവ്",
           "ta": "കഴിവ്"
         },
-        "example": "Could you point out a skill for me?"
+        "example": "We learned about skill in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d13_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ജോലി ചെയ്യുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "work",
+            "listen",
+            "discover",
+            "create"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "work",
+          "explanation": "work എന്നാൽ ജോലി ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d13_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'study'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "studied",
+            "studying",
+            "studys",
+            "has study"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "studied",
+          "explanation": "study ന്റെ ഭൂതകാല രൂപം studied ആണ്."
         },
         {
           "id": "trap_d13_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ശീലം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "courage",
+            "knowledge",
+            "habit",
+            "routine"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "habit",
+          "explanation": "ശീലം എന്നാൽ ഇംഗ്ലീഷിൽ habit."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'work':",
           "options": [
-            "യാത്ര",
-            "ജോലി ചെയ്യുക",
             "സന്തോഷം",
+            "ജോലി ചെയ്യുക",
+            "യാത്ര",
             "ഭക്ഷണം"
           ],
           "answer": "ജോലി ചെയ്യുക"
@@ -417,9 +417,9 @@
         {
           "q": "Complete the sentence: 'He _____s hard.'",
           "options": [
-            "working",
-            "is work",
             "were work",
+            "is work",
+            "working",
             "work"
           ],
           "answer": "work"
@@ -427,30 +427,30 @@
         {
           "q": "What is the past form (V2) of 'study'?",
           "options": [
-            "studied",
-            "studyedx",
             "None",
-            "studys"
+            "studys",
+            "studyedx",
+            "studied"
           ],
           "answer": "studied"
         },
         {
           "q": "Which English word means 'ശീലം'?",
           "options": [
-            "partner",
-            "progress",
             "schedule",
-            "habit"
+            "habit",
+            "progress",
+            "partner"
           ],
           "answer": "habit"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was work tomorrow.",
             "He do not work yesterday.",
             "I am work every time wrongly.",
-            "He works hard."
+            "He works hard.",
+            "We was work tomorrow."
           ],
           "answer": "He works hard."
         }

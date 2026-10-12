@@ -91,7 +91,7 @@
           "hi": "ചന്ത",
           "ta": "ചന്ത"
         },
-        "example": "Could you point out a market for me?"
+        "example": "We learned about market in today's lesson."
       },
       {
         "word": "shop",
@@ -100,7 +100,7 @@
           "hi": "കട",
           "ta": "കട"
         },
-        "example": "Could you point out a shop for me?"
+        "example": "We learned about shop in today's lesson."
       },
       {
         "word": "vegetable",
@@ -109,7 +109,7 @@
           "hi": "പച്ചക്കറി",
           "ta": "പച്ചക്കറി"
         },
-        "example": "Could you point out a vegetable for me?"
+        "example": "We learned about vegetable in today's lesson."
       },
       {
         "word": "fruit",
@@ -118,7 +118,7 @@
           "hi": "പഴം",
           "ta": "പഴം"
         },
-        "example": "Could you point out a fruit for me?"
+        "example": "We learned about fruit in today's lesson."
       },
       {
         "word": "bill",
@@ -127,7 +127,7 @@
           "hi": "ബിൽ",
           "ta": "ബിൽ"
         },
-        "example": "Could you point out a bill for me?"
+        "example": "We learned about bill in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d25_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിൽക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "remember",
+            "discover",
+            "sell",
+            "decide"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "sell",
+          "explanation": "sell എന്നാൽ വിൽക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d25_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'bargain'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "bargains",
+            "bargained",
+            "has bargain",
+            "bargaining"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "bargained",
+          "explanation": "bargain ന്റെ ഭൂതകാല രൂപം bargained ആണ്."
         },
         {
           "id": "trap_d25_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ചന്ത'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "market",
+            "routine",
+            "schedule",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "market",
+          "explanation": "ചന്ത എന്നാൽ ഇംഗ്ലീഷിൽ market."
         }
       ],
       "description": {
@@ -407,18 +407,18 @@
         {
           "q": "Choose the correct meaning for 'sell':",
           "options": [
+            "ഭക്ഷണം",
             "യാത്ര",
             "സന്തോഷം",
-            "വിൽക്കുക",
-            "ഭക്ഷണം"
+            "വിൽക്കുക"
           ],
           "answer": "വിൽക്കുക"
         },
         {
           "q": "Complete the sentence: 'He _____s fresh fruits.'",
           "options": [
-            "selling",
             "is sell",
+            "selling",
             "were sell",
             "sell"
           ],
@@ -427,30 +427,30 @@
         {
           "q": "What is the past form (V2) of 'bargain'?",
           "options": [
-            "bargained",
             "None",
+            "bargainedx",
             "bargains",
-            "bargainedx"
+            "bargained"
           ],
           "answer": "bargained"
         },
         {
           "q": "Which English word means 'ചന്ത'?",
           "options": [
+            "airport",
             "market",
-            "station",
             "partner",
-            "airport"
+            "station"
           ],
           "answer": "market"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was sell tomorrow.",
-            "He sells fresh fruits.",
             "I am sell every time wrongly.",
-            "He do not sell yesterday."
+            "He do not sell yesterday.",
+            "He sells fresh fruits.",
+            "We was sell tomorrow."
           ],
           "answer": "He sells fresh fruits."
         }

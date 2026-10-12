@@ -91,7 +91,7 @@
           "hi": "വോയ്‌സ് മെയിൽ",
           "ta": "വോയ്‌സ് മെയിൽ"
         },
-        "example": "Could you point out a voicemail for me?"
+        "example": "We learned about voicemail in today's lesson."
       },
       {
         "word": "note",
@@ -100,7 +100,7 @@
           "hi": "കുറിപ്പ്",
           "ta": "കുറിപ്പ്"
         },
-        "example": "Could you point out a note for me?"
+        "example": "We learned about note in today's lesson."
       },
       {
         "word": "number",
@@ -109,7 +109,7 @@
           "hi": "ഫോൺ നമ്പർ",
           "ta": "ഫോൺ നമ്പർ"
         },
-        "example": "Could you point out a number for me?"
+        "example": "We learned about number in today's lesson."
       },
       {
         "word": "client",
@@ -118,7 +118,7 @@
           "hi": "ക്ലയന്റ്",
           "ta": "ക്ലയന്റ്"
         },
-        "example": "Could you point out a client for me?"
+        "example": "We learned about client in today's lesson."
       },
       {
         "word": "urgent",
@@ -127,7 +127,7 @@
           "hi": "അടിയന്തിരം",
           "ta": "അടിയന്തിരം"
         },
-        "example": "Could you point out an urgent for me?"
+        "example": "We learned about urgent in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d75_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഇറങ്ങുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "decide",
+            "leave",
+            "remember",
+            "discover"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "leave",
+          "explanation": "leave എന്നാൽ ഇറങ്ങുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d75_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'note'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "notes",
+            "noteing",
+            "has note",
+            "noted"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "noted",
+          "explanation": "note ന്റെ ഭൂതകാല രൂപം noted ആണ്."
         },
         {
           "id": "trap_d75_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വോയ്‌സ് മെയിൽ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "voicemail",
+            "progress",
+            "schedule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "voicemail",
+          "explanation": "വോയ്‌സ് മെയിൽ എന്നാൽ ഇംഗ്ലീഷിൽ voicemail."
         }
       ],
       "description": {
@@ -408,8 +408,8 @@
           "q": "Choose the correct meaning for 'leave':",
           "options": [
             "സന്തോഷം",
-            "ഇറങ്ങുക",
             "ഭക്ഷണം",
+            "ഇറങ്ങുക",
             "യാത്ര"
           ],
           "answer": "ഇറങ്ങുക"
@@ -417,30 +417,30 @@
         {
           "q": "Complete the sentence: 'Can I _____ a message?'",
           "options": [
-            "leave",
+            "were leave",
             "leaveing",
-            "is leave",
-            "were leave"
+            "leave",
+            "is leave"
           ],
           "answer": "leave"
         },
         {
           "q": "What is the past form (V2) of 'note'?",
           "options": [
-            "noteedx",
             "notes",
-            "None",
-            "noted"
+            "noteedx",
+            "noted",
+            "None"
           ],
           "answer": "noted"
         },
         {
           "q": "Which English word means 'വോയ്‌സ് മെയിൽ'?",
           "options": [
-            "airport",
-            "station",
+            "voicemail",
             "partner",
-            "voicemail"
+            "airport",
+            "station"
           ],
           "answer": "voicemail"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "Can I leave a message?",
-            "We was leave tomorrow.",
             "He do not leave yesterday.",
+            "We was leave tomorrow.",
             "I am leave every time wrongly."
           ],
           "answer": "Can I leave a message?"

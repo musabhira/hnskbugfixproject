@@ -91,7 +91,7 @@
           "hi": "കോൾ",
           "ta": "കോൾ"
         },
-        "example": "Could you point out a call for me?"
+        "example": "We learned about call in today's lesson."
       },
       {
         "word": "line",
@@ -100,7 +100,7 @@
           "hi": "ലൈൻ",
           "ta": "ലൈൻ"
         },
-        "example": "Could you point out a line for me?"
+        "example": "We learned about line in today's lesson."
       },
       {
         "word": "reception",
@@ -109,7 +109,7 @@
           "hi": "റിസപ്ഷൻ",
           "ta": "റിസപ്ഷൻ"
         },
-        "example": "Could you point out a reception for me?"
+        "example": "We learned about reception in today's lesson."
       },
       {
         "word": "message",
@@ -118,7 +118,7 @@
           "hi": "മെസ്സേജ്",
           "ta": "മെസ്സേജ്"
         },
-        "example": "Could you point out a message for me?"
+        "example": "We learned about message in today's lesson."
       },
       {
         "word": "contact",
@@ -127,7 +127,7 @@
           "hi": "കോൺടാക്ട്",
           "ta": "കോൺടാക്ട്"
         },
-        "example": "Could you point out a contact for me?"
+        "example": "We learned about contact in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d74_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ബന്ധിപ്പിക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "create",
+            "remember",
+            "discover",
+            "connect"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "connect",
+          "explanation": "connect എന്നാൽ ബന്ധിപ്പിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d74_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'hold'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "holding",
+            "held",
+            "has hold",
+            "holds"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "held",
+          "explanation": "hold ന്റെ ഭൂതകാല രൂപം held ആണ്."
         },
         {
           "id": "trap_d74_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കോൾ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "knowledge",
+            "call",
+            "schedule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "call",
+          "explanation": "കോൾ എന്നാൽ ഇംഗ്ലീഷിൽ call."
         }
       ],
       "description": {
@@ -407,30 +407,30 @@
         {
           "q": "Choose the correct meaning for 'connect':",
           "options": [
-            "ഭക്ഷണം",
             "ബന്ധിപ്പിക്കുക",
             "സന്തോഷം",
-            "യാത്ര"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "ബന്ധിപ്പിക്കുക"
         },
         {
           "q": "Complete the sentence: 'Could you _____ me to HR?'",
           "options": [
-            "connect",
             "were connect",
-            "connecting",
-            "is connect"
+            "connect",
+            "is connect",
+            "connecting"
           ],
           "answer": "connect"
         },
         {
           "q": "What is the past form (V2) of 'hold'?",
           "options": [
-            "holdedx",
             "None",
             "holds",
-            "held"
+            "held",
+            "holdedx"
           ],
           "answer": "held"
         },
@@ -438,17 +438,17 @@
           "q": "Which English word means 'കോൾ'?",
           "options": [
             "station",
-            "progress",
+            "partner",
             "call",
-            "partner"
+            "progress"
           ],
           "answer": "call"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am connect every time wrongly.",
             "Could you connect me to HR?",
+            "I am connect every time wrongly.",
             "He do not connect yesterday.",
             "We was connect tomorrow."
           ],

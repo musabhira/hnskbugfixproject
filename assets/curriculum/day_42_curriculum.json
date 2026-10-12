@@ -91,7 +91,7 @@
           "hi": "മെനു",
           "ta": "മെനു"
         },
-        "example": "Could you point out a menu for me?"
+        "example": "We learned about menu in today's lesson."
       },
       {
         "word": "waiter",
@@ -100,7 +100,7 @@
           "hi": "സപ്ലയർ",
           "ta": "സപ്ലയർ"
         },
-        "example": "Could you point out a waiter for me?"
+        "example": "We learned about waiter in today's lesson."
       },
       {
         "word": "bill",
@@ -109,7 +109,7 @@
           "hi": "ബിൽ",
           "ta": "ബിൽ"
         },
-        "example": "Could you point out a bill for me?"
+        "example": "We learned about bill in today's lesson."
       },
       {
         "word": "table",
@@ -118,7 +118,7 @@
           "hi": "മേശ",
           "ta": "മേശ"
         },
-        "example": "Could you point out a table for me?"
+        "example": "We learned about table in today's lesson."
       },
       {
         "word": "tip",
@@ -127,7 +127,7 @@
           "hi": "ടിപ്പ്",
           "ta": "ടിപ്പ്"
         },
-        "example": "Could you point out a tip for me?"
+        "example": "We learned about tip in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d42_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഓർഡർ ചെയ്യുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "create",
+            "forget",
+            "order",
+            "listen"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "order",
+          "explanation": "order എന്നാൽ ഓർഡർ ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d42_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'taste'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has taste",
+            "tastes",
+            "tasteing",
+            "tasted"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "tasted",
+          "explanation": "taste ന്റെ ഭൂതകാല രൂപം tasted ആണ്."
         },
         {
           "id": "trap_d42_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'മെനു'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "success",
+            "menu",
+            "courage"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "menu",
+          "explanation": "മെനു എന്നാൽ ഇംഗ്ലീഷിൽ menu."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'order':",
           "options": [
-            "ഓർഡർ ചെയ്യുക",
             "ഭക്ഷണം",
             "സന്തോഷം",
+            "ഓർഡർ ചെയ്യുക",
             "യാത്ര"
           ],
           "answer": "ഓർഡർ ചെയ്യുക"
@@ -429,28 +429,28 @@
           "options": [
             "None",
             "tasteedx",
-            "tasted",
-            "tastes"
+            "tastes",
+            "tasted"
           ],
           "answer": "tasted"
         },
         {
           "q": "Which English word means 'മെനു'?",
           "options": [
-            "menu",
-            "routine",
             "schedule",
-            "progress"
+            "routine",
+            "progress",
+            "menu"
           ],
           "answer": "menu"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was order tomorrow.",
-            "He do not order yesterday.",
             "I am order every time wrongly.",
-            "Are you ready to order?"
+            "We was order tomorrow.",
+            "Are you ready to order?",
+            "He do not order yesterday."
           ],
           "answer": "Are you ready to order?"
         }

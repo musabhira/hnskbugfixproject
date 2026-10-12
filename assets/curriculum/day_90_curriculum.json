@@ -109,7 +109,7 @@
           "hi": "മാസ്റ്ററി",
           "ta": "മാസ്റ്ററി"
         },
-        "example": "Could you point out a mastery for me?"
+        "example": "We learned about mastery in today's lesson."
       },
       {
         "word": "journey",
@@ -118,7 +118,7 @@
           "hi": "യാത്ര",
           "ta": "യാത്ര"
         },
-        "example": "Could you point out a journey for me?"
+        "example": "We learned about journey in today's lesson."
       },
       {
         "word": "freedom",
@@ -127,7 +127,7 @@
           "hi": "സ്വാതന്ത്ര്യം",
           "ta": "സ്വാതന്ത്ര്യം"
         },
-        "example": "Could you point out a freedom for me?"
+        "example": "We learned about freedom in today's lesson."
       }
     ]
   },
@@ -339,39 +339,39 @@
       "traps": [
         {
           "id": "trap_d90_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിജയകരമായി പൂർത്തിയാക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "finish",
+            "forget",
+            "graduate"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "graduate",
+          "explanation": "graduate എന്നാൽ വിജയകരമായി പൂർത്തിയാക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d90_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'master'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "mastered",
+            "mastering",
+            "has master",
+            "masters"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "mastered",
+          "explanation": "master ന്റെ ഭൂതകാല രൂപം mastered ആണ്."
         },
         {
           "id": "trap_d90_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സർട്ടിഫിക്കറ്റ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "certificate",
+            "airport",
+            "journey",
+            "success"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "certificate",
+          "explanation": "സർട്ടിഫിക്കറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ certificate."
         }
       ],
       "description": {
@@ -452,66 +452,54 @@
       "passScore": 70,
       "examQuestions": [
         {
-          "assessmentType": "listening_discrimination",
-          "audioPrompt": "Listen: “I have worked here for three years.”",
-          "q": "Choose the sentence you hear.",
+          "q": "Choose the correct meaning for 'graduate':",
           "options": [
-            "I have worked here for three years.",
-            "I have work here for three years.",
-            "I am working here since three years.",
-            "I worked here since three years."
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "വിജയകരമായി പൂർത്തിയാക്കുക"
           ],
-          "answer": "I have worked here for three years."
+          "answer": "വിജയകരമായി പൂർത്തിയാക്കുക"
         },
         {
-          "assessmentType": "repair_correction",
-          "q": "Choose the corrected sentence.",
+          "q": "Complete the sentence: 'I completed the 90-day journey!'",
           "options": [
-            "I discussed the proposal with my manager.",
-            "I discussed about the proposal with my manager.",
-            "I have discussed about the proposal to my manager.",
-            "I discussed the proposal to my manager yesterday."
+            "graduate",
+            "is graduate",
+            "graduateing",
+            "were graduate"
           ],
-          "answer": "I discussed the proposal with my manager."
+          "answer": "graduate"
         },
         {
-          "assessmentType": "pragmatic_response",
-          "q": "Choose the most appropriate spoken response.",
+          "q": "What is the past form (V2) of 'master'?",
           "options": [
-            "I see your point; however, I recommend a different approach.",
-            "I am not agree with you.",
-            "Your idea is wrong.",
-            "I recommend to change it."
+            "masteredx",
+            "None",
+            "masters",
+            "mastered"
           ],
-          "answer": "I see your point; however, I recommend a different approach."
+          "answer": "mastered"
         },
         {
-          "assessmentType": "spoken_response",
-          "responseMode": "speech",
-          "q": "Give a 45-second professional introduction: your experience, one strength, and a goal for the next year.",
+          "q": "Which English word means 'സർട്ടിഫിക്കറ്റ്'?",
           "options": [
-            "Record my response",
-            "Skip speaking",
-            "Read silently",
-            "Use a translation app"
+            "knowledge",
+            "routine",
+            "certificate",
+            "courage"
           ],
-          "answer": "Record my response",
-          "expectedElements": [
-            "clear complete sentences",
-            "relevant details",
-            "intelligible speech"
-          ]
+          "answer": "certificate"
         },
         {
-          "assessmentType": "cumulative_grammar",
-          "q": "Choose the grammatically correct sentence.",
+          "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "If I had more time, I would prepare a fuller report.",
-            "If I would have more time, I will prepare a fuller report.",
-            "If I had more time, I will prepare a fuller report.",
-            "If I have more time, I would prepared a fuller report."
+            "I am graduate every time wrongly.",
+            "I completed the 90-day journey!",
+            "We was graduate tomorrow.",
+            "He do not graduate yesterday."
           ],
-          "answer": "If I had more time, I would prepare a fuller report."
+          "answer": "I completed the 90-day journey!"
         }
       ],
       "description": {

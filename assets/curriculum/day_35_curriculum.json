@@ -91,7 +91,7 @@
           "hi": "ദിവസം",
           "ta": "ദിവസം"
         },
-        "example": "Could you point out a day for me?"
+        "example": "We learned about day in today's lesson."
       },
       {
         "word": "routine",
@@ -100,7 +100,7 @@
           "hi": "പതിവ്",
           "ta": "പതിവ്"
         },
-        "example": "Could you point out a routine for me?"
+        "example": "We learned about routine in today's lesson."
       },
       {
         "word": "work",
@@ -109,7 +109,7 @@
           "hi": "ജോലി",
           "ta": "ജോലി"
         },
-        "example": "Could you point out a work for me?"
+        "example": "We learned about work in today's lesson."
       },
       {
         "word": "traffic",
@@ -118,7 +118,7 @@
           "hi": "ട്രാഫിക്",
           "ta": "ട്രാഫിക്"
         },
-        "example": "Could you point out a traffic for me?"
+        "example": "We learned about traffic in today's lesson."
       },
       {
         "word": "dinner",
@@ -127,7 +127,7 @@
           "hi": "അത്താഴം",
           "ta": "അത്താഴം"
         },
-        "example": "Could you point out a dinner for me?"
+        "example": "We learned about dinner in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d35_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഉണരുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "remember",
+            "decide",
+            "discover",
+            "wake"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "wake",
+          "explanation": "wake എന്നാൽ ഉണരുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d35_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'reach'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has reach",
+            "reached",
+            "reaching",
+            "reachs"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "reached",
+          "explanation": "reach ന്റെ ഭൂതകാല രൂപം reached ആണ്."
         },
         {
           "id": "trap_d35_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ദിവസം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "schedule",
+            "routine",
+            "progress",
+            "day"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "day",
+          "explanation": "ദിവസം എന്നാൽ ഇംഗ്ലീഷിൽ day."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'wake':",
           "options": [
-            "ഭക്ഷണം",
             "ഉണരുക",
+            "യാത്ര",
             "സന്തോഷം",
-            "യാത്ര"
+            "ഭക്ഷണം"
           ],
           "answer": "ഉണരുക"
         },
         {
           "q": "Complete the sentence: 'Yesterday I woke at 7.'",
           "options": [
-            "is wake",
-            "were wake",
+            "wake",
             "wakeing",
-            "wake"
+            "is wake",
+            "were wake"
           ],
           "answer": "wake"
         },
         {
           "q": "What is the past form (V2) of 'reach'?",
           "options": [
-            "reachedx",
-            "None",
+            "reached",
             "reachs",
-            "reached"
+            "reachedx",
+            "None"
           ],
           "answer": "reached"
         },
         {
           "q": "Which English word means 'ദിവസം'?",
           "options": [
-            "airport",
             "station",
             "partner",
-            "day"
+            "day",
+            "airport"
           ],
           "answer": "day"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "We was wake tomorrow.",
             "Yesterday I woke at 7.",
             "I am wake every time wrongly.",
-            "He do not wake yesterday.",
-            "We was wake tomorrow."
+            "He do not wake yesterday."
           ],
           "answer": "Yesterday I woke at 7."
         }

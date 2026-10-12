@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d88_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കണ്ടെത്തുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "figure out",
+            "arrive",
+            "finish",
+            "prepare"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "figure out",
+          "explanation": "figure out എന്നാൽ കണ്ടെത്തുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d88_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'look into'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "looked into",
+            "has look into",
+            "look intoing",
+            "look intos"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "looked into",
+          "explanation": "look into ന്റെ ഭൂതകാല രൂപം looked into ആണ്."
         },
         {
           "id": "trap_d88_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഫ്രേസൽ വെർബ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "phrasal verb",
+            "partner",
+            "station"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "phrasal verb",
+          "explanation": "ഫ്രേസൽ വെർബ് എന്നാൽ ഇംഗ്ലീഷിൽ phrasal verb."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'figure out':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
+            "കണ്ടെത്തുക",
             "സന്തോഷം",
-            "കണ്ടെത്തുക"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "കണ്ടെത്തുക"
         },
@@ -427,28 +427,28 @@
         {
           "q": "What is the past form (V2) of 'look into'?",
           "options": [
-            "looked into",
+            "None",
             "look intos",
-            "look intoedx",
-            "None"
+            "looked into",
+            "look intoedx"
           ],
           "answer": "looked into"
         },
         {
           "q": "Which English word means 'ഫ്രേസൽ വെർബ്'?",
           "options": [
-            "phrasal verb",
-            "courage",
             "journey",
-            "success"
+            "success",
+            "phrasal verb",
+            "courage"
           ],
           "answer": "phrasal verb"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I figured out the solution.",
             "We was figure out tomorrow.",
+            "I figured out the solution.",
             "I am figure out every time wrongly.",
             "He do not figure out yesterday."
           ],

@@ -91,7 +91,7 @@
           "hi": "കാർ",
           "ta": "കാർ"
         },
-        "example": "Could you point out a car for me?"
+        "example": "We learned about car in today's lesson."
       },
       {
         "word": "bike",
@@ -100,7 +100,7 @@
           "hi": "ബൈക്ക്",
           "ta": "ബൈക്ക്"
         },
-        "example": "Could you point out a bike for me?"
+        "example": "We learned about bike in today's lesson."
       },
       {
         "word": "song",
@@ -109,7 +109,7 @@
           "hi": "പാട്ട്",
           "ta": "പാട്ട്"
         },
-        "example": "Could you point out a song for me?"
+        "example": "We learned about song in today's lesson."
       },
       {
         "word": "language",
@@ -118,7 +118,7 @@
           "hi": "ഭാഷ",
           "ta": "ഭാഷ"
         },
-        "example": "Could you point out a language for me?"
+        "example": "We learned about language in today's lesson."
       },
       {
         "word": "power",
@@ -127,7 +127,7 @@
           "hi": "ശക്തി",
           "ta": "ശക്തി"
         },
-        "example": "Could you point out a power for me?"
+        "example": "We learned about power in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d17_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സംസാരിക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "speak",
+            "arrive",
+            "decide",
+            "prepare"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "speak",
+          "explanation": "speak എന്നാൽ സംസാരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d17_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'drive'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "drives",
+            "driveing",
+            "has drive",
+            "drove"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "drove",
+          "explanation": "drive ന്റെ ഭൂതകാല രൂപം drove ആണ്."
         },
         {
           "id": "trap_d17_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കാർ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "partner",
+            "progress",
+            "car"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "car",
+          "explanation": "കാർ എന്നാൽ ഇംഗ്ലീഷിൽ car."
         }
       ],
       "description": {
@@ -408,8 +408,8 @@
           "q": "Choose the correct meaning for 'speak':",
           "options": [
             "സംസാരിക്കുക",
-            "യാത്ര",
             "സന്തോഷം",
+            "യാത്ര",
             "ഭക്ഷണം"
           ],
           "answer": "സംസാരിക്കുക"
@@ -417,10 +417,10 @@
         {
           "q": "Complete the sentence: 'I can _____ English.'",
           "options": [
-            "is speak",
             "were speak",
             "speak",
-            "speaking"
+            "speaking",
+            "is speak"
           ],
           "answer": "speak"
         },
@@ -428,9 +428,9 @@
           "q": "What is the past form (V2) of 'drive'?",
           "options": [
             "None",
-            "driveedx",
+            "drove",
             "drives",
-            "drove"
+            "driveedx"
           ],
           "answer": "drove"
         },
@@ -438,19 +438,19 @@
           "q": "Which English word means 'കാർ'?",
           "options": [
             "success",
-            "car",
             "journey",
-            "airport"
+            "airport",
+            "car"
           ],
           "answer": "car"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was speak tomorrow.",
-            "He do not speak yesterday.",
+            "I can speak English.",
             "I am speak every time wrongly.",
-            "I can speak English."
+            "He do not speak yesterday.",
+            "We was speak tomorrow."
           ],
           "answer": "I can speak English."
         }

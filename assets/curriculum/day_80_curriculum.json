@@ -91,7 +91,7 @@
           "hi": "സ്ലൈഡ്",
           "ta": "സ്ലൈഡ്"
         },
-        "example": "Could you point out a slide for me?"
+        "example": "We learned about slide in today's lesson."
       },
       {
         "word": "presentation",
@@ -100,7 +100,7 @@
           "hi": "പ്രസന്റേഷൻ",
           "ta": "പ്രസന്റേഷൻ"
         },
-        "example": "Could you point out a presentation for me?"
+        "example": "We learned about presentation in today's lesson."
       },
       {
         "word": "audience",
@@ -109,7 +109,7 @@
           "hi": "കേൾവിക്കാർ",
           "ta": "കേൾവിക്കാർ"
         },
-        "example": "Could you point out an audience for me?"
+        "example": "We learned about audience in today's lesson."
       },
       {
         "word": "topic",
@@ -118,7 +118,7 @@
           "hi": "വിഷയം",
           "ta": "വിഷയം"
         },
-        "example": "Could you point out a topic for me?"
+        "example": "We learned about topic in today's lesson."
       },
       {
         "word": "overview",
@@ -127,7 +127,7 @@
           "hi": "അവലോകനം",
           "ta": "അവലോകനം"
         },
-        "example": "Could you point out an overview for me?"
+        "example": "We learned about overview in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d80_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'അവതരിപ്പിക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "finish",
+            "present",
+            "forget"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "present",
+          "explanation": "present എന്നാൽ അവതരിപ്പിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d80_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'highlight'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has highlight",
+            "highlighting",
+            "highlights",
+            "highlighted"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "highlighted",
+          "explanation": "highlight ന്റെ ഭൂതകാല രൂപം highlighted ആണ്."
         },
         {
           "id": "trap_d80_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സ്ലൈഡ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "slide",
+            "success",
+            "airport",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "slide",
+          "explanation": "സ്ലൈഡ് എന്നാൽ ഇംഗ്ലീഷിൽ slide."
         }
       ],
       "description": {
@@ -409,8 +409,8 @@
           "options": [
             "സന്തോഷം",
             "ഭക്ഷണം",
-            "അവതരിപ്പിക്കുക",
-            "യാത്ര"
+            "യാത്ര",
+            "അവതരിപ്പിക്കുക"
           ],
           "answer": "അവതരിപ്പിക്കുക"
         },
@@ -437,8 +437,8 @@
         {
           "q": "Which English word means 'സ്ലൈഡ്'?",
           "options": [
-            "routine",
             "knowledge",
+            "routine",
             "courage",
             "slide"
           ],
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am present every time wrongly.",
-            "He do not present yesterday.",
             "We was present tomorrow.",
-            "I am excited to present this."
+            "I am excited to present this.",
+            "I am present every time wrongly.",
+            "He do not present yesterday."
           ],
           "answer": "I am excited to present this."
         }

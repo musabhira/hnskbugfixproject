@@ -91,7 +91,7 @@
           "hi": "ക്ഷണം",
           "ta": "ക്ഷണം"
         },
-        "example": "Could you point out an invitation for me?"
+        "example": "We learned about invitation in today's lesson."
       },
       {
         "word": "party",
@@ -100,7 +100,7 @@
           "hi": "പാർട്ടി",
           "ta": "പാർട്ടി"
         },
-        "example": "Could you point out a party for me?"
+        "example": "We learned about party in today's lesson."
       },
       {
         "word": "tea",
@@ -109,7 +109,7 @@
           "hi": "ചായ",
           "ta": "ചായ"
         },
-        "example": "Could you point out a tea for me?"
+        "example": "We learned about tea in today's lesson."
       },
       {
         "word": "guest",
@@ -118,7 +118,7 @@
           "hi": "അതിഥി",
           "ta": "അതിഥി"
         },
-        "example": "Could you point out a guest for me?"
+        "example": "We learned about guest in today's lesson."
       },
       {
         "word": "weekend",
@@ -127,7 +127,7 @@
           "hi": "വാരാന്ത്യം",
           "ta": "വാരാന്ത്യം"
         },
-        "example": "Could you point out a weekend for me?"
+        "example": "We learned about weekend in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d47_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ക്ഷണിക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "invite",
+            "decide",
+            "prepare"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "invite",
+          "explanation": "invite എന്നാൽ ക്ഷണിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d47_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'join'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "joins",
+            "joining",
+            "has join",
+            "joined"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "joined",
+          "explanation": "join ന്റെ ഭൂതകാല രൂപം joined ആണ്."
         },
         {
           "id": "trap_d47_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ക്ഷണം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "progress",
+            "station",
+            "invitation",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "invitation",
+          "explanation": "ക്ഷണം എന്നാൽ ഇംഗ്ലീഷിൽ invitation."
         }
       ],
       "description": {
@@ -417,9 +417,9 @@
         {
           "q": "Complete the sentence: 'I _____ you to dinner.'",
           "options": [
+            "invite",
             "inviteing",
             "were invite",
-            "invite",
             "is invite"
           ],
           "answer": "invite"
@@ -427,28 +427,28 @@
         {
           "q": "What is the past form (V2) of 'join'?",
           "options": [
+            "joins",
             "joinedx",
             "joined",
-            "None",
-            "joins"
+            "None"
           ],
           "answer": "joined"
         },
         {
           "q": "Which English word means 'ക്ഷണം'?",
           "options": [
-            "invitation",
-            "airport",
+            "journey",
             "success",
-            "journey"
+            "invitation",
+            "airport"
           ],
           "answer": "invitation"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was invite tomorrow.",
             "I invite you to dinner.",
+            "We was invite tomorrow.",
             "I am invite every time wrongly.",
             "He do not invite yesterday."
           ],

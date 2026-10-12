@@ -91,7 +91,7 @@
           "hi": "നിമിഷം",
           "ta": "നിമിഷം"
         },
-        "example": "Could you point out a moment for me?"
+        "example": "We learned about moment in today's lesson."
       },
       {
         "word": "accident",
@@ -100,7 +100,7 @@
           "hi": "അപകടം",
           "ta": "അപകടം"
         },
-        "example": "Could you point out an accident for me?"
+        "example": "We learned about accident in today's lesson."
       },
       {
         "word": "call",
@@ -109,7 +109,7 @@
           "hi": "ഫോൺകോൾ",
           "ta": "ഫോൺകോൾ"
         },
-        "example": "Could you point out a call for me?"
+        "example": "We learned about call in today's lesson."
       },
       {
         "word": "storm",
@@ -118,7 +118,7 @@
           "hi": "കൊടുങ്കാറ്റ്",
           "ta": "കൊടുങ്കാറ്റ്"
         },
-        "example": "Could you point out a storm for me?"
+        "example": "We learned about storm in today's lesson."
       },
       {
         "word": "sound",
@@ -127,7 +127,7 @@
           "hi": "ശബ്ദം",
           "ta": "ശബ്ദം"
         },
-        "example": "Could you point out a sound for me?"
+        "example": "We learned about sound in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d37_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഉറങ്ങുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "sleep",
+            "decide",
+            "prepare",
+            "arrive"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "sleep",
+          "explanation": "sleep എന്നാൽ ഉറങ്ങുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d37_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'drive'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "drove",
+            "driveing",
+            "has drive",
+            "drives"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "drove",
+          "explanation": "drive ന്റെ ഭൂതകാല രൂപം drove ആണ്."
         },
         {
           "id": "trap_d37_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'നിമിഷം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "partner",
+            "moment",
+            "progress"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "moment",
+          "explanation": "നിമിഷം എന്നാൽ ഇംഗ്ലീഷിൽ moment."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'sleep':",
           "options": [
+            "യാത്ര",
             "ഉറങ്ങുക",
             "സന്തോഷം",
-            "യാത്ര",
             "ഭക്ഷണം"
           ],
           "answer": "ഉറങ്ങുക"
@@ -417,8 +417,8 @@
         {
           "q": "Complete the sentence: 'I was _____ing then.'",
           "options": [
-            "sleep",
             "were sleep",
+            "sleep",
             "sleeping",
             "is sleep"
           ],
@@ -427,8 +427,8 @@
         {
           "q": "What is the past form (V2) of 'drive'?",
           "options": [
-            "None",
             "driveedx",
+            "None",
             "drives",
             "drove"
           ],
@@ -437,10 +437,10 @@
         {
           "q": "Which English word means 'നിമിഷം'?",
           "options": [
-            "airport",
-            "moment",
+            "journey",
             "success",
-            "journey"
+            "airport",
+            "moment"
           ],
           "answer": "moment"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "I was sleeping then.",
-            "We was sleep tomorrow.",
             "I am sleep every time wrongly.",
+            "We was sleep tomorrow.",
             "He do not sleep yesterday."
           ],
           "answer": "I was sleeping then."

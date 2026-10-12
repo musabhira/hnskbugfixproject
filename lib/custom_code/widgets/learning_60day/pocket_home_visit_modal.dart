@@ -8,7 +8,6 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 class HomeOwnerEntry {
   final String id;
@@ -69,6 +68,8 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
   late AnimationController _ambientController;
   late final TransformationController _transformationController;
   bool _hasInitializedTransform = false;
+  bool _isNightMode = false; // Default: Sunny Day Mode
+  bool _isSheetExpanded = false;
 
   List<HomeOwnerEntry> _allOwners = [];
   List<HomeOwnerEntry> _filteredOwners = [];
@@ -84,6 +85,14 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
       duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
     _searchController.addListener(_onSearchChanged);
+    _sheetController.addListener(() {
+      if (_sheetController.isAttached) {
+        final isExp = _sheetController.size > 0.30;
+        if (isExp != _isSheetExpanded && mounted) {
+          setState(() => _isSheetExpanded = isExp);
+        }
+      }
+    });
     _loadOwners();
   }
 
@@ -179,17 +188,13 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     }
   }
 
-  void _openOwnerChat(HomeOwnerEntry owner) {
-    HapticFeedback.lightImpact();
-    Navigator.push(
+  void _attackOwner(HomeOwnerEntry owner) {
+    HapticFeedback.heavyImpact();
+    PocketCitadelAttackPage.openForUser(
       context,
-      MaterialPageRoute(
-        builder: (_) => WhatsAppGroupChat(
-          groupId: owner.id,
-          groupName: owner.name,
-          groupImage: owner.avatarUrl,
-        ),
-      ),
+      userId: owner.id,
+      targetName: owner.name,
+      attackerDay: widget.userCurrentDay,
     );
   }
 
@@ -198,8 +203,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(widget.day);
     final palette =
         HousePalette.presets[(widget.day - 1) % HousePalette.presets.length];
-    final currentHour = DateTime.now().hour;
-    final isNight = currentHour >= 18 || currentHour < 6;
+    final isNight = _isNightMode;
     final isDay90 = widget.day >= 90;
     final bool isPresident = widget.day >= 90;
 
@@ -271,7 +275,18 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
             children: [
               // 1. Unified Zoomable Virtual World Architecture (Landscape + Flame House)
               Positioned.fill(
-                child: InteractiveViewer(
+                child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (_sheetController.isAttached && _sheetController.size > 0.25) {
+                        _sheetController.animateTo(
+                          0.20,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      }
+                    },
+                    child: InteractiveViewer(
                   transformationController: _transformationController,
                   minScale: minScale,
                   maxScale: maxScale,
@@ -338,6 +353,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                           ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),
@@ -435,11 +451,50 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: IconButton(
+                            tooltip: _isNightMode ? 'Switch to Day Mode ☀️' : 'Switch to Night Mode 🌙',
+                            icon: Text(_isNightMode ? '🌙' : '☀️', style: const TextStyle(fontSize: 18)),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              setState(() {
+                                _isNightMode = !_isNightMode;
+                              });
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
+
+              // 3.5. Backdrop Dismiss Barrier when Sheet is open/expanded
+              if (_isSheetExpanded)
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      if (_sheetController.isAttached) {
+                        _sheetController.animateTo(
+                          0.20,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      }
+                    },
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ),
 
               // 4. Draggable Bottom Drawer: Owner of Homes
               DraggableScrollableSheet(
@@ -636,122 +691,153 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                                         final avatarConfig =
                                             VectorAvatarConfig.getEvolutionAvatarForStage(owner.day);
 
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF1E293B),
-                                            borderRadius: BorderRadius.circular(14),
-                                            border: Border.all(
-                                              color: owner.isRobot
-                                                  ? Colors.white10
-                                                  : const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                                              width: 0.9,
+                                        return Dismissible(
+                                          key: ValueKey('owner_swipe_${owner.id}_$index'),
+                                          direction: DismissDirection.startToEnd,
+                                          confirmDismiss: (_) async {
+                                            _attackOwner(owner);
+                                            return false;
+                                          },
+                                          background: Container(
+                                            alignment: Alignment.centerLeft,
+                                            padding: const EdgeInsets.only(left: 18),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFDC2626),
+                                              borderRadius: BorderRadius.circular(14),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.flash_on_rounded, color: Colors.white, size: 20),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  'SWIPE TO ATTACK ⚔️',
+                                                  style: GoogleFonts.outfit(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          child: Row(
-                                            children: [
-                                              // Stage Vector Avatar
-                                              ClipOval(
-                                                child: Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  color: const Color(0xFF0F172A),
-                                                  child: owner.avatarUrl != null &&
-                                                          owner.avatarUrl!.startsWith('http')
-                                                      ? Image.network(
-                                                          owner.avatarUrl!,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder: (_, __, ___) =>
-                                                              VectorAvatarWidget(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF1E293B),
+                                              borderRadius: BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: owner.isRobot
+                                                    ? Colors.white10
+                                                    : const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                                                width: 0.9,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                // Stage Vector Avatar
+                                                ClipOval(
+                                                  child: Container(
+                                                    width: 40,
+                                                    height: 40,
+                                                    color: const Color(0xFF0F172A),
+                                                    child: owner.avatarUrl != null &&
+                                                            owner.avatarUrl!.startsWith('http')
+                                                        ? Image.network(
+                                                            owner.avatarUrl!,
+                                                            fit: BoxFit.cover,
+                                                            errorBuilder: (_, __, ___) =>
+                                                                VectorAvatarWidget(
+                                                              config: avatarConfig,
+                                                              size: 40,
+                                                              showAura: false,
+                                                            ),
+                                                          )
+                                                        : VectorAvatarWidget(
                                                             config: avatarConfig,
                                                             size: 40,
                                                             showAura: false,
                                                           ),
-                                                        )
-                                                      : VectorAvatarWidget(
-                                                          config: avatarConfig,
-                                                          size: 40,
-                                                          showAura: false,
-                                                        ),
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(width: 12),
+                                                const SizedBox(width: 12),
 
-                                              // Details
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        Flexible(
-                                                          child: Text(
-                                                            owner.name,
-                                                            style: GoogleFonts.outfit(
-                                                              color: Colors.white,
-                                                              fontSize: 13,
-                                                              fontWeight: FontWeight.w700,
+                                                // Details
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Flexible(
+                                                            child: Text(
+                                                              owner.name,
+                                                              style: GoogleFonts.outfit(
+                                                                color: Colors.white,
+                                                                fontSize: 13,
+                                                                fontWeight: FontWeight.w700,
+                                                              ),
+                                                              maxLines: 1,
+                                                              overflow: TextOverflow.ellipsis,
                                                             ),
-                                                            maxLines: 1,
-                                                            overflow: TextOverflow.ellipsis,
                                                           ),
-                                                        ),
-                                                        if (owner.isRobot) ...[
-                                                          const SizedBox(width: 4),
-                                                          Container(
-                                                            padding: const EdgeInsets.symmetric(
-                                                                horizontal: 4, vertical: 1),
-                                                            decoration: BoxDecoration(
-                                                              color: Colors.blueGrey.withValues(alpha: 0.3),
-                                                              borderRadius: BorderRadius.circular(4),
+                                                          if (owner.isRobot) ...[
+                                                            const SizedBox(width: 4),
+                                                            Container(
+                                                              padding: const EdgeInsets.symmetric(
+                                                                  horizontal: 4, vertical: 1),
+                                                              decoration: BoxDecoration(
+                                                                color: Colors.blueGrey.withValues(alpha: 0.3),
+                                                                borderRadius: BorderRadius.circular(4),
+                                                              ),
+                                                              child: const Text('BOT',
+                                                                  style: TextStyle(
+                                                                      color: Colors.white54,
+                                                                      fontSize: 8,
+                                                                      fontWeight: FontWeight.bold)),
                                                             ),
-                                                            child: const Text('BOT',
-                                                                style: TextStyle(
-                                                                    color: Colors.white54,
-                                                                    fontSize: 8,
-                                                                    fontWeight: FontWeight.bold)),
-                                                          ),
+                                                          ],
                                                         ],
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      'House ${owner.day} • ${owner.score} PS 🪙',
-                                                      style: GoogleFonts.inter(
-                                                        color: const Color(0xFFFFD700),
-                                                        fontSize: 11,
-                                                        fontWeight: FontWeight.w600,
                                                       ),
-                                                    ),
-                                                  ],
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        'House ${owner.day} • ${owner.score} PS 🪙',
+                                                        style: GoogleFonts.inter(
+                                                          color: const Color(0xFFFFD700),
+                                                          fontSize: 11,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
 
-                                              // 💬 Chat / Connect Button (No Attack Button in Home Visit)
-                                              ElevatedButton.icon(
-                                                onPressed: () => _openOwnerChat(owner),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: const Color(0xFF0284C7),
-                                                  foregroundColor: Colors.white,
-                                                  elevation: 0,
-                                                  padding: const EdgeInsets.symmetric(
-                                                      horizontal: 10, vertical: 7),
-                                                  minimumSize: Size.zero,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(10),
+                                                // ⚔️ Attack Button (Citadel Raid)
+                                                ElevatedButton.icon(
+                                                  onPressed: () => _attackOwner(owner),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: const Color(0xFFDC2626),
+                                                    foregroundColor: Colors.white,
+                                                    elevation: 2,
+                                                    padding: const EdgeInsets.symmetric(
+                                                        horizontal: 10, vertical: 7),
+                                                    minimumSize: Size.zero,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                  ),
+                                                  icon: const Icon(Icons.flash_on_rounded, size: 12, color: Color(0xFFFFD700)),
+                                                  label: Text(
+                                                    'Attack',
+                                                    style: GoogleFonts.outfit(
+                                                      fontWeight: FontWeight.w900,
+                                                      fontSize: 11.5,
+                                                      letterSpacing: 0.2,
+                                                    ),
                                                   ),
                                                 ),
-                                                icon: const Icon(Icons.chat_bubble_rounded, size: 12),
-                                                label: Text(
-                                                  'Chat',
-                                                  style: GoogleFonts.outfit(
-                                                    fontWeight: FontWeight.w800,
-                                                    fontSize: 11.5,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         );
                                       },

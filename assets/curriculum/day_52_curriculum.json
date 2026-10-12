@@ -91,7 +91,7 @@
           "hi": "വികാരം",
           "ta": "വികാരം"
         },
-        "example": "Could you point out an emotion for me?"
+        "example": "We learned about emotion in today's lesson."
       },
       {
         "word": "happy",
@@ -100,7 +100,7 @@
           "hi": "സന്തോഷം",
           "ta": "സന്തോഷം"
         },
-        "example": "Could you point out a happy for me?"
+        "example": "We learned about happy in today's lesson."
       },
       {
         "word": "fear",
@@ -109,7 +109,7 @@
           "hi": "ഭയം",
           "ta": "ഭയം"
         },
-        "example": "Could you point out a fear for me?"
+        "example": "We learned about fear in today's lesson."
       },
       {
         "word": "courage",
@@ -118,7 +118,7 @@
           "hi": "ധൈര്യം",
           "ta": "ധൈര്യം"
         },
-        "example": "Could you point out a courage for me?"
+        "example": "We learned about courage in today's lesson."
       },
       {
         "word": "peace",
@@ -127,7 +127,7 @@
           "hi": "സമാധാനം",
           "ta": "സമാധാനം"
         },
-        "example": "Could you point out a peace for me?"
+        "example": "We learned about peace in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d52_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'തോന്നുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "feel",
+            "forget",
+            "create",
+            "listen"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "feel",
+          "explanation": "feel എന്നാൽ തോന്നുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d52_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'worry'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has worry",
+            "worried",
+            "worrys",
+            "worrying"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "worried",
+          "explanation": "worry ന്റെ ഭൂതകാല രൂപം worried ആണ്."
         },
         {
           "id": "trap_d52_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വികാരം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "emotion",
+            "success",
+            "courage",
+            "knowledge"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "emotion",
+          "explanation": "വികാരം എന്നാൽ ഇംഗ്ലീഷിൽ emotion."
         }
       ],
       "description": {
@@ -407,29 +407,29 @@
         {
           "q": "Choose the correct meaning for 'feel':",
           "options": [
-            "ഭക്ഷണം",
             "തോന്നുക",
-            "യാത്ര",
-            "സന്തോഷം"
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "യാത്ര"
           ],
           "answer": "തോന്നുക"
         },
         {
           "q": "Complete the sentence: 'I _____ confident now.'",
           "options": [
+            "were feel",
             "feel",
             "feeling",
-            "is feel",
-            "were feel"
+            "is feel"
           ],
           "answer": "feel"
         },
         {
           "q": "What is the past form (V2) of 'worry'?",
           "options": [
-            "worrys",
-            "None",
             "worried",
+            "None",
+            "worrys",
             "worryedx"
           ],
           "answer": "worried"
@@ -437,20 +437,20 @@
         {
           "q": "Which English word means 'വികാരം'?",
           "options": [
-            "schedule",
-            "routine",
             "emotion",
-            "progress"
+            "progress",
+            "schedule",
+            "routine"
           ],
           "answer": "emotion"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am feel every time wrongly.",
-            "I feel confident now.",
             "We was feel tomorrow.",
-            "He do not feel yesterday."
+            "He do not feel yesterday.",
+            "I am feel every time wrongly.",
+            "I feel confident now."
           ],
           "answer": "I feel confident now."
         }

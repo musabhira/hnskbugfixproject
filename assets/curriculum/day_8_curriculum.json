@@ -91,7 +91,7 @@
           "hi": "സംഖ്യ",
           "ta": "സംഖ്യ"
         },
-        "example": "Could you point out a number for me?"
+        "example": "We learned about number in today's lesson."
       },
       {
         "word": "money",
@@ -100,7 +100,7 @@
           "hi": "പണം",
           "ta": "പണം"
         },
-        "example": "Could you point out a money for me?"
+        "example": "We learned about money in today's lesson."
       },
       {
         "word": "coin",
@@ -109,7 +109,7 @@
           "hi": "നാണയം",
           "ta": "നാണയം"
         },
-        "example": "Could you point out a coin for me?"
+        "example": "We learned about coin in today's lesson."
       },
       {
         "word": "price",
@@ -118,7 +118,7 @@
           "hi": "വില",
           "ta": "വില"
         },
-        "example": "Could you point out a price for me?"
+        "example": "We learned about price in today's lesson."
       },
       {
         "word": "total",
@@ -127,7 +127,7 @@
           "hi": "ആകെ",
           "ta": "ആകെ"
         },
-        "example": "Could you point out a total for me?"
+        "example": "We learned about total in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d8_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'എണ്ണുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "finish",
+            "arrive",
+            "prepare",
+            "count"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "count",
+          "explanation": "count എന്നാൽ എണ്ണുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d8_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'add'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "added",
+            "adding",
+            "adds",
+            "has add"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "added",
+          "explanation": "add ന്റെ ഭൂതകാല രൂപം added ആണ്."
         },
         {
           "id": "trap_d8_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സംഖ്യ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "partner",
+            "station",
+            "number"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "number",
+          "explanation": "സംഖ്യ എന്നാൽ ഇംഗ്ലീഷിൽ number."
         }
       ],
       "description": {
@@ -407,30 +407,30 @@
         {
           "q": "Choose the correct meaning for 'count':",
           "options": [
-            "ഭക്ഷണം",
-            "എണ്ണുക",
+            "യാത്ര",
             "സന്തോഷം",
-            "യാത്ര"
+            "ഭക്ഷണം",
+            "എണ്ണുക"
           ],
           "answer": "എണ്ണുക"
         },
         {
           "q": "Complete the sentence: '_____ the coins.'",
           "options": [
-            "count",
             "counting",
-            "were count",
-            "is count"
+            "is count",
+            "count",
+            "were count"
           ],
           "answer": "count"
         },
         {
           "q": "What is the past form (V2) of 'add'?",
           "options": [
-            "adds",
             "addedx",
-            "added",
-            "None"
+            "adds",
+            "None",
+            "added"
           ],
           "answer": "added"
         },
@@ -438,9 +438,9 @@
           "q": "Which English word means 'സംഖ്യ'?",
           "options": [
             "courage",
-            "success",
             "journey",
-            "number"
+            "number",
+            "success"
           ],
           "answer": "number"
         },

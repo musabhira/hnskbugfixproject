@@ -91,7 +91,7 @@
           "hi": "വിനോദം",
           "ta": "വിനോദം"
         },
-        "example": "Could you point out a hobby for me?"
+        "example": "We learned about hobby in today's lesson."
       },
       {
         "word": "game",
@@ -100,7 +100,7 @@
           "hi": "കളി",
           "ta": "കളി"
         },
-        "example": "Could you point out a game for me?"
+        "example": "We learned about game in today's lesson."
       },
       {
         "word": "movie",
@@ -109,7 +109,7 @@
           "hi": "സിനിമ",
           "ta": "സിനിമ"
         },
-        "example": "Could you point out a movie for me?"
+        "example": "We learned about movie in today's lesson."
       },
       {
         "word": "travel",
@@ -118,7 +118,7 @@
           "hi": "യാത്ര",
           "ta": "യാത്ര"
         },
-        "example": "Could you point out a travel for me?"
+        "example": "We learned about travel in today's lesson."
       },
       {
         "word": "book",
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d20_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ആസ്വദിക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "forget",
+            "enjoy",
+            "finish",
+            "borrow"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "enjoy",
+          "explanation": "enjoy എന്നാൽ ആസ്വദിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d20_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'prefer'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "prefers",
+            "prefering",
+            "has prefer",
+            "preferred"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "preferred",
+          "explanation": "prefer ന്റെ ഭൂതകാല രൂപം preferred ആണ്."
         },
         {
           "id": "trap_d20_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വിനോദം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "hobby",
+            "success",
+            "airport",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "hobby",
+          "explanation": "വിനോദം എന്നാൽ ഇംഗ്ലീഷിൽ hobby."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'enjoy':",
           "options": [
-            "ആസ്വദിക്കുക",
             "ഭക്ഷണം",
-            "സന്തോഷം",
-            "യാത്ര"
+            "ആസ്വദിക്കുക",
+            "യാത്ര",
+            "സന്തോഷം"
           ],
           "answer": "ആസ്വദിക്കുക"
         },
         {
           "q": "Complete the sentence: 'I _____ cooking.'",
           "options": [
-            "enjoying",
             "enjoy",
-            "were enjoy",
-            "is enjoy"
+            "enjoying",
+            "is enjoy",
+            "were enjoy"
           ],
           "answer": "enjoy"
         },
         {
           "q": "What is the past form (V2) of 'prefer'?",
           "options": [
-            "prefers",
-            "None",
             "preferred",
-            "preferedx"
+            "prefers",
+            "preferedx",
+            "None"
           ],
           "answer": "preferred"
         },
         {
           "q": "Which English word means 'വിനോദം'?",
           "options": [
-            "knowledge",
             "courage",
+            "routine",
             "hobby",
-            "routine"
+            "knowledge"
           ],
           "answer": "hobby"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "We was enjoy tomorrow.",
             "I enjoy cooking.",
             "I am enjoy every time wrongly.",
-            "He do not enjoy yesterday.",
-            "We was enjoy tomorrow."
+            "He do not enjoy yesterday."
           ],
           "answer": "I enjoy cooking."
         }

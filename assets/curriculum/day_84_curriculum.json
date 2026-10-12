@@ -91,7 +91,7 @@
           "hi": "സംസ്കാരം",
           "ta": "സംസ്കാരം"
         },
-        "example": "Could you point out a culture for me?"
+        "example": "We learned about culture in today's lesson."
       },
       {
         "word": "growth",
@@ -100,7 +100,7 @@
           "hi": "വളർച്ച",
           "ta": "വളർച്ച"
         },
-        "example": "Could you point out a growth for me?"
+        "example": "We learned about growth in today's lesson."
       },
       {
         "word": "expectation",
@@ -109,7 +109,7 @@
           "hi": "പ്രതീക്ഷ",
           "ta": "പ്രതീക്ഷ"
         },
-        "example": "Could you point out an expectation for me?"
+        "example": "We learned about expectation in today's lesson."
       },
       {
         "word": "team",
@@ -118,7 +118,7 @@
           "hi": "ടീം",
           "ta": "ടീം"
         },
-        "example": "Could you point out a team for me?"
+        "example": "We learned about team in today's lesson."
       },
       {
         "word": "future",
@@ -127,7 +127,7 @@
           "hi": "ഭാവി",
           "ta": "ഭാവി"
         },
-        "example": "Could you point out a future for me?"
+        "example": "We learned about future in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d84_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'അന്വേഷിക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "inquire",
+            "remember",
+            "discover",
+            "create"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "inquire",
+          "explanation": "inquire എന്നാൽ അന്വേഷിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d84_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'clarify'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "clarified",
+            "clarifying",
+            "clarifys",
+            "has clarify"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "clarified",
+          "explanation": "clarify ന്റെ ഭൂതകാല രൂപം clarified ആണ്."
         },
         {
           "id": "trap_d84_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സംസ്കാരം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "culture",
+            "knowledge",
+            "routine",
+            "schedule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "culture",
+          "explanation": "സംസ്കാരം എന്നാൽ ഇംഗ്ലീഷിൽ culture."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'inquire':",
           "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
+            "അന്വേഷിക്കുക",
             "സന്തോഷം",
-            "അന്വേഷിക്കുക"
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "അന്വേഷിക്കുക"
         },
         {
           "q": "Complete the sentence: 'May I _____ about team culture?'",
           "options": [
-            "is inquire",
+            "inquire",
             "inquireing",
-            "were inquire",
-            "inquire"
+            "is inquire",
+            "were inquire"
           ],
           "answer": "inquire"
         },
         {
           "q": "What is the past form (V2) of 'clarify'?",
           "options": [
-            "clarified",
-            "None",
             "clarifys",
-            "clarifyedx"
+            "clarified",
+            "clarifyedx",
+            "None"
           ],
           "answer": "clarified"
         },
         {
           "q": "Which English word means 'സംസ്കാരം'?",
           "options": [
-            "partner",
+            "culture",
             "station",
             "progress",
-            "culture"
+            "partner"
           ],
           "answer": "culture"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not inquire yesterday.",
             "May I inquire about team culture?",
+            "I am inquire every time wrongly.",
             "We was inquire tomorrow.",
-            "I am inquire every time wrongly."
+            "He do not inquire yesterday."
           ],
           "answer": "May I inquire about team culture?"
         }

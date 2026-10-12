@@ -91,7 +91,7 @@
           "hi": "നിബന്ധന",
           "ta": "നിബന്ധന"
         },
-        "example": "Could you point out a condition for me?"
+        "example": "We learned about condition in today's lesson."
       },
       {
         "word": "chance",
@@ -100,7 +100,7 @@
           "hi": "സാധ്യത",
           "ta": "സാധ്യത"
         },
-        "example": "Could you point out a chance for me?"
+        "example": "We learned about chance in today's lesson."
       },
       {
         "word": "plan",
@@ -109,7 +109,7 @@
           "hi": "തീരുമാനം",
           "ta": "തീരുമാനം"
         },
-        "example": "Could you point out a plan for me?"
+        "example": "We learned about plan in today's lesson."
       },
       {
         "word": "future",
@@ -118,7 +118,7 @@
           "hi": "ഭാവി",
           "ta": "ഭാവി"
         },
-        "example": "Could you point out a future for me?"
+        "example": "We learned about future in today's lesson."
       },
       {
         "word": "result",
@@ -127,7 +127,7 @@
           "hi": "ഫലം",
           "ta": "ഫലം"
         },
-        "example": "Could you point out a result for me?"
+        "example": "We learned about result in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d69_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പെയ്യുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "rain",
+            "arrive",
+            "finish",
+            "borrow"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "rain",
+          "explanation": "rain എന്നാൽ പെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d69_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'call'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "called",
+            "calling",
+            "calls",
+            "has call"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "called",
+          "explanation": "call ന്റെ ഭൂതകാല രൂപം called ആണ്."
         },
         {
           "id": "trap_d69_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'നിബന്ധന'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "condition",
+            "airport",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "condition",
+          "explanation": "നിബന്ധന എന്നാൽ ഇംഗ്ലീഷിൽ condition."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'rain':",
           "options": [
-            "സന്തോഷം",
-            "പെയ്യുക",
             "ഭക്ഷണം",
+            "പെയ്യുക",
+            "സന്തോഷം",
             "യാത്ര"
           ],
           "answer": "പെയ്യുക"
@@ -417,10 +417,10 @@
         {
           "q": "Complete the sentence: 'If it _____s, we will stay home.'",
           "options": [
-            "rain",
-            "raining",
+            "were rain",
             "is rain",
-            "were rain"
+            "rain",
+            "raining"
           ],
           "answer": "rain"
         },
@@ -428,28 +428,28 @@
           "q": "What is the past form (V2) of 'call'?",
           "options": [
             "None",
-            "called",
+            "calledx",
             "calls",
-            "calledx"
+            "called"
           ],
           "answer": "called"
         },
         {
           "q": "Which English word means 'നിബന്ധന'?",
           "options": [
-            "condition",
-            "success",
+            "knowledge",
             "courage",
-            "knowledge"
+            "success",
+            "condition"
           ],
           "answer": "condition"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "I am rain every time wrongly.",
             "We was rain tomorrow.",
             "He do not rain yesterday.",
-            "I am rain every time wrongly.",
             "If it rains, we will stay home."
           ],
           "answer": "If it rains, we will stay home."

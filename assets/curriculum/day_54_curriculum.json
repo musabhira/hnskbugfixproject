@@ -91,7 +91,7 @@
           "hi": "ബാങ്ക്",
           "ta": "ബാങ്ക്"
         },
-        "example": "Could you point out a bank for me?"
+        "example": "We learned about bank in today's lesson."
       },
       {
         "word": "account",
@@ -100,7 +100,7 @@
           "hi": "അക്കൗണ്ട്",
           "ta": "അക്കൗണ്ട്"
         },
-        "example": "Could you point out an account for me?"
+        "example": "We learned about account in today's lesson."
       },
       {
         "word": "atm",
@@ -109,7 +109,7 @@
           "hi": "എടിഎം",
           "ta": "എടിഎം"
         },
-        "example": "Could you point out an atm for me?"
+        "example": "We learned about atm in today's lesson."
       },
       {
         "word": "balance",
@@ -118,7 +118,7 @@
           "hi": "ബാക്കി തുക",
           "ta": "ബാക്കി തുക"
         },
-        "example": "Could you point out a balance for me?"
+        "example": "We learned about balance in today's lesson."
       },
       {
         "word": "cash",
@@ -127,7 +127,7 @@
           "hi": "പണം",
           "ta": "പണം"
         },
-        "example": "Could you point out a cash for me?"
+        "example": "We learned about cash in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d54_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'നിക്ഷേപിക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "deposit",
+            "remember",
+            "create",
+            "discover"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "deposit",
+          "explanation": "deposit എന്നാൽ നിക്ഷേപിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d54_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'withdraw'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "withdrawing",
+            "withdrew",
+            "has withdraw",
+            "withdraws"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "withdrew",
+          "explanation": "withdraw ന്റെ ഭൂതകാല രൂപം withdrew ആണ്."
         },
         {
           "id": "trap_d54_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ബാങ്ക്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "bank",
+            "knowledge",
+            "routine",
+            "schedule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "bank",
+          "explanation": "ബാങ്ക് എന്നാൽ ഇംഗ്ലീഷിൽ bank."
         }
       ],
       "description": {
@@ -409,36 +409,36 @@
           "options": [
             "നിക്ഷേപിക്കുക",
             "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
+            "ഭക്ഷണം",
+            "യാത്ര"
           ],
           "answer": "നിക്ഷേപിക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ money in account.'",
           "options": [
-            "deposit",
-            "depositing",
             "is deposit",
-            "were deposit"
+            "depositing",
+            "were deposit",
+            "deposit"
           ],
           "answer": "deposit"
         },
         {
           "q": "What is the past form (V2) of 'withdraw'?",
           "options": [
-            "withdrew",
-            "withdraws",
             "withdrawedx",
-            "None"
+            "None",
+            "withdraws",
+            "withdrew"
           ],
           "answer": "withdrew"
         },
         {
           "q": "Which English word means 'ബാങ്ക്'?",
           "options": [
-            "station",
             "partner",
+            "station",
             "progress",
             "bank"
           ],

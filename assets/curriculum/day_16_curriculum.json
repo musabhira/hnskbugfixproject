@@ -91,7 +91,7 @@
           "hi": "പെട്ടി",
           "ta": "പെട്ടി"
         },
-        "example": "Could you point out a box for me?"
+        "example": "We learned about box in today's lesson."
       },
       {
         "word": "corner",
@@ -100,7 +100,7 @@
           "hi": "മൂല",
           "ta": "മൂല"
         },
-        "example": "Could you point out a corner for me?"
+        "example": "We learned about corner in today's lesson."
       },
       {
         "word": "wall",
@@ -109,7 +109,7 @@
           "hi": "മതിൽ",
           "ta": "മതിൽ"
         },
-        "example": "Could you point out a wall for me?"
+        "example": "We learned about wall in today's lesson."
       },
       {
         "word": "floor",
@@ -118,7 +118,7 @@
           "hi": "തറ",
           "ta": "തറ"
         },
-        "example": "Could you point out a floor for me?"
+        "example": "We learned about floor in today's lesson."
       },
       {
         "word": "roof",
@@ -127,7 +127,7 @@
           "hi": "മേൽക്കൂര",
           "ta": "മേൽക്കൂര"
         },
-        "example": "Could you point out a roof for me?"
+        "example": "We learned about roof in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d16_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വെയ്ക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "put",
+            "remember",
+            "decide",
+            "prepare"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "put",
+          "explanation": "put എന്നാൽ വെയ്ക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d16_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'hide'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "hid",
+            "hideing",
+            "hides",
+            "has hide"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "hid",
+          "explanation": "hide ന്റെ ഭൂതകാല രൂപം hid ആണ്."
         },
         {
           "id": "trap_d16_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പെട്ടി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "progress",
+            "schedule",
+            "box",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "box",
+          "explanation": "പെട്ടി എന്നാൽ ഇംഗ്ലീഷിൽ box."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'put':",
           "options": [
-            "വെയ്ക്കുക",
-            "ഭക്ഷണം",
             "സന്തോഷം",
-            "യാത്ര"
+            "വെയ്ക്കുക",
+            "യാത്ര",
+            "ഭക്ഷണം"
           ],
           "answer": "വെയ്ക്കുക"
         },
         {
           "q": "Complete the sentence: '_____ it on the table.'",
           "options": [
-            "were put",
-            "is put",
+            "put",
             "puting",
-            "put"
+            "is put",
+            "were put"
           ],
           "answer": "put"
         },
         {
           "q": "What is the past form (V2) of 'hide'?",
           "options": [
-            "None",
-            "hideedx",
+            "hid",
             "hides",
-            "hid"
+            "hideedx",
+            "None"
           ],
           "answer": "hid"
         },
         {
           "q": "Which English word means 'പെട്ടി'?",
           "options": [
-            "station",
+            "journey",
             "box",
-            "airport",
-            "journey"
+            "station",
+            "airport"
           ],
           "answer": "box"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not put yesterday.",
-            "I am put every time wrongly.",
             "Put it on the table.",
-            "We was put tomorrow."
+            "He do not put yesterday.",
+            "We was put tomorrow.",
+            "I am put every time wrongly."
           ],
           "answer": "Put it on the table."
         }

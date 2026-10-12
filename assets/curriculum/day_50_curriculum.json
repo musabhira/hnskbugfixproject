@@ -91,7 +91,7 @@
           "hi": "നിയമം",
           "ta": "നിയമം"
         },
-        "example": "Could you point out a rule for me?"
+        "example": "We learned about rule in today's lesson."
       },
       {
         "word": "law",
@@ -100,7 +100,7 @@
           "hi": "നിയമം",
           "ta": "നിയമം"
         },
-        "example": "Could you point out a law for me?"
+        "example": "We learned about law in today's lesson."
       },
       {
         "word": "helmet",
@@ -109,7 +109,7 @@
           "hi": "ഹെൽമെറ്റ്",
           "ta": "ഹെൽമെറ്റ്"
         },
-        "example": "Could you point out a helmet for me?"
+        "example": "We learned about helmet in today's lesson."
       },
       {
         "word": "duty",
@@ -118,7 +118,7 @@
           "hi": "കടമ",
           "ta": "കടമ"
         },
-        "example": "Could you point out a duty for me?"
+        "example": "We learned about duty in today's lesson."
       },
       {
         "word": "license",
@@ -127,7 +127,7 @@
           "hi": "ലൈസൻസ്",
           "ta": "ലൈസൻസ്"
         },
-        "example": "Could you point out a license for me?"
+        "example": "We learned about license in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d50_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പിന്തുടരുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "follow",
+            "finish",
+            "forget",
+            "borrow"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "follow",
+          "explanation": "follow എന്നാൽ പിന്തുടരുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d50_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'wear'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "wears",
+            "wearing",
+            "wore",
+            "has wear"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "wore",
+          "explanation": "wear ന്റെ ഭൂതകാല രൂപം wore ആണ്."
         },
         {
           "id": "trap_d50_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'നിയമം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "success",
+            "journey",
+            "airport",
+            "rule"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "rule",
+          "explanation": "നിയമം എന്നാൽ ഇംഗ്ലീഷിൽ rule."
         }
       ],
       "description": {
@@ -417,8 +417,8 @@
         {
           "q": "Complete the sentence: 'You must _____ rules.'",
           "options": [
-            "follow",
             "were follow",
+            "follow",
             "following",
             "is follow"
           ],
@@ -427,19 +427,19 @@
         {
           "q": "What is the past form (V2) of 'wear'?",
           "options": [
-            "wore",
             "wears",
             "None",
-            "wearedx"
+            "wearedx",
+            "wore"
           ],
           "answer": "wore"
         },
         {
           "q": "Which English word means 'നിയമം'?",
           "options": [
+            "rule",
             "knowledge",
             "courage",
-            "rule",
             "routine"
           ],
           "answer": "rule"
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not follow yesterday.",
             "I am follow every time wrongly.",
-            "You must follow rules.",
-            "We was follow tomorrow."
+            "We was follow tomorrow.",
+            "He do not follow yesterday.",
+            "You must follow rules."
           ],
           "answer": "You must follow rules."
         }

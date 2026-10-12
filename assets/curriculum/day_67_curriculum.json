@@ -91,7 +91,7 @@
           "hi": "കാരണം",
           "ta": "കാരണം"
         },
-        "example": "Could you point out a reason for me?"
+        "example": "We learned about reason in today's lesson."
       },
       {
         "word": "result",
@@ -100,7 +100,7 @@
           "hi": "ഫലം",
           "ta": "ഫലം"
         },
-        "example": "Could you point out a result for me?"
+        "example": "We learned about result in today's lesson."
       },
       {
         "word": "effort",
@@ -109,7 +109,7 @@
           "hi": "പ്രയത്നം",
           "ta": "പ്രയത്നം"
         },
-        "example": "Could you point out an effort for me?"
+        "example": "We learned about effort in today's lesson."
       },
       {
         "word": "success",
@@ -118,7 +118,7 @@
           "hi": "വിജയം",
           "ta": "വിജയം"
         },
-        "example": "Could you point out a success for me?"
+        "example": "We learned about success in today's lesson."
       },
       {
         "word": "connection",
@@ -127,7 +127,7 @@
           "hi": "ബന്ധം",
           "ta": "ബന്ധം"
         },
-        "example": "Could you point out a connection for me?"
+        "example": "We learned about connection in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d67_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പഠിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "prepare",
+            "decide",
+            "study"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "study",
+          "explanation": "study എന്നാൽ പഠിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d67_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'tire'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has tire",
+            "tires",
+            "tireing",
+            "tired"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "tired",
+          "explanation": "tire ന്റെ ഭൂതകാല രൂപം tired ആണ്."
         },
         {
           "id": "trap_d67_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കാരണം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "progress",
+            "partner",
+            "reason",
+            "station"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "reason",
+          "explanation": "കാരണം എന്നാൽ ഇംഗ്ലീഷിൽ reason."
         }
       ],
       "description": {
@@ -407,18 +407,18 @@
         {
           "q": "Choose the correct meaning for 'study':",
           "options": [
-            "പഠിക്കുക",
             "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
+            "പഠിക്കുക",
+            "ഭക്ഷണം",
+            "യാത്ര"
           ],
           "answer": "പഠിക്കുക"
         },
         {
           "q": "Complete the sentence: 'I studied hard, so I passed.'",
           "options": [
-            "study",
             "studying",
+            "study",
             "is study",
             "were study"
           ],
@@ -428,8 +428,8 @@
           "q": "What is the past form (V2) of 'tire'?",
           "options": [
             "tired",
-            "None",
             "tires",
+            "None",
             "tireedx"
           ],
           "answer": "tired"
@@ -437,9 +437,9 @@
         {
           "q": "Which English word means 'കാരണം'?",
           "options": [
-            "airport",
-            "success",
             "reason",
+            "success",
+            "airport",
             "journey"
           ],
           "answer": "reason"
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I studied hard, so I passed.",
             "We was study tomorrow.",
             "He do not study yesterday.",
-            "I am study every time wrongly."
+            "I am study every time wrongly.",
+            "I studied hard, so I passed."
           ],
           "answer": "I studied hard, so I passed."
         }

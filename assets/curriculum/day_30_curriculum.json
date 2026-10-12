@@ -91,7 +91,7 @@
           "hi": "ഗേറ്റ്",
           "ta": "ഗേറ്റ്"
         },
-        "example": "Could you point out a gate for me?"
+        "example": "We learned about gate in today's lesson."
       },
       {
         "word": "exam",
@@ -100,7 +100,7 @@
           "hi": "പരീക്ഷ",
           "ta": "പരീക്ഷ"
         },
-        "example": "Could you point out an exam for me?"
+        "example": "We learned about exam in today's lesson."
       },
       {
         "word": "badge",
@@ -109,7 +109,7 @@
           "hi": "ബാഡ്ജ്",
           "ta": "ബാഡ്ജ്"
         },
-        "example": "Could you point out a badge for me?"
+        "example": "We learned about badge in today's lesson."
       },
       {
         "word": "shield",
@@ -118,7 +118,7 @@
           "hi": "ഷീൽഡ്",
           "ta": "ഷീൽഡ്"
         },
-        "example": "Could you point out a shield for me?"
+        "example": "We learned about shield in today's lesson."
       },
       {
         "word": "trophy",
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d30_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിലയിരുത്തുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "borrow",
+            "review",
+            "forget",
+            "finish"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "review",
+          "explanation": "review എന്നാൽ വിലയിരുത്തുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d30_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'master'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "mastered",
+            "mastering",
+            "masters",
+            "has master"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "mastered",
+          "explanation": "master ന്റെ ഭൂതകാല രൂപം mastered ആണ്."
         },
         {
           "id": "trap_d30_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഗേറ്റ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "success",
+            "gate",
+            "journey"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "gate",
+          "explanation": "ഗേറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ gate."
         }
       ],
       "description": {
@@ -405,66 +405,54 @@
       "passScore": 70,
       "examQuestions": [
         {
-          "assessmentType": "listening_discrimination",
-          "audioPrompt": "Listen: “She does not work on Sundays.”",
-          "q": "Choose the sentence you hear.",
+          "q": "Choose the correct meaning for 'review':",
           "options": [
-            "She does not work on Sundays.",
-            "She do not work on Sundays.",
-            "She does not works on Sundays.",
-            "She not work on Sundays."
+            "സന്തോഷം",
+            "യാത്ര",
+            "വിലയിരുത്തുക",
+            "ഭക്ഷണം"
           ],
-          "answer": "She does not work on Sundays."
+          "answer": "വിലയിരുത്തുക"
         },
         {
-          "assessmentType": "repair_correction",
-          "q": "Choose the corrected sentence.",
+          "q": "Complete the sentence: '_____ your lessons.'",
           "options": [
-            "Did you go to the market yesterday?",
-            "Did you went to the market yesterday?",
-            "Did you went the market yesterday?",
-            "Did you goes to the market yesterday?"
+            "is review",
+            "reviewing",
+            "were review",
+            "review"
           ],
-          "answer": "Did you go to the market yesterday?"
+          "answer": "review"
         },
         {
-          "assessmentType": "pragmatic_response",
-          "q": "Choose the most appropriate spoken response.",
+          "q": "What is the past form (V2) of 'master'?",
           "options": [
-            "Could you tell me where the pharmacy is?",
-            "Tell me pharmacy where is.",
-            "Where pharmacy?",
-            "You tell pharmacy."
+            "None",
+            "masters",
+            "mastered",
+            "masteredx"
           ],
-          "answer": "Could you tell me where the pharmacy is?"
+          "answer": "mastered"
         },
         {
-          "assessmentType": "spoken_response",
-          "responseMode": "speech",
-          "q": "Describe your daily routine in three short sentences. Include a time, an activity, and one preference.",
+          "q": "Which English word means 'ഗേറ്റ്'?",
           "options": [
-            "Record my response",
-            "Skip speaking",
-            "Read silently",
-            "Use a translation app"
+            "gate",
+            "courage",
+            "knowledge",
+            "routine"
           ],
-          "answer": "Record my response",
-          "expectedElements": [
-            "clear complete sentences",
-            "relevant details",
-            "intelligible speech"
-          ]
+          "answer": "gate"
         },
         {
-          "assessmentType": "cumulative_grammar",
-          "q": "Choose the grammatically correct sentence.",
+          "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "There are two chairs in the room.",
-            "There is two chairs in the room.",
-            "There are two chair in the room.",
-            "There two chairs are in the room."
+            "We was review tomorrow.",
+            "He do not review yesterday.",
+            "I am review every time wrongly.",
+            "Review your lessons."
           ],
-          "answer": "There are two chairs in the room."
+          "answer": "Review your lessons."
         }
       ],
       "description": {

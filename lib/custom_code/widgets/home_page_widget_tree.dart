@@ -1373,70 +1373,76 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               Positioned(
                 top: MediaQuery.of(context).padding.top + 50,
                 right: 14,
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    setState(() {
-                      _showTopNotificationTooltip = false;
-                    });
-                    Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => const NotificationsPage(),
+                child: material.Material(
+                  type: material.MaterialType.transparency,
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      setState(() {
+                        _showTopNotificationTooltip = false;
+                      });
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => const NotificationsPage(),
+                        ),
+                      );
+                    },
+                    child: CustomPaint(
+                      painter: const InstagramBellTooltipPainter(
+                        color: Color(0xFFED4956),
+                        arrowCenterFromRight: 50.0,
                       ),
-                    );
-                  },
-                  child: CustomPaint(
-                    painter: const InstagramBellTooltipPainter(
-                      color: Color(0xFFED4956),
-                      arrowCenterFromRight: 50.0,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.only(
-                        left: 14,
-                        right: 14,
-                        top: 15, // accounts for arrow height
-                        bottom: 9,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.chat_bubble_rounded,
-                              color: Colors.white, size: 16),
-                          const SizedBox(width: 5),
-                          Text(
-                            '32',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                      child: Container(
+                        padding: const EdgeInsets.only(
+                          left: 14,
+                          right: 14,
+                          top: 15, // accounts for arrow height
+                          bottom: 9,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.chat_bubble_rounded,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${conversationsAsync.asData?.value.where((c) => c.unreadCount > 0).length ?? 0}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.none,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Icon(Icons.favorite_rounded,
-                              color: Colors.white, size: 16),
-                          const SizedBox(width: 5),
-                          Text(
-                            '182',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(width: 12),
+                            const Icon(Icons.favorite_rounded,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${_pendingRequests.isNotEmpty ? _pendingRequests.length : 1}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.none,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Icon(Icons.person_rounded,
-                              color: Colors.white, size: 17),
-                          const SizedBox(width: 5),
-                          Text(
-                            '${_pendingRequests.isNotEmpty ? _pendingRequests.length : 71}',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(width: 12),
+                            const Icon(Icons.person_rounded,
+                                color: Colors.white, size: 17),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${_pendingRequests.length}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.none,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

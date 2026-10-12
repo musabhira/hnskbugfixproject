@@ -91,7 +91,7 @@
           "hi": "ശൈലി",
           "ta": "ശൈലി"
         },
-        "example": "Could you point out an idiom for me?"
+        "example": "We learned about idiom in today's lesson."
       },
       {
         "word": "metaphor",
@@ -100,7 +100,7 @@
           "hi": "ഉപമ",
           "ta": "ഉപമ"
         },
-        "example": "Could you point out a metaphor for me?"
+        "example": "We learned about metaphor in today's lesson."
       },
       {
         "word": "conversation",
@@ -109,7 +109,7 @@
           "hi": "സംഭാഷണം",
           "ta": "സംഭാഷണം"
         },
-        "example": "Could you point out a conversation for me?"
+        "example": "We learned about conversation in today's lesson."
       },
       {
         "word": "richness",
@@ -118,7 +118,7 @@
           "hi": "സമ്പന്നത",
           "ta": "സമ്പന്നത"
         },
-        "example": "Could you point out a richness for me?"
+        "example": "We learned about richness in today's lesson."
       },
       {
         "word": "fluency",
@@ -127,7 +127,7 @@
           "hi": "ഫ്ലുവെൻസി",
           "ta": "ഫ്ലുവെൻസി"
         },
-        "example": "Could you point out a fluency for me?"
+        "example": "We learned about fluency in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d87_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'കൃത്യമായി പറയുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "hit",
+            "decide",
+            "prepare",
+            "arrive"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "hit",
+          "explanation": "hit എന്നാൽ കൃത്യമായി പറയുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d87_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'miss'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "misss",
+            "missing",
+            "has miss",
+            "missed"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "missed",
+          "explanation": "miss ന്റെ ഭൂതകാല രൂപം missed ആണ്."
         },
         {
           "id": "trap_d87_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ശൈലി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "station",
+            "partner",
+            "progress",
+            "idiom"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "idiom",
+          "explanation": "ശൈലി എന്നാൽ ഇംഗ്ലീഷിൽ idiom."
         }
       ],
       "description": {
@@ -407,9 +407,9 @@
         {
           "q": "Choose the correct meaning for 'hit':",
           "options": [
-            "യാത്ര",
-            "സന്തോഷം",
             "കൃത്യമായി പറയുക",
+            "സന്തോഷം",
+            "യാത്ര",
             "ഭക്ഷണം"
           ],
           "answer": "കൃത്യമായി പറയുക"
@@ -417,40 +417,40 @@
         {
           "q": "Complete the sentence: 'You _____ the nail on the head.'",
           "options": [
-            "hit",
-            "hiting",
+            "were hit",
             "is hit",
-            "were hit"
+            "hiting",
+            "hit"
           ],
           "answer": "hit"
         },
         {
           "q": "What is the past form (V2) of 'miss'?",
           "options": [
-            "misss",
             "missed",
-            "missedx",
-            "None"
+            "misss",
+            "None",
+            "missedx"
           ],
           "answer": "missed"
         },
         {
           "q": "Which English word means 'ശൈലി'?",
           "options": [
-            "idiom",
+            "success",
             "airport",
             "journey",
-            "success"
+            "idiom"
           ],
           "answer": "idiom"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am hit every time wrongly.",
-            "He do not hit yesterday.",
             "We was hit tomorrow.",
-            "You hit the nail on the head."
+            "You hit the nail on the head.",
+            "I am hit every time wrongly.",
+            "He do not hit yesterday."
           ],
           "answer": "You hit the nail on the head."
         }

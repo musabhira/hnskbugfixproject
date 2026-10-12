@@ -91,7 +91,7 @@
           "hi": "വിനയം",
           "ta": "വിനയം"
         },
-        "example": "Could you point out a politeness for me?"
+        "example": "We learned about politeness in today's lesson."
       },
       {
         "word": "favor",
@@ -100,7 +100,7 @@
           "hi": "സഹായം",
           "ta": "സഹായം"
         },
-        "example": "Could you point out a favor for me?"
+        "example": "We learned about favor in today's lesson."
       },
       {
         "word": "help",
@@ -109,7 +109,7 @@
           "hi": "സഹായം",
           "ta": "സഹായം"
         },
-        "example": "Could you point out a help for me?"
+        "example": "We learned about help in today's lesson."
       },
       {
         "word": "respect",
@@ -118,7 +118,7 @@
           "hi": "ബഹുമാനം",
           "ta": "ബഹുമാനം"
         },
-        "example": "Could you point out a respect for me?"
+        "example": "We learned about respect in today's lesson."
       },
       {
         "word": "tone",
@@ -127,7 +127,7 @@
           "hi": "ശബ്ദരീതി",
           "ta": "ശബ്ദരീതി"
         },
-        "example": "Could you point out a tone for me?"
+        "example": "We learned about tone in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d48_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വിഷമമാവുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "prepare",
+            "mind",
+            "finish"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "mind",
+          "explanation": "mind എന്നാൽ വിഷമമാവുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d48_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'favor'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has favor",
+            "favoring",
+            "favored",
+            "favors"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "favored",
+          "explanation": "favor ന്റെ ഭൂതകാല രൂപം favored ആണ്."
         },
         {
           "id": "trap_d48_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'വിനയം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "politeness",
+            "partner",
+            "station",
+            "airport"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "politeness",
+          "explanation": "വിനയം എന്നാൽ ഇംഗ്ലീഷിൽ politeness."
         }
       ],
       "description": {
@@ -407,40 +407,40 @@
         {
           "q": "Choose the correct meaning for 'mind':",
           "options": [
+            "ഭക്ഷണം",
             "യാത്ര",
             "സന്തോഷം",
-            "വിഷമമാവുക",
-            "ഭക്ഷണം"
+            "വിഷമമാവുക"
           ],
           "answer": "വിഷമമാവുക"
         },
         {
           "q": "Complete the sentence: 'Would you _____ closing door?'",
           "options": [
-            "minding",
-            "mind",
             "is mind",
-            "were mind"
+            "mind",
+            "were mind",
+            "minding"
           ],
           "answer": "mind"
         },
         {
           "q": "What is the past form (V2) of 'favor'?",
           "options": [
-            "favored",
-            "favors",
+            "None",
             "favoredx",
-            "None"
+            "favors",
+            "favored"
           ],
           "answer": "favored"
         },
         {
           "q": "Which English word means 'വിനയം'?",
           "options": [
-            "courage",
             "politeness",
             "journey",
-            "success"
+            "success",
+            "courage"
           ],
           "answer": "politeness"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "We was mind tomorrow.",
-            "He do not mind yesterday.",
             "I am mind every time wrongly.",
+            "He do not mind yesterday.",
             "Would you mind closing door?"
           ],
           "answer": "Would you mind closing door?"

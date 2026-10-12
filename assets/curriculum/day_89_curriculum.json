@@ -91,7 +91,7 @@
           "hi": "പ്രസംഗം",
           "ta": "പ്രസംഗം"
         },
-        "example": "Could you point out a speech for me?"
+        "example": "We learned about speech in today's lesson."
       },
       {
         "word": "audience",
@@ -100,7 +100,7 @@
           "hi": "സദസ്സ്",
           "ta": "സദസ്സ്"
         },
-        "example": "Could you point out an audience for me?"
+        "example": "We learned about audience in today's lesson."
       },
       {
         "word": "voice",
@@ -109,7 +109,7 @@
           "hi": "ശബ്ദം",
           "ta": "ശബ്ദം"
         },
-        "example": "Could you point out a voice for me?"
+        "example": "We learned about voice in today's lesson."
       },
       {
         "word": "power",
@@ -118,7 +118,7 @@
           "hi": "ശക്തി",
           "ta": "ശക്തി"
         },
-        "example": "Could you point out a power for me?"
+        "example": "We learned about power in today's lesson."
       },
       {
         "word": "conviction",
@@ -127,7 +127,7 @@
           "hi": "ഉറച്ച വിശ്വാസം",
           "ta": "ഉറച്ച വിശ്വാസം"
         },
-        "example": "Could you point out a conviction for me?"
+        "example": "We learned about conviction in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d89_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പ്രചോദിപ്പിക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "inspire",
+            "arrive",
+            "finish",
+            "borrow"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "inspire",
+          "explanation": "inspire എന്നാൽ പ്രചോദിപ്പിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d89_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'engage'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "engaged",
+            "engageing",
+            "engages",
+            "has engage"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "engaged",
+          "explanation": "engage ന്റെ ഭൂതകാല രൂപം engaged ആണ്."
         },
         {
           "id": "trap_d89_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പ്രസംഗം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "station",
+            "journey",
+            "speech"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "speech",
+          "explanation": "പ്രസംഗം എന്നാൽ ഇംഗ്ലീഷിൽ speech."
         }
       ],
       "description": {
@@ -417,20 +417,20 @@
         {
           "q": "Complete the sentence: '_____ people with your words.'",
           "options": [
-            "were inspire",
-            "is inspire",
+            "inspire",
             "inspireing",
-            "inspire"
+            "is inspire",
+            "were inspire"
           ],
           "answer": "inspire"
         },
         {
           "q": "What is the past form (V2) of 'engage'?",
           "options": [
-            "None",
+            "engaged",
             "engages",
-            "engageedx",
-            "engaged"
+            "None",
+            "engageedx"
           ],
           "answer": "engaged"
         },
@@ -438,19 +438,19 @@
           "q": "Which English word means 'പ്രസംഗം'?",
           "options": [
             "knowledge",
+            "speech",
             "success",
-            "courage",
-            "speech"
+            "courage"
           ],
           "answer": "speech"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am inspire every time wrongly.",
             "He do not inspire yesterday.",
             "Inspire people with your words.",
-            "We was inspire tomorrow."
+            "We was inspire tomorrow.",
+            "I am inspire every time wrongly."
           ],
           "answer": "Inspire people with your words."
         }

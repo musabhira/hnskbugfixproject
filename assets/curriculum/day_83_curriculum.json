@@ -91,7 +91,7 @@
           "hi": "സാഹചര്യം",
           "ta": "സാഹചര്യം"
         },
-        "example": "Could you point out a situation for me?"
+        "example": "We learned about situation in today's lesson."
       },
       {
         "word": "task",
@@ -100,7 +100,7 @@
           "hi": "ചുമതല",
           "ta": "ചുമതല"
         },
-        "example": "Could you point out a task for me?"
+        "example": "We learned about task in today's lesson."
       },
       {
         "word": "action",
@@ -109,7 +109,7 @@
           "hi": "നടപടി",
           "ta": "നടപടി"
         },
-        "example": "Could you point out an action for me?"
+        "example": "We learned about action in today's lesson."
       },
       {
         "word": "result",
@@ -118,7 +118,7 @@
           "hi": "ഫലം",
           "ta": "ഫലം"
         },
-        "example": "Could you point out a result for me?"
+        "example": "We learned about result in today's lesson."
       },
       {
         "word": "achievement",
@@ -127,7 +127,7 @@
           "hi": "നേട്ടം",
           "ta": "നേട്ടം"
         },
-        "example": "Could you point out an achievement for me?"
+        "example": "We learned about achievement in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d83_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'പരിഹരിക്കുക'?",
           "options": [
-            "He is married to a teacher.",
-            "He is married with a teacher.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "resolve",
+            "listen",
+            "create",
+            "discover"
           ],
-          "answer": "He is married to a teacher.",
-          "explanation": "Use married to when naming a spouse."
+          "answer": "resolve",
+          "explanation": "resolve എന്നാൽ പരിഹരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d83_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'achieve'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "achieves",
+            "achieveing",
+            "has achieve",
+            "achieved"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "achieved",
+          "explanation": "achieve ന്റെ ഭൂതകാല രൂപം achieved ആണ്."
         },
         {
           "id": "trap_d83_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സാഹചര്യം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "courage",
+            "knowledge",
+            "situation"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "situation",
+          "explanation": "സാഹചര്യം എന്നാൽ ഇംഗ്ലീഷിൽ situation."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'resolve':",
           "options": [
-            "പരിഹരിക്കുക",
-            "സന്തോഷം",
+            "ഭക്ഷണം",
             "യാത്ര",
-            "ഭക്ഷണം"
+            "പരിഹരിക്കുക",
+            "സന്തോഷം"
           ],
           "answer": "പരിഹരിക്കുക"
         },
@@ -428,17 +428,17 @@
           "q": "What is the past form (V2) of 'achieve'?",
           "options": [
             "achieved",
-            "achieveedx",
+            "None",
             "achieves",
-            "None"
+            "achieveedx"
           ],
           "answer": "achieved"
         },
         {
           "q": "Which English word means 'സാഹചര്യം'?",
           "options": [
-            "schedule",
             "situation",
+            "schedule",
             "partner",
             "progress"
           ],
@@ -447,10 +447,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I resolved the conflict effectively.",
-            "I am resolve every time wrongly.",
+            "We was resolve tomorrow.",
             "He do not resolve yesterday.",
-            "We was resolve tomorrow."
+            "I am resolve every time wrongly.",
+            "I resolved the conflict effectively."
           ],
           "answer": "I resolved the conflict effectively."
         }

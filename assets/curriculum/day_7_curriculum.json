@@ -91,7 +91,7 @@
           "hi": "പ്ലേറ്റ്",
           "ta": "പ്ലേറ്റ്"
         },
-        "example": "Could you point out a plate for me?"
+        "example": "We learned about plate in today's lesson."
       },
       {
         "word": "cup",
@@ -100,7 +100,7 @@
           "hi": "കപ്പ്",
           "ta": "കപ്പ്"
         },
-        "example": "Could you point out a cup for me?"
+        "example": "We learned about cup in today's lesson."
       },
       {
         "word": "chair",
@@ -109,7 +109,7 @@
           "hi": "കസേര",
           "ta": "കസേര"
         },
-        "example": "Could you point out a chair for me?"
+        "example": "We learned about chair in today's lesson."
       },
       {
         "word": "table",
@@ -118,7 +118,7 @@
           "hi": "മേശ",
           "ta": "മേശ"
         },
-        "example": "Could you point out a table for me?"
+        "example": "We learned about table in today's lesson."
       },
       {
         "word": "phone",
@@ -127,7 +127,7 @@
           "hi": "ഫോൺ",
           "ta": "ഫോൺ"
         },
-        "example": "Could you point out a phone for me?"
+        "example": "We learned about phone in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d7_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഉപയോഗിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "use",
+            "arrive",
+            "decide",
+            "prepare"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "use",
+          "explanation": "use എന്നാൽ ഉപയോഗിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d7_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'hold'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "holding",
+            "has hold",
+            "holds",
+            "held"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "held",
+          "explanation": "hold ന്റെ ഭൂതകാല രൂപം held ആണ്."
         },
         {
           "id": "trap_d7_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പ്ലേറ്റ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "plate",
+            "progress",
+            "partner",
+            "station"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "plate",
+          "explanation": "പ്ലേറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ plate."
         }
       ],
       "description": {
@@ -418,8 +418,8 @@
           "q": "Complete the sentence: '_____ a clean plate.'",
           "options": [
             "use",
-            "useing",
             "were use",
+            "useing",
             "is use"
           ],
           "answer": "use"
@@ -428,28 +428,28 @@
           "q": "What is the past form (V2) of 'hold'?",
           "options": [
             "holdedx",
-            "held",
+            "holds",
             "None",
-            "holds"
+            "held"
           ],
           "answer": "held"
         },
         {
           "q": "Which English word means 'പ്ലേറ്റ്'?",
           "options": [
+            "journey",
             "success",
             "airport",
-            "plate",
-            "journey"
+            "plate"
           ],
           "answer": "plate"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not use yesterday.",
             "I am use every time wrongly.",
             "Use a clean plate.",
+            "He do not use yesterday.",
             "We was use tomorrow."
           ],
           "answer": "Use a clean plate."

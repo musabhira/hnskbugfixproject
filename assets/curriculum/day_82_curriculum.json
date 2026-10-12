@@ -91,7 +91,7 @@
           "hi": "കരുത്ത്",
           "ta": "കരുത്ത്"
         },
-        "example": "Could you point out a strength for me?"
+        "example": "We learned about strength in today's lesson."
       },
       {
         "word": "weakness",
@@ -100,7 +100,7 @@
           "hi": "ദൗർബല്യം",
           "ta": "ദൗർബല്യം"
         },
-        "example": "Could you point out a weakness for me?"
+        "example": "We learned about weakness in today's lesson."
       },
       {
         "word": "growth",
@@ -109,7 +109,7 @@
           "hi": "വളർച്ച",
           "ta": "വളർച്ച"
         },
-        "example": "Could you point out a growth for me?"
+        "example": "We learned about growth in today's lesson."
       },
       {
         "word": "discipline",
@@ -118,7 +118,7 @@
           "hi": "അച്ചടക്കം",
           "ta": "അച്ചടക്കം"
         },
-        "example": "Could you point out a discipline for me?"
+        "example": "We learned about discipline in today's lesson."
       },
       {
         "word": "focus",
@@ -127,7 +127,7 @@
           "hi": "ശ്രദ്ധ",
           "ta": "ശ്രദ്ധ"
         },
-        "example": "Could you point out a focus for me?"
+        "example": "We learned about focus in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d82_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ശക്തിപ്പെടുത്തുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "listen",
+            "forget",
+            "create",
+            "strengthen"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "strengthen",
+          "explanation": "strengthen എന്നാൽ ശക്തിപ്പെടുത്തുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d82_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'overcome'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "overcame",
+            "overcomeing",
+            "overcomes",
+            "has overcome"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "overcame",
+          "explanation": "overcome ന്റെ ഭൂതകാല രൂപം overcame ആണ്."
         },
         {
           "id": "trap_d82_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കരുത്ത്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "strength",
+            "success",
+            "courage",
+            "knowledge"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "strength",
+          "explanation": "കരുത്ത് എന്നാൽ ഇംഗ്ലീഷിൽ strength."
         }
       ],
       "description": {
@@ -409,28 +409,28 @@
           "options": [
             "യാത്ര",
             "സന്തോഷം",
-            "ഭക്ഷണം",
-            "ശക്തിപ്പെടുത്തുക"
+            "ശക്തിപ്പെടുത്തുക",
+            "ഭക്ഷണം"
           ],
           "answer": "ശക്തിപ്പെടുത്തുക"
         },
         {
           "q": "Complete the sentence: 'My greatest strength is adaptability.'",
           "options": [
-            "strengthen",
+            "is strengthen",
             "strengthening",
             "were strengthen",
-            "is strengthen"
+            "strengthen"
           ],
           "answer": "strengthen"
         },
         {
           "q": "What is the past form (V2) of 'overcome'?",
           "options": [
-            "overcomes",
             "overcomeedx",
-            "None",
-            "overcame"
+            "overcomes",
+            "overcame",
+            "None"
           ],
           "answer": "overcame"
         },
@@ -438,8 +438,8 @@
           "q": "Which English word means 'കരുത്ത്'?",
           "options": [
             "schedule",
-            "progress",
             "strength",
+            "progress",
             "routine"
           ],
           "answer": "strength"
@@ -448,9 +448,9 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "My greatest strength is adaptability.",
-            "I am strengthen every time wrongly.",
             "He do not strengthen yesterday.",
-            "We was strengthen tomorrow."
+            "We was strengthen tomorrow.",
+            "I am strengthen every time wrongly."
           ],
           "answer": "My greatest strength is adaptability."
         }

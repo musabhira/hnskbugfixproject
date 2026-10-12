@@ -91,7 +91,7 @@
           "hi": "പ്രശ്നം",
           "ta": "പ്രശ്നം"
         },
-        "example": "Could you point out a problem for me?"
+        "example": "We learned about problem in today's lesson."
       },
       {
         "word": "mistake",
@@ -100,7 +100,7 @@
           "hi": "തെറ്റ്",
           "ta": "തെറ്റ്"
         },
-        "example": "Could you point out a mistake for me?"
+        "example": "We learned about mistake in today's lesson."
       },
       {
         "word": "trouble",
@@ -109,7 +109,7 @@
           "hi": "ബുദ്ധിമുട്ട്",
           "ta": "ബുദ്ധിമുട്ട്"
         },
-        "example": "Could you point out a trouble for me?"
+        "example": "We learned about trouble in today's lesson."
       },
       {
         "word": "lie",
@@ -118,7 +118,7 @@
           "hi": "നുണ",
           "ta": "നുണ"
         },
-        "example": "Could you point out a lie for me?"
+        "example": "We learned about lie in today's lesson."
       },
       {
         "word": "truth",
@@ -127,7 +127,7 @@
           "hi": "സത്യം",
           "ta": "സത്യം"
         },
-        "example": "Could you point out a truth for me?"
+        "example": "We learned about truth in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d14_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ഇഷ്ടപ്പെടുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "remember",
+            "create",
+            "like",
+            "discover"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "like",
+          "explanation": "like എന്നാൽ ഇഷ്ടപ്പെടുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d14_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'smoke'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "smokes",
+            "has smoke",
+            "smoked",
+            "smokeing"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "smoked",
+          "explanation": "smoke ന്റെ ഭൂതകാല രൂപം smoked ആണ്."
         },
         {
           "id": "trap_d14_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പ്രശ്നം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "schedule",
+            "routine",
+            "problem"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "problem",
+          "explanation": "പ്രശ്നം എന്നാൽ ഇംഗ്ലീഷിൽ problem."
         }
       ],
       "description": {
@@ -407,29 +407,29 @@
         {
           "q": "Choose the correct meaning for 'like':",
           "options": [
+            "ഭക്ഷണം",
             "ഇഷ്ടപ്പെടുക",
             "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
+            "യാത്ര"
           ],
           "answer": "ഇഷ്ടപ്പെടുക"
         },
         {
           "q": "Complete the sentence: 'I don't _____ junk food.'",
           "options": [
-            "like",
             "likeing",
-            "were like",
-            "is like"
+            "like",
+            "is like",
+            "were like"
           ],
           "answer": "like"
         },
         {
           "q": "What is the past form (V2) of 'smoke'?",
           "options": [
-            "smokes",
-            "smokeedx",
             "None",
+            "smokeedx",
+            "smokes",
             "smoked"
           ],
           "answer": "smoked"
@@ -437,20 +437,20 @@
         {
           "q": "Which English word means 'പ്രശ്നം'?",
           "options": [
-            "problem",
-            "station",
             "progress",
-            "partner"
+            "station",
+            "partner",
+            "problem"
           ],
           "answer": "problem"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I don't like junk food.",
-            "He do not like yesterday.",
             "We was like tomorrow.",
-            "I am like every time wrongly."
+            "He do not like yesterday.",
+            "I am like every time wrongly.",
+            "I don't like junk food."
           ],
           "answer": "I don't like junk food."
         }

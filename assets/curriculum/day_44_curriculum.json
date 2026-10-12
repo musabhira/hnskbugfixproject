@@ -91,7 +91,7 @@
           "hi": "എയർപോർട്ട്",
           "ta": "എയർപോർട്ട്"
         },
-        "example": "Could you point out an airport for me?"
+        "example": "We learned about airport in today's lesson."
       },
       {
         "word": "flight",
@@ -100,7 +100,7 @@
           "hi": "ഫ്ലൈറ്റ്",
           "ta": "ഫ്ലൈറ്റ്"
         },
-        "example": "Could you point out a flight for me?"
+        "example": "We learned about flight in today's lesson."
       },
       {
         "word": "passport",
@@ -109,7 +109,7 @@
           "hi": "പാസ്പോർട്ട്",
           "ta": "പാസ്പോർട്ട്"
         },
-        "example": "Could you point out a passport for me?"
+        "example": "We learned about passport in today's lesson."
       },
       {
         "word": "gate",
@@ -118,7 +118,7 @@
           "hi": "ഗേറ്റ്",
           "ta": "ഗേറ്റ്"
         },
-        "example": "Could you point out a gate for me?"
+        "example": "We learned about gate in today's lesson."
       },
       {
         "word": "luggage",
@@ -127,7 +127,7 @@
           "hi": "ലഗേജ്",
           "ta": "ലഗേജ്"
         },
-        "example": "Could you point out a luggage for me?"
+        "example": "We learned about luggage in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d44_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ചെക്ക്-ഇൻ ചെയ്യുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "remember",
+            "discover",
+            "create",
+            "check in"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "check in",
+          "explanation": "check in എന്നാൽ ചെക്ക്-ഇൻ ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d44_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'board'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has board",
+            "boarded",
+            "boarding",
+            "boards"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "boarded",
+          "explanation": "board ന്റെ ഭൂതകാല രൂപം boarded ആണ്."
         },
         {
           "id": "trap_d44_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'എയർപോർട്ട്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "schedule",
+            "routine",
+            "knowledge",
+            "airport"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "airport",
+          "explanation": "എയർപോർട്ട് എന്നാൽ ഇംഗ്ലീഷിൽ airport."
         }
       ],
       "description": {
@@ -407,10 +407,10 @@
         {
           "q": "Choose the correct meaning for 'check in':",
           "options": [
-            "സന്തോഷം",
+            "ഭക്ഷണം",
             "യാത്ര",
-            "ചെക്ക്-ഇൻ ചെയ്യുക",
-            "ഭക്ഷണം"
+            "സന്തോഷം",
+            "ചെക്ക്-ഇൻ ചെയ്യുക"
           ],
           "answer": "ചെക്ക്-ഇൻ ചെയ്യുക"
         },
@@ -418,39 +418,39 @@
           "q": "Complete the sentence: '_____ your luggage.'",
           "options": [
             "check ining",
-            "were check in",
+            "is check in",
             "check in",
-            "is check in"
+            "were check in"
           ],
           "answer": "check in"
         },
         {
           "q": "What is the past form (V2) of 'board'?",
           "options": [
-            "boarded",
-            "boards",
             "boardedx",
-            "None"
+            "None",
+            "boarded",
+            "boards"
           ],
           "answer": "boarded"
         },
         {
           "q": "Which English word means 'എയർപോർട്ട്'?",
           "options": [
-            "station",
-            "partner",
             "progress",
-            "airport"
+            "station",
+            "airport",
+            "partner"
           ],
           "answer": "airport"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was check in tomorrow.",
-            "He do not check in yesterday.",
             "I am check in every time wrongly.",
-            "Check in your luggage."
+            "We was check in tomorrow.",
+            "Check in your luggage.",
+            "He do not check in yesterday."
           ],
           "answer": "Check in your luggage."
         }

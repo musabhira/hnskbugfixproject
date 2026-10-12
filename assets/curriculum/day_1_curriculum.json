@@ -339,39 +339,39 @@
       "traps": [
         {
           "id": "trap_d1_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ആയിരിക്കുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "be",
+            "borrow",
+            "listen",
+            "forget"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "be",
+          "explanation": "be എന്നാൽ ആയിരിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d1_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'call'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has call",
+            "calls",
+            "calling",
+            "called"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "called",
+          "explanation": "call ന്റെ ഭൂതകാല രൂപം called ആണ്."
         },
         {
           "id": "trap_d1_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'പേര്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "name",
+            "journey",
+            "success",
+            "courage"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "name",
+          "explanation": "പേര് എന്നാൽ ഇംഗ്ലീഷിൽ name."
         }
       ],
       "description": {
@@ -466,10 +466,10 @@
         {
           "q": "Complete the sentence: 'I am happy.'",
           "options": [
-            "being",
-            "be",
+            "is be",
             "were be",
-            "is be"
+            "be",
+            "being"
           ],
           "answer": "be"
         },
@@ -478,17 +478,17 @@
           "options": [
             "calledx",
             "calls",
-            "None",
-            "called"
+            "called",
+            "None"
           ],
           "answer": "called"
         },
         {
           "q": "Which English word means 'പേര്'?",
           "options": [
-            "routine",
-            "knowledge",
             "name",
+            "knowledge",
+            "routine",
             "schedule"
           ],
           "answer": "name"
@@ -496,10 +496,10 @@
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
+            "I am happy.",
             "We was be tomorrow.",
             "He do not be yesterday.",
-            "I am be every time wrongly.",
-            "I am happy."
+            "I am be every time wrongly."
           ],
           "answer": "I am happy."
         }

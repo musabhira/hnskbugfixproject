@@ -91,7 +91,7 @@
           "hi": "അഭിപ്രായം",
           "ta": "അഭിപ്രായം"
         },
-        "example": "Could you point out an opinion for me?"
+        "example": "We learned about opinion in today's lesson."
       },
       {
         "word": "perspective",
@@ -100,7 +100,7 @@
           "hi": "കാഴ്ചപ്പാട്",
           "ta": "കാഴ്ചപ്പാട്"
         },
-        "example": "Could you point out a perspective for me?"
+        "example": "We learned about perspective in today's lesson."
       },
       {
         "word": "viewpoint",
@@ -109,7 +109,7 @@
           "hi": "നിലപാട്",
           "ta": "നിലപാട്"
         },
-        "example": "Could you point out a viewpoint for me?"
+        "example": "We learned about viewpoint in today's lesson."
       },
       {
         "word": "solution",
@@ -127,7 +127,7 @@
           "hi": "സമീപനം",
           "ta": "സമീപനം"
         },
-        "example": "Could you point out an approach for me?"
+        "example": "We learned about approach in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d78_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'നിർദ്ദേശിക്കുക'?",
           "options": [
-            "I have two brothers.",
-            "I am having two brothers.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "suggest",
+            "prepare",
+            "arrive",
+            "finish"
           ],
-          "answer": "I have two brothers.",
-          "explanation": "Use have, not am having, for possession."
+          "answer": "suggest",
+          "explanation": "suggest എന്നാൽ നിർദ്ദേശിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d78_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'recommend'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "recommended",
+            "recommending",
+            "recommends",
+            "has recommend"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "recommended",
+          "explanation": "recommend ന്റെ ഭൂതകാല രൂപം recommended ആണ്."
         },
         {
           "id": "trap_d78_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'അഭിപ്രായം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "airport",
+            "station",
+            "partner",
+            "opinion"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "opinion",
+          "explanation": "അഭിപ്രായം എന്നാൽ ഇംഗ്ലീഷിൽ opinion."
         }
       ],
       "description": {
@@ -408,9 +408,9 @@
           "q": "Choose the correct meaning for 'suggest':",
           "options": [
             "ഭക്ഷണം",
-            "നിർദ്ദേശിക്കുക",
+            "യാത്ര",
             "സന്തോഷം",
-            "യാത്ര"
+            "നിർദ്ദേശിക്കുക"
           ],
           "answer": "നിർദ്ദേശിക്കുക"
         },
@@ -427,19 +427,19 @@
         {
           "q": "What is the past form (V2) of 'recommend'?",
           "options": [
+            "None",
             "recommended",
             "recommends",
-            "recommendedx",
-            "None"
+            "recommendedx"
           ],
           "answer": "recommended"
         },
         {
           "q": "Which English word means 'അഭിപ്രായം'?",
           "options": [
-            "success",
-            "journey",
             "opinion",
+            "journey",
+            "success",
             "courage"
           ],
           "answer": "opinion"

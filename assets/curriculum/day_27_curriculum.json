@@ -91,7 +91,7 @@
           "hi": "തലവേദന",
           "ta": "തലവേദന"
         },
-        "example": "Could you point out a headache for me?"
+        "example": "We learned about headache in today's lesson."
       },
       {
         "word": "fever",
@@ -100,7 +100,7 @@
           "hi": "പനി",
           "ta": "പനി"
         },
-        "example": "Could you point out a fever for me?"
+        "example": "We learned about fever in today's lesson."
       },
       {
         "word": "cold",
@@ -109,7 +109,7 @@
           "hi": "ജലദോഷം",
           "ta": "ജലദോഷം"
         },
-        "example": "Could you point out a cold for me?"
+        "example": "We learned about cold in today's lesson."
       },
       {
         "word": "pain",
@@ -118,7 +118,7 @@
           "hi": "വേദന",
           "ta": "വേദന"
         },
-        "example": "Could you point out a pain for me?"
+        "example": "We learned about pain in today's lesson."
       },
       {
         "word": "doctor",
@@ -127,7 +127,7 @@
           "hi": "ഡോക്ടർ",
           "ta": "ഡോക്ടർ"
         },
-        "example": "Could you point out a doctor for me?"
+        "example": "We learned about doctor in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d27_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വേദനിക്കുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "hurt",
+            "decide",
+            "prepare",
+            "arrive"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "hurt",
+          "explanation": "hurt എന്നാൽ വേദനിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d27_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'ache'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has ache",
+            "aches",
+            "acheing",
+            "ached"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "ached",
+          "explanation": "ache ന്റെ ഭൂതകാല രൂപം ached ആണ്."
         },
         {
           "id": "trap_d27_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'തലവേദന'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "headache",
+            "station",
+            "progress",
+            "partner"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "headache",
+          "explanation": "തലവേദന എന്നാൽ ഇംഗ്ലീഷിൽ headache."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'hurt':",
           "options": [
-            "ഭക്ഷണം",
             "യാത്ര",
             "സന്തോഷം",
-            "വേദനിക്കുക"
+            "വേദനിക്കുക",
+            "ഭക്ഷണം"
           ],
           "answer": "വേദനിക്കുക"
         },
         {
           "q": "Complete the sentence: 'My knee _____s.'",
           "options": [
-            "hurt",
-            "hurting",
             "were hurt",
-            "is hurt"
+            "is hurt",
+            "hurting",
+            "hurt"
           ],
           "answer": "hurt"
         },
@@ -428,29 +428,29 @@
           "q": "What is the past form (V2) of 'ache'?",
           "options": [
             "ached",
+            "acheedx",
             "aches",
-            "None",
-            "acheedx"
+            "None"
           ],
           "answer": "ached"
         },
         {
           "q": "Which English word means 'തലവേദന'?",
           "options": [
-            "headache",
             "airport",
-            "journey",
-            "success"
+            "headache",
+            "success",
+            "journey"
           ],
           "answer": "headache"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "We was hurt tomorrow.",
-            "I am hurt every time wrongly.",
             "My knee hurts.",
-            "He do not hurt yesterday."
+            "He do not hurt yesterday.",
+            "I am hurt every time wrongly.",
+            "We was hurt tomorrow."
           ],
           "answer": "My knee hurts."
         }

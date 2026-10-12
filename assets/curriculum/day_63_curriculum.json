@@ -100,7 +100,7 @@
           "hi": "മെയിൽ",
           "ta": "മെയിൽ"
         },
-        "example": "Could you point out a mail for me?"
+        "example": "We learned about mail in today's lesson."
       },
       {
         "word": "status",
@@ -109,7 +109,7 @@
           "hi": "നിലവിലെ അവസ്ഥ",
           "ta": "നിലവിലെ അവസ്ഥ"
         },
-        "example": "Could you point out a status for me?"
+        "example": "We learned about status in today's lesson."
       },
       {
         "word": "update",
@@ -118,7 +118,7 @@
           "hi": "വിവരം",
           "ta": "വിവരം"
         },
-        "example": "Could you point out an update for me?"
+        "example": "We learned about update in today's lesson."
       },
       {
         "word": "reply",
@@ -127,7 +127,7 @@
           "hi": "മറുപടി",
           "ta": "മറുപടി"
         },
-        "example": "Could you point out a reply for me?"
+        "example": "We learned about reply in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d63_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'എത്തിച്ചേരുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "arrive",
+            "listen",
+            "create",
+            "discover"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "arrive",
+          "explanation": "arrive എന്നാൽ എത്തിച്ചേരുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d63_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'send'?",
           "options": [
-            "send",
             "sent",
-            "sends",
-            "sending"
+            "sending",
+            "has send",
+            "sends"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "sent",
+          "explanation": "send ന്റെ ഭൂതകാല രൂപം sent ആണ്."
         },
         {
           "id": "trap_d63_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'സമയം'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "time",
+            "courage",
+            "routine"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "time",
+          "explanation": "സമയം എന്നാൽ ഇംഗ്ലീഷിൽ time."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'arrive':",
           "options": [
-            "യാത്ര",
             "ഭക്ഷണം",
-            "എത്തിച്ചേരുക",
-            "സന്തോഷം"
+            "യാത്ര",
+            "സന്തോഷം",
+            "എത്തിച്ചേരുക"
           ],
           "answer": "എത്തിച്ചേരുക"
         },
         {
           "q": "Complete the sentence: 'Train has just _____d.'",
           "options": [
-            "were arrive",
-            "is arrive",
             "arriveing",
-            "arrive"
+            "were arrive",
+            "arrive",
+            "is arrive"
           ],
           "answer": "arrive"
         },
@@ -428,29 +428,29 @@
           "q": "What is the past form (V2) of 'send'?",
           "options": [
             "None",
-            "sendedx",
+            "sent",
             "sends",
-            "sent"
+            "sendedx"
           ],
           "answer": "sent"
         },
         {
           "q": "Which English word means 'സമയം'?",
           "options": [
-            "time",
-            "schedule",
+            "partner",
             "progress",
-            "partner"
+            "schedule",
+            "time"
           ],
           "answer": "time"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I am arrive every time wrongly.",
-            "He do not arrive yesterday.",
+            "Train has just arrived.",
             "We was arrive tomorrow.",
-            "Train has just arrived."
+            "I am arrive every time wrongly.",
+            "He do not arrive yesterday."
           ],
           "answer": "Train has just arrived."
         }

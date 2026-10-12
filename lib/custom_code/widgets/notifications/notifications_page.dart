@@ -227,6 +227,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         }
       }
 
+      // Clear and mark notifications as read in Supabase and SharedPreferences
+      try {
+        await _supabase
+            .from('notifications')
+            .update({'is_read': true})
+            .eq('user_id', myId);
+      } catch (_) {}
+      await prefs.setInt('unread_notifs_count_$myId', 0);
+
       if (mounted) {
         setState(() {
           _connectionRequests = requests;
@@ -239,6 +248,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  int _selectedFilter = 0; // 0: All, 1: Requests, 2: Activity, 3: President
 
   Future<void> _acceptRequest(Map<String, dynamic> req) async {
     final myId = _supabase.auth.currentUser?.id;
@@ -307,6 +318,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final presidentAlerts = _activityAlerts.where((a) =>
+        a['title'].toString().contains('President') ||
+        a['body'].toString().contains('President') ||
+        a['icon'] == '🏛️').toList();
+    final regularAlerts = _activityAlerts.where((a) =>
+        !a['title'].toString().contains('President') &&
+        !a['body'].toString().contains('President') &&
+        a['icon'] != '🏛️').toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFF090A10),
       appBar: AppBar(
@@ -329,235 +349,377 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
-          : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          : Column(
               children: [
-                // Pocket Mate Requests Header
-                Row(
-                  children: [
-                    Text(
-                      '🤝 POCKET MATE REQUESTS',
-                      style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.bold),
+                // Filter Tabs Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFF0B0D15),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip(0, 'All (${_connectionRequests.length + _activityAlerts.length})'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(1, '🤝 Requests (${_connectionRequests.length})'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(2, '✨ Activity (${regularAlerts.length})'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(3, '🏛️ President (${presidentAlerts.length})'),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFC00),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${_connectionRequests.length}',
-                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 10),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 10),
-
-                if (_connectionRequests.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131520),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'No pending Pocket Mate requests.\nMatch anonymously or via Stage Match to connect!',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
-                      ),
-                    ),
-                  )
-                else
-                  ..._connectionRequests.map((req) {
-                    final stageNum = (req['stage'] as num?)?.toInt() ?? 1;
-                    final stage = LearningMilestoneStage.getStageForDay(stageNum);
-                    final isRobot = req['isRobot'] == true ||
-                        PocketRobotService.isRobotId(req['senderId']?.toString() ?? '');
-                    VectorAvatarConfig? avatarConfig;
-                    if (isRobot) {
-                      final robot = PocketRobotService.getRobotById(req['senderId']?.toString() ?? '');
-                      final lvl = robot?.level ?? (req['stage'] as num?)?.toInt() ?? 1;
-                      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl);
-                    } else if (req['avatarConfig'] != null) {
-                      try {
-                        avatarConfig = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatarConfig']));
-                      } catch (_) {}
-                    }
-                    avatarConfig ??= const VectorAvatarConfig();
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF141724),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(22),
-                                child: isRobot
-                                    ? VectorAvatarWidget(config: avatarConfig, size: 44)
-                                    : ((req['avatarUrl'] != null &&
-                                            (req['avatarUrl'] as String).isNotEmpty)
-                                        ? Image.network(
-                                            req['avatarUrl'],
-                                            width: 44,
-                                            height: 44,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                VectorAvatarWidget(
-                                                    config: avatarConfig!,
-                                                    size: 44),
-                                          )
-                                        : VectorAvatarWidget(
-                                            config: avatarConfig, size: 44)),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    children: [
+                      // Presidential announcements prominent banner if available
+                      if ((_selectedFilter == 0 || _selectedFilter == 3) && presidentAlerts.isNotEmpty) ...[
+                        ...presidentAlerts.map((pa) => Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2A2000), Color(0xFF131520)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          req['senderName'] ?? 'English Mate',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text('🏛️ ', style: TextStyle(fontSize: 20)),
+                                      Expanded(
+                                        child: Text(
+                                          pa['title'] ?? 'Presidential Message',
                                           style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFFFFD700),
+                                            fontWeight: FontWeight.w900,
                                             fontSize: 14,
                                           ),
                                         ),
-                                        const SizedBox(width: 6),
-                                        if (req['isRobot'] == true)
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(4),
-                                              border: Border.all(color: const Color(0xFF06B6D4)),
-                                            ),
-                                            child: Text(
-                                              '🤖 ROBOT',
-                                              style: GoogleFonts.outfit(
-                                                color: const Color(0xFF06B6D4),
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 8.5,
-                                              ),
-                                            ),
-                                          )
-                                        else
-                                          Icon(Icons.verified, color: stage.tickColor, size: 14),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: stage.buttonColor.withValues(alpha: 0.15),
-                                            borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
-                                          ),
-                                          child: Text(
-                                            '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
-                                            style: GoogleFonts.outfit(
-                                              color: stage.buttonColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 9.5,
-                                            ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFD700),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'OFFICIAL',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.black,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
                                           ),
                                         ),
-                                        if (req['archetype'] != null) ...[
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.purple.withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(color: Colors.purple.withValues(alpha: 0.5)),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    pa['body'] ?? '',
+                                    style: GoogleFonts.inter(color: Colors.white, fontSize: 13, height: 1.35),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        pa['time'] ?? 'Just now',
+                                        style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          HapticFeedback.lightImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Viewing Presidential Broadcast ✨',
+                                                  style: GoogleFonts.outfit(color: Colors.white)),
+                                              backgroundColor: const Color(0xFF1E293B),
                                             ),
-                                            child: Text(
-                                              '${req['archetype']}'.toUpperCase(),
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.purpleAccent,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 9.0,
-                                              ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFFFD700),
+                                          foregroundColor: Colors.black,
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                          minimumSize: Size.zero,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        child: Text(
+                                          'VIEW DECREE ➔',
+                                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ],
+
+                      // Pocket Mate Requests Header
+                      if (_selectedFilter == 0 || _selectedFilter == 1) ...[
+                        Row(
+                          children: [
+                            Text(
+                              '🤝 POCKET MATE REQUESTS',
+                              style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFC00),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${_connectionRequests.length}',
+                                style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
+                        if (_connectionRequests.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131520),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'No pending Pocket Mate requests.\nMatch anonymously or via Stage Match to connect!',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                              ),
+                            ),
+                          )
+                        else
+                          ..._connectionRequests.map((req) {
+                            final stageNum = (req['stage'] as num?)?.toInt() ?? 1;
+                            final stage = LearningMilestoneStage.getStageForDay(stageNum);
+                            final isRobot = req['isRobot'] == true ||
+                                PocketRobotService.isRobotId(req['senderId']?.toString() ?? '');
+                            VectorAvatarConfig? avatarConfig;
+                            if (req['avatarConfig'] is Map) {
+                              avatarConfig = VectorAvatarConfig.fromMap(
+                                  Map<String, dynamic>.from(req['avatarConfig']));
+                            } else {
+                              avatarConfig =
+                                  VectorAvatarConfig.getEvolutionAvatarForStage(stageNum);
+                            }
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF131520),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isRobot
+                                      ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
+                                      : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      ClipOval(
+                                        child: VectorAvatarWidget(
+                                          config: avatarConfig,
+                                          size: 44,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    req['senderName'] ?? 'Pocket Mate',
+                                                    style: GoogleFonts.outfit(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (isRobot)
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4)),
+                                                    ),
+                                                    child: Text(
+                                                      'ROBOT PEER',
+                                                      style: GoogleFonts.outfit(
+                                                        color: const Color(0xFF06B6D4),
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: 8.5,
+                                                      ),
+                                                    ),
+                                                  )
+                                                else
+                                                  Icon(Icons.verified, color: stage.tickColor, size: 14),
+                                              ],
                                             ),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: stage.buttonColor.withValues(alpha: 0.15),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                    border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
+                                                  ),
+                                                  child: Text(
+                                                    '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
+                                                    style: GoogleFonts.outfit(
+                                                      color: stage.buttonColor,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 9.5,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (req['archetype'] != null) ...[
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.purple.withValues(alpha: 0.2),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                      border: Border.all(color: Colors.purple.withValues(alpha: 0.5)),
+                                                    ),
+                                                    child: Text(
+                                                      '${req['archetype']}'.toUpperCase(),
+                                                      style: GoogleFonts.outfit(
+                                                        color: Colors.purpleAccent,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 9.0,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    req['message'] ?? 'Wants to add you as a Pocket Mate!',
+                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => _declineRequest(req),
+                                          style: OutlinedButton.styleFrom(
+                                            side: const BorderSide(color: Colors.white24),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            padding: const EdgeInsets.symmetric(vertical: 8),
                                           ),
-                                        ],
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                          child: Text(
+                                            'Decline',
+                                            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => _acceptRequest(req),
+                                          icon: const Icon(Icons.check_rounded, color: Colors.black, size: 16),
+                                          label: Text(
+                                            'Accept Mate',
+                                            style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFFFFC00),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            padding: const EdgeInsets.symmetric(vertical: 8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            req['message'] ?? 'Wants to add you as a Pocket Mate!',
-                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () => _declineRequest(req),
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.white24),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                  ),
-                                  child: Text(
-                                    'Decline',
-                                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
-                                  ),
-                                ),
+                            );
+                          }),
+                        const SizedBox(height: 18),
+                      ],
+
+                      // Activity & Learning Alerts Header
+                      if (_selectedFilter == 0 || _selectedFilter == 2) ...[
+                        Row(
+                          children: [
+                            Text(
+                              '📢 LEARNING & ACTIVITY ALERTS',
+                              style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF38BDF8),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () => _acceptRequest(req),
-                                  icon: const Icon(Icons.check_rounded, color: Colors.black, size: 16),
-                                  label: Text(
-                                    'Accept Mate',
-                                    style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFFFC00),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                  ),
-                                ),
+                              child: Text(
+                                '${regularAlerts.length}',
+                                style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 10),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-
-                const SizedBox(height: 18),
-
-                // Activity & Learning Alerts Header
-                Text(
-                  '📢 LEARNING & ACTIVITY ALERTS',
-                  style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-
-                ..._activityAlerts.map((alert) {
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        if (regularAlerts.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131520),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'No recent activity alerts.',
+                                style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                              ),
+                            ),
+                          )
+                        else
+                          ...regularAlerts.map((alert) {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
@@ -691,7 +853,42 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   );
                 }),
               ],
-            ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+  }
+
+  Widget _buildFilterChip(int index, String label) {
+    final isSelected = _selectedFilter == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() => _selectedFilter = index);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1A1D2C),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFFC00) : Colors.white12,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? Colors.black : Colors.white70,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ),
     );
   }
+
 }

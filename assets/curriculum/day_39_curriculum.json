@@ -91,7 +91,7 @@
           "hi": "ഭാവി",
           "ta": "ഭാവി"
         },
-        "example": "Could you point out a future for me?"
+        "example": "We learned about future in today's lesson."
       },
       {
         "word": "promise",
@@ -100,7 +100,7 @@
           "hi": "വാക്ക്",
           "ta": "വാക്ക്"
         },
-        "example": "Could you point out a promise for me?"
+        "example": "We learned about promise in today's lesson."
       },
       {
         "word": "plan",
@@ -109,7 +109,7 @@
           "hi": "പ്ലാൻ",
           "ta": "പ്ലാൻ"
         },
-        "example": "Could you point out a plan for me?"
+        "example": "We learned about plan in today's lesson."
       },
       {
         "word": "decision",
@@ -118,7 +118,7 @@
           "hi": "തീരുമാനം",
           "ta": "തീരുമാനം"
         },
-        "example": "Could you point out a decision for me?"
+        "example": "We learned about decision in today's lesson."
       },
       {
         "word": "hope",
@@ -127,7 +127,7 @@
           "hi": "പ്രതീക്ഷ",
           "ta": "പ്രതീക്ഷ"
         },
-        "example": "Could you point out a hope for me?"
+        "example": "We learned about hope in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d39_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'വാഗ്ദാനം ചെയ്യുക'?",
           "options": [
-            "We discussed the plan.",
-            "We discussed about the plan.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "finish",
+            "promise",
+            "borrow",
+            "arrive"
           ],
-          "answer": "We discussed the plan.",
-          "explanation": "Discuss already includes the idea of about."
+          "answer": "promise",
+          "explanation": "promise എന്നാൽ വാഗ്ദാനം ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d39_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'call'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "called",
+            "calling",
+            "calls",
+            "has call"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "called",
+          "explanation": "call ന്റെ ഭൂതകാല രൂപം called ആണ്."
         },
         {
           "id": "trap_d39_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഭാവി'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "future",
+            "station",
+            "journey",
+            "airport"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "future",
+          "explanation": "ഭാവി എന്നാൽ ഇംഗ്ലീഷിൽ future."
         }
       ],
       "description": {
@@ -407,50 +407,50 @@
         {
           "q": "Choose the correct meaning for 'promise':",
           "options": [
-            "യാത്ര",
             "വാഗ്ദാനം ചെയ്യുക",
+            "സന്തോഷം",
             "ഭക്ഷണം",
-            "സന്തോഷം"
+            "യാത്ര"
           ],
           "answer": "വാഗ്ദാനം ചെയ്യുക"
         },
         {
           "q": "Complete the sentence: 'I _____ I will help.'",
           "options": [
-            "is promise",
-            "were promise",
+            "promise",
             "promiseing",
-            "promise"
+            "is promise",
+            "were promise"
           ],
           "answer": "promise"
         },
         {
           "q": "What is the past form (V2) of 'call'?",
           "options": [
-            "calledx",
-            "None",
             "called",
-            "calls"
+            "calls",
+            "calledx",
+            "None"
           ],
           "answer": "called"
         },
         {
           "q": "Which English word means 'ഭാവി'?",
           "options": [
-            "success",
-            "future",
+            "knowledge",
             "courage",
-            "knowledge"
+            "success",
+            "future"
           ],
           "answer": "future"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "I promise I will help.",
             "He do not promise yesterday.",
             "I am promise every time wrongly.",
-            "We was promise tomorrow."
+            "We was promise tomorrow.",
+            "I promise I will help."
           ],
           "answer": "I promise I will help."
         }

@@ -91,7 +91,7 @@
           "hi": "കാലയളവ്",
           "ta": "കാലയളവ്"
         },
-        "example": "Could you point out a duration for me?"
+        "example": "We learned about duration in today's lesson."
       },
       {
         "word": "year",
@@ -100,7 +100,7 @@
           "hi": "വർഷം",
           "ta": "വർഷം"
         },
-        "example": "Could you point out a year for me?"
+        "example": "We learned about year in today's lesson."
       },
       {
         "word": "month",
@@ -109,7 +109,7 @@
           "hi": "മാസം",
           "ta": "മാസം"
         },
-        "example": "Could you point out a month for me?"
+        "example": "We learned about month in today's lesson."
       },
       {
         "word": "period",
@@ -118,7 +118,7 @@
           "hi": "സമയം",
           "ta": "സമയം"
         },
-        "example": "Could you point out a period for me?"
+        "example": "We learned about period in today's lesson."
       },
       {
         "word": "beginning",
@@ -127,7 +127,7 @@
           "hi": "തുടക്കം",
           "ta": "തുടക്കം"
         },
-        "example": "Could you point out a beginning for me?"
+        "example": "We learned about beginning in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d64_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'താമസിക്കുക'?",
           "options": [
-            "She is good at English.",
-            "She is good in English.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "discover",
+            "live",
+            "remember",
+            "create"
           ],
-          "answer": "She is good at English.",
-          "explanation": "Use good at for a skill or subject."
+          "answer": "live",
+          "explanation": "live എന്നാൽ താമസിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d64_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'work'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "works",
+            "has work",
+            "working",
+            "worked"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "worked",
+          "explanation": "work ന്റെ ഭൂതകാല രൂപം worked ആണ്."
         },
         {
           "id": "trap_d64_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'കാലയളവ്'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "routine",
+            "schedule",
+            "duration",
+            "knowledge"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "duration",
+          "explanation": "കാലയളവ് എന്നാൽ ഇംഗ്ലീഷിൽ duration."
         }
       ],
       "description": {
@@ -407,20 +407,20 @@
         {
           "q": "Choose the correct meaning for 'live':",
           "options": [
-            "യാത്ര",
             "ഭക്ഷണം",
             "സന്തോഷം",
-            "താമസിക്കുക"
+            "താമസിക്കുക",
+            "യാത്ര"
           ],
           "answer": "താമസിക്കുക"
         },
         {
           "q": "Complete the sentence: 'I have _____d here for 5 years.'",
           "options": [
-            "liveing",
-            "is live",
             "were live",
-            "live"
+            "live",
+            "liveing",
+            "is live"
           ],
           "answer": "live"
         },
@@ -428,9 +428,9 @@
           "q": "What is the past form (V2) of 'work'?",
           "options": [
             "None",
+            "workedx",
             "works",
-            "worked",
-            "workedx"
+            "worked"
           ],
           "answer": "worked"
         },
@@ -448,9 +448,9 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "We was live tomorrow.",
+            "He do not live yesterday.",
             "I am live every time wrongly.",
-            "I have lived here for 5 years.",
-            "He do not live yesterday."
+            "I have lived here for 5 years."
           ],
           "answer": "I have lived here for 5 years."
         }

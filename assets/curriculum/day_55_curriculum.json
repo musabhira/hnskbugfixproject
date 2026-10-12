@@ -91,7 +91,7 @@
           "hi": "മൊബൈൽ",
           "ta": "മൊബൈൽ"
         },
-        "example": "Could you point out a mobile for me?"
+        "example": "We learned about mobile in today's lesson."
       },
       {
         "word": "battery",
@@ -100,7 +100,7 @@
           "hi": "ബാറ്ററി",
           "ta": "ബാറ്ററി"
         },
-        "example": "Could you point out a battery for me?"
+        "example": "We learned about battery in today's lesson."
       },
       {
         "word": "network",
@@ -109,7 +109,7 @@
           "hi": "നെറ്റ്‌വർക്ക്",
           "ta": "നെറ്റ്‌വർക്ക്"
         },
-        "example": "Could you point out a network for me?"
+        "example": "We learned about network in today's lesson."
       },
       {
         "word": "wifi",
@@ -118,7 +118,7 @@
           "hi": "വൈഫൈ",
           "ta": "വൈഫൈ"
         },
-        "example": "Could you point out a wifi for me?"
+        "example": "We learned about wifi in today's lesson."
       },
       {
         "word": "password",
@@ -127,7 +127,7 @@
           "hi": "പാസ്‌വേഡ്",
           "ta": "പാസ്‌വേഡ്"
         },
-        "example": "Could you point out a password for me?"
+        "example": "We learned about password in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d55_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'ചാർജ് ചെയ്യുക'?",
           "options": [
-            "He goes to work every day.",
-            "He go to work every day.",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "decide",
+            "charge",
+            "discover",
+            "remember"
           ],
-          "answer": "He goes to work every day.",
-          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+          "answer": "charge",
+          "explanation": "charge എന്നാൽ ചാർജ് ചെയ്യുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d55_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'connect'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "connected",
+            "has connect",
+            "connecting",
+            "connects"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "connected",
+          "explanation": "connect ന്റെ ഭൂതകാല രൂപം connected ആണ്."
         },
         {
           "id": "trap_d55_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'മൊബൈൽ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "progress",
+            "schedule",
+            "mobile",
+            "routine"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "mobile",
+          "explanation": "മൊബൈൽ എന്നാൽ ഇംഗ്ലീഷിൽ mobile."
         }
       ],
       "description": {
@@ -408,29 +408,29 @@
           "q": "Choose the correct meaning for 'charge':",
           "options": [
             "ചാർജ് ചെയ്യുക",
+            "ഭക്ഷണം",
             "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
+            "യാത്ര"
           ],
           "answer": "ചാർജ് ചെയ്യുക"
         },
         {
           "q": "Complete the sentence: '_____ your phone.'",
           "options": [
-            "chargeing",
-            "charge",
             "were charge",
-            "is charge"
+            "is charge",
+            "chargeing",
+            "charge"
           ],
           "answer": "charge"
         },
         {
           "q": "What is the past form (V2) of 'connect'?",
           "options": [
-            "connects",
-            "connected",
             "None",
-            "connectedx"
+            "connectedx",
+            "connected",
+            "connects"
           ],
           "answer": "connected"
         },
@@ -438,9 +438,9 @@
           "q": "Which English word means 'മൊബൈൽ'?",
           "options": [
             "airport",
-            "mobile",
+            "station",
             "partner",
-            "station"
+            "mobile"
           ],
           "answer": "mobile"
         },
@@ -448,8 +448,8 @@
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
             "Charge your phone.",
-            "I am charge every time wrongly.",
             "We was charge tomorrow.",
+            "I am charge every time wrongly.",
             "He do not charge yesterday."
           ],
           "answer": "Charge your phone."

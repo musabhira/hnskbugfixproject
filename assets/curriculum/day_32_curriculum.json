@@ -91,7 +91,7 @@
           "hi": "ഇന്നലെ",
           "ta": "ഇന്നലെ"
         },
-        "example": "Could you point out a yesterday for me?"
+        "example": "We learned about yesterday in today's lesson."
       },
       {
         "word": "trip",
@@ -100,7 +100,7 @@
           "hi": "യാത്ര",
           "ta": "യാത്ര"
         },
-        "example": "Could you point out a trip for me?"
+        "example": "We learned about trip in today's lesson."
       },
       {
         "word": "dinner",
@@ -109,7 +109,7 @@
           "hi": "അത്താഴം",
           "ta": "അത്താഴം"
         },
-        "example": "Could you point out a dinner for me?"
+        "example": "We learned about dinner in today's lesson."
       },
       {
         "word": "show",
@@ -118,7 +118,7 @@
           "hi": "ഷോ",
           "ta": "ഷോ"
         },
-        "example": "Could you point out a show for me?"
+        "example": "We learned about show in today's lesson."
       },
       {
         "word": "event",
@@ -127,7 +127,7 @@
           "hi": "പരിപാടി",
           "ta": "പരിപാടി"
         },
-        "example": "Could you point out an event for me?"
+        "example": "We learned about event in today's lesson."
       }
     ]
   },
@@ -292,39 +292,39 @@
       "traps": [
         {
           "id": "trap_d32_1",
-          "question": "Choose the natural, correct sentence.",
+          "question": "Which word represents: 'സന്ദർശിക്കുക'?",
           "options": [
-            "Did you go to the market?",
-            "Did you went to the market?",
-            "She go to the market yesterday.",
-            "I discussed about it yesterday."
+            "visit",
+            "forget",
+            "listen",
+            "create"
           ],
-          "answer": "Did you go to the market?",
-          "explanation": "After did, use the base verb (V1), not the past form."
+          "answer": "visit",
+          "explanation": "visit എന്നാൽ സന്ദർശിക്കുക എന്നർത്ഥം."
         },
         {
           "id": "trap_d32_2",
-          "question": "Complete the correction: “Did she ___ the email?”",
+          "question": "What is the past form (V2) of 'cook'?",
           "options": [
-            "send",
-            "sent",
-            "sends",
-            "sending"
+            "has cook",
+            "cooked",
+            "cooking",
+            "cooks"
           ],
-          "answer": "send",
-          "explanation": "After did, use the base form: did she send?"
+          "answer": "cooked",
+          "explanation": "cook ന്റെ ഭൂതകാല രൂപം cooked ആണ്."
         },
         {
           "id": "trap_d32_3",
-          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "question": "What is the correct English word for 'ഇന്നലെ'?",
           "options": [
-            "to",
-            "on",
-            "at",
-            "with"
+            "knowledge",
+            "courage",
+            "success",
+            "yesterday"
           ],
-          "answer": "to",
-          "explanation": "We reply to a message, email, or question."
+          "answer": "yesterday",
+          "explanation": "ഇന്നലെ എന്നാൽ ഇംഗ്ലീഷിൽ yesterday."
         }
       ],
       "description": {
@@ -417,40 +417,40 @@
         {
           "q": "Complete the sentence: 'I _____ed Munnar.'",
           "options": [
-            "is visit",
-            "were visit",
             "visit",
-            "visiting"
+            "visiting",
+            "is visit",
+            "were visit"
           ],
           "answer": "visit"
         },
         {
           "q": "What is the past form (V2) of 'cook'?",
           "options": [
-            "None",
-            "cookedx",
+            "cooked",
             "cooks",
-            "cooked"
+            "cookedx",
+            "None"
           ],
           "answer": "cooked"
         },
         {
           "q": "Which English word means 'ഇന്നലെ'?",
           "options": [
-            "yesterday",
-            "routine",
+            "schedule",
             "progress",
-            "schedule"
+            "routine",
+            "yesterday"
           ],
           "answer": "yesterday"
         },
         {
           "q": "Which sentence is grammatically correct for today's lesson?",
           "options": [
-            "He do not visit yesterday.",
-            "We was visit tomorrow.",
             "I visited Munnar.",
-            "I am visit every time wrongly."
+            "We was visit tomorrow.",
+            "I am visit every time wrongly.",
+            "He do not visit yesterday."
           ],
           "answer": "I visited Munnar."
         }
