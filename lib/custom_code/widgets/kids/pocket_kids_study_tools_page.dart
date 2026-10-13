@@ -473,11 +473,13 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
         ? _routines
         : _routines.where((r) => r.category == _routineCategoryFilter).toList();
 
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 110),
+      physics: const BouncingScrollPhysics(),
       children: [
         // Routine Controls & PDF Export Action Row
         Container(
-          margin: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+          margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -580,7 +582,7 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
         // Category Filter Chips
         Container(
           height: 34,
-          margin: const EdgeInsets.symmetric(horizontal: 14),
+          margin: const EdgeInsets.only(bottom: 10),
           child: ListView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -593,20 +595,30 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
             ],
           ),
         ),
-        const SizedBox(height: 6),
 
-        // Routine Task List
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(14, 6, 14, 20),
-            physics: const BouncingScrollPhysics(),
-            itemCount: filtered.length,
-            itemBuilder: (context, index) {
-              final r = filtered[index];
-              return _buildRoutineCard(r);
-            },
+        // Routine Task List Items
+        for (final r in filtered)
+          _buildRoutineCard(r),
+
+        if (filtered.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 36),
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                const Text('🎈', style: TextStyle(fontSize: 36)),
+                const SizedBox(height: 8),
+                Text(
+                  'No routine tasks here yet!',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Tap "ADD TASK" above to schedule your day.',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1056,11 +1068,13 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
   // --- 2. STUDY NOTES VIEW (Key Points Notepad & Sharing) ---
   // =========================================================================
   Widget _buildNotesView() {
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 110),
+      physics: const BouncingScrollPhysics(),
       children: [
         // Action Bar for Notes
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+          padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1073,42 +1087,49 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                   letterSpacing: 0.5,
                 ),
               ),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      minimumSize: const Size(80, 32),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    onPressed: _showAddNoteDialog,
-                    icon: const Icon(Icons.note_add_rounded, size: 16),
-                    label: Text(
-                      'NEW NOTE',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
-                  ),
-                ],
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  minimumSize: const Size(80, 32),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                onPressed: _showAddNoteDialog,
+                icon: const Icon(Icons.note_add_rounded, size: 16),
+                label: Text(
+                  'NEW NOTE',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11),
+                ),
               ),
             ],
           ),
         ),
 
-        // Notes List
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
-            physics: const BouncingScrollPhysics(),
-            itemCount: _notes.length,
-            itemBuilder: (context, index) {
-              final n = _notes[index];
-              return _buildNoteCard(n);
-            },
+        // Notes List Items
+        for (final n in _notes)
+          _buildNoteCard(n),
+
+        if (_notes.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 36),
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                const Text('📝', style: TextStyle(fontSize: 36)),
+                const SizedBox(height: 8),
+                Text(
+                  'No study notes saved yet!',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Tap "NEW NOTE" to jot down speaking tips and key points.',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1471,7 +1492,7 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
     final sortedLetters = keyboardSet.toList()..sort();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 4, 14, 20),
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 110),
       physics: const BouncingScrollPhysics(),
       children: [
         // Game Card
@@ -1901,8 +1922,9 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
   Widget _buildMathRocketGame() {
     final answer = _mathNum1 + _mathNum2;
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 110),
+      physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
           Container(
@@ -1995,13 +2017,13 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
   Widget _buildFlashcardsView() {
     final card = _flashcards[_flashcardIndex];
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
+      physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(22),
+          Container(
+            padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(28),
@@ -2060,7 +2082,6 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                 ],
               ),
             ),
-          ),
           const SizedBox(height: 12),
 
           Row(
@@ -2098,7 +2119,7 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
   // =========================================================================
   Widget _buildQuestsView() {
     return ListView.builder(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 110),
       physics: const BouncingScrollPhysics(),
       itemCount: _dailyQuests.length,
       itemBuilder: (context, index) {

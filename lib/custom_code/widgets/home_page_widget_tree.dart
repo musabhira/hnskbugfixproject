@@ -49,6 +49,7 @@ import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_c
 import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -7071,6 +7072,15 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
             onPressed: () async {
               Navigator.pop(ctx);
+              final hasPattern = await PocketParentalPatternLock.hasPattern();
+              if (!hasPattern && context.mounted) {
+                final setSuccess = await PocketParentalPatternLock.showSetupDialog(
+                  context,
+                  title: 'Set Parental Pattern Lock 🔒',
+                  subtitle: 'Draw a 3x3 pattern. You will need this to return to Adult Mode.',
+                );
+                if (!setSuccess) return;
+              }
               await PocketKidsService.activateKidAccount(
                 name: 'Student Mate',
                 ageGroup: '7-12',

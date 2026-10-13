@@ -19,6 +19,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
@@ -362,162 +363,23 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     super.dispose();
   }
 
-  void _showParentalGate(BuildContext context) {
-    final rand = math.Random();
-    final a = rand.nextInt(5) + 3; // 3 to 7
-    final b = rand.nextInt(5) + 2; // 2 to 6
-    final correctAnswer = a + b;
-    final options = [correctAnswer - 2, correctAnswer, correctAnswer + 3]..shuffle();
-    final controller = TextEditingController();
-    if (PocketKidsService.isAdminAccount) {
-      controller.text = '$correctAnswer';
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
-          ),
-          title: Row(
-            children: [
-              const Text('👨‍👩‍👧 ', style: TextStyle(fontSize: 22)),
-              Text(
-                'Parent Verification',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'To switch back to Adult Mode, please solve this problem:',
-                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
-              ),
-              const SizedBox(height: 14),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '$a + $b = ?',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF38BDF8),
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: options.map((opt) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: ActionChip(
-                      label: Text(
-                        '$opt',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      backgroundColor: const Color(0xFF334155),
-                      side: const BorderSide(color: Color(0xFF38BDF8), width: 1),
-                      onPressed: () async {
-                        if (opt == correctAnswer) {
-                          Navigator.pop(ctx);
-                          await PocketKidsService.activateAdultAccount();
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const HomePageWidget()),
-                              (route) => false,
-                            );
-                          }
-                        } else {
-                          HapticFeedback.heavyImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Incorrect answer! Only parents can exit Kids Mode.'),
-                              backgroundColor: Colors.redAccent,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: 'Or type answer here',
-                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-              onPressed: () async {
-                if (int.tryParse(controller.text.trim()) == correctAnswer) {
-                  Navigator.pop(ctx);
-                  await PocketKidsService.activateAdultAccount();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomePageWidget()),
-                      (route) => false,
-                    );
-                  }
-                } else {
-                  HapticFeedback.heavyImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Incorrect answer! Only parents can exit Kids Mode.'),
-                      backgroundColor: Colors.redAccent,
-                    ),
-                  );
-                }
-              },
-              child: Text('SWITCH TO ADULT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
+  Future<void> _showParentalGate(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final unlocked = await PocketParentalPatternLock.verifyOrSetup(
+      context,
+      title: 'Parent Verification 🔒',
+      subtitle: 'Draw your pattern lock to switch back to Adult Mode.',
     );
+
+    if (unlocked) {
+      await PocketKidsService.activateAdultAccount();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePageWidget()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   void _onTapDayNode(int day) {

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 /// 🔔 Gamified Kids Notifications & Adventure Alerts Screen
 /// Displays:
+/// - Real-time student notifications from Supabase (attacks, mate requests, missions)
+/// - Interactive double-tick (✓✓) acknowledgment & instant database clearing
 /// - King Lion Daily Sovereign Missions & Practice Reminders
 /// - Animal Mate & Peer Study Requests (Accept / Decline)
 /// - House Tier & Fortress Level Star Rewards
@@ -19,12 +24,105 @@ class PocketKidsNotificationsPage extends StatefulWidget {
 
 class _PocketKidsNotificationsPageState
     extends State<PocketKidsNotificationsPage> {
-  int _selectedFilter = 0; // 0: All, 1: Mates, 2: Missions, 3: Rewards
+  int _selectedFilter = 0; // 0: All, 1: Live Alerts, 2: Mates, 3: Missions, 4: Rewards
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _supabaseNotifications = [];
 
   @override
   void initState() {
     super.initState();
     HapticFeedback.lightImpact();
+    _fetchSupabaseNotifications();
+  }
+
+  Future<void> _fetchSupabaseNotifications() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final res = await SupaFlow.client
+          .from('notifications')
+          .select('*')
+          .eq('user_id', myId)
+          .order('created_at', ascending: false)
+          .limit(50);
+      if (mounted) {
+        setState(() {
+          _supabaseNotifications = List<Map<String, dynamic>>.from(res as List);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching kids notifications: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _acknowledgeNotification(String id) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _supabaseNotifications.removeWhere((n) => n['id']?.toString() == id);
+    });
+
+    try {
+      await SupaFlow.client.from('notifications').delete().eq('id', id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.done_all_rounded, color: Color(0xFF38BDF8), size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Alert acknowledged & cleared! ✓✓',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error clearing notification $id: $e');
+    }
+  }
+
+  Future<void> _clearAllNotifications() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId == null || _supabaseNotifications.isEmpty) return;
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _supabaseNotifications.clear();
+    });
+    try {
+      await SupaFlow.client.from('notifications').delete().eq('user_id', myId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.done_all_rounded, color: Color(0xFF38BDF8), size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'All alerts cleared! ✓✓',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error clearing all notifications: $e');
+    }
   }
 
   @override
@@ -63,8 +161,21 @@ class _PocketKidsNotificationsPageState
           ],
         ),
         actions: [
+          if (_supabaseNotifications.isNotEmpty)
+            TextButton.icon(
+              onPressed: _clearAllNotifications,
+              icon: const Icon(Icons.done_all_rounded, color: Color(0xFF38BDF8), size: 16),
+              label: Text(
+                'Clear All',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF38BDF8),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           Container(
-            margin: const EdgeInsets.only(right: 14),
+            margin: const EdgeInsets.only(right: 14, left: 6),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -98,7 +209,7 @@ class _PocketKidsNotificationsPageState
       ),
       body: Column(
         children: [
-          // Filter Chips (All, Mates, Missions, Rewards)
+          // Filter Chips (All, Live Alerts, Mates, Missions, Rewards)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             color: const Color(0xFF0F172A),
@@ -110,77 +221,137 @@ class _PocketKidsNotificationsPageState
                   _buildFilterChip('All Alerts', 0, Icons.auto_awesome),
                   const SizedBox(width: 8),
                   _buildFilterChip(
-                    'Animal Mates (${receivedRequestIds.length})',
+                    'Live Alerts (${_supabaseNotifications.length})',
                     1,
+                    Icons.bolt_rounded,
+                    highlight: _supabaseNotifications.isNotEmpty,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'Animal Mates (${receivedRequestIds.length})',
+                    2,
                     Icons.pets_rounded,
                     highlight: receivedRequestIds.isNotEmpty,
                   ),
                   const SizedBox(width: 8),
-                  _buildFilterChip('King Lion Missions', 2, Icons.military_tech_rounded),
+                  _buildFilterChip('King Lion Missions', 3, Icons.military_tech_rounded),
                   const SizedBox(width: 8),
-                  _buildFilterChip('House Trophies', 3, Icons.castle_rounded),
+                  _buildFilterChip('House Trophies', 4, Icons.castle_rounded),
                 ],
               ),
             ),
           ),
 
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                // 1. King Lion Daily Royal Mission Card
-                if (_selectedFilter == 0 || _selectedFilter == 2) ...[
-                  _buildKingLionMissionCard(currentDay),
-                  const SizedBox(height: 14),
-                ],
-
-                // 2. Pending Animal Mate Requests
-                if (_selectedFilter == 0 || _selectedFilter == 1) ...[
-                  if (receivedRequestIds.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.pets_rounded,
-                              size: 16, color: Color(0xFF38BDF8)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'New Animal Buddies Want to Connect!',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF38BDF8),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+            child: RefreshIndicator(
+              color: const Color(0xFFFFD700),
+              backgroundColor: const Color(0xFF1E293B),
+              onRefresh: _fetchSupabaseNotifications,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 110),
+                physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                children: [
+                  if (_isLoading && _supabaseNotifications.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: CircularProgressIndicator(color: Color(0xFFFFD700)),
                       ),
                     ),
-                    for (final reqId in receivedRequestIds)
-                      _buildMateRequestTile(reqId),
+
+                  // Real-time Supabase Student Alerts
+                  if (_selectedFilter == 0 || _selectedFilter == 1) ...[
+                    if (_supabaseNotifications.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10, top: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.bolt_rounded, size: 18, color: Color(0xFFFFD700)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Incoming Alerts (${_supabaseNotifications.length})',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              'Tap ✓✓ or swipe to clear',
+                              style: GoogleFonts.inter(
+                                color: Colors.white38,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      for (final notif in _supabaseNotifications)
+                        _buildRealtimeNotificationCard(notif),
+                      const SizedBox(height: 14),
+                    ] else if (_selectedFilter == 1 && !_isLoading) ...[
+                      _buildEmptyState(
+                        'Citadel is Peaceful & Secure',
+                        'No unread alerts! All incoming attacks and mate notes have been cleared.',
+                        '🛡️',
+                      ),
+                    ],
+                  ],
+
+                  // 1. King Lion Daily Royal Mission Card
+                  if (_selectedFilter == 0 || _selectedFilter == 3) ...[
+                    _buildKingLionMissionCard(currentDay),
                     const SizedBox(height: 14),
-                  ] else if (_selectedFilter == 1) ...[
-                    _buildEmptyState(
-                      'No New Mate Requests',
-                      'Check the Discover tab to meet new animal friends and study peers!',
-                      '🐾',
-                    ),
+                  ],
+
+                  // 2. Pending Animal Mate Requests
+                  if (_selectedFilter == 0 || _selectedFilter == 2) ...[
+                    if (receivedRequestIds.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.pets_rounded,
+                                size: 16, color: Color(0xFF38BDF8)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'New Animal Buddies Want to Connect!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      for (final reqId in receivedRequestIds)
+                        _buildMateRequestTile(reqId),
+                      const SizedBox(height: 14),
+                    ] else if (_selectedFilter == 2) ...[
+                      _buildEmptyState(
+                        'No New Mate Requests',
+                        'Check the Discover tab to meet new animal friends and study peers!',
+                        '🐾',
+                      ),
+                    ],
+                  ],
+
+                  // 3. Day Milestone & House Unlocks
+                  if (_selectedFilter == 0 || _selectedFilter == 4) ...[
+                    _buildHouseMilestoneCard(currentDay),
+                    const SizedBox(height: 14),
+                    _buildStarAchievementCard(stars),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // 4. Midnight Timer Notification Info
+                  if (_selectedFilter == 0) ...[
+                    _buildMidnightCountdownNotification(),
                   ],
                 ],
-
-                // 3. Day Milestone & House Unlocks
-                if (_selectedFilter == 0 || _selectedFilter == 3) ...[
-                  _buildHouseMilestoneCard(currentDay),
-                  const SizedBox(height: 14),
-                  _buildStarAchievementCard(stars),
-                  const SizedBox(height: 14),
-                ],
-
-                // 4. Midnight Timer Notification Info
-                if (_selectedFilter == 0) ...[
-                  _buildMidnightCountdownNotification(),
-                ],
-              ],
+              ),
             ),
           ),
         ],
@@ -660,6 +831,282 @@ class _PocketKidsNotificationsPageState
                 style: GoogleFonts.inter(
                   color: Colors.white54,
                   fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getDefaultTitleForType(String type) {
+    if (type.contains('attack') ||
+        type.contains('citadel') ||
+        type.contains('raid') ||
+        type.contains('fortress')) {
+      return '⚔️ Citadel Defense Alert!';
+    } else if (type.contains('mate_accepted')) {
+      return '🤝 Mate Request Accepted!';
+    } else if (type.contains('mate')) {
+      return '🐾 Animal Mate Connection';
+    } else if (type.contains('lion') ||
+        type.contains('mission') ||
+        type.contains('quest')) {
+      return '🦁 Sovereign King Lion Quest';
+    } else if (type.contains('chat') ||
+        type.contains('message') ||
+        type.contains('vibe')) {
+      return '💬 Study Mate Message';
+    } else if (type.contains('trophy') ||
+        type.contains('reward') ||
+        type.contains('star')) {
+      return '🏆 Star Reward Unlocked!';
+    }
+    return '🔔 Adventure Alert';
+  }
+
+  Widget _buildRealtimeNotificationCard(Map<String, dynamic> n) {
+    final id = n['id']?.toString() ?? '';
+    final type = n['type']?.toString().toLowerCase() ?? '';
+    final title = n['title']?.toString() ?? _getDefaultTitleForType(type);
+    final body = n['message']?.toString() ??
+        n['content']?.toString() ??
+        n['body']?.toString() ??
+        'New alert received!';
+    final createdAt = n['created_at'] != null
+        ? timeago.format(DateTime.tryParse(n['created_at'].toString()) ?? DateTime.now())
+        : 'Just now';
+
+    final isAttack = type.contains('attack') ||
+        type.contains('citadel') ||
+        type.contains('raid') ||
+        type.contains('fortress');
+    final isMate = type.contains('mate');
+    final isLion = type.contains('lion') ||
+        type.contains('mission') ||
+        type.contains('quest');
+    final isChat = type.contains('chat') ||
+        type.contains('message') ||
+        type.contains('vibe');
+
+    String emoji = '🔔';
+    Color accentColor = const Color(0xFF38BDF8);
+    if (isAttack) {
+      emoji = '⚔️';
+      accentColor = const Color(0xFFEF4444);
+    } else if (isMate) {
+      emoji = '🐾';
+      accentColor = const Color(0xFF10B981);
+    } else if (isLion) {
+      emoji = '🦁';
+      accentColor = const Color(0xFFFFD700);
+    } else if (isChat) {
+      emoji = '💬';
+      accentColor = const Color(0xFFA855F7);
+    }
+
+    return Dismissible(
+      key: ValueKey('sn_$id'),
+      direction: DismissDirection.horizontal,
+      onDismissed: (_) => _acknowledgeNotification(id),
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            const Icon(Icons.done_all_rounded, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              '✓✓ CLEAR',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+      secondaryBackground: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0284C7),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              '✓✓ ACKNOWLEDGED',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.done_all_rounded, color: Colors.white, size: 22),
+          ],
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: accentColor.withValues(alpha: 0.5), width: 1.5),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 22)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        createdAt,
+                        style: GoogleFonts.inter(
+                          color: Colors.white38,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    body,
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 12.5,
+                      height: 1.35,
+                    ),
+                  ),
+                  if (isAttack) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.heavyImpact();
+                            final senderId = n['sender_id']?.toString() ??
+                                (n['data'] is Map
+                                    ? n['data']['sender_id']?.toString()
+                                    : null) ??
+                                (n['data'] is Map
+                                    ? n['data']['attacker_id']?.toString()
+                                    : null);
+                            if (senderId != null && senderId.isNotEmpty) {
+                              PocketCitadelAttackPage.openForUser(
+                                context,
+                                userId: senderId,
+                                isDefenseMode: true,
+                              );
+                            }
+                          },
+                          icon: const Text('⚔️', style: TextStyle(fontSize: 14)),
+                          label: Text(
+                            'DEFEND NOW ⚔️',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF4444),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            // Double-tick acknowledge button
+            GestureDetector(
+              onTap: () => _acknowledgeNotification(id),
+              child: Tooltip(
+                message: 'Mark read & clear (✓✓)',
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.done_all_rounded,
+                          size: 15, color: Color(0xFF38BDF8)),
+                      const SizedBox(width: 3),
+                      Text(
+                        '✓✓',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

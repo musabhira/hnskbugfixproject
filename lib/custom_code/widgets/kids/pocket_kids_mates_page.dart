@@ -147,6 +147,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                             context,
                             userId: mate.id,
                             targetName: mate.name,
+                            targetDay: mate.dayLevel,
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
@@ -198,6 +199,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                             context,
                             userId: mate.id,
                             targetName: mate.name,
+                            targetDay: mate.dayLevel,
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
@@ -330,6 +332,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                       context,
                                       userId: mate.id,
                                       targetName: mate.name,
+                                      targetDay: mate.dayLevel,
                                     ).then((_) {
                                       if (mounted) setState(() {});
                                     });

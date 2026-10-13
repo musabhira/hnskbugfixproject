@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'day90_master_certificate_dialog.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
@@ -56,6 +57,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
     PocketNeighbor? neighbor,
     Map<String, dynamic>? preloadedProfile,
     int attackerDay = 1,
+    int? targetDay,
+    String? paletteId,
     bool isDefenseMode = false,
   }) async {
     // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
@@ -104,20 +107,56 @@ class PocketCitadelAttackPage extends StatefulWidget {
       return;
     }
 
+    // 🐾 Check if target is a Kid Animal Robot (from PocketKidsRobotsData: kid_bot_1 to kid_bot_100)
+    if (userId.startsWith('kid_bot_') || PocketKidsRobotsData.getAnimalById(userId) != null) {
+      final animal = PocketKidsRobotsData.getAnimalById(userId);
+      final level = targetDay ?? animal?.dayLevel ?? 1;
+      final palList = HousePalette.presets;
+      final autoPal = palList[(level - 1) % palList.length].id;
+      final animalNeighbor = PocketNeighbor(
+        id: userId,
+        name: animal?.name ?? targetName ?? 'Animal Companion',
+        day: level,
+        streak: level,
+        rank: 'Level $level Pioneer',
+        paletteId: paletteId ?? autoPal,
+        isMe: false,
+        hasActiveShield: true,
+        statusMessage: animal?.bio ?? 'A loyal companion exploring day $level!',
+        isPocketRobo: true,
+        hp: 100,
+        maxHp: 100,
+      );
+      if (!context.mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PocketCitadelAttackPage(
+            neighbor: animalNeighbor,
+            attackerDay: attackerDay,
+            isDefenseMode: isDefenseMode,
+          ),
+        ),
+      );
+      return;
+    }
+
     final isRobot = PocketRobotService.isRobotId(userId) ||
         !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
 
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??
-          PocketRobotService.getRobotByLevel(1);
-      final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+          PocketRobotService.getRobotByLevel(targetDay ?? 1);
+      final dynamicLevel = targetDay ?? PocketRobotService.getDynamicLevel(robot);
+      final palList = HousePalette.presets;
+      final autoPal = palList[(dynamicLevel - 1) % palList.length].id;
       final robotNeighbor = PocketNeighbor(
         id: robot.id,
-        name: robot.name,
+        name: targetName ?? robot.name,
         day: dynamicLevel,
         streak: dynamicLevel,
         rank: robot.cefrRank,
-        paletteId: robot.housePalette,
+        paletteId: paletteId ?? (robot.housePalette.isNotEmpty ? robot.housePalette : autoPal),
         isMe: false,
         hasActiveShield: true,
         statusMessage: robot.bio,
@@ -125,12 +164,14 @@ class PocketCitadelAttackPage extends StatefulWidget {
         hp: 100,
         maxHp: 100,
       );
+      if (!context.mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PocketCitadelAttackPage(
             neighbor: robotNeighbor,
             attackerDay: attackerDay,
+            isDefenseMode: isDefenseMode,
           ),
         ),
       );
@@ -155,13 +196,22 @@ class PocketCitadelAttackPage extends StatefulWidget {
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
     final isMe = (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
 
+    int effectiveDay = targetDay ?? (p['learning_day'] as num?)?.toInt() ?? 1;
+    if (effectiveDay < 1) effectiveDay = 1;
+    final palList = HousePalette.presets;
+    final autoPal = palList[(effectiveDay - 1) % palList.length].id;
+    String chosenPalette = paletteId ?? p['palette_id']?.toString() ?? autoPal;
+    if (chosenPalette == 'warm_cottage' || !palList.any((pl) => pl.id == chosenPalette)) {
+      chosenPalette = autoPal;
+    }
+
     final userNeighbor = PocketNeighbor(
       id: userId,
       name: p['first_name'] ?? p['name'] ?? targetName ?? (isMe ? 'My Fortress' : 'Citadel Defender'),
-      day: (p['learning_day'] as num?)?.toInt() ?? 1,
-      streak: (p['streak'] as num?)?.toInt() ?? 1,
+      day: effectiveDay,
+      streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
       rank: p['rank']?.toString() ?? 'Citizen',
-      paletteId: p['palette_id']?.toString() ?? 'warm_cottage',
+      paletteId: chosenPalette,
       isMe: isMe,
       hasActiveShield: true,
       statusMessage: p['bio']?.toString() ?? 'Learning English everyday!',

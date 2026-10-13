@@ -194,6 +194,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
       context,
       userId: owner.id,
       targetName: owner.name,
+      targetDay: owner.day,
       attackerDay: widget.userCurrentDay,
     );
   }

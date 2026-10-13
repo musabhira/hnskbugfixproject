@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -8,6 +7,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
 
 /// ⚙️ Pocket Kids Settings & Parental Hub
@@ -76,231 +76,41 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
     super.dispose();
   }
 
-  void _showParentalGateSwitchMode(BuildContext context) {
-    final rand = math.Random();
-    final a = rand.nextInt(6) + 4; // 4 to 9
-    final b = rand.nextInt(5) + 3; // 3 to 7
-    final correctAnswer = a + b;
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
-          ),
-          title: Row(
-            children: [
-              const Text('🔒 ', style: TextStyle(fontSize: 22)),
-              Text(
-                PocketLanguageService.getParentZoneTitle(PocketLanguageService.currentLanguage),
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'To switch to adult account, solve this math challenge:',
-                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
-              ),
-              const SizedBox(height: 14),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF38BDF8), width: 1),
-                  ),
-                  child: Text(
-                    '$a + $b = ?',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF38BDF8),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: 'Enter answer',
-                  hintStyle: GoogleFonts.inter(color: Colors.white30),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('CANCEL', style: GoogleFonts.inter(color: Colors.white60)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-              onPressed: () async {
-                if (int.tryParse(controller.text.trim()) == correctAnswer) {
-                  Navigator.pop(ctx);
-                  await PocketKidsService.activateAdultAccount();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const WelcomeOnboardingPage()),
-                      (route) => false,
-                    );
-                  }
-                } else {
-                  HapticFeedback.heavyImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Incorrect answer! Only parents can exit Kids Mode.'),
-                      backgroundColor: Colors.redAccent,
-                    ),
-                  );
-                }
-              },
-              child: Text('SWITCH TO ADULT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
+  Future<void> _showParentalGateSwitchMode(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final unlocked = await PocketParentalPatternLock.verifyOrSetup(
+      context,
+      title: 'Parent Verification 🔒',
+      subtitle: 'Draw pattern lock to switch to adult account',
     );
+
+    if (unlocked) {
+      await PocketKidsService.activateAdultAccount();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const WelcomeOnboardingPage()),
+          (route) => false,
+        );
+      }
+    }
   }
 
-  void _showParentalGateLogout(BuildContext context) {
-    final rand = math.Random();
-    final a = rand.nextInt(7) + 5;
-    final b = rand.nextInt(6) + 4;
-    final correctAnswer = a + b;
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
-          ),
-          title: Row(
-            children: [
-              const Text('⚠️ ', style: TextStyle(fontSize: 22)),
-              Text(
-                'Parent Gate: Sign Out',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'To sign out of Poket Mates, a parent must solve:',
-                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
-              ),
-              const SizedBox(height: 14),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEF4444), width: 1),
-                  ),
-                  child: Text(
-                    '$a + $b = ?',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFEF4444),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: 'Enter answer',
-                  hintStyle: GoogleFonts.inter(color: Colors.white30),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('CANCEL', style: GoogleFonts.inter(color: Colors.white60)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-              onPressed: () async {
-                if (int.tryParse(controller.text.trim()) == correctAnswer) {
-                  Navigator.pop(ctx);
-                  try {
-                    await SupaFlow.client.auth.signOut().timeout(const Duration(seconds: 2));
-                  } catch (_) {}
-                  if (context.mounted) {
-                    context.go('/authPage');
-                  }
-                } else {
-                  HapticFeedback.heavyImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Incorrect answer! Only parents can sign out.'),
-                      backgroundColor: Colors.redAccent,
-                    ),
-                  );
-                }
-              },
-              child: Text('LOG OUT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
+  Future<void> _showParentalGateLogout(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final unlocked = await PocketParentalPatternLock.verifyOrSetup(
+      context,
+      title: 'Parent Sign Out Gate 🔒',
+      subtitle: 'Draw pattern lock to confirm sign out',
     );
+
+    if (unlocked) {
+      try {
+        await SupaFlow.client.auth.signOut().timeout(const Duration(seconds: 2));
+      } catch (_) {}
+      if (context.mounted) {
+        context.go('/authPage');
+      }
+    }
   }
 
   void _showLanguagePickerModal(BuildContext context) {
