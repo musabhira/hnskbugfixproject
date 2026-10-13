@@ -10299,6 +10299,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         ),
       ),
     );
+  }
+
   // ==========================================
   // 🦁 KIDS PANEL (LION DESK) - SUPREME AUTHORITY FOR STUDENTS
   // ==========================================

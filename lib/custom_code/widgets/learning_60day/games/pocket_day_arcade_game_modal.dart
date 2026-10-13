@@ -4,14 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'english_realm/english_realm_localization_service.dart';
 import 'pocket_20days_40games_spec.dart';
-import '../pocket_90day_vocab_curriculum.dart';
-import 'meadow_runner_game_page.dart';
-import 'word_catcher_game_page.dart';
-import 'word_catcher_models.dart';
 import 'town_quest_dialogue_game_page.dart';
 import 'english_realm/english_realm_manifest.dart';
 import 'english_realm/english_realm_page.dart';
-import 'english_realm/english_realm_game_session_page.dart';
+import 'pocket_universal_arcade_engine_page.dart';
 
 /// 🎮 2D Open-World Daily Arcade Game Modal
 ///
@@ -58,22 +54,22 @@ class PocketDayArcadeGameModal extends StatelessWidget {
         .where((g) => g.day == day)
         .toList();
 
-    final game1 = realmGames.isNotEmpty
-        ? DayGameSpec(
-            day: day,
-            gameIndex: 1,
-            title: realmGames[0].title,
-            emoji: realmGames[0].icon,
-            genre: GameGenre.runner,
-            englishTarget: realmGames[0].subtitle,
-            descriptionEn: realmGames[0].descriptionEn,
-            descriptionMl: realmGames[0].descriptionMl,
-            controlMechanism: 'Interactive 2D game challenges with audio guidance',
-          )
-        : (dayGames.isNotEmpty
-            ? dayGames[0]
-            : DayGameSpec(
+    final game1 = dayGames.isNotEmpty
+        ? dayGames[0]
+        : (realmGames.isNotEmpty
+            ? DayGameSpec(
                 day: day,
+                gameIndex: 1,
+                title: realmGames[0].title,
+                emoji: realmGames[0].icon,
+                genre: GameGenre.runner,
+                englishTarget: realmGames[0].subtitle,
+                descriptionEn: realmGames[0].descriptionEn,
+                descriptionMl: realmGames[0].descriptionMl,
+                controlMechanism: 'Interactive 2D game challenges with audio guidance',
+              )
+            : const DayGameSpec(
+                day: 1,
                 gameIndex: 1,
                 title: 'Meadow Runner',
                 emoji: '🏃',
@@ -84,22 +80,22 @@ class PocketDayArcadeGameModal extends StatelessWidget {
                 controlMechanism: 'Swipe Left/Right to change lanes, Up to jump',
               ));
 
-    final game2 = realmGames.length > 1
-        ? DayGameSpec(
-            day: day,
-            gameIndex: 2,
-            title: realmGames[1].title,
-            emoji: realmGames[1].icon,
-            genre: GameGenre.fallingBlocks,
-            englishTarget: realmGames[1].subtitle,
-            descriptionEn: realmGames[1].descriptionEn,
-            descriptionMl: realmGames[1].descriptionMl,
-            controlMechanism: 'Interactive 2D game challenges with audio guidance',
-          )
-        : (dayGames.length > 1
-            ? dayGames[1]
-            : DayGameSpec(
+    final game2 = dayGames.length > 1
+        ? dayGames[1]
+        : (realmGames.length > 1
+            ? DayGameSpec(
                 day: day,
+                gameIndex: 2,
+                title: realmGames[1].title,
+                emoji: realmGames[1].icon,
+                genre: GameGenre.fallingBlocks,
+                englishTarget: realmGames[1].subtitle,
+                descriptionEn: realmGames[1].descriptionEn,
+                descriptionMl: realmGames[1].descriptionMl,
+                controlMechanism: 'Interactive 2D game challenges with audio guidance',
+              )
+            : const DayGameSpec(
+                day: 1,
                 gameIndex: 2,
                 title: 'Sky Word Catcher',
                 emoji: '🧺',
@@ -396,41 +392,17 @@ class PocketDayArcadeGameModal extends StatelessWidget {
     HapticFeedback.heavyImpact();
     Navigator.pop(context);
 
-    final realmGames = EnglishRealmManifest.getGamesForDay(day);
-    if (realmGames.isNotEmpty) {
-      EnglishRealmGameSessionPage.launch(
-        context,
-        spec: realmGames[0],
-        onCompleted: onGameFinished,
-      );
-      return;
-    }
+    final dayGames = Pocket20Days40GamesRegistry.allGames
+        .where((g) => g.day == day)
+        .toList();
+    final spec = dayGames.isNotEmpty ? dayGames[0] : null;
 
-    final currentLang = PocketLanguageService.currentLanguage;
-    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
-    final rounds = vocab.take(6).map((item) {
-      final meaning = item.getMeaning(currentLang);
-      return {
-        'targetLetter': item.word.isNotEmpty ? item.word[0].toUpperCase() : 'A',
-        'targetWord': item.word,
-        'meaning': meaning,
-        'prompt': 'Catch "${item.word}" ($meaning)',
-        'options': [item.word, 'Book', 'Water', 'Tree'],
-        'correct': item.word,
-      };
-    }).toList();
-
-    Navigator.push(
+    PocketUniversalArcadeEnginePage.launch(
       context,
-      MaterialPageRoute(
-        builder: (_) => MeadowRunnerGamePage(
-          rounds: rounds,
-          initialRound: 0,
-          isFullscreen: true,
-          nativeLanguage: currentLang,
-          onAllCompleted: onGameFinished,
-        ),
-      ),
+      day: day,
+      gameIndex: 1,
+      spec: spec,
+      onCompleted: onGameFinished,
     );
   }
 
@@ -438,59 +410,19 @@ class PocketDayArcadeGameModal extends StatelessWidget {
     HapticFeedback.heavyImpact();
     Navigator.pop(context);
 
-    final realmGames = EnglishRealmManifest.getGamesForDay(day);
-    if (realmGames.length > 1) {
-      EnglishRealmGameSessionPage.launch(
-        context,
-        spec: realmGames[1],
-        onCompleted: onGameFinished,
-      );
-      return;
-    }
+    final dayGames = Pocket20Days40GamesRegistry.allGames
+        .where((g) => g.day == day)
+        .toList();
+    final spec = dayGames.length > 1
+        ? dayGames[1]
+        : (dayGames.isNotEmpty ? dayGames[0] : null);
 
-    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
-    final items = <WordCatcherItem>[];
-    for (int i = 0; i < vocab.length; i++) {
-      final v = vocab[i];
-      items.add(
-        WordCatcherItem(
-          id: i + 1,
-          word: v.word,
-          emoji: '⭐',
-          category: v.partOfSpeech,
-          phonetics: '/${v.word.toLowerCase()}/',
-          definition: v.definition,
-          exampleSentence: v.exampleSentence,
-          nativeTranslations: {
-            'Malayalam': v.malayalamMeaning,
-            'Tamil': v.tamilMeaning,
-            'Hindi': v.hindiMeaning,
-            'Telugu': v.teluguMeaning,
-            'Kannada': v.kannadaMeaning,
-          },
-        ),
-      );
-    }
-
-    final levelData = WordCatcherLevelData(
-      levelNumber: day,
-      title: 'Day $day Word Catcher',
-      subtitle: 'Catch the falling words into the basket!',
-      guideIntro: 'Move your basket to catch target words falling from the sky.',
-      introExamples: items.take(2).toList(),
-      targetWords: items.isNotEmpty ? items : kWordCatcherLevel1Data.targetWords,
-      environmentTheme: 'park',
-    );
-
-    Navigator.push(
+    PocketUniversalArcadeEnginePage.launch(
       context,
-      MaterialPageRoute(
-        builder: (_) => WordCatcherGamePage(
-          levelData: levelData,
-          preferredLanguage: PocketLanguageService.currentLanguage,
-          onCompleted: (_) => onGameFinished?.call(),
-        ),
-      ),
+      day: day,
+      gameIndex: 2,
+      spec: spec,
+      onCompleted: onGameFinished,
     );
   }
 

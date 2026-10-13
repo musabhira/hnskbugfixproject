@@ -184,12 +184,23 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   }
 
   Future<void> _loadQuestions() async {
+    // 🛡️ User Audio Directive: Ensure defense is auto-armed from curated bank so it is never empty!
+    await PocketFortressDefenseService.ensureAutoArmedDefense(widget.userDay);
     final list = await PocketFortressDefenseService.loadShieldQuestions(widget.userDay);
     if (mounted) {
       setState(() {
         _questions = list;
         _isLoading = false;
       });
+
+      // If opening in creation mode and no edit is active, pre-populate with today's planned challenge
+      if (widget.editingQuestion == null && _questionCtrl.text.isEmpty) {
+        final planned = PocketFortressDefenseService.getComputerPlannedDefenseForDay(widget.userDay);
+        if (planned.isNotEmpty) {
+          _populateForEdit(planned.first);
+          _isEditMode = false; // Pre-filled ready to review, customize or confirm!
+        }
+      }
 
       // If user has already filled capacity and is not completing a level or editing,
       // default to My Shields list so they can view and edit.

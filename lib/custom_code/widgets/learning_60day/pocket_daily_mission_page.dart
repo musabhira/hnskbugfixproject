@@ -97,10 +97,11 @@ import 'career_adventure/bridge_builder_game_page.dart';
 import 'career_adventure/travel_rush_models.dart';
 import 'career_adventure/travel_rush_game_page.dart';
 import 'pocket_daily_mission_roadmap_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
-import 'games/english_realm/english_realm_manifest.dart';
-import 'games/english_realm/english_realm_game_session_page.dart';
-import 'games/pocket_day_arcade_game_modal.dart';
+import 'games/pocket_20days_40games_spec.dart';
+import 'games/pocket_universal_arcade_engine_page.dart';
+import 'games/pocket_open_world_theory_game_page.dart';
+import 'spoken/pocket_spoken_avatar_simulator_page.dart';
+import 'defense/pocket_minimal_defense_bottom_sheet.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -153,7 +154,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _readingNotesCompleted = false;
   bool _revisionQuizPassed = false;
   bool _defenseTrapArmed = false;
-  bool _randomChatVerified = false;
   bool _game1Completed = false;
   bool _game2Completed = false;
   bool _trialRaidLaunched = false;
@@ -205,6 +205,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _sentenceStructurePracticeCompleted = false;
   bool _timeMachinePracticeCompleted = false;
   bool _fluencyGymCompleted = false;
+  bool _spokenSimulatorCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -4266,7 +4267,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
-      _randomChatVerified = prefs.getBool('${dayKey}_random_chat') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
       _game1Completed = prefs.getBool('${dayKey}_game_1') ??
           (prefs.getBool('${dayKey}_career_adventure') ?? false);
@@ -4346,6 +4346,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_time_machine_practice') ?? false;
       _fluencyGymCompleted =
           prefs.getBool('${dayKey}_fluency_gym') ?? false;
+      _spokenSimulatorCompleted =
+          prefs.getBool('${dayKey}_spoken_simulator') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
@@ -4353,6 +4355,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   Future<void> _saveSubtask(String key, bool value) async {
     switch (key) {
+      case 'spoken_simulator':
+        _spokenSimulatorCompleted = value;
+        break;
       case 'fluency_gym':
         _fluencyGymCompleted = value;
         break;
@@ -4427,9 +4432,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         break;
       case 'quiz':
         _revisionQuizPassed = value;
-        break;
-      case 'random_chat':
-        _randomChatVerified = value;
         break;
       case 'game_1':
         _game1Completed = value;
@@ -4610,7 +4612,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         if (!mounted) return;
         setState(() => _peerCallVerified = true);
         _saveSubtask('peer_call', true);
-        _notifyStepUnlocked(_stepPeerCall, _stepRandomChat);
+        _notifyStepUnlocked(_stepPeerCall, _stepGame1);
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -4929,7 +4931,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   int get _totalSubtasksCount {
     int count =
-        11; // Rule + Hub + Peer Call + Random Chat + Vocab + Game 1 + Game 2 + Reading + Code English + Quiz + Defense Trap
+        11; // Rule + Spoken Simulator + Hub + Peer Call + Vocab + Game 1 + Game 2 + Reading + Code English + Quiz + Defense Trap
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4965,6 +4967,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_dailyRuleCompleted) count++;
     if (_hasAlphabetPhonics && _alphabetPhonicsCompleted) count++;
     if (_fluencyGymCompleted) count++;
+    if (_spokenSimulatorCompleted) count++;
     if (_showActiveSecretCode && _secretCodeGrammarCompleted) count++;
     if (_showActiveSentenceBuilder && _sentenceBuilderCompleted) count++;
     if (_showActiveSentenceStructure && _sentenceStructurePracticeCompleted) count++;
@@ -4982,7 +4985,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_showActiveDirectIndirect && _directIndirectPracticeCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
-    if (_randomChatVerified) count++;
     if (_vocabMemorized) count++;
     if (_game1Completed ||
         (widget.day == 1 && _careerAdventureCompleted) ||
@@ -5022,7 +5024,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepVocab => 2;
   int get _stepPhonics => 3;
   int get _stepFluencyGym => _hasAlphabetPhonics ? 4 : 3;
-  int get _stepActiveGrammar => _stepFluencyGym + 1;
+  int get _stepSpokenSimulator => _stepFluencyGym + 1;
+  int get _stepActiveGrammar => _stepSpokenSimulator + 1;
   int get _stepSecretCode => _stepActiveGrammar;
   int get _stepSentenceBuilder => _stepActiveGrammar;
   int get _stepSlang => _stepActiveGrammar;
@@ -5040,8 +5043,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepSentenceStructure => _stepActiveGrammar;
   int get _stepEnglishHub => _stepActiveGrammar + 1;
   int get _stepPeerCall => _stepEnglishHub + 1;
-  int get _stepRandomChat => _stepPeerCall + 1;
-  int get _stepGame1 => _stepRandomChat + 1;
+  int get _stepGame1 => _stepPeerCall + 1;
   int get _stepGame2 => _stepGame1 + 1;
   int get _stepAdventureGame => _stepGame1;
   int get _stepSentencePattern => _hasSentencePatterns ? _stepGame2 + 1 : _stepGame2;
@@ -5165,6 +5167,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         // 🎙️ Step 4: Master Multi-Skill Fluency Gym (Dedicated Arena Detail Page)
                         if (_showSpeaking) ...[
                           _buildFluencyGymSubtaskCard(),
+                          const SizedBox(height: 14),
+                        ],
+
+                        // 🗣️ Step 5: Spoken English Avatar Simulator (User Audio Directive: 20 dialogue turns per day)
+                        if (_showSpeaking) ...[
+                          _buildSpokenSimulatorSubtaskCard(),
                           const SizedBox(height: 14),
                         ],
 
@@ -5681,10 +5689,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                         const SizedBox(height: 14),
 
-                        // Subtask: 🎲 Random Chat / Spontaneous Match
-                        _buildRandomChatCard(),
-
-                        const SizedBox(height: 14),
                       ],
 
 
@@ -5815,26 +5819,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _buildSubtaskCard(
                           stepNumber: '$_stepDefenseTrap',
                           icon: '🛡️',
-                          title: 'Add Day ${widget.day} Home Defense',
-                          description:
-                              'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
+                          title: widget.day <= 40 ? 'Day ${widget.day} Cottage Shield (Auto-Armed)' : 'Add Day ${widget.day} Home Defense',
+                          description: widget.day <= 40
+                              ? 'Your English Cottage is auto-protected with Level ${widget.day} grammar traps against raids. Tap to view or edit.'
+                              : 'Arm your front gate with 1 authentic English challenge to defend your house from raiders.',
                           isVerified: _defenseTrapArmed,
-                          actionLabel: 'ADD HOME DEFENSE 🛡️',
-                          actionColor: const Color(0xFF8B5CF6),
+                          actionLabel: _defenseTrapArmed ? 'SHIELD ACTIVE 🛡️' : 'VIEW SHIELD 🛡️',
+                          actionColor: const Color(0xFF10B981),
                           onAction: () async {
-                            final uid = SupaFlow.client.auth.currentUser?.id;
-                            if (uid != null) {
-                              await PocketCitadelAttackPage.openForUser(
-                                context,
-                                userId: uid,
-                                attackerDay: widget.day,
-                                isDefenseMode: true,
-                              );
-                            } else {
-                              await PocketDefenseTrapModal.show(
-                                  context, widget.day);
-                            }
-                            if (mounted) {
+                            await PocketMinimalDefenseBottomSheet.show(
+                              context,
+                              day: widget.day,
+                              onConfirmed: () {
+                                if (mounted) {
+                                  setState(() => _defenseTrapArmed = true);
+                                  _saveSubtask('defense', true);
+                                }
+                              },
+                            );
+                            if (mounted && !_defenseTrapArmed) {
                               setState(() => _defenseTrapArmed = true);
                               _saveSubtask('defense', true);
                             }
@@ -6136,19 +6139,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   Widget _buildRoadmapView() {
     final List<_RawRoadmapStep> rawSteps = [];
 
-    // Step 1: Core Linguistic Theory
+    // Step 1: 2D Open-World Linguistic Discovery Quest
     rawSteps.add(
       _RawRoadmapStep(
         stepNumber: _stepTheory,
-        icon: '📖',
-        title: 'Core Linguistic Theory',
-        category: 'Theory',
-        subtitle: 'Speech rules, grammar breakdown & common mother-tongue mistake fixes for Day ${widget.day}',
-        accentColor: const Color(0xFFA855F7),
+        icon: '🌍',
+        title: '2D Open-World Linguistic Quest',
+        category: 'Open Quest',
+        subtitle: 'Explore the 2D Open Realm: master day grammar formulas, speech rules & error fixes through open gameplay',
+        accentColor: const Color(0xFF10B981),
         isCompleted: _dailyRuleCompleted,
         onAction: () async {
           HapticFeedback.lightImpact();
-          await PocketDayDetailOverviewPage.show(context, widget.day);
+          await PocketOpenWorldTheoryGamePage.launch(
+            context,
+            day: widget.day,
+            onQuestCompleted: () {
+              if (mounted) {
+                setState(() => _dailyRuleCompleted = true);
+                _saveSubtask('daily_rule', true);
+                _notifyStepUnlocked(_stepTheory, _stepVocab);
+              }
+            },
+          );
           if (mounted && !_dailyRuleCompleted) {
             setState(() => _dailyRuleCompleted = true);
             _saveSubtask('daily_rule', true);
@@ -6280,14 +6293,52 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           if (res == true && mounted && !_fluencyGymCompleted) {
             setState(() => _fluencyGymCompleted = true);
             _saveSubtask('fluency_gym', true);
-            _notifyStepUnlocked(_stepFluencyGym, _stepActiveGrammar);
+            _notifyStepUnlocked(_stepFluencyGym, _stepSpokenSimulator);
           }
         },
         onToggleComplete: () {
           final next = !_fluencyGymCompleted;
           setState(() => _fluencyGymCompleted = next);
           _saveSubtask('fluency_gym', next);
-          if (next) _notifyStepUnlocked(_stepFluencyGym, _stepActiveGrammar);
+          if (next) _notifyStepUnlocked(_stepFluencyGym, _stepSpokenSimulator);
+        },
+      ),
+    );
+
+    // Step: Spoken English Avatar Simulator (User Audio Directive: 20 dialogue turns with the Avatar)
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepSpokenSimulator,
+        icon: '🗣️',
+        title: 'Spoken English Avatar Simulator',
+        category: 'Spoken',
+        subtitle: '20 real-world conversational turns with your interactive AI Avatar coach',
+        accentColor: const Color(0xFF38BDF8),
+        isCompleted: _spokenSimulatorCompleted,
+        onAction: () async {
+          HapticFeedback.lightImpact();
+          final res = await PocketSpokenAvatarSimulatorPage.launch(
+            context,
+            day: widget.day,
+            onCompleted: () {
+              if (mounted) {
+                setState(() => _spokenSimulatorCompleted = true);
+                _saveSubtask('spoken_simulator', true);
+                _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
+              }
+            },
+          );
+          if (res == true && mounted && !_spokenSimulatorCompleted) {
+            setState(() => _spokenSimulatorCompleted = true);
+            _saveSubtask('spoken_simulator', true);
+            _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_spokenSimulatorCompleted;
+          setState(() => _spokenSimulatorCompleted = next);
+          _saveSubtask('spoken_simulator', next);
+          if (next) _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
         },
       ),
     );
@@ -6630,49 +6681,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
 
-    // Random Chat / Spontaneous Match
-    rawSteps.add(
-      _RawRoadmapStep(
-        stepNumber: _stepRandomChat,
-        icon: '🎲',
-        title: 'Random Chat / Spontaneous Match',
-        category: 'Speaking',
-        subtitle: 'Connect with a random peer for spontaneous English conversation to test quick reflexes',
-        accentColor: const Color(0xFF8B5CF6),
-        isCompleted: _randomChatVerified,
-        onAction: () async {
-          if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
-            _timerService.toggleTimer();
-          }
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const NativeWebRTCCallScreen(mode: 'Voice'),
-            ),
-          );
-          if (mounted) {
-            setState(() => _randomChatVerified = true);
-            _saveSubtask('random_chat', true);
-            _notifyStepUnlocked(_stepRandomChat, _stepGame1);
-          }
-        },
-        onToggleComplete: () {
-          final next = !_randomChatVerified;
-          setState(() => _randomChatVerified = next);
-          _saveSubtask('random_chat', next);
-          if (next) _notifyStepUnlocked(_stepRandomChat, _stepGame1);
-        },
-      ),
-    );
+    // Step 12: Game 1 – Action Arcade / Adventure Game
+    final dayGames = Pocket20Days40GamesRegistry.allGames
+        .where((g) => g.day == widget.day)
+        .toList();
+    final game1Spec = dayGames.isNotEmpty ? dayGames[0] : null;
+    final game2Spec = dayGames.length > 1 ? dayGames[1] : null;
 
-    // Step 12: Game 1 – 2D Open-World Adventure Quest
-    final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
-    final game1Spec = realmGames.isNotEmpty ? realmGames[0] : null;
-    final game2Spec = realmGames.length > 1 ? realmGames[1] : null;
-
-    final game1Title = game1Spec?.title ?? (widget.day == 1 ? 'Career Adventure (Cyber Vocab)' : 'Daily 2D Adventure Quest');
-    final game1Subtitle = game1Spec?.subtitle ?? 'Interactive 2D open-world vocational quest with speech tasks';
-    final game1Icon = game1Spec?.icon ?? '🎮';
+    final game1Title = game1Spec?.title ?? 'Daily 2D Adventure Quest';
+    final game1Subtitle = game1Spec?.englishTarget ?? 'Interactive action gameplay applied to spoken English';
+    final game1Icon = game1Spec?.emoji ?? '🎮';
 
     rawSteps.add(
       _RawRoadmapStep(
@@ -6684,46 +6702,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         accentColor: const Color(0xFFE11D48),
         isCompleted: _game1Completed,
         onAction: () async {
-          if (game1Spec != null) {
-            await EnglishRealmGameSessionPage.launch(
-              context,
-              spec: game1Spec,
-              onCompleted: () {
-                if (mounted) {
-                  setState(() => _game1Completed = true);
-                  _saveSubtask('game_1', true);
-                  _notifyStepUnlocked(_stepGame1, _stepGame2);
-                }
-              },
-            );
-          } else if (widget.day == 1) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CyberVocabGamePage(
-                  onCompleted: (xp) {
-                    if (mounted) {
-                      setState(() => _game1Completed = true);
-                      _saveSubtask('game_1', true);
-                      _notifyStepUnlocked(_stepGame1, _stepGame2);
-                    }
-                  },
-                ),
-              ),
-            );
-          } else {
-            await PocketDayArcadeGameModal.show(
-              context,
-              day: widget.day,
-              onGameFinished: () {
-                if (mounted) {
-                  setState(() => _game1Completed = true);
-                  _saveSubtask('game_1', true);
-                  _notifyStepUnlocked(_stepGame1, _stepGame2);
-                }
-              },
-            );
-          }
+          await PocketUniversalArcadeEnginePage.launch(
+            context,
+            day: widget.day,
+            gameIndex: 1,
+            spec: game1Spec,
+            onCompleted: () {
+              if (mounted) {
+                setState(() => _game1Completed = true);
+                _saveSubtask('game_1', true);
+                _notifyStepUnlocked(_stepGame1, _stepGame2);
+              }
+            },
+          );
         },
         onToggleComplete: () {
           final next = !_game1Completed;
@@ -6734,10 +6725,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
 
-    // Step 13: Game 2 – 2D Arcade Battle & Word Catcher
-    final game2Title = game2Spec?.title ?? 'Arcade Battle & Word Catcher';
-    final game2Subtitle = game2Spec?.subtitle ?? 'Catch falling vocabulary & defeat rapid speech boss';
-    final game2Icon = game2Spec?.icon ?? '🕹️';
+    // Step 13: Game 2 – Action Arcade Level 2
+    final game2Title = game2Spec?.title ?? 'Arcade Action Level 2';
+    final game2Subtitle = game2Spec?.englishTarget ?? 'Fast reflexes & rapid speech challenges';
+    final game2Icon = game2Spec?.emoji ?? '🕹️';
 
     rawSteps.add(
       _RawRoadmapStep(
@@ -6749,31 +6740,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         accentColor: const Color(0xFFF59E0B),
         isCompleted: _game2Completed,
         onAction: () async {
-          if (game2Spec != null) {
-            await EnglishRealmGameSessionPage.launch(
-              context,
-              spec: game2Spec,
-              onCompleted: () {
-                if (mounted) {
-                  setState(() => _game2Completed = true);
-                  _saveSubtask('game_2', true);
-                  _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
-                }
-              },
-            );
-          } else {
-            await PocketDayArcadeGameModal.show(
-              context,
-              day: widget.day,
-              onGameFinished: () {
-                if (mounted) {
-                  setState(() => _game2Completed = true);
-                  _saveSubtask('game_2', true);
-                  _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
-                }
-              },
-            );
-          }
+          await PocketUniversalArcadeEnginePage.launch(
+            context,
+            day: widget.day,
+            gameIndex: 2,
+            spec: game2Spec,
+            onCompleted: () {
+              if (mounted) {
+                setState(() => _game2Completed = true);
+                _saveSubtask('game_2', true);
+                _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
+              }
+            },
+          );
         },
         onToggleComplete: () {
           final next = !_game2Completed;
@@ -6907,35 +6886,38 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
 
-    // Step 16: Arm Home Defense Shield
+    // Step: Arm Home Defense Shield
     rawSteps.add(
       _RawRoadmapStep(
         stepNumber: _stepDefenseTrap,
         icon: '🛡️',
         title: 'Arm Home Defense Shield',
         category: 'Defense',
-        subtitle: 'Fortify your English Cottage front gate with an authentic grammar trap',
-        accentColor: const Color(0xFF8B5CF6),
+        subtitle: widget.day <= 40
+            ? 'Cottage Shield is auto-armed with curated grammar traps (Tap to view or edit)'
+            : 'Fortify your English Cottage front gate with an authentic grammar trap',
+        accentColor: const Color(0xFF10B981),
         isCompleted: _defenseTrapArmed,
         onAction: () async {
-          final uid = SupaFlow.client.auth.currentUser?.id;
-          if (uid != null) {
-            await PocketCitadelAttackPage.openForUser(
-              context,
-              userId: uid,
-              attackerDay: widget.day,
-              isDefenseMode: true,
-            );
-          } else {
-            await PocketDefenseTrapModal.show(context, widget.day);
-          }
-          if (mounted) {
+          // 🛡️ User Audio Directive: Minimal bottom sheet! Zero complication, no jump to attack profile!
+          await PocketMinimalDefenseBottomSheet.show(
+            context,
+            day: widget.day,
+            onConfirmed: () {
+              if (mounted) {
+                setState(() => _defenseTrapArmed = true);
+                _saveSubtask('defense', true);
+                _notifyStepUnlocked(_stepDefenseTrap, _stepQuiz);
+              }
+            },
+          );
+          if (mounted && !_defenseTrapArmed) {
             setState(() => _defenseTrapArmed = true);
             _saveSubtask('defense', true);
             _notifyStepUnlocked(_stepDefenseTrap, _stepQuiz);
           }
         },
-        onToggleComplete: () {
+        onToggleComplete: () async {
           final next = !_defenseTrapArmed;
           setState(() => _defenseTrapArmed = next);
           _saveSubtask('defense', next);
@@ -7040,18 +7022,27 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   Widget _buildTheorySubtaskCard() {
     return _buildSubtaskCard(
       stepNumber: '$_stepTheory',
-      icon: '📖',
-      title: 'Day ${widget.day} English Theory Guide',
+      icon: '🌍',
+      title: 'Day ${widget.day} Open-World Linguistic Quest',
       description:
-          'Master the core grammatical theory breakdown, native speech patterns, common mother-tongue mistakes, and speaking rules for Day ${widget.day}.',
+          'Explore an open 2D landscape: power up speech formula cores, hunt down mother-tongue error anomalies, and step through sentence evolution portals.',
       isVerified: _dailyRuleCompleted,
       actionLabel: _dailyRuleCompleted
-          ? 'REVIEW THEORY 📖'
-          : 'READ THEORY 📖',
-      actionColor: const Color(0xFFA855F7),
+          ? 'REPLAY OPEN QUEST 🔁'
+          : 'PLAY OPEN QUEST 🌍',
+      actionColor: const Color(0xFF10B981),
       onAction: () async {
         HapticFeedback.lightImpact();
-        await PocketDayDetailOverviewPage.show(context, widget.day);
+        await PocketOpenWorldTheoryGamePage.launch(
+          context,
+          day: widget.day,
+          onQuestCompleted: () {
+            if (mounted) {
+              setState(() => _dailyRuleCompleted = true);
+              _saveSubtask('daily_rule', true);
+            }
+          },
+        );
         if (mounted && !_dailyRuleCompleted) {
           setState(() => _dailyRuleCompleted = true);
           _saveSubtask('daily_rule', true);
@@ -7100,6 +7091,46 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         final next = !_fluencyGymCompleted;
         setState(() => _fluencyGymCompleted = next);
         _saveSubtask('fluency_gym', next);
+      },
+    );
+  }
+
+  Widget _buildSpokenSimulatorSubtaskCard() {
+    return _buildSubtaskCard(
+      stepNumber: '$_stepSpokenSimulator',
+      icon: '🗣️',
+      title: 'Day ${widget.day} Spoken English Avatar Simulator',
+      description:
+          '20 real-world conversational turns with your interactive AI Avatar coach. Tap or speak responses to build natural speech reflexes.',
+      isVerified: _spokenSimulatorCompleted,
+      actionLabel: _spokenSimulatorCompleted
+          ? 'REPLAY SPOKEN SIMULATOR 🎙️'
+          : 'PLAY SPOKEN SIMULATOR 🗣️',
+      actionColor: const Color(0xFF38BDF8),
+      onAction: () async {
+        HapticFeedback.lightImpact();
+        final res = await PocketSpokenAvatarSimulatorPage.launch(
+          context,
+          day: widget.day,
+          onCompleted: () {
+            if (mounted) {
+              setState(() => _spokenSimulatorCompleted = true);
+              _saveSubtask('spoken_simulator', true);
+              _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
+            }
+          },
+        );
+        if (res == true && mounted && !_spokenSimulatorCompleted) {
+          setState(() => _spokenSimulatorCompleted = true);
+          _saveSubtask('spoken_simulator', true);
+          _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
+        }
+      },
+      onVerify: () {
+        final next = !_spokenSimulatorCompleted;
+        setState(() => _spokenSimulatorCompleted = next);
+        _saveSubtask('spoken_simulator', next);
+        if (next) _notifyStepUnlocked(_stepSpokenSimulator, _stepActiveGrammar);
       },
     );
   }
@@ -8579,7 +8610,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   Widget _buildCategoryFilterBar() {
     final categories = [
       {'id': 'all', 'label': 'ALL', 'icon': '🎯'},
-      {'id': 'theory', 'label': 'THEORY', 'icon': '📖'},
+      {'id': 'theory', 'label': 'OPEN QUEST', 'icon': '🌍'},
       {'id': 'vocab', 'label': 'VOCAB', 'icon': '🧠'},
       {'id': 'grammar', 'label': 'GRAMMAR', 'icon': '⚡'},
       {'id': 'speaking', 'label': 'SPEAKING', 'icon': '🎙️'},
@@ -9554,47 +9585,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     }
   }
 
-  // --- SUBTASK: 🎲 RANDOM CHAT / SPONTANEOUS MATCH CARD ---
-  Widget _buildRandomChatCard() {
-    return _buildSubtaskCard(
-      stepNumber: '$_stepRandomChat',
-      icon: '🎲',
-      title: 'Random Chat / Spontaneous Match',
-      description:
-          'Connect with a random peer for spontaneous English conversation to test quick speaking reflexes and conquer hesitation.',
-      isVerified: _randomChatVerified,
-      actionLabel: _randomChatVerified ? 'PRACTICE AGAIN 🎲' : 'START RANDOM CHAT 🎲',
-      actionColor: const Color(0xFF8B5CF6),
-      onAction: () async {
-        if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
-          _timerService.toggleTimer();
-        }
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const NativeWebRTCCallScreen(mode: 'Voice'),
-          ),
-        );
-        if (mounted) {
-          setState(() => _randomChatVerified = true);
-          _saveSubtask('random_chat', true);
-        }
-      },
-      onVerify: () {
-        final next = !_randomChatVerified;
-        setState(() => _randomChatVerified = next);
-        _saveSubtask('random_chat', next);
-      },
-    );
-  }
-
   // --- SUBTASK: 🎮 2D OPEN-WORLD & ARCADE REALM GAME CARD (90 Non-Repeating Games) ---
   Widget _buildDayRealmGameCard(int gameIndex) {
-    final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
-    final spec = (gameIndex == 1 && realmGames.isNotEmpty)
-        ? realmGames[0]
-        : (gameIndex == 2 && realmGames.length > 1)
-            ? realmGames[1]
+    final dayGames = Pocket20Days40GamesRegistry.allGames
+        .where((g) => g.day == widget.day)
+        .toList();
+    final spec = (gameIndex == 1 && dayGames.isNotEmpty)
+        ? dayGames[0]
+        : (gameIndex == 2 && dayGames.length > 1)
+            ? dayGames[1]
             : null;
 
     final isDone = gameIndex == 1
@@ -9619,11 +9618,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         (gameIndex == 1
             ? 'Day ${widget.day} 2D Open-World Adventure Quest'
             : 'Day ${widget.day} 2D Arcade Battle & Catcher');
-    final subtitle = spec?.subtitle ??
+    final subtitle = spec?.englishTarget ??
         (gameIndex == 1
             ? 'Interactive vocational English challenge with speech tasks'
             : 'Catch vocabulary items and defeat speech challenges');
-    final icon = spec?.icon ?? (gameIndex == 1 ? '🎮' : '🕹️');
+    final icon = spec?.emoji ?? (gameIndex == 1 ? '🎮' : '🕹️');
     final stepNum = gameIndex == 1 ? '$_stepGame1' : '$_stepGame2';
     final actionLabel = isDone
         ? 'REPLAY GAME $gameIndex 🔁'
@@ -9639,37 +9638,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       actionLabel: actionLabel,
       actionColor: actionColor,
       onAction: () async {
-        if (spec != null) {
-          await EnglishRealmGameSessionPage.launch(
-            context,
-            spec: spec,
-            onCompleted: () {
-              if (mounted) {
-                final key = gameIndex == 1 ? 'game_1' : 'game_2';
-                setState(() {
-                  if (gameIndex == 1) _game1Completed = true;
-                  if (gameIndex == 2) _game2Completed = true;
-                });
-                _saveSubtask(key, true);
-              }
-            },
-          );
-        } else {
-          await PocketDayArcadeGameModal.show(
-            context,
-            day: widget.day,
-            onGameFinished: () {
-              if (mounted) {
-                final key = gameIndex == 1 ? 'game_1' : 'game_2';
-                setState(() {
-                  if (gameIndex == 1) _game1Completed = true;
-                  if (gameIndex == 2) _game2Completed = true;
-                });
-                _saveSubtask(key, true);
-              }
-            },
-          );
-        }
+        await PocketUniversalArcadeEnginePage.launch(
+          context,
+          day: widget.day,
+          gameIndex: gameIndex,
+          spec: spec,
+          onCompleted: () {
+            if (mounted) {
+              final key = gameIndex == 1 ? 'game_1' : 'game_2';
+              setState(() {
+                if (gameIndex == 1) _game1Completed = true;
+                if (gameIndex == 2) _game2Completed = true;
+              });
+              _saveSubtask(key, true);
+            }
+          },
+        );
       },
       onVerify: () {
         final key = gameIndex == 1 ? 'game_1' : 'game_2';

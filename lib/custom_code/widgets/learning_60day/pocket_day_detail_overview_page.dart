@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
+import 'games/pocket_open_world_theory_game_page.dart';
 
 /// 🧠 Learner Proficiency Level
 enum PocketLearnerLevel {
@@ -228,6 +229,11 @@ class _PocketDayDetailOverviewPageState
 
                     // Level Switcher (Beginner vs Expert)
                     _buildLevelSwitcherCard(),
+
+                    const SizedBox(height: 18),
+
+                    // 🌍 2D Open-World Linguistic Discovery Quest Game Banner
+                    _buildOpenWorldQuestHeroBanner(),
 
                     const SizedBox(height: 18),
 
@@ -584,16 +590,130 @@ class _PocketDayDetailOverviewPageState
     );
   }
 
+  /// 🌍 2D Open-World Linguistic Discovery Quest Hero Banner
+  Widget _buildOpenWorldQuestHeroBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF064E3B), Color(0xFF065F46), Color(0xFF047857)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                ),
+                child: const Text('🌍', style: TextStyle(fontSize: 24)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'OPEN-WORLD GAMEPLAY MODE',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '2D Open-World Linguistic Quest',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Explore freely across an interactive 2D open landscape! Charge speech formulas at the Power Station, hunt common mother-tongue errors with rogue drones, and step through the Sentence Evolution Portal.',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 12.5,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                PocketOpenWorldTheoryGamePage.launch(context, day: widget.day);
+              },
+              icon: const Icon(Icons.sports_esports_rounded, color: Colors.black, size: 22),
+              label: Text(
+                'ENTER OPEN-WORLD QUEST NOW ➔',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLearningRoadmapCard() {
     final steps = [
       {
         'num': '1',
-        'name': 'Today Lesson • Day ${widget.day} Step 1: Core Linguistic Theory',
-        'short': 'Core Theory & Linguistic Rules',
-        'desc': 'Deep-dive into grammar mechanics, formula breakdown & common native mistakes.',
-        'icon': '📖',
-        'badge': 'THEORY & FORMULA',
-        'color': '0xFFA855F7',
+        'name': 'Today Lesson • Day ${widget.day} Step 1: 2D Open-World Linguistic Quest',
+        'short': '2D Open-World Linguistic Quest',
+        'desc': 'Interactive 2D open exploration: Charge speech formula cores, hunt mother-tongue errors & unlock evolution portals.',
+        'icon': '🌍',
+        'badge': '2D OPEN GAME',
+        'color': '0xFF10B981',
       },
       {
         'num': '2',
@@ -722,7 +842,11 @@ class _PocketDayDetailOverviewPageState
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
                     HapticFeedback.mediumImpact();
-                    _showFuturisticStepTheoryBottomSheet(context, int.parse(st['num']!), st);
+                    if (st['num'] == '1') {
+                      PocketOpenWorldTheoryGamePage.launch(context, day: widget.day);
+                    } else {
+                      _showFuturisticStepTheoryBottomSheet(context, int.parse(st['num']!), st);
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(14),
@@ -1158,6 +1282,37 @@ class _PocketDayDetailOverviewPageState
                       ],
 
                       // Bottom CTA
+                      if (stepNum == 1) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              PocketOpenWorldTheoryGamePage.launch(context, day: widget.day);
+                            },
+                            icon: const Icon(Icons.sports_esports_rounded, color: Colors.black, size: 22),
+                            label: Text(
+                              'PLAY 2D OPEN-WORLD QUEST NOW ➔',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13.5,
+                                color: Colors.black,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFD700),
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -1289,6 +1444,33 @@ class _PocketDayDetailOverviewPageState
               ),
             ),
           ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                PocketOpenWorldTheoryGamePage.launch(context, day: widget.day);
+              },
+              icon: const Icon(Icons.sports_esports_rounded, color: Colors.black, size: 20),
+              label: Text(
+                'PLAY THEORY IN 2D OPEN WORLD ➔',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.black,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 3,
+              ),
+            ),
+          ),
         ],
       ),
     );

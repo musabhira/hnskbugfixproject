@@ -579,13 +579,116 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       case KidGameType.slingshotAim:
         return _buildSlingshotGame(context);
       case KidGameType.steppingStones:
+      case KidGameType.bridgeBuilder:
+      case KidGameType.riverRafting:
+      case KidGameType.vineSwinger:
+      case KidGameType.canopyZipLine:
+      case KidGameType.relaySprint:
+      case KidGameType.savannahSprint:
+      case KidGameType.trampolineBounce:
         return _buildSteppingStonesGame(context);
       case KidGameType.detectiveSpot:
+      case KidGameType.footprintTracker:
+      case KidGameType.questionDetective:
         return _buildDetectiveSpotGame(context);
       case KidGameType.sentenceJigsaw:
+      case KidGameType.conjunctionTrain:
+      case KidGameType.grammarFortress:
+      case KidGameType.timeMachine:
+      case KidGameType.wizardWand:
+      case KidGameType.miradorTwins:
+      case KidGameType.tugOfWar:
+      case KidGameType.podiumDebate:
+      case KidGameType.preSummitCreed:
+      case KidGameType.kingdomAccords:
+      case KidGameType.storybookOdyssey:
         return _buildSentenceJigsawGame(context);
       case KidGameType.voiceEcho:
+      case KidGameType.soundMimic:
+      case KidGameType.choirConcert:
+      case KidGameType.emotionMirror:
         return _buildVoiceEchoGame(context);
+      case KidGameType.rhythmDrums:
+      case KidGameType.danceGroove:
+        return _buildBalloonPopGame(context); // rhythm/tap interaction via balloon tap
+      case KidGameType.cloudCatcher:
+      case KidGameType.eagleFlight:
+      case KidGameType.hummingbirdBloom:
+      case KidGameType.swanLake:
+      case KidGameType.dolphinLeap:
+      case KidGameType.balloonPilot:
+      case KidGameType.kiteRibbon:
+        return _buildSlingshotGame(context); // aim/catch mechanics
+      case KidGameType.vowelBubbles:
+      case KidGameType.fountainSplash:
+      case KidGameType.elephantSpray:
+        return _buildBalloonPopGame(context); // bubble/pop interaction
+      case KidGameType.starTracing:
+      case KidGameType.colorSplash:
+      case KidGameType.artistStudio:
+      case KidGameType.beehiveArchitect:
+      case KidGameType.geometryCastle:
+        return _buildSteppingStonesGame(context);
+      case KidGameType.treasureChest:
+      case KidGameType.magicBox:
+      case KidGameType.piggyBank:
+      case KidGameType.sharingBasket:
+        return _buildMemoryMatchGame(context);
+      case KidGameType.cookieOven:
+      case KidGameType.kitchenChef:
+      case KidGameType.potionBrewer:
+      case KidGameType.marshmallowRoast:
+        return _buildAnimalFeederGame(context);
+      case KidGameType.spellCannon:
+      case KidGameType.castleMaze:
+      case KidGameType.spatialRadar:
+      case KidGameType.rainbowBridge:
+        return _buildSlingshotGame(context);
+      case KidGameType.scrambleCarousel:
+      case KidGameType.beePollinator:
+      case KidGameType.windmillSpinner:
+      case KidGameType.shapeSorter:
+        return _buildTrainScrambleGame(context);
+      case KidGameType.squirrelStash:
+      case KidGameType.treeTapper:
+      case KidGameType.otterJuggler:
+      case KidGameType.koalaClimber:
+        return _buildMemoryMatchGame(context);
+      case KidGameType.submarineSonar:
+      case KidGameType.telescopeScience:
+      case KidGameType.discoveryBeacon:
+      case KidGameType.rangerBadge:
+        return _buildDetectiveSpotGame(context);
+      case KidGameType.starCounter:
+      case KidGameType.balanceScale:
+      case KidGameType.heightClimber:
+      case KidGameType.thermometerSort:
+      case KidGameType.cheetahTrack:
+      case KidGameType.fruitMarket:
+        return _buildBalloonPopGame(context);
+      case KidGameType.playhouseDoors:
+      case KidGameType.clockTower:
+      case KidGameType.routineClockMaster:
+      case KidGameType.bedtimeTale:
+        return _buildMemoryMatchGame(context);
+      case KidGameType.lionRoar:
+      case KidGameType.pandaStroll:
+      case KidGameType.owlNightWatch:
+        return _buildAnimalFeederGame(context);
+      case KidGameType.libraryExplorer:
+      case KidGameType.zenGarden:
+      case KidGameType.teaPartyManners:
+      case KidGameType.etiquetteDoorstep:
+      case KidGameType.internationalMeet:
+      case KidGameType.playgroundChat:
+      case KidGameType.cafeMenuOrder:
+      case KidGameType.trailCompass:
+      case KidGameType.cheerHorns:
+      case KidGameType.meadowMediation:
+      case KidGameType.sunsetFarewell:
+      case KidGameType.handshakeBridge:
+      case KidGameType.knightShield:
+        return _buildSentenceJigsawGame(context);
       case KidGameType.bossBattle:
         return _buildKingLionBossBattleGame(context);
     }

@@ -2331,6 +2331,43 @@ class PocketFortressDefenseService {
     }
   }
 
+  /// 🛡️ Ensure house defense questions are automatically planned and armed up to the user's level
+  /// As per User Audio Directive:
+  /// Defense is already pre-filled from curated questions so learners can simply review, edit or confirm,
+  /// and houses are never left empty during peer raids.
+  static Future<List<HouseShieldQuestion>> ensureAutoArmedDefense(int day) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_trapsKey);
+    List<HouseShieldQuestion> existing = [];
+    if (raw != null) {
+      try {
+        existing = (jsonDecode(raw) as List).map((e) => HouseShieldQuestion.fromJson(e)).toList();
+      } catch (_) {}
+    }
+
+    final maxAllowed = getMaxQuestionsForStage(day);
+    if (existing.length < maxAllowed) {
+      final planned = getComputerPlannedDefenseForDay(day);
+      for (final q in planned) {
+        if (existing.length >= maxAllowed) break;
+        if (!existing.any((e) => e.question == q.question || e.id == q.id)) {
+          existing.add(q);
+        }
+      }
+
+      if (existing.length < maxAllowed) {
+        final extras = _getDefaultQuestions(maxAllowed - existing.length);
+        for (final eq in extras) {
+          if (existing.length >= maxAllowed) break;
+          existing.add(eq);
+        }
+      }
+
+      await saveShieldQuestions(existing);
+    }
+    return existing.take(maxAllowed).toList();
+  }
+
   /// Starter default questions (Used strictly for neighbor raids)
   static List<HouseShieldQuestion> _getDefaultQuestions(int count) {
     final List<HouseShieldQuestion> result = [];
