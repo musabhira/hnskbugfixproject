@@ -11,6 +11,8 @@ import '../../services/pocket_mate_service.dart';
 import '../../services/pocket_trophy_service.dart';
 import '../learning_60day/pocket_fortress_defense_service.dart';
 
+import '../../services/pocket_kids_service.dart';
+import '../kids/pocket_kids_robots_data.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/flame_english_house_game.dart';
@@ -298,53 +300,97 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   Future<void> _refreshFeedList() async {
     final List<PocketNeighbor> rawNeighbors = [];
 
-    try {
-      final currentUserId = _supabase.auth.currentUser?.id;
+    if (PocketKidsService.isKidAccount) {
+      // 🦁 1. KIDS ISOLATED HOMES FEED:
+      // Show ONLY Kids Animal Companions + King Lion Sovereign Palace!
+      // Adult profiles and adult robots are STRICTLY EXCLUDED.
+      rawNeighbors.add(
+        const PocketNeighbor(
+          id: 'king_lion',
+          name: 'King Lion Palace 🦁 👑',
+          day: 100,
+          streak: 100,
+          rank: 'Supreme King',
+          paletteId: 'royal_gold',
+          isMe: false,
+          hasActiveShield: true,
+          statusMessage: 'Official Sovereign Palace of King Lion. Welcome young cubs!',
+          isPocketRobo: true,
+          hp: 10000,
+          maxHp: 10000,
+          isVip: true,
+        ),
+      );
 
-      // 1. Fetch real peer users from Supabase profile table
-      final profiles = await _supabase
-          .from('profile')
-          .select('id, user_id, name, display_name, learning_day, daily_streak, profile_image_url')
-          .neq('user_id', currentUserId ?? '')
-          .order('learning_day', ascending: false)
-          .limit(30);
-
-      if (profiles.isNotEmpty) {
-        for (final p in profiles) {
-          final day = (p['learning_day'] as num?)?.toInt() ?? 3;
-          final streak = (p['daily_streak'] as num?)?.toInt() ?? 1;
-          final name = p['name']?.toString() ?? p['display_name']?.toString() ?? 'English Learner';
-          final id = p['user_id']?.toString() ?? p['id']?.toString() ?? 'user';
-
-          rawNeighbors.add(
-            PocketNeighbor(
-              id: id,
-              name: name,
-              day: day,
-              streak: streak,
-              rank: day >= 71
-                  ? 'Grandmaster'
-                  : (day >= 30 ? 'Scholar' : 'Explorer'),
-              paletteId: _randomPalette(day),
-              statusMessage:
-                  _statusQuotes[math.Random().nextInt(_statusQuotes.length)],
-              hasActiveShield: true,
-              hp: 100,
-              maxHp: 100,
-            ),
-          );
-        }
+      for (final mate in PocketKidsRobotsData.robotsAndHomies) {
+        rawNeighbors.add(
+          PocketNeighbor(
+            id: mate.id,
+            name: mate.name,
+            day: mate.dayLevel,
+            streak: mate.dayLevel,
+            rank: mate.ageGroup == '4-6'
+                ? 'Junior Cub'
+                : (mate.ageGroup == '6-8' ? 'Mountain Scout' : 'Star Explorer'),
+            paletteId: _randomPalette(mate.dayLevel),
+            statusMessage: mate.bio,
+            hasActiveShield: true,
+            isPocketRobo: true,
+            hp: 100,
+            maxHp: 100,
+          ),
+        );
       }
-    } catch (e) {
-      debugPrint('Error fetching real profiles for Homes feed: $e');
+    } else {
+      // 🏰 2. ADULT HOMES FEED:
+      // Show Real adult learners + Adult Robots (Levels 1-90) + Sovereign President
+      try {
+        final currentUserId = _supabase.auth.currentUser?.id;
+
+        final profiles = await _supabase
+            .from('profile')
+            .select('id, user_id, name, display_name, learning_day, daily_streak, profile_image_url')
+            .neq('user_id', currentUserId ?? '')
+            .order('learning_day', ascending: false)
+            .limit(30);
+
+        if (profiles.isNotEmpty) {
+          for (final p in profiles) {
+            final day = (p['learning_day'] as num?)?.toInt() ?? 3;
+            final streak = (p['daily_streak'] as num?)?.toInt() ?? 1;
+            final name = p['name']?.toString() ?? p['display_name']?.toString() ?? 'English Learner';
+            final id = p['user_id']?.toString() ?? p['id']?.toString() ?? 'user';
+
+            rawNeighbors.add(
+              PocketNeighbor(
+                id: id,
+                name: name,
+                day: day,
+                streak: streak,
+                rank: day >= 71
+                    ? 'Grandmaster'
+                    : (day >= 30 ? 'Scholar' : 'Explorer'),
+                paletteId: _randomPalette(day),
+                statusMessage:
+                    _statusQuotes[math.Random().nextInt(_statusQuotes.length)],
+                hasActiveShield: true,
+                hp: 100,
+                maxHp: 100,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('Error fetching real profiles for Homes feed: $e');
+      }
+
+      // Add full-spectrum architectural showcase robots across all 6 tiers
+      final dynamicRobots = _generateFullSpectrumHomes(count: 36);
+      rawNeighbors.addAll(dynamicRobots);
+
+      // Add Sovereign President as supreme Day 90 boss
+      rawNeighbors.add(PocketNeighbor.createPresident());
     }
-
-    // 2. Add full-spectrum architectural showcase robots across all 6 tiers (Levels 1 to 90)
-    final dynamicRobots = _generateFullSpectrumHomes(count: 36);
-    rawNeighbors.addAll(dynamicRobots);
-
-    // 3. Add Sovereign President as supreme Day 90 boss
-    rawNeighbors.add(PocketNeighbor.createPresident());
 
     // Check Presidential Protection status for neighbors
     try {
@@ -443,115 +489,195 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
 
     final List<ReelVibeCard> publicVibes = [];
-    try {
-      final nowIso = DateTime.now().toIso8601String();
-      final vibesRes = await _supabase
-          .from('statuses')
-          .select('id, user_id, media_url, media_type, caption, duration, is_private, status_privacy, profile:profile_id(id, name, display_name, profile_image_url, learning_day)')
-          .eq('is_active', true)
-          .gt('expires_at', nowIso)
-          .order('created_at', ascending: false)
-          .limit(30);
 
-      // Group vibes by creator so multi-story taps work smoothly (User Audio Directive)
-      final Map<String, List<Map<String, dynamic>>> groupedVibes = {};
-      for (final v in vibesRes) {
-        final rawMeta = v['metadata'];
-        final isPriv = (v['is_private'] == true) || (rawMeta is Map && rawMeta['is_private'] == true);
-        final privType = v['status_privacy']?.toString() ?? (rawMeta is Map ? rawMeta['status_privacy']?.toString() : null);
-        if (isPriv || (privType != null && privType != 'public')) continue;
+    if (PocketKidsService.isKidAccount) {
+      // 🦁 KIDS EDUCATIONAL STORY BITES & VIBES:
+      // Strictly child-safe educational English learning story bites from Animal Companions & King Lion.
+      // Adult robot coaches and adult user statuses are completely excluded.
+      publicVibes.addAll([
+        ReelVibeCard(
+          id: 'kid_vibe_lion',
+          userId: 'king_lion',
+          authorName: 'King Lion 🦁 (Kingdom Sovereign)',
+          stories: const [
+            ReelVibeItem(
+              id: 'kl_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&q=80',
+              mediaType: 'image',
+              caption: '🦁 Word of the Day: "COURAGE" ✨ Be brave and speak English words loud and proud today!',
+              duration: 10,
+            ),
+            ReelVibeItem(
+              id: 'kl_s2',
+              mediaUrl: 'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=800&q=80',
+              mediaType: 'image',
+              caption: '🎈 King Lion Rhyme: "Little cubs climb high and true, learning English words anew!" ⭐',
+              duration: 10,
+            ),
+          ],
+          day: 100,
+          isRobot: true,
+        ),
+        ReelVibeCard(
+          id: 'kid_vibe_tiger',
+          userId: 'kid_bot_1',
+          authorName: 'Sparky Tiger 🐯 (Phonics Buddy)',
+          stories: const [
+            ReelVibeItem(
+              id: 'st_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+              mediaType: 'image',
+              caption: '🐾 Phonics Fun! Letter "T" makes the /t/ sound! Can you say: Tiger, Tree, Treasure? 🌟',
+              duration: 10,
+            ),
+          ],
+          day: 1,
+          isRobot: true,
+        ),
+        ReelVibeCard(
+          id: 'kid_vibe_panda',
+          userId: 'kid_bot_2',
+          authorName: 'Pandy Panda 🐼 (Manners Guide)',
+          stories: const [
+            ReelVibeItem(
+              id: 'pp_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+              mediaType: 'image',
+              caption: '✨ Polite Magic Words! Always remember to say "Please" and "Thank You" with a smile! 🎋',
+              duration: 10,
+            ),
+          ],
+          day: 2,
+          isRobot: true,
+        ),
+        ReelVibeCard(
+          id: 'kid_vibe_bunny',
+          userId: 'kid_bot_3',
+          authorName: 'Bouncy Bunny 🐰 (Story Explorer)',
+          stories: const [
+            ReelVibeItem(
+              id: 'bb_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+              mediaType: 'image',
+              caption: '🥕 Fruit Words Quiz! "An apple a day keeps the doctor away!" What is your favorite fruit? 🍎🍌',
+              duration: 10,
+            ),
+          ],
+          day: 3,
+          isRobot: true,
+        ),
+      ]);
+    } else {
+      // 🏰 ADULT VIBES (Supabase user statuses + Adult Robot Habit coaches)
+      try {
+        final nowIso = DateTime.now().toIso8601String();
+        final vibesRes = await _supabase
+            .from('statuses')
+            .select('id, user_id, media_url, media_type, caption, duration, is_private, status_privacy, profile:profile_id(id, name, display_name, profile_image_url, learning_day)')
+            .eq('is_active', true)
+            .gt('expires_at', nowIso)
+            .order('created_at', ascending: false)
+            .limit(30);
 
-        final mediaUrl = v['media_url']?.toString() ?? '';
-        if (mediaUrl.isEmpty) continue;
+        final Map<String, List<Map<String, dynamic>>> groupedVibes = {};
+        for (final v in vibesRes) {
+          final rawMeta = v['metadata'];
+          final isPriv = (v['is_private'] == true) || (rawMeta is Map && rawMeta['is_private'] == true);
+          final privType = v['status_privacy']?.toString() ?? (rawMeta is Map ? rawMeta['status_privacy']?.toString() : null);
+          if (isPriv || (privType != null && privType != 'public')) continue;
 
-        final uId = v['user_id']?.toString() ?? '';
-        if (uId.isEmpty) continue;
-        groupedVibes.putIfAbsent(uId, () => []).add(v);
+          final mediaUrl = v['media_url']?.toString() ?? '';
+          if (mediaUrl.isEmpty) continue;
+
+          final uId = v['user_id']?.toString() ?? '';
+          if (uId.isEmpty) continue;
+          groupedVibes.putIfAbsent(uId, () => []).add(v);
+        }
+
+        groupedVibes.forEach((uId, vList) {
+          final first = vList.first;
+          final profile = first['profile'];
+          final authorName = (profile is Map ? (profile['name'] ?? profile['display_name']) : null)?.toString() ?? 'Vibe Creator';
+          final authorAvatar = (profile is Map ? profile['profile_image_url'] : null)?.toString();
+          final day = (profile is Map ? (profile['learning_day'] as num?)?.toInt() : null) ?? 1;
+
+          final stories = vList.map((item) {
+            return ReelVibeItem(
+              id: item['id']?.toString() ?? UniqueKey().toString(),
+              mediaUrl: item['media_url']?.toString() ?? '',
+              mediaType: item['media_type']?.toString() ?? 'video',
+              caption: item['caption']?.toString(),
+              duration: (item['duration'] as num?)?.toInt() ?? 10,
+            );
+          }).toList();
+
+          publicVibes.add(
+            ReelVibeCard(
+              id: first['id']?.toString() ?? UniqueKey().toString(),
+              userId: uId,
+              authorName: authorName,
+              authorAvatarUrl: authorAvatar,
+              stories: stories,
+              day: day,
+              isRobot: false,
+            ),
+          );
+        });
+      } catch (e) {
+        debugPrint('Error fetching public vibes for Homes feed: $e');
       }
 
-      groupedVibes.forEach((uId, vList) {
-        final first = vList.first;
-        final profile = first['profile'];
-        final authorName = (profile is Map ? (profile['name'] ?? profile['display_name']) : null)?.toString() ?? 'Vibe Creator';
-        final authorAvatar = (profile is Map ? profile['profile_image_url'] : null)?.toString();
-        final day = (profile is Map ? (profile['learning_day'] as num?)?.toInt() : null) ?? 1;
-
-        final stories = vList.map((item) {
-          return ReelVibeItem(
-            id: item['id']?.toString() ?? UniqueKey().toString(),
-            mediaUrl: item['media_url']?.toString() ?? '',
-            mediaType: item['media_type']?.toString() ?? 'video',
-            caption: item['caption']?.toString(),
-            duration: (item['duration'] as num?)?.toInt() ?? 10,
-          );
-        }).toList();
-
-        publicVibes.add(
+      if (publicVibes.length < 5) {
+        final robotVibes = [
           ReelVibeCard(
-            id: first['id']?.toString() ?? UniqueKey().toString(),
-            userId: uId,
-            authorName: authorName,
-            authorAvatarUrl: authorAvatar,
-            stories: stories,
-            day: day,
-            isRobot: false,
+            id: 'robot_vibe_1',
+            userId: 'robo_maya',
+            authorName: 'Maya 🤖 (Habit Coach)',
+            stories: const [
+              ReelVibeItem(
+                id: 'maya_s1',
+                mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+                mediaType: 'image',
+                caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
+                duration: 10,
+              ),
+              ReelVibeItem(
+                id: 'maya_s2',
+                mediaUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
+                mediaType: 'image',
+                caption: 'Quick tip: Speak out loud every sentence you construct today! 🗣️🔥',
+                duration: 10,
+              ),
+            ],
+            day: 14,
+            isRobot: true,
           ),
-        );
-      });
-    } catch (e) {
-      debugPrint('Error fetching public vibes for Homes feed: $e');
-    }
-
-    if (publicVibes.length < 5) {
-      final robotVibes = [
-        ReelVibeCard(
-          id: 'robot_vibe_1',
-          userId: 'robo_maya',
-          authorName: 'Maya 🤖 (Habit Coach)',
-          stories: const [
-            ReelVibeItem(
-              id: 'maya_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
-              mediaType: 'image',
-              caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
-              duration: 10,
-            ),
-            ReelVibeItem(
-              id: 'maya_s2',
-              mediaUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
-              mediaType: 'image',
-              caption: 'Quick tip: Speak out loud every sentence you construct today! 🗣️🔥',
-              duration: 10,
-            ),
-          ],
-          day: 14,
-          isRobot: true,
-        ),
-        ReelVibeCard(
-          id: 'robot_vibe_2',
-          userId: 'robo_alex',
-          authorName: 'Alex 🤖 (Grammar Master)',
-          stories: const [
-            ReelVibeItem(
-              id: 'alex_s1',
-              mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
-              mediaType: 'image',
-              caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
-              duration: 10,
-            ),
-            ReelVibeItem(
-              id: 'alex_s2',
-              mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
-              mediaType: 'image',
-              caption: 'Spot the difference: "I have eaten" vs "I ate". Practice now! 💡',
-              duration: 10,
-            ),
-          ],
-          day: 28,
-          isRobot: true,
-        ),
-      ];
-      publicVibes.addAll(robotVibes);
+          ReelVibeCard(
+            id: 'robot_vibe_2',
+            userId: 'robo_alex',
+            authorName: 'Alex 🤖 (Grammar Master)',
+            stories: const [
+              ReelVibeItem(
+                id: 'alex_s1',
+                mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
+                mediaType: 'image',
+                caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
+                duration: 10,
+              ),
+              ReelVibeItem(
+                id: 'alex_s2',
+                mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
+                mediaType: 'image',
+                caption: 'Spot the difference: "I have eaten" vs "I ate". Practice now! 💡',
+                duration: 10,
+              ),
+            ],
+            day: 28,
+            isRobot: true,
+          ),
+        ];
+        publicVibes.addAll(robotVibes);
+      }
     }
 
     final List<ReelFeedItem> combinedFeed = [];
@@ -769,6 +895,67 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   Future<void> _onSendMateRequest(PocketNeighbor neighbor) async {
+    HapticFeedback.mediumImpact();
+
+    if (PocketKidsService.isKidAccount) {
+      if (PocketKidsService.isMate(neighbor.id)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF1E293B),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              content: Row(
+                children: [
+                  const Text('🦁', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'You and ${neighbor.name} are already Pocket Mates! 🎈',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      await PocketKidsService.sendMateRequest(neighbor.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E1B4B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+            ),
+            content: Row(
+              children: [
+                const Text('🦁', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Animal Mate request sent to ${neighbor.name}! 🌟',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF7DD3FC),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -776,7 +963,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       );
       return;
     }
-    HapticFeedback.mediumImpact();
 
     final isAlreadyMate = await PocketMateService.isMate(currentUserId, neighbor.id);
     if (isAlreadyMate) {
@@ -1102,25 +1288,33 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     );
   }
 
-  /// 🏡 House Reel Slide with authentic Citadel scenery (sky + green foothills)
+  /// 🏡 House Reel Slide with authentic Citadel scenery (Day Meadow & Night Twilight)
   Widget _buildHouseReelSlide(PocketNeighbor neighbor, int index) {
     final screenH = MediaQuery.of(context).size.height;
     final isPresident = neighbor.id == 'pocket_president';
+    final isDaytime = (index % 2 == 0); // Alternating light and dark modes
 
     return Stack(
       children: [
-        // 🌄 1. Authentic Living Citadel Scenery (Sky + Green Foothills)
+        // 🌄 1. Living Citadel Scenery (Alternates between Day Sunlit Meadow and Night Twilight)
         Positioned.fill(
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0F172A), // Deep navy sky
-                  Color(0xFF1E293B), // Horizon twilight
-                  Color(0xFF1B4D3E), // Emerald foothills
-                  Color(0xFF0B251E), // Lush lawn ground
-                ],
-                stops: [0.0, 0.40, 0.60, 1.0],
+                colors: isDaytime
+                    ? const [
+                        Color(0xFF38BDF8), // Azure sunny sky
+                        Color(0xFF7DD3FC), // Horizon bright morning
+                        Color(0xFF34D399), // Sunlit green foothills
+                        Color(0xFF15803D), // Lush emerald ground
+                      ]
+                    : const [
+                        Color(0xFF0F172A), // Deep navy sky
+                        Color(0xFF1E293B), // Horizon twilight
+                        Color(0xFF1B4D3E), // Emerald foothills
+                        Color(0xFF0B251E), // Lush lawn ground
+                      ],
+                stops: const [0.0, 0.40, 0.60, 1.0],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -1131,16 +1325,26 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   top: 35,
                   right: 25,
                   child: Opacity(
-                    opacity: 0.25,
-                    child: Row(
-                      children: const [
-                        Text('⭐', style: TextStyle(fontSize: 10)),
-                        SizedBox(width: 25),
-                        Text('✨', style: TextStyle(fontSize: 14)),
-                        SizedBox(width: 40),
-                        Text('⭐', style: TextStyle(fontSize: 8)),
-                      ],
-                    ),
+                    opacity: isDaytime ? 0.9 : 0.7,
+                    child: isDaytime
+                        ? Row(
+                            children: const [
+                              Text('☀️', style: TextStyle(fontSize: 24)),
+                              SizedBox(width: 14),
+                              Text('☁️', style: TextStyle(fontSize: 18)),
+                              SizedBox(width: 24),
+                              Text('🕊️', style: TextStyle(fontSize: 14)),
+                            ],
+                          )
+                        : Row(
+                            children: const [
+                              Text('🌙', style: TextStyle(fontSize: 20)),
+                              SizedBox(width: 20),
+                              Text('✨', style: TextStyle(fontSize: 14)),
+                              SizedBox(width: 30),
+                              Text('⭐', style: TextStyle(fontSize: 10)),
+                            ],
+                          ),
                   ),
                 ),
                 Positioned(
@@ -1151,11 +1355,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF10B981).withValues(alpha: 0.15),
-                          const Color(0xFF064E3B).withValues(alpha: 0.5),
-                          const Color(0xFF022C22),
-                        ],
+                        colors: isDaytime
+                            ? [
+                                const Color(0xFF22C55E).withValues(alpha: 0.35),
+                                const Color(0xFF16A34A).withValues(alpha: 0.7),
+                                const Color(0xFF14532D),
+                              ]
+                            : [
+                                const Color(0xFF10B981).withValues(alpha: 0.15),
+                                const Color(0xFF064E3B).withValues(alpha: 0.5),
+                                const Color(0xFF022C22),
+                              ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -1164,6 +1374,41 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                         topRight: Radius.circular(32),
                       ),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ☀️/🌙 Day vs Night Atmosphere Mode Pill
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 16,
+          right: 18,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDaytime
+                    ? const Color(0xFFFDE047).withValues(alpha: 0.7)
+                    : const Color(0xFF818CF8).withValues(alpha: 0.7),
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(isDaytime ? '☀️' : '🌙', style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 5),
+                Text(
+                  isDaytime ? 'DAY MEADOW' : 'STARLIGHT NIGHT',
+                  style: GoogleFonts.outfit(
+                    color: isDaytime ? const Color(0xFFFEF08A) : const Color(0xFFC7D2FE),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ],
@@ -1484,10 +1729,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       padding: const EdgeInsets.all(2),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(22),
-                        child: VectorAvatarWidget(
-                          config: VectorAvatarConfig.getEvolutionAvatarForStage(neighbor.day),
-                          size: 40,
-                        ),
+                        child: PocketKidsService.isKidAccount &&
+                                PocketKidsRobotsData.robotsAndHomies.any((m) => m.id == neighbor.id)
+                            ? Center(
+                                child: Text(
+                                  PocketKidsRobotsData.robotsAndHomies
+                                      .firstWhere((m) => m.id == neighbor.id)
+                                      .avatar,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              )
+                            : (neighbor.id == 'king_lion'
+                                ? const Center(child: Text('🦁', style: TextStyle(fontSize: 22)))
+                                : VectorAvatarWidget(
+                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(neighbor.day),
+                                    size: 40,
+                                  )),
                       ),
                     ),
                   ),

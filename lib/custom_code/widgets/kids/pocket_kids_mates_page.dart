@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_attacking_profile_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 
 /// 🤝 Kids Mates, Robots & Attack Profile Search Page
@@ -143,11 +143,10 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           HapticFeedback.heavyImpact();
-                          Navigator.push(
+                          PocketCitadelAttackPage.openForUser(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
-                            ),
+                            userId: mate.id,
+                            targetName: mate.name,
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
@@ -195,11 +194,10 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                         child: GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          Navigator.push(
+                          PocketCitadelAttackPage.openForUser(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
-                            ),
+                            userId: mate.id,
+                            targetName: mate.name,
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
@@ -328,11 +326,10 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                   ),
                                   onPressed: () {
                                     HapticFeedback.heavyImpact();
-                                    Navigator.push(
+                                    PocketCitadelAttackPage.openForUser(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
-                                      ),
+                                      userId: mate.id,
+                                      targetName: mate.name,
                                     ).then((_) {
                                       if (mounted) setState(() {});
                                     });

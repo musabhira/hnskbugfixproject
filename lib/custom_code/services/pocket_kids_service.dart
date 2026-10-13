@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 
 /// 🏡 Kids House / Homestead Model matching the Adult Avatar Homes
 class KidsHouse {
@@ -38,24 +40,37 @@ class KidMate {
   final bool isRobot;
   final KidMateRequestStatus requestStatus;
   final String bio;
+  final String houseTier;
+  final String challengeSentence;
+  final VectorAvatarConfig? explicitAvatarConfig;
+
+  VectorAvatarConfig get vectorAvatarConfig =>
+      explicitAvatarConfig ??
+      PocketKidsAvatarSystem.getAvatarConfigForDay(dayLevel);
 
   const KidMate({
     required this.id,
     required this.name,
     required this.avatar,
-    required this.ageGroup,
+    this.ageGroup = '4-6',
     required this.dayLevel,
-    required this.stars,
+    this.stars = 0,
     this.isFriend = false,
     this.isRobot = false,
     this.requestStatus = KidMateRequestStatus.none,
     this.bio = '',
+    this.houseTier = 'Tier 1 Wooden Cabin',
+    this.challengeSentence = 'Practice makes progress! Ready to challenge my house defense?',
+    this.explicitAvatarConfig,
   });
 
   KidMate copyWith({
     bool? isFriend,
     KidMateRequestStatus? requestStatus,
     String? bio,
+    String? houseTier,
+    String? challengeSentence,
+    VectorAvatarConfig? explicitAvatarConfig,
   }) {
     return KidMate(
       id: id,
@@ -68,6 +83,9 @@ class KidMate {
       isRobot: isRobot,
       requestStatus: requestStatus ?? this.requestStatus,
       bio: bio ?? this.bio,
+      houseTier: houseTier ?? this.houseTier,
+      challengeSentence: challengeSentence ?? this.challengeSentence,
+      explicitAvatarConfig: explicitAvatarConfig ?? this.explicitAvatarConfig,
     );
   }
 }
@@ -340,11 +358,16 @@ class PocketKidsService {
   static bool get isPureKidAccount => _isPureKidAccount;
   static bool get isParentSwitched => _isParentSwitched;
   static String get kidName => _kidName;
+  static bool get isProfileConfigured =>
+      _kidName.isNotEmpty && _kidName != 'Little Explorer';
   static String get kidAgeGroup => _kidAgeGroup;
   static String get kidAvatar => _kidAvatar;
   static int get kidStars => _kidStars;
   static int get currentUnlockedDay => isAdminAccount ? 100 : _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
+  static Set<String> get friendIds => Set.unmodifiable(_friendIds);
+  static Set<String> get sentRequestIds => Set.unmodifiable(_sentRequestIds);
+  static Set<String> get receivedRequestIds => Set.unmodifiable(_receivedRequestIds);
 
   /// 🎯 Pocket Score calculation for Kids Target Page
   static int get pocketScore => (_kidStars * 15) + (_completedDays.length * 100);
@@ -463,6 +486,9 @@ class PocketKidsService {
     return achieved;
   }
 
+  /// Get current or day-specific house
+  static KidsHouse getCurrentHouse([int? day]) => day != null ? getHouseForDay(day) : currentHouse;
+
   /// Get the next house to unlock
   static KidsHouse? get nextHouseToUnlock {
     final cur = currentHouse;
@@ -520,22 +546,27 @@ class PocketKidsService {
       final savedFriends = prefs.getStringList(_keyKidFriendIds);
       if (savedFriends != null) {
         _friendIds.clear();
-        _friendIds.addAll(savedFriends);
+        _friendIds.addAll(savedFriends.where(isAllowedKidMateId));
       }
 
       final savedSent = prefs.getStringList(_keyKidSentRequests);
       if (savedSent != null) {
         _sentRequestIds.clear();
-        _sentRequestIds.addAll(savedSent);
+        _sentRequestIds.addAll(savedSent.where(isAllowedKidMateId));
       }
 
       final savedReceived = prefs.getStringList(_keyKidReceivedRequests);
       if (savedReceived != null) {
         _receivedRequestIds.clear();
-        _receivedRequestIds.addAll(savedReceived);
+        _receivedRequestIds.addAll(savedReceived.where(isAllowedKidMateId));
       } else if (_receivedRequestIds.isEmpty && _friendIds.isEmpty) {
         // Friendly welcome requests from AI kid peers so children can experience accepting requests!
         _receivedRequestIds.addAll(['kid_bot_1', 'kid_bot_2']);
+      }
+
+      // Automatically persist cleansed list if adult IDs were purged
+      if (savedFriends != null && savedFriends.length != _friendIds.length) {
+        _persistFriendshipState();
       }
 
       isKidAccountNotifier.value = _isKidAccount;
@@ -616,6 +647,10 @@ class PocketKidsService {
     }
   }
 
+  /// Update kid profile wrapper
+  static Future<void> updateProfile({String? name, String? avatar}) =>
+      saveKidProfile(name: name ?? _kidName, avatar: avatar ?? _kidAvatar);
+
   /// Activate Adult Account Mode
   static Future<void> activateAdultAccount() async {
     _isKidAccount = false;
@@ -681,6 +716,32 @@ class PocketKidsService {
     return KidMateRequestStatus.none;
   }
 
+  /// Strictly determines if an ID belongs to an allowed Kid Mate (Animal Buddy or Kid Peer)
+  /// NEVER allows adult robots (Maya, Alex, Sophia, adult robot IDs) or adult entities.
+  static bool isAllowedKidMateId(String id) {
+    if (id.isEmpty) return false;
+    if (id == 'mentor_animal_king_lion') return true;
+    if (id.startsWith('kid_bot_')) return true;
+    if (PocketKidsRobotsData.robotsAndHomies.any((m) => m.id == id)) return true;
+    // Explicitly reject any adult robots and adult IDs:
+    final lower = id.toLowerCase();
+    if (lower.startsWith('pocket_robot_') ||
+        lower.startsWith('robot_') ||
+        lower.startsWith('pocket_robo_') ||
+        lower.startsWith('pocket_') ||
+        lower == 'pocket' ||
+        lower == 'maya' ||
+        lower == 'alex' ||
+        lower == 'sophia' ||
+        lower == 'liam' ||
+        lower == 'emma' ||
+        lower == 'oliver' ||
+        lower == 'noah') {
+      return false;
+    }
+    return true;
+  }
+
   static KidMate? getKidMateById(String kidId) {
     try {
       final found = PocketKidsRobotsData.robotsAndHomies.firstWhere((m) => m.id == kidId);
@@ -720,6 +781,9 @@ class PocketKidsService {
     final q = query.trim().toLowerCase();
     return filtered.where((m) => m.name.toLowerCase().contains(q)).toList();
   }
+
+  /// Expose discovery peers list
+  static List<KidMate> get mates => getKidMates(filterTab: 0);
 
   /// Send a mate request to a kid or robot peer
   static Future<void> sendMateRequest(String kidId) async {
@@ -1074,7 +1138,7 @@ class PocketKidsService {
   // --- 🦁 THE KING LION SYSTEM (Audio Directive 6 & 7) ---
 
   static const String lionId = 'pocket_lion';
-  static const String lionName = 'King Lion';
+  static const String lionName = 'Lion';
   static const String lionAvatar = '🦁';
   static const String lionRole = 'King of the Animal Kingdom';
   static const String defaultLionWelcome =
@@ -1421,8 +1485,127 @@ class PocketKidsService {
     ),
   ];
 
+  static const String _kVibesKey = 'pm_student_vibes_list';
+  static const String _kThoughtsKey = 'pm_student_thoughts_list';
+
   static Future<List<StudentVibe>> getStudentVibes() async {
-    return _defaultVibes;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kVibesKey);
+      if (raw == null || raw.isEmpty) {
+        return _defaultVibes;
+      }
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.map((e) {
+        final m = Map<String, dynamic>.from(e);
+        return StudentVibe(
+          id: m['id'] ?? 'vibe_${DateTime.now().millisecondsSinceEpoch}',
+          authorName: m['authorName'] ?? 'Student Mate',
+          authorAvatar: m['authorAvatar'] ?? '🦁',
+          dayLevel: m['dayLevel'] ?? 1,
+          title: m['title'] ?? '',
+          message: m['message'] ?? '',
+          tag: m['tag'] ?? '#StudentVoice',
+          likes: m['likes'] ?? 0,
+          isLiked: m['isLiked'] ?? false,
+        );
+      }).toList();
+    } catch (_) {
+      return _defaultVibes;
+    }
+  }
+
+  static Future<void> addStudentVibe({
+    required String title,
+    required String message,
+    String tag = '#StudentVoice',
+  }) async {
+    final currentList = await getStudentVibes();
+    final newVibe = StudentVibe(
+      id: 'vibe_${DateTime.now().millisecondsSinceEpoch}',
+      authorName: _kidName,
+      authorAvatar: _kidAvatar,
+      dayLevel: _currentUnlockedDay,
+      title: title,
+      message: message,
+      tag: tag,
+      likes: 1,
+      isLiked: true,
+    );
+    final updated = [newVibe, ...currentList];
+    final prefs = await SharedPreferences.getInstance();
+    final mapped = updated.map((v) => {
+      'id': v.id,
+      'authorName': v.authorName,
+      'authorAvatar': v.authorAvatar,
+      'dayLevel': v.dayLevel,
+      'title': v.title,
+      'message': v.message,
+      'tag': v.tag,
+      'likes': v.likes,
+      'isLiked': v.isLiked,
+    }).toList();
+    await prefs.setString(_kVibesKey, jsonEncode(mapped));
+  }
+
+  static Future<List<Map<String, dynamic>>> getStudentThoughts() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kThoughtsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+    } catch (_) {}
+    return [
+      {
+        'id': 'thought_1',
+        'authorName': 'King Lion 👑 🦁',
+        'authorAvatar': '🦁',
+        'day': 100,
+        'thought': 'Every champion was once a beginner who refused to quit. Practice 5 sentences today!',
+        'likes': 142,
+        'comments': 18,
+        'time': 'Just now',
+      },
+      {
+        'id': 'thought_2',
+        'authorName': 'Cub Leo 🦁',
+        'authorAvatar': '🦁',
+        'day': 12,
+        'thought': 'Today I learned the difference between "their", "there", and "they\'re"! English is awesome!',
+        'likes': 28,
+        'comments': 4,
+        'time': '2h ago',
+      },
+      {
+        'id': 'thought_3',
+        'authorName': 'Bella Bunny 🐰',
+        'authorAvatar': '🐰',
+        'day': 8,
+        'thought': 'I read an English storybook to my little brother today. He loved the pictures!',
+        'likes': 35,
+        'comments': 6,
+        'time': '5h ago',
+      },
+    ];
+  }
+
+  static Future<void> addStudentThought(String text) async {
+    final list = await getStudentThoughts();
+    final item = {
+      'id': 'thought_${DateTime.now().millisecondsSinceEpoch}',
+      'authorName': _kidName,
+      'authorAvatar': _kidAvatar,
+      'day': _currentUnlockedDay,
+      'thought': text,
+      'likes': 1,
+      'comments': 0,
+      'time': 'Just now',
+    };
+    final updated = [item, ...list];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kThoughtsKey, jsonEncode(updated));
   }
 
   // --- 🛡️ CUSTOMIZABLE DEFENSE CHALLENGES (Audio Directive 7) ---

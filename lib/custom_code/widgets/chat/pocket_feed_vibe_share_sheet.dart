@@ -9,6 +9,7 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/pocket_world_street_page.dart';
 import 'pocket_reels_game_engine.dart';
+import '../../services/pocket_kids_service.dart';
 
 class PocketFeedVibeShareSheet extends StatefulWidget {
   final PocketNeighbor? neighbor;
@@ -319,6 +320,7 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
         'media_url': '',
         'caption': captionText,
         'metadata': metadata,
+        'is_kid': PocketKidsService.isKidAccount,
         'created_at': now.toIso8601String(),
         'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
       });

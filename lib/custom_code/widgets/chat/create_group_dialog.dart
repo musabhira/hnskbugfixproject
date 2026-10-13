@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class CreateGroupDialog extends StatefulWidget {
   final VoidCallback onGroupCreated;
@@ -295,8 +296,13 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
       // The user code tried to do both: set bytes in insert, AND upload to storage later.
       // I'll stick to standard: insert group -> upload image -> update group with URL.
 
+      final groupsTable =
+          PocketKidsService.isKidAccount ? 'kids_groups' : 'groups';
+      final membersTable =
+          PocketKidsService.isKidAccount ? 'kids_group_members' : 'group_members';
+
       final groupResponse =
-          await supabase.from('groups').insert(groupData).select().single();
+          await supabase.from(groupsTable).insert(groupData).select().single();
 
       final groupId = groupResponse['id'];
 
@@ -306,7 +312,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
 
         if (imageUrl != null) {
           await supabase
-              .from('groups')
+              .from(groupsTable)
               .update({'group_image_url': imageUrl}).eq('id', groupId);
         }
       }
@@ -332,7 +338,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
         });
       }
 
-      await supabase.from('group_members').insert(membersToAdd);
+      await supabase.from(membersTable).insert(membersToAdd);
 
       widget.onGroupCreated();
       if (mounted) Navigator.of(context).pop();

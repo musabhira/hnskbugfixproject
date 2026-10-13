@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
 /// 🎮 Kids Interactive Multi-Game Engine (100-Day Progressive Curriculum)
@@ -98,6 +99,10 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
 
     _initTts();
     _setupRound(0);
+    PocketGameAudioService.instance.playAttackTheme(
+      targetId: 'kids_game_${widget.day}',
+      targetDay: widget.day,
+    );
   }
 
   Future<void> _initTts() async {
@@ -224,6 +229,7 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
     await PocketKidsService.completeDayGame(widget.day, earnedStars);
 
     HapticFeedback.heavyImpact();
+    PocketGameAudioService.instance.playVictorySfx();
     _speak('Super star! Day ${widget.day} Complete! You earned 3 stars!');
 
     if (!mounted) return;
@@ -409,6 +415,7 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
     _tts.stop();
     _pulseController.dispose();
     _particleController.dispose();
+    PocketGameAudioService.instance.playAmbientBgm();
     super.dispose();
   }
 
@@ -428,10 +435,12 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
               ],
             ),
 
-            // Particle Confetti Canvas
-            CustomPaint(
-              size: Size.infinite,
-              painter: _ParticlePainter(_particles),
+            // Particle Confetti Canvas (IgnorePointer prevents blocking touches on back button and game controls)
+            IgnorePointer(
+              child: CustomPaint(
+                size: Size.infinite,
+                painter: _ParticlePainter(_particles),
+              ),
             ),
           ],
         ),
@@ -444,30 +453,41 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-            onPressed: () => Navigator.pop(context),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Text(
-                    'DAY ${widget.day} • ${_syllabus.gameTypeDisplayName}',
-                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.w900, fontSize: 12),
+                    'DAY ${widget.day} • STEP ${_currentRound + 1}/${_syllabus.rounds.length}',
+                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.w900, fontSize: 11.5),
                   ),
                 ],
               ),
               Text(
                 _syllabus.title,
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
             ],
           ),
           const Spacer(),
-          // Stars Counter
+          // Stars & Step Progress Counter
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
@@ -480,7 +500,7 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
                 const Text('⭐', style: TextStyle(fontSize: 14)),
                 const SizedBox(width: 4),
                 Text(
-                  '${_currentRound + 1}/3',
+                  '${_currentRound + 1}/${_syllabus.rounds.length}',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
                 ),
               ],

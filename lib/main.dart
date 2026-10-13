@@ -31,6 +31,12 @@ void main() {
       if (exceptionStr.contains('mouse_tracker.dart') && exceptionStr.contains('_debugDuringDeviceUpdate')) {
         return;
       }
+      // Suppress known transient framework layout hit-test assertion during scaffold/FAB route transitions
+      if (exceptionStr.contains('Cannot hit test a render box that has never been laid out') ||
+          (exceptionStr.contains('hitTest()') && exceptionStr.contains('floatingActionButton'))) {
+        debugPrint('Main: Handled transient FAB hit test transition assertion: $exceptionStr');
+        return;
+      }
       FlutterError.presentError(details);
       debugPrint('Main: FlutterError caught: $exceptionStr');
     };

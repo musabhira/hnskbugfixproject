@@ -8,6 +8,7 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'flame_english_house_game.dart';
+import '../../services/pocket_kids_service.dart';
 
 /// 🌟 End-of-Level Milestone Share Card & Vibe Story Dialog
 ///
@@ -91,6 +92,7 @@ class _PocketLevelMilestoneVibeCardDialogState
         'caption': caption,
         'type': 'text',
         'privacy': 'public',
+        'is_kid': PocketKidsService.isKidAccount,
         'created_at': now.toIso8601String(),
         'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
       });

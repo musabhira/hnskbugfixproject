@@ -11,6 +11,9 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 
 /// 🎭 Archetypes for Pocket Robot Personalities
 enum RobotArchetype {
@@ -153,6 +156,38 @@ class PocketRobot {
           [],
     );
   }
+
+  PocketRobot copyWith({
+    String? id,
+    String? name,
+    int? baseLevel,
+    int? level,
+    RobotArchetype? archetype,
+    String? cefrRank,
+    String? bio,
+    String? avatarUrl,
+    String? housePalette,
+    String? status,
+    String? openingMessage,
+    List<String>? catchphrases,
+    int? trophies,
+  }) {
+    return PocketRobot(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      baseLevel: baseLevel ?? this.baseLevel,
+      level: level ?? this.level,
+      archetype: archetype ?? this.archetype,
+      cefrRank: cefrRank ?? this.cefrRank,
+      bio: bio ?? this.bio,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      housePalette: housePalette ?? this.housePalette,
+      status: status ?? this.status,
+      openingMessage: openingMessage ?? this.openingMessage,
+      catchphrases: catchphrases ?? this.catchphrases,
+      trophies: trophies ?? this.trophies,
+    );
+  }
 }
 
 /// 📸 Model for rich, authentic Pocket Robot Snaps
@@ -191,6 +226,25 @@ class PocketRobotService {
   /// Find robot by ID or Name (always returns dynamic looped robot)
   static PocketRobot? getRobotById(String id) {
     if (id.isEmpty) return null;
+    if (id.startsWith('kid_bot_')) {
+      final animal = PocketKidsRobotsData.getAnimalById(id);
+      if (animal != null) {
+        return PocketRobot(
+          id: animal.id,
+          name: animal.name,
+          baseLevel: animal.dayLevel,
+          level: animal.dayLevel,
+          archetype: RobotArchetype.cheerful,
+          cefrRank: 'Level ${animal.dayLevel}',
+          bio: animal.bio,
+          avatarUrl: '',
+          housePalette: 'terracotta',
+          status: '🐾 Animal Buddy • Level ${animal.dayLevel}',
+          openingMessage: 'Hello! I am ${animal.name}. Ready to climb the mountain together?',
+          catchphrases: ['Let’s climb the mountain!', 'Practice makes progress!'],
+        );
+      }
+    }
     try {
       final lower = id.toLowerCase().trim();
       final base = _baseRobots.firstWhere(
@@ -228,6 +282,7 @@ class PocketRobotService {
         id.startsWith('robot_') ||
         id.startsWith('pocket_robo_') ||
         id.startsWith('pocket_') ||
+        id.startsWith('kid_bot_') ||
         id == 'pocket' ||
         _baseRobots.any((r) => r.id == id);
   }
@@ -337,7 +392,7 @@ class PocketRobotService {
     final trophyBadge = trophyCount > 0 ? ' • 🏆x$trophyCount' : '';
     final dynamicCefr = getCefrForLevel(dynLvl);
 
-    return PocketRobot(
+    final dyn = PocketRobot(
       id: base.id,
       name: base.name,
       baseLevel: base.baseLevel,
@@ -353,6 +408,20 @@ class PocketRobotService {
       openingMessage: base.openingMessage,
       catchphrases: base.catchphrases,
     );
+
+    if (PocketKidsService.isKidAccount) {
+      final animal = PocketKidsRobotsData.getAnimalByLevel(dynLvl);
+      if (animal != null) {
+        return dyn.copyWith(
+          name: animal.name,
+          bio: animal.bio,
+          status: '🐾 Animal Buddy • Level $dynLvl',
+          openingMessage: 'Hello! I am ${animal.name}. Ready to climb the mountain together?',
+        );
+      }
+    }
+
+    return dyn;
   }
 
   // 🌐 Free AI Model Pipeline for Authentic Human-Like Real-Time Conversations
@@ -1743,6 +1812,85 @@ class PocketRobotService {
       final tB = DateTime.tryParse(b['created_at'] ?? '') ?? now;
       return tB.compareTo(tA);
     });
+
+    return feed;
+  }
+
+  /// 🎈 Dedicated Kid Animal Buddy Thoughts for Kids Mode Feed
+  /// 100% child-friendly animal homies sharing fun educational tips, riddles & rhymes
+  static List<Map<String, dynamic>> getKidsRobotFeedThoughts(
+      {String? currentUserId}) {
+    final List<Map<String, dynamic>> feed = [];
+    final now = DateTime.now();
+    final homies = PocketKidsRobotsData.robotsAndHomies;
+
+    final funPosts = [
+      {
+        'index': 0,
+        'title': '🦁 King Lion',
+        'content': 'Welcome young heroes to our Pocket Gang! Remember: Practice 1 word every hour and you will speak English like a true champion! 👑',
+      },
+      {
+        'index': 0,
+        'title': '🐯 Sparky Tiger',
+        'content': 'Quick puzzle! Who can name 3 words that rhyme with "Cat"? 🐱 (Hint: Hat, Bat, Mat!) Tell your gang in chat! 🎒',
+      },
+      {
+        'index': 1,
+        'title': '🐼 Pandy Panda',
+        'content': 'Fun Animal Fact! 🎋 Bamboo can grow up to 1 meter in just one day! Have you completed your daily English quest today?',
+      },
+      {
+        'index': 2,
+        'title': '🐰 Bouncy Bunny',
+        'content': 'Today\'s Magic Word is "Cheerful" 😄 What made you smile today? Share it with your friends! 🎈',
+      },
+      {
+        'index': 3,
+        'title': '🐶 Pip Puppy',
+        'content': 'Who is ready to challenge my Citadel defense today? Let\'s win 50 stars together in English arena! ⚔️⭐',
+      },
+      {
+        'index': 33,
+        'title': '🦊 Finny Fox',
+        'content': 'Riddle time! ⏰ What has hands and a face, but cannot hold anything or smile? (A Clock!) 🧠💡',
+      },
+      {
+        'index': 7,
+        'title': '🐻 Bella Bear',
+        'content': 'Sweet greetings from the berry forest! 🍓 Don\'t forget to say "Good Morning" and "Thank You" with a bright smile!',
+      },
+      {
+        'index': 37,
+        'title': '🐬 Aqua Dolphin',
+        'content': 'Jumping through grammar waves! 🐬 Remember: "He is jumping", "They are jumping"! Keep practicing!',
+      },
+    ];
+
+    for (int i = 0; i < funPosts.length; i++) {
+      final p = funPosts[i];
+      final mateIdx = (p['index'] as int) < homies.length ? (p['index'] as int) : 0;
+      final mate = homies[mateIdx];
+      final avatarCfg = PocketKidsAvatarSystem.getAvatarConfigForDay(mate.dayLevel);
+
+      feed.add({
+        'id': 'kid_robot_thought_$i',
+        'content': p['content'],
+        'user_id': mate.id,
+        'name': mate.name,
+        'profile_image_url': null,
+        'avatar_emoji': mate.avatar,
+        'avatar_config': avatarCfg.toMap(),
+        'created_at': now.subtract(Duration(hours: (i * 2) + 1)).toIso8601String(),
+        'like_count': 12 + (i * 4),
+        'comment_count': 3 + i,
+        'is_robot': true,
+        'is_kid': true,
+        'level': mate.dayLevel,
+        'has_trophy': false,
+        'is_game': false,
+      });
+    }
 
     return feed;
   }

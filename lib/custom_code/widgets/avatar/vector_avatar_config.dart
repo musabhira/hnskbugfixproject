@@ -424,9 +424,21 @@ class VectorAvatarConfig {
     (species: 'chrono_dragon', furColor: '#D97706', eyeColor: '#00F0FF', outfitColor: '#1E1B4B', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Chrono Time Dragon'),
     (species: 'astral_titan', furColor: '#4338CA', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#818CF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Eternal Astral Titan'),
     (species: 'cosmic_dragon_sovereign', furColor: '#7C3AED', eyeColor: '#00F0FF', outfitColor: '#050B14', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Supreme Cosmic Dragon God (Day 90 Master)'),
+
+    // 🦁 91–100: Grand Imperial Summit & King Lion Apex (Days 91-100)
+    (species: 'golden_falcon', furColor: '#EAB308', eyeColor: '#FFD700', outfitColor: '#172554', outfitAccent: '#FDE047', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Golden Falcon Vanguard'),
+    (species: 'crystal_panther', furColor: '#E0E7FF', eyeColor: '#38BDF8', outfitColor: '#0F172A', outfitAccent: '#60A5FA', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Crystal Snow Panther'),
+    (species: 'storm_griffin', furColor: '#38BDF8', eyeColor: '#F59E0B', outfitColor: '#1E1B4B', outfitAccent: '#FBBF24', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Sovereign Storm Griffin'),
+    (species: 'solar_pegasus', furColor: '#FEF08A', eyeColor: '#F97316', outfitColor: '#7F1D1D', outfitAccent: '#F97316', accessory: 'crown', auraStyle: 'sunset_orange', rarityTier: 'Solar Pegasus Stallion'),
+    (species: 'celestial_tiger', furColor: '#FB923C', eyeColor: '#FDE047', outfitColor: '#1C1917', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Celestial Tiger God'),
+    (species: 'diamond_mammoth', furColor: '#94A3B8', eyeColor: '#38BDF8', outfitColor: '#0F172A', outfitAccent: '#38BDF8', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Diamond Mammoth Colossus'),
+    (species: 'astral_kraken', furColor: '#A855F7', eyeColor: '#00F0FF', outfitColor: '#3B0764', outfitAccent: '#C084FC', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Cosmic Astral Kraken'),
+    (species: 'galactic_phoenix', furColor: '#F43F5E', eyeColor: '#FFD700', outfitColor: '#881337', outfitAccent: '#FDA4AF', accessory: 'crown', auraStyle: 'cherry_blossom', rarityTier: 'Galactic Starlight Phoenix'),
+    (species: 'golden_stag_emperor', furColor: '#F59E0B', eyeColor: '#34D399', outfitColor: '#064E3B', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Sovereign Golden Stag Emperor'),
+    (species: 'king_lion_emperor', furColor: '#F59E0B', eyeColor: '#FFD700', outfitColor: '#451A03', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: '24K Supreme King Lion Emperor (Day 100 Summit)'),
   ];
 
-  /// Expose all 90 day animal records (Days 1 to 90)
+  /// Expose all 100 day animal records (Days 1 to 100)
   static List<({
     String species,
     String furColor,
@@ -438,18 +450,29 @@ class VectorAvatarConfig {
     String rarityTier,
   })> get90DayAnimals() => _k90DayAnimals;
 
+  static List<({
+    String species,
+    String furColor,
+    String eyeColor,
+    String outfitColor,
+    String outfitAccent,
+    String accessory,
+    String auraStyle,
+    String rarityTier,
+  })> get100DayAnimals() => _k90DayAnimals;
+
   /// Level 1 players unlock the first 5 starter companions (Cyber Cat, Cyber Fox, Shadow Wolf, Royal Tiger, Golden Lion).
-  /// Days 6–90 unlock when the user reaches that learning level/day.
+  /// Days 6–100 unlock when the user reaches that learning level/day.
   static bool isCompanionUnlocked(int companionDay, int userLevel) {
     if (companionDay <= 5) return true;
     return userLevel >= companionDay;
   }
 
-  /// Retrieve the active in-game fortress perk for day 1..90
+  /// Retrieve the active in-game fortress perk for day 1..100
   static AvatarGamePerk getAvatarPerkForDay(int stage) => AvatarGamePerk.forDay(stage);
 
   static VectorAvatarConfig getEvolutionAvatarForStage(int stage, {String? talismanId}) {
-    final day = stage.clamp(1, 90);
+    final day = stage.clamp(1, _k90DayAnimals.length);
     final animal = _k90DayAnimals[day - 1];
 
     final species = animal.species;
@@ -518,10 +541,10 @@ class VectorAvatarConfig {
     );
   }
 
-  /// 🎨 90 DISTINCT BANNER DECORATIONS (1 PER ANIMAL AVATAR)
-  /// Generates a uniquely styled luxury banner gradient, border glow, and shadow for each of the 90 animals!
+  /// 🎨 100 DISTINCT BANNER DECORATIONS (1 PER ANIMAL AVATAR)
+  /// Generates a uniquely styled luxury banner gradient, border glow, and shadow for each of the 100 animals!
   static BoxDecoration getEvolutionBannerDecoration(int stage) {
-    final day = stage.clamp(1, 90);
+    final day = stage.clamp(1, _k90DayAnimals.length);
     final animal = _k90DayAnimals[day - 1];
     final primary = parseHex(animal.outfitAccent, fallback: const Color(0xFF00F0FF));
     final fur = parseHex(animal.furColor, fallback: const Color(0xFFF59E0B));

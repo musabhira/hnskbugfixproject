@@ -105,6 +105,12 @@ class KidDaySyllabus {
         return 'Challenge King Lion in 3 Royal Spoken English rounds!';
     }
   }
+
+  List<String> get dailyVocabulary => rounds.map((r) => r.targetWord).toList();
+  String get phonicsFocus => phonicsSound;
+  String get sentencePattern => dialogueSentence;
+  String get speakingMission => dialogueSentence;
+  String get dailyDefenseWord => rounds.isNotEmpty ? rounds.first.targetWord : 'BRAVE';
 }
 
 /// 📚 The Complete 100-Day English Curriculum & Game Database

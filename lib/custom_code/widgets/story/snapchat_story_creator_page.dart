@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class StoryStickerItem {
   final String id;
@@ -1459,6 +1460,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
+        'is_kid': PocketKidsService.isKidAccount,
       };
 
       await supabase

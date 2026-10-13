@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_compress/video_compress.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class VibeUploadTask {
   final String title;
@@ -195,6 +196,7 @@ class PocketVibesUploadManager {
             'is_private': statusPrivacy != 'public',
             'status_privacy': statusPrivacy,
             'is_active': true,
+            'is_kid': PocketKidsService.isKidAccount,
             'expires_at': uploadBaseTime.add(const Duration(hours: 24)).toIso8601String(),
             'created_at': uploadBaseTime.add(Duration(milliseconds: i * 200)).toIso8601String(),
             'excluded_user_ids': excludedUserIds.toList(),

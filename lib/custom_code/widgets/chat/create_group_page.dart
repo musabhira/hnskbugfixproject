@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,8 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class SquadThemePreset {
   final String id;
@@ -97,41 +96,59 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     ),
   ];
 
+  List<SquadThemePreset> get _activeThemes => PocketKidsService.isKidAccount
+      ? const [
+          SquadThemePreset(
+            id: 'animal_gang',
+            name: 'Animal Gang 🦁 🐘',
+            icon: Icons.pets_rounded,
+            gradientColors: [Color(0xFFFFD700), Color(0xFFFF8906)],
+            defaultTag: 'Animal Buddies & Fun',
+          ),
+          SquadThemePreset(
+            id: 'super_explorers',
+            name: 'Super Explorers 🚀 ⭐',
+            icon: Icons.rocket_launch_rounded,
+            gradientColors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
+            defaultTag: 'Mountain Adventures',
+          ),
+          SquadThemePreset(
+            id: 'english_champs',
+            name: 'English Champions 🏆 📚',
+            icon: Icons.emoji_events_rounded,
+            gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
+            defaultTag: 'Speaking & Word Games',
+          ),
+          SquadThemePreset(
+            id: 'cartoon_artists',
+            name: 'Cartoon Artists 🎨 🎪',
+            icon: Icons.palette_rounded,
+            gradientColors: [Color(0xFFEC4899), Color(0xFFA855F7)],
+            defaultTag: 'Drawing & Stories',
+          ),
+          SquadThemePreset(
+            id: 'little_geniuses',
+            name: 'Little Geniuses 💡 🧠',
+            icon: Icons.lightbulb_rounded,
+            gradientColors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
+            defaultTag: 'Puzzles & Brain Quests',
+          ),
+        ]
+      : _squadThemes;
+
   List<dynamic> _searchResults = [];
   final List<dynamic> _selectedMembers = [];
 
   bool _isCreating = false;
   bool _isSearching = false;
-  bool _isImageUploading = false;
   bool _isPublicGroup = true;
-
-  // Creator's Avatar
-  VectorAvatarConfig _myAvatarConfig = const VectorAvatarConfig();
 
   @override
   void initState() {
     super.initState();
-    _loadCreatorAvatar();
     _searchUsers('');
   }
 
-  Future<void> _loadCreatorAvatar() async {
-    try {
-      final supabase = SupaFlow.client;
-      final userId = supabase.auth.currentUser!.id;
-      final res = await supabase
-          .from('profile')
-          .select('avatar_config')
-          .eq('user_id', userId)
-          .maybeSingle();
-      if (res != null && res['avatar_config'] != null && mounted) {
-        setState(() {
-          _myAvatarConfig = VectorAvatarConfig.fromMap(
-              Map<String, dynamic>.from(res['avatar_config']));
-        });
-      }
-    } catch (_) {}
-  }
 
   @override
   void dispose() {
@@ -151,7 +168,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       );
 
       if (image != null) {
-        setState(() => _isImageUploading = true);
         final bytes = await image.readAsBytes();
 
         img.Image? decoded = img.decodeImage(bytes);
@@ -161,13 +177,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           setState(() {
             _selectedImageBytes = compressed;
             _isUsingCustomPhoto = true;
-            _isImageUploading = false;
           });
         }
       }
-    } catch (e) {
-      setState(() => _isImageUploading = false);
-    }
+    } catch (_) {}
   }
 
   Future<void> _searchUsers(String query) async {
@@ -235,7 +248,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           .single();
       final currentUserProfileId = profileRes['id'];
 
-      final activeTheme = _squadThemes[_selectedThemeIndex];
+      final themes = _activeThemes;
+      final activeTheme = themes[_selectedThemeIndex.clamp(0, themes.length - 1)];
 
       final groupData = {
         'name': groupName,
@@ -246,8 +260,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         'is_public': _isPublicGroup,
       };
 
+      final groupsTable =
+          PocketKidsService.isKidAccount ? 'kids_groups' : 'groups';
+      final membersTable =
+          PocketKidsService.isKidAccount ? 'kids_group_members' : 'group_members';
+
       final groupResponse =
-          await supabase.from('groups').insert(groupData).select().single();
+          await supabase.from(groupsTable).insert(groupData).select().single();
       final groupId = groupResponse['id'];
 
       // Upload Custom Photo if selected
@@ -259,7 +278,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
             );
         final imageUrl = supabase.storage.from('group_images').getPublicUrl(fileName);
-        await supabase.from('groups').update({'group_image_url': imageUrl}).eq('id', groupId);
+        await supabase.from(groupsTable).update({'group_image_url': imageUrl}).eq('id', groupId);
       }
 
       // Add Creator as Admin
@@ -284,7 +303,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         });
       }
 
-      await supabase.from('group_members').insert(membersToAdd);
+      await supabase.from(membersTable).insert(membersToAdd);
 
       widget.onGroupCreated();
       if (mounted) {
@@ -319,10 +338,15 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    final activeTheme = _squadThemes[_selectedThemeIndex];
+    final themes = _activeThemes;
+    final themeIndex = _selectedThemeIndex.clamp(0, themes.length - 1);
+    final activeTheme = themes[themeIndex];
+    final defaultSquadName = PocketKidsService.isKidAccount
+        ? 'New Pocket Gang 🎈'
+        : 'New Pocket Squad';
     final groupName = _nameController.text.trim().isNotEmpty
         ? _nameController.text.trim()
-        : 'New Pocket Squad';
+        : defaultSquadName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1118),
@@ -331,7 +355,9 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Create Pocket Gang',
+          PocketKidsService.isKidAccount
+              ? 'Build Pocket Gang 🦁 🎈'
+              : 'Create Pocket Gang',
           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
         ),
         leading: IconButton(
@@ -456,10 +482,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               height: 38,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: _squadThemes.length,
+                itemCount: themes.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
-                  final themeItem = _squadThemes[index];
+                  final themeItem = themes[index];
                   final isSelected = _selectedThemeIndex == index;
 
                   return GestureDetector(
@@ -599,7 +625,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   ),
                   Switch(
                     value: _isPublicGroup,
-                    activeColor: const Color(0xFFFFFC00),
+                    activeThumbColor: const Color(0xFFFFFC00),
                     onChanged: (val) => setState(() => _isPublicGroup = val),
                   ),
                 ],

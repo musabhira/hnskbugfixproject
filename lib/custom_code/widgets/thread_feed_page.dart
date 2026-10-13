@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class ThreadFeedPage extends StatefulWidget {
   final double? width;
@@ -479,6 +480,7 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
       final response = await supabase
           .from('threads_view')
           .select()
+          .or('is_kid.is.null,is_kid.eq.false')
           .order('created_at', ascending: false)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
@@ -532,6 +534,7 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
       final response = await supabase
           .from('threads_view')
           .select()
+          .or('is_kid.is.null,is_kid.eq.false')
           .order('created_at', ascending: false)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
@@ -1117,7 +1120,8 @@ class ModernCard extends StatelessWidget {
 
 class CreateThreadPage extends StatefulWidget {
   final String? userId;
-  const CreateThreadPage({super.key, this.userId});
+  final bool isKid;
+  const CreateThreadPage({super.key, this.userId, this.isKid = false});
 
   @override
   State<CreateThreadPage> createState() => _CreateThreadPageState();
@@ -1135,24 +1139,44 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
   int _authorStage = 1;
   String? _authorTalisman;
 
-  final List<Map<String, String>> _promptStarters = [
-    {
-      'label': '💡 Reflection',
-      'starter': 'Today\'s English insight: ',
-    },
-    {
-      'label': '📚 New Vocab',
-      'starter': 'A powerful word I learned today is "',
-    },
-    {
-      'label': '🎯 Goal',
-      'starter': 'My speaking goal for this week is: ',
-    },
-    {
-      'label': '🥊 Daily Win',
-      'starter': 'Proud of my practice streak today because ',
-    },
-  ];
+  List<Map<String, String>> get _promptStarters =>
+      widget.isKid || PocketKidsService.isKidAccount
+          ? [
+              {
+                'label': '🦁 Animal Fact',
+                'starter': 'Did you know that ',
+              },
+              {
+                'label': '🎈 Fun Joke',
+                'starter': 'Knock knock! Who is there? ',
+              },
+              {
+                'label': '⭐ Magic Word',
+                'starter': 'My favorite new English word today is "',
+              },
+              {
+                'label': '⚔️ Citadel Quest',
+                'starter': 'Today my Pocket Gang defeated ',
+              },
+            ]
+          : [
+              {
+                'label': '💡 Reflection',
+                'starter': 'Today\'s English insight: ',
+              },
+              {
+                'label': '📚 New Vocab',
+                'starter': 'A powerful word I learned today is "',
+              },
+              {
+                'label': '🎯 Goal',
+                'starter': 'My speaking goal for this week is: ',
+              },
+              {
+                'label': '🥊 Daily Win',
+                'starter': 'Proud of my practice streak today because ',
+              },
+            ];
 
   @override
   void initState() {
@@ -1215,9 +1239,11 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
     setState(() => _isSubmitting = true);
 
     try {
+      final isKidPost = widget.isKid || PocketKidsService.isKidAccount;
       final inserted = await supabase.from('threads').insert({
         'user_id': userId,
         'content': text,
+        'is_kid': isKidPost,
       }).select().maybeSingle();
 
       // Simulated robot classmate peer interactions (likes / cheers)

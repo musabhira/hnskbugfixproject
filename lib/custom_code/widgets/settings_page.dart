@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -314,7 +315,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 );
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const HomePageWidget()),
+                    MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
                     (route) => false,
                   );
                 }

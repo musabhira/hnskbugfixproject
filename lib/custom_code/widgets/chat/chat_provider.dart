@@ -9,6 +9,8 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/kids_chat_groups_provider.dart';
 import 'whats_app_groups_provider.dart';
 
 import 'chat_models.dart';
@@ -29,6 +31,12 @@ String currentUserId(Ref ref) {
 class ChatMessages extends _$ChatMessages {
   late SupabaseClient _supabase;
   RealtimeChannel? _subscription;
+
+  bool get _isKid => PocketKidsService.isKidAccount;
+  String get _messagesTable => _isKid ? 'kids_messages' : 'messages';
+  String get _groupMessagesTable => _isKid ? 'kids_group_messages' : 'group_messages';
+  String get _conversationsTable => _isKid ? 'kids_conversations' : 'conversations';
+  String get _groupsTable => _isKid ? 'kids_groups' : 'groups';
 
   // Performance optimizations
   static const int _pageSize = 50; // Load 50 messages at a time
@@ -92,7 +100,7 @@ class ChatMessages extends _$ChatMessages {
         if (!isUuid || PocketRobotService.isRobotId(actualId) || PocketPresidentService.isPresidentId(actualId)) return;
 
         await _supabase
-            .from('messages')
+            .from(_messagesTable)
             .update({'is_read': true})
             .eq('receiver_id', uid)
             .eq('sender_id', actualId)
@@ -103,7 +111,7 @@ class ChatMessages extends _$ChatMessages {
         Future.delayed(const Duration(seconds: 4), () async {
           try {
             await _supabase
-                .from('messages')
+                .from(_messagesTable)
                 .delete()
                 .eq('receiver_id', uid)
                 .eq('sender_id', actualId)
@@ -114,7 +122,7 @@ class ChatMessages extends _$ChatMessages {
         });
       } else {
         await _supabase
-            .from('group_messages')
+            .from(_groupMessagesTable)
             .update({'is_read': true})
             .eq('group_id', actualId)
             .neq('sender_id', uid)
@@ -157,7 +165,7 @@ class ChatMessages extends _$ChatMessages {
     channel.onPostgresChanges(
       event: PostgresChangeEvent.all,
       schema: 'public',
-      table: isPersonal ? 'messages' : 'group_messages',
+      table: isPersonal ? _messagesTable : _groupMessagesTable,
       filter: isPersonal
           ? PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
@@ -182,7 +190,7 @@ class ChatMessages extends _$ChatMessages {
       channel.onPostgresChanges(
         event: PostgresChangeEvent.update,
         schema: 'public',
-        table: 'messages',
+        table: _messagesTable,
         filter: PostgresChangeFilter(
           type: PostgresChangeFilterType.eq,
           column: 'sender_id',
@@ -452,7 +460,7 @@ class ChatMessages extends _$ChatMessages {
           ''';
 
       final query = _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
+          .from(isPersonal ? _messagesTable : _groupMessagesTable)
           .select(selectQuery);
 
       final response = await (isPersonal
@@ -546,13 +554,13 @@ class ChatMessages extends _$ChatMessages {
         }
         // Safe delete for personal chat: only messages between these match two users
         await _supabase
-            .from('messages')
+            .from(_messagesTable)
             .delete()
             .lt('created_at', cutoffTime.toIso8601String())
             .or('and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)');
       } else {
         await _supabase
-            .from('group_messages')
+            .from(_groupMessagesTable)
             .delete()
             .eq('group_id', actualId)
             .lt('created_at', cutoffTime.toIso8601String());
@@ -567,7 +575,7 @@ class ChatMessages extends _$ChatMessages {
   Future<void> editMessage(String messageId, String newText) async {
     final isPersonal = groupId.startsWith('p:');
     try {
-      await _supabase.from(isPersonal ? 'messages' : 'group_messages').update({
+      await _supabase.from(isPersonal ? _messagesTable : _groupMessagesTable).update({
         'message_text': newText,
         'is_edited': true,
       }).eq('id', messageId);
@@ -954,7 +962,7 @@ class ChatMessages extends _$ChatMessages {
       Map<String, dynamic> response;
       try {
         response = await _supabase
-            .from(isPersonal ? 'messages' : 'group_messages')
+            .from(isPersonal ? _messagesTable : _groupMessagesTable)
             .insert(messageData)
             .select(selectQueryInsert)
             .single();
@@ -962,7 +970,7 @@ class ChatMessages extends _$ChatMessages {
         debugPrint(
             'Insert with selectQueryInsert failed ($insertSelectError), trying simple insert');
         response = await _supabase
-            .from(isPersonal ? 'messages' : 'group_messages')
+            .from(isPersonal ? _messagesTable : _groupMessagesTable)
             .insert(messageData)
             .select('*')
             .single();
@@ -1023,7 +1031,7 @@ class ChatMessages extends _$ChatMessages {
                     : (messageType == 'gallery' ? '🎨 Artwork' : 'Attachment')));
 
         if (isPersonal) {
-          final updateRes = await _supabase.from('conversations').update({
+          final updateRes = await _supabase.from(_conversationsTable).update({
             'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
@@ -1032,7 +1040,7 @@ class ChatMessages extends _$ChatMessages {
               'and(user1_id.eq.$uid,user2_id.eq.$actualId),and(user1_id.eq.$actualId,user2_id.eq.$uid)').select();
 
           if (updateRes.isEmpty) {
-            await _supabase.from('conversations').insert({
+            await _supabase.from(_conversationsTable).insert({
               'user1_id': uid,
               'user2_id': actualId,
               'last_message': displayMsg,
@@ -1042,25 +1050,43 @@ class ChatMessages extends _$ChatMessages {
             });
           }
 
-          ref.read(conversationsProvider.notifier).updateLastMessage(
-            conversationId: actualId,
-            message: displayMsg,
-            time: DateTime.now(),
-            senderId: uid,
-          );
+          if (_isKid) {
+            ref.read(kidsConversationsProvider.notifier).updateLastMessage(
+              conversationId: actualId,
+              message: displayMsg,
+              time: DateTime.now(),
+              senderId: uid,
+            );
+          } else {
+            ref.read(conversationsProvider.notifier).updateLastMessage(
+              conversationId: actualId,
+              message: displayMsg,
+              time: DateTime.now(),
+              senderId: uid,
+            );
+          }
         } else {
-          await _supabase.from('groups').update({
+          await _supabase.from(_groupsTable).update({
             'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('id', actualId);
 
-          ref.read(conversationsProvider.notifier).updateLastMessage(
-            conversationId: actualId,
-            message: displayMsg,
-            time: DateTime.now(),
-            senderId: uid,
-          );
+          if (_isKid) {
+            ref.read(kidsConversationsProvider.notifier).updateLastMessage(
+              conversationId: actualId,
+              message: displayMsg,
+              time: DateTime.now(),
+              senderId: uid,
+            );
+          } else {
+            ref.read(conversationsProvider.notifier).updateLastMessage(
+              conversationId: actualId,
+              message: displayMsg,
+              time: DateTime.now(),
+              senderId: uid,
+            );
+          }
         }
       } catch (metaError) {
         debugPrint('Error updating metadata: $metaError');
@@ -1156,7 +1182,11 @@ class ChatMessages extends _$ChatMessages {
       });
 
       try {
-        ref.invalidate(conversationsProvider);
+        if (_isKid) {
+          ref.invalidate(kidsConversationsProvider);
+        } else {
+          ref.invalidate(conversationsProvider);
+        }
       } catch (_) {}
     } catch (e) {
       debugPrint('Error triggering robot AI reply: $e');
@@ -1169,7 +1199,7 @@ class ChatMessages extends _$ChatMessages {
   Future<void> updateMessageFileUrl(String messageId, String fileUrl) async {
     final isPersonal = groupId.startsWith('p:');
     try {
-      await _supabase.from(isPersonal ? 'messages' : 'group_messages').update({
+      await _supabase.from(isPersonal ? _messagesTable : _groupMessagesTable).update({
         'file_url': fileUrl,
       }).eq('id', messageId);
 
@@ -1210,7 +1240,7 @@ class ChatMessages extends _$ChatMessages {
       }
 
       await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
+          .from(isPersonal ? _messagesTable : _groupMessagesTable)
           .delete()
           .eq('id', messageId);
       // Real-time listener confirms deletion
@@ -1290,7 +1320,7 @@ class ChatMessages extends _$ChatMessages {
       ''';
 
       final response = await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
+          .from(isPersonal ? _messagesTable : _groupMessagesTable)
           .select(selectQueryFetch)
           .eq('id', id)
           .maybeSingle();

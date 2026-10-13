@@ -23,6 +23,8 @@ import 'package:pocket_mates_app/custom_code/widgets/president/presidential_pala
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'day90_master_certificate_dialog.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
@@ -927,6 +929,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         'duration': 10,
         'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'is_active': true,
+        'is_kid': PocketKidsService.isKidAccount,
       });
 
       if (mounted) {
@@ -3394,6 +3397,249 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
+  /// 🎒 Kid Hero Drawer Content (Homestead House, Evolution Avatar, Adventure Stats)
+  Widget _buildKidHeroDrawerContent() {
+    final day = widget.neighbor.day;
+    final house = PocketKidsService.getHouseForDay(day);
+    final avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. Kids Hero Identity Card with Homestead House
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Flame Homestead House Showcase
+                PocketAvatarHouseWidget(
+                  day: day,
+                  width: 260,
+                  height: 180,
+                  lightsOn: true,
+                ),
+                const SizedBox(height: 12),
+
+                // House Tier & Title Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: house.themeColor.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: house.themeColor, width: 1.2),
+                  ),
+                  child: Text(
+                    '${house.title} ${house.emoji} • Tier ${house.tier}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Mascot Avatar & Hero Info
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                      ),
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 52,
+                        showAura: false,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.neighbor.name,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD700),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'KID HERO 🎒',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            widget.neighbor.statusMessage.isNotEmpty
+                                ? widget.neighbor.statusMessage
+                                : 'Exploring Day $day on the 100-Day Mountain Trail! 🏔️',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 11,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // 2. Kid Hero Adventure Stats Row
+          Row(
+            children: [
+              _buildKidStatCard('🎯', 'Trail Level', 'Day $day', const Color(0xFF0284C7)),
+              const SizedBox(width: 8),
+              _buildKidStatCard('⭐', 'Star Coins', '${day * 40} PTS', const Color(0xFFF59E0B)),
+              const SizedBox(width: 8),
+              _buildKidStatCard('🏰', 'House Tier', 'Tier ${house.tier}', const Color(0xFF10B981)),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 3. Action Buttons: High-Five & Add Mate
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.heavyImpact();
+                    PocketGameAudioService.instance.playCoinSound();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('🖐️ High-five sent to ${widget.neighbor.name}!'),
+                        backgroundColor: const Color(0xFF10B981),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Text('🖐️', style: TextStyle(fontSize: 16)),
+                  label: Text('HIGH-FIVE', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    PocketKidsService.sendMateRequest(widget.neighbor.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('🤝 Mate request sent to ${widget.neighbor.name}!'),
+                        backgroundColor: const Color(0xFF0284C7),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Text('🤝', style: TextStyle(fontSize: 16)),
+                  label: Text('ADD MATE', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKidStatCard(String emoji, String title, String val, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.4), width: 1.2),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 3),
+            Text(
+              val,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 11.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF94A3B8),
+                fontSize: 9.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 📜 Sovereign Drawer Content for The President (Decrees, Hotline, Mateship, Boss Stats)
   Widget _buildPresidentialDrawerContent() {
     return FutureBuilder<List<Map<String, dynamic>>>(
@@ -4624,19 +4870,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   color: const Color(0xFF0F172A),
                   child: widget.neighbor.isPresident
                       ? _buildPresidentialDrawerContent()
-                      : MainProfileWidget(
-                          userId: widget.neighbor.id,
-                          preloadedProfile: {
-                            'user_id': widget.neighbor.id,
-                            'first_name': widget.neighbor.name,
-                            'bio': widget.neighbor.statusMessage,
-                            'learning_day': widget.neighbor.day,
-                            'streak': widget.neighbor.streak,
-                            'rank': widget.neighbor.rank,
-                            'palette_id': widget.neighbor.paletteId,
-                            'is_pocket_robo': widget.neighbor.isPocketRobo,
-                          },
-                        ),
+                      : (PocketKidsService.isKidAccount ||
+                              PocketKidsService.isAllowedKidMateId(widget.neighbor.id)
+                          ? _buildKidHeroDrawerContent()
+                          : MainProfileWidget(
+                              userId: widget.neighbor.id,
+                              preloadedProfile: {
+                                'user_id': widget.neighbor.id,
+                                'first_name': widget.neighbor.name,
+                                'bio': widget.neighbor.statusMessage,
+                                'learning_day': widget.neighbor.day,
+                                'streak': widget.neighbor.streak,
+                                'rank': widget.neighbor.rank,
+                                'palette_id': widget.neighbor.paletteId,
+                                'is_pocket_robo': widget.neighbor.isPocketRobo,
+                              },
+                            )),
                 ),
               ),
           ],

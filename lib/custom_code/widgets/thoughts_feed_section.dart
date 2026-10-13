@@ -17,17 +17,20 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_thought_game_card.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
   final String currentProfileId;
   final String searchQuery;
+  final bool? isKidMode;
 
   const ThoughtsFeedSection({
     super.key,
     required this.currentUserId,
     required this.currentProfileId,
     this.searchQuery = '',
+    this.isKidMode,
     this.onStatusShared,
   });
 
@@ -105,9 +108,12 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     return false;
   }
 
+  bool get _isKid => widget.isKidMode ?? PocketKidsService.isKidAccount;
+
   Future<void> _loadCache() async {
     final prefs = await SharedPreferences.getInstance();
-    final cached = prefs.getString('cached_thoughts_$_activeTab');
+    final cacheKey = _isKid ? 'cached_kids_thoughts_$_activeTab' : 'cached_thoughts_$_activeTab';
+    final cached = prefs.getString(cacheKey);
     if (cached != null && widget.searchQuery.isEmpty) {
       setState(() {
         final List<dynamic> decoded = jsonDecode(cached);
@@ -124,7 +130,8 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
   Future<void> _saveCache(List<Map<String, dynamic>> data) async {
     if (widget.searchQuery.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cached_thoughts_$_activeTab', jsonEncode(data));
+    final cacheKey = _isKid ? 'cached_kids_thoughts_$_activeTab' : 'cached_thoughts_$_activeTab';
+    await prefs.setString(cacheKey, jsonEncode(data));
   }
 
   Future<void> _fetchUserLikes() async {
@@ -172,6 +179,13 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     try {
       var query = supabase.from('threads_view').select();
 
+      // Strict separation: Kids only see kid thoughts; adults only see adult thoughts
+      if (_isKid) {
+        query = query.eq('is_kid', true);
+      } else {
+        query = query.or('is_kid.is.null,is_kid.eq.false');
+      }
+
       // Apply Search Filter
       if (widget.searchQuery.isNotEmpty) {
         query = query.ilike('content', '%${widget.searchQuery}%');
@@ -186,6 +200,12 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
         final followedIds =
             followingResponse.map((e) => e['followed_id']).toList();
+        if (_isKid) {
+          final kidMateIds = PocketKidsService.mates.map((m) => m.id).toList();
+          for (final mid in kidMateIds) {
+            if (!followedIds.contains(mid)) followedIds.add(mid);
+          }
+        }
         if (followedIds.isEmpty) {
           setState(() {
             _followingThreads = [];
@@ -205,11 +225,15 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
       final List<Map<String, dynamic>> newThreads =
           List<Map<String, dynamic>>.from(response);
 
-      // 🤖 Inject Robot English Learning Thoughts into Public Feed
+      // 🤖 Inject Robot/Animal Companions Thoughts into Public Feed
       if ((refresh || _currentPage == 0) && _activeTab == 'Public') {
-        final robotThoughts = PocketRobotService.getAllRobotFeedThoughts(
-          currentUserId: widget.currentUserId,
-        );
+        final robotThoughts = _isKid
+            ? PocketRobotService.getKidsRobotFeedThoughts(
+                currentUserId: widget.currentUserId,
+              )
+            : PocketRobotService.getAllRobotFeedThoughts(
+                currentUserId: widget.currentUserId,
+              );
         final filteredRobo = widget.searchQuery.isNotEmpty
             ? robotThoughts.where((t) {
                 final content = (t['content'] ?? '').toString().toLowerCase();
@@ -370,9 +394,9 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             unselectedLabelStyle:
                 GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 11.5),
             dividerColor: Colors.transparent,
-            tabs: const [
-              Tab(text: 'Public'),
-              Tab(text: 'Following'),
+            tabs: [
+              Tab(text: _isKid ? '💭 Thoughts' : 'Public'),
+              Tab(text: _isKid ? '🐾 My Gangs' : 'Following'),
             ],
           ),
         ),
@@ -385,8 +409,10 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      CreateThreadPage(userId: widget.currentUserId),
+                  builder: (context) => CreateThreadPage(
+                    userId: widget.currentUserId,
+                    isKid: _isKid,
+                  ),
                 ),
               );
               if (!mounted) return;
@@ -402,35 +428,51 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1B2232) : Colors.grey.shade100,
+                color: _isKid
+                    ? Colors.white
+                    : (isDark ? const Color(0xFF1B2232) : Colors.grey.shade100),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.grey.shade300,
-                  width: 1,
+                  color: _isKid
+                      ? const Color(0xFFFFD700)
+                      : (isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.grey.shade300),
+                  width: _isKid ? 1.5 : 1,
                 ),
+                boxShadow: _isKid
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 15,
-                    backgroundColor:
-                        const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                    child: const Icon(
-                      Icons.edit_note_rounded,
-                      color: Color(0xFFFFFC00),
+                    backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                    child: Icon(
+                      _isKid ? Icons.auto_awesome_rounded : Icons.edit_note_rounded,
+                      color: _isKid ? const Color(0xFFD97706) : const Color(0xFFFFFC00),
                       size: 18,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "What's on your mind? Share a thought...",
+                      _isKid
+                          ? "Share a fun thought, puzzle, or animal rhyme! 🎈✏️"
+                          : "What's on your mind? Share a thought...",
                       style: GoogleFonts.outfit(
-                        color: isDark ? Colors.white54 : Colors.black45,
+                        color: _isKid
+                            ? const Color(0xFF475569)
+                            : (isDark ? Colors.white54 : Colors.black45),
                         fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: _isKid ? FontWeight.w500 : FontWeight.w400,
                       ),
                     ),
                   ),
@@ -442,7 +484,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'Post',
+                      _isKid ? 'Share 🚀' : 'Post',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontSize: 12,

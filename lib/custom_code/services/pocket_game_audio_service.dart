@@ -589,6 +589,25 @@ class PocketGameAudioService with WidgetsBindingObserver {
     }
   }
 
+  /// Alias for playAmbientAppTheme
+  Future<void> playAmbientBgm() async {
+    await playAmbientAppTheme();
+  }
+
+  /// 🏆 Play celebration sound effect
+  Future<void> playVictorySfx() async {
+    HapticFeedback.heavyImpact();
+    try {
+      // Play triumphant fanfare or happy shuffle track
+      await playTrack(homeTracks[1], volume: 0.45); // Sunny Meadow
+    } catch (_) {}
+  }
+
+  /// 🪙 Play arcade coin sound / feedback
+  Future<void> playCoinSound() async {
+    HapticFeedback.selectionClick();
+  }
+
   /// Dispose service
   void dispose() {
     _isDisposed = true;

@@ -16,6 +16,15 @@ class PocketKidsMateChatPage extends StatefulWidget {
     required this.mate,
   });
 
+  static Future<void> open(BuildContext context, {required KidMate mate}) {
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketKidsMateChatPage(mate: mate),
+      ),
+    );
+  }
+
   @override
   State<PocketKidsMateChatPage> createState() => _PocketKidsMateChatPageState();
 }

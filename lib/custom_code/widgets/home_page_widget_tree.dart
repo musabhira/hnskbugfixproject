@@ -555,7 +555,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   void _onKidAccountModeChanged() {
     if (mounted) {
-      safeSetState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          safeSetState(() {});
+        }
+      });
     }
   }
 
@@ -1160,6 +1164,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       height: 36,
                       margin: const EdgeInsets.only(bottom: 6),
                       child: material.FloatingActionButton.extended(
+                        heroTag: 'adult_anon_chat_fab',
                         onPressed: () async {
                           final isAuth =
                               await AuthAlertBox.checkAuthAndShowAlert(
@@ -6700,12 +6705,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Live Call / Matchmaking Quick Action
+                              // 🧸 Switch to Kids Mode Quick Action (Replaces Voice Call icon)
                               _buildHeaderIconButton(
                                 context,
-                                icon: material.Icons.phone_in_talk_rounded,
-                                iconColor: const Color(0xFFFFFC00),
-                                onTap: onTapFriends,
+                                icon: material.Icons.child_care_rounded,
+                                iconColor: const Color(0xFFFFD700),
+                                onTap: () => _showSwitchToKidsAlert(context),
                               ),
                               const SizedBox(width: 6),
                               // Search
@@ -7012,6 +7017,80 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSwitchToKidsAlert(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 2),
+        ),
+        title: Row(
+          children: [
+            const Text('🧸 ', style: TextStyle(fontSize: 24)),
+            Expanded(
+              child: Text(
+                'Switch to Kids Mode?',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Step into the fun 100-Day Kids Adventure with cartoon games, animal companions, voice practice, and castle quests!',
+          style: GoogleFonts.inter(
+            color: Colors.white70,
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.outfit(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: const Color(0xFF78350F),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await PocketKidsService.activateKidAccount(
+                name: 'Student Mate',
+                ageGroup: '7-12',
+                avatar: '🦁',
+                isParentSwitched: true,
+              );
+              if (context.mounted) {
+                PocketKidsHomePage.launch(context, promptProfileSetup: true);
+              }
+            },
+            icon: const Text('🚀', style: TextStyle(fontSize: 16)),
+            label: Text(
+              'Switch to Kids',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

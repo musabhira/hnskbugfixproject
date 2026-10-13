@@ -41,6 +41,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
@@ -61,6 +62,7 @@ class StatusDisplayWidget extends StatefulWidget {
 
   final String searchQuery;
   final ValueNotifier<String>? filterNotifier;
+  final bool? isKidMode;
 
   const StatusDisplayWidget({
     super.key,
@@ -73,6 +75,7 @@ class StatusDisplayWidget extends StatefulWidget {
     this.onStatusWatched,
     this.searchQuery = '',
     this.filterNotifier,
+    this.isKidMode,
   });
 
   @override
@@ -332,12 +335,21 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
-      final response = await supabase
+      var query = supabase
           .from('statuses')
           .select(
               '*, profile:profile_id(id, name, profile_image_url, user_id, learning_day, avatar_config, pocket_score), thought:thought_id(*, user:users!user_id(profile:profile!user_id(name, profile_image_url, learning_day, avatar_config)))')
           .eq('is_active', true)
-          .gt('expires_at', DateTime.now().toIso8601String())
+          .gt('expires_at', DateTime.now().toIso8601String());
+
+      final bool isKid = widget.isKidMode ?? PocketKidsService.isKidAccount;
+      if (isKid) {
+        query = query.eq('is_kid', true);
+      } else {
+        query = query.or('is_kid.is.null,is_kid.eq.false');
+      }
+
+      final response = await query
           .order('created_at', ascending: false) // Latest active statuses first
           .limit(100);
 
@@ -456,16 +468,57 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         }
       }
 
-      // 4.2 Include Robot Vibes from Autonomous Robot Engine
-      try {
-        final robotVibes = await PocketRobotService.getAllActiveRobotVibes();
-        for (final v in robotVibes) {
+      // 4.2 Robot Vibes (Strict Isolation between Kids Animal Companions & Adult Robot Coaches)
+      if (PocketKidsService.isKidAccount) {
+        // 🐾 Kids Mode: Clean educational English story vibes from Animal Companions
+        final kidAnimalVibes = [
+          {
+            'profile_id': 'kid_bot_1',
+            'profile': {
+              'id': 'kid_bot_1',
+              'name': 'Sparky Tiger 🐯',
+              'avatar': '🐯',
+              'profile_image_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+            },
+            'media_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+            'media_type': 'image',
+            'caption': '🐾 Phonics Fun! Letter "T" is for Tiger! Can you say: Tiger, Tree, Treasure? 🌟',
+            'created_at': DateTime.now().toIso8601String(),
+            'id': 'kid_vibe_st_1',
+          },
+          {
+            'profile_id': 'kid_bot_2',
+            'profile': {
+              'id': 'kid_bot_2',
+              'name': 'Pandy Panda 🐼',
+              'avatar': '🐼',
+              'profile_image_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+            },
+            'media_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+            'media_type': 'image',
+            'caption': '✨ Manners Matter! Always say "Please" and "Thank You" with a smile! 🎋',
+            'created_at': DateTime.now().toIso8601String(),
+            'id': 'kid_vibe_pp_1',
+          },
+          {
+            'profile_id': 'kid_bot_3',
+            'profile': {
+              'id': 'kid_bot_3',
+              'name': 'Bouncy Bunny 🐰',
+              'avatar': '🐰',
+              'profile_image_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+            },
+            'media_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+            'media_type': 'image',
+            'caption': '🥕 Word Quest: "An apple a day keeps the doctor away!" Hop into English learning! 🍎',
+            'created_at': DateTime.now().toIso8601String(),
+            'id': 'kid_vibe_bb_1',
+          },
+        ];
+
+        for (final v in kidAnimalVibes) {
           final rId = v['profile_id']?.toString() ?? '';
-          final rProfile = v['profile'] ?? {
-            'id': rId,
-            'name': 'Pocket Robot',
-            'profile_image_url': v['media_url'],
-          };
+          final rProfile = v['profile'] ?? {'id': rId, 'name': 'Animal Companion'};
           if (!publicGroups.containsKey(rId)) {
             publicGroups[rId] = {
               'profile': rProfile,
@@ -476,11 +529,21 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             };
           }
           (publicGroups[rId]!['statuses'] as List).add(v);
-
-          // If robot is in following/mates, also add to followingGroups
-          if (allFollowingIds.contains(rId)) {
-            if (!followingGroups.containsKey(rId)) {
-              followingGroups[rId] = {
+          followingGroups[rId] = publicGroups[rId]!;
+        }
+      } else {
+        // Adult Autonomous Robot Engine Vibes
+        try {
+          final robotVibes = await PocketRobotService.getAllActiveRobotVibes();
+          for (final v in robotVibes) {
+            final rId = v['profile_id']?.toString() ?? '';
+            final rProfile = v['profile'] ?? {
+              'id': rId,
+              'name': 'Pocket Robot',
+              'profile_image_url': v['media_url'],
+            };
+            if (!publicGroups.containsKey(rId)) {
+              publicGroups[rId] = {
                 'profile': rProfile,
                 'statuses': [],
                 'is_own': false,
@@ -488,14 +551,28 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 'is_robot': true,
               };
             }
-            (followingGroups[rId]!['statuses'] as List).add(v);
+            (publicGroups[rId]!['statuses'] as List).add(v);
+
+            // If robot is in following/mates, also add to followingGroups
+            if (allFollowingIds.contains(rId)) {
+              if (!followingGroups.containsKey(rId)) {
+                followingGroups[rId] = {
+                  'profile': rProfile,
+                  'statuses': [],
+                  'is_own': false,
+                  'is_group': false,
+                  'is_robot': true,
+                };
+              }
+              (followingGroups[rId]!['statuses'] as List).add(v);
+            }
           }
+        } catch (e) {
+          debugPrint('Error loading robot vibes: $e');
         }
-      } catch (e) {
-        debugPrint('Error loading robot vibes: $e');
       }
 
-      // 4.3 Include President Vibes (Top priority with Golden Aura & Golden Tick)
+      // 4.3 Include President / King Lion Vibes (Top priority with Golden Aura & Golden Tick)
       try {
         final presVibes = await PocketPresidentService.getActivePresidentVibes();
         if (presVibes.isNotEmpty) {
@@ -503,8 +580,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           final presProfile = {
             'id': presId,
             'user_id': presId,
-            'name': 'President',
-            'profile_image_url': PocketPresidentService.presidentAvatarUrl,
+            'name': PocketKidsService.isKidAccount ? 'King Lion' : 'President',
+            'profile_image_url': PocketKidsService.isKidAccount
+                ? 'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=800&q=80'
+                : PocketPresidentService.presidentAvatarUrl,
             'is_president': true,
             'golden_tick': true,
           };
@@ -1648,6 +1727,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   }
 
   Widget _buildAddStatusButton() {
+    if (PocketKidsService.isKidAccount) {
+      return const SizedBox.shrink();
+    }
     if (widget.isVertical) {
       return InkWell(
         onTap: _openStatusUpload,
@@ -1751,6 +1833,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     final isPresident = statusGroup['is_president'] == true || profile?['is_president'] == true || PocketPresidentService.isPresidentId(groupId);
     final isRobot = statusGroup['is_robot'] == true || profile?['is_robot'] == true || PocketRobotService.isRobotId(groupId);
+    final presidentTitle =
+        PocketKidsService.isKidAccount ? 'King Lion' : 'President';
 
     if (!isHorizontal) {
       return Container(
@@ -1772,7 +1856,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               children: [
                 _buildAvatarWithRing(
                   profileImageUrl,
-                  isPresident ? 'President' : name,
+                  isPresident ? presidentTitle : name,
                   52,
                   isGroup: isGroup,
                   isWatched: isFullyWatched,
@@ -1790,7 +1874,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                         children: [
                           Flexible(
                             child: Text(
-                              isOwn ? 'My Vibes' : (isPresident ? 'President' : name),
+                              isOwn ? 'My Vibes' : (isPresident ? presidentTitle : name),
                               style: GoogleFonts.outfit(
                                 color: isFullyWatched ? Colors.white70 : Colors.white,
                                 fontSize: 15.5,
@@ -1861,7 +1945,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           children: [
             _buildAvatarWithRing(
               profileImageUrl,
-              isPresident ? 'President' : name,
+              isPresident ? presidentTitle : name,
               72,
               isGroup: isGroup,
               isWatched: isFullyWatched,
@@ -1877,7 +1961,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               children: [
                 Flexible(
                   child: Text(
-                    isOwn ? 'My Vibes' : (isPresident ? 'President' : name),
+                    isOwn ? 'My Vibes' : (isPresident ? presidentTitle : name),
                     style: GoogleFonts.outfit(
                       color: isFullyWatched ? Colors.white60 : Colors.white,
                       fontSize: 12.5,
@@ -5895,7 +5979,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         children: [
                           Flexible(
                             child: Text(
-                              isPresident ? '🏛️ Sovereign Citadel' : '🏰 $targetUserName\'s Citadel',
+                              isPresident
+                                  ? (PocketKidsService.isKidAccount
+                                      ? '🦁 King Lion Palace'
+                                      : '🏛️ Sovereign Citadel')
+                                  : '🏰 $targetUserName\'s Citadel',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -6506,6 +6594,7 @@ class StatusUploadWidget extends StatefulWidget {
   final String? sharedContentId; // gallery_id
   final Map<String, dynamic>? sharedMetadata;
   final String? initialPicker;
+  final bool? isKidMode;
 
   const StatusUploadWidget({
     super.key,
@@ -6516,6 +6605,7 @@ class StatusUploadWidget extends StatefulWidget {
     this.sharedContentId,
     this.sharedMetadata,
     this.initialPicker,
+    this.isKidMode,
   });
 
   @override
@@ -8026,6 +8116,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true, // Ensure it's active so it shows up
+        'is_kid': widget.isKidMode ?? PocketKidsService.isKidAccount,
       };
 
       await supabase.from('statuses').insert(statusData);
@@ -8134,6 +8225,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
+        'is_kid': widget.isKidMode ?? PocketKidsService.isKidAccount,
         if (contentId != null && contentId.isNotEmpty) ...{
           if (type == 'thought')
             'thought_id': int.tryParse(contentId.toString()) ?? contentId

@@ -18,6 +18,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 
 // Begin custom widget code
@@ -100,6 +102,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
   static const Color accentColor = Color(0xFFFFFC00);
   final _supabase = Supabase.instance.client;
+  String get _groupMessagesTable =>
+      PocketKidsService.isKidAccount ? 'kids_group_messages' : 'group_messages';
   final _teamsService = TeamsService();
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
@@ -139,7 +143,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final Set<String> _loadingAnalysisMessageIds = {};
 
   bool _isAdminBlockedFromHub = false;
+
+  bool get _isKidMode =>
+      PocketKidsService.isKidAccount ||
+      widget.groupId.startsWith('kid_') ||
+      widget.groupId.startsWith('p:kid_') ||
+      (widget.groupId.startsWith('p:') &&
+          PocketKidsService.isAllowedKidMateId(widget.groupId.substring(2)));
+
   bool get _isEnglishHubGroup {
+    if (_isKidMode) return false; // Strict separation: Kids mode has NO English Hub!
     final name = widget.groupName.toLowerCase();
     final id = widget.groupId.toLowerCase();
     return name.contains('english hub') ||
@@ -321,6 +334,99 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPocketGangHeaderRibbon() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFEF3C7),
+            Color(0xFFEFF6FF),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+            width: 1.2,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD700), Color(0xFFFF9800)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🏰', style: TextStyle(fontSize: 11)),
+                const SizedBox(width: 4),
+                Text(
+                  'POCKET GANG',
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 10,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '🎮 Play, chat & conquer English quests together!',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF1E293B),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              final targetId = widget.groupId.startsWith('p:')
+                  ? widget.groupId.substring(2)
+                  : widget.groupId;
+              PocketCitadelAttackPage.openForUser(context, userId: targetId);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('⚔️', style: TextStyle(fontSize: 10)),
+                  const SizedBox(width: 2),
+                  Text(
+                    'Citadel',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -668,7 +774,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         // Persist to Supabase group_messages so it syncs across users
         // NOTE: sender_id must be null because sender_id in group_messages is a UUID referencing users(id)
         try {
-          await _supabase.from('group_messages').insert({
+          await _supabase.from(_groupMessagesTable).insert({
             'group_id': widget.groupId,
             'sender_id': null,
             'message_text': turn.text,
@@ -780,7 +886,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         // Persist to Supabase group_messages with null sender_id so UUID constraint passes
         try {
-          await _supabase.from('group_messages').insert({
+          await _supabase.from(_groupMessagesTable).insert({
             'group_id': widget.groupId,
             'sender_id': null,
             'message_text': reply['text'],
@@ -876,10 +982,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   String? _stagedDocumentPath;
   String? _stagedAudioPath;
 
+  static final RegExp _uuidRegex = RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  );
+
   Future<void> _fetchUserAvatarConfigAsync(String targetId) async {
     if (targetId.isEmpty ||
+        !_uuidRegex.hasMatch(targetId) ||
         PocketRobotService.isRobotId(targetId) ||
         PocketPresidentService.isPresidentId(targetId) ||
+        targetId == 'mentor_animal_king_lion' ||
+        targetId.startsWith('kid_bot_') ||
+        PocketKidsService.isAllowedKidMateId(targetId) ||
         _fetchingAvatarUserIds.contains(targetId) ||
         _userAvatarConfigCache.containsKey(targetId)) {
       return;
@@ -943,6 +1057,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   VectorAvatarConfig _getPersonalAvatarConfig(String targetId) {
+    if (targetId == 'mentor_animal_king_lion' || targetId == 'kid_bot_100') {
+      return PocketKidsAvatarSystem.getAvatarConfigForDay(100);
+    }
+    if (targetId.startsWith('kid_bot_')) {
+      final d = int.tryParse(targetId.replaceFirst('kid_bot_', '')) ?? 1;
+      return PocketKidsAvatarSystem.getAvatarConfigForDay(d);
+    }
     if (PocketPresidentService.isPresidentId(targetId)) {
       return VectorAvatarConfig.getEvolutionAvatarForStage(90);
     }
@@ -1039,6 +1160,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (!widget.groupId.startsWith('p:')) return;
     final mateUserId = widget.groupId.substring(2);
     try {
+      if (mateUserId == 'mentor_animal_king_lion' || mateUserId == 'kid_bot_100') {
+        safeSetState(() {
+          _mateStreakDays = 100;
+        });
+        return;
+      }
+      if (mateUserId.startsWith('kid_bot_')) {
+        final dynLvl = int.tryParse(mateUserId.replaceFirst('kid_bot_', '')) ?? 1;
+        safeSetState(() {
+          _mateStreakDays = dynLvl;
+        });
+        return;
+      }
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(mateUserId);
       if (!isUuid || PocketRobotService.isRobotId(mateUserId)) {
         final robot = PocketRobotService.getRobotById(mateUserId) ??
@@ -1932,7 +2066,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           const Icon(Icons.handshake_rounded, color: Color(0xFFFFD600), size: 18),
                           const SizedBox(height: 6),
                           Text(
-                            _activePocketTalkPact?.isAccepted == true ? 'Day ${_mateStreakDays}/4' : 'Active Pact',
+                            _activePocketTalkPact?.isAccepted == true ? 'Day $_mateStreakDays/4' : 'Active Pact',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 16,
@@ -4887,6 +5021,9 @@ Draft: "$draft"''';
                         : widget.groupId;
                     final isPresident =
                         PocketPresidentService.isPresidentId(targetId);
+                    final isKidKing =
+                        targetId == 'mentor_animal_king_lion' ||
+                        targetId == 'kid_bot_100';
 
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -4895,12 +5032,14 @@ Draft: "$draft"''';
                           child: Text(
                             isPresident
                                 ? 'President'
-                                : (widget.groupId.startsWith('p:')
-                                    ? ContactsNameService().getDisplayName(
-                                        userId: targetId,
-                                        fallbackName: widget.groupName,
-                                      )
-                                    : widget.groupName),
+                                : (isKidKing
+                                    ? 'King'
+                                    : (widget.groupId.startsWith('p:')
+                                        ? ContactsNameService().getDisplayName(
+                                            userId: targetId,
+                                            fallbackName: widget.groupName,
+                                          )
+                                        : widget.groupName)),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -4909,7 +5048,7 @@ Draft: "$draft"''';
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isPresident)
+                        if (isPresident || isKidKing)
                           Container(
                             margin: const EdgeInsets.only(left: 5),
                             child: const Icon(
@@ -4993,6 +5132,24 @@ Draft: "$draft"''';
 
                     final isPresident =
                         PocketPresidentService.isPresidentId(targetId);
+                    final isKidKing =
+                        targetId == 'mentor_animal_king_lion' ||
+                        targetId == 'kid_bot_100';
+                    if (isKidKing) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          'Supreme Animal King • Kids Mentor',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFFFFD700),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }
                     if (isPresident) {
                       return const Padding(
                         padding: EdgeInsets.only(top: 1.5),
@@ -5081,10 +5238,23 @@ Draft: "$draft"''';
       ],
     ),
     actions: [
-            if (!PocketPresidentService.isPresidentId(
-                widget.groupId.startsWith('p:')
-                    ? widget.groupId.substring(2)
-                    : widget.groupId))
+            if (_isKidMode)
+              IconButton(
+                icon: const Icon(Icons.shield_rounded,
+                    color: Color(0xFFFFD700), size: 22),
+                tooltip: 'Citadel Challenge 🏰',
+                onPressed: () {
+                  final targetId = widget.groupId.startsWith('p:')
+                      ? widget.groupId.substring(2)
+                      : widget.groupId;
+                  PocketCitadelAttackPage.openForUser(context, userId: targetId);
+                },
+              ),
+            if (!_isKidMode &&
+                !PocketPresidentService.isPresidentId(
+                    widget.groupId.startsWith('p:')
+                        ? widget.groupId.substring(2)
+                        : widget.groupId))
               IconButton(
                 icon: const Icon(Icons.casino_outlined,
                     color: Color(0xFFFFFC00), size: 21),
@@ -5230,7 +5400,9 @@ Draft: "$draft"''';
                 ),
                 Column(
                   children: [
-                    if (_isEnglishHubGroup)
+                    if (_isKidMode && !widget.groupId.startsWith('p:'))
+                      _buildPocketGangHeaderRibbon()
+                    else if (_isEnglishHubGroup)
                       _buildEnglishHubHeaderRibbon()
                     else if (widget.groupId.startsWith('p:'))
                       _buildPocketTalkPactHeaderRibbon()
@@ -9691,7 +9863,7 @@ Draft: "$draft"''';
       try {
         final supabase = ref.read(supabaseClientProvider);
         await supabase
-            .from('group_messages')
+            .from(_groupMessagesTable)
             .delete()
             .eq('group_id', widget.groupId);
         // Refresh the messages list
