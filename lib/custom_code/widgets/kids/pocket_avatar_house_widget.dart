@@ -53,12 +53,29 @@ class _KidAvatarHousePainter extends CustomPainter {
     this.isPresident = false,
     this.lightsOn = true,
   }) {
+    // 🏰 Progressive Palettes: Days 91–100 get progressive majestic themes!
+    HousePalette effectivePalette = HousePalette.presets[0];
+    if (day >= 90) {
+      // Days 91–100 cycle through Royal Gold, Luxury Mirror Glass, Emerald, Cyber Yellow, and Sakura
+      final highTierPalettes = [
+        HousePalette.presets[3], // 👑 Royal Grandmaster (Gold/Purple)
+        HousePalette.presets[2], // 💎 Luxury Mirror Glass (Sapphire/Azure)
+        HousePalette.presets[4], // 🌲 Emerald Pine Lodge
+        HousePalette.presets[1], // ⚡ Profile Neon Yellow
+        HousePalette.presets[5], // 🌸 Rose Blossom
+      ];
+      effectivePalette = highTierPalettes[(day - 90) % highTierPalettes.length];
+    }
+
+    // Days 95–100 unlock Presidential Storey & Grand Citadel apex automatically!
+    final bool effectivePresident = isPresident || (day >= 95);
+
     _comp = HouseMasterComponent(
       day: day.clamp(1, 100),
       streak: 1,
-      palette: HousePalette.presets[0],
+      palette: effectivePalette,
       isDamaged: isDamaged,
-      isPresident: isPresident,
+      isPresident: effectivePresident,
     )..lightsOn = lightsOn;
   }
 

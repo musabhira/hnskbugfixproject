@@ -1487,7 +1487,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               ),
             ),
           ),
-        ),
+          // 🚀 Smooth Fast Scroll Scrubber Bar on Right Side (Quick Altitude Navigation)
+          _buildFastScrollScrubber(screenWidth, MediaQuery.of(context).size.height),
 
           // 📍 FLOATING QUICK ALTITUDE & TRAIL CONTROLLER
           Positioned(
@@ -1632,6 +1633,154 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
         ],
       );
+  }
+
+  /// 🚀 Vertical Fast Scroll Scrubber Bar on right side for Kids Mountain Trail
+  /// Enables instant smooth sliding up and down across the entire 100 days with live altitude day badge!
+  Widget _buildFastScrollScrubber(double screenWidth, double screenHeight) {
+    const double scrubberHeight = 240.0;
+    final double scrubberTop = (screenHeight - scrubberHeight) / 2.0 - 20.0;
+
+    return Positioned(
+      right: 6,
+      top: scrubberTop,
+      width: 36,
+      height: scrubberHeight,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: (details) {
+          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
+              _scrollController.jumpTo(targetOffset);
+            }
+          });
+        },
+        onTapDown: (details) {
+          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
+              _scrollController.animateTo(
+                targetOffset,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        },
+        child: Container(
+          width: 36,
+          height: scrubberHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              // Top milestone: Summit Day 100
+              const Positioned(
+                top: 6,
+                child: Text('🏰', style: TextStyle(fontSize: 11)),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.33,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.66,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
+                  ),
+                ),
+              ),
+              // Bottom milestone: Basecamp Day 1
+              const Positioned(
+                bottom: 6,
+                child: Text('⛺', style: TextStyle(fontSize: 11)),
+              ),
+
+              // Draggable Glowing Thumb with Live Day Badge
+              AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, _) {
+                  double fraction = 1.0;
+                  if (_scrollController.hasClients &&
+                      _scrollController.position.hasContentDimensions &&
+                      _scrollController.position.maxScrollExtent > 0) {
+                    fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
+                  }
+                  // Inverted mountain trail: top (offset 0) = Day 100 summit, bottom (maxScroll) = Day 1 basecamp
+                  final currentViewingDay = ((1.0 - fraction) * 99 + 1).round().clamp(1, 100);
+
+                  return Positioned(
+                    top: (fraction * (scrubberHeight - 34)).clamp(0.0, scrubberHeight - 34),
+                    child: Container(
+                      width: 30,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$currentViewingDay',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF78350F),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // --- 🕹️ Open World Arcade Console Bottom Navigation Bar ---
