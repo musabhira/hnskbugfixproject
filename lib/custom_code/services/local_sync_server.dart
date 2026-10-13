@@ -120,17 +120,19 @@ class LocalSyncServer {
     }
   }
 
-  Future<void> saveConversations(String userId, List<ChatConversation> conversations) async {
+  Future<void> saveConversations(String userId, List<ChatConversation> conversations,
+      {String prefix = ''}) async {
     if (!_isInitialized) return;
     final List<Map<String, dynamic>> jsonList =
         conversations.map((e) => e.toJson()).toList();
-    await _conversationBox.put('list_$userId', jsonList);
+    await _conversationBox.put('${prefix}list_$userId', jsonList);
     _conversationController.add(conversations);
   }
 
-  List<ChatConversation> getCachedConversations(String userId) {
+  List<ChatConversation> getCachedConversations(String userId,
+      {String prefix = ''}) {
     if (!_isInitialized) return [];
-    final List<dynamic>? list = _conversationBox.get('list_$userId');
+    final List<dynamic>? list = _conversationBox.get('${prefix}list_$userId');
     if (list == null) return [];
     return list
         .map((e) => ChatConversation.fromJson(Map<String, dynamic>.from(e)))
@@ -140,12 +142,13 @@ class LocalSyncServer {
   // --- MESSAGES ---
 
   Future<void> saveMessages(
-      String userId, String chatOrGroupId, List<dynamic> messages) async {
-    final key = '${userId}_$chatOrGroupId';
+      String userId, String chatOrGroupId, List<dynamic> messages,
+      {String prefix = ''}) async {
+    final key = '$prefix${userId}_$chatOrGroupId';
     final altChatId = chatOrGroupId.startsWith('p:')
         ? chatOrGroupId.substring(2)
         : 'p:$chatOrGroupId';
-    final altKey = '${userId}_$altChatId';
+    final altKey = '$prefix${userId}_$altChatId';
 
     final List<Map<String, dynamic>> jsonList = messages.map((e) {
       if (e is ChatMessage) return e.toJson();
@@ -163,8 +166,9 @@ class LocalSyncServer {
     }
   }
 
-  List<dynamic> getCachedMessages(String userId, String chatOrGroupId) {
-    final key = '${userId}_$chatOrGroupId';
+  List<dynamic> getCachedMessages(String userId, String chatOrGroupId,
+      {String prefix = ''}) {
+    final key = '$prefix${userId}_$chatOrGroupId';
     // Return from hot memory first
     if (_memoryMessageCache.containsKey(key)) {
       return _memoryMessageCache[key]!;
@@ -172,7 +176,7 @@ class LocalSyncServer {
     final altChatId = chatOrGroupId.startsWith('p:')
         ? chatOrGroupId.substring(2)
         : 'p:$chatOrGroupId';
-    final altKey = '${userId}_$altChatId';
+    final altKey = '$prefix${userId}_$altChatId';
     if (_memoryMessageCache.containsKey(altKey)) {
       return _memoryMessageCache[altKey]!;
     }
@@ -344,18 +348,20 @@ class LocalSyncServer {
     }
   }
 
-  Future<void> deleteCachedMessage(String userId, String chatId, String messageId) async {
-    final List<dynamic> current = getCachedMessages(userId, chatId);
+  Future<void> deleteCachedMessage(String userId, String chatId, String messageId,
+      {String prefix = ''}) async {
+    final List<dynamic> current =
+        getCachedMessages(userId, chatId, prefix: prefix);
     final updated = current.where((m) => m['id'].toString() != messageId).toList();
     if (updated.length < current.length) {
-      await saveMessages(userId, chatId, updated);
+      await saveMessages(userId, chatId, updated, prefix: prefix);
     }
   }
 
   // Speed optimization: Tap inside should be fast
   // This is where we provide the local data instantly
   Future<List<dynamic>> getMessagesForChat(String userId, String chatId,
-      {bool isGroup = false}) async {
-    return getCachedMessages(userId, chatId);
+      {bool isGroup = false, String prefix = ''}) async {
+    return getCachedMessages(userId, chatId, prefix: prefix);
   }
 }

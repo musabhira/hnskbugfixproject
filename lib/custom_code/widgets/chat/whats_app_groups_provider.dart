@@ -348,11 +348,11 @@ class Conversations extends _$Conversations {
   }
 
   Future<List<ChatConversation>> _loadFromCache(String userId) async {
-    return LocalSyncServer().getCachedConversations(userId);
+    return LocalSyncServer().getCachedConversations(userId, prefix: 'adult_');
   }
 
   Future<void> _saveToCache(String userId, List<ChatConversation> list) async {
-    await LocalSyncServer().saveConversations(userId, list);
+    await LocalSyncServer().saveConversations(userId, list, prefix: 'adult_');
   }
 
   void _setupRealtimeSubscriptions(String userId) {
@@ -1022,6 +1022,13 @@ class Conversations extends _$Conversations {
           statusData: userStatusData,
         ));
       }
+ 
+      // Filter out any kid animal bots or mentors so they never clash with adult chats
+      chats.removeWhere((c) =>
+          c.id == 'mentor_animal_king_lion' ||
+          c.id == 'king_lion' ||
+          c.id.startsWith('kid_bot_') ||
+          c.id.startsWith('mate_day_'));
 
       return chats;
     } catch (e) {

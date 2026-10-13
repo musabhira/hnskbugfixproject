@@ -678,12 +678,21 @@ class ChatMessages extends _$ChatMessages {
       });
 
       // Instantly update conversations list tile
-      ref.read(conversationsProvider.notifier).updateLastMessage(
-        conversationId: actualId,
-        message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
-        time: DateTime.now(),
-        senderId: uid,
-      );
+      if (_isKid) {
+        ref.read(kidsConversationsProvider.notifier).updateLastMessage(
+          conversationId: actualId,
+          message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+          time: DateTime.now(),
+          senderId: uid,
+        );
+      } else {
+        ref.read(conversationsProvider.notifier).updateLastMessage(
+          conversationId: actualId,
+          message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+          time: DateTime.now(),
+          senderId: uid,
+        );
+      }
 
       // 🤖 Trigger Autonomous President Robot / AI Response for citizen questions & doubts
       PocketRobotService.typingStatusNotifier.value = {
@@ -764,12 +773,21 @@ class ChatMessages extends _$ChatMessages {
       });
 
       // Instantly update conversations list tile
-      ref.read(conversationsProvider.notifier).updateLastMessage(
-        conversationId: actualId,
-        message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
-        time: DateTime.now(),
-        senderId: uid,
-      );
+      if (_isKid) {
+        ref.read(kidsConversationsProvider.notifier).updateLastMessage(
+          conversationId: actualId,
+          message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+          time: DateTime.now(),
+          senderId: uid,
+        );
+      } else {
+        ref.read(conversationsProvider.notifier).updateLastMessage(
+          conversationId: actualId,
+          message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+          time: DateTime.now(),
+          senderId: uid,
+        );
+      }
 
       // Handle Pocket Talk challenge to Robot
       if (messageType == 'pocket_talk_request') {
@@ -1236,7 +1254,8 @@ class ChatMessages extends _$ChatMessages {
     try {
       final uid = ref.read(currentUserIdProvider);
       if (uid.isNotEmpty) {
-        await LocalSyncServer().deleteCachedMessage(uid, groupId, messageId);
+        final prefix = _isKid ? 'kids_' : 'adult_';
+        await LocalSyncServer().deleteCachedMessage(uid, groupId, messageId, prefix: prefix);
       }
 
       await _supabase
@@ -1255,7 +1274,8 @@ class ChatMessages extends _$ChatMessages {
   Future<List<ChatMessage>> _loadFromCache() async {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return [];
-    final cachedData = LocalSyncServer().getCachedMessages(uid, groupId);
+    final prefix = _isKid ? 'kids_' : 'adult_';
+    final cachedData = LocalSyncServer().getCachedMessages(uid, groupId, prefix: prefix);
     return cachedData
         .map((m) => ChatMessage.fromJson(Map<String, dynamic>.from(m)))
         .toList();
@@ -1283,7 +1303,8 @@ class ChatMessages extends _$ChatMessages {
   Future<void> _saveToCache(List<ChatMessage> messages) async {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return;
-    await LocalSyncServer().saveMessages(uid, groupId, messages);
+    final prefix = _isKid ? 'kids_' : 'adult_';
+    await LocalSyncServer().saveMessages(uid, groupId, messages, prefix: prefix);
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {

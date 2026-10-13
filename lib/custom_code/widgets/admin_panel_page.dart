@@ -21,6 +21,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -156,10 +158,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   int _curriculumEditorMode = 0; // 0 = JSON, 1 = Quick Form
   String _curriculumFilterText = '';
 
+  // 🦁 Kids Panel (Lion Desk) State
+  int _lionKidsSubTab = 0; // 0: Chats, 1: 100-Day Progress, 2: Safety Shield, 3: Royal Broadcast, 4: Homies
+  List<Map<String, dynamic>> _lionKidsInquiries = [];
+  bool _isLoadingLionKidsInquiries = false;
+  String _lionKidsInquirySearchQuery = '';
+  final TextEditingController _lionBroadcastTitleController = TextEditingController();
+  final TextEditingController _lionBroadcastContentController = TextEditingController();
+  final TextEditingController _lionBroadcastMediaUrlController = TextEditingController();
+  final TextEditingController _lionSafetyBannedWordController = TextEditingController();
+  final List<String> _lionBannedWords = ['abuse', 'badword', 'hate', 'stupid', 'kill'];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 14, vsync: this);
+    _tabController = TabController(length: 15, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -167,6 +180,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _loadAdminMediaOverrides();
       _loadPresidentInquiries();
       _loadCurriculumDayData(1);
+      _loadLionKidsInquiries();
     });
   }
 
@@ -304,6 +318,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _presidentAnnouncementContentController.dispose();
     _presidentAnnouncementMediaUrlController.dispose();
     _presidentProtectionTargetController.dispose();
+    _lionBroadcastTitleController.dispose();
+    _lionBroadcastContentController.dispose();
+    _lionBroadcastMediaUrlController.dispose();
+    _lionSafetyBannedWordController.dispose();
     super.dispose();
   }
 
@@ -678,6 +696,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.account_balance_rounded),
                 text: 'President Desk 🏛️'),
+            Tab(
+                icon: Icon(Icons.pets_rounded),
+                text: 'Kids Panel (Lion Desk 🦁)'),
             Tab(icon: Icon(Icons.dashboard_outlined), text: 'Insight'),
             Tab(icon: Icon(Icons.people_outline), text: 'Users'),
             Tab(icon: Icon(Icons.school_outlined), text: 'Requests'),
@@ -706,6 +727,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         controller: _tabController,
         children: [
           _buildPresidentDeskTab(),
+          _buildLionKidsDeskTab(),
           _buildInsightTab(),
           _buildUserTab(),
           _buildRequestsTab(),
@@ -10276,6 +10298,1025 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           ],
         ),
       ),
+    );
+  // ==========================================
+  // 🦁 KIDS PANEL (LION DESK) - SUPREME AUTHORITY FOR STUDENTS
+  // ==========================================
+
+  Future<void> _loadLionKidsInquiries() async {
+    if (!mounted) return;
+    setState(() => _isLoadingLionKidsInquiries = true);
+    try {
+      final res = await supabase
+          .from('kids_messages')
+          .select('id, sender_id, receiver_id, message_text, message_type, created_at, is_read')
+          .eq('receiver_id', 'mentor_animal_king_lion')
+          .order('created_at', ascending: false)
+          .limit(50);
+
+      final list = (res as List).map((m) => Map<String, dynamic>.from(m)).toList();
+      if (mounted) {
+        setState(() {
+          _lionKidsInquiries = list;
+          _isLoadingLionKidsInquiries = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading Lion kids inquiries: $e');
+      if (mounted) setState(() => _isLoadingLionKidsInquiries = false);
+    }
+  }
+
+  Widget _buildLionKidsDeskTab() {
+    final pendingCount =
+        _lionKidsInquiries.where((i) => i['is_read'] != true).length;
+    return Column(
+      children: [
+        // Lion Sovereign Royal Sub-navigation Bar
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1B4B),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              _buildLionKidsSubNavButton(
+                label: 'Chats ${pendingCount > 0 ? '($pendingCount)' : ''}',
+                icon: Icons.forum_rounded,
+                index: 0,
+              ),
+              _buildLionKidsSubNavButton(
+                label: '100 Days',
+                icon: Icons.military_tech_rounded,
+                index: 1,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Safety',
+                icon: Icons.shield_rounded,
+                index: 2,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Broadcast',
+                icon: Icons.campaign_rounded,
+                index: 3,
+              ),
+              _buildLionKidsSubNavButton(
+                label: 'Homies (100)',
+                icon: Icons.pets_rounded,
+                index: 4,
+              ),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: _lionKidsSubTab == 0
+              ? _buildLionKidsInquiriesSubTab()
+              : _lionKidsSubTab == 1
+                  ? _buildLionKids100DaySubTab()
+                  : _lionKidsSubTab == 2
+                      ? _buildLionKidsSafetyShieldSubTab()
+                      : _lionKidsSubTab == 3
+                          ? _buildLionKidsBroadcastSubTab()
+                          : _buildLionKidsHomiesSubTab(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLionKidsSubNavButton({
+    required String label,
+    required IconData icon,
+    required int index,
+  }) {
+    final isSelected = _lionKidsSubTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _lionKidsSubTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? Colors.black : Colors.white70,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: isSelected ? Colors.black : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 10.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 1. LION KIDS CHATS & INQUIRIES SUB-TAB
+  Widget _buildLionKidsInquiriesSubTab() {
+    if (_isLoadingLionKidsInquiries) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+      );
+    }
+
+    final filtered = _lionKidsInquiries.where((inq) {
+      final text = (inq['message_text'] ?? '').toString().toLowerCase();
+      final sender = (inq['sender_id'] ?? '').toString().toLowerCase();
+      final q = _lionKidsInquirySearchQuery.toLowerCase();
+      if (q.isNotEmpty && !text.contains(q) && !sender.contains(q)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    return Column(
+      children: [
+        // Search & Refresh Row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (val) =>
+                      setState(() => _lionKidsInquirySearchQuery = val),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search student chats, questions, IDs...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search,
+                        color: Color(0xFFFFD700), size: 18),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded,
+                    color: Color(0xFFFFD700)),
+                onPressed: _loadLionKidsInquiries,
+                tooltip: 'Refresh Student Chats',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        Expanded(
+          child: filtered.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🦁', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 10),
+                      Text(
+                        'All student chats handled with royal pride!',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'No pending questions from students to King Lion.',
+                        style: GoogleFonts.inter(
+                            color: Colors.white54, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, idx) {
+                    final item = filtered[idx];
+                    final msg = item['message_text']?.toString() ?? '';
+                    final senderId = item['sender_id']?.toString() ?? 'Student';
+                    final isRead = item['is_read'] == true;
+
+                    return Card(
+                      color: const Color(0xFF1E293B),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isRead
+                              ? Colors.white12
+                              : const Color(0xFFFFD700),
+                          width: isRead ? 0.8 : 1.5,
+                        ),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF334155),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Text('🎒',
+                                      style: TextStyle(fontSize: 16)),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Student: $senderId',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      Text(
+                                        item['created_at'] != null
+                                            ? item['created_at']
+                                                .toString()
+                                                .split('T')
+                                                .first
+                                            : '',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white38,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (!isRead)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700)),
+                                    ),
+                                    child: Text(
+                                      'NEW',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                msg,
+                                style: GoogleFonts.inter(
+                                    color: Colors.white, fontSize: 13),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFFD700),
+                                    foregroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                  ),
+                                  icon: const Icon(Icons.reply_rounded, size: 16),
+                                  label: Text(
+                                    'Reply as King Lion 🦁',
+                                    style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                  ),
+                                  onPressed: () => _showLionReplyModal(item),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  void _showLionReplyModal(Map<String, dynamic> item) {
+    final replyController = TextEditingController();
+    final senderId = item['sender_id']?.toString() ?? '';
+    bool isSending = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) {
+          final bottomInset = MediaQuery.of(modalContext).viewInsets.bottom;
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: bottomInset + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🦁', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Reply as Sovereign King Lion',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Sending to Student ID: $senderId',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Quick reply chips
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildLionQuickReplyChip(
+                      label: 'Roar! Keep shining! 🦁',
+                      controller: replyController,
+                    ),
+                    _buildLionQuickReplyChip(
+                      label: 'Great English practice! ⭐',
+                      controller: replyController,
+                    ),
+                    _buildLionQuickReplyChip(
+                      label: 'Day 100 Sovereign awaits you! 🏰',
+                      controller: replyController,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                TextField(
+                  controller: replyController,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Type royal mentor advice...',
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: isSending
+                        ? null
+                        : () async {
+                            final text = replyController.text.trim();
+                            if (text.isEmpty) return;
+                            setModalState(() => isSending = true);
+                            try {
+                              await supabase.from('kids_messages').insert({
+                                'sender_id': 'mentor_animal_king_lion',
+                                'receiver_id': senderId,
+                                'message_text': text,
+                                'message_type': 'text',
+                                'created_at': DateTime.now().toIso8601String(),
+                                'is_read': false,
+                              });
+                              if (item['id'] != null) {
+                                await supabase
+                                    .from('kids_messages')
+                                    .update({'is_read': true})
+                                    .eq('id', item['id']);
+                              }
+                              Navigator.pop(modalContext);
+                              _loadLionKidsInquiries();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('King Lion reply sent to student! 🦁'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              setModalState(() => isSending = false);
+                              debugPrint('Error sending Lion reply: $e');
+                            }
+                          },
+                    child: isSending
+                        ? const CircularProgressIndicator(color: Colors.black)
+                        : Text(
+                            'Send Royal Advice 🦁',
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLionQuickReplyChip({
+    required String label,
+    required TextEditingController controller,
+  }) {
+    return ActionChip(
+      backgroundColor: const Color(0xFF1E293B),
+      label: Text(label,
+          style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11)),
+      onPressed: () {
+        controller.text = label;
+      },
+    );
+  }
+
+  // 2. 100-DAY PROGRESS & ARCHITECTURAL TIERS SUB-TAB
+  Widget _buildLionKids100DaySubTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Stats Overview
+        Row(
+          children: [
+            _buildLionStatCard('Total Days', '100', '🎒', const Color(0xFF38BDF8)),
+            const SizedBox(width: 8),
+            _buildLionStatCard('Houses', '10 Tiers', '🏰', const Color(0xFFFFD700)),
+            const SizedBox(width: 8),
+            _buildLionStatCard('Companions', '100 BOTS', '🐾', const Color(0xFF10B981)),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        Text(
+          'Architectural Homestead Tiers (Days 1–100)',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        ...PocketKidsService.houses.map((house) {
+          final isLionPalace = house.tier == 10;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isLionPalace
+                    ? const Color(0xFFFFD700)
+                    : house.themeColor.withValues(alpha: 0.4),
+                width: isLionPalace ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: house.themeColor.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(house.emoji, style: const TextStyle(fontSize: 22)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Tier ${house.tier}: ${house.title}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          if (isLionPalace) ...[
+                            const SizedBox(width: 6),
+                            const Text('👑', style: TextStyle(fontSize: 14)),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        house.description,
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    'Day ${house.unlockedAtDay}+',
+                    style: GoogleFonts.outfit(
+                      color: house.themeColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildLionStatCard(String label, String value, String icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 3. SAFETY SHIELD & CONTENT FILTERS SUB-TAB
+  Widget _buildLionKidsSafetyShieldSubTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified_user_rounded,
+                      color: Color(0xFF10B981), size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Child Safety & Protection Shield',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kids Mode is strictly walled off from adult interactions. Content filters, parental math challenges, and isolated chat databases ensure 100% child safety.',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildLionSafetyPill('Parental Gate Active', Icons.lock_rounded, const Color(0xFF10B981)),
+                  const SizedBox(width: 8),
+                  _buildLionSafetyPill('Chat Partitioned', Icons.shield_rounded, const Color(0xFF38BDF8)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        Text(
+          'Banned Words & Moderation Filter',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _lionSafetyBannedWordController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Add inappropriate word to ban...',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                final w = _lionSafetyBannedWordController.text.trim().toLowerCase();
+                if (w.isNotEmpty && !_lionBannedWords.contains(w)) {
+                  setState(() {
+                    _lionBannedWords.add(w);
+                    _lionSafetyBannedWordController.clear();
+                  });
+                }
+              },
+              child: const Text('Add Ban', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _lionBannedWords.map((word) {
+            return Chip(
+              backgroundColor: const Color(0xFF1E293B),
+              side: const BorderSide(color: Color(0xFFEF4444)),
+              label: Text(word, style: const TextStyle(color: Colors.white, fontSize: 12)),
+              deleteIcon: const Icon(Icons.close_rounded, size: 14, color: Colors.white70),
+              onDeleted: () {
+                setState(() => _lionBannedWords.remove(word));
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLionSafetyPill(String text, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 4. ROYAL BROADCAST SUB-TAB
+  Widget _buildLionKidsBroadcastSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF78350F), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('👑', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'King Lion Royal Broadcast 📢',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Send announcements to all students in Kids Mode. Appears with golden lion badge and audio greeting.',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          Text('Announcement Title:',
+              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _lionBroadcastTitleController,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'e.g., Weekend English Safari Challenge!',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          Text('Announcement Message:',
+              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _lionBroadcastContentController,
+            maxLines: 4,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Roar! Today we practice 10 animal names and collect 50 gold stars...',
+              hintStyle: const TextStyle(color: Colors.white38),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            icon: const Icon(Icons.campaign_rounded),
+            label: Text(
+              'Broadcast to All Kids 🦁',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            onPressed: () async {
+              final title = _lionBroadcastTitleController.text.trim();
+              final content = _lionBroadcastContentController.text.trim();
+              if (title.isEmpty || content.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter both title and message.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                await supabase.from('announcements').insert({
+                  'title': title,
+                  'content': content,
+                  'priority': 'high',
+                  'target_audience': 'kids',
+                  'created_at': DateTime.now().toIso8601String(),
+                  'is_active': true,
+                });
+                _lionBroadcastTitleController.clear();
+                _lionBroadcastContentController.clear();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Royal Broadcast published to Student Realm! 🦁'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                debugPrint('Broadcast error: $e');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 5. 100 ANIMAL HOMIES & ROBOTS SUB-TAB
+  Widget _buildLionKidsHomiesSubTab() {
+    final allBots = PocketKidsRobotsData.robotsAndHomies;
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: allBots.length,
+      itemBuilder: (context, idx) {
+        final bot = allBots[idx];
+        return Card(
+          color: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+              ),
+              child: Center(
+                child: Text(bot.avatar, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            title: Text(
+              bot.name,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            subtitle: Text(
+              'Day ${bot.dayLevel} • Age ${bot.ageGroup} • ${bot.bio}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${bot.stars} ⭐',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

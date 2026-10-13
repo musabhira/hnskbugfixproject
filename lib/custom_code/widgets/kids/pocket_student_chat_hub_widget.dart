@@ -2794,140 +2794,84 @@ class _KidsChatHeaderDelegate extends SliverPersistentHeaderDelegate {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Top Bar (Kids Arcade Gaming Header)
-                    Container(
-                      height: topBarHeight,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: material.Image.asset(
-                                  'assets/images/pocket_mates_logo.png',
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                      Container(
+                        height: topBarHeight,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'POCKET KIDS',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 15.0,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5, vertical: 1.5),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              Color(0xFFFFD700),
-                                              Color(0xFFFF9800)
-                                            ],
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          'ARCADE 🎮',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.black,
-                                            fontSize: 7.5,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: material.Image.asset(
+                                      'assets/images/pocket_mates_logo.png',
+                                      width: 28,
+                                      height: 28,
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                  Text(
-                                    'STUDENT REALM 🎒',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF0284C7),
-                                      fontSize: 9.0,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.4,
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'POCKET MATES',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.3,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          'STUDENT REALM 🎒',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF38BDF8),
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.4,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          const Spacer(),
-                          // Star Points Coin HUD
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFF59E0B),
-                                width: 1.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
-                                  blurRadius: 6,
-                                ),
-                              ],
                             ),
-                            child: Row(
+                            Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('⭐', style: TextStyle(fontSize: 10)),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${PocketKidsService.kidStars} PTS',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                  ),
+                                _buildHeaderIconButton(
+                                  context,
+                                  icon: material.Icons.search_rounded,
+                                  onTap: onTapSearch,
+                                ),
+                                const SizedBox(width: 6),
+                                _buildHeaderIconButton(
+                                  context,
+                                  icon: material.Icons.notifications_outlined,
+                                  badgeCount: pendingRequestsCount,
+                                  onTap: onTapNotifications,
+                                ),
+                                const SizedBox(width: 6),
+                                _buildHeaderIconButton(
+                                  context,
+                                  icon: material.Icons.person_add_rounded,
+                                  onTap: onTapCreateGroup,
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildHeaderIconButton(
-                                context,
-                                icon: material.Icons.search_rounded,
-                                onTap: onTapSearch,
-                              ),
-                              const SizedBox(width: 4),
-                              _buildHeaderIconButton(
-                                context,
-                                icon: material.Icons.notifications_outlined,
-                                badgeCount: pendingRequestsCount,
-                                onTap: onTapNotifications,
-                              ),
-                              const SizedBox(width: 4),
-                              _buildHeaderIconButton(
-                                context,
-                                icon: material.Icons.person_add_rounded,
-                                onTap: onTapCreateGroup,
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

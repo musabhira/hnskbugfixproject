@@ -280,10 +280,8 @@ class PocketKidsService {
   }
 
   /// Whether current user can exit Kids Mode back to Adult Mode
-  /// - Admin (musabthonippadam@gmail.com) can always exit
-  /// - Parents who switched into Kids Mode can exit via Parent Gate
-  /// - Pure Kid/Student accounts CANNOT exit to Adult Mode (strictly no exit option shown)
-  static bool get canExitToAdultAccount => isAdminAccount || (_isParentSwitched && !_isPureKidAccount);
+  /// Any user/parent who solves the Parental Gate challenge can return to Adult Mode smoothly!
+  static bool get canExitToAdultAccount => true;
 
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;

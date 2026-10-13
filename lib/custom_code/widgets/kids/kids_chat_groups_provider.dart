@@ -5,6 +5,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
     as groups_provider;
+import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
@@ -46,7 +47,18 @@ class KidsConversationsNotifier extends AsyncNotifier<List<ChatConversation>> {
       _debounceTimer?.cancel();
     });
 
-    return await _fetchKidsConversations(userId);
+    final cached = LocalSyncServer().getCachedConversations(userId, prefix: 'kids_');
+    if (cached.isNotEmpty) {
+      _fetchKidsConversations(userId).then((fresh) {
+        state = AsyncValue.data(fresh);
+        LocalSyncServer().saveConversations(userId, fresh, prefix: 'kids_');
+      });
+      return cached;
+    }
+
+    final fresh = await _fetchKidsConversations(userId);
+    LocalSyncServer().saveConversations(userId, fresh, prefix: 'kids_');
+    return fresh;
   }
 
   void _setupRealtime(String userId) {
@@ -81,6 +93,7 @@ class KidsConversationsNotifier extends AsyncNotifier<List<ChatConversation>> {
       if (user != null) {
         final list = await _fetchKidsConversations(user.id);
         state = AsyncValue.data(list);
+        LocalSyncServer().saveConversations(user.id, list, prefix: 'kids_');
       }
     });
   }
@@ -91,6 +104,7 @@ class KidsConversationsNotifier extends AsyncNotifier<List<ChatConversation>> {
     if (user != null) {
       final list = await _fetchKidsConversations(user.id);
       state = AsyncValue.data(list);
+      LocalSyncServer().saveConversations(user.id, list, prefix: 'kids_');
     }
   }
 

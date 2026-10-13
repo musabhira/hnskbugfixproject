@@ -278,13 +278,11 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   }
 
   void _showParentalGate(BuildContext context) {
-    if (!PocketKidsService.canExitToAdultAccount) {
-      return;
-    }
     final rand = math.Random();
     final a = rand.nextInt(5) + 3; // 3 to 7
     final b = rand.nextInt(5) + 2; // 2 to 6
     final correctAnswer = a + b;
+    final options = [correctAnswer - 2, correctAnswer, correctAnswer + 3]..shuffle();
     final controller = TextEditingController();
     if (PocketKidsService.isAdminAccount) {
       controller.text = '$correctAnswer';
@@ -301,9 +299,9 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
           title: Row(
             children: [
-              const Text('🔒 ', style: TextStyle(fontSize: 22)),
+              const Text('👨‍👩‍👧 ', style: TextStyle(fontSize: 22)),
               Text(
-                PocketLanguageService.getParentZoneTitle(PocketLanguageService.currentLanguage),
+                'Parent Verification',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -317,7 +315,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'To switch to adult account, solve this math problem:',
+                'To switch back to Adult Mode, please solve this problem:',
                 style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
               ),
               const SizedBox(height: 14),
@@ -339,16 +337,57 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                 ),
               ),
               const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: options.map((opt) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ActionChip(
+                      label: Text(
+                        '$opt',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFF334155),
+                      side: const BorderSide(color: Color(0xFF38BDF8), width: 1),
+                      onPressed: () async {
+                        if (opt == correctAnswer) {
+                          Navigator.pop(ctx);
+                          await PocketKidsService.activateAdultAccount();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const HomePageWidget()),
+                              (route) => false,
+                            );
+                          }
+                        } else {
+                          HapticFeedback.heavyImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Incorrect answer! Only parents can exit Kids Mode.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
-                autofocus: true,
                 style: const TextStyle(color: Colors.white, fontSize: 18),
                 decoration: InputDecoration(
-                  hintText: 'Enter answer',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintText: 'Or type answer here',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
                   filled: true,
                   fillColor: const Color(0xFF1E293B),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -1456,33 +1495,49 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     ),
                   ],
 
-                  // Parental Lock Button (Settings) - ONLY visible if user can exit to Adult Mode (parent switched or admin)
-                  if (PocketKidsService.canExitToAdultAccount) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => _showParentalGate(context),
-                      child: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 6,
+                  // 👨‍👩‍👧 Switch to Adult Mode Button (Parental Gate Protected)
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _showParentalGate(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.swap_horiz_rounded,
+                            color: Color(0xFF38BDF8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'ADULT',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
                             ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.lock_outline_rounded,
-                          color: Color(0xFF0F172A),
-                          size: 20,
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
