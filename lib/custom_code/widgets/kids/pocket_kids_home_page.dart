@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_day_open_world_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page.dart';
@@ -13,7 +12,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_study_tool
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_student_chat_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kid_avatar_card_dialog.dart';
@@ -54,10 +52,14 @@ class PocketKidsHomePage extends StatefulWidget {
 }
 
 class _PocketKidsHomePageState extends State<PocketKidsHomePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _bounceController;
+  late final AnimationController _earthRotationController;
+  late final TransformationController _mapTransformController;
+  AnimationController? _cameraAnimationController;
   final ScrollController _scrollController = ScrollController();
   int _currentTab = 2; // 0 = Homes, 1 = Chat, 2 = Target (Center Trail), 3 = Tools, 4 = Profile
+  bool _isGlobeMode = false;
 
   static const int _totalDays = 100;
   static const double _nodeSpacingY = 540.0;
@@ -88,11 +90,19 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
+    _earthRotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 16),
+    )..repeat();
+
+    _mapTransformController = TransformationController();
+
     PocketKidsService.kidPremiumNotifier.addListener(_onPremiumChanged);
 
-    // Auto-scroll directly to the kid's current active day at the bottom / on mountain
+    // Auto-focus directly on the kid's current active level on the 2D mountain map
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToActiveDay(animate: false);
+      final curDay = PocketKidsService.currentUnlockedDay;
+      _focusOnNode(curDay, scale: 1.0, animate: false);
       if (widget.promptProfileSetup || !PocketKidsService.isProfileConfigured) {
         _showInitialProfileSetupDialog();
       }
@@ -242,37 +252,112 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     if (mounted) setState(() {});
   }
 
-  void _scrollToActiveDay({bool animate = true}) {
-    if (!mounted || !_scrollController.hasClients) return;
-    if (!_scrollController.position.hasContentDimensions) {
-      // If layout is not ready yet, defer safely to after layout completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _scrollToActiveDay(animate: animate);
-      });
-      return;
+  void _focusOnNode(int day, {double scale = 1.0, bool animate = true}) {
+    if (!mounted) return;
+    final screenSize = MediaQuery.of(context).size;
+    final double worldWidth = math.max(screenSize.width, 680.0);
+    final nodeX = _getNodeX(day, worldWidth);
+    final nodeY = _getNodeY(day);
+
+    final targetX = -(nodeX * scale) + (screenSize.width / 2.0);
+    final targetY = -(nodeY * scale) + (screenSize.height / 2.0);
+
+    final targetMatrix = Matrix4.identity()
+      ..setEntry(0, 0, scale)
+      ..setEntry(1, 1, scale)
+      ..setEntry(0, 3, targetX)
+      ..setEntry(1, 3, targetY);
+
+    if (_isGlobeMode) {
+      setState(() => _isGlobeMode = false);
     }
-    final curDay = PocketKidsService.currentUnlockedDay;
-    final targetY = _getNodeY(curDay) - 300.0;
-    final clampedY = targetY.clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
 
     if (animate) {
-      _scrollController.animateTo(
-        clampedY,
+      _cameraAnimationController?.dispose();
+      _cameraAnimationController = AnimationController(
+        vsync: this,
         duration: const Duration(milliseconds: 700),
-        curve: Curves.easeOutCubic,
       );
+      final startMatrix = _mapTransformController.value;
+      final anim = Matrix4Tween(begin: startMatrix, end: targetMatrix).animate(
+        CurvedAnimation(parent: _cameraAnimationController!, curve: Curves.easeInOutCubic),
+      );
+      anim.addListener(() {
+        _mapTransformController.value = anim.value;
+      });
+      _cameraAnimationController!.forward();
     } else {
-      _scrollController.jumpTo(clampedY);
+      _mapTransformController.value = targetMatrix;
     }
+  }
+
+  void _zoomBy(double factor) {
+    if (!mounted) return;
+    final screenSize = MediaQuery.of(context).size;
+    final curMatrix = _mapTransformController.value;
+    final curScale = curMatrix.getMaxScaleOnAxis();
+    final targetScale = (curScale * factor).clamp(0.20, 2.2);
+
+    if (targetScale <= 0.32) {
+      HapticFeedback.mediumImpact();
+      setState(() => _isGlobeMode = true);
+      return;
+    } else if (_isGlobeMode) {
+      setState(() => _isGlobeMode = false);
+    }
+
+    final curTranslation = curMatrix.getTranslation();
+    final centerX = screenSize.width / 2;
+    final centerY = screenSize.height / 2;
+    final worldCenterX = (centerX - curTranslation.x) / curScale;
+    final worldCenterY = (centerY - curTranslation.y) / curScale;
+
+    final newX = -(worldCenterX * targetScale) + centerX;
+    final newY = -(worldCenterY * targetScale) + centerY;
+
+    final targetMatrix = Matrix4.identity()
+      ..setEntry(0, 0, targetScale)
+      ..setEntry(1, 1, targetScale)
+      ..setEntry(0, 3, newX)
+      ..setEntry(1, 3, newY);
+
+    _cameraAnimationController?.dispose();
+    _cameraAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    final anim = Matrix4Tween(begin: curMatrix, end: targetMatrix).animate(
+      CurvedAnimation(parent: _cameraAnimationController!, curve: Curves.easeOutCubic),
+    );
+    anim.addListener(() {
+      _mapTransformController.value = anim.value;
+    });
+    _cameraAnimationController!.forward();
+  }
+
+  void _toggleGlobeMode() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isGlobeMode = !_isGlobeMode;
+    });
+    if (!_isGlobeMode) {
+      final unlockedDay = PocketKidsService.currentUnlockedDay;
+      _focusOnNode(unlockedDay, scale: 1.0, animate: true);
+    }
+  }
+
+  void _scrollToActiveDay({bool animate = true}) {
+    final curDay = PocketKidsService.currentUnlockedDay;
+    _focusOnNode(curDay, scale: 1.0, animate: animate);
   }
 
   @override
   void dispose() {
     PocketKidsService.kidPremiumNotifier.removeListener(_onPremiumChanged);
     _bounceController.dispose();
+    _earthRotationController.dispose();
+    _cameraAnimationController?.dispose();
+    _mapTransformController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -466,192 +551,11 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       return;
     }
 
-    _showDayStepsModal(day);
-  }
-
-  void _showDayStepsModal(int day) {
-    HapticFeedback.lightImpact();
-    final syllabus = PocketKids100DaySyllabusDB.getSyllabusForDay(day);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1E293B),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(syllabus.mascot, style: const TextStyle(fontSize: 22)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'DAY $day • 5 STEP LEARNING QUEST',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13.5,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      Text(
-                        syllabus.title,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // Day Adult House Preview
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Row(
-                children: [
-                  PocketAvatarHouseWidget(
-                    day: day,
-                    width: 90,
-                    height: 80,
-                    lightsOn: true,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Day $day Architectural House',
-                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Upgrade this estate by completing all 5 English game steps!',
-                          style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-            Text(
-              'TODAY\'S 10 OPEN WORLD GAMES',
-              style: GoogleFonts.outfit(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 0.5),
-            ),
-            const SizedBox(height: 8),
-
-            // 10 Distinct Game Steps
-            _buildStepRow(1, '🎈', 'Phonics & Letter Pop', 'Recognize target letter sounds and pop floating balloons'),
-            _buildStepRow(2, '🚂', 'Letter Train Builder', 'Spell the target English word in correct sequence'),
-            _buildStepRow(3, '🍎', 'Mascot Animal Feast', 'Feed animal companions the correct vocabulary food'),
-            _buildStepRow(4, '🃏', 'Safari Memory Match', 'Flip and match memory challenge cards'),
-            _buildStepRow(5, '🎯', 'Slingshot Word Target', 'Aim and launch acorn to hit the matching target word'),
-            _buildStepRow(6, '🐸', 'River Lilypad Hopper', 'Help the frog hop across floating phonetic lilypads'),
-            _buildStepRow(7, '🔍', 'Detective Meadow Spy', 'Spot hidden English vocabulary items across the scenery'),
-            _buildStepRow(8, '🌈', 'Rainbow Sentence Builder', 'Assemble scattered colored blocks into proper sentences'),
-            _buildStepRow(9, '🗣️', 'Spoken Voice Echo', 'Speak the full sentence aloud with voice coaching'),
-            _buildStepRow(10, '⚔️', 'Summit Gate Guardian Duel', 'Answer challenge questions to unlock the summit ridge gate'),
-
-            const SizedBox(height: 18),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD700),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                  elevation: 4,
-                ),
-                icon: const Text('🌍', style: TextStyle(fontSize: 22)),
-                label: Text(
-                  'START DAY $day OPEN WORLD ADVENTURE 🚀',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5),
-                ),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  HapticFeedback.heavyImpact();
-                  PocketKidsDayOpenWorldPage.open(context, day).then((_) {
-                    if (mounted) setState(() {});
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepRow(int num, String icon, String title, String desc) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 22,
-            height: 22,
-            decoration: const BoxDecoration(color: Color(0xFF1E293B), shape: BoxShape.circle),
-            child: Center(
-              child: Text('$num', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 11)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(icon, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12.5)),
-                Text(desc, style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 10)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    // Direct launch of the Day Open World Adventure! Zero bottom sheet, zero delay!
+    HapticFeedback.heavyImpact();
+    PocketKidsDayOpenWorldPage.open(context, day).then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _showMidnightCooldownDialog(int day) {
@@ -1042,104 +946,112 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     required int unlockedDay,
     required Map<int, int> completedDays,
   }) {
+    final double worldWidth = math.max(screenWidth, 680.0);
+
     return Stack(
       children: [
-        // 🗺️ 100-DAY ASCENDING ADVENTURE MOUNTAIN WORLD
-        RawScrollbar(
-          controller: _scrollController,
-          thumbVisibility: true,
-          interactive: true,
-          thickness: 7.0,
-          radius: const Radius.circular(8),
-          thumbColor: const Color(0xFFFFD700).withValues(alpha: 0.9),
-          trackVisibility: true,
-          trackColor: Colors.black.withValues(alpha: 0.25),
-          trackRadius: const Radius.circular(8),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            child: SizedBox(
-              width: screenWidth,
-              height: _totalCanvasHeight,
-              child: Stack(
-                children: [
-                  // 1. Continuous Cartoon Mountain Road & Biome Painter
-                  IgnorePointer(
-                    child: CustomPaint(
-                      size: Size(screenWidth, _totalCanvasHeight),
-                      painter: _KidsAdventureMountainRoadPainter(
-                        totalDays: _totalDays,
-                        unlockedDay: unlockedDay,
-                        nodeSpacingY: _nodeSpacingY,
-                        topPadding: _topPadding,
-                        bottomPadding: _bottomPadding,
-                        screenWidth: screenWidth,
-                      ),
+        // 🗺️ 100-DAY GOOGLE MAP-LIKE 2D INTERACTIVE PAN & ZOOM CANVAS
+        InteractiveViewer(
+          transformationController: _mapTransformController,
+          minScale: 0.20,
+          maxScale: 2.2,
+          boundaryMargin: const EdgeInsets.all(800),
+          constrained: false,
+          onInteractionUpdate: (details) {
+            final currentScale = _mapTransformController.value.getMaxScaleOnAxis();
+            if (currentScale <= 0.32 && !_isGlobeMode) {
+              setState(() => _isGlobeMode = true);
+            } else if (currentScale > 0.35 && _isGlobeMode) {
+              setState(() => _isGlobeMode = false);
+            }
+          },
+          child: SizedBox(
+            width: worldWidth,
+            height: _totalCanvasHeight,
+            child: Stack(
+              children: [
+                // 1. Continuous Cartoon Mountain Road & Biome Painter
+                IgnorePointer(
+                  child: CustomPaint(
+                    size: Size(worldWidth, _totalCanvasHeight),
+                    painter: _KidsAdventureMountainRoadPainter(
+                      totalDays: _totalDays,
+                      unlockedDay: unlockedDay,
+                      nodeSpacingY: _nodeSpacingY,
+                      topPadding: _topPadding,
+                      bottomPadding: _bottomPadding,
+                      screenWidth: worldWidth,
                     ),
                   ),
+                ),
 
-                  // 2. Day 100 Summit Golden Castle Banner
-                  Positioned(
-                    top: 40,
-                    left: 20,
-                    right: 20,
-                    child: _buildSummitCastleCard(screenWidth),
-                  ),
+                // 2. Day 100 Summit Golden Castle Banner
+                Positioned(
+                  top: 40,
+                  left: 20,
+                  right: 20,
+                  child: _buildSummitCastleCard(worldWidth),
+                ),
 
-                  // 3. Day 1 Basecamp Welcome Sign
-                  Positioned(
-                    top: _getNodeY(1) + 80,
-                    left: 24,
-                    right: 24,
-                    child: _buildBasecampCard(),
-                  ),
+                // 3. Day 1 Basecamp Welcome Sign
+                Positioned(
+                  top: _getNodeY(1) + 80,
+                  left: 24,
+                  right: 24,
+                  child: _buildBasecampCard(),
+                ),
 
-                  // 4. Architectural English Houses along the path (All 100 Days)
-                  ...List.generate(_totalDays, (index) {
-                    final day = index + 1;
-                    return _buildRoadmapHouse(day, screenWidth, unlockedDay);
-                  }),
+                // 4. Architectural English Houses along the path (All 100 Days)
+                ...List.generate(_totalDays, (index) {
+                  final day = index + 1;
+                  return _buildRoadmapHouse(day, worldWidth, unlockedDay);
+                }),
 
-                  // 5. Fortress Exam Gates between Day N and Day N+1 (Days 1 to 99)
-                  ...List.generate(_totalDays - 1, (index) {
-                    final day = index + 1;
-                    return _buildRoadmapGate(day, screenWidth, unlockedDay);
-                  }),
+                // 5. Fortress Exam Gates between Day N and Day N+1 (Days 1 to 99)
+                ...List.generate(_totalDays - 1, (index) {
+                  final day = index + 1;
+                  return _buildRoadmapGate(day, worldWidth, unlockedDay);
+                }),
 
-                  // 6. Zone Banners across the Mountain Passes
-                  ..._buildZoneMilestonePasses(screenWidth),
+                // 6. Zone Banners across the Mountain Passes
+                ..._buildZoneMilestonePasses(worldWidth),
 
-                  // 6. Interactive Day Nodes (Day 1 to 100)
-                  ...List.generate(_totalDays, (index) {
-                    final dayNumber = index + 1;
-                    final nodeX = _getNodeX(dayNumber, screenWidth);
-                    final nodeY = _getNodeY(dayNumber);
-                    final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(dayNumber);
-                    final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
-                    final isCurrent = dayNumber == unlockedDay;
-                    final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
+                // 7. Interactive Day Nodes (Day 1 to 100)
+                ...List.generate(_totalDays, (index) {
+                  final dayNumber = index + 1;
+                  final nodeX = _getNodeX(dayNumber, worldWidth);
+                  final nodeY = _getNodeY(dayNumber);
+                  final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(dayNumber);
+                  final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
+                  final isCurrent = dayNumber == unlockedDay;
+                  final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
 
-                    return Positioned(
-                      left: nodeX - 44,
-                      top: nodeY - 44,
-                      child: GestureDetector(
-                        onTap: () => _onTapDayNode(dayNumber),
-                        child: _buildDayNode(
-                          dayNumber: dayNumber,
-                          isUnlocked: isUnlocked,
-                          isCurrent: isCurrent,
-                          isMidnightLocked: isMidnightLocked,
-                          stars: stars,
-                          kidAvatar: kidAvatar,
-                        ),
+                  return Positioned(
+                    left: nodeX - 44,
+                    top: nodeY - 44,
+                    child: GestureDetector(
+                      onTap: () => _onTapDayNode(dayNumber),
+                      child: _buildDayNode(
+                        dayNumber: dayNumber,
+                        isUnlocked: isUnlocked,
+                        isCurrent: isCurrent,
+                        isMidnightLocked: isMidnightLocked,
+                        stars: stars,
+                        kidAvatar: kidAvatar,
                       ),
-                    );
-                  }),
-                ],
-              ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
         ),
+
+        // 🌍 3D-STYLED ROTATING CARTOON EARTH GLOBE OVERLAY (Visible when zoomed out or toggled)
+        if (_isGlobeMode)
+          Positioned.fill(
+            child: _buildRotatingEarthGlobe(unlockedDay),
+          ),
 
           // 🌟 TOP HUD BAR (Minimal, Cartoonic, Super Clean)
           SafeArea(
@@ -1542,10 +1454,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               ),
             ),
           ),
-          // 🚀 Smooth Fast Scroll Scrubber Bar on Right Side (Quick Altitude Navigation)
-          _buildFastScrollScrubber(screenWidth, MediaQuery.of(context).size.height),
-
-          // 📍 FLOATING QUICK ALTITUDE & TRAIL CONTROLLER
+        ),
+        // 📍 GOOGLE MAP-STYLE FLOATING QUICK HUD CONTROLLER
           Positioned(
             right: 14,
             bottom: 20,
@@ -1553,17 +1463,103 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Jump to Summit (Day 100)
+                // Zoom In (+)
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        0,
-                        duration: const Duration(milliseconds: 650),
-                        curve: Curves.easeOutCubic,
-                      );
-                    }
+                    _zoomBy(1.30);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white38, width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                  ),
+                ),
+
+                // Zoom Out (-)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _zoomBy(0.75);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white38, width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.remove_rounded, color: Colors.white, size: 20),
+                  ),
+                ),
+
+                // 🌍 Globe Orbit Toggle Button
+                GestureDetector(
+                  onTap: _toggleGlobeMode,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _isGlobeMode
+                            ? [const Color(0xFF38BDF8), const Color(0xFF0284C7)]
+                            : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _isGlobeMode ? Colors.white : const Color(0xFF38BDF8),
+                        width: 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🌍', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isGlobeMode ? 'MAP VIEW' : 'GLOBE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 🏰 Jump to Summit (Day 100)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _focusOnNode(100, scale: 1.0, animate: true);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -1598,11 +1594,11 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                   ),
                 ),
 
-                // Snaps to Active Level
+                // 🎯 FOCUS BUTTON (Centers directly onto student's active level)
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
-                    _scrollToActiveDay(animate: true);
+                    HapticFeedback.heavyImpact();
+                    _focusOnNode(unlockedDay, scale: 1.0, animate: true);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -1614,7 +1610,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1624,14 +1620,14 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.navigation_rounded, size: 18, color: Color(0xFF78350F)),
+                        const Icon(Icons.my_location_rounded, size: 18, color: Color(0xFF78350F)),
                         const SizedBox(width: 5),
                         Text(
-                          'DAY $unlockedDay',
+                          '🎯 FOCUS (DAY $unlockedDay)',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF78350F),
                             fontWeight: FontWeight.w900,
-                            fontSize: 13,
+                            fontSize: 12.5,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -1640,17 +1636,11 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                   ),
                 ),
 
-                // Jump to Basecamp (Day 1)
+                // ⛺ Jump to Basecamp (Day 1)
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 650),
-                        curve: Curves.easeOutCubic,
-                      );
-                    }
+                    _focusOnNode(1, scale: 1.0, animate: true);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -1688,154 +1678,6 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
         ],
       );
-  }
-
-  /// 🚀 Vertical Fast Scroll Scrubber Bar on right side for Kids Mountain Trail
-  /// Enables instant smooth sliding up and down across the entire 100 days with live altitude day badge!
-  Widget _buildFastScrollScrubber(double screenWidth, double screenHeight) {
-    const double scrubberHeight = 240.0;
-    final double scrubberTop = (screenHeight - scrubberHeight) / 2.0 - 20.0;
-
-    return Positioned(
-      right: 6,
-      top: scrubberTop,
-      width: 36,
-      height: scrubberHeight,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onVerticalDragUpdate: (details) {
-          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
-          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
-          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
-              _scrollController.jumpTo(targetOffset);
-            }
-          });
-        },
-        onTapDown: (details) {
-          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
-          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
-          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
-              _scrollController.animateTo(
-                targetOffset,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-              );
-            }
-          });
-        },
-        child: Container(
-          width: 36,
-          height: scrubberHeight,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.5),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              // Top milestone: Summit Day 100
-              const Positioned(
-                top: 6,
-                child: Text('🏰', style: TextStyle(fontSize: 11)),
-              ),
-              Positioned(
-                top: scrubberHeight * 0.33,
-                child: Container(
-                  width: 5,
-                  height: 5,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white30,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: scrubberHeight * 0.66,
-                child: Container(
-                  width: 5,
-                  height: 5,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white30,
-                  ),
-                ),
-              ),
-              // Bottom milestone: Basecamp Day 1
-              const Positioned(
-                bottom: 6,
-                child: Text('⛺', style: TextStyle(fontSize: 11)),
-              ),
-
-              // Draggable Glowing Thumb with Live Day Badge
-              AnimatedBuilder(
-                animation: _scrollController,
-                builder: (context, _) {
-                  double fraction = 1.0;
-                  if (_scrollController.hasClients &&
-                      _scrollController.position.hasContentDimensions &&
-                      _scrollController.position.maxScrollExtent > 0) {
-                    fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
-                  }
-                  // Inverted mountain trail: top (offset 0) = Day 100 summit, bottom (maxScroll) = Day 1 basecamp
-                  final currentViewingDay = ((1.0 - fraction) * 99 + 1).round().clamp(1, 100);
-
-                  return Positioned(
-                    top: (fraction * (scrubberHeight - 34)).clamp(0.0, scrubberHeight - 34),
-                    child: Container(
-                      width: 30,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$currentViewingDay',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF78350F),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   // --- 🕹️ Open World Arcade Console Bottom Navigation Bar ---
@@ -2087,47 +1929,56 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
   // --- Basecamp Welcome Sign ---
   Widget _buildBasecampCard() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFF4ADE80), width: 2.5),
-      ),
-      child: Row(
-        children: [
-          const Text('⛺ 🌻', style: TextStyle(fontSize: 28)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ADVENTURE BASE CAMP (DAY 1)',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  'Your 100-Day English Game Journey starts here! Tap Day 1 to begin!',
-                  style: GoogleFonts.inter(
-                    color: Colors.black54,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.heavyImpact();
+        PocketKidsDayOpenWorldPage.open(context, 1).then((_) {
+          if (mounted) setState(() {});
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+          border: Border.all(color: const Color(0xFF4ADE80), width: 2.5),
+        ),
+        child: Row(
+          children: [
+            const Text('⛺ 🌻', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ADVENTURE BASE CAMP (DAY 1) 🚀',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'Tap here to begin your Day 1 Open World Journey!',
+                    style: GoogleFonts.inter(
+                      color: Colors.black54,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF10B981), size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -3045,6 +2896,166 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       ),
     );
   }
+
+  // --- 🌍 3D-Styled Rotating Cartoon Earth Globe (Orbit View) ---
+  Widget _buildRotatingEarthGlobe(int unlockedDay) {
+    return Container(
+      color: const Color(0xFF050814),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 1. Cosmic Nebulae & Twinkling Stars
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _SpaceNebulaStarsPainter(),
+            ),
+          ),
+
+          // 2. Rotating Earth Sphere
+          Center(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                _toggleGlobeMode();
+              },
+              child: AnimatedBuilder(
+                animation: _earthRotationController,
+                builder: (context, _) {
+                  return _buildEarthSphere(unlockedDay);
+                },
+              ),
+            ),
+          ),
+
+          // 3. Top Space Banner & Instructions
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 70,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                    blurRadius: 14,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🌍 🛰️ ', style: TextStyle(fontSize: 18)),
+                  Text(
+                    'ORBITAL VIEW • POCKET KINGDOM PLANET',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF38BDF8),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 4. Floating "DIVE TO TRAIL" CTA Button
+          Positioned(
+            bottom: 34,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: const Color(0xFF78350F),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                elevation: 8,
+                shadowColor: const Color(0xFFFFD700).withValues(alpha: 0.5),
+              ),
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                _toggleGlobeMode();
+              },
+              icon: const Icon(Icons.travel_explore_rounded, size: 22),
+              label: Text(
+                'ENTER MOUNTAIN TRAIL (DAY $unlockedDay) 🚀',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEarthSphere(int unlockedDay) {
+    const double sphereSize = 270.0;
+    return Container(
+      width: sphereSize,
+      height: sphereSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.65),
+            blurRadius: 40,
+            spreadRadius: 8,
+          ),
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.40),
+            blurRadius: 80,
+            spreadRadius: 20,
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: const Size(sphereSize, sphereSize),
+            painter: _RotatingEarthGlobePainter(
+              rotation: _earthRotationController.value,
+              unlockedDay: unlockedDay,
+            ),
+          ),
+          // Pulsing Continent Pin Tag
+          Positioned(
+            top: 70,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('📍', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'KINGDOM • DAY $unlockedDay 🦁',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// 🎨 CustomPainter for the Ascending Cartoon Mountain Trail
@@ -3178,4 +3189,164 @@ class _KidsAdventureMountainRoadPainter extends CustomPainter {
     return oldDelegate.unlockedDay != unlockedDay ||
         oldDelegate.screenWidth != screenWidth;
   }
+}
+
+/// 🌌 CustomPainter for Twinkling Deep Space & Nebulae in Globe View
+class _SpaceNebulaStarsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Cosmic Nebulae
+    final nebula1 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF8B5CF6).withValues(alpha: 0.28),
+          const Color(0xFF3B82F6).withValues(alpha: 0.12),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(size.width * 0.25, size.height * 0.28), radius: 240));
+    canvas.drawCircle(Offset(size.width * 0.25, size.height * 0.28), 240, nebula1);
+
+    final nebula2 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFEC4899).withValues(alpha: 0.22),
+          const Color(0xFF06B6D4).withValues(alpha: 0.10),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(size.width * 0.75, size.height * 0.72), radius: 280));
+    canvas.drawCircle(Offset(size.width * 0.75, size.height * 0.72), 280, nebula2);
+
+    // 2. Twinkling Stars
+    final rand = math.Random(1337);
+    final starPaint = Paint()..color = Colors.white;
+    for (int i = 0; i < 95; i++) {
+      final x = rand.nextDouble() * size.width;
+      final y = rand.nextDouble() * size.height;
+      final radius = 0.8 + rand.nextDouble() * 1.8;
+      final opacity = 0.35 + rand.nextDouble() * 0.65;
+      starPaint.color = Colors.white.withValues(alpha: opacity);
+      canvas.drawCircle(Offset(x, y), radius, starPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// 🌍 CustomPainter for Rotating 3D Cartoon Earth Globe with Continents & Clouds
+class _RotatingEarthGlobePainter extends CustomPainter {
+  final double rotation; // 0.0 to 1.0 from AnimationController
+  final int unlockedDay;
+
+  _RotatingEarthGlobePainter({required this.rotation, required this.unlockedDay});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // Clip all globe elements to spherical disc
+    final globePath = Path()..addOval(Rect.fromCircle(center: center, radius: radius));
+    canvas.save();
+    canvas.clipPath(globePath);
+
+    // 1. Deep Oceanic Gradient with Spherical Light
+    final oceanPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(-0.35, -0.35),
+        radius: 0.95,
+        colors: const [
+          Color(0xFF38BDF8), // Sunny highlight rim
+          Color(0xFF0284C7), // Azure cartoon ocean
+          Color(0xFF0369A1), // Deep blue
+          Color(0xFF0F172A), // Shadowed ocean horizon
+        ],
+        stops: const [0.0, 0.45, 0.75, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, oceanPaint);
+
+    // 2. Seamless Rotating Green Continents
+    final continentPaint = Paint()
+      ..color = const Color(0xFF22C55E)
+      ..style = PaintingStyle.fill;
+    final mountainPaint = Paint()
+      ..color = const Color(0xFF15803D)
+      ..style = PaintingStyle.fill;
+
+    final double globeCircumference = radius * 2.8;
+    final double shiftX = (rotation * globeCircumference) % globeCircumference;
+
+    for (int rep = -1; rep <= 2; rep++) {
+      final baseX = center.dx - (radius * 1.2) + (rep * globeCircumference) - shiftX;
+
+      // Continent 1: Pocket Kingdom Mountain Island
+      final island1 = Path();
+      island1.addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(baseX + 20, center.dy - 55, 95, 80),
+        const Radius.circular(38),
+      ));
+      canvas.drawPath(island1, continentPaint);
+
+      // Mountain ridge on Continent 1
+      final ridge1 = Path();
+      ridge1.moveTo(baseX + 45, center.dy - 10);
+      ridge1.lineTo(baseX + 65, center.dy - 35);
+      ridge1.lineTo(baseX + 85, center.dy - 10);
+      ridge1.close();
+      canvas.drawPath(ridge1, mountainPaint);
+
+      // Continent 2: Safari Savannah Continent
+      final island2 = Path();
+      island2.addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(baseX + 130, center.dy + 5, 80, 65),
+        const Radius.circular(30),
+      ));
+      canvas.drawPath(island2, continentPaint);
+
+      // Continent 3: Polar Arctic Cap
+      final island3 = Path();
+      island3.addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(baseX + 70, center.dy - 95, 75, 30),
+        const Radius.circular(16),
+      ));
+      canvas.drawPath(island3, Paint()..color = const Color(0xFFE0F2FE));
+    }
+
+    // 3. Drifting White Cloud Swirls
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.55);
+    final double cloudShift = ((rotation * 1.35) * globeCircumference) % globeCircumference;
+    for (int rep = -1; rep <= 2; rep++) {
+      final cx = center.dx - radius + (rep * globeCircumference) - cloudShift;
+      canvas.drawOval(Rect.fromLTWH(cx + 30, center.dy - 40, 70, 16), cloudPaint);
+      canvas.drawOval(Rect.fromLTWH(cx + 120, center.dy + 30, 85, 20), cloudPaint);
+      canvas.drawOval(Rect.fromLTWH(cx + 80, center.dy - 80, 50, 12), cloudPaint);
+    }
+
+    // 4. Spherical 3D Volume Shadow
+    final shadowPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0.4, 0.4),
+        radius: 0.9,
+        colors: [
+          Colors.transparent,
+          Colors.black.withValues(alpha: 0.40),
+          Colors.black.withValues(alpha: 0.70),
+        ],
+        stops: const [0.55, 0.85, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawCircle(center, radius, shadowPaint);
+
+    canvas.restore();
+
+    // 5. Outer Atmospheric Cyan Glow Ring
+    final atmoPaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.50)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0;
+    canvas.drawCircle(center, radius + 1.5, atmoPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RotatingEarthGlobePainter oldDelegate) =>
+      oldDelegate.rotation != rotation || oldDelegate.unlockedDay != unlockedDay;
 }
