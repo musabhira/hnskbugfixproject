@@ -11,6 +11,7 @@ import 'pocket_90day_spoken_simulator_data.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../pocket_pronunciation_evaluator.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// 🎙️ Pocket Spoken English Avatar Simulator Page
 ///
@@ -364,7 +365,6 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       setState(() {
         _isRecording = true;
         _spokenText = '';
-        _speechError = null;
         _recordingSeconds = 0;
       });
 
@@ -405,11 +405,13 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         } catch (_) {}
       }
 
+      setState(() => _isRecording = false);
+
       final cleanSpk = _spokenText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
 
       if (cleanSpk.isEmpty) {
+        PocketGameAudioService.instance.playIncorrectSound();
         setState(() {
-          _isRecording = false;
           _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and speak: "$targetPhrase"';
         });
         await _speakText('Please speak into the mic: $targetPhrase');
@@ -426,9 +428,9 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       final containsKeyword = targetKeywords.any((kw) => cleanSpk.contains(kw));
 
       if (evalResult.accuracyPercentage < 45 && !containsKeyword) {
+        PocketGameAudioService.instance.playIncorrectSound();
         final focus = evalResult.focusWords.take(2).join(', ');
         setState(() {
-          _isRecording = false;
           _speechError = 'You said: "$_spokenText"\nExpected: "$targetPhrase"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
         });
         await _speakText('Not quite right. Please say: $targetPhrase');
@@ -436,8 +438,8 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       }
 
       // Passed!
+      PocketGameAudioService.instance.playCorrectSound();
       setState(() {
-        _isRecording = false;
         _speechError = null;
       });
 
@@ -932,48 +934,27 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
                     ),
                   ),
                 ],
-              ],
-
-              // Error Feedback Box: Shows learner what was heard vs expected
-              if (_speechError != null && !_isRecording) ...[
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.8)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.error_outline_rounded, color: Color(0xFFF87171), size: 16),
-                          const SizedBox(width: 6),
-                          Text(
-                            'NOT QUITE RIGHT • TAP MIC TO RETRY',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFF87171),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                if (_speechError != null && !_isRecording)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFEF4444)),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                      child: Text(
                         _speechError!,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 12,
+                          color: const Color(0xFFFCA5A5),
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
