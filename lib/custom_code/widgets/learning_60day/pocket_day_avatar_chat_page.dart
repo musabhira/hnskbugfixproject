@@ -2987,13 +2987,14 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     });
     _scrollToBottom();
 
-    // Strict evaluation check
-    if (evalResult.accuracyPercentage < 65 &&
+    // Forgiving evaluation check (avoid blocking user due to mobile mic/STT inaccuracies)
+    if (!evalResult.isAcceptable &&
+        evalResult.accuracyPercentage < 50 &&
         voiceText.toLowerCase() != target.toLowerCase() &&
         !voiceText.toLowerCase().contains('yes') &&
         !voiceText.toLowerCase().contains('start') &&
         !voiceText.toLowerCase().contains('test')) {
-      // Evaluation failed: Give constructive retry feedback
+      // Evaluation failed: Give constructive retry feedback with option to continue anyway
       PocketGameAudioService.instance.playIncorrectSound();
       HapticFeedback.vibrate();
 
@@ -3005,20 +3006,20 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             textEn:
                 'Pronunciation Check (${evalResult.accuracyPercentage}%):\n'
                 'You said: "$voiceText"\n'
-                'Expected: "$target"\n\n'
+                'Target: "$target"\n\n'
                 '${evalResult.feedbackTip}',
-            textNative: 'ശ്രമിക്കൂ! ഈ വാക്ക് കുറച്ചുകൂടി വ്യക്തമായി പറയൂ.',
+            textNative: 'ശ്രമിക്കൂ! വീണ്ടും പറയാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം.',
             cardContent: PocketPronunciationResultCard(
               result: evalResult,
               onRetry: () => _toggleLiveListening(),
             ),
-            speakThisPrompt: 'Tap mic or button below to try again:',
+            speakThisPrompt: 'Tap mic to try again, or continue:',
             inBubbleOptions: [
               DayInBubbleOption(
                 labelEn: '🎙️ RETRY: "$target"',
                 labelNative: 'വീണ്ടും പറയാം',
                 icon: '🔄',
-                isHighlightedAnswer: true,
+                isHighlightedAnswer: false,
                 backgroundColor: const Color(0xFFEF4444),
                 borderColor: const Color(0xFFFCA5A5),
                 textColor: Colors.white,
@@ -3027,13 +3028,26 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                   action: action,
                 ),
               ),
+              DayInBubbleOption(
+                labelEn: '✨ CONTINUE ANYWAY ➔',
+                labelNative: 'മുന്നോട്ട് പോകാം',
+                icon: '🚀',
+                isHighlightedAnswer: true,
+                backgroundColor: const Color(0xFF10B981),
+                borderColor: const Color(0xFF6EE7B7),
+                textColor: Colors.white,
+                onTap: () {
+                  setState(() => _isAnalyzing = false);
+                  action();
+                },
+              ),
             ],
           ),
         );
         _isAnalyzing = false;
       });
 
-      _speak('Let\'s try again: $target');
+      _speak('Good try! Say: $target');
       _scrollToBottom();
       return;
     }

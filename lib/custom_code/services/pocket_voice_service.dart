@@ -81,6 +81,34 @@ class PocketVoiceService {
           await _applyVoiceCandidates(tts, ['oliver', 'serena', 'george', 'stephanie', 'en-gb']);
           break;
 
+        case 'australian':
+          await tts.setLanguage('en-AU');
+          await tts.setSpeechRate(isIos ? 0.49 : 0.46);
+          await tts.setPitch(1.06); // Friendly Australian accent
+          await _applyVoiceCandidates(tts, ['katherine', 'catherine', 'lee', 'en-au-x-aud', 'en-au', 'australian']);
+          break;
+
+        case 'indian':
+          await tts.setLanguage('en-IN');
+          await tts.setSpeechRate(isIos ? 0.49 : 0.46);
+          await tts.setPitch(1.08); // Clear, familiar Indian English
+          await _applyVoiceCandidates(tts, ['rishi', 'veena', 'en-in-x-cfl#female', 'en-in-x-enc#female', 'en-in', 'indian']);
+          break;
+
+        case 'storyteller':
+          await tts.setLanguage('en-US');
+          await tts.setSpeechRate(isIos ? 0.41 : 0.38); // Gentle, slow, highly intelligible pace
+          await tts.setPitch(0.98); // Calm, soothing tone
+          await _applyVoiceCandidates(tts, ['samantha', 'ava', 'allison', 'susan', 'female']);
+          break;
+
+        case 'coach':
+          await tts.setLanguage('en-US');
+          await tts.setSpeechRate(isIos ? 0.52 : 0.49); // Energetic, motivating pace
+          await tts.setPitch(1.15); // Enthusiastic, vibrant coach
+          await _applyVoiceCandidates(tts, ['daniel', 'alex', 'oliver', 'en-us-x-sfg#male', 'male']);
+          break;
+
         case 'female':
         default:
           await tts.setLanguage('en-US');
@@ -138,12 +166,33 @@ class PocketVoiceService {
     }
   }
 
-  /// Previews the selected persona voice immediately
+  FlutterTts? _previewTts;
+  bool _isPlayingPreview = false;
+  bool get isPlayingPreview => _isPlayingPreview;
+
+  /// Immediately stops any currently active voice preview
+  Future<void> stopPreview() async {
+    try {
+      if (_previewTts != null) {
+        await _previewTts!.stop();
+      }
+      _isPlayingPreview = false;
+    } catch (_) {}
+  }
+
+  /// Previews the selected persona voice immediately with strict single-instance lifecycle
   Future<void> previewPersona(String persona) async {
     try {
+      await stopPreview();
       await setPersona(persona);
-      final FlutterTts previewTts = FlutterTts();
-      await configureOptimalFemaleVoice(previewTts);
+
+      _previewTts ??= FlutterTts();
+      _previewTts!.setStartHandler(() => _isPlayingPreview = true);
+      _previewTts!.setCompletionHandler(() => _isPlayingPreview = false);
+      _previewTts!.setCancelHandler(() => _isPlayingPreview = false);
+      _previewTts!.setErrorHandler((_) => _isPlayingPreview = false);
+
+      await configureOptimalFemaleVoice(_previewTts!);
       String previewLine;
       switch (persona) {
         case 'cybercat':
@@ -155,12 +204,24 @@ class PocketVoiceService {
         case 'british':
           previewLine = 'Good day! Let us practise your English pronunciation.';
           break;
+        case 'australian':
+          previewLine = 'G\'day mate! Ready to master everyday English with me?';
+          break;
+        case 'indian':
+          previewLine = 'Namaste! Welcome to your daily English speaking practice.';
+          break;
+        case 'storyteller':
+          previewLine = 'Welcome. Breathe deeply, relax, and let us speak together.';
+          break;
+        case 'coach':
+          previewLine = 'Awesome energy! Let us crush today\'s speaking challenge!';
+          break;
         case 'female':
         default:
           previewLine = 'Hello! Welcome to Pocket Mates. Let us learn English!';
           break;
       }
-      await previewTts.speak(previewLine);
+      await _previewTts!.speak(previewLine);
     } catch (e) {
       debugPrint('⚠️ Voice preview error: $e');
     }

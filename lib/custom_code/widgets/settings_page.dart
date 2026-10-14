@@ -48,6 +48,12 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadUserSettings();
   }
 
+  @override
+  void dispose() {
+    PocketVoiceService.instance.stopPreview();
+    super.dispose();
+  }
+
   Future<void> _loadUserSettings() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
@@ -591,99 +597,147 @@ class _SettingsPageState extends State<SettingsPage> {
         'desc': 'Refined British accent & clear phonics',
         'icon': '🇬🇧',
       },
+      {
+        'id': 'australian',
+        'name': 'Aussie Mate',
+        'desc': 'Friendly Australian English accent & natural pace',
+        'icon': '🇦🇺',
+      },
+      {
+        'id': 'indian',
+        'name': 'Indian English',
+        'desc': 'Clear, familiar Indian English accent for easy understanding',
+        'icon': '🇮🇳',
+      },
+      {
+        'id': 'storyteller',
+        'name': 'Gentle Storyteller',
+        'desc': 'Slow, soothing, crystal-clear pronunciation for beginners',
+        'icon': '🌙',
+      },
+      {
+        'id': 'coach',
+        'name': 'High Energy Coach',
+        'desc': 'Dynamic, motivating, and fast-paced fluency trainer',
+        'icon': '⚡',
+      },
     ];
 
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 22),
-                const SizedBox(width: 8),
-                Text(
-                  'Tutor Character Voice',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '100% Free on-device speech synthesis • No paid cloud charges',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11.5),
-            ),
-            const SizedBox(height: 16),
-            ...personas.map((p) {
-              final isSelected = _voicePersona == p['id'];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF0284C7).withValues(alpha: 0.25)
-                      : Colors.white.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
-                    width: isSelected ? 1.5 : 1.0,
+      builder: (ctx) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tutor Character Voice',
+                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-                child: ListTile(
-                  leading: Text(p['icon']!, style: const TextStyle(fontSize: 24)),
-                  title: Text(
-                    p['name']!,
-                    style: GoogleFonts.outfit(
-                      color: isSelected ? const Color(0xFF38BDF8) : Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.5,
-                    ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 22),
+                    tooltip: 'Close',
+                    onPressed: () {
+                      PocketVoiceService.instance.stopPreview();
+                      Navigator.pop(ctx);
+                    },
                   ),
-                  subtitle: Text(
-                    p['desc']!,
-                    style: const TextStyle(color: Colors.white70, fontSize: 11.5),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 20),
-                        tooltip: 'Listen to sample',
-                        onPressed: () => PocketVoiceService.instance.previewPersona(p['id']!),
-                      ),
-                      if (isSelected)
-                        const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
-                    ],
-                  ),
-                  onTap: () async {
-                    HapticFeedback.mediumImpact();
-                    await PocketVoiceService.instance.setPersona(p['id']!);
-                    setState(() => _voicePersona = p['id']!);
-                    await PocketVoiceService.instance.previewPersona(p['id']!);
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('✨ Tutor voice set to ${p["name"]}!'),
-                          backgroundColor: const Color(0xFF0284C7),
-                          duration: const Duration(seconds: 2),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '100% Free on-device speech synthesis • No paid cloud charges',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11.5),
+              ),
+              const SizedBox(height: 14),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: personas.map((p) {
+                    final isSelected = _voicePersona == p['id'];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                            : Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                          width: isSelected ? 1.5 : 1.0,
                         ),
-                      );
-                    }
-                  },
+                      ),
+                      child: ListTile(
+                        leading: Text(p['icon']!, style: const TextStyle(fontSize: 24)),
+                        title: Text(
+                          p['name']!,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.5,
+                          ),
+                        ),
+                        subtitle: Text(
+                          p['desc']!,
+                          style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 20),
+                              tooltip: 'Listen to sample',
+                              onPressed: () => PocketVoiceService.instance.previewPersona(p['id']!),
+                            ),
+                            if (isSelected)
+                              const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
+                          ],
+                        ),
+                        onTap: () async {
+                          HapticFeedback.mediumImpact();
+                          // Stop any running preview immediately before closing
+                          await PocketVoiceService.instance.stopPreview();
+                          await PocketVoiceService.instance.setPersona(p['id']!);
+                          setState(() => _voicePersona = p['id']!);
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('✨ Tutor voice set to ${p["name"]}!'),
+                                backgroundColor: const Color(0xFF0284C7),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      // 🛑 Critical Bug Fix: Kill any playing preview audio when bottom sheet closes
+      PocketVoiceService.instance.stopPreview();
+    });
   }
 
   void _showVoiceSpeedPicker() {
@@ -1164,7 +1218,15 @@ class _SettingsPageState extends State<SettingsPage> {
                         ? 'Clear Male (Articulate tutor)'
                         : _voicePersona == 'british'
                             ? 'British English (Refined RP)'
-                            : 'Smooth Female (Natural & warm)',
+                            : _voicePersona == 'australian'
+                                ? 'Aussie Mate (Australian accent)'
+                                : _voicePersona == 'indian'
+                                    ? 'Indian English (Natural familiarity)'
+                                    : _voicePersona == 'storyteller'
+                                        ? 'Gentle Storyteller (Slow & clear)'
+                                        : _voicePersona == 'coach'
+                                            ? 'High Energy Coach (Motivating pace)'
+                                            : 'Smooth Female (Natural & warm)',
                 trailingWidget: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -1178,7 +1240,15 @@ class _SettingsPageState extends State<SettingsPage> {
                             ? 'Male 👨‍🏫'
                             : _voicePersona == 'british'
                                 ? 'British 🇬🇧'
-                                : 'Female 👩‍🏫',
+                                : _voicePersona == 'australian'
+                                    ? 'Aussie 🇦🇺'
+                                    : _voicePersona == 'indian'
+                                        ? 'Indian 🇮🇳'
+                                        : _voicePersona == 'storyteller'
+                                            ? 'Gentle 🌙'
+                                            : _voicePersona == 'coach'
+                                                ? 'Coach ⚡'
+                                                : 'Female 👩‍🏫',
                     style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ),

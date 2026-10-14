@@ -45,6 +45,7 @@ class PronunciationEvaluationResult {
 
   bool get isExcellent => accuracyPercentage >= 80;
   bool get isGood => accuracyPercentage >= 60 && accuracyPercentage < 80;
+  bool get isAcceptable => accuracyPercentage >= 50;
 }
 
 /// Evaluator logic that compares target sentence against spoken STT output
@@ -53,19 +54,51 @@ class PocketPronunciationEvaluator {
     return w.toLowerCase().replaceAll(RegExp(r"[^\w']"), '').trim();
   }
 
-  /// Evaluates speech input against the target sentence
+  /// Normalizes spoken and target text for speech recognition quirks:
+  /// - Numbers to spoken words ("4" -> "for" / "four", "2" -> "two", etc.)
+  /// - Common contractions ("couldn't" -> "could not", etc.)
+  static List<String> _normalizeTokens(String text) {
+    var lower = text.toLowerCase();
+    // Normalize contractions
+    lower = lower
+        .replaceAll("couldn't", "could not")
+        .replaceAll("wouldn't", "would not")
+        .replaceAll("shouldn't", "should not")
+        .replaceAll("don't", "do not")
+        .replaceAll("doesn't", "does not")
+        .replaceAll("didn't", "did not")
+        .replaceAll("can't", "cannot")
+        .replaceAll("won't", "will not")
+        .replaceAll("i'm", "i am")
+        .replaceAll("we're", "we are")
+        .replaceAll("they're", "they are")
+        .replaceAll("it's", "it is")
+        .replaceAll("that's", "that is")
+        .replaceAll("what's", "what is");
+
+    // Replace standalone digits with words
+    lower = lower
+        .replaceAll(RegExp(r'\b4\b'), 'for')
+        .replaceAll(RegExp(r'\b2\b'), 'two')
+        .replaceAll(RegExp(r'\b1\b'), 'one')
+        .replaceAll(RegExp(r'\b3\b'), 'three')
+        .replaceAll(RegExp(r'\b8\b'), 'eight');
+
+    return lower
+        .split(RegExp(r'\s+'))
+        .map(_cleanWord)
+        .where((w) => w.isNotEmpty)
+        .toList();
+  }
+
+  /// Evaluates speech input against the target sentence with fuzzy sequence alignment
   static PronunciationEvaluationResult evaluate({
     required String targetSentence,
     required String spokenText,
   }) {
     final rawTargetTokens = targetSentence.trim().split(RegExp(r'\s+'));
     final cleanTargetWords = rawTargetTokens.map(_cleanWord).toList();
-    final cleanSpokenWords = spokenText
-        .trim()
-        .split(RegExp(r'\s+'))
-        .map(_cleanWord)
-        .where((w) => w.isNotEmpty)
-        .toList();
+    final cleanSpokenWords = _normalizeTokens(spokenText);
 
     if (cleanTargetWords.isEmpty) {
       return PronunciationEvaluationResult(
@@ -92,18 +125,45 @@ class PocketPronunciationEvaluator {
         words: words,
         spokenText: spokenText.isEmpty ? '(No speech detected)' : spokenText,
         focusWords: cleanTargetWords.take(3).toList(),
-        feedbackTip: 'Microphone did not pick up your voice. Tap Say It and speak clearly.',
+        feedbackTip: 'Microphone did not pick up your voice. Tap mic and speak clearly.',
       );
     }
 
-    // Positional evaluation matching speech recognition pronunciation engines
+    // 🌟 Special Rule for Alphabet Drills (e.g. "A for Apple", "B for Ball"):
+    // If user says "Apple", "A", "A for", or "A for Apple", give immediate 100% pass!
+    if (cleanTargetWords.length >= 2 && cleanTargetWords.contains('for')) {
+      final keyWord = cleanTargetWords.last; // e.g. "apple"
+      final targetLetter = cleanTargetWords.first; // e.g. "a"
+      final spokenJoined = cleanSpokenWords.join(' ');
+
+      if (spokenJoined.contains(keyWord) ||
+          spokenJoined.contains(targetLetter) ||
+          cleanSpokenWords.any((w) => _isCloseMatch(w, keyWord))) {
+        final words = rawTargetTokens
+            .map((t) => EvaluatedWord(word: t, status: WordEvaluationStatus.correct))
+            .toList();
+        return PronunciationEvaluationResult(
+          accuracyPercentage: 100,
+          correctCount: rawTargetTokens.length,
+          wrongCount: 0,
+          missedCount: 0,
+          words: words,
+          spokenText: spokenText,
+          focusWords: const [],
+          feedbackTip: '🌟 Excellent! You pronounced the letter and word perfectly.',
+        );
+      }
+    }
+
+    // 🌟 Flexible Order-Aware Window Alignment:
+    // Prevents one missed filler word from desynchronizing and failing the entire sentence!
     final evaluatedList = <EvaluatedWord>[];
     int correctCount = 0;
     int wrongCount = 0;
     int missedCount = 0;
     final focusList = <String>[];
 
-    final totalSpoken = cleanSpokenWords.length;
+    int spokenScanIndex = 0;
 
     for (int i = 0; i < rawTargetTokens.length; i++) {
       final origWord = rawTargetTokens[i];
@@ -111,18 +171,34 @@ class PocketPronunciationEvaluator {
 
       if (target.isEmpty) continue;
 
-      if (i < totalSpoken) {
-        final spk = cleanSpokenWords[i];
+      // Scan within a window of upcoming spoken words (up to 4 words ahead)
+      int matchedIndex = -1;
+      final maxScan = (spokenScanIndex + 4).clamp(0, cleanSpokenWords.length);
+
+      for (int s = spokenScanIndex; s < maxScan; s++) {
+        final spk = cleanSpokenWords[s];
         if (spk == target || _isCloseMatch(spk, target)) {
-          evaluatedList.add(
-            EvaluatedWord(
-              word: origWord,
-              status: WordEvaluationStatus.correct,
-              spokenVariant: spk,
-            ),
-          );
-          correctCount++;
-        } else {
+          matchedIndex = s;
+          break;
+        }
+      }
+
+      if (matchedIndex != -1) {
+        // Found match! Advance spoken scanner past matched word
+        final spk = cleanSpokenWords[matchedIndex];
+        evaluatedList.add(
+          EvaluatedWord(
+            word: origWord,
+            status: WordEvaluationStatus.correct,
+            spokenVariant: spk,
+          ),
+        );
+        correctCount++;
+        spokenScanIndex = matchedIndex + 1;
+      } else {
+        // Not matched in current window
+        if (spokenScanIndex < cleanSpokenWords.length) {
+          final spk = cleanSpokenWords[spokenScanIndex];
           evaluatedList.add(
             EvaluatedWord(
               word: origWord,
@@ -132,28 +208,37 @@ class PocketPronunciationEvaluator {
           );
           wrongCount++;
           focusList.add(target);
+          spokenScanIndex++;
+        } else {
+          evaluatedList.add(
+            EvaluatedWord(
+              word: origWord,
+              status: WordEvaluationStatus.missed,
+            ),
+          );
+          missedCount++;
+          focusList.add(target);
         }
-      } else {
-        evaluatedList.add(
-          EvaluatedWord(
-            word: origWord,
-            status: WordEvaluationStatus.missed,
-          ),
-        );
-        missedCount++;
-        focusList.add(target);
       }
     }
 
     final totalEvaluated = evaluatedList.length;
-    final int accuracy = totalEvaluated == 0
+    int accuracy = totalEvaluated == 0
         ? 0
         : ((correctCount / totalEvaluated) * 100).round().clamp(0, 100);
 
+    // If whole spoken string is very close or contains target phrase, boost accuracy
+    final cleanTargetPhrase = cleanTargetWords.join(' ');
+    final cleanSpokenPhrase = cleanSpokenWords.join(' ');
+    if (cleanSpokenPhrase.contains(cleanTargetPhrase) ||
+        cleanTargetPhrase.contains(cleanSpokenPhrase)) {
+      accuracy = accuracy.clamp(80, 100);
+    }
+
     String tip;
-    if (focusList.isEmpty && accuracy >= 80) {
+    if (focusList.isEmpty && accuracy >= 75) {
       tip = '🌟 Outstanding! You pronounced every syllable clearly and naturally.';
-    } else if (accuracy >= 60) {
+    } else if (accuracy >= 50) {
       final focusSample = focusList.take(3).join(', ');
       tip = 'Good effort! Focus on: "$focusSample". Try saying them with slightly stronger stress.';
     } else {
@@ -175,27 +260,56 @@ class PocketPronunciationEvaluator {
 
   static bool _isCloseMatch(String s1, String s2) {
     if (s1 == s2) return true;
-    if (s1.length < 3 || s2.length < 3) return false;
-    // Simple edit distance tolerance of 1
-    if ((s1.length - s2.length).abs() > 1) return false;
-    int mismatches = 0;
-    int i = 0, j = 0;
-    while (i < s1.length && j < s2.length) {
-      if (s1[i] != s2[j]) {
-        mismatches++;
-        if (mismatches > 1) return false;
-        if (s1.length > s2.length) {
+    if (s1.isEmpty || s2.isEmpty) return false;
+
+    // Common phonetic equivalences for ESL learners
+    if ((s1 == 'for' && s2 == '4') || (s1 == '4' && s2 == 'for')) return true;
+    if ((s1 == 'two' && s2 == '2') || (s1 == '2' && s2 == 'two')) return true;
+    if ((s1 == 'to' && s2 == '2') || (s1 == '2' && s2 == 'to')) return true;
+    if ((s1 == 'a' && s2 == 'ay') || (s1 == 'ay' && s2 == 'a')) return true;
+
+    // Allow single edit distance for words >= 3
+    if (s1.length >= 3 && s2.length >= 3) {
+      if ((s1.length - s2.length).abs() <= 1) {
+        int mismatches = 0;
+        int i = 0, j = 0;
+        while (i < s1.length && j < s2.length) {
+          if (s1[i] != s2[j]) {
+            mismatches++;
+            if (mismatches > 1) break;
+            if (s1.length > s2.length) {
+              i++;
+              continue;
+            } else if (s2.length > s1.length) {
+              j++;
+              continue;
+            }
+          }
           i++;
-          continue;
-        } else if (s2.length > s1.length) {
           j++;
-          continue;
         }
+        if (mismatches <= 1) return true;
       }
-      i++;
-      j++;
     }
-    return true;
+
+    // Allow edit distance of 2 for longer words >= 5
+    if (s1.length >= 5 && s2.length >= 5) {
+      if ((s1.length - s2.length).abs() <= 2) {
+        int mismatches = 0;
+        int i = 0, j = 0;
+        while (i < s1.length && j < s2.length) {
+          if (s1[i] != s2[j]) {
+            mismatches++;
+            if (mismatches > 2) break;
+          }
+          i++;
+          j++;
+        }
+        if (mismatches <= 2) return true;
+      }
+    }
+
+    return false;
   }
 }
 

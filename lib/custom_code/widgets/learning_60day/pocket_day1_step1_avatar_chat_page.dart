@@ -13,7 +13,6 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
-import 'pocket_pronunciation_evaluator.dart';
 import 'games/pocket_alphabet_balloon_sky_game_page.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -1236,58 +1235,18 @@ class _PocketDay1Step1AvatarChatPageState
       return;
     }
 
-    // 3. Letter drill evaluation: check pronunciation of target letter phrase
-    final evaluation = PocketPronunciationEvaluator.evaluate(
-      targetSentence: _currentExpectedVoicePhrase,
-      spokenText: spokenText,
+    // 3. Letter drill evaluation (A for Apple, B for Ball, etc.):
+
+    // 3. Letter drill evaluation (A for Apple, B for Ball, etc.):
+    // As per User Audio Directive: Never block the learner here with rigid rejections.
+    // Recognize any spoken input (apple, a, for, or phrase), praise the effort, and advance smoothly!
+    HapticFeedback.lightImpact();
+    PocketGameAudioService.instance.playCorrectSound();
+
+    _handleVoiceSubmission(
+      voiceText: spokenText,
+      action: _advanceToNextLetter,
     );
-
-    final cleanTarget = _currentExpectedVoicePhrase.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
-    final cleanSpoken = spokenText.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
-
-    // Word contains target letter or target word
-    final isMatch = evaluation.accuracyPercentage >= 50 ||
-        cleanSpoken.contains(cleanTarget) ||
-        cleanTarget.contains(cleanSpoken);
-
-    if (isMatch) {
-      // Correct! Advance
-      _handleVoiceSubmission(
-        voiceText: spokenText,
-        action: _advanceToNextLetter,
-      );
-    } else {
-      // Incorrect pronunciation - Do NOT advance! Show error & let learner retry
-      HapticFeedback.heavyImpact();
-      PocketGameAudioService.instance.playIncorrectSound();
-
-      setState(() {
-        _isAnalyzing = false;
-        _messages.add(
-          Step1ChatMessage(
-            id: 'user_voice_err_${DateTime.now().millisecondsSinceEpoch}',
-            isAvatar: false,
-            textEn: spokenText,
-            isVoiceMessage: true,
-          ),
-        );
-
-        final focus = evaluation.focusWords.join(', ');
-        _messages.add(
-          Step1ChatMessage(
-            id: 'correction_${DateTime.now().millisecondsSinceEpoch}',
-            isAvatar: true,
-            textEn: 'Not quite! You said: "$spokenText"\nExpected: "$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}',
-            textNative: 'പറഞ്ഞത് ശരിയായില്ല! നിങ്ങൾ പറഞ്ഞത്: "$spokenText"\nശരിയായത്: "$_currentExpectedVoicePhrase"\nഒന്നുകൂടി മൈക്കിൽ പറഞ്ഞു നോക്കൂ! 🎙️',
-            audioText: 'Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase',
-            speakThisPrompt: 'Tap mic below to try again 👇',
-          ),
-        );
-      });
-
-      _speak('Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase');
-      _scrollToBottom();
-    }
   }
 
   void _showMisunderstoodDialogue({
