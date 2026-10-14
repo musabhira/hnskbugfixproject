@@ -2438,8 +2438,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 1 on Days 3 to 31: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
-      if (day >= 3 && day <= 31 && s == 1) {
+      // Step 1 on Days 3 to 50: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
+      if (day >= 3 && day <= 50 && s == 1) {
         await PocketDayAvatarChatPage.show(
           context,
           day: day,
@@ -2527,8 +2527,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 7 on Days 1 to 31: Launches Dedicated House Defense Shield Command (User Audio Directive!)
-      if (day >= 1 && day <= 31 && s == 7) {
+      // Step 7 on Days 1 to 50: Launches Dedicated House Defense Shield Command (User Audio Directive!)
+      if (day >= 1 && day <= 50 && s == 7) {
         await PocketHouseDefenseChatPage.show(
           context,
           day: day,
