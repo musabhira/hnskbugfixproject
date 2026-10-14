@@ -10,30 +10,28 @@ import 'english_tasks_master_hub.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
 
-/// 🛡️ Dedicated House 1 Defense Shield Command Page
+import 'pocket_defense_question_bank.dart';
+
+/// 🛡️ Dedicated House Defense Shield Command Page (Days 1 to 16+)
 /// Overhauled based on User Audio Directives:
 /// - Minimal, crystal-clear UX without overlapping audio or verbose chat walls.
-/// - Top section showcases House 1 visual (HouseMasterPainter) + dynamic HP Shield bar (0/100 HP -> 100/100 HP).
-/// - Single CyberCat prompt explaining defense against rival loot attacks.
-/// - Simple "[ 🛡️ Add Defense Shield ]" button leading to 2 choices:
-///     1. ✨ Auto-Add with AI (5 curated Spoken English questions, +20 HP each -> 100 HP).
-///     2. ✍️ Add Manually (Choose 5 questions).
-/// - Once equipped:
-///     - [ 👁️ View & Test Defense ] bottom sheet showing equipped questions + rival attack test simulator.
-///     - [ ✅ Complete Step 7 & Continue ] returns to open-world map.
-/// - Strict audio discipline: always calls `_tts.stop()` before speaking short cues.
+/// - Top section showcases House visual (HouseMasterPainter) + dynamic HP Shield bar (0/100 HP -> 100/100 HP).
+/// - Dynamic question bank customized for each specific day (never repeats!).
 class PocketHouseDefenseChatPage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int)? onStepFinished;
 
   const PocketHouseDefenseChatPage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int)? onStepFinished,
   }) {
@@ -41,6 +39,7 @@ class PocketHouseDefenseChatPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketHouseDefenseChatPage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -70,7 +69,7 @@ class _PocketHouseDefenseChatPageState
   List<HouseShieldQuestion> _activeQuestions = [];
 
   // Curated research-backed starter defense questions for Level 1 House
-  final List<HouseShieldQuestion> _curatedBank = const [
+  static const List<HouseShieldQuestion> _defaultDay1Bank = [
     HouseShieldQuestion(
       id: 'h1_def_1',
       question: 'Good morning! What is your name?',
@@ -163,9 +162,28 @@ class _PocketHouseDefenseChatPageState
     ),
   ];
 
+  late final List<HouseShieldQuestion> _curatedBank;
+
+  List<HouseShieldQuestion> _buildQuestionsForDay(int day) {
+    if (day == 1) return _defaultDay1Bank;
+    final list = <HouseShieldQuestion>[];
+    final gates = ['vocab_gate', 'grammar_defusal', 'speed_blitz', 'idiom_shield', 'riddle_sphinx'];
+    for (int i = 0; i < 10; i++) {
+      final gate = gates[i % gates.length];
+      list.add(PocketDefenseQuestionBank.getRandomHouseShieldQuestion(
+        gate,
+        day: day,
+        idPrefix: 'h${day}_def_${i + 1}',
+      ));
+    }
+    return list;
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _curatedBank = _buildQuestionsForDay(widget.day);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -191,7 +209,7 @@ class _PocketHouseDefenseChatPageState
 
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();
-    final isActive = prefs.getBool('pocket_house_1_defense_active') ?? false;
+    final isActive = prefs.getBool('pocket_house_${widget.day}_defense_active') ?? false;
     if (isActive) {
       setState(() {
         _isShieldArmed = true;
@@ -201,7 +219,7 @@ class _PocketHouseDefenseChatPageState
     } else {
       // Speak brief initial prompt
       _speak(
-        "Protect House 1! Add defense questions so rival learners cannot loot your points.",
+        "Protect House ${widget.day}! Add defense questions so rival learners cannot loot your points.",
       );
     }
   }
@@ -246,7 +264,7 @@ class _PocketHouseDefenseChatPageState
     await _saveDefenseQuestions(questions);
 
     _speak(
-      "Excellent choice! House number 1 defense shield is fully activated. Shield health is 100 percent.",
+      "Excellent choice! House number ${widget.day} defense shield is fully activated. Shield health is 100 percent.",
     );
   }
 
@@ -263,10 +281,10 @@ class _PocketHouseDefenseChatPageState
       final uid = widget.userId ?? _supabase.auth.currentUser?.id;
       final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setBool('pocket_house_1_defense_active', true);
-      await prefs.setInt('pocket_house_1_hp', 100);
+      await prefs.setBool('pocket_house_${widget.day}_defense_active', true);
+      await prefs.setInt('pocket_house_${widget.day}_hp', 100);
       if (uid != null) {
-        await prefs.setBool('pocket_day_${uid}_1_step_7_done', true);
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_7_done', true);
       }
 
       await PocketFortressDefenseService.saveShieldQuestions(questions);
@@ -384,7 +402,7 @@ class _PocketHouseDefenseChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Step 7: House 1 Defense Shield',
+                  'Step 7: House ${widget.day} Defense Shield',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -420,7 +438,7 @@ class _PocketHouseDefenseChatPageState
     );
   }
 
-  /// 🏡 House 1 Visual Widget with Dynamic Shield Barrier and HP Gauge
+  /// 🏡 House Visual Widget with Dynamic Shield Barrier and HP Gauge
   Widget _buildHouseAndShieldCard() {
     return Container(
       width: double.infinity,
@@ -457,7 +475,7 @@ class _PocketHouseDefenseChatPageState
                   border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
-                  '🏡 HOUSE #1: FOUNDATION',
+                  '🏡 HOUSE #${widget.day}: CITADEL',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontWeight: FontWeight.w900,
@@ -516,8 +534,8 @@ class _PocketHouseDefenseChatPageState
                 child: CustomPaint(
                   size: const Size(200, 130),
                   painter: HouseMasterPainter(
-                    day: 1,
-                    palette: HousePalette.presets[0],
+                    day: widget.day,
+                    palette: HousePalette.presets[(widget.day - 1) % HousePalette.presets.length],
                     isPresident: false,
                     lightsOn: true,
                   ),
@@ -654,11 +672,11 @@ class _PocketHouseDefenseChatPageState
                       onTap: () {
                         if (_isShieldArmed) {
                           _speak(
-                            "House number 1 defense shield is fully activated! Shield health is 100 percent. Your house is completely protected.",
+                            "House number ${widget.day} defense shield is fully activated! Shield health is 100 percent. Your house is completely protected.",
                           );
                         } else {
                           _speak(
-                            "Protect House 1! Add defense questions so rival learners cannot loot your points.",
+                            "Protect House ${widget.day}! Add defense questions so rival learners cannot loot your points.",
                           );
                         }
                       },
@@ -672,8 +690,8 @@ class _PocketHouseDefenseChatPageState
                 const SizedBox(height: 4),
                 Text(
                   _isShieldArmed
-                      ? "🎉 House #1 Defense Shield is fully activated! 100/100 HP. Your house is completely protected from rival raids."
-                      : "Protect House #1! Other learners and citadels will attack to loot points. Add your English defense questions as a protective shield!",
+                      ? "🎉 House #${widget.day} Defense Shield is fully activated! 100/100 HP. Your house is completely protected from rival raids."
+                      : "Protect House #${widget.day}! Other learners and citadels will attack to loot points. Add your English defense questions as a protective shield!",
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 13,
@@ -684,7 +702,7 @@ class _PocketHouseDefenseChatPageState
                 const SizedBox(height: 6),
                 Text(
                   _isShieldArmed
-                      ? "🎉 ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് 100% സജ്ജമായി! വീട് പൂർണ്ണമായും സുരക്ഷിതമാണ്."
+                      ? "🎉 ഹൗസ് ${widget.day} ഡിഫൻസ് ഷീൽഡ് 100% സജ്ജമായി! വീട് പൂർണ്ണമായും സുരക്ഷിതമാണ്."
                       : "നമ്മുടെ വീട് മറ്റ് കൂട്ടുകാർ അറ്റാക്ക് ചെയ്ത് പോയിന്റ് കവരാതിരിക്കാൻ ഇംഗ്ലീഷ് ഡിഫൻസ് ഷീൽഡ് സജ്ജമാക്കുക!",
                   style: GoogleFonts.inter(
                     color: const Color(0xFF93C5FD),

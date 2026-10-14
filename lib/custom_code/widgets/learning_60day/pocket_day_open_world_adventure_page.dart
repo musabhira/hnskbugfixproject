@@ -38,6 +38,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_sylla
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -791,6 +792,7 @@ class _PocketDayOpenWorldAdventurePageState
                   HapticFeedback.mediumImpact();
                   await PocketHouseDefenseChatPage.show(
                     context,
+                    day: widget.day,
                     userId: widget.userId ?? _supabase.auth.currentUser?.id,
                     onStepFinished: (finishedStep) {
                       _onStepCompleted(finishedStep);
@@ -2436,6 +2438,20 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
+      // Step 1 on Days 3 to 16: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
+      if (day >= 3 && day <= 16 && s == 1) {
+        await PocketDayAvatarChatPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
       // Step 2 on Day 1: Launches Dedicated Conversational Avatar Chat + Word Game (User Audio Directive!)
       if (day == 1 && s == 2) {
         await PocketDay1Step2AvatarChatPage.show(
@@ -2511,10 +2527,11 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 7 on Day 1 & Day 2: Launches Dedicated House Defense Shield Command (User Audio Directive!)
-      if ((day == 1 || day == 2) && s == 7) {
+      // Step 7 on Days 1 to 16: Launches Dedicated House Defense Shield Command (User Audio Directive!)
+      if (day >= 1 && day <= 16 && s == 7) {
         await PocketHouseDefenseChatPage.show(
           context,
+          day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);

@@ -32,6 +32,8 @@ import 'pocket_day1_step2_avatar_chat_page.dart';
 import 'pocket_day1_step3_avatar_chat_page.dart';
 import 'pocket_day1_step4_avatar_chat_page.dart';
 import 'pocket_day1_step5_avatar_chat_page.dart';
+import 'pocket_day2_step1_avatar_chat_page.dart';
+import 'pocket_day_avatar_chat_page.dart';
 import 'pocket_house_defense_chat_page.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
@@ -550,6 +552,27 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
+    // 🐱 User Audio Directive: Day 2 Step 1 uses dedicated conversational avatar chat interface!
+    if (widget.day == 2 && _activeStep == 1) {
+      return PocketDay2Step1AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(1);
+        },
+      );
+    }
+
+    // 🐱 User Audio Directive: Days 3 to 16 Step 1 uses dedicated conversational avatar chat interface!
+    if (widget.day >= 3 && widget.day <= 16 && _activeStep == 1) {
+      return PocketDayAvatarChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(1);
+        },
+      );
+    }
+
     // 🐱 User Audio Directive: Day 1 Step 2 uses the conversational onboarding-style avatar chat interface for Vocabulary!
     if (widget.day == 1 && _activeStep == 2) {
       return PocketDay1Step2AvatarChatPage(
@@ -590,8 +613,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 💬 User Audio Directive: Day 1 Step 6 uses English Hub Community Chat!
-    if (widget.day == 1 && _activeStep == 6) {
+    // 💬 User Audio Directive: Day 1 & Day 2 Step 6 uses English Hub Community Chat!
+    if ((widget.day == 1 || widget.day == 2) && _activeStep == 6) {
       return Scaffold(
         backgroundColor: const Color(0xFF0A1118),
         body: SafeArea(
@@ -604,9 +627,10 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🛡️ User Audio Directive: Day 1 Step 7 uses Dedicated House 1 Defense Shield Command!
-    if (widget.day == 1 && _activeStep == 7) {
+    // 🛡️ User Audio Directive: Days 1 to 16 Step 7 uses Dedicated House Defense Shield Command!
+    if (widget.day >= 1 && widget.day <= 16 && _activeStep == 7) {
       return PocketHouseDefenseChatPage(
+        day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(7);
