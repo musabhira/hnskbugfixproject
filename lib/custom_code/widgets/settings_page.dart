@@ -649,13 +649,33 @@ class _SettingsPageState extends State<SettingsPage> {
                     p['desc']!,
                     style: const TextStyle(color: Colors.white70, fontSize: 11.5),
                   ),
-                  trailing: isSelected
-                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700))
-                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 20),
+                        tooltip: 'Listen to sample',
+                        onPressed: () => PocketVoiceService.instance.previewPersona(p['id']!),
+                      ),
+                      if (isSelected)
+                        const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
+                    ],
+                  ),
                   onTap: () async {
+                    HapticFeedback.mediumImpact();
                     await PocketVoiceService.instance.setPersona(p['id']!);
                     setState(() => _voicePersona = p['id']!);
+                    await PocketVoiceService.instance.previewPersona(p['id']!);
                     if (ctx.mounted) Navigator.pop(ctx);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✨ Tutor voice set to ${p["name"]}!'),
+                          backgroundColor: const Color(0xFF0284C7),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
                   },
                 ),
               );

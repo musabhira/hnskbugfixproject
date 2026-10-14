@@ -137,5 +137,33 @@ class PocketVoiceService {
       debugPrint('⚠️ Voice candidate selection error: $e');
     }
   }
+
+  /// Previews the selected persona voice immediately
+  Future<void> previewPersona(String persona) async {
+    try {
+      await setPersona(persona);
+      final FlutterTts previewTts = FlutterTts();
+      await configureOptimalFemaleVoice(previewTts);
+      String previewLine;
+      switch (persona) {
+        case 'cybercat':
+          previewLine = 'Hi! I am CyberCat! Let us learn English together!';
+          break;
+        case 'male':
+          previewLine = 'Hello! I am your English tutor. Ready to practice speaking?';
+          break;
+        case 'british':
+          previewLine = 'Good day! Let us practise your English pronunciation.';
+          break;
+        case 'female':
+        default:
+          previewLine = 'Hello! Welcome to Pocket Mates. Let us learn English!';
+          break;
+      }
+      await previewTts.speak(previewLine);
+    } catch (e) {
+      debugPrint('⚠️ Voice preview error: $e');
+    }
+  }
 }
 
