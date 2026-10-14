@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import '../pocket_pronunciation_evaluator.dart';
 import '../pocket_fortress_defense_service.dart';
 
 /// 🚗 Particle effect for road dust, checkpoint celebrations, and coin bursts
@@ -270,6 +271,7 @@ class _PocketVocabOpenWorldDrivePageState
   int _recordingSeconds = 0;
   Timer? _recordTimer;
   bool _isWordVerified = false;
+  String? _speechError;
   bool _speechAvailable = false;
   bool _allCompleted = false;
 
@@ -473,6 +475,7 @@ class _PocketVocabOpenWorldDrivePageState
     setState(() {
       _isRecording = true;
       _spokenText = '';
+      _speechError = null;
       _recordingSeconds = 0;
     });
 
@@ -518,14 +521,52 @@ class _PocketVocabOpenWorldDrivePageState
       } catch (_) {}
     }
 
+    final currentItem = _currentCheckpointIndex < vocabCheckpoints.length
+        ? vocabCheckpoints[_currentCheckpointIndex]
+        : vocabCheckpoints.last;
+    final wrd = (currentItem['word'] ?? '').toString().toLowerCase();
+
+    final cleanSpoken = _spokenText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
+
+    if (cleanSpoken.isEmpty) {
+      setState(() {
+        _isRecording = false;
+        _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and say: "$sentence"';
+      });
+      PocketGameAudioService.instance.playIncorrectSound();
+      await _speak('Please speak into the mic: $sentence');
+      return;
+    }
+
+    // Accurate Speech Verification
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: sentence,
+      spokenText: _spokenText,
+    );
+
+    final containsKeyword = cleanSpoken.contains(wrd);
+    final isPassed = evalResult.accuracyPercentage >= 45 || containsKeyword;
+
+    if (!isPassed) {
+      final focus = evalResult.focusWords.take(2).join(', ');
+      setState(() {
+        _isRecording = false;
+        _speechError = 'You said: "$_spokenText"\nExpected: "$sentence"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
+      });
+      PocketGameAudioService.instance.playIncorrectSound();
+      await _speak('Not quite right. Say: $sentence');
+      return;
+    }
+
+    // Speech Passed!
     setState(() {
       _isRecording = false;
+      _speechError = null;
       _isWordVerified = true;
       _checkpointGateOpening = true;
     });
 
     // Computer verifies speech and pronounces the target sentence aloud ONLY AFTER learner finishes speaking!
-    // ("Voice record aayi off cheythu kazhinjaalaanu 'The sun is bright' ennu computer parayullu!")
     await _speak(sentence);
 
     PocketGameAudioService.instance.playCoinSound();
@@ -869,6 +910,69 @@ class _PocketVocabOpenWorldDrivePageState
                     color: _spokenText.isNotEmpty ? const Color(0xFFFFD700) : Colors.white60,
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+
+              // Error Feedback Box: Shows what learner said vs what was expected!
+              if (_speechError != null && !_isRecording && !_isWordVerified) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.8)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Color(0xFFF87171), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'NOT QUITE RIGHT • TAP MIC TO RETRY',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFF87171),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _speechError!,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Verified Success Pill
+              if (_isWordVerified) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: Text(
+                    '✅ Excellent! “$_spokenText”',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF34D399),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

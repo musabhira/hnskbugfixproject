@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 
@@ -36,6 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isPowerSaving = false;
   bool _isNotificationsEnabled = true;
   double _voiceSpeed = 1.0;
+  String _voicePersona = 'female';
   bool _onlineStatusVisible = true;
 
   @override
@@ -55,6 +57,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _isPowerSaving = prefs.getBool('power_saving_mode') ?? false;
         _isNotificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
         _voiceSpeed = prefs.getDouble('voice_speed') ?? 1.0;
+        _voicePersona = prefs.getString(PocketVoiceService.prefKeyVoicePersona) ?? 'female';
         _onlineStatusVisible = prefs.getBool('online_status_visible') ?? true;
       });
     }
@@ -562,6 +565,107 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showVoicePersonaPicker() {
+    final personas = [
+      {
+        'id': 'female',
+        'name': 'Smooth Female',
+        'desc': 'Warm, natural female AI voice (Ava / Samantha / sfg)',
+        'icon': '👩‍🏫',
+      },
+      {
+        'id': 'cybercat',
+        'name': 'CyberCat Cheer',
+        'desc': 'Playful, lively CyberCat companion pitch & pacing',
+        'icon': '🐱',
+      },
+      {
+        'id': 'male',
+        'name': 'Clear Male',
+        'desc': 'Articulate & confident male tutor (Daniel / Alex)',
+        'icon': '👨‍🏫',
+      },
+      {
+        'id': 'british',
+        'name': 'British English',
+        'desc': 'Refined British accent & clear phonics',
+        'icon': '🇬🇧',
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  'Tutor Character Voice',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '100% Free on-device speech synthesis • No paid cloud charges',
+              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11.5),
+            ),
+            const SizedBox(height: 16),
+            ...personas.map((p) {
+              final isSelected = _voicePersona == p['id'];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                      : Colors.white.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                    width: isSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: ListTile(
+                  leading: Text(p['icon']!, style: const TextStyle(fontSize: 24)),
+                  title: Text(
+                    p['name']!,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? const Color(0xFF38BDF8) : Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  subtitle: Text(
+                    p['desc']!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700))
+                      : null,
+                  onTap: () async {
+                    await PocketVoiceService.instance.setPersona(p['id']!);
+                    setState(() => _voicePersona = p['id']!);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showVoiceSpeedPicker() {
     showModalBottomSheet(
       context: context,
@@ -1030,6 +1134,36 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // 🎙️ Voice & Audio Settings
               const _SectionHeader(title: 'Voice & Audio'),
+              _SettingsTile(
+                icon: Icons.record_voice_over_rounded,
+                iconColor: const Color(0xFF38BDF8),
+                title: 'Tutor Character Voice',
+                subtitle: _voicePersona == 'cybercat'
+                    ? 'CyberCat Cheer (Playful companion)'
+                    : _voicePersona == 'male'
+                        ? 'Clear Male (Articulate tutor)'
+                        : _voicePersona == 'british'
+                            ? 'British English (Refined RP)'
+                            : 'Smooth Female (Natural & warm)',
+                trailingWidget: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _voicePersona == 'cybercat'
+                        ? 'CyberCat 🐱'
+                        : _voicePersona == 'male'
+                            ? 'Male 👨‍🏫'
+                            : _voicePersona == 'british'
+                                ? 'British 🇬🇧'
+                                : 'Female 👩‍🏫',
+                    style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                onTap: _showVoicePersonaPicker,
+              ),
               _SettingsTile(
                 icon: Icons.speed_rounded,
                 iconColor: const Color(0xFFF59E0B),

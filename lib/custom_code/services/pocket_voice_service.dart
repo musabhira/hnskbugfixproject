@@ -1,31 +1,47 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// 🎙️ PocketVoiceService: Central High-Quality Female Voice Engine
+/// 🎙️ PocketVoiceService: Free Native Multi-Persona Voice Engine
 ///
 /// Implemented according to User Audio Directives:
-/// - Provides a high-quality, natural, smooth female voice across iOS and Android.
-/// - iOS: Prioritizes neural & natural female voices (Ava, Samantha, Allison, Susan, Karen).
-/// - Android: Prioritizes Google natural neural female voices (sfg, tpf, iob).
-/// - Tuned with natural speech rate (0.47) and warm, friendly female pitch (1.12).
-/// - Configures iOS audio session category to playback with speaker output.
+/// - 100% Free: Uses only on-device native TTS voices (zero paid cloud APIs).
+/// - Settings switchable personas:
+///   1. 'female' -> Smooth Female (Ava / Samantha / Allison / sfg)
+///   2. 'cybercat' -> CyberCat Warm & Friendly (higher pitch 1.25, cheerful pace)
+///   3. 'male' -> Clear Male (Daniel / Alex / en-us-x-sfg#male)
+///   4. 'british' -> British Accent (en-GB / Oliver / Serena / George)
 class PocketVoiceService {
   static final PocketVoiceService instance = PocketVoiceService._internal();
   PocketVoiceService._internal();
 
-  Map<String, String>? _cachedFemaleVoice;
+  static const String prefKeyVoicePersona = 'tutor_voice_persona';
+  String _currentPersona = 'female';
 
-  /// Applies the optimal high-quality smooth female voice settings to any [FlutterTts] instance
+  String get currentPersona => _currentPersona;
+
+  Future<String> getSelectedPersona() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _currentPersona = prefs.getString(prefKeyVoicePersona) ?? 'female';
+    } catch (_) {}
+    return _currentPersona;
+  }
+
+  Future<void> setPersona(String persona) async {
+    _currentPersona = persona;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(prefKeyVoicePersona, persona);
+    } catch (_) {}
+  }
+
+  /// Applies the optimal high-quality voice settings to any [FlutterTts] instance based on user preferences
   Future<void> configureOptimalFemaleVoice(FlutterTts tts) async {
     try {
-      await tts.setLanguage('en-US');
-
-      // Natural smooth conversational pacing and gentle, warm female pitch
+      await getSelectedPersona();
       final isIos = !kIsWeb && Platform.isIOS;
-      await tts.setSpeechRate(isIos ? 0.49 : 0.46);
-      await tts.setPitch(1.12); // Smooth, pleasant female pitch (warm teacher / CyberCat)
-      await tts.setVolume(1.0);
 
       if (isIos) {
         try {
@@ -41,74 +57,85 @@ class PocketVoiceService {
         } catch (_) {}
       }
 
-      if (_cachedFemaleVoice != null) {
-        await tts.setVoice(_cachedFemaleVoice!);
-        return;
-      }
+      await tts.setVolume(1.0);
 
-      final rawVoices = await tts.getVoices;
-      if (rawVoices is List && rawVoices.isNotEmpty) {
-        // Priority ranking of premium smooth female voices
-        final candidateNames = [
-          'ava',        // iOS Premium Neural Female
-          'samantha',   // iOS Natural Female
-          'allison',    // iOS Warm Female
-          'susan',      // iOS Clear Female
-          'karen',      // iOS Friendly Female
-          'victoria',   // iOS Refined Female
-          'sfg',        // Android Google Neural Female (e.g. en-us-x-sfg#female)
-          'tpf',        // Android Neural Female
-          'iob',        // Android Smooth Female
-          'female',     // Generic female identifier
-        ];
+      switch (_currentPersona) {
+        case 'cybercat':
+          await tts.setLanguage('en-US');
+          await tts.setSpeechRate(isIos ? 0.50 : 0.48);
+          await tts.setPitch(1.28); // Cheerful playful CyberCat tutor pitch
+          await _applyVoiceCandidates(tts, ['ava', 'samantha', 'allison', 'karen', 'sfg', 'female']);
+          break;
 
-        Map? selectedVoice;
+        case 'male':
+          await tts.setLanguage('en-US');
+          await tts.setSpeechRate(isIos ? 0.48 : 0.45);
+          await tts.setPitch(0.95); // Deep, articulate male mentor pitch
+          await _applyVoiceCandidates(tts, ['daniel', 'alex', 'oliver', 'en-us-x-sfg#male', 'male']);
+          break;
 
-        // 1. Look for English voices matching top candidates
-        for (final candidate in candidateNames) {
-          for (final v in rawVoices) {
-            if (v is Map) {
-              final name = (v['name'] ?? '').toString().toLowerCase();
-              final locale = (v['locale'] ?? '').toString().toLowerCase();
-              if (locale.startsWith('en') && name.contains(candidate)) {
-                selectedVoice = v;
-                break;
-              }
-            }
-          }
-          if (selectedVoice != null) break;
-        }
+        case 'british':
+          await tts.setLanguage('en-GB');
+          await tts.setSpeechRate(isIos ? 0.48 : 0.46);
+          await tts.setPitch(1.08); // Polished British RP tutor
+          await _applyVoiceCandidates(tts, ['oliver', 'serena', 'george', 'stephanie', 'en-gb']);
+          break;
 
-        // 2. Fallback to any English voice marked as female
-        if (selectedVoice == null) {
-          for (final v in rawVoices) {
-            if (v is Map) {
-              final name = (v['name'] ?? '').toString().toLowerCase();
-              final locale = (v['locale'] ?? '').toString().toLowerCase();
-              if (locale.startsWith('en') &&
-                  (name.contains('female') ||
-                   name.contains('woman') ||
-                   name.contains('girl'))) {
-                selectedVoice = v;
-                break;
-              }
-            }
-          }
-        }
-
-        if (selectedVoice != null) {
-          _cachedFemaleVoice = {
-            "name": selectedVoice['name'].toString(),
-            "locale": selectedVoice['locale'].toString(),
-          };
-          await tts.setVoice(_cachedFemaleVoice!);
-          debugPrint(
-            '🎙️ Configured Smooth Female Voice: ${_cachedFemaleVoice!["name"]} (${_cachedFemaleVoice!["locale"]})',
-          );
-        }
+        case 'female':
+        default:
+          await tts.setLanguage('en-US');
+          await tts.setSpeechRate(isIos ? 0.49 : 0.46);
+          await tts.setPitch(1.12); // Smooth, pleasant female pitch
+          await _applyVoiceCandidates(tts, [
+            'ava',
+            'samantha',
+            'allison',
+            'susan',
+            'karen',
+            'victoria',
+            'sfg',
+            'tpf',
+            'iob',
+            'female'
+          ]);
+          break;
       }
     } catch (e) {
-      debugPrint('⚠️ Error configuring female voice: $e');
+      debugPrint('⚠️ Error configuring voice persona: $e');
+    }
+  }
+
+  Future<void> _applyVoiceCandidates(FlutterTts tts, List<String> candidateNames) async {
+    try {
+      final rawVoices = await tts.getVoices;
+      if (rawVoices is! List || rawVoices.isEmpty) return;
+
+      Map? selectedVoice;
+      for (final candidate in candidateNames) {
+        for (final v in rawVoices) {
+          if (v is Map) {
+            final name = (v['name'] ?? '').toString().toLowerCase();
+            final locale = (v['locale'] ?? '').toString().toLowerCase();
+            if (locale.startsWith('en') && (name.contains(candidate) || locale.contains(candidate))) {
+              selectedVoice = v;
+              break;
+            }
+          }
+        }
+        if (selectedVoice != null) break;
+      }
+
+      if (selectedVoice != null) {
+        final voiceMap = {
+          "name": selectedVoice['name'].toString(),
+          "locale": selectedVoice['locale'].toString(),
+        };
+        await tts.setVoice(voiceMap);
+        debugPrint('🎙️ Applied Tutor Voice Persona [$_currentPersona]: ${voiceMap["name"]}');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Voice candidate selection error: $e');
     }
   }
 }
+

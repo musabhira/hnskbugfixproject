@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'pocket_pronunciation_evaluator.dart';
 import 'games/pocket_vocab_open_world_drive_page.dart';
 import 'pocket_fortress_defense_service.dart';
 
@@ -1300,16 +1301,14 @@ class _PocketDay1Step2AvatarChatPageState
           onResult: (result) {
             if (result.recognizedWords.isNotEmpty) {
               _speech.stop();
-              _handleVoiceSubmission(
-                voiceText: result.recognizedWords,
-                action: _getNextVoiceAction(),
-              );
+              setState(() => _isListening = false);
+              _processSpokenText(result.recognizedWords);
             }
           },
           listenOptions: stt.SpeechListenOptions(
             listenFor: const Duration(seconds: 5),
             pauseFor: const Duration(seconds: 2),
-            partialResults: true,
+            partialResults: false,
             listenMode: stt.ListenMode.confirmation,
           ),
         );
@@ -1325,11 +1324,141 @@ class _PocketDay1Step2AvatarChatPageState
     Future.delayed(const Duration(milliseconds: 1400), () {
       if (!mounted) return;
       setState(() => _isListening = false);
+      _processSpokenText(_currentExpectedVoicePhrase);
+    });
+  }
+
+  /// Evaluates learner's spoken input against current word or prompt and gives corrective feedback
+  void _processSpokenText(String spokenText) {
+    // 1. Initial greeting preference
+    if (_messages.length <= 1) {
+      final lower = spokenText.toLowerCase();
+      if (lower.contains('yes') || lower.contains('learn') || lower.contains('teach') || lower.contains('want')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _onUserWantsToLearnVocabulary,
+        );
+      } else if (lower.contains('no') || lower.contains('skip') || lower.contains('next') || lower.contains('already')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _onUserAlreadyKnowsVocabulary,
+        );
+      } else {
+        _showMisunderstoodDialogue(
+          spokenText: spokenText,
+          expectedText: 'Yes or No',
+          tip: 'Please say "Yes" to learn 20 essential words, or "No" to skip!',
+          tipMl: '20 വാക്കുകൾ പഠിക്കണമെങ്കിൽ "Yes" എന്നും, അടുത്തതിലേക്ക് പോകണമെങ്കിൽ "No" എന്നും പറയൂ!',
+        );
+      }
+      return;
+    }
+
+    // 2. Choice between Game or Speaking
+    if (_currentExpectedVoicePhrase.contains('Word Game or Speaking')) {
+      final lower = spokenText.toLowerCase();
+      if (lower.contains('game') || lower.contains('drive') || lower.contains('car')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _startWordGameMode,
+        );
+      } else if (lower.contains('speak') || lower.contains('chat') || lower.contains('repeat')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _startTeachingVocabSequence,
+        );
+      } else {
+        _showMisunderstoodDialogue(
+          spokenText: spokenText,
+          expectedText: 'Game or Speaking',
+          tip: 'Say "Game" to play open-world driving, or "Speaking" to practice words in chat!',
+          tipMl: '"Game" എന്ന് പറഞ്ഞാൽ ഡ്രൈവിംഗ് ഗെയിം കളിക്കാം, "Speaking" എന്ന് പറഞ്ഞാൽ ചാറ്റിൽ പഠിക്കാം!',
+        );
+      }
+      return;
+    }
+
+    // 3. Word repetition drill evaluation
+    final evaluation = PocketPronunciationEvaluator.evaluate(
+      targetSentence: _currentExpectedVoicePhrase,
+      spokenText: spokenText,
+    );
+
+    final cleanTarget = _currentExpectedVoicePhrase.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
+    final cleanSpoken = spokenText.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
+
+    final isMatch = evaluation.accuracyPercentage >= 50 ||
+        cleanSpoken.contains(cleanTarget) ||
+        cleanTarget.contains(cleanSpoken);
+
+    if (isMatch) {
       _handleVoiceSubmission(
-        voiceText: _currentExpectedVoicePhrase,
-        action: _getNextVoiceAction(),
+        voiceText: spokenText,
+        action: _advanceToNextWord,
+      );
+    } else {
+      HapticFeedback.heavyImpact();
+      PocketGameAudioService.instance.playIncorrectSound();
+
+      setState(() {
+        _messages.add(
+          Step2ChatMessage(
+            id: 'user_voice_err_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: false,
+            textEn: spokenText,
+            isVoiceMessage: true,
+          ),
+        );
+
+        final focus = evaluation.focusWords.join(', ');
+        _messages.add(
+          Step2ChatMessage(
+            id: 'correction_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: true,
+            textEn: 'Not quite! You said: "$spokenText"\nExpected: "$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}',
+            textNative: 'വായന ശരിയായില്ല! നിങ്ങൾ പറഞ്ഞത്: "$spokenText"\nശരിയായത്: "$_currentExpectedVoicePhrase"\nഒന്നുകൂടി മൈക്കിൽ പറഞ്ഞു നോക്കൂ! 🎙️',
+            audioText: 'Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase',
+            speakThisPrompt: 'Tap mic below to try again 👇',
+          ),
+        );
+      });
+
+      _speak('Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase');
+      _scrollToBottom();
+    }
+  }
+
+  void _showMisunderstoodDialogue({
+    required String spokenText,
+    required String expectedText,
+    required String tip,
+    required String tipMl,
+  }) {
+    HapticFeedback.lightImpact();
+    PocketGameAudioService.instance.playIncorrectSound();
+
+    setState(() {
+      _messages.add(
+        Step2ChatMessage(
+          id: 'user_voice_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: false,
+          textEn: spokenText,
+          isVoiceMessage: true,
+        ),
+      );
+      _messages.add(
+        Step2ChatMessage(
+          id: 'clarify_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: true,
+          textEn: 'I heard: "$spokenText"\n$tip',
+          textNative: tipMl,
+          audioText: tip,
+          speakThisPrompt: 'Tap mic or option below to continue 👇',
+        ),
       );
     });
+    _speak(tip);
+    _scrollToBottom();
   }
 
   VoidCallback _getNextVoiceAction() {

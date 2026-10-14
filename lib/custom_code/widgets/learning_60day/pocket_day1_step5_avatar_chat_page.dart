@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'pocket_pronunciation_evaluator.dart';
 
 /// 💬 Chat Message Model for Step 5 Reading Room
 class Step5ChatMessage {
@@ -522,6 +523,48 @@ class _PocketDay1Step5AvatarChatPageState
     });
     _scrollToBottom();
 
+    // Accurate Reading Aloud Verification
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: _currentExpectedVoicePhrase,
+      spokenText: voiceText,
+    );
+
+    final cleanVoice = voiceText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
+    final cleanTarget = _currentExpectedVoicePhrase.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
+    final targetKeywords = cleanTarget.split(' ').where((w) => w.length > 3).toList();
+    final containsCoreKeywords = targetKeywords.isNotEmpty && targetKeywords.any((kw) => cleanVoice.contains(kw));
+
+    final isPassed = evalResult.accuracyPercentage >= 40 || containsCoreKeywords;
+
+    if (!isPassed) {
+      PocketGameAudioService.instance.playIncorrectSound();
+      final focus = evalResult.focusWords.take(3).join(', ');
+
+      final correctionEn =
+          'I heard: "$voiceText"\n\n'
+          'Let\'s try reading this part again! Speak clearly into the mic:\n'
+          '"$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}';
+      final correctionMl =
+          'വായിച്ചത് കൃത്യമായില്ല. ഈ ഭാഗം ഒന്നുകൂടി ശ്രദ്ധിച്ചു വായിക്കൂ:\n"$_currentExpectedVoicePhrase"';
+
+      setState(() {
+        _messages.add(
+          Step5ChatMessage(
+            id: 'reading_retry_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: true,
+            textEn: correctionEn,
+            textNative: correctionMl,
+            audioText: 'Let\'s try reading this part again. $_currentExpectedVoicePhrase',
+          ),
+        );
+      });
+
+      _speak('Let\'s try reading this part again. $_currentExpectedVoicePhrase');
+      _scrollToBottom();
+      return;
+    }
+
+    // Passed reading
     Future.delayed(const Duration(milliseconds: 700), () {
       if (!mounted) return;
       _handleReadingSuccess();

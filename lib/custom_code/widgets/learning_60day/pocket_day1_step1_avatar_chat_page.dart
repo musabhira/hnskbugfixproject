@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'pocket_pronunciation_evaluator.dart';
 import 'games/pocket_alphabet_balloon_sky_game_page.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -1155,16 +1156,14 @@ class _PocketDay1Step1AvatarChatPageState
           onResult: (result) {
             if (result.recognizedWords.isNotEmpty) {
               _speech.stop();
-              _handleVoiceSubmission(
-                voiceText: result.recognizedWords,
-                action: _getNextVoiceAction(),
-              );
+              setState(() => _isListening = false);
+              _processSpokenText(result.recognizedWords);
             }
           },
           listenOptions: stt.SpeechListenOptions(
             listenFor: const Duration(seconds: 5),
             pauseFor: const Duration(seconds: 2),
-            partialResults: true,
+            partialResults: false,
             listenMode: stt.ListenMode.confirmation,
           ),
         );
@@ -1173,7 +1172,7 @@ class _PocketDay1Step1AvatarChatPageState
       }
     } else {
       // Windows Desktop, Web, or Mic unavailable:
-      // Smoothly activate listening animation and gracefully submit spoken phrase without ANY errors!
+      // Graceful fallback simulation
       _simulateVoiceCaptureFallback();
     }
   }
@@ -1182,16 +1181,151 @@ class _PocketDay1Step1AvatarChatPageState
     Future.delayed(const Duration(milliseconds: 1400), () {
       if (!mounted) return;
       setState(() => _isListening = false);
+      _processSpokenText(_currentExpectedVoicePhrase);
+    });
+  }
+
+  /// Evaluates learner's spoken input against current expectation and provides immediate corrective feedback
+  void _processSpokenText(String spokenText) {
+    // 1. First greeting step: checking for yes (knows) vs no (wants to learn)
+    if (_messages.length <= 1) {
+      final lower = spokenText.toLowerCase();
+      if (lower.contains('no') || lower.contains('learn') || lower.contains('not') || lower.contains('teach')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _onUserWantsToLearnAlphabet,
+        );
+      } else if (lower.contains('yes') || lower.contains('know') || lower.contains('skip') || lower.contains('next')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _onUserAlreadyKnowsAlphabet,
+        );
+      } else {
+        // Did not say yes or no clearly
+        _showMisunderstoodDialogue(
+          spokenText: spokenText,
+          expectedText: 'Yes or No',
+          tip: 'Please clearly say "Yes" if you know ABCD, or "No" if you want to learn! 😊',
+          tipMl: 'ദയവായി ABCD അറിയാമെങ്കിൽ "Yes" എന്നും, പഠിക്കണമെങ്കിൽ "No" എന്നും പറയൂ! 😊',
+        );
+      }
+      return;
+    }
+
+    // 2. Preference step: checking for game vs speaking
+    if (_currentExpectedVoicePhrase.contains('Game or Speaking')) {
+      final lower = spokenText.toLowerCase();
+      if (lower.contains('game') || lower.contains('balloon') || lower.contains('play')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _startBalloonGameMode,
+        );
+      } else if (lower.contains('speak') || lower.contains('chat') || lower.contains('repeat')) {
+        _handleVoiceSubmission(
+          voiceText: spokenText,
+          action: _startTeachingLettersSequence,
+        );
+      } else {
+        _showMisunderstoodDialogue(
+          spokenText: spokenText,
+          expectedText: 'Game or Speaking',
+          tip: 'Say "Game" to pop balloons, or "Speaking" to practice in chat!',
+          tipMl: '"Game" എന്ന് പറഞ്ഞാൽ ബലൂൺ ഗെയിം കളിക്കാം, "Speaking" എന്ന് പറഞ്ഞാൽ ചാറ്റിൽ സംസാരിക്കാം!',
+        );
+      }
+      return;
+    }
+
+    // 3. Letter drill evaluation: check pronunciation of target letter phrase
+    final evaluation = PocketPronunciationEvaluator.evaluate(
+      targetSentence: _currentExpectedVoicePhrase,
+      spokenText: spokenText,
+    );
+
+    final cleanTarget = _currentExpectedVoicePhrase.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
+    final cleanSpoken = spokenText.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
+
+    // Word contains target letter or target word
+    final isMatch = evaluation.accuracyPercentage >= 50 ||
+        cleanSpoken.contains(cleanTarget) ||
+        cleanTarget.contains(cleanSpoken);
+
+    if (isMatch) {
+      // Correct! Advance
       _handleVoiceSubmission(
-        voiceText: _currentExpectedVoicePhrase,
-        action: _getNextVoiceAction(),
+        voiceText: spokenText,
+        action: _advanceToNextLetter,
+      );
+    } else {
+      // Incorrect pronunciation - Do NOT advance! Show error & let learner retry
+      HapticFeedback.heavyImpact();
+      PocketGameAudioService.instance.playIncorrectSound();
+
+      setState(() {
+        _isAnalyzing = false;
+        _messages.add(
+          Step1ChatMessage(
+            id: 'user_voice_err_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: false,
+            textEn: spokenText,
+            isVoiceMessage: true,
+          ),
+        );
+
+        final focus = evaluation.focusWords.join(', ');
+        _messages.add(
+          Step1ChatMessage(
+            id: 'correction_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: true,
+            textEn: 'Not quite! You said: "$spokenText"\nExpected: "$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}',
+            textNative: 'പറഞ്ഞത് ശരിയായില്ല! നിങ്ങൾ പറഞ്ഞത്: "$spokenText"\nശരിയായത്: "$_currentExpectedVoicePhrase"\nഒന്നുകൂടി മൈക്കിൽ പറഞ്ഞു നോക്കൂ! 🎙️',
+            audioText: 'Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase',
+            speakThisPrompt: 'Tap mic below to try again 👇',
+          ),
+        );
+      });
+
+      _speak('Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase');
+      _scrollToBottom();
+    }
+  }
+
+  void _showMisunderstoodDialogue({
+    required String spokenText,
+    required String expectedText,
+    required String tip,
+    required String tipMl,
+  }) {
+    HapticFeedback.lightImpact();
+    PocketGameAudioService.instance.playIncorrectSound();
+
+    setState(() {
+      _isAnalyzing = false;
+      _messages.add(
+        Step1ChatMessage(
+          id: 'user_voice_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: false,
+          textEn: spokenText,
+          isVoiceMessage: true,
+        ),
+      );
+      _messages.add(
+        Step1ChatMessage(
+          id: 'clarify_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: true,
+          textEn: 'I heard: "$spokenText"\n$tip',
+          textNative: tipMl,
+          audioText: tip,
+          speakThisPrompt: 'Tap mic or option below to continue 👇',
+        ),
       );
     });
+    _speak(tip);
+    _scrollToBottom();
   }
 
   VoidCallback _getNextVoiceAction() {
     if (_messages.length <= 1) {
-      // First welcome step: if user says "no" -> choose preference, if "yes" -> skip
       if (_currentExpectedVoicePhrase.toLowerCase().contains('no')) {
         return _onUserWantsToLearnAlphabet;
       } else {
