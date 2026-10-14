@@ -1047,6 +1047,366 @@ class PocketDays3To16Registry {
         },
       ],
     ),
+
+    // -------------------------------------------------------------------------
+    // DAY 24: Quantifiers (Countable vs Uncountable Nouns)
+    // -------------------------------------------------------------------------
+    24: const DayCurriculumSpec(
+      day: 24,
+      topicEmoji: '🏂',
+      titleEn: 'Day 24: Quantifiers (Countable vs Uncountable Nouns)',
+      titleMl: 'ഡേ 24: അളവുകളും എണ്ണവും കൃത്യമായി പറയാൻ Quantifiers',
+      greetingEn: 'Welcome to Day 24! 🌟 Today we master quantifiers: using "many" and "few" for countable things, and "much" and "little" for uncountable quantities!',
+      greetingMl: 'ഡേ 24 ലേക്ക് സ്വാഗതം! 🌟 എണ്ണാൻ കഴിയുന്നവയ്ക്കും കഴിയാത്തവയ്ക്കും കൃത്യമായ അളവുകൾ (many, much, few, little) നൽകി സംസാരിക്കാൻ ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 24! Today we master countable and uncountable quantifiers like many, much, some, and any.',
+      blueprintTitle: 'COUNTABLE VS UNCOUNTABLE FORMULA',
+      blueprintExplanationEn: 'Use "many" and "few" for things you can count individually (books, tasks, bugs). Use "much" and "little" for uncountable volume or abstract mass (time, water, information). Use "some" in positive statements and "any" in questions or negatives!',
+      blueprintExplanationMl: 'എണ്ണാൻ കഴിയുന്നവയ്ക്ക് many, few ഉപയോഗിക്കുക (many tasks). എണ്ണാൻ കഴിയാത്തവയ്ക്ക് much, little ഉപയോഗിക്കുക (much time). ചോദ്യങ്ങളിലും നെഗറ്റീവുകളിലും "any" ഉപയോഗിക്കുക (Do you have any questions?).',
+      blueprintRules: [
+        {'subject': 'Countable Nouns', 'en': 'There are many new features in this release.', 'ml': 'ഈ റിലീസിൽ നിരവധി പുതിയ ഫീച്ചറുകൾ ഉണ്ട്.'},
+        {'subject': 'Uncountable Nouns', 'en': 'We don\'t have much time before the deadline.', 'ml': 'ഡെഡ്‌ലൈന് മുൻപ് ഞങ്ങൾക്ക് അധികം സമയമില്ല.'},
+        {'subject': 'Questions & Negatives', 'en': 'Do you have any questions about the plan?', 'ml': 'പദ്ധതിയെക്കുറിച്ച് നിങ്ങൾക്ക് എന്തെങ്കിലും സംശയങ്ങളുണ്ടോ?'},
+      ],
+      drills: [
+        {'en': 'We encountered many unexpected challenges yesterday.', 'ml': 'ഇന്നലെ ഞങ്ങൾ പല അപ്രതീക്ഷിത വെല്ലുവിളികളും നേരിട്ടു.', 'rule': 'Countable Quantifier: many + challenges'},
+        {'en': 'I do not have much time before the meeting.', 'ml': 'മീറ്റിംഗിന് മുൻപ് എനിക്ക് അധികം സമയമില്ല.', 'rule': 'Uncountable Quantifier: much + time'},
+        {'en': 'Do you have any suggestions for our project?', 'ml': 'ഞങ്ങളുടെ പ്രോജക്റ്റിലേക്ക് എന്തെങ്കിലും നിർദ്ദേശങ്ങൾ നിങ്ങൾക്കുണ്ടോ?', 'rule': 'Question Quantifier: any + suggestions'},
+        {'en': 'She gave me some valuable advice about learning.', 'ml': 'പഠനത്തെക്കുറിച്ച് അവൾ എനിക്ക് ചില വിലപ്പെട്ട ഉപദേശങ്ങൾ തന്നു.', 'rule': 'Uncountable: some advice (not an advice)'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Stating you don\'t have enough time today, say:',
+          'qMl': 'ചോദ്യം 1: എനിക്ക് ഇന്ന് അധികം സമയമില്ല എന്ന് എങ്ങനെ പറയും?',
+          'audio': 'Question 1: Is it I do not have much time, or I do not have many time?',
+          'correct': 'I do not have much time.',
+          'wrong': 'I do not have many time.',
+          'tip': 'Time is uncountable! Use "much time", never "many time".',
+        },
+        {
+          'qEn': 'Question 2: Complete: "There are ___ bugs to fix in this version."',
+          'qMl': 'ചോദ്യം 2: ഈ വേർഷനിൽ പരിഹരിക്കാൻ ധാരാളം ബഗ്ഗുകൾ ഉണ്ട്:',
+          'audio': 'Question 2: Does bugs take many, or much?',
+          'correct': 'many',
+          'wrong': 'much',
+          'tip': 'Bugs are countable nouns! Say: "many bugs".',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 25: Master the Articles (A, An, The)
+    // -------------------------------------------------------------------------
+    25: const DayCurriculumSpec(
+      day: 25,
+      topicEmoji: '🏝️',
+      titleEn: 'Day 25: Master the Articles (A, An, The)',
+      titleMl: 'ഡേ 25: നാമങ്ങൾക്ക് വ്യക്തത നൽകാൻ Articles (A, An, The)',
+      greetingEn: 'Welcome to Day 25! 🌟 Today we master English articles: knowing exactly when to use "a", "an", and when to switch into the specific spotlight with "the"!',
+      greetingMl: 'ഡേ 25 ലേക്ക് സ്വാഗതം! 🌟 ഇംഗ്ലീഷ് സംസാരത്തിന് കൂടുതൽ അഴക് നൽകുന്ന Articles (A, An, The) കൃത്യമായി ഉപയോഗിക്കാൻ ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 25! Today we master the spotlight rule of articles: a, an, and the.',
+      blueprintTitle: 'THE ARTICLE SPOTLIGHT FORMULA',
+      blueprintExplanationEn: 'Use "a" before consonant sounds and "an" before vowel sounds (an hour, a university). Use "a/an" when introducing an item for the first time, and switch to "the" once it becomes specific and known to both speaker and listener!',
+      blueprintExplanationMl: 'ഒരു വസ്തുവിനെ ആദ്യമായി പരാമർശിക്കുമ്പോൾ "a" അല്ലെങ്കിൽ "an" ഉപയോഗിക്കുക. അതേ വസ്തുവിനെ തുടർന്ന് പറയുമ്പോഴോ എല്ലാവർക്കും അറിയാവുന്ന പ്രത്യേക കാര്യമാണെങ്കിലോ "the" ഉപയോഗിക്കുക ("I bought a phone. The phone is fast").',
+      blueprintRules: [
+        {'subject': 'First Mention', 'en': 'I bought a new laptop yesterday.', 'ml': 'ഞാൻ ഇന്നലെ ഒരു പുതിയ ലാപ്ടോപ്പ് വാങ്ങി.'},
+        {'subject': 'Specific Mention', 'en': 'The laptop is remarkably fast and light.', 'ml': 'ആ ലാപ്ടോപ്പ് വളരെ വേഗതയേറിയതും ഭാരം കുറഞ്ഞതുമാണ്.'},
+        {'subject': 'Vowel Sound Rule', 'en': 'She has an honest and transparent approach.', 'ml': 'അവൾക്ക് സത്യസന്ധവും സുതാര്യവുമായ ഒരു സമീപനമുണ്ട് (honest takes an).'},
+      ],
+      drills: [
+        {'en': 'I am a software engineer building a mobile app.', 'ml': 'ഞാൻ ഒരു മൊബൈൽ ആപ്പ് നിർമ്മിക്കുന്ന സോഫ്റ്റ്‌വെയർ എഞ്ചിനീയറാണ്.', 'rule': 'Indefinite Article: a + engineer / a + app'},
+        {'en': 'She gave an inspiring presentation to the team.', 'ml': 'അവൾ ടീമിന് പ്രചോദനാത്മകമായ ഒരു പ്രസന്റേഷൻ നൽകി.', 'rule': 'Vowel Sound: an + inspiring'},
+        {'en': 'The project we started last week is progressing well.', 'ml': 'കഴിഞ്ഞ ആഴ്ച നമ്മൾ തുടങ്ങിയ ആ പ്രോജക്ട് നന്നായി മുന്നേറുന്നു.', 'rule': 'Definite Specific Article: The project'},
+        {'en': 'He is an honest person with great dedication.', 'ml': 'അവൻ മികച്ച അർപ്പണബോധമുള്ള ഒരു സത്യസന്ധനായ വ്യക്തിയാണ്.', 'rule': 'Silent H: an honest person'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Stating your profession as an engineer:',
+          'qMl': 'ചോദ്യം 1: ഞാൻ ഒരു എഞ്ചിനീയറാണ് എന്ന് എങ്ങനെ പറയും?',
+          'audio': 'Question 1: Is it I am an engineer, or I am a engineer?',
+          'correct': 'I am an engineer.',
+          'wrong': 'I am a engineer.',
+          'tip': '"Engineer" begins with a vowel sound! Always say: "an engineer".',
+        },
+        {
+          'qEn': 'Question 2: Complete: "She attends ___ university in Kochi."',
+          'qMl': 'ചോദ്യം 2: അവൾ കൊച്ചിയിലെ ഒരു യൂണിവേഴ്സിറ്റിയിലാണ് പഠിക്കുന്നത്:',
+          'audio': 'Question 2: Does university take a, or an?',
+          'correct': 'a',
+          'wrong': 'an',
+          'tip': '"University" starts with a "yu" consonant sound, so it takes "a university"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 26: Ownership & Possessives (My/Mine, Your/Yours)
+    // -------------------------------------------------------------------------
+    26: const DayCurriculumSpec(
+      day: 26,
+      topicEmoji: '🏭',
+      titleEn: 'Day 26: Ownership & Possessives (My/Mine, Your/Yours)',
+      titleMl: 'ഡേ 26: ഉടമസ്ഥതയും ഉത്തരവാദിത്തവും വ്യക്തമാക്കാൻ Possessives',
+      greetingEn: 'Welcome to Day 26! 🌟 Today we master expressing ownership, responsibility, and task boundaries using possessive adjectives and pronouns!',
+      greetingMl: 'ഡേ 26 ലേക്ക് സ്വാഗതം! 🌟 വസ്തുക്കളുടെയും ഉത്തരവാദിത്തങ്ങളുടെയും ഉടമസ്ഥത (my, mine, our, ours) വ്യക്തമായി പറയാൻ ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 26! Today we master possessive adjectives and pronouns to state ownership with clarity.',
+      blueprintTitle: 'POSSESSIVE PRONOUN BLUEPRINT',
+      blueprintExplanationEn: 'Possessive adjectives (my, your, our, their) always attach directly to nouns ("my code"). Possessive pronouns (mine, yours, ours, theirs) stand alone ("that code is mine"). Also remember: "its" shows ownership; "it\'s" means "it is"!',
+      blueprintExplanationMl: 'നാമത്തോടൊപ്പം വരുമ്പോൾ my, our, your ("my project"). ഒറ്റയ്ക്ക് നിൽക്കുമ്പോൾ mine, ours, yours ("The project is mine"). Its (ഉടമസ്ഥത) ഇൽ അപ്പോസ്ട്രഫി ഇടരുത്.',
+      blueprintRules: [
+        {'subject': 'Attached to Noun', 'en': 'This is our strategic roadmap.', 'ml': 'ഇതാണ് ഞങ്ങളുടെ തന്ത്രപരമായ റോഡ്മാപ്പ്.'},
+        {'subject': 'Standing Alone', 'en': 'The final decision is entirely yours.', 'ml': 'അന്തിമ തീരുമാനം പൂർണ്ണമായും നിങ്ങളുടേതാണ്.'},
+        {'subject': 'Non-Human Possessive', 'en': 'The mobile app updated its user interface.', 'ml': 'മൊബൈൽ ആപ്പ് അതിന്റെ യൂസർ ഇന്റർഫേസ് അപ്ഡേറ്റ് ചെയ്തു (its, no apostrophe).'},
+      ],
+      drills: [
+        {'en': 'This laptop is mine and that workstation is yours.', 'ml': 'ഈ ലാപ്ടോപ്പ് എന്റേതാണ്, ആ വർക്ക്സ്റ്റേഷൻ നിങ്ങളുടേതാണ്.', 'rule': 'Standalone Possessives: mine & yours'},
+        {'en': 'Our team completed the milestone ahead of schedule.', 'ml': 'ഞങ്ങളുടെ ടീം നിശ്ചിത സമയത്തിന് മുൻപേ ലക്ഷ്യം പൂർത്തിയാക്കി.', 'rule': 'Possessive Adjective: Our + team'},
+        {'en': 'The company launched its new product line today.', 'ml': 'കമ്പനി ഇന്ന് തങ്ങളുടെ പുതിയ ഉൽപ്പന്നങ്ങൾ പുറത്തിറക്കി.', 'rule': 'Possessive Its: its + product (no apostrophe)'},
+        {'en': 'The responsibility for this success is entirely ours.', 'ml': 'ഈ വിജയത്തിന്റെ ഉത്തരവാദിത്തം പൂർണ്ണമായും നമ്മുടേതാണ്.', 'rule': 'Standalone Pronoun: entirely ours'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Stating that a phone belongs to you:',
+          'qMl': 'ചോദ്യം 1: ഈ ഫോൺ എന്റേതാണ് എന്ന് എങ്ങനെ പറയും?',
+          'audio': 'Question 1: Is it This phone is mine, or This phone is my?',
+          'correct': 'This phone is mine.',
+          'wrong': 'This phone is my.',
+          'tip': 'When standing alone at the end of a clause, use "mine", not "my"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "The application updated ___ database securely."',
+          'qMl': 'ചോദ്യം 2: ആപ്ലിക്കേഷൻ അതിന്റെ ഡാറ്റാബേസ് സുരക്ഷിതമായി അപ്ഡേറ്റ് ചെയ്തു:',
+          'audio': 'Question 2: Is it its, or it\'s?',
+          'correct': 'its',
+          'wrong': 'it\'s',
+          'tip': 'Possessive form is "its" without an apostrophe! "It\'s" means "it is".',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 27: Smart Comparisons (Comparatives: -er / more than)
+    // -------------------------------------------------------------------------
+    27: const DayCurriculumSpec(
+      day: 27,
+      topicEmoji: '🐝',
+      titleEn: 'Day 27: Smart Comparisons (Comparatives: -er / more than)',
+      titleMl: 'ഡേ 27: രണ്ട് കാര്യങ്ങൾ തമ്മിൽ താരതമ്യം ചെയ്യാൻ Comparatives',
+      greetingEn: 'Welcome to Day 27! 🌟 Today we master evaluating choices and comparing alternatives using comparatives (-er than, more than)!',
+      greetingMl: 'ഡേ 27 ലേക്ക് സ്വാഗതം! 🌟 രണ്ട് കാര്യങ്ങളെ തമ്മിൽ ശരിയായി താരതമ്യം ചെയ്യാനും തീരുമാനങ്ങൾ വ്യക്തമാക്കാനും Comparatives ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 27! Today we master making smart comparisons using -er than and more than.',
+      blueprintTitle: 'COMPARATIVE EVALUATION FORMULA',
+      blueprintExplanationEn: 'Use "-er than" for short one-syllable adjectives (fast ➔ faster than, clean ➔ cleaner than). Use "more ... than" for longer multi-syllable adjectives (efficient ➔ more efficient than). Never combine both (never say "more faster")!',
+      blueprintExplanationMl: 'ചെറിയ വാക്കുകൾക്ക് -er than (quicker than, simpler than). വലിയ വാക്കുകൾക്ക് more ... than (more powerful than). ഒരിക്കലും "more faster" എന്ന് രണ്ടും ഒരുമിച്ച് പറയരുത്!',
+      blueprintRules: [
+        {'subject': 'Short Adjectives (-er)', 'en': 'This framework is faster than the old one.', 'ml': 'ഈ ഫ്രെയിംവർക്ക് പഴയതിനേക്കാൾ വേഗതയേറിയതാണ്.'},
+        {'subject': 'Long Adjectives (more)', 'en': 'This design is more user-friendly than before.', 'ml': 'ഈ ഡിസൈൻ മുൻപത്തേക്കാൾ കൂടുതൽ ഉപയോക്തൃ സൗഹൃദമാണ്.'},
+        {'subject': 'Irregular Comparatives', 'en': 'Her spoken English is much better now.', 'ml': 'അവളുടെ ഇംഗ്ലീഷ് സംസാരം ഇപ്പോൾ വളരെ മികച്ചതാണ് (good ➔ better).'},
+      ],
+      drills: [
+        {'en': 'This new approach is faster and cleaner than the old method.', 'ml': 'ഈ പുതിയ രീതി പഴയതിനേക്കാൾ വേഗതയേറിയതും വൃത്തിയുള്ളതുമാണ്.', 'rule': 'Short Comparatives: faster and cleaner'},
+        {'en': 'Flutter is more flexible and productive for mobile apps.', 'ml': 'മൊബൈൽ ആപ്പുകൾക്ക് ഫ്ലട്ടർ കൂടുതൽ വഴക്കമുള്ളതും ഫലപ്രദവുമാണ്.', 'rule': 'Long Comparative: more flexible'},
+        {'en': 'My pronunciation is significantly better than last month.', 'ml': 'കഴിഞ്ഞ മാസത്തെ അപേക്ഷിച്ച് എന്റെ ഉച്ചാരണം വളരെ മികച്ചതാണ്.', 'rule': 'Irregular: better (good ➔ better)'},
+        {'en': 'This solution is simpler and more reliable for our users.', 'ml': 'ഈ പരിഹാരം ഞങ്ങളുടെ ഉപയോക്താക്കൾക്ക് കൂടുതൽ ലളിതവും ആശ്രയിക്കാവുന്നതുമാണ്.', 'rule': 'Combined: simpler and more reliable'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Comparing the speed of two tools, which is correct?',
+          'qMl': 'ചോദ്യം 1: രണ്ട് ടൂളുകളുടെ വേഗത താരതമ്യം ചെയ്യാൻ ഏതാണ് ശരി?',
+          'audio': 'Question 1: Is it Flutter is faster than React, or Flutter is more faster than React?',
+          'correct': 'Flutter is faster than React.',
+          'wrong': 'Flutter is more faster than React.',
+          'tip': 'Never say "more faster"! Short adjectives take -er only: "faster than"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "His English communication is getting ___ every single day."',
+          'qMl': 'ചോദ്യം 2: അവന്റെ ഇംഗ്ലീഷ് സംസാരം ദിവസേന കൂടുതൽ മികച്ചതായി മാറുന്നു:',
+          'audio': 'Question 2: Is it better, or gooder?',
+          'correct': 'better',
+          'wrong': 'gooder',
+          'tip': '"Good" is irregular! Its comparative form is "better", never "gooder".',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 28: Superlatives (The Best, The Greatest, The Most)
+    // -------------------------------------------------------------------------
+    28: const DayCurriculumSpec(
+      day: 28,
+      topicEmoji: '🚇',
+      titleEn: 'Day 28: Superlatives (The Best, The Greatest, The Most)',
+      titleMl: 'ഡേ 28: ഏറ്റവും മികച്ചതിനെ ഉയർത്തിക്കാട്ടാൻ Superlatives',
+      greetingEn: 'Welcome to Day 28! 🌟 Today we master superlatives (the greatest, the most innovative) to celebrate peak achievements and define excellence!',
+      greetingMl: 'ഡേ 28 ലേക്ക് സ്വാഗതം! 🌟 ഒരു കൂട്ടത്തിൽ ഏറ്റവും മികച്ചത് (the best, the most important) എടുത്തുപറയാൻ Superlatives ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 28! Today we master superlatives to highlight the number one in any category.',
+      blueprintTitle: 'SUPERLATIVE PINNACLE BLUEPRINT',
+      blueprintExplanationEn: 'Superlatives identify the top spot in a group. Always use "the" before superlatives! Short adjectives add -est (the fastest, the simplest), while long adjectives take "the most" (the most impactful).',
+      blueprintExplanationMl: 'ഏറ്റവും മികച്ചത് എന്ന് പറയാൻ എപ്പോഴും "the" ഉപയോഗിക്കണം (the best, the most valuable). ചെറിയ വാക്കുകൾക്ക് -est (the easiest), വലിയ വാക്കുകൾക്ക് the most (the most dependable).',
+      blueprintRules: [
+        {'subject': 'Short Adjectives (-est)', 'en': 'This is the simplest way to learn speaking.', 'ml': 'സംസാരം പഠിക്കാനുള്ള ഏറ്റവും ലളിതമായ മാർഗ്ഗമാണിത്.'},
+        {'subject': 'Long Adjectives (the most)', 'en': 'Security is the most critical feature of our app.', 'ml': 'സുരക്ഷയാണ് ഞങ്ങളുടെ ആപ്പിന്റെ ഏറ്റവും നിർണ്ണായകമായ ഫീച്ചർ.'},
+        {'subject': 'Irregular Superlatives', 'en': 'Consistency is the best habit you can cultivate.', 'ml': 'തുടർച്ചയായ പരിശീലനമാണ് നിങ്ങൾക്ക് വളർത്തിയെടുക്കാവുന്ന ഏറ്റവും മികച്ച ശീലം (best).'},
+      ],
+      drills: [
+        {'en': 'This is the most effective English course I have taken.', 'ml': 'ഞാൻ പങ്കെടുത്തതിൽ വെച്ച് ഏറ്റവും ഫലപ്രദമായ ഇംഗ്ലീഷ് കോഴ്സാണിത്.', 'rule': 'Superlative: the most effective'},
+        {'en': 'Speaking daily is the fastest way to gain fluency.', 'ml': 'ദിവസവും സംസാരിക്കുന്നതാണ് വേഗത്തിൽ സ്വാഭാവികത നേടാനുള്ള ഏറ്റവും മികച്ച വഴി.', 'rule': 'Superlative: the fastest way'},
+        {'en': 'He is the most experienced developer on our team.', 'ml': 'ഞങ്ങളുടെ ടീമിലെ ഏറ്റവും പരിചയസമ്പന്നനായ ഡെവലപ്പറാണ് അവൻ.', 'rule': 'Superlative: the most experienced'},
+        {'en': 'That was the best presentation delivered at the summit.', 'ml': 'സമ്മിറ്റിൽ അവതരിപ്പിക്കപ്പെട്ടതിൽ വെച്ച് ഏറ്റവും മികച്ച പ്രസന്റേഷനായിരുന്നു അത്.', 'rule': 'Irregular Superlative: the best (good ➔ best)'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Praising a colleague as the top developer on the team:',
+          'qMl': 'ചോദ്യം 1: ടീമിലെ ഏറ്റവും മികച്ച ഡെവലപ്പർ എന്ന് എങ്ങനെ പറയും?',
+          'audio': 'Question 1: Is it He is the best developer, or He is best developer?',
+          'correct': 'He is the best developer.',
+          'wrong': 'He is best developer.',
+          'tip': 'Always include "the" with superlatives: "the best"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "This is ___ convenient feature in the entire app."',
+          'qMl': 'ചോദ്യം 2: മുഴുവൻ ആപ്പിലും വെച്ച് ഏറ്റവും സൗകര്യപ്രദമായ ഫീച്ചർ:',
+          'audio': 'Question 2: Does convenient take the most, or the more?',
+          'correct': 'the most',
+          'wrong': 'the more',
+          'tip': 'Superlative pinnacle requires "the most convenient"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 29: Connecting Thoughts (And, But, Because, So)
+    // -------------------------------------------------------------------------
+    29: const DayCurriculumSpec(
+      day: 29,
+      topicEmoji: '🧗',
+      titleEn: 'Day 29: Connecting Thoughts (And, But, Because, So)',
+      titleMl: 'ഡേ 29: ആശയങ്ങൾ കൂട്ടിയിണക്കി സംസാരിക്കാൻ Conjunctions',
+      greetingEn: 'Welcome to Day 29! 🌟 Today we master the connectors of human speech (and, but, because, so, although) that transform short fragments into fluent, natural sentences!',
+      greetingMl: 'ഡേ 29 ലേക്ക് സ്വാഗതം! 🌟 കൊച്ചുകൊച്ചു വാചകങ്ങൾക്ക് പകരം ആശയങ്ങളെ ഒഴുക്കോടെ കൂട്ടിയിണക്കി സംസാരിക്കാൻ Conjunctions ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 29! Today we master connecting thoughts smoothly with and, but, because, and so.',
+      blueprintTitle: 'ORGANIC CONJUNCTION BLUEPRINT',
+      blueprintExplanationEn: 'Connectors are the glue of human speech. Use "and" for addition, "but" for contrast, "because" for causes/reasons, and "so" for results. Never pair "although" with "but" in the same sentence!',
+      blueprintExplanationMl: 'വാക്യങ്ങളെ കൂട്ടിച്ചേർക്കാൻ and (കൂടാതെ), but (പക്ഷേ), because (കാരണം), so (അതുകൊണ്ട്) ഉപയോഗിക്കുക. ഒരു വാക്യത്തിൽ Although ഉം But ഉം ഒരുമിച്ച് ഉപയോഗിക്കരുത്.',
+      blueprintRules: [
+        {'subject': 'Addition & Contrast', 'en': 'I was tired after work, but I completed my drill.', 'ml': 'ജോലി കഴിഞ്ഞ് എനിക്ക് ക്ഷീണമായിരുന്നു, പക്ഷേ ഞാൻ ഡ്രിൽ പൂർത്തിയാക്കി.'},
+        {'subject': 'Reason & Consequence', 'en': 'I practice speaking daily because fluency requires action.', 'ml': 'ഫ്ലുവൻസിക്ക് പ്രവർത്തനം ആവശ്യമായതുകൊണ്ട് ഞാൻ ദിവസവും സംസാരിക്കുന്നു.'},
+        {'subject': 'Subordination (Although)', 'en': 'Although the problem was complex, we solved it.', 'ml': 'പ്രശ്നം സങ്കീർണ്ണമായിരുന്നെങ്കിലും ഞങ്ങൾ അത് പരിഹരിച്ചു.'},
+      ],
+      drills: [
+        {'en': 'I enjoy coding, but I also love learning spoken English.', 'ml': 'എനിക്ക് കോഡിംഗ് ഇഷ്ടമാണ്, പക്ഷേ അതോടൊപ്പം ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കുന്നതും ഞാൻ ഇഷ്ടപ്പെടുന്നു.', 'rule': 'Contrast Connector: but'},
+        {'en': 'I practice speaking every morning because consistency brings results.', 'ml': 'തുടർച്ചയായ പരിശീലനം ഫലം തരുമെന്നതിനാൽ ഞാൻ എല്ലാ ദിവസവും രാവിലെ സംസാരിക്കുന്നു.', 'rule': 'Causal Connector: because'},
+        {'en': 'We completed all test cases, so we deployed the release build.', 'ml': 'ഞങ്ങൾ എല്ലാ ടെസ്റ്റുകളും പൂർത്തിയാക്കി, അതിനാൽ റിലീസ് ബിൽഡ് വിന്യസിച്ചു.', 'rule': 'Consequence Connector: so'},
+        {'en': 'Although it rained heavily, our team arrived right on time.', 'ml': 'കനത്ത മഴ പെയ്തിട്ടും ഞങ്ങളുടെ ടീം കൃത്യസമയത്ത് തന്നെ എത്തിച്ചേർന്നു.', 'rule': 'Subordination: Although (no but)'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Expressing that you attended the meeting despite being tired:',
+          'qMl': 'ചോദ്യം 1: ക്ഷീണിതനായിരുന്നിട്ടും മീറ്റിംഗിൽ പങ്കെടുത്തു എന്ന് പറയാൻ ഏതാണ് ശരി?',
+          'audio': 'Question 1: Is it Although I was tired, I attended the meeting, or Although I was tired, but I attended the meeting?',
+          'correct': 'Although I was tired, I attended the meeting.',
+          'wrong': 'Although I was tired, but I attended the meeting.',
+          'tip': 'Never combine "Although" with "but"! "Although" handles the contrast by itself.',
+        },
+        {
+          'qEn': 'Question 2: Complete: "The server crashed, ___ we quickly restored the backup."',
+          'qMl': 'ചോദ്യം 2: സെർവർ തകരാറിലായി, അതിനാൽ ഞങ്ങൾ വേഗത്തിൽ ബാക്കപ്പ് റീസ്റ്റോർ ചെയ്തു:',
+          'audio': 'Question 2: Does it take so, or because?',
+          'correct': 'so',
+          'wrong': 'because',
+          'tip': '"So" indicates consequence and result!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 30: Foundation Capstone & Speech Autonomy
+    // -------------------------------------------------------------------------
+    30: const DayCurriculumSpec(
+      day: 30,
+      topicEmoji: '🏆',
+      titleEn: '🥈 Day 30: Foundation Capstone & Speech Autonomy',
+      titleMl: 'ഡേ 30: ഫൗണ്ടേഷൻ സമാപനവും 3-മിനിറ്റ് സംഭാഷണ വിജയവും',
+      greetingEn: 'Welcome to Day 30! 🌟 Congratulations on reaching the Phase 1 Foundation milestone! Today we weave together present, past, future, modals, and connectors into autonomous spoken fluency!',
+      greetingMl: 'ഡേ 30 ലേക്ക് സ്വാഗതം! 🌟 അഭിനന്ദനങ്ങൾ! ആദ്യ 30 ദിവസങ്ങൾ വിജയകരമായി പൂർത്തിയാക്കി നമ്മൾ ഇംഗ്ലീഷിന്റെ അടിത്തറ കീഴടക്കി. പഠിച്ച എല്ലാ വ്യാകരണങ്ങളും ഒഴുക്കോടെ സംസാരിക്കാൻ ഇന്ന് പരിശീലിച്ച് സിൽവർ ഷീൽഡ് നേടാം!',
+      greetingAudio: 'Welcome to Day 30! Congratulations on completing Phase 1. Today we synthesize all 30 days into complete spoken fluency.',
+      blueprintTitle: 'PHASE 1 CAPSTONE SYNTHESIS',
+      blueprintExplanationEn: 'Over 30 days you mastered S-V-O rhythm, Present Simple habits, Past Simple narratives, Future intentions, Modals of capacity, and Connectors. Now speak continuously without pausing to translate from Malayalam!',
+      blueprintExplanationMl: 'കഴിഞ്ഞ 30 ദിവസത്തെ കഠിനാധ്വാനം കൊണ്ട് നിങ്ങൾ ഇംഗ്ലീഷിന്റെ എല്ലാ അടിസ്ഥാനങ്ങളും പഠിച്ചുകഴിഞ്ഞു. ഇപ്പോൾ മലയാളത്തിൽ ആലോചിച്ച് വിവർത്തനം ചെയ്യാതെ സ്വാഭാവികമായി ചിന്തിച്ച് സംസാരിക്കുക!',
+      blueprintRules: [
+        {'subject': 'Self Introduction', 'en': 'I am an ambitious professional dedicated to continuous growth.', 'ml': 'നിരന്തരമായ വളർച്ചയ്ക്കായി പ്രയത്നിക്കുന്ന ഒരു വ്യക്തിയാണ് ഞാൻ.'},
+        {'subject': 'Past Experience', 'en': 'Over the last thirty days, I practiced English consistently.', 'ml': 'കഴിഞ്ഞ 30 ദിവസങ്ങളിൽ ഞാൻ മുടങ്ങാതെ ഇംഗ്ലീഷ് സംസാരിച്ചു പരിശീലിച്ചു.'},
+        {'subject': 'Future Vision', 'en': 'I will communicate fearlessly in any professional setting.', 'ml': 'ഏതൊരു അന്താരാഷ്ട്ര വേദിയിലും ഞാൻ ഭയമില്ലാതെ ഇംഗ്ലീഷിൽ സംസാരിക്കും.'},
+      ],
+      drills: [
+        {'en': 'I have completed thirty consecutive days of spoken English training.', 'ml': 'തുടർച്ചയായ 30 ദിവസത്തെ ഇംഗ്ലീഷ് സംഭാഷണ പരിശീലനം ഞാൻ വിജയകരമായി പൂർത്തിയാക്കി.', 'rule': 'Milestone Monologue: completed 30 days'},
+        {'en': 'I can express my daily thoughts clearly and without hesitation now.', 'ml': 'എന്റെ ദൈനംദിന ചിന്തകൾ യാതൊരു മടിയുമില്ലാതെ വ്യക്തമായി പ്രകടിപ്പിക്കാൻ എനിക്കിപ്പോൾ സാധിക്കുന്നുണ്ട്.', 'rule': 'Capacity & Autonomy: can express'},
+        {'en': 'Although it was challenging initially, I built a lasting habit.', 'ml': 'തുടക്കത്തിൽ വെല്ലുവിളിയായിരുന്നെങ്കിലും ഞാൻ ശാശ്വതമായ ഒരു ശീലം ഉണ്ടാക്കിയെടുത്തു.', 'rule': 'Connector Synthesis: Although + built'},
+        {'en': 'I will continue practicing until full native-like fluency is achieved.', 'ml': 'പൂർണ്ണമായ ഒഴുക്ക് നേടുന്നതുവരെ ഞാൻ ഈ സംഭാഷണ പരിശീലനം തുടരും.', 'rule': 'Future Commitment: will continue'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Reflecting on your 30-day journey, which sentence is grammatically flawless?',
+          'qMl': 'ചോദ്യം 1: നിങ്ങളുടെ 30 ദിവസത്തെ യാത്രയെക്കുറിച്ച് പറയാൻ ഏതാണ് ശരി?',
+          'audio': 'Question 1: Is it I have practiced English every day for thirty days, or I practiced English every day since thirty days?',
+          'correct': 'I have practiced English every day for thirty days.',
+          'wrong': 'I practiced English every day since thirty days.',
+          'tip': 'Use "for" with durations of time: "for thirty days"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "I can now speak English ___ and with genuine confidence."',
+          'qMl': 'ചോദ്യം 2: എനിക്ക് ഇപ്പോൾ വ്യക്തമായും ആത്മവിശ്വാസത്തോടെയും സംസാരിക്കാൻ സാധിക്കുന്നു:',
+          'audio': 'Question 2: Does speak take clearly, or clear?',
+          'correct': 'clearly',
+          'wrong': 'clear',
+          'tip': 'Verbs require adverbs: "speak clearly"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 31: Life Experience (The Present Perfect: have/has + V3)
+    // -------------------------------------------------------------------------
+    31: const DayCurriculumSpec(
+      day: 31,
+      topicEmoji: '🏜️',
+      titleEn: 'Day 31: Life Experience (The Present Perfect)',
+      titleMl: 'ഡേ 31: ജീവിതാനുഭവങ്ങൾ പറയാൻ Present Perfect Tense',
+      greetingEn: 'Welcome to Day 31! 🌟 Welcome to Phase 2: Functional English! Today we unlock the Present Perfect tense (have/has + V3) to talk about life achievements, milestones, and experiences!',
+      greetingMl: 'ഡേ 31 ലേക്ക് സ്വാഗതം! 🌟 ഫേസ് 2 (Functional English) ലേക്ക് സ്വാഗതം! നിങ്ങളുടെ ജീവിതാനുഭവങ്ങളും പ്രധാന നേട്ടങ്ങളും ഇംഗ്ലീഷിൽ പറയാൻ Present Perfect (have/has + V3) ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 31 and Phase 2! Today we master the Present Perfect tense to talk about life experiences.',
+      blueprintTitle: 'PRESENT PERFECT EXPERIENCE BLUEPRINT',
+      blueprintExplanationEn: 'Use "have / has + V3 (Past Participle)" for life experiences when the exact time is unstated or unimportant. For example: "I have visited many cities", "She has built several apps". Pair with words like ever, never, already, yet!',
+      blueprintExplanationMl: 'ജീവിതത്തിൽ ഇതുവരെ ചെയ്ത കാര്യങ്ങൾ, കൈവരിച്ച അനുഭവങ്ങൾ പറയാൻ have/has + V3 ഉപയോഗിക്കുക ("I have worked on Flutter apps"). സമയം പ്രസക്തമല്ലാത്തപ്പോഴാണ് ഇത് ഉപയോഗിക്കുന്നത് (have visited, have completed).',
+      blueprintRules: [
+        {'subject': 'Life Experience (I/We)', 'en': 'I have built multiple mobile applications.', 'ml': 'ഞാൻ നിരവധി മൊബൈൽ ആപ്പുകൾ നിർമ്മിച്ചിട്ടുണ്ട് (have + V3).'},
+        {'subject': 'Third Person (He/She)', 'en': 'She has achieved remarkable success in her career.', 'ml': 'അവൾ തന്റെ കരിയറിൽ മികച്ച വിജയം നേടിയിട്ടുണ്ട് (has + V3).'},
+        {'subject': 'Questions of Experience', 'en': 'Have you ever presented to international clients?', 'ml': 'നിങ്ങൾ എപ്പോഴെങ്കിലും വിദേശ ക്ലയന്റുകൾക്ക് മുന്നിൽ പ്രസന്റേഷൻ ചെയ്തിട്ടുണ്ടോ?'},
+      ],
+      drills: [
+        {'en': 'I have developed modern applications for international users.', 'ml': 'ഞാൻ അന്താരാഷ്ട്ര ഉപയോക്താക്കൾക്കായി ആധുനിക ആപ്ലിക്കേഷനുകൾ നിർമ്മിച്ചിട്ടുണ്ട്.', 'rule': 'Present Perfect: have + developed (V3)'},
+        {'en': 'She has achieved significant milestones in software development.', 'ml': 'സോഫ്റ്റ്‌വെയർ രംഗത്ത് അവൾ നിർണ്ണായക നേട്ടങ്ങൾ കൈവരിച്ചിട്ടുണ്ട്.', 'rule': 'Third Person: has + achieved (V3)'},
+        {'en': 'Have you ever traveled to another country for work?', 'ml': 'ജോലിക്കായി നിങ്ങൾ എപ്പോഴെങ്കിലും മറ്റൊരു രാജ്യത്തേക്ക് യാത്ര ചെയ്തിട്ടുണ്ടോ?', 'rule': 'Experience Question: Have you ever traveled'},
+        {'en': 'We have already tested all core functions of this system.', 'ml': 'ഞങ്ങൾ ഈ സിസ്റ്റത്തിന്റെ എല്ലാ പ്രധാന ഫംഗ്ഷനുകളും ഇതിനകം പരിശോധിച്ചു കഴിഞ്ഞു.', 'rule': 'Adverb: have already tested'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Stating your experience in visiting Bengaluru:',
+          'qMl': 'ചോദ്യം 1: ഞാൻ ബംഗളൂരു സന്ദർശിച്ചിട്ടുണ്ട് എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it I have visited Bengaluru, or I have visit Bengaluru?',
+          'correct': 'I have visited Bengaluru.',
+          'wrong': 'I have visit Bengaluru.',
+          'tip': 'Present Perfect requires the V3 past participle: "have visited"!',
+        },
+        {
+          'qEn': 'Question 2: Asking a friend if they have ever eaten Italian pasta:',
+          'qMl': 'ചോദ്യം 2: ഇറ്റാലിയൻ പാസ്ത കഴിച്ചിട്ടുണ്ടോ എന്ന് ചോദിക്കാൻ:',
+          'audio': 'Question 2: Is it Have you ever eaten Italian pasta, or Did you ever eaten Italian pasta?',
+          'correct': 'Have you ever eaten Italian pasta?',
+          'wrong': 'Did you ever eaten Italian pasta?',
+          'tip': 'Life experience questions use "Have you ever + V3": "Have you ever eaten"!',
+        },
+      ],
+    ),
   };
 }
 
@@ -2502,4 +2862,85 @@ class PocketDay23Step1AvatarChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 23, userId: userId, onStepFinished: onStepFinished);
 }
+
+class PocketDay24Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay24Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 24, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 24, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay25Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay25Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 25, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 25, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay26Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay26Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 26, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 26, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay27Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay27Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 27, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 27, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay28Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay28Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 28, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 28, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay29Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay29Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 29, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 29, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay30Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay30Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 30, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 30, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay31Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay31Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 31, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 31, userId: userId, onStepFinished: onStepFinished);
+}
+
 

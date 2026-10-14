@@ -562,8 +562,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🐱 User Audio Directive: Days 3 to 23 Step 1 uses dedicated conversational avatar chat interface!
-    if (widget.day >= 3 && widget.day <= 23 && _activeStep == 1) {
+    // 🐱 User Audio Directive: Days 3 to 31 Step 1 uses dedicated conversational avatar chat interface!
+    if (widget.day >= 3 && widget.day <= 31 && _activeStep == 1) {
       return PocketDayAvatarChatPage(
         day: widget.day,
         userId: widget.userId,
@@ -627,8 +627,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🛡️ User Audio Directive: Days 1 to 23 Step 7 uses Dedicated House Defense Shield Command!
-    if (widget.day >= 1 && widget.day <= 23 && _activeStep == 7) {
+    // 🛡️ User Audio Directive: Days 1 to 31 Step 7 uses Dedicated House Defense Shield Command!
+    if (widget.day >= 1 && widget.day <= 31 && _activeStep == 7) {
       return PocketHouseDefenseChatPage(
         day: widget.day,
         userId: widget.userId,
