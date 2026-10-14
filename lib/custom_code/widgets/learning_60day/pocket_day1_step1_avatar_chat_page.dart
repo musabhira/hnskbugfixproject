@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_service.da
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'games/pocket_alphabet_balloon_sky_game_page.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -202,10 +203,7 @@ class _PocketDay1Step1AvatarChatPageState
   Future<void> _initTts() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setVolume(1.0);
-      await _tts.setPitch(1.0);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
 
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);

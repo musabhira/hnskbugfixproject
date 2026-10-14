@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_90day_spoken_simulator_data.dart';
 import '../pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 
 /// 🎙️ Pocket Spoken English Avatar Simulator Page
 ///
@@ -130,10 +131,9 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   Future<void> _initTts() async {
     try {
       _flutterTts = FlutterTts();
-      await _flutterTts?.setLanguage('en-US');
-      await _flutterTts?.setSpeechRate(0.46); // Natural conversational cadence
-      await _flutterTts?.setVolume(1.0);
-      await _flutterTts?.setPitch(1.0);
+      if (_flutterTts != null) {
+        await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts!);
+      }
 
       _flutterTts?.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);

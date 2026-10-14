@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 
 /// 💬 Chat Message Model for Step 5 Reading Room
 class Step5ChatMessage {
@@ -205,27 +206,8 @@ class _PocketDay1Step5AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
       await _tts.setSpeechRate(0.43); // Clear, expressive storytelling pace
-      await _tts.setPitch(1.03);
-
-      final voices = await _tts.getVoices;
-      if (voices is List) {
-        final naturalVoice = voices.firstWhere(
-          (v) =>
-              (v['name']?.toString().toLowerCase().contains('natural') == true ||
-               v['name']?.toString().toLowerCase().contains('sfg') == true ||
-               v['name']?.toString().toLowerCase().contains('female') == true) &&
-              v['locale']?.toString().startsWith('en') == true,
-          orElse: () => null,
-        );
-        if (naturalVoice != null && naturalVoice is Map) {
-          await _tts.setVoice({
-            "name": naturalVoice['name'].toString(),
-            "locale": naturalVoice['locale'].toString(),
-          });
-        }
-      }
 
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);

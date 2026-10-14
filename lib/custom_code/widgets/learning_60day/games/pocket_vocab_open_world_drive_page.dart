@@ -10,6 +10,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import '../pocket_fortress_defense_service.dart';
 
 /// 🚗 Particle effect for road dust, checkpoint celebrations, and coin bursts
@@ -308,10 +309,7 @@ class _PocketVocabOpenWorldDrivePageState
   Future<void> _initTts() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setVolume(1.0);
-      await _tts.setPitch(1.0);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
     } catch (_) {}
   }
 
