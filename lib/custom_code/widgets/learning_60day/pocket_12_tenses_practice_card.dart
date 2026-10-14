@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'pocket_pronunciation_evaluator.dart';
 
 /// Model for 12 Tenses Speaking Exercise
 class TenseExerciseItem {
@@ -245,17 +246,20 @@ class _Pocket12TensesPracticeCardState extends State<Pocket12TensesPracticeCard>
   }
 
   bool _matchesPhrase(String spoken, String target) {
-    final cleanSpoken = ' ${spoken.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').replaceAll(RegExp(r'\s+'), ' ')} ';
-    final cleanTarget = target.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (PocketSpeechNormalizer.isMatch(spokenText: spoken, targetSentence: target, thresholdPercentage: 45)) {
+      return true;
+    }
+    final cleanSpoken = ' ${PocketSpeechNormalizer.normalize(spoken)} ';
+    final cleanTarget = PocketSpeechNormalizer.normalize(target);
     if (cleanTarget.isEmpty) return false;
-    return cleanSpoken.contains(' $cleanTarget ');
+    return cleanSpoken.contains(' $cleanTarget ') || cleanSpoken.contains(cleanTarget);
   }
 
   void _evaluateSpeech(String spokenText) {
     final exercises = _filteredExercises;
     if (exercises.isEmpty) return;
     final ex = exercises[_currentExerciseIndex % exercises.length];
-    final normalized = spokenText.toLowerCase().trim();
+    final normalized = PocketSpeechNormalizer.normalize(spokenText);
 
     bool matched = false;
     if (normalized.isNotEmpty) {
@@ -273,21 +277,26 @@ class _Pocket12TensesPracticeCardState extends State<Pocket12TensesPracticeCard>
         }
       }
       if (!matched && normalized.length >= 3) {
-        final fullNormalized = ex.fullSentence.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').trim();
-        final cleanSpoken = normalized.replaceAll(RegExp(r"[^\w\s']"), ' ').trim();
-        if (fullNormalized.contains(cleanSpoken) ||
-            cleanSpoken.contains(fullNormalized)) {
+        final fullNormalized = PocketSpeechNormalizer.normalize(ex.fullSentence);
+        if (fullNormalized.contains(normalized) ||
+            normalized.contains(fullNormalized) ||
+            PocketSpeechNormalizer.isMatch(spokenText: normalized, targetSentence: fullNormalized, thresholdPercentage: 45)) {
           matched = true;
         }
       }
     }
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: ex.fullSentence,
+      spokenText: spokenText,
+    );
+
     setState(() {
       _isExerciseAnswered = true;
-      _isCorrect = matched;
+      _isCorrect = matched || evalResult.accuracyPercentage >= 50 || evalResult.isAcceptable;
     });
 
-    if (matched) {
+    if (_isCorrect) {
       HapticFeedback.heavyImpact();
       _speakText(ex.fullSentence);
     } else {

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'games/meadow_runner_game_page.dart';
 
 /// 💬 Chat message model for Step 3 Word & Letter Hunt
@@ -595,16 +596,21 @@ class _PocketDay1Step3AvatarChatPageState
     try {
       await _speech.listen(
         onResult: (result) {
-          final recognized = result.recognizedWords.trim();
+          final raw = result.recognizedWords.trim();
+          final recognized = PocketSpeechNormalizer.normalize(raw);
           if (recognized.isNotEmpty && result.finalResult) {
             setState(() => _isListening = false);
             _handleVoiceSubmission(
-              voiceText: recognized,
+              voiceText: recognized.isEmpty ? raw : recognized,
               action: () {
                 if (_currentHuntRound < huntRounds.length) {
                   final roundData = huntRounds[_currentHuntRound];
                   final correct = roundData['correct'] as String;
-                  final isMatch = recognized.toLowerCase().contains(correct.toLowerCase());
+                  final isMatch = PocketSpeechNormalizer.isMatch(
+                    spokenText: recognized,
+                    targetSentence: correct,
+                    thresholdPercentage: 40,
+                  ) || recognized.toLowerCase().contains(correct.toLowerCase());
                   _handleHuntAnswer(isMatch, recognized);
                 } else {
                   _completeStep3AndProceedToStep4();

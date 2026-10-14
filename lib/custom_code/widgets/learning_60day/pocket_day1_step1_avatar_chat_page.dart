@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'games/pocket_alphabet_balloon_sky_game_page.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -138,6 +139,7 @@ class _PocketDay1Step1AvatarChatPageState
   bool _isListening = false;
   bool _isAnalyzing = false;
   bool _speechAvailable = false;
+  bool _isProcessingVoice = false;
 
   String _userName = 'Hira'; // Default learner name as instructed in user audio
   String _nativeLanguage = 'Malayalam';
@@ -987,7 +989,8 @@ class _PocketDay1Step1AvatarChatPageState
       return;
     }
 
-    final item = letters[_currentLetterIndex];
+    final safeIndex = _currentLetterIndex.clamp(0, letters.length - 1);
+    final item = letters[safeIndex];
     final letter = item['letter']?.toString() ?? 'A';
     final word = item['word']?.toString() ?? 'Apple';
     final sound = item['sound']?.toString() ?? '';
@@ -1111,6 +1114,7 @@ class _PocketDay1Step1AvatarChatPageState
 
     setState(() {
       _isAnalyzing = false;
+      _isProcessingVoice = false;
       _messages.add(
         Step1ChatMessage(
           id: 'user_voice_${DateTime.now().millisecondsSinceEpoch}',
@@ -1139,10 +1143,14 @@ class _PocketDay1Step1AvatarChatPageState
           await _speech.stop();
         } catch (_) {}
       }
-      setState(() => _isListening = false);
+      setState(() {
+        _isListening = false;
+        _isProcessingVoice = false;
+      });
       return;
     }
 
+    _isProcessingVoice = false;
     setState(() {
       _isListening = true;
     });
@@ -1153,10 +1161,16 @@ class _PocketDay1Step1AvatarChatPageState
       try {
         await _speech.listen(
           onResult: (result) {
-            if (result.recognizedWords.isNotEmpty) {
-              _speech.stop();
-              setState(() => _isListening = false);
-              _processSpokenText(result.recognizedWords);
+            if (_isProcessingVoice) return;
+            final words = result.recognizedWords.trim();
+            if (words.isNotEmpty) {
+              _isProcessingVoice = true;
+              try {
+                _speech.stop();
+              } catch (_) {}
+              if (mounted) setState(() => _isListening = false);
+              final normalized = PocketSpeechNormalizer.normalize(words);
+              _processSpokenText(normalized.isEmpty ? words : normalized);
             }
           },
           listenOptions: stt.SpeechListenOptions(
@@ -1178,7 +1192,8 @@ class _PocketDay1Step1AvatarChatPageState
 
   void _simulateVoiceCaptureFallback() {
     Future.delayed(const Duration(milliseconds: 1400), () {
-      if (!mounted) return;
+      if (!mounted || _isProcessingVoice) return;
+      _isProcessingVoice = true;
       setState(() => _isListening = false);
       _processSpokenText(_currentExpectedVoicePhrase);
     });

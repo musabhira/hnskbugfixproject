@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'pocket_pronunciation_evaluator.dart';
 
 /// Model for a Conditionals (If Clauses) speaking exercise
 class ConditionalsExerciseItem {
@@ -726,28 +727,28 @@ class _PocketConditionalsPracticeCardState
 
   // ── Evaluation ───────────────────────────────────────────────────────
   bool _matchesPhrase(String text, String phrase) {
-    final t = text.trim();
-    final p = phrase.trim();
+    if (PocketSpeechNormalizer.isMatch(spokenText: text, targetSentence: phrase, thresholdPercentage: 45)) {
+      return true;
+    }
+    final t = PocketSpeechNormalizer.normalize(text);
+    final p = PocketSpeechNormalizer.normalize(phrase);
     if (t.isEmpty || p.isEmpty) return false;
     if (t == p) return true;
-    final escaped = RegExp.escape(p);
-    return RegExp('\\b$escaped\\b', caseSensitive: false).hasMatch(t);
+    return t.contains(p) || p.contains(t);
   }
 
   void _evaluateSpokenAnswer(String spokenText) {
     if (spokenText.trim().isEmpty) return;
     final ex = _filteredExercises[_currentExerciseIndex];
-    String clean(String s) =>
-        s.toLowerCase().replaceAll(RegExp(r"[^a-zA-Z0-9\s']"), '').trim();
 
-    final spoken = clean(spokenText);
-    final target = clean(ex.targetWord);
-    final full = clean(ex.fullSentence);
+    final spoken = PocketSpeechNormalizer.normalize(spokenText);
+    final target = PocketSpeechNormalizer.normalize(ex.targetWord);
+    final full = PocketSpeechNormalizer.normalize(ex.fullSentence);
 
     bool matched = _matchesPhrase(spoken, target);
     if (!matched) {
       for (final alt in ex.acceptableWords) {
-        if (_matchesPhrase(spoken, clean(alt))) {
+        if (_matchesPhrase(spoken, PocketSpeechNormalizer.normalize(alt))) {
           matched = true;
           break;
         }
@@ -763,11 +764,16 @@ class _PocketConditionalsPracticeCardState
       }
     }
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: ex.fullSentence,
+      spokenText: spokenText,
+    );
+
     setState(() {
       _isExerciseAnswered = true;
-      _isCorrect = matched;
+      _isCorrect = matched || evalResult.accuracyPercentage >= 50 || evalResult.isAcceptable;
     });
-    if (matched) {
+    if (_isCorrect) {
       HapticFeedback.heavyImpact();
       _speakText(ex.fullSentence);
     } else {

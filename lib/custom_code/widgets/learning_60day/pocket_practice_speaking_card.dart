@@ -245,16 +245,19 @@ class _PocketPracticeSpeakingCardState
   }
 
   bool _matchesPhrase(String spoken, String target) {
-    final cleanSpoken = ' ${spoken.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').replaceAll(RegExp(r'\s+'), ' ')} ';
-    final cleanTarget = target.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (PocketSpeechNormalizer.isMatch(spokenText: spoken, targetSentence: target, thresholdPercentage: 45)) {
+      return true;
+    }
+    final cleanSpoken = ' ${PocketSpeechNormalizer.normalize(spoken)} ';
+    final cleanTarget = PocketSpeechNormalizer.normalize(target);
     if (cleanTarget.isEmpty) return false;
-    return cleanSpoken.contains(' $cleanTarget ');
+    return cleanSpoken.contains(' $cleanTarget ') || cleanSpoken.contains(cleanTarget);
   }
 
   void _evaluateSpeech(String spokenText) {
     final exercises = _getExercisesForLevel(_selectedLevel);
     final ex = exercises[_currentExerciseIndex % exercises.length];
-    final normalized = spokenText.toLowerCase().trim();
+    final normalized = PocketSpeechNormalizer.normalize(spokenText);
 
     bool matched = false;
     if (normalized.isNotEmpty) {
@@ -272,10 +275,10 @@ class _PocketPracticeSpeakingCardState
         }
       }
       if (!matched && normalized.length >= 3) {
-        final fullNormalized = ex.fullSentence.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), ' ').trim();
-        final cleanSpoken = normalized.replaceAll(RegExp(r"[^\w\s']"), ' ').trim();
-        if (fullNormalized.contains(cleanSpoken) ||
-            cleanSpoken.contains(fullNormalized)) {
+        final fullNormalized = PocketSpeechNormalizer.normalize(ex.fullSentence);
+        if (fullNormalized.contains(normalized) ||
+            normalized.contains(fullNormalized) ||
+            PocketSpeechNormalizer.isMatch(spokenText: normalized, targetSentence: fullNormalized, thresholdPercentage: 45)) {
           matched = true;
         }
       }
@@ -288,7 +291,7 @@ class _PocketPracticeSpeakingCardState
 
     setState(() {
       _isExerciseAnswered = true;
-      _isCorrect = matched || evalResult.accuracyPercentage >= 60;
+      _isCorrect = matched || evalResult.accuracyPercentage >= 50 || evalResult.isAcceptable;
       _pronunciationResult = evalResult;
     });
 

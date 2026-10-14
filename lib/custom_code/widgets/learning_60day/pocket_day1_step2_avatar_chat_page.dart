@@ -114,6 +114,7 @@ class _PocketDay1Step2AvatarChatPageState
   bool _isSoundMuted = false;
   bool _isListening = false;
   bool _speechAvailable = false;
+  bool _isProcessingVoice = false;
 
   String _userName = 'Hira';
   String _currentExpectedVoicePhrase = 'Yes';
@@ -1259,6 +1260,7 @@ class _PocketDay1Step2AvatarChatPageState
     PocketGameAudioService.instance.playCoinSound();
 
     setState(() {
+      _isProcessingVoice = false;
       _messages.add(
         Step2ChatMessage(
           id: 'user_voice_${DateTime.now().millisecondsSinceEpoch}',
@@ -1285,10 +1287,14 @@ class _PocketDay1Step2AvatarChatPageState
           await _speech.stop();
         } catch (_) {}
       }
-      setState(() => _isListening = false);
+      setState(() {
+        _isListening = false;
+        _isProcessingVoice = false;
+      });
       return;
     }
 
+    _isProcessingVoice = false;
     setState(() {
       _isListening = true;
     });
@@ -1299,10 +1305,16 @@ class _PocketDay1Step2AvatarChatPageState
       try {
         await _speech.listen(
           onResult: (result) {
-            if (result.recognizedWords.isNotEmpty) {
-              _speech.stop();
-              setState(() => _isListening = false);
-              _processSpokenText(result.recognizedWords);
+            if (_isProcessingVoice) return;
+            final words = result.recognizedWords.trim();
+            if (words.isNotEmpty) {
+              _isProcessingVoice = true;
+              try {
+                _speech.stop();
+              } catch (_) {}
+              if (mounted) setState(() => _isListening = false);
+              final normalized = PocketSpeechNormalizer.normalize(words);
+              _processSpokenText(normalized.isEmpty ? words : normalized);
             }
           },
           listenOptions: stt.SpeechListenOptions(
@@ -1322,7 +1334,8 @@ class _PocketDay1Step2AvatarChatPageState
 
   void _simulateVoiceCaptureFallback() {
     Future.delayed(const Duration(milliseconds: 1400), () {
-      if (!mounted) return;
+      if (!mounted || _isProcessingVoice) return;
+      _isProcessingVoice = true;
       setState(() => _isListening = false);
       _processSpokenText(_currentExpectedVoicePhrase);
     });
@@ -1384,12 +1397,11 @@ class _PocketDay1Step2AvatarChatPageState
       spokenText: spokenText,
     );
 
-    final cleanTarget = _currentExpectedVoicePhrase.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
-    final cleanSpoken = spokenText.toLowerCase().replaceAll(RegExp(r"[^\w'\s]"), '').trim();
-
-    final isMatch = evaluation.accuracyPercentage >= 50 ||
-        cleanSpoken.contains(cleanTarget) ||
-        cleanTarget.contains(cleanSpoken);
+    final isMatch = PocketSpeechNormalizer.isMatch(
+      spokenText: spokenText,
+      targetSentence: _currentExpectedVoicePhrase,
+      thresholdPercentage: 45,
+    ) || evaluation.accuracyPercentage >= 45 || evaluation.isAcceptable;
 
     if (isMatch) {
       _handleVoiceSubmission(
@@ -1397,7 +1409,7 @@ class _PocketDay1Step2AvatarChatPageState
         action: _advanceToNextWord,
       );
     } else {
-      HapticFeedback.heavyImpact();
+      HapticFeedback.lightImpact();
       PocketGameAudioService.instance.playIncorrectSound();
 
       setState(() {
@@ -1416,14 +1428,41 @@ class _PocketDay1Step2AvatarChatPageState
             id: 'correction_${DateTime.now().millisecondsSinceEpoch}',
             isAvatar: true,
             textEn: 'Not quite! You said: "$spokenText"\nExpected: "$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}',
-            textNative: 'വായന ശരിയായില്ല! നിങ്ങൾ പറഞ്ഞത്: "$spokenText"\nശരിയായത്: "$_currentExpectedVoicePhrase"\nഒന്നുകൂടി മൈക്കിൽ പറഞ്ഞു നോക്കൂ! 🎙️',
-            audioText: 'Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase',
-            speakThisPrompt: 'Tap mic below to try again 👇',
+            textNative: 'ശ്രമിക്കൂ! വീണ്ടും പറയാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം.',
+            audioText: 'Good try. Say: $_currentExpectedVoicePhrase',
+            speakThisPrompt: 'Tap mic or option below to continue 👇',
+            inBubbleOptions: [
+              Step2InBubbleOption(
+                labelEn: '🎙️ RETRY: "$_currentExpectedVoicePhrase"',
+                labelNative: 'വീണ്ടും ശ്രമിക്കാം',
+                icon: '🔄',
+                isHighlightedAnswer: false,
+                backgroundColor: const Color(0xFFEF4444),
+                borderColor: const Color(0xFFFCA5A5),
+                textColor: Colors.white,
+                onTap: () => _handleVoiceSubmission(
+                  voiceText: _currentExpectedVoicePhrase,
+                  action: _advanceToNextWord,
+                ),
+              ),
+              Step2InBubbleOption(
+                labelEn: '✨ CONTINUE ANYWAY ➔',
+                labelNative: 'മുന്നോട്ട് പോകാം',
+                icon: '🚀',
+                isHighlightedAnswer: true,
+                backgroundColor: const Color(0xFF10B981),
+                borderColor: const Color(0xFF6EE7B7),
+                textColor: Colors.white,
+                onTap: () {
+                  _advanceToNextWord();
+                },
+              ),
+            ],
           ),
         );
       });
 
-      _speak('Let\'s try again. Repeat after me: $_currentExpectedVoicePhrase');
+      _speak('Good try! Say: $_currentExpectedVoicePhrase');
       _scrollToBottom();
     }
   }

@@ -520,11 +520,17 @@ class _PocketTimeMachinePracticeCardState
       spokenText: _recognizedWords,
     );
 
+    final isMatch = PocketSpeechNormalizer.isMatch(
+      spokenText: _recognizedWords,
+      targetSentence: targetSentence,
+      thresholdPercentage: 45,
+    );
+
     setState(() {
       _evaluationResult = eval;
     });
 
-    if (eval.accuracyPercentage >= 60) {
+    if (eval.accuracyPercentage >= 50 || eval.isAcceptable || isMatch) {
       HapticFeedback.heavyImpact();
       if (!widget.isCompleted) {
         widget.onCompleted(true);

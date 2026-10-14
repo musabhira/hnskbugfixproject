@@ -534,7 +534,14 @@ class _PocketDay1Step5AvatarChatPageState
     final targetKeywords = cleanTarget.split(' ').where((w) => w.length > 3).toList();
     final containsCoreKeywords = targetKeywords.isNotEmpty && targetKeywords.any((kw) => cleanVoice.contains(kw));
 
-    final isPassed = evalResult.accuracyPercentage >= 40 || containsCoreKeywords;
+    final isPassed = PocketSpeechNormalizer.isMatch(
+          spokenText: voiceText,
+          targetSentence: _currentExpectedVoicePhrase,
+          thresholdPercentage: 40,
+        ) ||
+        evalResult.accuracyPercentage >= 40 ||
+        evalResult.isAcceptable ||
+        containsCoreKeywords;
 
     if (!isPassed) {
       PocketGameAudioService.instance.playIncorrectSound();
@@ -545,7 +552,7 @@ class _PocketDay1Step5AvatarChatPageState
           'Let\'s try reading this part again! Speak clearly into the mic:\n'
           '"$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}';
       final correctionMl =
-          'വായിച്ചത് കൃത്യമായില്ല. ഈ ഭാഗം ഒന്നുകൂടി ശ്രദ്ധിച്ചു വായിക്കൂ:\n"$_currentExpectedVoicePhrase"';
+          'ശ്രമിക്കൂ! ഈ ഭാഗം വീണ്ടും വായിക്കാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം:\n"$_currentExpectedVoicePhrase"';
 
       setState(() {
         _messages.add(
@@ -554,12 +561,38 @@ class _PocketDay1Step5AvatarChatPageState
             isAvatar: true,
             textEn: correctionEn,
             textNative: correctionMl,
-            audioText: 'Let\'s try reading this part again. $_currentExpectedVoicePhrase',
+            audioText: 'Good try. Let us continue.',
+            inBubbleOptions: [
+              Step5InBubbleOption(
+                labelEn: '🎙️ RETRY READING',
+                labelNative: 'വീണ്ടും വായിക്കാം',
+                icon: '🔄',
+                isHighlighted: false,
+                backgroundColor: const Color(0xFFEF4444),
+                borderColor: const Color(0xFFFCA5A5),
+                textColor: Colors.white,
+                onTap: () {
+                  _startListeningToCentralMic();
+                },
+              ),
+              Step5InBubbleOption(
+                labelEn: '✨ CONTINUE ANYWAY ➔',
+                labelNative: 'മുന്നോട്ട് പോകാം',
+                icon: '🚀',
+                isHighlighted: true,
+                backgroundColor: const Color(0xFF10B981),
+                borderColor: const Color(0xFF6EE7B7),
+                textColor: Colors.white,
+                onTap: () {
+                  _handleReadingSuccess();
+                },
+              ),
+            ],
           ),
         );
       });
 
-      _speak('Let\'s try reading this part again. $_currentExpectedVoicePhrase');
+      _speak('Good try! Let us continue.');
       _scrollToBottom();
       return;
     }

@@ -407,7 +407,8 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
 
       setState(() => _isRecording = false);
 
-      final cleanSpk = _spokenText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
+      final normalizedSpk = PocketSpeechNormalizer.normalize(_spokenText);
+      final cleanSpk = normalizedSpk.isNotEmpty ? normalizedSpk : PocketSpeechNormalizer.clean(_spokenText);
 
       if (cleanSpk.isEmpty) {
         PocketGameAudioService.instance.playIncorrectSound();
@@ -418,16 +419,18 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         return;
       }
 
+      final isMatch = PocketSpeechNormalizer.isMatch(
+        spokenText: _spokenText,
+        targetSentence: targetPhrase,
+        thresholdPercentage: 40,
+      );
+
       final evalResult = PocketPronunciationEvaluator.evaluate(
         targetSentence: targetPhrase,
         spokenText: _spokenText,
       );
 
-      final cleanTgt = targetPhrase.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
-      final targetKeywords = cleanTgt.split(' ').where((w) => w.length > 2).toList();
-      final containsKeyword = targetKeywords.any((kw) => cleanSpk.contains(kw));
-
-      if (evalResult.accuracyPercentage < 45 && !containsKeyword) {
+      if (!isMatch && evalResult.accuracyPercentage < 40) {
         PocketGameAudioService.instance.playIncorrectSound();
         final focus = evalResult.focusWords.take(2).join(', ');
         setState(() {
@@ -443,7 +446,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         _speechError = null;
       });
 
-      await _onSelectResponse(_spokenText.trim());
+      await _onSelectResponse(normalizedSpk.isNotEmpty ? normalizedSpk : _spokenText.trim());
     }
   }
 

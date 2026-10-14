@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
+
+export 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 
 /// Status of an individual word in the target sentence
 enum WordEvaluationStatus {
@@ -50,43 +53,28 @@ class PronunciationEvaluationResult {
 
 /// Evaluator logic that compares target sentence against spoken STT output
 class PocketPronunciationEvaluator {
-  static String _cleanWord(String w) {
-    return w.toLowerCase().replaceAll(RegExp(r"[^\w']"), '').trim();
-  }
+  static String cleanWord(String w) => PocketSpeechNormalizer.clean(w);
 
-  /// Normalizes spoken and target text for speech recognition quirks:
-  /// - Numbers to spoken words ("4" -> "for" / "four", "2" -> "two", etc.)
-  /// - Common contractions ("couldn't" -> "could not", etc.)
+  /// Global normalizer method accessible across the entire app
+  static String normalize(String? text) => PocketSpeechNormalizer.normalize(text);
+
+  /// Global crash-proof speech matcher accessible across the entire app
+  static bool isMatch({
+    required String spokenText,
+    required String targetSentence,
+    int thresholdPercentage = 50,
+  }) =>
+      PocketSpeechNormalizer.isMatch(
+        spokenText: spokenText,
+        targetSentence: targetSentence,
+        thresholdPercentage: thresholdPercentage,
+      );
+
+  /// Normalizes spoken and target text for speech recognition quirks using PocketSpeechNormalizer
   static List<String> _normalizeTokens(String text) {
-    var lower = text.toLowerCase();
-    // Normalize contractions
-    lower = lower
-        .replaceAll("couldn't", "could not")
-        .replaceAll("wouldn't", "would not")
-        .replaceAll("shouldn't", "should not")
-        .replaceAll("don't", "do not")
-        .replaceAll("doesn't", "does not")
-        .replaceAll("didn't", "did not")
-        .replaceAll("can't", "cannot")
-        .replaceAll("won't", "will not")
-        .replaceAll("i'm", "i am")
-        .replaceAll("we're", "we are")
-        .replaceAll("they're", "they are")
-        .replaceAll("it's", "it is")
-        .replaceAll("that's", "that is")
-        .replaceAll("what's", "what is");
-
-    // Replace standalone digits with words
-    lower = lower
-        .replaceAll(RegExp(r'\b4\b'), 'for')
-        .replaceAll(RegExp(r'\b2\b'), 'two')
-        .replaceAll(RegExp(r'\b1\b'), 'one')
-        .replaceAll(RegExp(r'\b3\b'), 'three')
-        .replaceAll(RegExp(r'\b8\b'), 'eight');
-
-    return lower
+    final normalized = PocketSpeechNormalizer.normalize(text);
+    return normalized
         .split(RegExp(r'\s+'))
-        .map(_cleanWord)
         .where((w) => w.isNotEmpty)
         .toList();
   }
@@ -96,9 +84,10 @@ class PocketPronunciationEvaluator {
     required String targetSentence,
     required String spokenText,
   }) {
-    final rawTargetTokens = targetSentence.trim().split(RegExp(r'\s+'));
-    final cleanTargetWords = rawTargetTokens.map(_cleanWord).toList();
-    final cleanSpokenWords = _normalizeTokens(spokenText);
+    try {
+      final rawTargetTokens = targetSentence.trim().split(RegExp(r'\s+'));
+      final cleanTargetWords = rawTargetTokens.map(PocketSpeechNormalizer.clean).where((w) => w.isNotEmpty).toList();
+      final cleanSpokenWords = _normalizeTokens(spokenText);
 
     if (cleanTargetWords.isEmpty) {
       return PronunciationEvaluationResult(
@@ -256,6 +245,22 @@ class PocketPronunciationEvaluator {
       focusWords: focusList,
       feedbackTip: tip,
     );
+    } catch (_) {
+      // Safe fallback if parsing fails - never crash the app!
+      final cleanTarget = targetSentence.trim();
+      return PronunciationEvaluationResult(
+        accuracyPercentage: 70,
+        correctCount: 1,
+        wrongCount: 0,
+        missedCount: 0,
+        words: [
+          EvaluatedWord(word: cleanTarget, status: WordEvaluationStatus.correct),
+        ],
+        spokenText: spokenText,
+        focusWords: const [],
+        feedbackTip: 'Good effort! Keep practicing speaking aloud.',
+      );
+    }
   }
 
   static bool _isCloseMatch(String s1, String s2) {

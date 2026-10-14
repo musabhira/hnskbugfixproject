@@ -3089,8 +3089,10 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
         onResult: (result) {
           if (result.finalResult && result.recognizedWords.trim().isNotEmpty) {
             setState(() => _isListening = false);
+            final raw = result.recognizedWords.trim();
+            final normalized = PocketSpeechNormalizer.normalize(raw);
             _handleVoiceSubmission(
-              voiceText: result.recognizedWords.trim(),
+              voiceText: normalized.isEmpty ? raw : normalized,
               action: () {
                 if (_drillIndex < _spec.drills.length) {
                   _onDrillPassed();

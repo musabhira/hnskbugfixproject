@@ -121,6 +121,7 @@ class _PocketAlphabetBalloonSkyGamePageState
   bool _isListening = false;
   bool _speechAvailable = false;
   bool _allCompleted = false;
+  bool _isAdvancing = false;
   double _cloudScroll = 0.0;
 
   static const List<Color> _balloonPalette = [
@@ -325,6 +326,7 @@ class _PocketAlphabetBalloonSkyGamePageState
 
     if (!_isListening) {
       // Start listening
+      _isAdvancing = false;
       setState(() => _isListening = true);
 
       final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
@@ -332,7 +334,8 @@ class _PocketAlphabetBalloonSkyGamePageState
         try {
           _speech.listen(
             onResult: (result) {
-              if (result.finalResult && mounted) {
+              if (result.finalResult && mounted && !_isAdvancing) {
+                _isAdvancing = true;
                 _advanceToNextLetter();
               }
             },
@@ -346,14 +349,18 @@ class _PocketAlphabetBalloonSkyGamePageState
       } else {
         // Auto-advance after 2 seconds if web/simulator
         Future.delayed(const Duration(milliseconds: 2200), () {
-          if (mounted && _isListening) {
+          if (mounted && _isListening && !_isAdvancing) {
+            _isAdvancing = true;
             _advanceToNextLetter();
           }
         });
       }
     } else {
       // Child tapped again to finish and continue
-      _advanceToNextLetter();
+      if (!_isAdvancing) {
+        _isAdvancing = true;
+        _advanceToNextLetter();
+      }
     }
   }
 
@@ -369,11 +376,12 @@ class _PocketAlphabetBalloonSkyGamePageState
       _currentLetterIndex++;
       final letters = Day1AlphabetData.lettersAtoZ;
       if (_currentLetterIndex < letters.length) {
-        _spawnTargetLetterBalloon(_currentLetterIndex);
+        _spawnTargetLetterBalloon(_currentLetterIndex.clamp(0, letters.length - 1));
       } else {
         _allCompleted = true;
         _onCompleteAllLetters();
       }
+      _isAdvancing = false;
     });
   }
 
