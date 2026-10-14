@@ -732,6 +732,321 @@ class PocketDays3To16Registry {
         },
       ],
     ),
+
+    // -------------------------------------------------------------------------
+    // DAY 17: Talking About Yesterday (The Simple Past)
+    // -------------------------------------------------------------------------
+    17: const DayCurriculumSpec(
+      day: 17,
+      topicEmoji: '🏎️',
+      titleEn: 'Day 17: Talking About Yesterday (The Simple Past)',
+      titleMl: 'ഡേ 17: കഴിഞ്ഞുപോയ കാര്യങ്ങൾ പറയാൻ Simple Past Tense',
+      greetingEn: 'Welcome to Day 17! 🌟 Today we master the Simple Past tense (V2) to talk about yesterday, completed actions, and past experiences with total confidence!',
+      greetingMl: 'ഡേ 17 ലേക്ക് സ്വാഗതം! 🌟 ഇന്നലെ ചെയ്ത കാര്യങ്ങളും കഴിഞ്ഞുപോയ അനുഭവങ്ങളും ഇംഗ്ലീഷിൽ കൃത്യമായി പറയാൻ Simple Past Tense (V2) ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 17! Today we master the Simple Past tense with regular and irregular verbs. Ready to begin?',
+      blueprintTitle: 'COMPLETED ACTIONS FORMULA (V2)',
+      blueprintExplanationEn: 'Use the Simple Past (V2 form of verb) for actions completed in finished past time (yesterday, last week). Regular verbs add -ed (worked, completed), while irregular verbs change form (go ➔ went, see ➔ saw, buy ➔ bought).',
+      blueprintExplanationMl: 'കഴിഞ്ഞുപോയ കാര്യങ്ങൾക്ക് ക്രിയയുടെ രണ്ടാം രൂപം (V2) ഉപയോഗിക്കുക: "Yesterday I went to Kochi" (അല്ലാതെ I go എന്നല്ല). കഴിഞ്ഞ കാലത്തെ സൂചിപ്പിക്കുന്ന yesterday, last night എന്നിവയ്ക്കൊപ്പം V2 വരും.',
+      blueprintRules: [
+        {'subject': 'Regular Verbs (-ed)', 'en': 'I completed the project yesterday.', 'ml': 'ഞാൻ ഇന്നലെ പ്രോജക്ട് പൂർത്തിയാക്കി.'},
+        {'subject': 'Irregular Verbs', 'en': 'She went to the office by train.', 'ml': 'അവൾ ട്രെയിനിലാണ് ഓഫീസിലേക്ക് പോയത് (go ➔ went).'},
+        {'subject': 'Past of Be (Was/Were)', 'en': 'We were very busy last week.', 'ml': 'കഴിഞ്ഞ ആഴ്ച ഞങ്ങൾ വളരെ തിരക്കിലായിരുന്നു.'},
+      ],
+      drills: [
+        {'en': 'Yesterday I completed three key tasks on time.', 'ml': 'ഇന്നലെ ഞാൻ മൂന്ന് പ്രധാന ജോലികൾ കൃത്യസമയത്ത് പൂർത്തിയാക്കി.', 'rule': 'Simple Past: completed (regular V2)'},
+        {'en': 'She went to the market and bought fresh fruits.', 'ml': 'അവൾ മാർക്കറ്റിൽ പോയി പുതിയ പഴങ്ങൾ വാങ്ങി.', 'rule': 'Irregular Past: went and bought (V2)'},
+        {'en': 'We saw an interesting tech presentation yesterday.', 'ml': 'ഇന്നലെ ഞങ്ങൾ ഒരു രസകരമായ സാങ്കേതിക പ്രസന്റേഷൻ കണ്ടു.', 'rule': 'Irregular Past: saw (V2 of see)'},
+        {'en': 'He worked hard and achieved his quarterly goal.', 'ml': 'അവൻ കഠിനാധ്വാനം ചെയ്ത് തന്റെ ലക്ഷ്യം നേടി.', 'rule': 'Simple Past: worked and achieved'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Describing a trip to the market yesterday, say:',
+          'qMl': 'ചോദ്യം 1: ഇന്നലെ മാർക്കറ്റിൽ പോയി എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it Yesterday I went to the market, or Yesterday I go to the market?',
+          'correct': 'Yesterday I went to the market.',
+          'wrong': 'Yesterday I go to the market.',
+          'tip': 'Past actions in finished time require the V2 verb: "went", not "go"!',
+        },
+        {
+          'qEn': 'Question 2: Which sentence correctly uses the past form of buy?',
+          'qMl': 'ചോദ്യം 2: buy എന്ന വാക്കിന്റെ ശരിയായ പാസ്റ്റ് രൂപം ഏതാണ്?',
+          'audio': 'Question 2: Is it She bought a new car, or She buyed a new car?',
+          'correct': 'She bought a new car.',
+          'wrong': 'She buyed a new car.',
+          'tip': '"Buy" is irregular! Its past form is "bought", never "buyed".',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 18: Inquiring About the Past (Did you...?)
+    // -------------------------------------------------------------------------
+    18: const DayCurriculumSpec(
+      day: 18,
+      topicEmoji: '🧟',
+      titleEn: 'Day 18: Inquiring About the Past (Did you...?)',
+      titleMl: 'ഡേ 18: കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കാൻ "Did you...?"',
+      greetingEn: 'Welcome to Day 18! 🌟 Today we master asking about past actions using the auxiliary "Did" and the golden V1 base verb reset rule!',
+      greetingMl: 'ഡേ 18 ലേക്ക് സ്വാഗതം! 🌟 കഴിഞ്ഞുപോയ കാര്യങ്ങൾ സംശയമില്ലാതെ ചോദിച്ചറിയാൻ "Did you...?" ഘടന ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 18! Today we master past questions using Did and the base verb reset rule.',
+      blueprintTitle: 'THE "DID" RESET BLUEPRINT',
+      blueprintExplanationEn: 'Because "Did" already shows the past tense, the main verb MUST be in its base form (V1). Never say "Did you went?", ALWAYS say "Did you go?"!',
+      blueprintExplanationMl: 'കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കാൻ Did ഉപയോഗിക്കുമ്പോൾ പ്രധാന ക്രിയ എപ്പോഴും ആദ്യ രൂപത്തിൽ (V1) ആയിരിക്കണം: "Did you see?" (അല്ലാതെ Did you saw? എന്ന് ഒരിക്കലും പറയരുത്).',
+      blueprintRules: [
+        {'subject': 'Past Questions', 'en': 'Did you finish the report yesterday?', 'ml': 'നീ ഇന്നലെ റിപ്പോർട്ട് പൂർത്തിയാക്കിയോ?'},
+        {'subject': 'Question Words', 'en': 'Where did they go for the conference?', 'ml': 'കോൺഫറൻസിനായി അവർ എവിടെയാണ് പോയത്?'},
+        {'subject': 'Follow-up Inquiries', 'en': 'What did she say about the design?', 'ml': 'ഡിസൈനിനെക്കുറിച്ച് അവൾ എന്താണ് പറഞ്ഞത്?'},
+      ],
+      drills: [
+        {'en': 'Did you finish your breakfast this morning?', 'ml': 'ഇന്ന് രാവിലെ നീ പ്രഭാതഭക്ഷണം കഴിച്ചോ?', 'rule': 'Past Question: Did + you + finish (V1 reset)'},
+        {'en': 'Where did you go for the weekend trip?', 'ml': 'വീക്കെൻഡ് യാത്രയ്ക്കായി നിങ്ങൾ എവിടെയാണ് പോയത്?', 'rule': 'Wh- Question: Where did you go (V1)'},
+        {'en': 'Did she receive the email I sent yesterday?', 'ml': 'ഇന്നലെ ഞാൻ അയച്ച ഇമെയിൽ അവൾക്ക് ലഭിച്ചോ?', 'rule': 'Auxiliary Did + base verb receive'},
+        {'en': 'Why did you choose this learning course?', 'ml': 'എന്തുകൊണ്ടാണ് നിങ്ങൾ ഈ കോഴ്സ് തിരഞ്ഞെടുത്തത്?', 'rule': 'Wh- Question: Why did you choose'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Asking a friend if they went to the office yesterday:',
+          'qMl': 'ചോദ്യം 1: സുഹൃത്ത് ഇന്നലെ ഓഫീസിൽ പോയോ എന്ന് ചോദിക്കാൻ:',
+          'audio': 'Question 1: Is it Did you go to the office, or Did you went to the office?',
+          'correct': 'Did you go to the office?',
+          'wrong': 'Did you went to the office?',
+          'tip': '"Did" already carries the past! The main verb resets to V1: "go"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "What time did the train ___?"',
+          'qMl': 'ചോദ്യം 2: "What time did the train ___?"',
+          'audio': 'Question 2: Does it take arrive, or arrived?',
+          'correct': 'arrive',
+          'wrong': 'arrived',
+          'tip': 'After "did", always use the base form "arrive"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 19: Past Negatives (I didn't...)
+    // -------------------------------------------------------------------------
+    19: const DayCurriculumSpec(
+      day: 19,
+      topicEmoji: '🎮',
+      titleEn: 'Day 19: Past Negatives (I didn\'t...)',
+      titleMl: 'ഡേ 19: കഴിഞ്ഞ കാര്യങ്ങൾ നിഷേധിക്കാൻ "I didn\'t..."',
+      greetingEn: 'Welcome to Day 19! 🌟 Today we master expressing past negatives and clearing up misunderstandings with "didn\'t" + base verb!',
+      greetingMl: 'ഡേ 19 ലേക്ക് സ്വാഗതം! 🌟 കഴിഞ്ഞകാലത്ത് ഒരു കാര്യം ചെയ്തില്ല അല്ലെങ്കിൽ സംഭവിച്ചില്ല എന്ന് വ്യക്തമായി പറയാൻ "I didn\'t..." ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 19! Today we master past negatives using didn\'t and base verbs.',
+      blueprintTitle: 'PAST NEGATION BLUEPRINT',
+      blueprintExplanationEn: 'To negate a past action, use "didn\'t" (did not) + base verb (V1). Never use past tense verbs after didn\'t ("I didn\'t know", NOT "I didn\'t knew").',
+      blueprintExplanationMl: 'ഒരു കാര്യം ചെയ്തില്ല എന്ന് പറയാൻ Subject + didn\'t + Base Verb (V1) ഉപയോഗിക്കുക. "I didn\'t went" എന്ന് ഒരിക്കലും പറയരുത്, "I didn\'t go" എന്ന് പറയണം.',
+      blueprintRules: [
+        {'subject': 'Basic Negation', 'en': 'I didn\'t see the message yesterday.', 'ml': 'ഞാൻ ഇന്നലെ ആ മെസ്സേജ് കണ്ടില്ല.'},
+        {'subject': 'Third Person Negation', 'en': 'She didn\'t attend the meeting.', 'ml': 'അവൾ മീറ്റിംഗിൽ പങ്കെടുത്തില്ല.'},
+        {'subject': 'Explaining Reasons', 'en': 'We didn\'t know about the delay.', 'ml': 'ആ വൈകലിനെക്കുറിച്ച് ഞങ്ങൾ അറിഞ്ഞിരുന്നില്ല.'},
+      ],
+      drills: [
+        {'en': 'I didn\'t receive the update until this morning.', 'ml': 'ഇന്ന് രാവിലെ വരെ എനിക്ക് ആ അപ്‌ഡേറ്റ് ലഭിച്ചില്ലായിരുന്നു.', 'rule': 'Past Negative: didn\'t + receive (V1)'},
+        {'en': 'She didn\'t know about the schedule change.', 'ml': 'സമയമാറ്റത്തെക്കുറിച്ച് അവൾ അറിഞ്ഞിരുന്നില്ല.', 'rule': 'Negative: didn\'t + know (not knew)'},
+        {'en': 'We didn\'t find any critical errors in the code.', 'ml': 'കോഡിൽ വലിയ തെറ്റുകളൊന്നും ഞങ്ങൾ കണ്ടെത്തിയില്ല.', 'rule': 'Negative: didn\'t + find (not found)'},
+        {'en': 'He didn\'t come to the office yesterday.', 'ml': 'അവൻ ഇന്നലെ ഓഫീസിലേക്ക് വന്നില്ല.', 'rule': 'Negative: didn\'t + come (not came)'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Saying you did not know about an announcement:',
+          'qMl': 'ചോദ്യം 1: ഞാൻ അറിഞ്ഞിരുന്നില്ല എന്ന് എങ്ങനെ പറയും?',
+          'audio': 'Question 1: Is it I didn\'t know, or I didn\'t knew?',
+          'correct': 'I didn\'t know.',
+          'wrong': 'I didn\'t knew.',
+          'tip': 'Always use base verb after didn\'t: "didn\'t know"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "She ___ come yesterday because she was unwell."',
+          'qMl': 'ചോദ്യം 2: അവൾ ഇന്നലെ വന്നില്ല എന്ന് പറയാൻ:',
+          'audio': 'Question 2: Is it didn\'t, or doesn\'t?',
+          'correct': 'didn\'t',
+          'wrong': 'doesn\'t',
+          'tip': 'Past negative uses "didn\'t"! "Doesn\'t" is for present habits.',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 20: Future Plans & Spontaneous Decisions (Will)
+    // -------------------------------------------------------------------------
+    20: const DayCurriculumSpec(
+      day: 20,
+      topicEmoji: '🌍',
+      titleEn: 'Day 20: Future Plans & Spontaneous Decisions (Will)',
+      titleMl: 'ഡേ 20: ഭാവി തീരുമാനങ്ങളും വാഗ്ദാനങ്ങളും പറയാൻ "Will"',
+      greetingEn: 'Welcome to Day 20! 🌟 Today we master the modal "will" for rapid on-the-spot decisions, promises, and future commitments!',
+      greetingMl: 'ഡേ 20 ലേക്ക് സ്വാഗതം! 🌟 പെട്ടെന്നുള്ള തീരുമാനങ്ങൾ, വാഗ്ദാനങ്ങൾ, ഭാവി കാര്യങ്ങൾ എന്നിവ വ്യക്തമാക്കാൻ "Will" ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 20! Today we master expressing future decisions and promises with Will.',
+      blueprintTitle: 'SPONTANEOUS FUTURE FORMULA',
+      blueprintExplanationEn: 'Use "will" + base verb (V1) for decisions made at the moment of speaking ("I\'ll call you"), promises ("I will help"), and predictions. Never add -s or -ing after will!',
+      blueprintExplanationMl: 'സംസാരിക്കുന്ന നിമിഷത്തിൽ എടുക്കുന്ന തീരുമാനങ്ങൾക്കും ഉറപ്പുകൾക്കും "will" ഉപയോഗിക്കുക: "I will call you back" (will-ന് ശേഷം ക്രിയയുടെ ആദ്യരൂപം മാത്രം).',
+      blueprintRules: [
+        {'subject': 'Instant Decision', 'en': 'I will send you the document right now.', 'ml': 'ഞാൻ ഇപ്പോൾ തന്നെ ആ രേഖ അയച്ചുതരാം.'},
+        {'subject': 'Personal Promise', 'en': 'I will practice English every day.', 'ml': 'ഞാൻ എല്ലാ ദിവസവും ഇംഗ്ലീഷ് പരിശീലിക്കും.'},
+        {'subject': 'Future Prediction', 'en': 'The weather will be pleasant tomorrow.', 'ml': 'നാളെ കാലാവസ്ഥ സുഖകരമായിരിക്കും.'},
+      ],
+      drills: [
+        {'en': 'I will call you as soon as I arrive.', 'ml': 'ഞാൻ എത്തിയ ഉടൻ തന്നെ നിങ്ങളെ വിളിക്കാം.', 'rule': 'Spontaneous Decision: will + call'},
+        {'en': 'We will improve our spoken English together.', 'ml': 'നമ്മൾ ഒരുമിച്ച് ഇംഗ്ലീഷ് സംസാരിക്കാൻ മെച്ചപ്പെടും.', 'rule': 'Future Commitment: will + improve'},
+        {'en': 'She will join our team meeting tomorrow morning.', 'ml': 'നാളെ രാവിലെ അവൾ നമ്മുടെ ടീം മീറ്റിംഗിൽ പങ്കുചേരും.', 'rule': 'Future Plan: will + join'},
+        {'en': 'I will help you solve this coding problem.', 'ml': 'ഈ കോഡിംഗ് പ്രശ്നം പരിഹരിക്കാൻ ഞാൻ നിന്നെ സഹായിക്കാം.', 'rule': 'Instant Offer: will + help'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Promising to call a colleague back shortly:',
+          'qMl': 'ചോദ്യം 1: ഞാൻ ഉടൻ തിരിച്ചു വിളിക്കാം എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it I will call you back, or I will calling you back?',
+          'correct': 'I will call you back.',
+          'wrong': 'I will calling you back.',
+          'tip': 'Modals like "will" take the base verb directly: "will call"!',
+        },
+        {
+          'qEn': 'Question 2: Which is correct for tomorrow\'s weather?',
+          'qMl': 'ചോദ്യം 2: നാളെ മഴ പെയ്യും എന്ന് പറയാൻ ഏതാണ് ശരി?',
+          'audio': 'Question 2: Is it It will rain tomorrow, or It will rains tomorrow?',
+          'correct': 'It will rain tomorrow.',
+          'wrong': 'It will rains tomorrow.',
+          'tip': 'Never add -s to the verb after will! Say: "will rain".',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 21: Planned Intentions (Going to)
+    // -------------------------------------------------------------------------
+    21: const DayCurriculumSpec(
+      day: 21,
+      topicEmoji: '🎯',
+      titleEn: 'Day 21: Planned Intentions (Going to)',
+      titleMl: 'ഡേ 21: നേരത്തെ ആസൂത്രണം ചെയ്ത കാര്യങ്ങൾക്ക് "Going to"',
+      greetingEn: 'Welcome to Day 21! 🌟 Today we master expressing premeditated plans, intentions, and upcoming roadmaps with "am/is/are + going to"!',
+      greetingMl: 'ഡേ 21 ലേക്ക് സ്വാഗതം! 🌟 മുൻകൂട്ടി തീരുമാനിച്ച പ്ലാനുകളും ഉദ്ദേശ്യങ്ങളും പറയാൻ "going to" ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 21! Today we master planned intentions using going to.',
+      blueprintTitle: 'PLANNED FUTURE BLUEPRINT',
+      blueprintExplanationEn: 'Use "am / is / are + going to + base verb" when you decided the action BEFORE the moment of speaking (pre-arranged plans). For example: "I am going to start a new project next week."',
+      blueprintExplanationMl: 'നേരത്തെ തന്നെ പ്ലാൻ ചെയ്തുറപ്പിച്ച കാര്യങ്ങൾക്ക് am/is/are + going to + Verb ഉപയോഗിക്കുക (I am going to learn Flutter, She is going to travel).',
+      blueprintRules: [
+        {'subject': 'I (am)', 'en': 'I am going to buy a new laptop this weekend.', 'ml': 'ഈ വാരാന്ത്യത്തിൽ ഞാൻ പുതിയ ലാപ്ടോപ്പ് വാങ്ങാൻ പോകുന്നു.'},
+        {'subject': 'He / She (is)', 'en': 'She is going to present the project tomorrow.', 'ml': 'അവൾ നാളെ പ്രോജക്ട് അവതരിപ്പിക്കാൻ പോകുന്നു.'},
+        {'subject': 'We / They (are)', 'en': 'We are going to launch the mobile app soon.', 'ml': 'ഞങ്ങൾ ഉടൻ തന്നെ മൊബൈൽ ആപ്പ് ലോഞ്ച് ചെയ്യാൻ പോകുന്നു.'},
+      ],
+      drills: [
+        {'en': 'I am going to practice English for thirty minutes.', 'ml': 'ഞാൻ മുപ്പത് മിനിറ്റ് ഇംഗ്ലീഷ് പരിശീലിക്കാൻ പോകുന്നു.', 'rule': 'Intention: am + going to + practice'},
+        {'en': 'She is going to start a new job next month.', 'ml': 'അടുത്ത മാസം അവൾ പുതിയ ജോലി ആരംഭിക്കാൻ പോകുന്നു.', 'rule': 'Planned Future: is + going to + start'},
+        {'en': 'We are going to build a useful mobile application.', 'ml': 'ഉപകാരപ്രദമായ ഒരു മൊബൈൽ ആപ്പ് നിർമ്മിക്കാൻ ഞങ്ങൾ പോകുന്നു.', 'rule': 'Team Plan: are + going to + build'},
+        {'en': 'He is going to visit his grandparents this Sunday.', 'ml': 'ഈ ഞായറാഴ്ച അവൻ മുത്തശ്ശീമുത്തശ്ശന്മാരെ സന്ദർശിക്കാൻ പോകുന്നു.', 'rule': 'Plan: is + going to + visit'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Expressing your pre-decided plan to travel next week:',
+          'qMl': 'ചോദ്യം 1: അടുത്ത ആഴ്ച യാത്ര ചെയ്യാൻ പ്ലാൻ ചെയ്തിരിക്കുന്നു എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it I am going to travel next week, or I going to travel next week?',
+          'correct': 'I am going to travel next week.',
+          'wrong': 'I going to travel next week.',
+          'tip': 'Never forget the helper verb! Say "I am going to", not "I going to"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "She ___ going to launch her startup next month."',
+          'qMl': 'ചോദ്യം 2: "She ___ going to launch her startup next month."',
+          'audio': 'Question 2: Does She take is, or are?',
+          'correct': 'is',
+          'wrong': 'are',
+          'tip': 'Singular third person (She, He) takes "is"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 22: What is Happening Right Now (Present Continuous)
+    // -------------------------------------------------------------------------
+    22: const DayCurriculumSpec(
+      day: 22,
+      topicEmoji: '🏗️',
+      titleEn: 'Day 22: What is Happening Right Now (Present Continuous)',
+      titleMl: 'ഡേ 22: ഇപ്പോൾ നടക്കുന്ന കാര്യങ്ങൾ പറയാൻ Present Continuous',
+      greetingEn: 'Welcome to Day 22! 🌟 Today we master the Present Continuous tense (am/is/are + verb-ing) to narrate live actions happening at this exact moment!',
+      greetingMl: 'ഡേ 22 ലേക്ക് സ്വാഗതം! 🌟 ഇപ്പോൾ നിങ്ങളുടെ മുന്നിൽ സംഭവിച്ചുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ ലൈവായി പറയാൻ Present Continuous (am/is/are + ing) ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 22! Today we master the Present Continuous tense for ongoing live actions.',
+      blueprintTitle: 'LIVE MOMENT FORMULA',
+      blueprintExplanationEn: 'Use "am / is / are + verb-ing" for actions in progress right now. Always pair the subject with its matching helper: I am, He/She is, We/They are!',
+      blueprintExplanationMl: 'സംസാരിക്കുന്ന ഈ നിമിഷത്തിൽ നടക്കുന്ന കാര്യങ്ങൾക്ക് Present Continuous ഉപയോഗിക്കുക: "I am writing code now" (am/is/are വിട്ടുപോകരുത്).',
+      blueprintRules: [
+        {'subject': 'I (am)', 'en': 'I am speaking English right now.', 'ml': 'ഞാൻ ഇപ്പോൾ ഇംഗ്ലീഷ് സംസാരിച്ചുകൊണ്ടിരിക്കുകയാണ്.'},
+        {'subject': 'Singular (is)', 'en': 'The software is compiling smoothly.', 'ml': 'സോഫ്റ്റ്‌വെയർ സുഗമമായി കംപൈൽ ചെയ്തുകൊണ്ടിരിക്കുന്നു.'},
+        {'subject': 'Plural (are)', 'en': 'We are developing an innovative feature.', 'ml': 'ഞങ്ങൾ ഒരു പുതിയ ഫീച്ചർ വികസിപ്പിച്ചുകൊണ്ടിരിക്കുകയാണ്.'},
+      ],
+      drills: [
+        {'en': 'I am learning new English phrases right now.', 'ml': 'ഞാൻ ഇപ്പോൾ പുതിയ ഇംഗ്ലീഷ് ശൈലികൾ പഠിച്ചുകൊണ്ടിരിക്കുകയാണ്.', 'rule': 'Present Continuous: am + learning'},
+        {'en': 'She is writing clean code for the new feature.', 'ml': 'പുതിയ ഫീച്ചറിനായി അവൾ വൃത്തിയുള്ള കോഡ് എഴുതിക്കൊണ്ടിരിക്കുകയാണ്.', 'rule': 'Ongoing Action: is + writing'},
+        {'en': 'They are testing the application on multiple devices.', 'ml': 'വിവിധ ഫോണുകളിൽ അവർ ആപ്ലിക്കേഷൻ പരിശോധിച്ച് കൊണ്ടിരിക്കുകയാണ്.', 'rule': 'Team Continuous: are + testing'},
+        {'en': 'The team is preparing for the product demonstration.', 'ml': 'പ്രൊഡക്റ്റ് ഡെമോൺസ്ട്രേഷനായി ടീം തയ്യാറെടുത്തുകൊണ്ടിരിക്കുകയാണ്.', 'rule': 'Present Continuous: is + preparing'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Describing what you are currently doing:',
+          'qMl': 'ചോദ്യം 1: ഞാൻ ഇപ്പോൾ കോഡ് എഴുതുകയാണ് എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it I am writing code now, or I writing code now?',
+          'correct': 'I am writing code now.',
+          'wrong': 'I writing code now.',
+          'tip': 'Always include the auxiliary "am": "I am writing"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "He ___ working on fixing the bug at this moment."',
+          'qMl': 'ചോദ്യം 2: അവൻ ഇപ്പോൾ ബഗ്ഗ് പരിഹരിക്കുകയാണ്:',
+          'audio': 'Question 2: Does He take is, or are?',
+          'correct': 'is',
+          'wrong': 'are',
+          'tip': 'He/She takes "is": "He is working"!',
+        },
+      ],
+    ),
+
+    // -------------------------------------------------------------------------
+    // DAY 23: Past Interrupted Actions (Past Continuous)
+    // -------------------------------------------------------------------------
+    23: const DayCurriculumSpec(
+      day: 23,
+      topicEmoji: '🛸',
+      titleEn: 'Day 23: Past Interrupted Actions (Past Continuous)',
+      titleMl: 'ഡേ 23: മുൻപ് നടന്നുകൊണ്ടിരുന്നപ്പോൾ മറ്റൊന്ന് സംഭവിച്ചാൽ Past Continuous',
+      greetingEn: 'Welcome to Day 23! 🌟 Today we master the Past Continuous tense (was/were + verb-ing) to set background scenes and describe interrupted actions!',
+      greetingMl: 'ഡേ 23 ലേക്ക് സ്വാഗതം! 🌟 മുൻപ് ഒരു കാര്യം നടന്നുകൊണ്ടിരുന്നപ്പോൾ മറ്റൊന്ന് സംഭവിച്ചു എന്ന് വർണ്ണിക്കാൻ Past Continuous (was/were + ing + when) ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 23! Today we master the Past Continuous tense to describe background and interrupted actions.',
+      blueprintTitle: 'BACKGROUND & INTERRUPTION BLUEPRINT',
+      blueprintExplanationEn: 'Use "was / were + verb-ing" for the ongoing background action, connected by "when" to a sudden Simple Past action ("I was coding when the power went out").',
+      blueprintExplanationMl: 'നടന്നുകൊണ്ടിരുന്ന കാര്യത്തിന് was/were + ing ഉം പെട്ടെന്ന് സംഭവിച്ച കാര്യത്തിന് Simple Past ഉം ഉപയോഗിക്കുക ("I was studying when my phone rang").',
+      blueprintRules: [
+        {'subject': 'Singular (Was)', 'en': 'I was working when you called me.', 'ml': 'നീ എന്നെ വിളിച്ചപ്പോൾ ഞാൻ ജോലി ചെയ്തുകൊണ്ടിരിക്കുകയായിരുന്നു.'},
+        {'subject': 'Plural (Were)', 'en': 'They were discussing the plan when the bell rang.', 'ml': 'ബെല്ലടിച്ചപ്പോൾ അവർ പ്ലാൻ ചർച്ച ചെയ്തുകൊണ്ടിരിക്കുകയായിരുന്നു.'},
+        {'subject': 'Parallel Actions', 'en': 'While she was designing, he was coding.', 'ml': 'അവൾ ഡിസൈൻ ചെയ്യുമ്പോൾ അവൻ കോഡിംഗ് ചെയ്യുകയായിരുന്നു.'},
+      ],
+      drills: [
+        {'en': 'I was studying English when my friend called me.', 'ml': 'സുഹൃത്ത് എന്നെ വിളിച്ചപ്പോൾ ഞാൻ ഇംഗ്ലീഷ് പഠിച്ചുകൊണ്ടിരിക്കുകയായിരുന്നു.', 'rule': 'Interrupted Past: was studying + when called'},
+        {'en': 'They were discussing the project when the power went out.', 'ml': 'വൈദ്യുതി പോയപ്പോൾ അവർ പ്രോജക്റ്റിനെക്കുറിച്ച് സംസാരിക്കുകയായിരുന്നു.', 'rule': 'Past Continuous: were discussing'},
+        {'en': 'She was explaining the logic when the meeting ended.', 'ml': 'മീറ്റിംഗ് തീർന്നപ്പോൾ അവൾ അതിന്റെ ലോജിക് വിശദീകരിക്കുകയായിരുന്നു.', 'rule': 'Scene Setting: was explaining'},
+        {'en': 'We were developing the app while they prepared the tests.', 'ml': 'അവർ ടെസ്റ്റുകൾ തയ്യാറാക്കുമ്പോൾ ഞങ്ങൾ ആപ്പ് ഡെവലപ്പ് ചെയ്യുകയായിരുന്നു.', 'rule': 'Parallel Actions: were developing'},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Stating you were having dinner when the doorbell rang:',
+          'qMl': 'ചോദ്യം 1: കോളിംഗ് ബെല്ലടിച്ചപ്പോൾ ഞാൻ ഭക്ഷണം കഴിക്കുകയായിരുന്നു എന്ന് പറയാൻ:',
+          'audio': 'Question 1: Is it I was having dinner when the bell rang, or I were having dinner when the bell rang?',
+          'correct': 'I was having dinner when the bell rang.',
+          'wrong': 'I were having dinner when the bell rang.',
+          'tip': 'First person singular "I" takes "was": "I was having"!',
+        },
+        {
+          'qEn': 'Question 2: Complete: "They ___ working late last night when the server crashed."',
+          'qMl': 'ചോദ്യം 2: സെർവർ തകരാറിലായപ്പോൾ അവർ ജോലി ചെയ്യുകയായിരുന്നു:',
+          'audio': 'Question 2: Does They take was, or were?',
+          'correct': 'were',
+          'wrong': 'was',
+          'tip': 'Plural subjects (They, We) take "were": "They were working"!',
+        },
+      ],
+    ),
   };
 }
 
@@ -1478,8 +1793,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                 'Expected: "$target"\n\n'
                 '${evalResult.feedbackTip}',
             textNative: 'ശ്രമിക്കൂ! ഈ വാക്ക് കുറച്ചുകൂടി വ്യക്തമായി പറയൂ.',
-            cardContent: PocketPronunciationEvaluator.buildFeedbackCard(
-              evalResult,
+            cardContent: PocketPronunciationResultCard(
+              result: evalResult,
               onRetry: () => _toggleLiveListening(),
             ),
             speakThisPrompt: 'Tap mic or button below to try again:',
@@ -1562,8 +1877,10 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             );
           }
         },
-        listenFor: const Duration(seconds: 7),
-        pauseFor: const Duration(seconds: 3),
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.confirmation,
+          cancelOnError: true,
+        ),
       );
     }
   }
@@ -1624,10 +1941,15 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF047857)],
+              gradient: LinearGradient(
+                colors: _isSpeaking
+                    ? const [Color(0xFF00F0FF), Color(0xFF10B981)]
+                    : const [Color(0xFF10B981), Color(0xFF047857)],
               ),
-              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+              border: Border.all(
+                color: _isSpeaking ? const Color(0xFF00F0FF) : const Color(0xFFFFD700),
+                width: 1.5,
+              ),
             ),
             child: Center(
               child: Text(_spec.topicEmoji, style: const TextStyle(fontSize: 18)),
@@ -2110,3 +2432,74 @@ class PocketDay16Step1AvatarChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 16, userId: userId, onStepFinished: onStepFinished);
 }
+
+class PocketDay17Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay17Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 17, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 17, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay18Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay18Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 18, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 18, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay19Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay19Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 19, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 19, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay20Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay20Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 20, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 20, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay21Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay21Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 21, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 21, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay22Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay22Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 22, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 22, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay23Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay23Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 23, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 23, userId: userId, onStepFinished: onStepFinished);
+}
+
