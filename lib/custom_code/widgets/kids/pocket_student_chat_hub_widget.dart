@@ -414,6 +414,7 @@ class _PocketStudentChatHubWidgetState
                     PocketCitadelAttackPage.openForUser(
                       context,
                       userId: conversation.id,
+                      isKidMode: true,
                     );
                   },
                   child: CircleAvatar(
@@ -552,6 +553,7 @@ class _PocketStudentChatHubWidgetState
                 PocketCitadelAttackPage.openForUser(
                   context,
                   userId: conversation.id,
+                  isKidMode: true,
                 );
               },
             ),
@@ -951,6 +953,7 @@ class _PocketStudentChatHubWidgetState
                                         PocketCitadelAttackPage.openForUser(
                                           context,
                                           userId: userId,
+                                          isKidMode: true,
                                         );
                                       },
                                       child: CircleAvatar(
@@ -1663,6 +1666,7 @@ class _PocketStudentChatHubWidgetState
                             PocketCitadelAttackPage.openForUser(
                               context,
                               userId: conversation.id,
+                              isKidMode: true,
                             );
                           },
                           child: Container(
@@ -1762,6 +1766,7 @@ class _PocketStudentChatHubWidgetState
           context,
           userId: conversation.id,
           targetName: conversation.name,
+          isKidMode: true,
         );
         return false;
       },
@@ -2328,6 +2333,7 @@ class _PocketStudentChatHubWidgetState
                         PocketCitadelAttackPage.openForUser(
                           context,
                           userId: senderUserId,
+                          isKidMode: true,
                         );
                       }
                     },

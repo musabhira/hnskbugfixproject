@@ -40,6 +40,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
   final int attackerDay;
   final int attackerStreak;
   final bool isDefenseMode;
+  final bool isKidMode;
 
   const PocketCitadelAttackPage({
     super.key,
@@ -47,6 +48,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     this.attackerDay = 1,
     this.attackerStreak = 0,
     this.isDefenseMode = false,
+    this.isKidMode = false,
   });
 
   /// 🏰 Open Citadel / House Page for any user or robot from anywhere in the app
@@ -60,6 +62,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     int? targetDay,
     String? paletteId,
     bool isDefenseMode = false,
+    bool isKidMode = false,
   }) async {
     // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
     if (PocketPresidentService.isPresidentId(userId) || userId == 'pocket_president') {
@@ -87,6 +90,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
           builder: (context) => PocketCitadelAttackPage(
             neighbor: PocketNeighbor.createPresident(),
             attackerDay: effectiveAttackerDay,
+            isKidMode: isKidMode,
           ),
         ),
       );
@@ -101,6 +105,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
             neighbor: neighbor,
             attackerDay: attackerDay,
             isDefenseMode: isDefenseMode,
+            isKidMode: isKidMode,
           ),
         ),
       );
@@ -135,6 +140,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
             neighbor: animalNeighbor,
             attackerDay: attackerDay,
             isDefenseMode: isDefenseMode,
+            isKidMode: true,
           ),
         ),
       );
@@ -172,6 +178,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
             neighbor: robotNeighbor,
             attackerDay: attackerDay,
             isDefenseMode: isDefenseMode,
+            isKidMode: isKidMode,
           ),
         ),
       );
@@ -228,6 +235,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
           neighbor: neighbor ?? userNeighbor,
           attackerDay: attackerDay,
           isDefenseMode: isDefenseMode,
+          isKidMode: isKidMode,
         ),
       ),
     );
@@ -4704,6 +4712,30 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 🛡️ Check if Kids Hero Drawer should be shown instead of Adult MainProfileWidget
+  bool get _shouldShowKidProfile {
+    // 🏛️ Sovereign President citadel is always presidential
+    if (widget.neighbor.isPresident) return false;
+
+    // 🎒 If explicitly opened in Kid Mode (from Kid Hub, Kid Mates, Kid Home, etc.)
+    if (widget.isKidMode) return true;
+
+    // 🐾 Kid Animal Robots are kids-only companions (kid_bot_1 ... kid_bot_100)
+    if (widget.neighbor.id.startsWith('kid_bot_') ||
+        PocketKidsRobotsData.getAnimalById(widget.neighbor.id) != null) {
+      return true;
+    }
+
+    // 🧒 Only if currently logged in as a kid account AND not an adult robot
+    if (PocketKidsService.isKidAccount &&
+        !PocketRobotService.isRobotId(widget.neighbor.id)) {
+      return true;
+    }
+
+    // 🛡️ Adult mode: Real users and adult robots ALWAYS show Adult MainProfileWidget!
+    return false;
+  }
+
   /// 📇 Draggable & Tappable Bottom Sheet Drawer for Citadel Defender Profile
   Widget _buildProfileDrawer(double maxHeight, double collapsedH, double bottomPad) {
     final prog = _profileDrawerController.value;
@@ -4859,11 +4891,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               const SizedBox(height: 1),
                               Text(
                                 prog > 0.5
-                                    ? (widget.neighbor.isPresident ? 'Sovereign Head of Pocket World' : 'Citadel Defender Profile')
+                                    ? (widget.neighbor.isPresident
+                                        ? 'Sovereign Head of Pocket World'
+                                        : (_shouldShowKidProfile
+                                            ? 'Kid Hero Profile 🎒'
+                                            : 'Citadel Defender Profile'))
                                     : 'Swipe up or tap to explore profile',
                                 style: GoogleFonts.outfit(
                                   color: prog > 0.5
-                                      ? (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA))
+                                      ? (widget.neighbor.isPresident
+                                          ? const Color(0xFFFFD700)
+                                          : (_shouldShowKidProfile
+                                              ? const Color(0xFF38BDF8)
+                                              : const Color(0xFFA78BFA)))
                                       : Colors.white60,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
@@ -4920,8 +4960,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   color: const Color(0xFF0F172A),
                   child: widget.neighbor.isPresident
                       ? _buildPresidentialDrawerContent()
-                      : (PocketKidsService.isKidAccount ||
-                              PocketKidsService.isAllowedKidMateId(widget.neighbor.id)
+                      : (_shouldShowKidProfile
                           ? _buildKidHeroDrawerContent()
                           : MainProfileWidget(
                               userId: widget.neighbor.id,

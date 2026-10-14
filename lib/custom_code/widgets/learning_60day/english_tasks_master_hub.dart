@@ -299,7 +299,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final int _totalDays = 91;
   bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
-  bool _hasCustomSelectedSyllabus = false;
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
@@ -475,7 +474,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isVip = await PocketAdService().isUserSubscribed();
     final isCitadelConquered = await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
-    final hasCustomSyllabus = prefs.getBool('pocket_has_custom_syllabus_selection_$uid') ?? false;
 
     final Map<String, bool> subFlags = {};
     for (int step = 1; step <= 17; step++) {
@@ -488,7 +486,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _isSubscribed = isVip;
         _hasConqueredCitadel = isCitadelConquered;
         _currentLearnerLevel = savedLevel;
-        _hasCustomSelectedSyllabus = hasCustomSyllabus;
         _progress = prog;
         _unifiedPocketScore = score;
         _unifiedTrophies = trophies;
@@ -1567,26 +1564,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor.withValues(alpha: 0.16),
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor.withValues(alpha: 0.5),
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.5),
                           width: 0.8,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            PocketSyllabusRepository.getTrack(_currentLearnerLevel).icon,
+                          const Icon(
+                            Icons.auto_awesome_rounded,
                             size: 10,
-                            color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor,
+                            color: Color(0xFFFFD700),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            PocketSyllabusRepository.getTrack(_currentLearnerLevel).nameEn,
+                            'English Mastery Track',
                             style: GoogleFonts.inter(
-                              color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor,
+                              color: const Color(0xFFFFD700),
                               fontSize: 9.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -2616,7 +2613,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
 
-                    // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
+                    // 🎯 Unified Syllabus Track Pill (Single Unified Syllabus)
                     _buildSyllabusSelectorMenu(screenWidth),
 
                     // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
@@ -3839,178 +3836,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Displays "YOUR SYLLABUS" initially as generated during onboarding.
   /// Tapping opens the 6-track switcher without any bottomsheet.
   Widget _buildSyllabusSelectorMenu(double screenWidth) {
-    final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
     final x = screenWidth / 2;
     // Positioned cleanly right above the Rules node (_ruleNodeY is 240, top of sphere is 203)
     final y = _ruleNodeY - 54.0;
-    final pillWidth = _hasCustomSelectedSyllabus ? 188.0 : 164.0;
+    const pillWidth = 200.0;
 
     return Positioned(
       left: x - (pillWidth / 2),
       top: y,
       width: pillWidth,
-      child: PopupMenuButton<LearnerLevel?>(
-        tooltip: 'Your Syllabus',
-        color: const Color(0xFF131722),
-        elevation: 14,
-        offset: const Offset(0, 34),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.8),
-            width: 1.3,
-          ),
-        ),
-        onSelected: (level) async {
-          if (level == null) return;
-          HapticFeedback.selectionClick();
-          await PocketSyllabusRepository.saveLevel(level);
-          final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('pocket_has_custom_syllabus_selection_${uid ?? "guest"}', true);
-          setState(() {
-            _hasCustomSelectedSyllabus = true;
-            _currentLearnerLevel = level;
-          });
-
-          // Sync to Supabase profile so the selected level persists globally
-          if (uid != null) {
-            try {
-              await _supabase.from('profile').update({
-                'english_level': level.name,
-                'updated_at': DateTime.now().toIso8601String(),
-              }).eq('user_id', uid);
-            } catch (e) {
-              debugPrint('Notice: Error updating profile english_level on syllabus switch: $e');
-            }
-          }
-
-          // Dynamically refresh learning hub and missions to immediately reflect switched track
-          await _loadData();
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(PocketSyllabusRepository.getTrack(level).icon,
-                        color: const Color(0xFFFFFC00), size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Syllabus Track switched to ${PocketSyllabusRepository.getTrack(level).nameEn}! 🎯',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                backgroundColor: const Color(0xFF1E2438),
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        },
-        itemBuilder: (context) {
-          final options = [
-            (
-              level: LearnerLevel.zero,
-              title: 'Zero Level (ABC & Phonics)',
-              sub: 'ശൂന്യത്തിൽ നിന്നുള്ള അടിത്തറ • Voice & Phonics',
-              badge: '🌱 ZERO LEVEL',
-              color: const Color(0xFF10B981),
-              icon: Icons.record_voice_over_rounded,
-            ),
-            (
-              level: LearnerLevel.middle,
-              title: 'Middle Level (Conversational English)',
-              sub: 'നിത്യജീവിത സംഭാഷണങ്ങൾ • Daily Speech',
-              badge: '💬 MIDDLE LEVEL',
-              color: const Color(0xFF38BDF8),
-              icon: Icons.chat_bubble_outline_rounded,
-            ),
-            (
-              level: LearnerLevel.advanced,
-              title: 'Higher Level (Fluent Communication)',
-              sub: 'സ്വാഭാവിക സംഭാഷണം • Natural Fluency',
-              badge: '💎 HIGHER LEVEL',
-              color: const Color(0xFFA855F7),
-              icon: Icons.auto_awesome_rounded,
-            ),
-          ];
-
-          return options.map((opt) {
-            final isSelected = opt.level == _currentLearnerLevel ||
-                (opt.level == LearnerLevel.middle &&
-                    (_currentLearnerLevel == LearnerLevel.beginner ||
-                        _currentLearnerLevel == LearnerLevel.elementary)) ||
-                (opt.level == LearnerLevel.advanced &&
-                    _currentLearnerLevel == LearnerLevel.expert);
-
-            return PopupMenuItem<LearnerLevel?>(
-              value: opt.level,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: opt.color.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(opt.icon, color: opt.color, size: 16),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          opt.title,
-                          style: GoogleFonts.outfit(
-                            color: isSelected ? const Color(0xFFFFFC00) : Colors.white,
-                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                        Text(
-                          opt.sub,
-                          style: GoogleFonts.inter(
-                            color: Colors.white54,
-                            fontSize: 9.5,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isSelected) ...[
-                    const SizedBox(width: 6),
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFFFFFC00), size: 16),
-                  ],
-                ],
-              ),
-            );
-          }).toList();
-        },
+      child: Center(
         child: Container(
-          width: pillWidth,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: const Color(0xFF0F1424).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.7),
-              width: 1.1,
+              color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.22),
+                color: const Color(0xFFFFD700).withValues(alpha: 0.22),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -4020,59 +3867,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (!_hasCustomSelectedSyllabus) ...[
-                const Text('📘', style: TextStyle(fontSize: 11)),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    'YOUR SYLLABUS',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 10,
-                      letterSpacing: 0.3,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              const Text('🎯', style: TextStyle(fontSize: 12)),
+              const SizedBox(width: 6),
+              Text(
+                'ENGLISH MASTERY TRACK',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10.5,
+                  letterSpacing: 0.5,
                 ),
-                const SizedBox(width: 2),
-                const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFFFD700), size: 16),
-              ] else ...[
-                Icon(
-                  _currentLearnerLevel == LearnerLevel.zero
-                      ? Icons.record_voice_over_rounded
-                      : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
-                          ? Icons.auto_awesome_rounded
-                          : Icons.chat_bubble_outline_rounded),
-                  color: _currentLearnerLevel == LearnerLevel.zero
-                      ? const Color(0xFF10B981)
-                      : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
-                          ? const Color(0xFFA855F7)
-                          : const Color(0xFF38BDF8)),
-                  size: 12,
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    _currentLearnerLevel == LearnerLevel.zero
-                        ? 'SYLLABUS: ZERO LEVEL'
-                        : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
-                            ? 'SYLLABUS: HIGHER LEVEL'
-                            : 'SYLLABUS: MIDDLE LEVEL'),
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 9.5,
-                      letterSpacing: 0.3,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 2),
-                Icon(Icons.arrow_drop_down_rounded, color: track.primaryColor, size: 16),
-              ],
+              ),
             ],
           ),
         ),

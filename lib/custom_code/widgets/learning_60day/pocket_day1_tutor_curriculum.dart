@@ -48,33 +48,33 @@ enum Day1Track {
   String get displayNameEn {
     switch (this) {
       case Day1Track.zero:
-        return 'Zero Level (ABC & Phonics)';
+        return 'Foundations (ABC & Phonics)';
       case Day1Track.middle:
-        return 'Middle Level (Self Introduction)';
+        return 'Conversational English';
       case Day1Track.higher:
-        return 'Higher Level (Natural Communication)';
+        return 'Fluent Communication';
     }
   }
 
   String get displayNameMl {
     switch (this) {
       case Day1Track.zero:
-        return 'Zero Level (ABC മുതൽ)';
+        return 'അടിത്തറ (ABC & Phonics)';
       case Day1Track.middle:
-        return 'Middle Level (സ്വന്തം കാര്യം പറയൽ)';
+        return 'സംഭാഷണ ഇംഗ്ലീഷ്';
       case Day1Track.higher:
-        return 'Higher Level (സ്വാഭാവിക സംഭാഷണം)';
+        return 'സ്വാഭാവിക ആശയവിനിമയം';
     }
   }
 
   String get badge {
     switch (this) {
       case Day1Track.zero:
-        return '🌱 Zero Level';
+        return '🌱 Foundations';
       case Day1Track.middle:
-        return '💬 Middle Level';
+        return '💬 Conversation';
       case Day1Track.higher:
-        return '💎 Higher Level';
+        return '💎 Fluent';
     }
   }
 
@@ -756,8 +756,15 @@ class Day1Curriculum {
             };
           }
 
-          // Step 6 Spoken English Vocal Gym synthesis (User Audio Directive: High priority, rich multi-sentence challenges for Zero, Middle, Higher across all 90 days)
-          if (stepNum == 6) {
+          // Step 6 on Day 1: English Hub Community Chat (User Audio Directive!)
+          if (day == 1 && stepNum == 6) {
+            titleEn = '💬 English Hub Community Chat';
+            titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+            descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+            descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+            icon = '💬';
+            gameType = 'group_chat_action';
+          } else if (stepNum == 6) {
             titleEn = '🎙️ Spoken English Vocal Gym';
             titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
             descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
@@ -773,30 +780,14 @@ class Day1Curriculum {
             );
           }
 
-          // Zero track safe options (User Audio Directive: Up to Day 10, Zero learners get safe non-social steps)
-          if (currentTrack == Day1Track.zero && day <= 10) {
-            if (stepNum == 7) {
-              titleEn = 'Tutor Robot Voice Practice';
-              titleMl = 'ട്യൂട്ടർ റോബോട്ടിനൊപ്പമുള്ള സംസാരം 🤖';
-              descEn = 'Practice repeating simple words with your private AI Robot without any fear or embarrassment!';
-              descMl = 'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!';
-              icon = '🤖';
-              gameType = 'spoken_robot';
-            } else if (stepNum == 8) {
-              titleEn = 'Phonics & Object Memory Match';
-              titleMl = 'അക്ഷര-വസ്തു മാച്ചിംഗ് ഗെയിം 🧩';
-              descEn = 'Match letters with their correct picture objects to build strong recognition.';
-              descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
-              icon = '🧩';
-              gameType = 'memory_match';
-            } else if (stepNum == 9) {
-              titleEn = 'AI Tutor Private Audio Lab';
-              titleMl = 'സ്വകാര്യ ഓഡിയോ ലാബ് 🎧';
-              descEn = 'Listen to native pronunciation and practice speaking safely in private.';
-              descMl = 'സ്വകാര്യമായി കേട്ടു പഠിച്ച് പേടിയില്ലാതെ സംസാരിക്കുക.';
-              icon = '🎧';
-              gameType = 'audio_listening_lab';
-            }
+          // Step 7 on Day 1: House 1 Defense Shield Command (User Audio Directive!)
+          if (day == 1 && stepNum == 7) {
+            titleEn = '🛡️ House 1 Defense Shield Command';
+            titleMl = '🛡️ ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+            descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield House 1 from rival attacks!';
+            descMl = 'ഹൗസ് 1 സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+            icon = '🛡️';
+            gameType = 'house_defense_chat';
           }
 
           return Day1StepModel(
@@ -824,48 +815,21 @@ class Day1Curriculum {
       var icon = map['icon']?.toString() ?? '📚';
       var gameType = map['gameType']?.toString() ?? 'generic';
 
-      // 🛡️ User Audio Directive: Zero Foundation learners (like Father) MUST NOT be forced
-      // to make real stranger phone calls, PocketTalk requests, or group chats on Days 1-10!
-      if (currentTrack == Day1Track.zero) {
-        if (stepNum == 7) {
-          titleEn = 'Tutor Robot Voice Practice';
-          titleMl = 'ട്യൂട്ടർ റോബോട്ടിനൊപ്പമുള്ള സംസാരം 🤖';
-          descEn = 'Practice repeating simple words with your private AI Robot without any fear or embarrassment!';
-          descMl = 'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!';
-          icon = '🤖';
-          gameType = 'spoken_robot';
-        } else if (stepNum == 8) {
-          titleEn = 'Phonics & Object Memory Match';
-          titleMl = 'അക്ഷര-വസ്തു മാച്ചിംഗ് ഗെയിം 🧩';
-          descEn = 'Match letters A-F with their correct picture objects to build strong recognition.';
-          descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
-          icon = '🧩';
-          gameType = 'memory_match';
-        } else if (stepNum == 9) {
-          titleEn = 'AI Tutor Private Audio Lab';
-          titleMl = 'സ്വകാര്യ ഓഡിയോ ലാബ് 🎧';
-          descEn = 'Listen to native pronunciation and practice speaking safely in private.';
-          descMl = 'സ്വകാര്യമായി കേട്ടു പഠിച്ച് പേടിയില്ലാതെ സംസാരിക്കുക.';
-          icon = '🎧';
-          gameType = 'audio_listening_lab';
-        }
-      }
-
-      // Step 6 Spoken English Vocal Gym synthesis (User Audio Directive: High priority, rich multi-sentence challenges for Zero, Middle, Higher)
+      // Day 1: Step 6 is English Hub, Step 7 is House Defense
       if (stepNum == 6) {
-        titleEn = '🎙️ Spoken English Vocal Gym';
-        titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
-        descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
-        descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പ്രാക്ടീസ് ചെയ്യുക!';
-        icon = '🎙️';
-        gameType = 'speech_analyzer';
-
-        map['challenges'] = synthesizeSpokenWorkoutChallenges(
-          track: currentTrack,
-          day: 1,
-          dayData: Day1CurriculumJsonData.rawMap,
-          existingStepData: map,
-        );
+        titleEn = '💬 English Hub Community Chat';
+        titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+        descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+        descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+        icon = '💬';
+        gameType = 'group_chat_action';
+      } else if (stepNum == 7) {
+        titleEn = '🛡️ House 1 Defense Shield Command';
+        titleMl = '🛡️ ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+        descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield House 1 from rival attacks!';
+        descMl = 'ഹൗസ് 1 സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+        icon = '🛡️';
+        gameType = 'house_defense_chat';
       }
 
       return Day1StepModel(

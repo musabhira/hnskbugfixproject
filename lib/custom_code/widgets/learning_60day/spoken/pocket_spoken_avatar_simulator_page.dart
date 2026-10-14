@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_90day_spoken_simulator_data.dart';
@@ -63,6 +67,13 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   bool _isSpeaking = false;
   bool _isCompleted = false;
 
+  bool _isRecording = false;
+  String _spokenText = '';
+  int _recordingSeconds = 0;
+  Timer? _recordTimer;
+  stt.SpeechToText? _speech;
+  bool _speechAvailable = false;
+
   final List<_ChatMessageItem> _chatHistory = [];
   final ScrollController _scrollController = ScrollController();
   FlutterTts? _flutterTts;
@@ -84,7 +95,36 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
     );
 
     _initTts();
+    _initSpeechRecognizer();
     _startExchange(0);
+  }
+
+  Future<void> _initSpeechRecognizer() async {
+    final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+    if (!isMobile) {
+      _speechAvailable = false;
+      return;
+    }
+    try {
+      _speech = stt.SpeechToText();
+      final available = await _speech!.initialize(
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted && _isRecording) {
+              setState(() => _isRecording = false);
+            }
+          }
+        },
+        onError: (_) {
+          if (mounted && _isRecording) {
+            setState(() => _isRecording = false);
+          }
+        },
+      );
+      if (mounted) setState(() => _speechAvailable = available);
+    } catch (_) {
+      if (mounted) setState(() => _speechAvailable = false);
+    }
   }
 
   Future<void> _initTts() async {
@@ -314,8 +354,67 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
     );
   }
 
+  Future<void> _toggleRecording(String targetPhrase) async {
+    if (_isCompleted) return;
+
+    if (!_isRecording) {
+      HapticFeedback.heavyImpact();
+      setState(() {
+        _isRecording = true;
+        _spokenText = '';
+        _recordingSeconds = 0;
+      });
+
+      _recordTimer?.cancel();
+      _recordTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted && _isRecording) {
+          setState(() => _recordingSeconds++);
+        }
+      });
+
+      final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+      if (isMobile && _speechAvailable && _speech != null) {
+        try {
+          await _speech!.listen(
+            onResult: (result) {
+              if (mounted && _isRecording) {
+                setState(() => _spokenText = result.recognizedWords);
+              }
+            },
+            listenOptions: stt.SpeechListenOptions(
+              listenFor: const Duration(seconds: 20),
+              pauseFor: const Duration(seconds: 3),
+              partialResults: true,
+              listenMode: stt.ListenMode.confirmation,
+            ),
+          );
+        } catch (_) {}
+      }
+    } else {
+      // STOP recording & submit!
+      HapticFeedback.heavyImpact();
+      _recordTimer?.cancel();
+
+      final isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+      if (isMobile && _speechAvailable && _speech != null) {
+        try {
+          await _speech!.stop();
+        } catch (_) {}
+      }
+
+      setState(() => _isRecording = false);
+
+      final chosenText = _spokenText.trim().isNotEmpty ? _spokenText.trim() : targetPhrase;
+      await _onSelectResponse(chosenText);
+    }
+  }
+
   @override
   void dispose() {
+    _recordTimer?.cancel();
+    try {
+      if (_speechAvailable) _speech?.stop();
+    } catch (_) {}
     _flutterTts?.stop();
     _pulseController.dispose();
     _scrollController.dispose();
@@ -682,83 +781,241 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   }
 
   Widget _buildResponseOptionsSheet(SpokenDialogueExchange exchange) {
+    final targetPhrase = exchange.responseOptions[exchange.bestResponseIndex.clamp(0, exchange.responseOptions.length - 1)];
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.12))),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 18,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'TAP OR SPEAK YOUR RESPONSE 👇',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                ),
+          // 📢 PROMINENT BOLD SPEAK PROMPT CARD (User Audio Directive: "bond aakki ezhuthi kaanikkanam!")
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: _isRecording ? const Color(0xFFEF4444) : const Color(0xFFFFD700),
+                width: 1.8,
               ),
-              Row(
-                children: [
-                  const Icon(Icons.mic_none_rounded, color: Colors.white38, size: 14),
-                  const SizedBox(width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: (_isRecording ? const Color(0xFFEF4444) : const Color(0xFFFFD700)).withValues(alpha: 0.25),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'SPEAK THIS ALOUD 👇',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Bold Target Phrase
+                Text(
+                  '"$targetPhrase"',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                    height: 1.3,
+                  ),
+                ),
+
+                // Live Recording Feedback
+                if (_isRecording) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFEF4444), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'RECORDING 00:${_recordingSeconds.toString().padLeft(2, '0')}',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFCA5A5),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   Text(
-                    'Voice Repetition',
-                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                    _spokenText.isNotEmpty ? '“$_spokenText”' : 'Listening... Speak aloud now',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: _spokenText.isNotEmpty ? const Color(0xFFFFD700) : Colors.white60,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 🎙️ Centered Floating Mic Action Button
+          GestureDetector(
+            onTap: () => _toggleRecording(targetPhrase),
+            child: ScaleTransition(
+              scale: _isRecording ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+              child: Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: _isRecording
+                        ? [const Color(0xFFEF4444), const Color(0xFFB91C1C)]
+                        : [const Color(0xFF059669), const Color(0xFF10B981)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: _isRecording ? const Color(0xFFFCA5A5) : const Color(0xFFFFD700),
+                    width: 2.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isRecording ? const Color(0xFFEF4444) : const Color(0xFF10B981)).withValues(alpha: 0.5),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                    color: Colors.white,
+                    size: 34,
+                  ),
+                ),
               ),
-            ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _isRecording ? 'Tap red button to STOP & send' : 'Tap mic & speak aloud',
+            style: GoogleFonts.inter(
+              color: _isRecording ? const Color(0xFFFCA5A5) : Colors.white70,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 10),
+
+          // Quick Tap Options Divider & Chips (for alternative tap answering)
+          Row(
+            children: [
+              const Expanded(child: Divider(color: Colors.white12)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'OR TAP TO ANSWER',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white38,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              const Expanded(child: Divider(color: Colors.white12)),
+            ],
+          ),
+          const SizedBox(height: 8),
+
           ...exchange.responseOptions.map((opt) {
+            final isPrimary = opt == targetPhrase;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 6),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => _onSelectResponse(opt),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(14),
+                      color: isPrimary
+                          ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                          : const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                        color: isPrimary
+                            ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                            : Colors.white10,
                         width: 1.2,
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Text('💬', style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 10),
+                        Text(isPrimary ? '⭐' : '💬', style: const TextStyle(fontSize: 14)),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             opt,
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w600,
+                              color: isPrimary ? const Color(0xFFD1FAE5) : Colors.white70,
+                              fontSize: 13,
+                              fontWeight: isPrimary ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.send_rounded, color: Color(0xFF38BDF8), size: 16),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          color: isPrimary ? const Color(0xFF10B981) : Colors.white24,
+                          size: 15,
+                        ),
                       ],
                     ),
                   ),

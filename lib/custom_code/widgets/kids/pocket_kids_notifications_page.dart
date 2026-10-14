@@ -1047,6 +1047,7 @@ class _PocketKidsNotificationsPageState
                                 context,
                                 userId: senderId,
                                 isDefenseMode: true,
+                                isKidMode: true,
                               );
                             }
                           },

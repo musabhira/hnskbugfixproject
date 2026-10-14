@@ -1748,6 +1748,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     context,
                     userId: PocketKidsService.lionId,
                     targetName: PocketKidsService.lionName,
+                    isKidMode: true,
                   );
                 },
                 icon: const Text('⚔️', style: TextStyle(fontSize: 16)),

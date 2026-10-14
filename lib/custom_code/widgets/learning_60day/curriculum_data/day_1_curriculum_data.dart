@@ -490,275 +490,80 @@ class Day1CurriculumJsonData {
     },
     {
       "stepNumber": 6,
-      "id": "step_6_spoken_lab",
+      "id": "step_6_english_hub",
       "title": {
-        "en": "Spoken Speech Lab (Voice Reflex)",
-        "ml": "സംസാര പരിശീലനം (മൈക്ക് പ്രാക്ടീസ്)",
-        "hi": "बोलने की प्रयोगशाला",
-        "ta": "பேச்சுப் பயிற்சி கூடம்"
-      },
-      "icon": "🎙️",
-      "gameType": "spoken_lab",
-      "description": {
-        "en": "Speak 6 key everyday sentences into your microphone with native audio comparison.",
-        "ml": "മൈക്കിലൂടെ 6 പ്രധാന വാക്യങ്ങൾ ഉറക്കെ പറഞ്ഞു ശീലിക്കുക.",
-        "hi": "माइक में 6 महत्वपूर्ण वाक्य बोलें।",
-        "ta": "மைக்கில் 6 முக்கிய வாக்கியங்களைப் பேசுங்கள்."
-      },
-      "challenges": [
-        {
-          "id": 1,
-          "phrase": "Hello! Good morning.",
-          "phonetic": "/həˈləʊ ɡʊd ˈmɔː.nɪŋ/",
-          "meaning": {"ml": "ഹലോ! സുപ്രഭാതം.", "hi": "नमस्ते! शुभ प्रभात।", "ta": "வணக்கம்! காலை வணக்கம்."}
-        },
-        {
-          "id": 2,
-          "phrase": "My name is Alex.",
-          "phonetic": "/maɪ neɪm ɪz ˈæl.ɪks/",
-          "meaning": {"ml": "എന്റെ പേര് അലക്സ് എന്നാണ്.", "hi": "मेरा नाम एलेक्स है।", "ta": "என் பெயர் அலெக்ஸ்."}
-        },
-        {
-          "id": 3,
-          "phrase": "I want a glass of water.",
-          "phonetic": "/aɪ wɒnt ə ɡlɑːs əv ˈwɔː.tər/",
-          "meaning": {"ml": "എനിക്ക് ഒരു ഗ്ലാസ്സ് വെള്ളം വേണം.", "hi": "मुझे एक गिलास पानी चाहिए।", "ta": "எனக்கு ஒரு டம்ளர் தண்ணீர் வேண்டும்."}
-        },
-        {
-          "id": 4,
-          "phrase": "I love sweet grapes.",
-          "phonetic": "/aɪ lʌv swiːt ɡreɪps/",
-          "meaning": {"ml": "എനിക്ക് മധുരമുള്ള മുന്തിരി ഇഷ്ടമാണ്.", "hi": "मुझे मीठे अंगूर पसंद हैं।", "ta": "எனக்கு இனிப்பு திராட்சை பிடிக்கும்."}
-        },
-        {
-          "id": 5,
-          "phrase": "Nice to meet you, friend.",
-          "phonetic": "/naɪs tuː miːt juː frend/",
-          "meaning": {"ml": "സുഹൃത്തേ, കണ്ടുമുട്ടിയതിൽ സന്തോഷം.", "hi": "आपसे मिलकर अच्छा लगा दोस्त।", "ta": "உங்களை சந்தித்ததில் மகிழ்ச்சி நண்பா."}
-        },
-        {
-          "id": 6,
-          "phrase": "Have a wonderful day ahead!",
-          "phonetic": "/hæv ə ˈwʌn.də.fəl deɪ əˈhed/",
-          "meaning": {"ml": "ഒരു നല്ല ദിവസം ആശംസിക്കുന്നു!", "hi": "आपका दिन शुभ हो!", "ta": "இனிய நாளாக அமையட்டும்!"}
-        }
-      ]
-    },
-    {
-      "stepNumber": 7,
-      "id": "step_7_random_chat_partner",
-      "title": {
-        "en": "Random Partner English Call",
-        "ml": "റാൻഡം ഇംഗ്ലീഷ് കോൾ & ചാറ്റ് 📞",
-        "hi": "रैंडम साथी के साथ बात करें",
-        "ta": "சீரற்ற நண்பருடன் பேசுங்கள்"
-      },
-      "icon": "📞",
-      "gameType": "random_call_action",
-      "description": {
-        "en": "Connect anonymously with a real English learning partner from Kerala/India to practice speaking today's words!",
-        "ml": "ഹോം പേജിലെ റാൻഡം കോളിലൂടെ ഒരു ലൈവ് കൂട്ടുകാരനുമായി ഇംഗ്ലീഷിൽ സംസാരിക്കുക!",
-        "hi": "लाइव साथी के साथ अंग्रेजी बोलने का अभ्यास करें।",
-        "ta": "நேரலை நண்பருடன் ஆங்கிலம் பேச பயிற்சி செய்யுங்கள்."
-      },
-      "action": {
-        "targetRoute": "anonymous_english_chat",
-        "promptText": {
-          "en": "Tap below to connect with a random English learning partner!",
-          "ml": "താഴെ ടാപ്പ് ചെയ്ത് റാൻഡം ഇംഗ്ലീഷ് പാർട്ണറുമായി സംസാരിക്കുക!",
-          "hi": "रैंडम पार्टनर से जुड़ने के लिए नीचे टैप करें!",
-          "ta": "சீரற்ற பார்ட்னருடன் இணைக்க கீழே தட்டவும்!"
-        },
-        "starterTopics": [
-          "Ask their name: 'Hi, what is your name?'",
-          "Ask their favorite fruit: 'Do you like grapes or apples?'",
-          "Say goodbye: 'Nice meeting you, have a good day!'"
-        ]
-      }
-    },
-    {
-      "stepNumber": 8,
-      "id": "step_8_pocket_talk",
-      "title": {
-        "en": "PocketTalk: Spoken Partner Match",
-        "ml": "പോക്കറ്റ് ടോക്ക്: സ്പോക്കൺ പാർട്ണർ മാച്ച് ⚡",
-        "hi": "पॉकेटटॉक: पार्टनर मैच",
-        "ta": "பாக்கெட்டாக்: பார்ட்னர் மேட்ச்"
-      },
-      "icon": "⚡",
-      "gameType": "pocket_talk_action",
-      "description": {
-        "en": "Find your spoken practice mate via PocketTalk and chat in the community English Hub room!",
-        "ml": "പോക്കറ്റ് ടോക്ക് വഴി ഒരു സ്പോക്കൺ പാർട്ണറെ കണ്ടെത്തുക, ഗ്രൂപ്പിൽ ഹലോ പറയുക!",
-        "hi": "पॉकेटटॉक स्वाइप करें और कम्युनिटी चैट में शामिल हों!",
-        "ta": "பாக்கெட்டாக் நண்பரைத் தேடுங்கள் அல்லது சமூக அரட்டையில் இணையுங்கள்!"
-      },
-      "action": {
-        "targetRoute": "pocket_talk_card_swiper",
-        "communityRoute": "community_chat_page",
-        "promptText": {
-          "en": "Swipe cards to find your mate or post in the English Hub!",
-          "ml": "മേറ്റിനെ കണ്ടെത്തുക അല്ലെങ്കിൽ ഗ്രൂപ്പ് ചാറ്റിൽ സംസാരിക്കുക!",
-          "hi": "साथी खोजें या कम्युनिटी चैट में शामिल हों!",
-          "ta": "நண்பரைத் தேடுங்கள் அல்லது அரட்டையில் இணையுங்கள்!"
-        }
-      }
-    },
-    {
-      "stepNumber": 9,
-      "id": "step_9_group_chat",
-      "title": {
-        "en": "English Hub Level Group Chat",
-        "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പ് ചാറ്റ് 💬",
-        "hi": "इंग्लिश हब ग्रुप चैट",
-        "ta": "இங்கிலீஷ் Hub குழு அரட்டை"
+        "en": "English Hub Community Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ് 💬",
+        "hi": "इंग्लिश हब कम्युनिटी चैट",
+        "ta": "இங்கிலீஷ் ஹப் அரட்டை"
       },
       "icon": "💬",
       "gameType": "group_chat_action",
       "description": {
-        "en": "Join your level group in the English Hub! Chat with peers and practice today's words.",
-        "ml": "നിങ്ങളുടെ ലെവൽ ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പിൽ പ്രവേശിക്കുക! കൂട്ടുകാരുമായി ഇംഗ്ലീഷിൽ സംസാരിക്കുക.",
-        "hi": "अपने स्तर के इंग्लिश हब ग्रुप में शामिल हों और बातचीत करें!",
-        "ta": "உங்கள் நிலை இங்கிலீஷ் ஹப் குழுவில் இணைந்து பேசுங்கள்!"
-      },
-      "action": {
-        "targetRoute": "english_learning_group_chat",
-        "promptText": {
-          "en": "Enter your level's English Hub group chat!",
-          "ml": "നിങ്ങളുടെ ലെവൽ ഗ്രൂപ്പ് ചാറ്റിലേക്ക് പ്രവേശിക്കുക!",
-          "hi": "अपने लेवल ग्रुप चैट में प्रवेश करें!",
-          "ta": "உங்கள் நிலை குழு அரட்டையில் நுழையுங்கள்!"
-        }
+        "en": "Enter the English Hub community chat to say hello, practice your daily phrases, and interact with fellow learners!",
+        "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!",
+        "hi": "इंग्लिश हब चैट में प्रवेश करें और अभ्यास करें!",
+        "ta": "இங்கிலீஷ் ஹப் அரட்டையில் இணையுங்கள்!"
       }
     },
     {
-      "stepNumber": 10,
-      "id": "step_10_house_defense",
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
       "title": {
-        "en": "House Defense Shield & Citadel Combat",
-        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് & അറ്റാക്ക് കോംബാറ്റ് 🛡️",
-        "hi": "हाउस डिफेंस शील्ड और कॉम्बैट",
-        "ta": "ஹவுஸ் டிஃபென்ஸ் ஷீல்டு"
+        "en": "House 1 Defense Shield Command",
+        "ml": "ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ് 🛡️",
+        "hi": "हाउस 1 डिफेंस शील्ड",
+        "ta": "ஹவுஸ் 1 டிஃபென்ஸ் ஷீல்டு"
       },
       "icon": "🛡️",
-      "gameType": "house_defense",
+      "gameType": "house_defense_chat",
       "description": {
-        "en": "Equip 5 learned English defense traps to protect your house. Test your attack against a Level 10 opponent. Once armed, your vehicle drives to House 2!",
-        "ml": "നിങ്ങളുടെ വീടിന് 5 ഡിഫൻസ് ട്രാപ്പുകൾ സെറ്റ് ചെയ്യുക. ലെവൽ 10 എതിരാളിയെ അറ്റാക്ക് ചെയ്യുക. പൂർത്തിയാകുമ്പോൾ വണ്ടി ഹൗസ് 2-ലേക്ക് ഡ്രൈവ് ചെയ്യും!",
-        "hi": "अपने घर की रक्षा के लिए 5 डिफेंस ट्रैप लगाएं और लेवल 10 बॉट पर हमला करें!",
-        "ta": "உங்கள் வீட்டைப் பாதுகாக்க 5 டிஃபென்ஸ் பொறிகளை அமைத்து எதிரியைத் தாக்கங்கள்!"
-      },
-      "combatTest": {
-        "targetOpponent": "Iron Citadel Bot (Level 10)",
-        "opponentHp": 100,
-        "challenge": {
-          "en": "Which object do you sleep on? 🛏️",
-          "ml": "നിങ്ങൾ ഉറങ്ങുന്നത് എന്തിലാണ്? 🛏️",
-          "hi": "आप किस पर सोते हैं? 🛏️",
-          "ta": "நீங்கள் எதில் தூங்குகிறீர்கள்? 🛏️"
-        },
-        "options": ["Crow 🐦‍⬛", "Bed 🛏️", "Grapes 🍇", "Water 💧"],
-        "correct": "Bed 🛏️"
-      },
-      "defenseTraps": [
-        {
-          "gate": 1,
-          "question": {
-            "en": "What is the English word for 'കിടക്ക / കട്ടിൽ' 🛏️?",
-            "ml": "'കിടക്ക / കട്ടിൽ' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഏതാണ്?",
-            "hi": "'बिस्तर' के लिए अंग्रेजी शब्द क्या है?",
-            "ta": "'படுக்கை' என்பதன் ஆங்கில சொல் எது?"
-          },
-          "options": ["Bed", "Crow", "Grapes", "Water"],
-          "correctIndex": 0,
-          "explanation": {"ml": "Bed എന്നാൽ കിടക്ക."}
-        },
-        {
-          "gate": 2,
-          "question": {
-            "en": "What fruit is sweet and purple or green 🍇?",
-            "ml": "'മുന്തിരി' എന്നതിന് ഇംഗ്ലീഷിൽ എന്ത് പറയും?",
-            "hi": "'अंगूर' को अंग्रेजी में क्या कहते हैं?",
-            "ta": "'திராட்சை' என்பதை ஆங்கிலத்தில் என்ன சொல்வார்கள்?"
-          },
-          "options": ["Apple", "Grapes", "Egg", "Fish"],
-          "correctIndex": 1,
-          "explanation": {"ml": "Grapes എന്നാൽ മുന്തിരി."}
-        },
-        {
-          "gate": 3,
-          "question": {
-            "en": "What is the black bird that says 'caw-caw' 🐦‍⬛?",
-            "ml": "'കാക്ക' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഏതാണ്?",
-            "hi": "'कौआ' को अंग्रेजी में क्या कहते हैं?",
-            "ta": "'காகம்' என்பதன் ஆங்கில சொல் எது?"
-          },
-          "options": ["Cat", "Dog", "Crow", "Fish"],
-          "correctIndex": 2,
-          "explanation": {"ml": "Crow എന്നാൽ കാക്ക."}
-        },
-        {
-          "gate": 4,
-          "question": {
-            "en": "Complete: 'I drink pure ______.' 💧",
-            "ml": "വാചകം പൂർത്തിയാക്കുക: 'I drink pure ______.'",
-            "hi": "वाक्य पूरा करें: 'I drink pure ______.'",
-            "ta": "நிரப்புக: 'I drink pure ______.'"
-          },
-          "options": ["water", "crow", "bed", "book"],
-          "correctIndex": 0,
-          "explanation": {"ml": "Water എന്നാൽ വെള്ളം."}
-        },
-        {
-          "gate": 5,
-          "question": {
-            "en": "How do you politely greet in the morning?",
-            "ml": "രാവിലെ എങ്ങനെയാണ് അഭിവാദ്യം ചെയ്യുന്നത്?",
-            "hi": "सुबह कैसे बधाई देते हैं?",
-            "ta": "காலையில் எப்படி வாழ்த்து சொல்வீர்கள்?"
-          },
-          "options": ["Good night", "Good morning", "Goodbye", "Go away"],
-          "correctIndex": 1,
-          "explanation": {"ml": "Good morning."}
-        }
-      ]
+        "en": "Equip 5 essential Spoken English defense questions with CyberCat to shield House 1 from rival citadel attacks!",
+        "ml": "നമ്മുടെ വീടിനെ സംരക്ഷിക്കാൻ സൈബർ ക്യാറ്റിനൊപ്പം 5 ഇംഗ്ലീഷ് ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!",
+        "hi": "घर की सुरक्षा के लिए 5 डिफेंस प्रश्न लगाएं!",
+        "ta": "வீட்டைப் பாதுகாக்க 5 டிஃபென்ஸ் கேள்விகளை அமைக்கவும்!"
+      }
     }
   ],
   "houseGateExam": {
     "title": {
-      "en": "House 1 Final Gate Exam",
-      "ml": "ഹൗസ് 1 ഫൈനൽ എക്സാം (ഹൗസ് 2 അൺലോക്ക് ചെയ്യാൻ)",
-      "hi": "हाउस 1 फाइनल गेट परीक्षा",
-      "ta": "ஹவுஸ் 1 இறுதித் தேர்வு"
+      "en": "House 1 Spoken Gate Exam",
+      "ml": "ഹൗസ് 1 സ്പോക്കൺ ഗേറ്റ് എക്സാം (ഹൗസ് 2 അൺലോക്ക് ചെയ്യാൻ)",
+      "hi": "हाउस 1 स्पोकन गेट परीक्षा",
+      "ta": "ஹவுஸ் 1 ஸ்போக்கன் கேட் தேர்வு"
     },
     "description": {
-      "en": "Pass this 8-question exam to master House 1 and officially unlock House 2 (Day 2).",
-      "ml": "ഹൗസ് 2-ലേക്ക് കടക്കുന്നതിനായി ഈ 8 ചോദ്യങ്ങൾക്ക് കൃത്യമായി ഉത്തരം നൽകുക.",
-      "hi": "हाउस 2 अनलॉक करने के लिए इन 8 प्रश्नों के उत्तर दें।",
-      "ta": "ஹவுஸ் 2 ஐ திறக்க இந்த 8 கேள்விகளுக்கு பதிலளிக்கவும்."
+      "en": "Speak aloud into the mic for these 8 practical English questions to unlock House 2 (Pass: 60%+).",
+      "ml": "ഹൗസ് 2-ലേക്ക് കടക്കുന്നതിനായി മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഈ 8 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക (60% പാസ്സ് മാർക്ക്).",
+      "hi": "हाउस 2 अनलॉक करने के लिए माइक में बोलकर 8 प्रश्नों के उत्तर दें (60%+ पास)।",
+      "ta": "ஹவுஸ் 2 ஐ திறக்க மைக்கில் பேசி 8 கேள்விகளுக்கு பதிலளிக்கவும் (60%+ பாஸ்)."
     },
     "passPercentage": 60,
     "questions": [
       {
         "id": 1,
         "question": {
-          "en": "Which letter starts the word 'Apple' 🍎?",
-          "ml": "'Apple' എന്ന വാക്ക് തുടങ്ങുന്ന അക്ഷരം ഏതാണ്?",
-          "hi": "'Apple' किस अक्षर से शुरू होता है?",
-          "ta": "'Apple' எந்த எழுத்தில் தொடங்குகிறது?"
+          "en": "Speak aloud the first letter of 'Apple' 🍎:",
+          "ml": "'Apple' എന്ന വാക്കിന്റെ ആദ്യ അക്ഷരം ഉറക്കെ പറയുക:",
+          "hi": "'Apple' का पहला अक्षर बोलें:",
+          "ta": "'Apple' இன் முதல் எழுத்தை சொல்லுங்கள்:"
         },
-        "options": ["A", "B", "C", "D"],
+        "targetText": "Apple",
+        "voicePrompt": "Say: Apple",
+        "options": ["Apple", "Ball", "Cat", "Dog"],
         "correctIndex": 0,
         "explanation": {"ml": "A for Apple."}
       },
       {
         "id": 2,
         "question": {
-          "en": "What is the English word for 'മുന്തിരി' 🍇?",
-          "ml": "'മുന്തിരി' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഏതാണ്?",
-          "hi": "'अंगूर' का अंग्रेजी शब्द क्या है?",
-          "ta": "'திராட்சை' என்பதன் ஆங்கில சொல் எது?"
+          "en": "Speak the English word for 'മുന്തിരി' 🍇:",
+          "ml": "'മുന്തിരി' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഉറക്കെ പറയുക:",
+          "hi": "'अंगूर' का अंग्रेजी शब्द बोलें:",
+          "ta": "'திராட்சை' ஆங்கில சொல் சொல்லுங்கள்:"
         },
+        "targetText": "Grapes",
+        "voicePrompt": "Say: Grapes",
         "options": ["Grapes", "Book", "Bed", "Water"],
         "correctIndex": 0,
         "explanation": {"ml": "Grapes എന്നാൽ മുന്തിരി."}
@@ -766,11 +571,13 @@ class Day1CurriculumJsonData {
       {
         "id": 3,
         "question": {
-          "en": "What is the English word for 'കാക്ക' 🐦‍⬛?",
-          "ml": "'കാക്ക' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഏതാണ്?",
-          "hi": "'कौआ' का अंग्रेजी शब्द क्या है?",
-          "ta": "'காகம்' என்பதன் ஆங்கில சொல் எது?"
+          "en": "Speak the English word for 'കാക്ക' 🐦‍⬛:",
+          "ml": "'കാക്ക' എന്നതിന്റെ ഇംഗ്ലീഷ് വാക്ക് ഉറക്കെ പറയുക:",
+          "hi": "'कौआ' का अंग्रेजी शब्द बोलें:",
+          "ta": "'காகம்' ஆங்கில சொல் சொல்லுங்கள்:"
         },
+        "targetText": "Crow",
+        "voicePrompt": "Say: Crow",
         "options": ["Crow", "Cat", "Fish", "Dog"],
         "correctIndex": 0,
         "explanation": {"ml": "Crow എന്നാൽ കാക്ക."}
@@ -778,11 +585,13 @@ class Day1CurriculumJsonData {
       {
         "id": 4,
         "question": {
-          "en": "Where do you sleep at night? 🛏️",
-          "ml": "രാത്രിയിൽ നിങ്ങൾ എവിടെയാണ് ഉറങ്ങുന്നത്?",
-          "hi": "आप रात में कहाँ सोते हैं?",
-          "ta": "இரவில் எங்கு தூங்குகிறீர்கள்?"
+          "en": "Where do you sleep at night? Speak: 'On the bed' 🛏️",
+          "ml": "രാത്രിയിൽ എവിടെയാണ് ഉറങ്ങുന്നത്? പറയുക: 'On the bed':",
+          "hi": "रात में कहाँ सोते हैं? बोलें: 'On the bed'",
+          "ta": "இரவில் எங்கு தூங்குகிறீர்கள்? சொல்லுங்கள்: 'On the bed'"
         },
+        "targetText": "On the bed",
+        "voicePrompt": "Say: On the bed",
         "options": ["On the table", "On the bed", "In the water", "On the road"],
         "correctIndex": 1,
         "explanation": {"ml": "On the bed (കിടക്കയിൽ)."}
@@ -790,11 +599,13 @@ class Day1CurriculumJsonData {
       {
         "id": 5,
         "question": {
-          "en": "Rearrange the words to make a correct sentence: [my / is / bed / This]",
-          "ml": "വാചകം ശരിയായ ക്രമത്തിൽ എഴുതുക:",
-          "hi": "सही वाक्य बनाएं:",
-          "ta": "சரியான வாக்கியத்தை அமைக்கவும்:"
+          "en": "Speak this full sentence: 'This is my bed'",
+          "ml": "ഈ വാചകം ഉറക്കെ പറയുക: 'This is my bed':",
+          "hi": "यह पूरा वाक्य बोलें: 'This is my bed'",
+          "ta": "முழு வாக்கியத்தை சொல்லுங்கள்: 'This is my bed'"
         },
+        "targetText": "This is my bed",
+        "voicePrompt": "Say: This is my bed",
         "options": ["This is my bed", "Bed my is this", "Is this bed my", "My bed this is"],
         "correctIndex": 0,
         "explanation": {"ml": "This is my bed (ഇത് എന്റെ കട്ടിലാണ്)."}
@@ -802,23 +613,27 @@ class Day1CurriculumJsonData {
       {
         "id": 6,
         "question": {
-          "en": "In the story, what did the crow see on the table?",
-          "ml": "കഥയിൽ മേശപ്പുറത്ത് കാക്ക എന്താണ് കണ്ടത്?",
-          "hi": "कहानी में कौए ने मेज पर क्या देखा?",
-          "ta": "கதையில் காகம் மேசையில் எதைப் பார்த்தது?"
+          "en": "What did the crow see on the table? Speak: 'Sweet grapes' 🍇",
+          "ml": "മേശപ്പുറത്ത് കാക്ക എന്താണ് കണ്ടത്? പറയുക: 'Sweet grapes':",
+          "hi": "मेज पर कौए ने क्या देखा? बोलें: 'Sweet grapes'",
+          "ta": "மேசையில் காகம் எதைப் பார்த்தது? சொல்லுங்கள்: 'Sweet grapes'"
         },
-        "options": ["A bowl of sweet grapes 🍇", "A hot tea", "A sleeping dog", "A book"],
+        "targetText": "Sweet grapes",
+        "voicePrompt": "Say: Sweet grapes",
+        "options": ["Sweet grapes", "Hot tea", "Sleeping dog", "A book"],
         "correctIndex": 0,
-        "explanation": {"ml": "A bowl of sweet grapes."}
+        "explanation": {"ml": "Sweet grapes."}
       },
       {
         "id": 7,
         "question": {
-          "en": "What do you say when you meet someone for the first time?",
-          "ml": "ആദ്യമായി ഒരാളെ കാണുമ്പോൾ എന്ത് പറയുന്നു?",
-          "hi": "पहली बार किसी से मिलने पर क्या कहते हैं?",
-          "ta": "ஒருவரை முதன்முறையாக சந்திக்கும் போது என்ன சொல்வீர்கள்?"
+          "en": "When meeting someone, greet them! Speak: 'Nice to meet you' 🤝",
+          "ml": "ഒരാളെ കാണുമ്പോൾ പറയുക: 'Nice to meet you':",
+          "hi": "किसी से मिलने पर बोलें: 'Nice to meet you'",
+          "ta": "ஒருவரை சந்திக்கும் போது சொல்லுங்கள்: 'Nice to meet you'"
         },
+        "targetText": "Nice to meet you",
+        "voicePrompt": "Say: Nice to meet you",
         "options": ["Nice to meet you", "Go away", "Good night", "I am sleeping"],
         "correctIndex": 0,
         "explanation": {"ml": "'Nice to meet you' എന്ന് പറയുന്നു."}
@@ -826,11 +641,13 @@ class Day1CurriculumJsonData {
       {
         "id": 8,
         "question": {
-          "en": "What transparent liquid do all humans need to drink? 💧",
-          "ml": "മനുഷ്യർ കുടിക്കുന്ന ദ്രാവകം ഏതാണ്?",
-          "hi": "पीने के लिए किस तरल पदार्थ की आवश्यकता होती है?",
-          "ta": "குடிக்க வேண்டிய திரவம் எது?"
+          "en": "What liquid do all humans drink? Speak: 'Water' 💧",
+          "ml": "മനുഷ്യർ കുടിക്കുന്ന ദ്രാവകം ഏതാണ്? പറയുക: 'Water':",
+          "hi": "पीने के लिए कौन सा तरल है? बोलें: 'Water'",
+          "ta": "குடிக்க வேண்டிய திரவம் எது? சொல்லுங்கள்: 'Water'"
         },
+        "targetText": "Water",
+        "voicePrompt": "Say: Water",
         "options": ["Water", "Oil", "Ink", "Paint"],
         "correctIndex": 0,
         "explanation": {"ml": "Water (വെള്ളം)."}

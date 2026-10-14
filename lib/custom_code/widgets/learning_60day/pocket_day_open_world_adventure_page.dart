@@ -28,15 +28,22 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step1_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step2_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step3_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step4_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step5_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step1_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
-
-
-
-
-
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day_1_curriculum_data.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -89,8 +96,8 @@ class _PocketDayOpenWorldAdventurePageState
   bool _isLoading = true;
   static const double _zoomScale = 1.05; // Default close-up zoom for clear viewing!
 
-  // World Canvas Geometry
-  static const double _worldWidth = 4600.0;
+  // World Canvas Geometry (Expanded width for breathing room and scenic mountain ascent)
+  static const double _worldWidth = 5200.0;
   static const double _worldHeight = 1600.0;
 
   // Sports Buggy State
@@ -124,17 +131,17 @@ class _PocketDayOpenWorldAdventurePageState
 
     _riverBoats = [
       CruisingBoat(x: 400, y: 1380, speed: 28, boatType: CruisingBoatType.kettuvallam),
-      CruisingBoat(x: 1500, y: 1410, speed: 45, boatType: CruisingBoatType.sailboat),
-      CruisingBoat(x: 2600, y: 1390, speed: 36, boatType: CruisingBoatType.cruiseShip),
-      CruisingBoat(x: 3700, y: 1420, speed: 60, boatType: CruisingBoatType.speedboat),
+      CruisingBoat(x: 1600, y: 1410, speed: 45, boatType: CruisingBoatType.sailboat),
+      CruisingBoat(x: 2900, y: 1390, speed: 36, boatType: CruisingBoatType.cruiseShip),
+      CruisingBoat(x: 4200, y: 1420, speed: 60, boatType: CruisingBoatType.speedboat),
     ];
 
     _seagulls = [
       FlyingBird(x: 300, y: 160, speed: 38),
-      FlyingBird(x: 1100, y: 130, speed: 44),
-      FlyingBird(x: 2200, y: 180, speed: 35),
-      FlyingBird(x: 3200, y: 140, speed: 48),
-      FlyingBird(x: 4100, y: 170, speed: 40),
+      FlyingBird(x: 1200, y: 130, speed: 44),
+      FlyingBird(x: 2400, y: 180, speed: 35),
+      FlyingBird(x: 3600, y: 140, speed: 48),
+      FlyingBird(x: 4700, y: 170, speed: 40),
     ];
 
     _ambientAnimController = AnimationController(
@@ -212,14 +219,15 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   Day1Track _day1Track = Day1Track.middle;
-  int get _totalSteps => _runtimeSteps?.length ?? 10;
+  bool _isGateExamPassed = false;
+  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 7 : 10);
 
-  /// Exact coordinate of milestone step on the mountain slope
+  /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
     final denominator = (totalSteps > 1) ? (totalSteps - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
-    const startX = 640.0;
-    const endX = 3560.0;
+    const startX = 1040.0;
+    const endX = 3960.0;
     final x = startX + (endX - startX) * progress;
     final y = getGroundY(x);
     return Offset(x, y);
@@ -233,6 +241,9 @@ class _PocketDayOpenWorldAdventurePageState
 
     final currentLvl = await PocketSyllabusRepository.getSavedLevel();
     _day1Track = Day1Track.fromLearnerLevel(currentLvl);
+
+    final gatePassedKey = 'pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed';
+    final gatePassed = prefs.getBool(gatePassedKey) ?? false;
 
     final Map<String, bool> flags = {};
     for (int step = 1; step <= _totalSteps; step++) {
@@ -266,6 +277,7 @@ class _PocketDayOpenWorldAdventurePageState
         _subStepFlags.addAll(flags);
         _isLoading = false;
         _currentLedgeStep = activeStep;
+        _isGateExamPassed = gatePassed;
       });
 
       // User Audio Directive: Don't always reset car to House 1 start!
@@ -426,7 +438,11 @@ class _PocketDayOpenWorldAdventurePageState
       if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
-        widget.onCompleted?.call();
+        if (!_isGateExamPassed) {
+          _driveToGate(openExamOnArrival: true);
+        } else {
+          widget.onCompleted?.call();
+        }
       }
     }
   }
@@ -486,8 +502,11 @@ class _PocketDayOpenWorldAdventurePageState
                   // 🎯 TODAY'S TOPIC / LESSON BILLBOARD (User Audio Directive: Right after house, big title board before Step 1!)
                   _buildDayTopicBillboard(widget.day),
 
+                  // 🚪 SUMMIT GATE: Day Exam Gate (Between Step 7 and Summit House)
+                  _buildSummitGate(widget.day, _isGateExamPassed),
+
                   // 🏡 SUMMIT: House 2 (Day ${day + 1} Estate on mountain summit)
-                  _buildSummitHouse(widget.day + 1, completedCount >= _totalSteps),
+                  _buildSummitHouse(widget.day + 1, _isGateExamPassed),
 
                   // Stepping Ledges along the Rolling Mountain Highway
                   for (int s = 1; s <= _totalSteps; s++) _buildMountainStepNode(s),
@@ -512,14 +531,17 @@ class _PocketDayOpenWorldAdventurePageState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF065F46), Color(0xFF047857), Color(0xFF10B981)],
+                    gradient: LinearGradient(
+                      colors: _isGateExamPassed
+                          ? [const Color(0xFF065F46), const Color(0xFF047857), const Color(0xFF10B981)]
+                          : [const Color(0xFF78350F), const Color(0xFFB45309), const Color(0xFFD97706)],
                     ),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: const Color(0xFFFFD700), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                        color: (_isGateExamPassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                            .withValues(alpha: 0.5),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
                       ),
@@ -527,7 +549,7 @@ class _PocketDayOpenWorldAdventurePageState
                   ),
                   child: Row(
                     children: [
-                      const Text('🏆', style: TextStyle(fontSize: 28)),
+                      Text(_isGateExamPassed ? '🏆' : '🔒', style: const TextStyle(fontSize: 28)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -535,19 +557,21 @@ class _PocketDayOpenWorldAdventurePageState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'DAY ${widget.day} COMPLETE!',
+                              _isGateExamPassed ? 'DAY ${widget.day} COMPLETE!' : 'DAY ${widget.day} STEPS COMPLETE!',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 15,
                                 letterSpacing: 0.5,
                               ),
                             ),
                             Text(
-                              'House ${widget.day + 1} & Stage Avatar Unlocked 🎉',
+                              _isGateExamPassed
+                                  ? 'Gate 1 Passed • House ${widget.day + 1} Unlocked 🎉'
+                                  : 'Pass the 8-Question Spoken Gate Exam to unlock House 2!',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFFEF08A),
-                                fontSize: 11.5,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -558,17 +582,21 @@ class _PocketDayOpenWorldAdventurePageState
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           elevation: 4,
                         ),
                         onPressed: () {
                           HapticFeedback.heavyImpact();
-                          widget.onCompleted?.call();
-                          Navigator.pop(context);
+                          if (!_isGateExamPassed) {
+                            _driveToGate(openExamOnArrival: true);
+                          } else {
+                            widget.onCompleted?.call();
+                            Navigator.pop(context);
+                          }
                         },
                         child: Text(
-                          'ENTER DAY ${widget.day + 1}',
+                          _isGateExamPassed ? 'ENTER HOUSE 2 ➔' : 'TAKE EXAM 🎙️',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
                         ),
                       ),
@@ -645,180 +673,76 @@ class _PocketDayOpenWorldAdventurePageState
       right: 0,
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (widget.day == 1)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(3),
+              // ◀️ Back Button
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _day1Track.color, width: 1.2),
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24, width: 1.0),
                     boxShadow: [
                       BoxShadow(
-                        color: _day1Track.color.withValues(alpha: 0.25),
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // 📍 Focus Button (Re-centers on vehicle / active step)
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _focusOnActiveStep(animate: true);
+                },
+                child: Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(21),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
                         blurRadius: 8,
                       ),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: Day1Track.values.map((t) {
-                      final isSelected = t == _day1Track;
-                      return GestureDetector(
-                        onTap: () async {
-                          HapticFeedback.selectionClick();
-                          final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', t.name);
-                          setState(() => _day1Track = t);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: isSelected ? t.color : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            t.badge,
-                            style: GoogleFonts.outfit(
-                              color: isSelected ? Colors.white : Colors.white60,
-                              fontSize: 11,
-                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                            ),
-                          ),
+                    children: [
+                      const Text('📍', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Focus',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
                 ),
-              Row(
-                children: [
-                  // Back Button
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white24, width: 1.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 17),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Level Title & Progress Capsule
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('🏔️', style: TextStyle(fontSize: 15)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              widget.day == 1
-                                  ? 'DAY 1: ME + BASIC ENGLISH'
-                                  : 'Day ${widget.day} Mountain Trail',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.22),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF10B981), width: 0.8),
-                            ),
-                            child: Text(
-                              '$completedCount / $_totalSteps Done',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFF34D399),
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // 📍 Focus Button (Re-centers on vehicle / active step)
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      _focusOnActiveStep(animate: true);
-                    },
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.75),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('📍', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Focus',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -830,7 +754,7 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildStartHouse(int day) {
     const houseWidth = 240.0;
     const houseHeight = 145.0;
-    const startX = 180.0;
+    const startX = 160.0;
     final groundY = getGroundY(startX);
     final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
@@ -841,21 +765,72 @@ class _PocketDayOpenWorldAdventurePageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF10B981), width: 1.2),
-            ),
-            child: Text(
-              '🏠 START: DAY $day ($estateTitle)',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF10B981),
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                ),
+                child: Text(
+                  '🏠 START: DAY $day ($estateTitle)',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF10B981),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // 🛡️ House Defense Signboard Button (User Audio Directive!)
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await PocketHouseDefenseChatPage.show(
+                    context,
+                    userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                    onStepFinished: (finishedStep) {
+                      _onStepCompleted(finishedStep);
+                    },
+                  );
+                  await _loadState(preserveCarPosition: true);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF065F46), Color(0xFF047857)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🛡️', style: TextStyle(fontSize: 11)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'House Defense Shield',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           SizedBox(
@@ -876,23 +851,43 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
-  /// 🎯 Large, High-Visibility Day Topic Billboard right after House 1 (User Audio Directive!)
-  /// "Veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam.
-  /// Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto."
+  /// 🎯 Futuristic High-Visibility Day Topic Billboard right after House 1 (User Audio Directive!)
+  /// "Day 1 ന്റെ Today Lesson എന്ന് പറഞ്ഞിട്ട് ഒരു സാധനമുണ്ട്. അത് കുറച്ചു gap ഇട്ട് വെക്കണം.
+  ///  ആ ground open world ന്റെ ground കുറച്ചുകൂടി width കൂട്ടി കഴിഞ്ഞാൽ Today Lesson എന്നുള്ളത്
+  ///  correct place ചെയ്യാൻ പറ്റും. Correct അത് തിരിച്ച് place ചെയ്യേണ്ടി വരും കാരണം അത് ഇങ്ങനെ
+  ///  hump പോലെ പോകുന്നുണ്ട്. എന്നിട്ട് അതിന്റെ അടിയിൽ just futuristic ആയിട്ട് കൊടുത്തോ.
+  ///  അതിനുശേഷം ഇത് stack ആയി കിടക്കുന്നത് step 1."
   Widget _buildDayTopicBillboard(int day) {
-    const boardWidth = 200.0;
-    const boardHeight = 138.0;
-    const boardX = 430.0;
-    final groundY = getGroundY(boardX + (boardWidth / 2));
+    const boardWidth = 240.0;
+    const boardHeight = 155.0;
+    const boardX = 560.0; // Ample gap from House 1 (160..400) and before Step 1 (1040)
+
+    // Left and right stilt ground intersection points to adapt cleanly to hillside wave/hump
+    const leftStiltOffset = 42.0;
+    const rightStiltOffset = boardWidth - 42.0;
+    final leftGroundY = getGroundY(boardX + leftStiltOffset);
+    final rightGroundY = getGroundY(boardX + rightStiltOffset);
+
     final cached = PocketDayCurriculumService.getCachedDay(day);
-    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
-    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final topicEn = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'en',
+        fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(
+        cached?['course']?['topic'],
+        lang: 'ml');
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
-    final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+    final formula =
+        grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+
+    // Board bottom sits above highest ground point
+    final boardTopY = math.min(leftGroundY, rightGroundY) - boardHeight - 34.0;
+    final totalContainerHeight =
+        (math.max(leftGroundY, rightGroundY) - boardTopY) + 16.0;
 
     return Positioned(
       left: boardX,
-      top: groundY - boardHeight - 20.0,
+      top: boardTopY,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
@@ -900,53 +895,127 @@ class _PocketDayOpenWorldAdventurePageState
         },
         child: SizedBox(
           width: boardWidth,
-          height: boardHeight + 20.0,
+          height: totalContainerHeight,
           child: Stack(
             alignment: Alignment.topCenter,
+            clipBehavior: Clip.none,
             children: [
-              // Two sturdy stilts rooted into the hillside
+              // 1. Futuristic Cyber Energy Stilts anchoring into hillside
+              // Left Cyber Pillar
               Positioned(
-                left: 32,
-                bottom: 0,
-                top: boardHeight - 10,
+                left: leftStiltOffset - 5,
+                top: boardHeight - 4,
+                height: (leftGroundY - boardTopY) - boardHeight + 10,
+                width: 10,
                 child: Container(
-                  width: 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF78350F),
-                    borderRadius: BorderRadius.circular(3),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00F0FF), Color(0xFF0284C7), Color(0xFF0F172A)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00F0FF).withValues(alpha: 0.45),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Right Cyber Pillar
+              Positioned(
+                left: rightStiltOffset - 5,
+                top: boardHeight - 4,
+                height: (rightGroundY - boardTopY) - boardHeight + 10,
+                width: 10,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFD700), Color(0xFFD97706), Color(0xFF0F172A)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 2. Futuristic Ground Stabilizer Base Pads on the hillside
+              Positioned(
+                left: leftStiltOffset - 16,
+                top: (leftGroundY - boardTopY) - 4,
+                child: Container(
+                  width: 32,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFF00F0FF), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00F0FF).withValues(alpha: 0.6),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
               ),
               Positioned(
-                right: 32,
-                bottom: 0,
-                top: boardHeight - 10,
+                left: rightStiltOffset - 16,
+                top: (rightGroundY - boardTopY) - 4,
                 child: Container(
-                  width: 8,
+                  width: 32,
+                  height: 10,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF78350F),
-                    borderRadius: BorderRadius.circular(3),
+                    color: const Color(0xFFB45309),
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                        blurRadius: 8,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              // Main High-Visibility Billboard
+
+              // 3. Futuristic High-Visibility Holographic Billboard Card
               Container(
                 width: boardWidth,
                 height: boardHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF0F172A),
+                      Color(0xFF1E1B4B),
+                      Color(0xFF0F172A),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 2.2),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFF00F0FF), width: 2.0),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                      blurRadius: 16,
+                      color: const Color(0xFF00F0FF).withValues(alpha: 0.35),
+                      blurRadius: 18,
                       offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.20),
+                      blurRadius: 28,
+                      spreadRadius: 2,
                     ),
                   ],
                 ),
@@ -954,44 +1023,61 @@ class _PocketDayOpenWorldAdventurePageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Header Badge
+                    // Top Header Hologram Badge
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFD700),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '🎯 TODAY\'S LESSON',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.4,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
                             ),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                                blurRadius: 6,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🎯', style: TextStyle(fontSize: 10)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'TODAY\'S LESSON',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0284C7),
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
                           ),
                           child: Text(
                             'DAY $day',
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 9,
+                              color: const Color(0xFF7DD3FC),
+                              fontSize: 9.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 6),
+
                     // Topic Title EN
                     Text(
                       topicEn,
@@ -999,36 +1085,42 @@ class _PocketDayOpenWorldAdventurePageState
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+                      const SizedBox(height: 1),
                       Text(
                         topicMl,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF93C5FD),
-                          fontSize: 10,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
+
                     const Spacer(),
-                    // Formula / Rule Box
+
+                    // Futuristic Formula / Concept Energy Capsule
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E1B4B),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: const Color(0xFF818CF8).withValues(alpha: 0.6),
+                          width: 1.0,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Text('⚡', style: TextStyle(fontSize: 10)),
-                          const SizedBox(width: 4),
+                          const Text('⚡', style: TextStyle(fontSize: 11)),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               formula,
@@ -1036,7 +1128,7 @@ class _PocketDayOpenWorldAdventurePageState
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.robotoMono(
                                 color: const Color(0xFFFFE066),
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1044,14 +1136,30 @@ class _PocketDayOpenWorldAdventurePageState
                         ],
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 5),
+
+                    // Bottom Tap Prompt & Step 1 Ahead
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Tap for Details ℹ️',
-                            style: GoogleFonts.inter(color: Colors.white38, fontSize: 8.5)),
-                        const Text('👉 Step 1',
-                            style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Tap for Details ℹ️',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 9),
+                        ),
+                        Row(
+                          children: [
+                            const Text('👉', style: TextStyle(fontSize: 9)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Step 1 Ahead',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF10B981),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
@@ -1197,10 +1305,715 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
+  void _driveToGate({bool openExamOnArrival = true}) {
+    if (!mounted) return;
+    const gateX = 4220.0;
+    final targetX = gateX - 48.0;
+
+    _driveAnimController.stop();
+    final startX = _playerX;
+    _driveAnimation = Tween<double>(begin: startX, end: targetX).animate(
+      CurvedAnimation(parent: _driveAnimController, curve: Curves.easeInOutCubic),
+    )..addListener(() {
+        if (!mounted) return;
+        final currentX = _driveAnimation!.value;
+        final dx = currentX - _prevPlayerX;
+        _wheelAngle += dx * 0.14;
+        _prevPlayerX = currentX;
+
+        if (dx.abs() > 0.8 && math.Random().nextDouble() < 0.45) {
+          final gy = getGroundY(currentX);
+          _dustParticles.add(
+            JumpDustParticle(
+              x: currentX - (dx.sign * 24.0),
+              y: gy + 4.0,
+              vx: -dx.sign * (15.0 + math.Random().nextDouble() * 20.0),
+              vy: -10.0 - math.Random().nextDouble() * 15.0,
+            ),
+          );
+        }
+
+        setState(() {
+          _playerX = currentX;
+          _isDriving = true;
+        });
+
+        _focusOnPoint(currentX, getGroundY(currentX), scale: _zoomScale, animate: false);
+      });
+
+    _driveAnimController.forward(from: 0.0).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _isDriving = false;
+      });
+      HapticFeedback.mediumImpact();
+      if (openExamOnArrival) {
+        _showSpokenGateExamModal();
+      }
+    });
+  }
+
+  Widget _buildSummitGate(int day, bool isGatePassed) {
+    const gateWidth = 140.0;
+    const gateHeight = 160.0;
+    const gateX = 4220.0;
+    final groundY = getGroundY(gateX);
+
+    return Positioned(
+      left: gateX - (gateWidth / 2),
+      top: groundY - gateHeight + 6.0,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          _driveToGate(openExamOnArrival: true);
+        },
+        child: Column(
+          children: [
+            // Floating Status Pill
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: isGatePassed ? const Color(0xFF064E3B) : const Color(0xFF7F1D1D),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isGatePassed ? const Color(0xFF34D399) : const Color(0xFFFFD700),
+                  width: 1.4,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isGatePassed ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                        .withValues(alpha: 0.45),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isGatePassed ? Icons.lock_open_rounded : Icons.lock_rounded,
+                    color: isGatePassed ? const Color(0xFF34D399) : const Color(0xFFFFD700),
+                    size: 13,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    isGatePassed
+                        ? '✨ GATE 1: UNLOCKED (60%+ PASSED)'
+                        : '🔒 GATE 1: SPOKEN EXAM',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Arch Graphic
+            Container(
+              width: gateWidth,
+              height: 125,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(60)),
+                border: Border.all(
+                  color: isGatePassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                  width: 3.5,
+                ),
+                gradient: LinearGradient(
+                  colors: isGatePassed
+                      ? [
+                          const Color(0xFF10B981).withValues(alpha: 0.35),
+                          const Color(0xFF064E3B).withValues(alpha: 0.15),
+                        ]
+                      : [
+                          const Color(0xFFEF4444).withValues(alpha: 0.35),
+                          const Color(0xFF450A0A).withValues(alpha: 0.15),
+                        ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isGatePassed ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                        .withValues(alpha: 0.35),
+                    blurRadius: 16,
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isGatePassed
+                            ? Icons.verified_rounded
+                            : Icons.mic_external_on_rounded,
+                        color: isGatePassed
+                            ? const Color(0xFF34D399)
+                            : const Color(0xFFFFD700),
+                        size: 32,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        isGatePassed ? 'PASSED 🛡️' : 'TAP TO SPEAK',
+                        style: GoogleFonts.outfit(
+                          color: isGatePassed ? const Color(0xFF34D399) : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 9.5,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (isGatePassed)
+                        Text(
+                          'Retest Anytime',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 8.5,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSpokenGateExamModal() {
+    final rawExam = Day1CurriculumJsonData.rawMap['houseGateExam'] as Map<String, dynamic>?;
+    final questions = (rawExam?['questions'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+
+    if (questions.isEmpty) return;
+
+    int currentIdx = 0;
+    int correctCount = 0;
+    bool isListening = false;
+    String liveTranscript = '';
+    bool? isCurrentCorrect;
+    final stt.SpeechToText sttEngine = stt.SpeechToText();
+    final FlutterTts ttsEngine = FlutterTts();
+    bool sttReady = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dlgCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final isCompleted = currentIdx >= questions.length;
+
+            if (isCompleted) {
+              final scorePct = ((correctCount / questions.length) * 100).toInt();
+              final isPassed = correctCount >= 5; // 60%+ pass threshold
+
+              if (isPassed && !_isGateExamPassed) {
+                // Award points & unlock
+                final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                SharedPreferences.getInstance().then((prefs) async {
+                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed', true);
+                  await PocketFortressDefenseService.recordTrainingPoints(100, uid);
+                  if (mounted) {
+                    setState(() {
+                      _isGateExamPassed = true;
+                    });
+                  }
+                });
+              }
+
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      width: 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                            .withValues(alpha: 0.4),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(isPassed ? '🏆' : '🔒', style: const TextStyle(fontSize: 48)),
+                      const SizedBox(height: 12),
+                      Text(
+                        isPassed ? 'GATE 1 CONQUERED!' : 'GATE 1 LOCKED',
+                        style: GoogleFonts.outfit(
+                          color: isPassed ? const Color(0xFFFFD700) : Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        isPassed
+                            ? 'Score: $correctCount / ${questions.length} ($scorePct%) • PASSED (60%+)'
+                            : 'Score: $correctCount / ${questions.length} ($scorePct%) • NEED 60% (5/8)',
+                        style: GoogleFonts.inter(
+                          color: isPassed ? const Color(0xFF34D399) : const Color(0xFFF87171),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      if (isPassed) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF132238),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🌟', style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 8),
+                              Text(
+                                '+100 POCKET SCORE AWARDED!',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'House 2 (Day 2) is officially unlocked on the Summit!',
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ] else ...[
+                        Text(
+                          'Tap Retry to speak the questions again and conquer the gate!',
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isPassed ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          onPressed: () {
+                            if (isPassed) {
+                              Navigator.pop(dlgCtx);
+                            } else {
+                              setModalState(() {
+                                currentIdx = 0;
+                                correctCount = 0;
+                                liveTranscript = '';
+                                isCurrentCorrect = null;
+                              });
+                            }
+                          },
+                          child: Text(
+                            isPassed ? 'CONTINUE TO ROAD ➔' : 'RETRY EXAM 🔄',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final q = questions[currentIdx];
+            final qText = Day1CurriculumJsonData.getLocalizedString(q['question'], lang: 'en');
+            final qTextMl = Day1CurriculumJsonData.getLocalizedString(q['question'], lang: 'ml');
+            final targetText = (q['targetText'] ?? '').toString();
+            final voicePrompt = (q['voicePrompt'] ?? 'Say: $targetText').toString();
+            final options = (q['options'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
+            final correctIndex = q['correctIndex'] as int? ?? 0;
+
+            void evaluateSpeech(String speechInput) {
+              final spoken = speechInput.toLowerCase().trim();
+              final target = targetText.toLowerCase().trim();
+              if (spoken.isNotEmpty && (spoken.contains(target) || target.contains(spoken))) {
+                setModalState(() {
+                  isCurrentCorrect = true;
+                  correctCount++;
+                });
+                try {
+                  PocketGameAudioService.instance.playCorrectSound();
+                } catch (_) {}
+              }
+            }
+
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header: Progress & Close
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Text(
+                            '🎙️ SPOKEN EXAM: ${currentIdx + 1} / ${questions.length}',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            sttEngine.stop();
+                            ttsEngine.stop();
+                            Navigator.pop(dlgCtx);
+                          },
+                          icon: const Icon(Icons.close_rounded, color: Colors.white60, size: 20),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Progress Bar
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: (currentIdx + 1) / questions.length,
+                        minHeight: 6,
+                        backgroundColor: Colors.white12,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Question Prompt
+                    Text(
+                      qText,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    if (qTextMl.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        qTextMl,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF93C5FD),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 14),
+
+                    // Target Box: Prompt to Speak
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131D2D),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isCurrentCorrect == true
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFFD700).withValues(alpha: 0.6),
+                          width: 1.4,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'SPEAK ALOUD:',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white60,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  voicePrompt,
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await ttsEngine.stop();
+                              await ttsEngine.speak(voicePrompt);
+                            },
+                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF10B981)),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Big Microphone Button
+                    Center(
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              HapticFeedback.mediumImpact();
+                              if (isListening) {
+                                await sttEngine.stop();
+                                setModalState(() => isListening = false);
+                                return;
+                              }
+
+                              if (!sttReady) {
+                                sttReady = await sttEngine.initialize(
+                                  onStatus: (status) {
+                                    if (status == 'done' || status == 'notListening') {
+                                      setModalState(() => isListening = false);
+                                    }
+                                  },
+                                  onError: (_) => setModalState(() => isListening = false),
+                                );
+                              }
+
+                              if (sttReady) {
+                                setModalState(() {
+                                  isListening = true;
+                                  liveTranscript = '';
+                                });
+                                await sttEngine.listen(
+                                  onResult: (result) {
+                                    setModalState(() {
+                                      liveTranscript = result.recognizedWords;
+                                    });
+                                    evaluateSpeech(liveTranscript);
+                                  },
+                                  listenOptions: stt.SpeechListenOptions(
+                                    listenMode: stt.ListenMode.confirmation,
+                                    cancelOnError: true,
+                                  ),
+                                );
+                              }
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isListening
+                                    ? const Color(0xFFEF4444)
+                                    : (isCurrentCorrect == true
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFF2563EB)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isListening ? const Color(0xFFEF4444) : const Color(0xFF2563EB))
+                                        .withValues(alpha: 0.5),
+                                    blurRadius: isListening ? 20 : 10,
+                                    spreadRadius: isListening ? 4 : 1,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                isListening
+                                    ? Icons.mic_rounded
+                                    : (isCurrentCorrect == true
+                                        ? Icons.check_circle_rounded
+                                        : Icons.mic_none_rounded),
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            isListening
+                                ? 'Listening... Speak now!'
+                                : (isCurrentCorrect == true
+                                    ? '✅ Correct Speech Recognized!'
+                                    : 'Tap mic and speak aloud'),
+                            style: GoogleFonts.inter(
+                              color: isListening
+                                  ? const Color(0xFFF87171)
+                                  : (isCurrentCorrect == true
+                                      ? const Color(0xFF34D399)
+                                      : Colors.white70),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (liveTranscript.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              '"$liveTranscript"',
+                              style: GoogleFonts.inter(color: const Color(0xFFFEF08A), fontSize: 11.5),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Or Tap Multiple Choice Options
+                    Text(
+                      'Or choose correct option:',
+                      style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: options.asMap().entries.map((entry) {
+                        final idx = entry.key;
+                        final opt = entry.value;
+                        final isCorrectOpt = idx == correctIndex;
+                        final isChosen = isCurrentCorrect == true && isCorrectOpt;
+
+                        return SizedBox(
+                          width: (MediaQuery.of(context).size.width - 80) / 2,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isChosen
+                                  ? const Color(0xFF064E3B)
+                                  : const Color(0xFF1E293B),
+                              foregroundColor: isChosen ? const Color(0xFF34D399) : Colors.white,
+                              side: BorderSide(
+                                color: isChosen ? const Color(0xFF10B981) : Colors.white12,
+                                width: 1.2,
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: isCurrentCorrect == true
+                                ? null
+                                : () {
+                                    HapticFeedback.selectionClick();
+                                    if (isCorrectOpt) {
+                                      setModalState(() {
+                                        isCurrentCorrect = true;
+                                        correctCount++;
+                                      });
+                                      try {
+                                        PocketGameAudioService.instance.playCorrectSound();
+                                      } catch (_) {}
+                                    } else {
+                                      setModalState(() {
+                                        isCurrentCorrect = false;
+                                      });
+                                      try {
+                                        PocketGameAudioService.instance.playIncorrectSound();
+                                      } catch (_) {}
+                                    }
+                                  },
+                            child: Text(
+                              opt,
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Next Question Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          sttEngine.stop();
+                          ttsEngine.stop();
+                          setModalState(() {
+                            currentIdx++;
+                            liveTranscript = '';
+                            isCurrentCorrect = null;
+                            isListening = false;
+                          });
+                        },
+                        child: Text(
+                          currentIdx + 1 == questions.length
+                              ? 'SUBMIT EXAM & SEE RESULT ➔'
+                              : 'NEXT QUESTION ➔',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildSummitHouse(int targetDay, bool isUnlocked) {
     const houseWidth = 240.0;
     const houseHeight = 145.0;
-    const summitX = 3820.0;
+    const summitX = 4480.0;
     final groundY = getGroundY(summitX);
     final palette =
         HousePalette.presets[(targetDay - 1) % HousePalette.presets.length];
@@ -1597,6 +2410,120 @@ class _PocketDayOpenWorldAdventurePageState
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
     if (day >= 1 && day <= 90) {
+      // Step 1 on Day 1: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
+      if (day == 1 && s == 1) {
+        await PocketDay1Step1AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 1 on Day 2: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
+      if (day == 2 && s == 1) {
+        await PocketDay2Step1AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 2 on Day 1: Launches Dedicated Conversational Avatar Chat + Word Game (User Audio Directive!)
+      if (day == 1 && s == 2) {
+        await PocketDay1Step2AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 3 on Day 1: Launches Dedicated Conversational Avatar Chat + Hunt Game (User Audio Directive!)
+      if (day == 1 && s == 3) {
+        await PocketDay1Step3AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 4 on Day 1: Launches Dedicated Spoken English Avatar Chat (User Audio Directive!)
+      if (day == 1 && s == 4) {
+        await PocketDay1Step4AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 5 on Day 1: Launches Dedicated Reading Room Avatar Chat (User Audio Directive!)
+      if (day == 1 && s == 5) {
+        await PocketDay1Step5AvatarChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 6 on Day 1 & Day 2: Launches Dedicated English Hub Group Chat (User Audio Directive!)
+      if ((day == 1 || day == 2) && s == 6) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => Scaffold(
+              backgroundColor: const Color(0xFF0A1118),
+              body: SafeArea(
+                child: EnglishLearningGroupChatWidget(
+                  onCancel: () {
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+        // User Audio Directive: Entering English Hub, chatting/viewing and returning marks Step 6 as completed!
+        await _onStepCompleted(6);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 7 on Day 1 & Day 2: Launches Dedicated House Defense Shield Command (User Audio Directive!)
+      if ((day == 1 || day == 2) && s == 7) {
+        await PocketHouseDefenseChatPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
       await PocketDay1InteractiveFlowPage.show(
         context,
         day: day,
@@ -1607,7 +2534,7 @@ class _PocketDayOpenWorldAdventurePageState
           _onStepCompleted(finishedStep);
         },
         onCompleted: () {
-          _onStepCompleted(8);
+          _onStepCompleted(7);
         },
       );
       await _loadState(preserveCarPosition: true);

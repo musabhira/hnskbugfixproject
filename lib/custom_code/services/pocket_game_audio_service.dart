@@ -608,6 +608,19 @@ class PocketGameAudioService with WidgetsBindingObserver {
     HapticFeedback.selectionClick();
   }
 
+  /// 🔔 Play correct answer sound / feedback
+  Future<void> playCorrectSound() async {
+    HapticFeedback.mediumImpact();
+    try {
+      await playCoinSound();
+    } catch (_) {}
+  }
+
+  /// ❌ Play incorrect answer sound / feedback
+  Future<void> playIncorrectSound() async {
+    HapticFeedback.lightImpact();
+  }
+
   /// Dispose service
   void dispose() {
     _isDisposed = true;

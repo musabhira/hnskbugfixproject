@@ -18,7 +18,6 @@ import 'curriculum_data/pocket_day_curriculum_service.dart';
 import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_language_selection_dialog.dart';
-import 'pocket_day1_diagnostic_sheet.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'games/meadow_runner_game_page.dart';
 import 'games/word_catcher_game_page.dart';
@@ -28,6 +27,12 @@ import 'games/english_realm/english_realm_manifest.dart';
 import 'games/english_realm/english_realm_page.dart';
 import 'games/english_realm/english_realm_game_session_page.dart';
 import 'games/english_realm/english_realm_models.dart';
+import 'pocket_day1_step1_avatar_chat_page.dart';
+import 'pocket_day1_step2_avatar_chat_page.dart';
+import 'pocket_day1_step3_avatar_chat_page.dart';
+import 'pocket_day1_step4_avatar_chat_page.dart';
+import 'pocket_day1_step5_avatar_chat_page.dart';
+import 'pocket_house_defense_chat_page.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -535,6 +540,80 @@ class _PocketDay1InteractiveFlowPageState
 
   @override
   Widget build(BuildContext context) {
+    // 🐱 User Audio Directive: Day 1 Step 1 uses the conversational onboarding-style avatar chat interface!
+    if (widget.day == 1 && _activeStep == 1) {
+      return PocketDay1Step1AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(1);
+        },
+      );
+    }
+
+    // 🐱 User Audio Directive: Day 1 Step 2 uses the conversational onboarding-style avatar chat interface for Vocabulary!
+    if (widget.day == 1 && _activeStep == 2) {
+      return PocketDay1Step2AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(2);
+        },
+      );
+    }
+
+    // 🔍 User Audio Directive: Day 1 Step 3 uses the conversational avatar chat interface for Letter & Word Hunt!
+    if (widget.day == 1 && _activeStep == 3) {
+      return PocketDay1Step3AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(3);
+        },
+      );
+    }
+
+    // 🎙️ User Audio Directive: Day 1 Step 4 uses the conversational avatar chat interface for Spoken English!
+    if (widget.day == 1 && _activeStep == 4) {
+      return PocketDay1Step4AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(4);
+        },
+      );
+    }
+
+    // 📖 User Audio Directive: Day 1 Step 5 uses the conversational avatar chat interface for Reading Room!
+    if (widget.day == 1 && _activeStep == 5) {
+      return PocketDay1Step5AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(5);
+        },
+      );
+    }
+
+    // 💬 User Audio Directive: Day 1 Step 6 uses English Hub Community Chat!
+    if (widget.day == 1 && _activeStep == 6) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A1118),
+        body: SafeArea(
+          child: EnglishLearningGroupChatWidget(
+            onCancel: () {
+              _markStepCompleted(6);
+            },
+          ),
+        ),
+      );
+    }
+
+    // 🛡️ User Audio Directive: Day 1 Step 7 uses Dedicated House 1 Defense Shield Command!
+    if (widget.day == 1 && _activeStep == 7) {
+      return PocketHouseDefenseChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(7);
+        },
+      );
+    }
+
     final steps = Day1Curriculum.getSteps(_currentTrack, widget.day);
     final activeStepData = steps[(_activeStep - 1).clamp(0, steps.length - 1)];
 
@@ -709,27 +788,6 @@ class _PocketDay1InteractiveFlowPageState
                 ],
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          // Level Check Diagnostic Button (Track switching is managed from "Your Syllabus" on Target page)
-          IconButton(
-            icon: const Icon(Icons.tune_rounded, color: Colors.white70, size: 20),
-            tooltip: 'Level Check',
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            onPressed: () async {
-              final res = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
-              if (res != null) {
-                final skip1 = res['skipStep1'] ?? false;
-                final skip2 = res['skipStep2'] ?? false;
-                if (skip1 && skip2) {
-                  setState(() => _activeStep = 3);
-                } else if (skip1) {
-                  setState(() => _activeStep = 2);
-                }
-              }
-            },
           ),
         ],
       ),
