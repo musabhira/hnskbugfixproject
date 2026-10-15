@@ -264,10 +264,23 @@ class _PocketDay1Step3AvatarChatPageState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 280,
-        duration: const Duration(milliseconds: 350),
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
+    });
+    // Smooth micro catch-up after layout pass to eliminate sudden jumps
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final current = _scrollController.position.pixels;
+      if ((max - current).abs() > 4) {
+        _scrollController.animateTo(
+          max,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      }
     });
   }
 
@@ -467,9 +480,9 @@ class _PocketDay1Step3AvatarChatPageState
           speakThisPrompt: 'Tap below to enter Step 4: Spoken English 🎙️',
           inBubbleOptions: [
             Step3InBubbleOption(
-              labelEn: '🎙️ PROCEED TO STEP 4: SPOKEN ENGLISH ➔',
-              labelNative: 'സ്റ്റെപ്പ് 4-ലേക്ക് പോകാം',
-              icon: '🚀',
+              labelEn: 'Step 4: Spoken English ➔',
+              labelNative: 'സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ്',
+              icon: '🎙️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFFFFD700),
@@ -694,7 +707,7 @@ class _PocketDay1Step3AvatarChatPageState
               child: ListView.builder(
                 controller: _scrollController,
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
                   return _buildMessageItem(_messages[index]);
@@ -897,6 +910,9 @@ class _PocketDay1Step3AvatarChatPageState
                         return GestureDetector(
                           onTap: opt.onTap,
                           child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width - 90,
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
                               color: opt.backgroundColor,
@@ -916,28 +932,32 @@ class _PocketDay1Step3AvatarChatPageState
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(opt.icon, style: const TextStyle(fontSize: 14)),
-                                const SizedBox(width: 6),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      opt.labelEn,
-                                      style: GoogleFonts.outfit(
-                                        color: opt.textColor,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    if (opt.labelNative.isNotEmpty)
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
                                       Text(
-                                        opt.labelNative,
-                                        style: GoogleFonts.inter(
-                                          color: opt.textColor.withValues(alpha: 0.8),
-                                          fontSize: 10,
+                                        opt.labelEn,
+                                        style: GoogleFonts.outfit(
+                                          color: opt.textColor,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
                                         ),
+                                        softWrap: true,
                                       ),
-                                  ],
+                                      if (opt.labelNative.isNotEmpty)
+                                        Text(
+                                          opt.labelNative,
+                                          style: GoogleFonts.inter(
+                                            color: opt.textColor.withValues(alpha: 0.8),
+                                            fontSize: 10,
+                                          ),
+                                          softWrap: true,
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),

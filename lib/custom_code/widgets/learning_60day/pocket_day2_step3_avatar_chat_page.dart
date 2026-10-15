@@ -262,10 +262,23 @@ class _PocketDay2Step3AvatarChatPageState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 280,
-        duration: const Duration(milliseconds: 350),
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
+    });
+    // Smooth micro catch-up after layout pass to eliminate sudden jumps
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final current = _scrollController.position.pixels;
+      if ((max - current).abs() > 4) {
+        _scrollController.animateTo(
+          max,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      }
     });
   }
 
@@ -524,15 +537,15 @@ class _PocketDay2Step3AvatarChatPageState
           ),
           inBubbleOptions: [
             Day2Step3InBubbleOption(
-              labelEn: 'COMPLETE STEP 3 ➔',
-              labelNative: 'സ്റ്റെപ്പ് 3 പൂർത്തിയാക്കുക',
-              icon: '🚀',
+              labelEn: 'Step 4: Spoken English ➔',
+              labelNative: 'സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ്',
+              icon: '🎙️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF10B981),
               borderColor: const Color(0xFFFFD700),
               textColor: Colors.black,
               onTap: () => _handleTextSubmission(
-                text: 'COMPLETE STEP 3 ➔',
+                text: 'Step 4: Spoken English ➔',
                 action: _completeStep3,
               ),
             ),
@@ -816,7 +829,7 @@ class _PocketDay2Step3AvatarChatPageState
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                 itemCount: _messages.length,
                 itemBuilder: (context, index) {
                   final msg = _messages[index];

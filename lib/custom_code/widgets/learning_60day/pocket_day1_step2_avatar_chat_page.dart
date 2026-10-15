@@ -510,10 +510,23 @@ class _PocketDay1Step2AvatarChatPageState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 260,
-        duration: const Duration(milliseconds: 350),
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
+    });
+    // Smooth micro catch-up after layout pass to eliminate sudden jumps
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final current = _scrollController.position.pixels;
+      if ((max - current).abs() > 4) {
+        _scrollController.animateTo(
+          max,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      }
     });
   }
 

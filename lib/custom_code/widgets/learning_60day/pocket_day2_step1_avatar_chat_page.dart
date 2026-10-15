@@ -301,10 +301,23 @@ class _PocketDay2Step1AvatarChatPageState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 260,
-        duration: const Duration(milliseconds: 350),
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
+    });
+    // Smooth micro catch-up after layout pass to eliminate sudden jumps
+    Future.delayed(const Duration(milliseconds: 120), () {
+      if (!_scrollController.hasClients) return;
+      final max = _scrollController.position.maxScrollExtent;
+      final current = _scrollController.position.pixels;
+      if ((max - current).abs() > 4) {
+        _scrollController.animateTo(
+          max,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+        );
+      }
     });
   }
 
@@ -1041,8 +1054,8 @@ class _PocketDay2Step1AvatarChatPageState
           speakThisPrompt: 'Tap below to return to the road: 👇',
           inBubbleOptions: [
             Day2InBubbleOption(
-              labelEn: '🚗 PROCEED TO STEP 2: VOCAB DRIVE ➔',
-              labelNative: 'റോഡിലേക്ക് മടങ്ങുക ➔',
+              labelEn: 'Step 2: Vocab Drive ➔',
+              labelNative: 'സ്റ്റെപ്പ് 2: വൊക്കാബ് ഡ്രൈവ്',
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -1327,7 +1340,7 @@ class _PocketDay2Step1AvatarChatPageState
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.fromLTRB(14, 16, 14, 24),
+              padding: const EdgeInsets.fromLTRB(14, 16, 14, 96),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
