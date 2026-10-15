@@ -1227,7 +1227,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         ),
                       )
                     : _currentIndex == 0
-                        ? const MainMarketPage()
+                        ? const PocketEnglishStoreRoomPage()
                         : _currentIndex == 2
                             ? EnglishLearningGroupChatWidget(
                                 onCancel: () =>
@@ -4876,7 +4876,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildNavItem(
-                  icon: material.Icons.storefront_rounded,
+                  icon: material.Icons.auto_stories_rounded,
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
                 ),
@@ -5410,59 +5410,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               const SizedBox(height: 20),
               Row(
                 children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: material.InkWell(
-                        onTap: () async {
-                          Navigator.pop(context);
-                          final isAuthenticated =
-                              await AuthAlertBox.checkAuthAndShowAlert(
-                            context: context,
-                            customMessage: "Please login to add to Gallery",
-                          );
-                          if (isAuthenticated && mounted) {
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                  builder: (_) => const CreateGalleryWidget(
-                                      width: double.infinity,
-                                      height: double.infinity)),
-                            );
-                          }
-                        },
-                        child: Container(
-                            height: 100,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  FlutterFlowTheme.of(context)
-                                      .primary
-                                      .withValues(alpha: 0.8),
-                                  FlutterFlowTheme.of(context)
-                                      .secondary
-                                      .withValues(alpha: 0.8),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(14.0),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(material.Icons.shopping_cart_rounded,
-                                    color: Colors.white, size: 30),
-                                const SizedBox(height: 8),
-                                Text('Add\nGallery',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.poppins(
-                                        color: Colors.white, fontSize: 12)),
-                              ],
-                            )),
-                      ),
-                    ),
-                  ),
+                  // "Add Gallery" option removed per directive (all gallery/market creation hidden)
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),

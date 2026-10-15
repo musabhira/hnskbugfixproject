@@ -14,7 +14,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_service.da
 import 'index.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
-import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -244,7 +243,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     // Show Posters only in Main Profile (isMe: 3 tabs: Gallery, Thoughts, Posters).
     // In Search / Other Profile (!isMe: 2 tabs: Gallery, Thoughts).
     _myAccountTabController = material.TabController(length: 1, vsync: this);
-    _publicTabController = material.TabController(length: isMe ? 3 : 2, vsync: this);
+    // Public profile focused exclusively on English Thoughts feed (Gallery & Posters hidden per directive)
+    _publicTabController = material.TabController(length: 1, vsync: this);
     _myAccountTabController.addListener(() { if (mounted) setState(() {}); });
     _publicTabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
@@ -255,7 +255,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   void _ensurePublicTabController() {
-    final expectedLength = isMe ? 3 : 2;
+    const expectedLength = 1;
     if (_publicTabController.length != expectedLength) {
       final oldIndex = _publicTabController.index.clamp(0, expectedLength - 1);
       _publicTabController.dispose();
@@ -1559,10 +1559,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     indicatorColor: btnColor,
                     indicatorWeight: 3,
                     labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                    tabs: [
-                      const material.Tab(text: "🖼️ Gallery"),
-                      const material.Tab(text: "💭 Thoughts"),
-                      if (isMe) const material.Tab(text: "📜 Posters"),
+                    tabs: const [
+                      material.Tab(text: "💭 Thoughts"),
                     ],
                   ),
                   bgColor,
@@ -1755,74 +1753,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     )
                   : Column(
                       children: [
-                        // Category Selector — only shown on Gallery tab of Public Profile (never in My Account)
-                        if (_categories.length > 1 && _publicTabController.index == 0)
-                          Container(
-                            height: 50,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _categories.length,
-                              itemBuilder: (context, index) {
-                                final cat = _categories[index];
-                                final isSelected = _selectedCategory == cat;
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: GestureDetector(
-                                    onTap: () => _filterGalleryByCategory(cat),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? btnColor : material.Colors.transparent,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: isSelected ? btnColor : textColor.withValues(alpha: 0.2),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        cat,
-                                        style: TextStyle(
-                                          color: isSelected ? btnTextColor : textColor,
-                                          fontSize: 12,
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
                         Expanded(
                           child: material.TabBarView(
                             key: ValueKey('tab_view_public_$isMe'),
                             controller: _publicTabController,
                             children: [
-                              _GalleryTab(
-                                userId: userId,
-                                items: _filteredGalleryItems,
-                                textColor: textColor,
-                                bgColor: bgColor,
-                                btnColor: btnColor,
-                                btnTextColor: btnTextColor,
-                              ),
                               _ThreadsTab(
                                 items: _threadItems,
                                 textColor: textColor,
                                 btnColor: btnColor,
                                 btnTextColor: btnTextColor,
                               ),
-                              if (isMe)
-                                PostersTab(
-                                  profileData: _profileData,
-                                  galleryItems: _galleryItems,
-                                  services: const [],
-                                  thoughts: _threadItems,
-                                ),
                             ],
                           ),
                         ),
@@ -1942,26 +1883,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ],
                 ),
                 const SizedBox(height: 14),
-                _buildAddSheetOption(
-                  icon: Icons.storefront_rounded,
-                  iconColor: const Color(0xFFEC4899),
-                  title: 'Add Product',
-                  subtitle: 'Showcase an item or service in your showcase',
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreateGalleryWidget(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height,
-                        ),
-                      ),
-                    ).then((_) => _loadInitialData());
-                  },
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 10),
+                // "Add Product" hidden per directive to align app strictly with English Learning ecosystem
                 _buildAddSheetOption(
                   icon: Icons.chat_bubble_outline_rounded,
                   iconColor: const Color(0xFF38BDF8),

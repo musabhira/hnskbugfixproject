@@ -41,6 +41,7 @@ export 'verified_switch_page.dart';
 
 // Marketplace & Gallery
 export 'main_market_page.dart' show MainMarketPage;
+export 'pocket_english_store_room_page.dart' show PocketEnglishStoreRoomPage;
 export 'tab_view.dart' show GalleryTabViewPage;
 export 'gallery_following_tab_view.dart' show GalleryFollowingTabViewPage;
 export 'create_gallery_widget.dart' show CreateGalleryWidget;

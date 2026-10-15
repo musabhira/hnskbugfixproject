@@ -50,7 +50,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    _selectedTab = (widget.initialTab == 'market') ? 'market' : 'people';
+    _selectedTab = 'people';
   }
 
   String get _effectiveSearchQuery {
@@ -358,8 +358,8 @@ class _SearchPageState extends State<SearchPage> {
               onSearchChanged: _handleSearchChanged,
             ),
 
-            // Top Tabs (People vs Market)
-            _buildTopTabs(),
+            // Top Tabs (People vs Market) - Market tab hidden per directive
+            // _buildTopTabs(),
 
             if (_selectedTab == 'people') ...[
               // Quick Minimal Filter Chips (All, Humans, Robots)
