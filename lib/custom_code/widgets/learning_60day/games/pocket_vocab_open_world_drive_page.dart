@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import '../pocket_pronunciation_evaluator.dart';
 import '../pocket_fortress_defense_service.dart';
+import '../pocket_90day_vocab_curriculum.dart';
 
 /// 🚗 Particle effect for road dust, checkpoint celebrations, and coin bursts
 class DriveParticle {
@@ -45,18 +46,33 @@ class DriveParticle {
 /// 5. Once spoken and verified, mic disappears, game resumes, and Drive Forward button reappears!
 /// 6. Reverse / Back control available if player wants to back up.
 /// 7. Open world aesthetics: hills, green grass, sky, trees, and roadside nature.
+/// 🚗 Supported Ride & Movement Modes (User Audio Directive!)
+enum RideMode {
+  car,       // 🏎️ Highway Sports Cruiser
+  jeep,      // 🚙 4x4 Off-Road Safari Jeep (with oncoming opposite traffic!)
+  airplane,  // ✈️ Sky Flight (Soaring high into clouds & sky)
+  walking,   // 🚶 Nature Explorer (Walking/jogging through forest trail)
+  rocket,    // 🚀 Galaxy Ascender (Rocket blasting through cosmic space)
+}
+
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
+  final int day;
+  final String? initialRideMode;
   final String? userId;
   final VoidCallback? onCompleted;
 
   const PocketVocabOpenWorldDrivePage({
     super.key,
+    this.day = 1,
+    this.initialRideMode,
     this.userId,
     this.onCompleted,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
+    String? initialRideMode,
     String? userId,
     VoidCallback? onCompleted,
   }) {
@@ -64,6 +80,8 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketVocabOpenWorldDrivePage(
+          day: day,
+          initialRideMode: initialRideMode,
           userId: userId,
           onCompleted: onCompleted,
         ),
@@ -253,6 +271,7 @@ class _PocketVocabOpenWorldDrivePageState
   ];
 
   // 🚗 Drive & Physics State
+  late RideMode _currentRideMode;
   int _currentCheckpointIndex = 0;
   double _distanceTraveled = 0.0;
   double _speed = 0.0;
@@ -274,13 +293,61 @@ class _PocketVocabOpenWorldDrivePageState
   String? _speechError;
   bool _speechAvailable = false;
   bool _allCompleted = false;
+  late final List<Map<String, dynamic>> _checkpoints;
 
-  // Distance between each vocabulary house
+  // Distance between each vocabulary landmark
   static const double kDistancePerCheckpoint = 320.0;
 
   @override
   void initState() {
     super.initState();
+
+    // Populate day-specific unique vocabulary items (User Audio Directive!)
+    final dayItems = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
+    if (widget.day > 1 && dayItems.isNotEmpty) {
+      final emojis = ['💎', '🚀', '🌟', '🏆', '🎯', '⚡', '🔥', '📚', '🎨', '✨', '🌍', '🔮', '🛡️', '🔑', '🌈', '💡'];
+      _checkpoints = dayItems.asMap().entries.map((entry) {
+        final idx = entry.key;
+        final v = entry.value;
+        return {
+          'word': v.word,
+          'meaningEn': v.definition,
+          'meaningMl': v.malayalamMeaning,
+          'emoji': emojis[idx % emojis.length],
+          'sentence': v.exampleSentence.isNotEmpty ? v.exampleSentence : 'This is ${v.word}.',
+          'sentenceMl': v.malayalamMeaning,
+        };
+      }).toList();
+    } else {
+      _checkpoints = vocabCheckpoints;
+    }
+
+    // Set initial ride mode according to user selection or cyclic day theme (User Audio Directive!)
+    if (widget.initialRideMode == 'jeep') {
+      _currentRideMode = RideMode.jeep;
+    } else if (widget.initialRideMode == 'airplane') {
+      _currentRideMode = RideMode.airplane;
+    } else if (widget.initialRideMode == 'walking') {
+      _currentRideMode = RideMode.walking;
+    } else if (widget.initialRideMode == 'rocket') {
+      _currentRideMode = RideMode.rocket;
+    } else if (widget.initialRideMode == 'car') {
+      _currentRideMode = RideMode.car;
+    } else {
+      final modeCycle = widget.day % 5;
+      if (modeCycle == 2) {
+        _currentRideMode = RideMode.jeep;
+      } else if (modeCycle == 4) {
+        _currentRideMode = RideMode.airplane;
+      } else if (modeCycle == 3) {
+        _currentRideMode = RideMode.walking;
+      } else if (modeCycle == 0) {
+        _currentRideMode = RideMode.rocket;
+      } else {
+        _currentRideMode = RideMode.car;
+      }
+    }
+
     _initTts();
     _initSpeechRecognizer();
     _initAudioService();
@@ -300,6 +367,21 @@ class _PocketVocabOpenWorldDrivePageState
       duration: const Duration(milliseconds: 16),
     )..addListener(_gameLoop);
     _gameLoopController.repeat();
+  }
+
+  void _switchRideMode(RideMode mode) {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _currentRideMode = mode;
+    });
+    final titles = {
+      RideMode.car: 'Highway Sports Cruiser selected!',
+      RideMode.jeep: '4x4 Off-Road Safari Jeep selected!',
+      RideMode.airplane: 'Skyward Flight Airplane selected!',
+      RideMode.walking: 'Nature Trail Explorer selected!',
+      RideMode.rocket: 'Cosmic Star Rocket selected!',
+    };
+    _speak(titles[mode] ?? 'New ride selected!');
   }
 
   Future<void> _initAudioService() async {
@@ -431,7 +513,7 @@ class _PocketVocabOpenWorldDrivePageState
       final targetDistanceForNext = (_currentCheckpointIndex + 1) * kDistancePerCheckpoint;
       if (!_isAtCheckpoint &&
           !_checkpointGateOpening &&
-          _currentCheckpointIndex < vocabCheckpoints.length &&
+          _currentCheckpointIndex < _checkpoints.length &&
           _distanceTraveled >= targetDistanceForNext - 10.0) {
         _distanceTraveled = targetDistanceForNext - 10.0; // Park right in front of house
         _hitCheckpoint();
@@ -451,7 +533,7 @@ class _PocketVocabOpenWorldDrivePageState
     _recordTimer?.cancel();
     HapticFeedback.heavyImpact();
 
-    final item = vocabCheckpoints[_currentCheckpointIndex];
+    final item = _checkpoints[_currentCheckpointIndex];
     final wrd = item['word'];
 
     // Per user audio directive:
@@ -521,9 +603,9 @@ class _PocketVocabOpenWorldDrivePageState
       } catch (_) {}
     }
 
-    final currentItem = _currentCheckpointIndex < vocabCheckpoints.length
-        ? vocabCheckpoints[_currentCheckpointIndex]
-        : vocabCheckpoints.last;
+    final currentItem = _currentCheckpointIndex < _checkpoints.length
+        ? _checkpoints[_currentCheckpointIndex]
+        : _checkpoints.last;
     final wrd = (currentItem['word'] ?? '').toString().toLowerCase();
 
     final cleanSpoken = _spokenText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
@@ -600,7 +682,7 @@ class _PocketVocabOpenWorldDrivePageState
         _recordingSeconds = 0;
         _currentCheckpointIndex++;
 
-        if (_currentCheckpointIndex >= vocabCheckpoints.length) {
+        if (_currentCheckpointIndex >= _checkpoints.length) {
           _allCompleted = true;
           _onCompleteAllCheckpoints();
         }
@@ -611,11 +693,11 @@ class _PocketVocabOpenWorldDrivePageState
   Future<void> _onCompleteAllCheckpoints() async {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playVictorySfx();
-    _speak('Congratulations! You completed all 20 vocabulary checkpoints on the highway!');
+    _speak('Congratulations! You completed all ${_checkpoints.length} vocabulary checkpoints on the road!');
 
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_1_step_2_done', true);
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
 
     if (uid != null && uid.isNotEmpty) {
       await PocketFortressDefenseService.recordTrainingPoints(35, uid);
@@ -630,9 +712,9 @@ class _PocketVocabOpenWorldDrivePageState
 
   @override
   Widget build(BuildContext context) {
-    final currentItem = _currentCheckpointIndex < vocabCheckpoints.length
-        ? vocabCheckpoints[_currentCheckpointIndex]
-        : vocabCheckpoints.last;
+    final currentItem = _currentCheckpointIndex < _checkpoints.length
+        ? _checkpoints[_currentCheckpointIndex]
+        : _checkpoints.last;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0284C7),
@@ -643,6 +725,7 @@ class _PocketVocabOpenWorldDrivePageState
             Positioned.fill(
               child: CustomPaint(
                 painter: _OpenWorldDrivePainter(
+                  rideMode: _currentRideMode,
                   distanceTraveled: _distanceTraveled,
                   speed: _speed,
                   carLaneY: _carLaneY,
@@ -652,17 +735,17 @@ class _PocketVocabOpenWorldDrivePageState
                   isAtCheckpoint: _isAtCheckpoint,
                   gateOpening: _checkpointGateOpening,
                   particles: _particles,
-                  checkpoints: vocabCheckpoints,
+                  checkpoints: _checkpoints,
                   kDistancePerCheckpoint: kDistancePerCheckpoint,
                 ),
               ),
             ),
 
-            // 2. Responsive Minimal Top Navigation Bar
+            // 2. Responsive Minimal Top Navigation Bar with Ride Switcher
             Positioned(
-              top: 10,
-              left: 14,
-              right: 14,
+              top: 8,
+              left: 12,
+              right: 12,
               child: _buildMinimalTopBar(),
             ),
 
@@ -684,7 +767,7 @@ class _PocketVocabOpenWorldDrivePageState
                 child: _buildManualDriveControls(),
               ),
 
-            // 5. Grand Victory Overlay when all 20 checkpoints completed
+            // 5. Grand Victory Overlay when all checkpoints completed
             if (_allCompleted)
               Positioned.fill(
                 child: _buildGrandVictoryOverlay(),
@@ -695,100 +778,175 @@ class _PocketVocabOpenWorldDrivePageState
     );
   }
 
-  /// 🌟 Super Clean, Responsive Top Navigation Bar
+  /// 🌟 Super Clean, Responsive Top Navigation Bar with Dynamic Ride Mode Switcher
   Widget _buildMinimalTopBar() {
-    final currentItem = _currentCheckpointIndex < vocabCheckpoints.length
-        ? vocabCheckpoints[_currentCheckpointIndex]
-        : vocabCheckpoints.last;
+    final currentItem = _currentCheckpointIndex < _checkpoints.length
+        ? _checkpoints[_currentCheckpointIndex]
+        : _checkpoints.last;
     final currentWord = currentItem['word'] ?? 'Book';
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final modeEmojis = {
+      RideMode.car: '🏎️',
+      RideMode.jeep: '🚙',
+      RideMode.airplane: '✈️',
+      RideMode.walking: '🚶',
+      RideMode.rocket: '🚀',
+    };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Back Button
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.pop(context);
-          },
-          child: Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 6,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Back Button
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
-              ],
+                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+              ),
             ),
-            child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-          ),
+
+            // Clean, Compact Title & Word Indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(modeEmojis[_currentRideMode] ?? '🏎️', style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Day ${widget.day} Vocab • $currentWord (${_currentCheckpointIndex + 1}/${_checkpoints.length})',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Sound Mute Toggle
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() => _isAudioMuted = !_isAudioMuted);
+              },
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _isAudioMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                  color: _isAudioMuted ? Colors.redAccent : const Color(0xFFFFD700),
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
         ),
 
-        // Clean, Compact Title & Word Indicator
+        const SizedBox(height: 6),
+
+        // 🚀 Chic Ride Mode Switcher Pill (User Audio Directive: Choose car, jeep, plane, walk, or rocket!)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white24),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.45), width: 1.2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 6,
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 8,
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🚗', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 6),
-              Text(
-                'Vocab Drive • $currentWord (${_currentCheckpointIndex + 1}/20)',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Sound Mute Toggle
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            setState(() => _isAudioMuted = !_isAudioMuted);
-          },
-          child: Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 6,
-                ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildRidePill(RideMode.car, '🏎️ Racer'),
+                const SizedBox(width: 3),
+                _buildRidePill(RideMode.jeep, '🚙 4x4 Jeep'),
+                const SizedBox(width: 3),
+                _buildRidePill(RideMode.airplane, '✈️ Sky Plane'),
+                const SizedBox(width: 3),
+                _buildRidePill(RideMode.walking, '🚶 Forest Trail'),
+                const SizedBox(width: 3),
+                _buildRidePill(RideMode.rocket, '🚀 Star Rocket'),
               ],
-            ),
-            child: Icon(
-              _isAudioMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-              color: _isAudioMuted ? Colors.redAccent : const Color(0xFFFFD700),
-              size: 20,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRidePill(RideMode mode, String label) {
+    final isSelected = _currentRideMode == mode;
+    return GestureDetector(
+      onTap: () => _switchRideMode(mode),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF0284C7) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF38BDF8) : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? Colors.white : Colors.white60,
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 
@@ -1237,7 +1395,7 @@ class _PocketVocabOpenWorldDrivePageState
               ),
               const SizedBox(height: 6),
               Text(
-                'You drove to all 20 vocabulary houses and mastered everyday words!',
+                'You completed all ${_checkpoints.length} Day ${widget.day} vocabulary landmarks and mastered their pronunciation!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   color: Colors.white,
@@ -1279,8 +1437,9 @@ class _PocketVocabOpenWorldDrivePageState
   }
 }
 
-/// 🌄 CustomPainter for rendering the 2D Open World Driving Landscape & Vocabulary Houses
+/// 🌄 CustomPainter for rendering the Open World Movement Landscape & Thematic Vocabulary Landmarks
 class _OpenWorldDrivePainter extends CustomPainter {
+  final RideMode rideMode;
   final double distanceTraveled;
   final double speed;
   final double carLaneY;
@@ -1294,6 +1453,7 @@ class _OpenWorldDrivePainter extends CustomPainter {
   final double kDistancePerCheckpoint;
 
   _OpenWorldDrivePainter({
+    required this.rideMode,
     required this.distanceTraveled,
     required this.speed,
     required this.carLaneY,
@@ -1309,54 +1469,155 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Sky Gradient (Bright sunny morning)
-    final skyPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.58));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.58), skyPaint);
+    // =========================================================================
+    // 1. DYNAMIC SKY & BACKGROUND ADAPTED TO RIDE MODE
+    // =========================================================================
+    _drawDynamicSky(canvas, size);
 
-    // 2. Radiant Sun ☀️
+    // =========================================================================
+    // 2. CELESTIAL / HORIZON DETAILS (Sun, Stars, Clouds, Distant Terrain)
+    // =========================================================================
+    _drawSceneryAndHorizon(canvas, size);
+
+    // =========================================================================
+    // 3. ROAD / TRAIL / TERRAIN SURFACE
+    // =========================================================================
+    final roadTopY = size.height * 0.62;
+    final roadBottomY = size.height * 0.86;
+    final roadHeight = roadBottomY - roadTopY;
+
+    _drawTerrainSurface(canvas, size, roadTopY, roadBottomY, roadHeight);
+
+    // =========================================================================
+    // 4. ONCOMING OPPOSITE VEHICLE (User Audio Directive: "ഓപ്പോസിറ്റ് വരാ!")
+    // =========================================================================
+    if (rideMode == RideMode.jeep || rideMode == RideMode.car) {
+      _drawOppositeTraffic(canvas, size, roadTopY, roadHeight);
+    }
+
+    // =========================================================================
+    // 5. THEMATIC VOCABULARY LANDMARKS (User Audio Directive: Real objects like Book, Fountain, Tree, etc. instead of houses!)
+    // =========================================================================
+    _drawThematicVocabularyLandmarks(canvas, size, roadTopY);
+
+    // =========================================================================
+    // 6. PLAYER RIDE / AVATAR (Car, Safari Jeep, Plane, Walking Explorer, Rocket)
+    // =========================================================================
+    _drawPlayerRide(canvas, size);
+
+    // =========================================================================
+    // 7. PARTICLES & EXHAUST (Dust, Smoke, Contrails, Sparks)
+    // =========================================================================
+    for (final p in particles) {
+      final pPaint = Paint()..color = p.color.withValues(alpha: p.life.clamp(0.0, 1.0));
+      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), p.size, pPaint);
+    }
+  }
+
+  void _drawDynamicSky(Canvas canvas, Size size) {
+    switch (rideMode) {
+      case RideMode.rocket:
+        // Deep cosmic space gradient
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF020617), Color(0xFF0F172A), Color(0xFF1E1B4B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
+      case RideMode.airplane:
+        // High-altitude azure sky
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFE0F2FE)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
+      case RideMode.walking:
+        // Emerald rainforest / jungle canopy atmosphere
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF064E3B), Color(0xFF047857), Color(0xFFA7F3D0)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
+      case RideMode.jeep:
+        // Warm safari canyon sky
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFB45309), Color(0xFFF59E0B), Color(0xFFFEF3C7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
+      case RideMode.car:
+        // Bright sunny morning
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+    }
+  }
+
+  void _drawSceneryAndHorizon(Canvas canvas, Size size) {
+    if (rideMode == RideMode.rocket) {
+      // Cosmic stars & distant nebula
+      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+      for (int i = 0; i < 40; i++) {
+        final sx = ((i * 73 + cloudScroll * 6) % size.width);
+        final sy = ((i * 37) % (size.height * 0.55));
+        final sRadius = (i % 3 == 0) ? 2.2 : 1.2;
+        canvas.drawCircle(Offset(sx, sy), sRadius, starPaint);
+      }
+      // Distant ringed planet
+      final planetPaint = Paint()..color = const Color(0xFF818CF8).withValues(alpha: 0.65);
+      canvas.drawCircle(Offset(size.width * 0.82, size.height * 0.16), 26, planetPaint);
+      return;
+    }
+
+    // Sun for Earthly modes
     final sunCenter = Offset(size.width * 0.82, size.height * 0.16);
     final sunGlowPaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+      ..color = (rideMode == RideMode.jeep ? const Color(0xFFF59E0B) : const Color(0xFFFFD700)).withValues(alpha: 0.35)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28);
     canvas.drawCircle(sunCenter, 38, sunGlowPaint);
 
-    final sunPaint = Paint()..color = const Color(0xFFFFF066);
+    final sunPaint = Paint()..color = (rideMode == RideMode.jeep ? const Color(0xFFFDE68A) : const Color(0xFFFFF066));
     canvas.drawCircle(sunCenter, 22, sunPaint);
 
-    // 3. Clouds (Drifting smoothly)
-    _drawCloud(canvas, Offset((cloudScroll * 20) % (size.width + 120) - 60, size.height * 0.10), 40);
-    _drawCloud(canvas, Offset(((cloudScroll * 14) + 180) % (size.width + 120) - 60, size.height * 0.18), 32);
-
-    // 4. Distant Green Hills & Mountains
-    final mountainPaint = Paint()..color = const Color(0xFF0369A1);
-    final mountainPath = Path();
-    mountainPath.moveTo(0, size.height * 0.44);
-    for (double x = 0; x <= size.width; x += 60) {
-      final y = size.height * 0.38 + math.sin((x + sceneryScroll * 0.2) * 0.02) * 22;
-      mountainPath.lineTo(x, y);
+    // Drifting clouds (more voluminous for airplane mode!)
+    final cloudCount = (rideMode == RideMode.airplane) ? 5 : 2;
+    for (int c = 0; c < cloudCount; c++) {
+      final speedFactor = 14 + c * 6.0;
+      final xPos = ((cloudScroll * speedFactor) + (c * 140)) % (size.width + 160) - 80;
+      final yPos = size.height * (0.08 + c * 0.08);
+      final cRadius = 34.0 + (c % 2) * 10;
+      _drawCloud(canvas, Offset(xPos, yPos), cRadius);
     }
-    mountainPath.lineTo(size.width, size.height * 0.52);
-    mountainPath.lineTo(0, size.height * 0.52);
-    mountainPath.close();
-    canvas.drawPath(mountainPath, mountainPaint);
 
-    // 5. Rolling Green Meadow Hills
-    final hillPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF10B981), Color(0xFF059669)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, size.height * 0.46, size.width, size.height * 0.22));
-
+    // Rolling Distant Hills / Mountains
+    final hillColor = rideMode == RideMode.jeep
+        ? const Color(0xFF78350F)
+        : (rideMode == RideMode.walking ? const Color(0xFF064E3B) : const Color(0xFF0369A1));
+    final hillPaint = Paint()..color = hillColor;
     final hillPath = Path();
-    hillPath.moveTo(0, size.height * 0.52);
-    for (double x = 0; x <= size.width; x += 30) {
-      final y = size.height * 0.50 + math.sin((x + sceneryScroll * 0.6) * 0.015) * 14;
+    hillPath.moveTo(0, size.height * 0.44);
+    for (double x = 0; x <= size.width; x += 50) {
+      final y = size.height * 0.38 + math.sin((x + sceneryScroll * 0.25) * 0.02) * 20;
       hillPath.lineTo(x, y);
     }
     hillPath.lineTo(size.width, size.height * 0.62);
@@ -1364,183 +1625,673 @@ class _OpenWorldDrivePainter extends CustomPainter {
     hillPath.close();
     canvas.drawPath(hillPath, hillPaint);
 
-    // 6. Asphalt Road
-    final roadTopY = size.height * 0.62;
-    final roadBottomY = size.height * 0.86;
-    final roadHeight = roadBottomY - roadTopY;
-
-    // Grass border above road
-    final grassBorderPaint = Paint()..color = const Color(0xFF047857);
-    canvas.drawRect(Rect.fromLTWH(0, roadTopY - 6, size.width, 8), grassBorderPaint);
-
-    // Asphalt surface
-    final roadPaint = Paint()..color = const Color(0xFF1E293B);
-    canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), roadPaint);
-
-    // Bottom curb
-    final curbPaint = Paint()..color = const Color(0xFF334155);
-    canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), curbPaint);
-
-    // Dashed Highway Lane Markers (Scrolls with distance)
-    final laneMarkerPaint = Paint()
-      ..color = const Color(0xFFFFD700)
-      ..strokeWidth = 3.5;
-    final dashOffset = (distanceTraveled * 1.5) % 40;
-    for (double x = -dashOffset; x < size.width; x += 40) {
-      canvas.drawLine(
-        Offset(x, roadTopY + roadHeight * 0.5),
-        Offset(x + 22, roadTopY + roadHeight * 0.5),
-        laneMarkerPaint,
-      );
+    // Foreground lush meadow / desert mounds
+    final moundColor = rideMode == RideMode.jeep
+        ? const Color(0xFF92400E)
+        : (rideMode == RideMode.walking ? const Color(0xFF059669) : const Color(0xFF10B981));
+    final moundPaint = Paint()..color = moundColor;
+    final moundPath = Path();
+    moundPath.moveTo(0, size.height * 0.52);
+    for (double x = 0; x <= size.width; x += 30) {
+      final y = size.height * 0.50 + math.sin((x + sceneryScroll * 0.6) * 0.015) * 14;
+      moundPath.lineTo(x, y);
     }
+    moundPath.lineTo(size.width, size.height * 0.62);
+    moundPath.lineTo(0, size.height * 0.62);
+    moundPath.close();
+    canvas.drawPath(moundPath, moundPaint);
 
-    // 7. Roadside Trees
-    final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
-    _drawTree(canvas, Offset(treeOffset1, roadTopY - 2), 24);
-
-    // 8. Vocabulary Checkpoint Landmark Houses (Prominent Buildings beside road)
-    _drawVocabularyHouses(canvas, size, roadTopY);
-
-    // 9. Player Sports Car 🏎️
-    _drawPlayerCar(canvas, size);
-
-    // 10. Road Particles & Smoke
-    for (final p in particles) {
-      final pPaint = Paint()..color = p.color.withValues(alpha: p.life.clamp(0.0, 1.0));
-      canvas.drawCircle(Offset(p.x * size.width, p.y * size.height), p.size, pPaint);
+    // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket) {
+      final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
+      _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
+      final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
+      _drawTree(canvas, Offset(treeOffset2, size.height * 0.62 - 2), 20);
     }
   }
 
-  void _drawCloud(Canvas canvas, Offset center, double radius) {
-    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.82);
-    canvas.drawCircle(center, radius, cloudPaint);
-    canvas.drawCircle(center.translate(-radius * 0.55, radius * 0.1), radius * 0.75, cloudPaint);
-    canvas.drawCircle(center.translate(radius * 0.55, radius * 0.1), radius * 0.75, cloudPaint);
+  void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
+    switch (rideMode) {
+      case RideMode.rocket:
+        // Cosmic runway grid
+        final runwayPaint = Paint()..color = const Color(0xFF090D1A);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), runwayPaint);
+        final glowBorder = Paint()..color = const Color(0xFF6366F1)..strokeWidth = 2;
+        canvas.drawLine(Offset(0, roadTopY), Offset(size.width, roadTopY), glowBorder);
+        canvas.drawLine(Offset(0, roadBottomY), Offset(size.width, roadBottomY), glowBorder);
+        // Warp grid markers
+        final warpPaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.4)..strokeWidth = 2;
+        final dashOffset = (distanceTraveled * 2.2) % 50;
+        for (double x = -dashOffset; x < size.width; x += 50) {
+          canvas.drawLine(Offset(x, roadTopY + roadHeight * 0.5), Offset(x + 28, roadTopY + roadHeight * 0.5), warpPaint);
+        }
+        break;
+
+      case RideMode.airplane:
+        // High sky cloud corridor
+        final skyCorridorPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+          ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), skyCorridorPaint);
+        // Cloud cushion beneath plane
+        final cloudBedPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+        for (double x = 0; x <= size.width; x += 60) {
+          canvas.drawCircle(Offset(x, roadBottomY - 8), 32, cloudBedPaint);
+        }
+        break;
+
+      case RideMode.walking:
+        // Forest Cobblestone Path
+        final pathPaint = Paint()..color = const Color(0xFF475569);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), pathPaint);
+        // Grass borders
+        final forestBorder = Paint()..color = const Color(0xFF065F46);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY - 6, size.width, 8), forestBorder);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), forestBorder);
+        // Cobblestones
+        final stonePaint = Paint()..color = const Color(0xFF64748B);
+        final stoneOffset = (distanceTraveled * 1.5) % 40;
+        for (double x = -stoneOffset; x < size.width; x += 40) {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(x + 4, roadTopY + 12, 18, 12), const Radius.circular(4)),
+            stonePaint,
+          );
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(x + 20, roadTopY + 34, 16, 10), const Radius.circular(4)),
+            stonePaint,
+          );
+        }
+        break;
+
+      case RideMode.jeep:
+        // Safari Dirt / Canyon Track
+        final dirtPaint = Paint()..color = const Color(0xFF78350F);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), dirtPaint);
+        // Desert sand shoulder
+        final sandBorder = Paint()..color = const Color(0xFF92400E);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY - 6, size.width, 8), sandBorder);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), sandBorder);
+        // Rough tire ruts
+        final rutPaint = Paint()..color = const Color(0xFF451A03)..strokeWidth = 3;
+        final rutOffset = (distanceTraveled * 1.8) % 36;
+        for (double x = -rutOffset; x < size.width; x += 36) {
+          canvas.drawLine(Offset(x, roadTopY + 16), Offset(x + 18, roadTopY + 16), rutPaint);
+          canvas.drawLine(Offset(x, roadTopY + 48), Offset(x + 18, roadTopY + 48), rutPaint);
+        }
+        break;
+
+      case RideMode.car:
+        // Classic Asphalt Highway
+        final grassBorderPaint = Paint()..color = const Color(0xFF047857);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY - 6, size.width, 8), grassBorderPaint);
+        final roadPaint = Paint()..color = const Color(0xFF1E293B);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), roadPaint);
+        final curbPaint = Paint()..color = const Color(0xFF334155);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), curbPaint);
+        // Dashed center highway lines
+        final laneMarkerPaint = Paint()..color = const Color(0xFFFFD700)..strokeWidth = 3.5;
+        final dashOffset = (distanceTraveled * 1.5) % 40;
+        for (double x = -dashOffset; x < size.width; x += 40) {
+          canvas.drawLine(
+            Offset(x, roadTopY + roadHeight * 0.5),
+            Offset(x + 22, roadTopY + roadHeight * 0.5),
+            laneMarkerPaint,
+          );
+        }
+        break;
+    }
   }
 
-  void _drawTree(Canvas canvas, Offset groundPos, double height) {
-    final trunkPaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 4;
-    canvas.drawLine(groundPos, groundPos.translate(0, -height), trunkPaint);
+  /// 🚗 Oncoming Opposite Vehicle (User Audio Directive: "ഓപ്പോസിറ്റ് വരാ!")
+  void _drawOppositeTraffic(Canvas canvas, Size size, double roadTop, double roadHeight) {
+    // Calculates a car driving smoothly from right to left in the upper lane
+    final cyclePeriod = size.width * 2.8;
+    final oppX = size.width + 120 - ((distanceTraveled * 1.4 + sceneryScroll * 2.2) % cyclePeriod);
 
-    final foliagePaint = Paint()..color = const Color(0xFF047857);
-    canvas.drawCircle(groundPos.translate(0, -height - 8), height * 0.65, foliagePaint);
+    if (oppX < -100 || oppX > size.width + 120) return;
+
+    final oppY = roadTop + roadHeight * 0.26;
+
+    // Shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.35);
+    canvas.drawOval(Rect.fromCenter(center: Offset(oppX, oppY + 12), width: 62, height: 12), shadowPaint);
+
+    // Opposite vehicle body (Blue/Teal sedan pointing LEFT)
+    final oppBodyPaint = Paint()..color = const Color(0xFF0284C7);
+    final oppPath = Path();
+    oppPath.moveTo(oppX + 26, oppY + 6);
+    oppPath.lineTo(oppX + 26, oppY - 2);
+    oppPath.lineTo(oppX + 12, oppY - 10);
+    oppPath.lineTo(oppX - 10, oppY - 10);
+    oppPath.lineTo(oppX - 24, oppY - 2);
+    oppPath.lineTo(oppX - 26, oppY + 6);
+    oppPath.close();
+    canvas.drawPath(oppPath, oppBodyPaint);
+
+    // Windshield facing LEFT
+    final glassPaint = Paint()..color = const Color(0xFFBAE6FD);
+    canvas.drawRect(Rect.fromLTWH(oppX - 18, oppY - 8, 14, 6), glassPaint);
+
+    // Yellow Headlights beaming to the LEFT!
+    final oppLightPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0xFFFFF066).withValues(alpha: 0.5), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: Offset(oppX - 28, oppY + 2), radius: 24));
+    canvas.drawOval(Rect.fromLTWH(oppX - 44, oppY - 4, 30, 12), oppLightPaint);
+
+    // Spinning wheels
+    final tirePaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawCircle(Offset(oppX - 16, oppY + 7), 6, tirePaint);
+    canvas.drawCircle(Offset(oppX + 16, oppY + 7), 6, tirePaint);
   }
 
-  /// 🏠 Draws the Vocabulary Landmark Building / House beside the road
-  void _drawVocabularyHouses(Canvas canvas, Size size, double roadTop) {
+  // =========================================================================
+  // 📚 THEMATIC VOCABULARY LANDMARKS (User Audio Directive!)
+  // =========================================================================
+  void _drawThematicVocabularyLandmarks(Canvas canvas, Size size, double roadTop) {
     for (int i = 0; i < checkpoints.length; i++) {
       final targetDistance = (i + 1) * kDistancePerCheckpoint;
       final distToCar = targetDistance - distanceTraveled;
-      final houseX = (size.width * 0.24) + distToCar + 40;
+      final objX = (size.width * 0.24) + distToCar + 40;
 
       // Only draw if within screen view
-      if (houseX < -180 || houseX > size.width + 180) continue;
+      if (objX < -180 || objX > size.width + 180) continue;
 
       final item = checkpoints[i];
-      final word = item['word']?.toString() ?? '';
-      final ml = item['meaningMl']?.toString() ?? '';
-      final emoji = item['emoji']?.toString() ?? '🏠';
+      final isSelected = (i == currentCheckpoint && isAtCheckpoint);
 
-      final houseW = 120.0;
-      final houseH = 80.0;
-      final houseY = roadTop - houseH;
+      // Draw the specialized 3D thematic sculpture according to the word!
+      _drawThematicObject(canvas, objX, roadTop, item, isSelected);
 
-      // 1. House Shadow
-      final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.3);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(houseX, roadTop + 2), width: houseW + 20, height: 16),
-        shadowPaint,
-      );
-
-      // 2. House Walls (Cozy styled building)
-      final wallPaint = Paint()..color = const Color(0xFFF8FAFC);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX - houseW / 2, houseY + 22, houseW, houseH - 22), const Radius.circular(8)),
-        wallPaint,
-      );
-
-      // 3. House Door & Windows
-      final doorPaint = Paint()..color = const Color(0xFF0F172A);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX - 12, roadTop - 28, 24, 28), const Radius.circular(4)),
-        doorPaint,
-      );
-
-      final windowPaint = Paint()..color = const Color(0xFF38BDF8);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX - 44, houseY + 36, 18, 18), const Radius.circular(3)),
-        windowPaint,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX + 26, houseY + 36, 18, 18), const Radius.circular(3)),
-        windowPaint,
-      );
-
-      // 4. Roof (Terracotta / Emerald)
-      final roofPaint = Paint()..color = const Color(0xFFDC2626);
-      final roofPath = Path();
-      roofPath.moveTo(houseX - houseW / 2 - 10, houseY + 22);
-      roofPath.lineTo(houseX, houseY);
-      roofPath.lineTo(houseX + houseW / 2 + 10, houseY + 22);
-      roofPath.close();
-      canvas.drawPath(roofPath, roofPaint);
-
-      // 5. Large Vocabulary Signboard on top of House! (User Audio Directive!)
-      final signboardW = 136.0;
-      final signboardH = 36.0;
-      final signboardY = houseY - signboardH - 4;
-
-      final signBgPaint = Paint()
-        ..color = const Color(0xFF0F172A)
-        ..style = PaintingStyle.fill;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX - signboardW / 2, signboardY, signboardW, signboardH), const Radius.circular(8)),
-        signBgPaint,
-      );
-
-      final signBorderPaint = Paint()
-        ..color = (i == currentCheckpoint && isAtCheckpoint)
-            ? const Color(0xFFFFD700)
-            : const Color(0xFF38BDF8)
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(houseX - signboardW / 2, signboardY, signboardW, signboardH), const Radius.circular(8)),
-        signBorderPaint,
-      );
-
-      // Draw Word & Emoji Text on Signboard
-      final textSpan = TextSpan(
-        text: '$emoji $word\n$ml',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-          height: 1.15,
-        ),
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout(maxWidth: signboardW);
-      textPainter.paint(canvas, Offset(houseX - textPainter.width / 2, signboardY + 4));
+      // Floating illuminated vocabulary billboard on top
+      _drawSignboard(canvas, objX, roadTop, item, isSelected, i + 1);
     }
   }
 
+  /// 🎨 Renders Dedicated Thematic Objects instead of generic houses! (User Audio Directive!)
+  void _drawThematicObject(Canvas canvas, double objX, double roadTop, Map<String, dynamic> item, bool isSelected) {
+    final word = (item['word']?.toString() ?? '').toLowerCase();
+
+    // 1. Base pedestal / Shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.32);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(objX, roadTop + 2), width: 130, height: 18),
+      shadowPaint,
+    );
+
+    // Marble plinth foundation
+    final plinthPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF334155), Color(0xFF1E293B)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(objX - 55, roadTop - 14, 110, 16));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(objX - 55, roadTop - 14, 110, 16), const Radius.circular(5)),
+      plinthPaint,
+    );
+
+    // 2. Specialized Thematic Sculpture based on Word:
+    if (word.contains('book') || word.contains('paper')) {
+      _drawGiantOpenBook(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('water') || word.contains('drink')) {
+      _drawCrystalFountain(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('tree')) {
+      _drawMajesticAncientTree(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('food') || word.contains('eat')) {
+      _drawGourmetBistro(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('car')) {
+      _drawShowroomTurntable(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('home')) {
+      _drawCozyCottage(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('cat') || word.contains('dog')) {
+      _drawPetSanctuary(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('sun')) {
+      _drawSunTemple(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('ball')) {
+      _drawTrophyPodium(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('door')) {
+      _drawGoldenDoorway(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('milk')) {
+      _drawDairyKiosk(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('school')) {
+      _drawAcademyBuilding(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('friend') || word.contains('family')) {
+      _drawFriendshipMonument(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('clock')) {
+      _drawVictorianClocktower(canvas, objX, roadTop - 14, isSelected);
+    } else if (word.contains('star')) {
+      _drawCelestialStarShrine(canvas, objX, roadTop - 14, isSelected);
+    } else {
+      // Default: High-tech holographic energy crystal display
+      _drawHolographicCrystalMonument(canvas, objX, roadTop - 14, item, isSelected);
+    }
+  }
+
+  // 📖 1. Giant Open Book Sculpture (User's specific audio example: "പേപ്പർ അല്ലെങ്കിൽ ബുക്ക് ആക്കാൻ പറ്റുമോ?")
+  void _drawGiantOpenBook(Canvas canvas, double x, double y, bool isSelected) {
+    final bookW = 86.0;
+    final bookH = 48.0;
+
+    // Glowing aura if selected
+    if (isSelected) {
+      final glowPaint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.4)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+      canvas.drawCircle(Offset(x, y - bookH * 0.5), 44, glowPaint);
+    }
+
+    // Book Cover Leather Binding
+    final coverPaint = Paint()..color = const Color(0xFF7C2D12);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x - bookW / 2 - 4, y - bookH - 2, bookW + 8, bookH + 4), const Radius.circular(6)),
+      coverPaint,
+    );
+
+    // Left Page (Curved Open White Page)
+    final leftPagePaint = Paint()..color = const Color(0xFFF8FAFC);
+    final leftPath = Path();
+    leftPath.moveTo(x - 2, y - 6);
+    leftPath.lineTo(x - bookW / 2, y - 4);
+    leftPath.quadraticBezierTo(x - bookW / 2 + 8, y - bookH, x - 2, y - bookH + 6);
+    leftPath.close();
+    canvas.drawPath(leftPath, leftPagePaint);
+
+    // Right Page (Curved Open White Page)
+    final rightPagePaint = Paint()..color = const Color(0xFFFFFFFF);
+    final rightPath = Path();
+    rightPath.moveTo(x + 2, y - 6);
+    rightPath.lineTo(x + bookW / 2, y - 4);
+    rightPath.quadraticBezierTo(x + bookW / 2 - 8, y - bookH, x + 2, y - bookH + 6);
+    rightPath.close();
+    canvas.drawPath(rightPath, rightPagePaint);
+
+    // Ruled lines of text on pages
+    final textLinePaint = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 1.6;
+    for (int l = 1; l <= 4; l++) {
+      final lineY = y - bookH + 12 + l * 6.5;
+      canvas.drawLine(Offset(x - bookW / 2 + 10, lineY), Offset(x - 10, lineY), textLinePaint);
+      canvas.drawLine(Offset(x + 10, lineY), Offset(x + bookW / 2 - 10, lineY), textLinePaint);
+    }
+
+    // Golden Bookmark Ribbon
+    final ribbonPaint = Paint()..color = const Color(0xFFFFD700)..strokeWidth = 3.5;
+    canvas.drawLine(Offset(x, y - bookH + 4), Offset(x + 4, y + 2), ribbonPaint);
+  }
+
+  // 💧 2. Crystal Water Fountain
+  void _drawCrystalFountain(Canvas canvas, double x, double y, bool isSelected) {
+    // Marble Lower Basin
+    final basinPaint = Paint()..color = const Color(0xFFE2E8F0);
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 10), width: 78, height: 22), basinPaint);
+
+    // Sparkling Blue Water Pool
+    final waterPaint = Paint()..color = const Color(0xFF0284C7);
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 12), width: 68, height: 16), waterPaint);
+
+    // Fountain Column
+    final colPaint = Paint()..color = const Color(0xFFCBD5E1);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 7, y - 42, 14, 32), const Radius.circular(3)), colPaint);
+
+    // Upper Tier Basin
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 40), width: 38, height: 12), basinPaint);
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 41), width: 32, height: 9), waterPaint);
+
+    // Bubbling water jets
+    final jetPaint = Paint()..color = const Color(0xFFBAE6FD)..strokeWidth = 2;
+    canvas.drawLine(Offset(x, y - 42), Offset(x, y - 56), jetPaint);
+    canvas.drawCircle(Offset(x - 5, y - 48), 2.5, jetPaint);
+    canvas.drawCircle(Offset(x + 5, y - 48), 2.5, jetPaint);
+  }
+
+  // 🌳 3. Ancient Majestic Oak Tree
+  void _drawMajesticAncientTree(Canvas canvas, double x, double y, bool isSelected) {
+    // Broad textured trunk
+    final trunkPaint = Paint()..color = const Color(0xFF78350F);
+    final trunkPath = Path();
+    trunkPath.moveTo(x - 14, y);
+    trunkPath.lineTo(x - 7, y - 45);
+    trunkPath.lineTo(x + 7, y - 45);
+    trunkPath.lineTo(x + 14, y);
+    trunkPath.close();
+    canvas.drawPath(trunkPath, trunkPaint);
+
+    // Triple Lush Canopy Foliage
+    final foliageDark = Paint()..color = const Color(0xFF065F46);
+    final foliageLight = Paint()..color = const Color(0xFF10B981);
+    canvas.drawCircle(Offset(x - 18, y - 50), 22, foliageDark);
+    canvas.drawCircle(Offset(x + 18, y - 50), 22, foliageDark);
+    canvas.drawCircle(Offset(x, y - 62), 26, foliageLight);
+
+    // Glowing Golden Apples/Fruits
+    final applePaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawCircle(Offset(x - 10, y - 52), 4, applePaint);
+    canvas.drawCircle(Offset(x + 12, y - 48), 4, applePaint);
+    canvas.drawCircle(Offset(x, y - 68), 4, applePaint);
+  }
+
+  // 🍲 4. Gourmet Food Bistro
+  void _drawGourmetBistro(Canvas canvas, double x, double y, bool isSelected) {
+    // Bistro Counter
+    final counterPaint = Paint()..color = const Color(0xFFB45309);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 36, y - 28, 72, 28), const Radius.circular(5)), counterPaint);
+
+    // Striped Awning
+    final awningRed = Paint()..color = const Color(0xFFDC2626);
+    final awningWhite = Paint()..color = Colors.white;
+    for (int s = 0; s < 5; s++) {
+      canvas.drawRect(Rect.fromLTWH(x - 40 + s * 16, y - 48, 8, 16), awningRed);
+      canvas.drawRect(Rect.fromLTWH(x - 32 + s * 16, y - 48, 8, 16), awningWhite);
+    }
+
+    // Golden Cloche Platter with Steam
+    final clochePaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawArc(Rect.fromCenter(center: Offset(x, y - 32), width: 26, height: 20), math.pi, math.pi, true, clochePaint);
+    final steamPaint = Paint()..color = Colors.white70..strokeWidth = 1.5;
+    canvas.drawLine(Offset(x - 3, y - 44), Offset(x - 5, y - 52), steamPaint);
+    canvas.drawLine(Offset(x + 3, y - 44), Offset(x + 5, y - 52), steamPaint);
+  }
+
+  // 🚗 5. Vehicle Showroom Turntable
+  void _drawShowroomTurntable(Canvas canvas, double x, double y, bool isSelected) {
+    // Glowing neon turntable base
+    final ringPaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 6), width: 84, height: 22), ringPaint);
+
+    // Miniature Sports Car Showcase on plinth
+    final carPaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 22, y - 24, 44, 16), const Radius.circular(4)), carPaint);
+    final glassPaint = Paint()..color = const Color(0xFFBAE6FD);
+    canvas.drawRect(Rect.fromLTWH(x - 10, y - 30, 20, 8), glassPaint);
+  }
+
+  // 🏠 6. Cozy Cottage Home
+  void _drawCozyCottage(Canvas canvas, double x, double y, bool isSelected) {
+    final wallPaint = Paint()..color = const Color(0xFFFEF3C7);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 34, y - 38, 68, 38), const Radius.circular(4)), wallPaint);
+
+    final roofPaint = Paint()..color = const Color(0xFFDC2626);
+    final roofPath = Path();
+    roofPath.moveTo(x - 42, y - 38);
+    roofPath.lineTo(x, y - 60);
+    roofPath.lineTo(x + 42, y - 38);
+    roofPath.close();
+    canvas.drawPath(roofPath, roofPaint);
+
+    // Chimney with smoke
+    final chimneyPaint = Paint()..color = const Color(0xFF78350F);
+    canvas.drawRect(Rect.fromLTWH(x + 16, y - 58, 10, 18), chimneyPaint);
+    final smokePaint = Paint()..color = Colors.white54;
+    canvas.drawCircle(Offset(x + 22, y - 64), 4, smokePaint);
+    canvas.drawCircle(Offset(x + 26, y - 72), 6, smokePaint);
+  }
+
+  // 🐱 7. Pet Sanctuary Pavilion
+  void _drawPetSanctuary(Canvas canvas, double x, double y, bool isSelected) {
+    final housePaint = Paint()..color = const Color(0xFFD97706);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 26, y - 36, 52, 36), const Radius.circular(4)), housePaint);
+
+    final roofPaint = Paint()..color = const Color(0xFF047857);
+    final roofPath = Path();
+    roofPath.moveTo(x - 32, y - 36);
+    roofPath.lineTo(x, y - 52);
+    roofPath.lineTo(x + 32, y - 36);
+    roofPath.close();
+    canvas.drawPath(roofPath, roofPaint);
+
+    // Cute Arched Doghouse/Cathouse Doorway
+    final doorPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 10, y - 22, 20, 22), const Radius.circular(8)), doorPaint);
+  }
+
+  // ☀️ 8. Sun Temple Obelisk
+  void _drawSunTemple(Canvas canvas, double x, double y, bool isSelected) {
+    // Obelisk
+    final obeliskPaint = Paint()..color = const Color(0xFFD97706);
+    final obPath = Path();
+    obPath.moveTo(x - 14, y);
+    obPath.lineTo(x - 6, y - 48);
+    obPath.lineTo(x + 6, y - 48);
+    obPath.lineTo(x + 14, y);
+    obPath.close();
+    canvas.drawPath(obPath, obeliskPaint);
+
+    // Radiant Golden Solar Orb on top
+    final sunPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(x, y - 56), 14, sunPaint);
+
+    // Sunburst rays
+    final rayPaint = Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 2.2;
+    for (int r = 0; r < 8; r++) {
+      final angle = r * (math.pi / 4);
+      canvas.drawLine(
+        Offset(x + math.cos(angle) * 16, y - 56 + math.sin(angle) * 16),
+        Offset(x + math.cos(angle) * 23, y - 56 + math.sin(angle) * 23),
+        rayPaint,
+      );
+    }
+  }
+
+  // ⚽ 9. Trophy Podium & Soccer Ball
+  void _drawTrophyPodium(Canvas canvas, double x, double y, bool isSelected) {
+    final goldPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 22, y - 24, 44, 24), const Radius.circular(4)), goldPaint);
+
+    // Giant Soccer Ball
+    final ballPaint = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset(x, y - 42), 18, ballPaint);
+    final pentagonPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawCircle(Offset(x, y - 42), 6, pentagonPaint);
+    canvas.drawCircle(Offset(x - 10, y - 48), 4, pentagonPaint);
+    canvas.drawCircle(Offset(x + 10, y - 48), 4, pentagonPaint);
+    canvas.drawCircle(Offset(x, y - 30), 4, pentagonPaint);
+  }
+
+  // 🚪 10. Golden Doorway Arch
+  void _drawGoldenDoorway(Canvas canvas, double x, double y, bool isSelected) {
+    // Golden Frame
+    final framePaint = Paint()..color = const Color(0xFFD97706);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 26, y - 54, 52, 54), const Radius.circular(10)), framePaint);
+
+    // Door Portal Opening with Mystical Cyan Light
+    final portalPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+      ).createShader(Rect.fromLTWH(x - 18, y - 48, 36, 48));
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 18, y - 48, 36, 48), const Radius.circular(8)), portalPaint);
+
+    // Brass Doorknob
+    final knobPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(x + 10, y - 24), 3, knobPaint);
+  }
+
+  // 🥛 11. Dairy Milk Kiosk
+  void _drawDairyKiosk(Canvas canvas, double x, double y, bool isSelected) {
+    final kioskPaint = Paint()..color = const Color(0xFF0284C7);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 30, y - 28, 60, 28), const Radius.circular(4)), kioskPaint);
+
+    // Giant Glass Milk Bottle
+    final bottlePaint = Paint()..color = Colors.white;
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 10, y - 50, 20, 26), const Radius.circular(4)), bottlePaint);
+    canvas.drawRect(Rect.fromLTWH(x - 6, y - 56, 12, 8), bottlePaint);
+    final capPaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawRect(Rect.fromLTWH(x - 7, y - 58, 14, 4), capPaint);
+  }
+
+  // 🏫 12. Academy Schoolhouse
+  void _drawAcademyBuilding(Canvas canvas, double x, double y, bool isSelected) {
+    final brickPaint = Paint()..color = const Color(0xFF991B1B);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 36, y - 36, 72, 36), const Radius.circular(3)), brickPaint);
+
+    // Bell / Clock Tower
+    canvas.drawRect(Rect.fromLTWH(x - 12, y - 56, 24, 20), brickPaint);
+    final spirePaint = Paint()..color = const Color(0xFF1E293B);
+    final spire = Path();
+    spire.moveTo(x - 14, y - 56);
+    spire.lineTo(x, y - 68);
+    spire.lineTo(x + 14, y - 56);
+    spire.close();
+    canvas.drawPath(spire, spirePaint);
+
+    // Clock face
+    final clockFace = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset(x, y - 46), 6, clockFace);
+  }
+
+  // 🤝 13. Friendship Arch
+  void _drawFriendshipMonument(Canvas canvas, double x, double y, bool isSelected) {
+    final archPaint = Paint()
+      ..color = const Color(0xFFEC4899)
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
+    canvas.drawArc(Rect.fromCenter(center: Offset(x, y - 10), width: 56, height: 60), math.pi, math.pi, false, archPaint);
+
+    // Golden Heart Emblem in Center
+    final heartPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(x - 5, y - 42), 6, heartPaint);
+    canvas.drawCircle(Offset(x + 5, y - 42), 6, heartPaint);
+    final triPath = Path();
+    triPath.moveTo(x - 10, y - 40);
+    triPath.lineTo(x, y - 30);
+    triPath.lineTo(x + 10, y - 40);
+    triPath.close();
+    canvas.drawPath(triPath, heartPaint);
+  }
+
+  // ⏰ 14. Victorian Clock Tower
+  void _drawVictorianClocktower(Canvas canvas, double x, double y, bool isSelected) {
+    final towerPaint = Paint()..color = const Color(0xFF475569);
+    canvas.drawRect(Rect.fromLTWH(x - 12, y - 54, 24, 54), towerPaint);
+
+    final clockPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(x, y - 40), 12, clockPaint);
+
+    // Hands
+    final handPaint = Paint()..color = const Color(0xFF0F172A)..strokeWidth = 1.8;
+    canvas.drawLine(Offset(x, y - 40), Offset(x, y - 48), handPaint);
+    canvas.drawLine(Offset(x, y - 40), Offset(x + 5, y - 40), handPaint);
+  }
+
+  // ⭐ 15. Celestial Star Shrine
+  void _drawCelestialStarShrine(Canvas canvas, double x, double y, bool isSelected) {
+    final pillarPaint = Paint()..color = const Color(0xFF6366F1);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(x - 14, y - 44, 28, 44), const Radius.circular(5)), pillarPaint);
+
+    // 5-Pointed Star
+    final starPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(x, y - 54), 14, starPaint);
+  }
+
+  // 🔮 16. Default Holographic Crystal Monument
+  void _drawHolographicCrystalMonument(Canvas canvas, double x, double y, Map<String, dynamic> item, bool isSelected) {
+    final crystalPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF38BDF8), Color(0xFF818CF8)],
+      ).createShader(Rect.fromCircle(center: Offset(x, y - 36), radius: 24));
+    canvas.drawCircle(Offset(x, y - 36), 22, crystalPaint);
+
+    // Neon energy ring
+    final ringPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+    canvas.drawOval(Rect.fromCenter(center: Offset(x, y - 36), width: 56, height: 16), ringPaint);
+  }
+
+  /// 🏷️ Sleek Floating Illuminated Vocabulary Signboard
+  void _drawSignboard(Canvas canvas, double x, double roadTop, Map<String, dynamic> item, bool isSelected, int index) {
+    final word = item['word']?.toString() ?? '';
+    final ml = item['meaningMl']?.toString() ?? '';
+    final emoji = item['emoji']?.toString() ?? '💎';
+
+    final signW = 142.0;
+    final signH = 38.0;
+    final signY = roadTop - 110.0;
+
+    // Glowing border when stopped at checkpoint
+    if (isSelected) {
+      final glowPaint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.5)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(x - signW / 2 - 2, signY - 2, signW + 4, signH + 4), const Radius.circular(10)),
+        glowPaint,
+      );
+    }
+
+    // Signboard Body
+    final signBgPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x - signW / 2, signY, signW, signH), const Radius.circular(8)),
+      signBgPaint,
+    );
+
+    // Signboard Border
+    final signBorderPaint = Paint()
+      ..color = isSelected ? const Color(0xFFFFD700) : const Color(0xFF38BDF8)
+      ..strokeWidth = isSelected ? 2.4 : 1.6
+      ..style = PaintingStyle.stroke;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x - signW / 2, signY, signW, signH), const Radius.circular(8)),
+      signBorderPaint,
+    );
+
+    // Word & Malayalam Text
+    final textSpan = TextSpan(
+      text: '$emoji $word\n$ml',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w900,
+        height: 1.15,
+      ),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(maxWidth: signW);
+    textPainter.paint(canvas, Offset(x - textPainter.width / 2, signY + 4));
+  }
+
+  // =========================================================================
+  // 🏎️ DIVERSE PLAYER RIDES & CHARACTERS (User Audio Directive!)
+  // =========================================================================
+  void _drawPlayerRide(Canvas canvas, Size size) {
+    switch (rideMode) {
+      case RideMode.jeep:
+        _drawSafariJeep(canvas, size);
+        break;
+      case RideMode.airplane:
+        _drawAirplane(canvas, size);
+        break;
+      case RideMode.walking:
+        _drawWalkingExplorer(canvas, size);
+        break;
+      case RideMode.rocket:
+        _drawSpaceRocket(canvas, size);
+        break;
+      case RideMode.car:
+        _drawPlayerCar(canvas, size);
+        break;
+    }
+  }
+
+  // 🏎️ Mode 1: Red Sports Racer
   void _drawPlayerCar(Canvas canvas, Size size) {
     final carX = size.width * 0.24;
     final carY = size.height * carLaneY;
 
-    // Car Shadow
+    // Shadow
     final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.35);
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(carX, carY + 16), width: 78, height: 16),
-      shadowPaint,
-    );
+    canvas.drawOval(Rect.fromCenter(center: Offset(carX, carY + 16), width: 78, height: 16), shadowPaint);
 
-    // Car Body (Sporty Red Racer)
+    // Body
     final bodyPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -1551,14 +2302,14 @@ class _OpenWorldDrivePainter extends CustomPainter {
     final carPath = Path();
     carPath.moveTo(carX - 34, carY + 8);
     carPath.lineTo(carX - 34, carY - 2);
-    carPath.lineTo(carX - 18, carY - 14); // Windshield
-    carPath.lineTo(carX + 16, carY - 14); // Roof
-    carPath.lineTo(carX + 34, carY - 2); // Hood
+    carPath.lineTo(carX - 18, carY - 14);
+    carPath.lineTo(carX + 16, carY - 14);
+    carPath.lineTo(carX + 34, carY - 2);
     carPath.lineTo(carX + 36, carY + 8);
     carPath.close();
     canvas.drawPath(carPath, bodyPaint);
 
-    // Windshield Glass
+    // Windshield
     final glassPaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.85);
     final glassPath = Path();
     glassPath.moveTo(carX - 14, carY - 12);
@@ -1575,9 +2326,194 @@ class _OpenWorldDrivePainter extends CustomPainter {
       ).createShader(Rect.fromCircle(center: Offset(carX + 44, carY + 3), radius: 36));
     canvas.drawOval(Rect.fromLTWH(carX + 34, carY - 6, 44, 18), headlightPaint);
 
-    // Wheels (Spinning with speed)
+    // Wheels
     _drawWheel(canvas, Offset(carX - 22, carY + 10));
     _drawWheel(canvas, Offset(carX + 22, carY + 10));
+  }
+
+  // 🚙 Mode 2: 4x4 Off-Road Safari Jeep (User Audio Directive!)
+  void _drawSafariJeep(Canvas canvas, Size size) {
+    final jeepX = size.width * 0.24;
+    final jeepY = size.height * carLaneY;
+
+    // Shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.38);
+    canvas.drawOval(Rect.fromCenter(center: Offset(jeepX, jeepY + 18), width: 84, height: 18), shadowPaint);
+
+    // Rugged Boxy Jeep Body (Olive Green / Safari Khaki)
+    final jeepBody = Paint()..color = const Color(0xFF4D7C0F);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(jeepX - 36, jeepY - 10, 72, 22), const Radius.circular(5)), jeepBody);
+
+    // Cabin
+    final cabinPaint = Paint()..color = const Color(0xFF365314);
+    canvas.drawRect(Rect.fromLTWH(jeepX - 22, jeepY - 24, 42, 14), cabinPaint);
+
+    // Roof Rack with Luggage
+    final rackPaint = Paint()..color = const Color(0xFF1E293B)..strokeWidth = 2.5;
+    canvas.drawLine(Offset(jeepX - 24, jeepY - 26), Offset(jeepX + 20, jeepY - 26), rackPaint);
+    final bagPaint = Paint()..color = const Color(0xFFD97706);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(jeepX - 16, jeepY - 33, 26, 8), const Radius.circular(2)), bagPaint);
+
+    // Large Windshield
+    final glassPaint = Paint()..color = const Color(0xFFBAE6FD);
+    canvas.drawRect(Rect.fromLTWH(jeepX + 8, jeepY - 22, 10, 11), glassPaint);
+
+    // Front Bullbar with Fog Lights
+    final barPaint = Paint()..color = const Color(0xFF0F172A)..strokeWidth = 3;
+    canvas.drawLine(Offset(jeepX + 36, jeepY - 4), Offset(jeepX + 36, jeepY + 12), barPaint);
+    final fogPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(jeepX + 36, jeepY + 2), 4, fogPaint);
+
+    // Spare Tire mounted on back
+    final sparePaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawCircle(Offset(jeepX - 38, jeepY), 9, sparePaint);
+
+    // Heavy Tread Knobby Off-Road Wheels
+    _drawKnobbyWheel(canvas, Offset(jeepX - 22, jeepY + 12));
+    _drawKnobbyWheel(canvas, Offset(jeepX + 22, jeepY + 12));
+  }
+
+  // ✈️ Mode 3: Skyward Propeller Aeroplane (User Audio Directive: "വിമാനം ആകാശത്തേക്ക് പോവാ!")
+  void _drawAirplane(Canvas canvas, Size size) {
+    final planeX = size.width * 0.24;
+    // Flies slightly higher and bobs with flight rhythm
+    final flightBob = math.sin(cloudScroll * 0.15) * 6;
+    final planeY = (size.height * (carLaneY - 0.10)) + flightBob;
+
+    // Contrail cloud puffs streaming behind
+    final contrailPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
+    for (int p = 1; p <= 4; p++) {
+      final cx = planeX - 38 - (p * 18);
+      final cy = planeY + (p % 2 == 0 ? 2 : -2);
+      canvas.drawCircle(Offset(cx, cy), 6.0 + p * 2.2, contrailPaint);
+    }
+
+    // Aeroplane Fuselage (Streamlined Blue & White)
+    final fuselagePaint = Paint()..color = const Color(0xFF0284C7);
+    final fPath = Path();
+    fPath.moveTo(planeX - 38, planeY);
+    fPath.lineTo(planeX - 34, planeY - 14); // Tail fin
+    fPath.lineTo(planeX - 26, planeY - 14);
+    fPath.lineTo(planeX + 24, planeY - 4);
+    fPath.lineTo(planeX + 36, planeY); // Nose
+    fPath.lineTo(planeX + 24, planeY + 6);
+    fPath.lineTo(planeX - 38, planeY + 4);
+    fPath.close();
+    canvas.drawPath(fPath, fuselagePaint);
+
+    // Wings
+    final wingPaint = Paint()..color = Colors.white;
+    final wingPath = Path();
+    wingPath.moveTo(planeX - 6, planeY - 2);
+    wingPath.lineTo(planeX + 8, planeY - 20); // Wingtip
+    wingPath.lineTo(planeX + 16, planeY - 20);
+    wingPath.lineTo(planeX + 12, planeY + 2);
+    wingPath.close();
+    canvas.drawPath(wingPath, wingPaint);
+
+    // Cockpit Bubble
+    final cockpitPaint = Paint()..color = const Color(0xFFBAE6FD);
+    canvas.drawOval(Rect.fromCenter(center: Offset(planeX + 14, planeY - 4), width: 18, height: 9), cockpitPaint);
+
+    // Spinning Front Propeller (Motion Blur)
+    final propPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 2.5;
+    final propAngle = (distanceTraveled * 0.5) % (math.pi * 2);
+    canvas.drawLine(
+      Offset(planeX + 37, planeY - math.sin(propAngle) * 16),
+      Offset(planeX + 37, planeY + math.sin(propAngle) * 16),
+      propPaint,
+    );
+  }
+
+  // 🚶 Mode 4: Nature Trail Explorer Walking/Jogging (User Audio Directive: "നടന്നു പോവാ / കാട്ടിൽ കൂടെ നടന്നു പോവാ!")
+  void _drawWalkingExplorer(Canvas canvas, Size size) {
+    final walkX = size.width * 0.24;
+    // Step bob animation
+    final stepCycle = distanceTraveled * 0.18;
+    final bobY = math.sin(stepCycle * 2).abs() * 4;
+    final walkY = size.height * carLaneY - bobY;
+
+    // Small ground shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.3);
+    canvas.drawOval(Rect.fromCenter(center: Offset(walkX, walkY + 16), width: 34, height: 9), shadowPaint);
+
+    // Legs (Swinging with walking stride)
+    final legPaint = Paint()..color = const Color(0xFF1E293B)..strokeWidth = 4..strokeCap = StrokeCap.round;
+    final legSwing = math.sin(stepCycle) * 12;
+    // Left leg
+    canvas.drawLine(Offset(walkX - 2, walkY + 4), Offset(walkX - 2 - legSwing, walkY + 14), legPaint);
+    // Right leg
+    canvas.drawLine(Offset(walkX + 2, walkY + 4), Offset(walkX + 2 + legSwing, walkY + 14), legPaint);
+
+    // Torso / Jacket (Explorer Red)
+    final jacketPaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(walkX - 8, walkY - 14, 16, 18), const Radius.circular(4)), jacketPaint);
+
+    // Hiker Backpack (Khaki)
+    final packPaint = Paint()..color = const Color(0xFFD97706);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(walkX - 16, walkY - 12, 8, 14), const Radius.circular(3)), packPaint);
+
+    // Head with Explorer Cap
+    final facePaint = Paint()..color = const Color(0xFFFDBA74);
+    canvas.drawCircle(Offset(walkX + 2, walkY - 22), 7, facePaint);
+    final capPaint = Paint()..color = const Color(0xFF047857);
+    canvas.drawArc(Rect.fromCenter(center: Offset(walkX + 2, walkY - 24), width: 16, height: 12), math.pi, math.pi, true, capPaint);
+    canvas.drawRect(Rect.fromLTWH(walkX + 2, walkY - 25, 10, 3), capPaint); // Cap brim
+
+    // Swinging Arms
+    final armPaint = Paint()..color = const Color(0xFFFDBA74)..strokeWidth = 3..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(walkX, walkY - 8), Offset(walkX + legSwing * 0.8, walkY), armPaint);
+  }
+
+  // 🚀 Mode 5: Cosmic Star Rocket (User Audio Directive: "വെർട്ടിക്കൽ ആയിട്ട് / റോക്കറ്റ്!")
+  void _drawSpaceRocket(Canvas canvas, Size size) {
+    final rocketX = size.width * 0.24;
+    final rocketY = size.height * (carLaneY - 0.05);
+
+    // Blazing animated rocket exhaust flames!
+    final flamePulsing = 18 + math.sin(distanceTraveled * 0.4).abs() * 12;
+    final flameOuter = Paint()..color = const Color(0xFFEF4444);
+    final flameInner = Paint()..color = const Color(0xFFFFD700);
+    final fPath = Path();
+    fPath.moveTo(rocketX - 32, rocketY - 6);
+    fPath.lineTo(rocketX - 32 - flamePulsing, rocketY);
+    fPath.lineTo(rocketX - 32, rocketY + 6);
+    fPath.close();
+    canvas.drawPath(fPath, flameOuter);
+    canvas.drawCircle(Offset(rocketX - 34, rocketY), 5, flameInner);
+
+    // Rocket Body (Sleek White Spacecraft)
+    final rocketPaint = Paint()..color = const Color(0xFFF8FAFC);
+    final rPath = Path();
+    rPath.moveTo(rocketX - 30, rocketY - 9);
+    rPath.lineTo(rocketX + 18, rocketY - 9);
+    rPath.lineTo(rocketX + 36, rocketY); // Nosecone tip
+    rPath.lineTo(rocketX + 18, rocketY + 9);
+    rPath.lineTo(rocketX - 30, rocketY + 9);
+    rPath.close();
+    canvas.drawPath(rPath, rocketPaint);
+
+    // Delta Stabilizer Fins
+    final finPaint = Paint()..color = const Color(0xFF0284C7);
+    final topFin = Path();
+    topFin.moveTo(rocketX - 28, rocketY - 9);
+    topFin.lineTo(rocketX - 12, rocketY - 20);
+    topFin.lineTo(rocketX, rocketY - 9);
+    topFin.close();
+    canvas.drawPath(topFin, finPaint);
+
+    final botFin = Path();
+    botFin.moveTo(rocketX - 28, rocketY + 9);
+    botFin.lineTo(rocketX - 12, rocketY + 20);
+    botFin.lineTo(rocketX, rocketY + 9);
+    botFin.close();
+    canvas.drawPath(botFin, finPaint);
+
+    // Cockpit Circular Porthole
+    final portPaint = Paint()..color = const Color(0xFF38BDF8);
+    canvas.drawCircle(Offset(rocketX + 12, rocketY), 5.5, portPaint);
   }
 
   void _drawWheel(Canvas canvas, Offset center) {
@@ -1587,16 +2523,47 @@ class _OpenWorldDrivePainter extends CustomPainter {
     final rimPaint = Paint()..color = const Color(0xFF94A3B8);
     canvas.drawCircle(center, 5, rimPaint);
 
-    // Animated rim spokes
-    final spokePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 1.2;
+    final spokePaint = Paint()..color = Colors.white..strokeWidth = 1.2;
     final angle = (distanceTraveled * 0.15) % (math.pi * 2);
     canvas.drawLine(
       Offset(center.dx + math.cos(angle) * 4, center.dy + math.sin(angle) * 4),
       Offset(center.dx - math.cos(angle) * 4, center.dy - math.sin(angle) * 4),
       spokePaint,
     );
+  }
+
+  void _drawKnobbyWheel(Canvas canvas, Offset center) {
+    final tirePaint = Paint()..color = const Color(0xFF0A0F1D);
+    canvas.drawCircle(center, 11, tirePaint);
+
+    // Rugged Knobby treads
+    final treadPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 2.2;
+    for (int t = 0; t < 6; t++) {
+      final angle = ((distanceTraveled * 0.15) + t * (math.pi / 3)) % (math.pi * 2);
+      canvas.drawLine(
+        Offset(center.dx + math.cos(angle) * 8, center.dy + math.sin(angle) * 8),
+        Offset(center.dx + math.cos(angle) * 12, center.dy + math.sin(angle) * 12),
+        treadPaint,
+      );
+    }
+
+    final hubPaint = Paint()..color = const Color(0xFFF59E0B);
+    canvas.drawCircle(center, 5.5, hubPaint);
+  }
+
+  void _drawCloud(Canvas canvas, Offset center, double radius) {
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.82);
+    canvas.drawCircle(center, radius, cloudPaint);
+    canvas.drawCircle(center.translate(-radius * 0.55, radius * 0.1), radius * 0.75, cloudPaint);
+    canvas.drawCircle(center.translate(radius * 0.55, radius * 0.1), radius * 0.75, cloudPaint);
+  }
+
+  void _drawTree(Canvas canvas, Offset groundPos, double height) {
+    final trunkPaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 4;
+    canvas.drawLine(groundPos, groundPos.translate(0, -height), trunkPaint);
+
+    final foliagePaint = Paint()..color = const Color(0xFF047857);
+    canvas.drawCircle(groundPos.translate(0, -height - 8), height * 0.65, foliagePaint);
   }
 
   @override

@@ -131,6 +131,7 @@ class _PocketDay1Step1AvatarChatPageState
   late final AnimationController _pulseController;
   late final AnimationController _micWaveController;
   late final AnimationController _balloonFloatController;
+  late final AnimationController _arrowBounceController;
 
   final List<Step1ChatMessage> _messages = [];
 
@@ -141,6 +142,8 @@ class _PocketDay1Step1AvatarChatPageState
   bool _speechAvailable = false;
   bool _isProcessingVoice = false;
   String _liveRecordedWords = '';
+  bool _showMicGuideArrow = false;
+  bool _hasShownMicGuide = false;
 
   String _userName = 'Hira'; // Default learner name as instructed in user audio
   String _nativeLanguage = 'Malayalam';
@@ -167,6 +170,11 @@ class _PocketDay1Step1AvatarChatPageState
     _balloonFloatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _arrowBounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
     )..repeat(reverse: true);
 
     _initUserName();
@@ -261,6 +269,7 @@ class _PocketDay1Step1AvatarChatPageState
     _pulseController.dispose();
     _micWaveController.dispose();
     _balloonFloatController.dispose();
+    _arrowBounceController.dispose();
     _tts.stop();
     try {
       if (_speechAvailable) _speech.stop();
@@ -342,8 +351,8 @@ class _PocketDay1Step1AvatarChatPageState
               backgroundColor: const Color(0xFF047857), // Distinct Emerald Green
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Yes',
+              onTap: () => _handleTextSubmission(
+                text: '✅ YES, LET\'S LEARN ABCD!',
                 action: _onUserWantsToLearnAlphabet,
               ),
             ),
@@ -355,8 +364,8 @@ class _PocketDay1Step1AvatarChatPageState
               backgroundColor: const Color(0xFF1E293B),
               borderColor: Colors.white24,
               textColor: const Color(0xFFFFD700),
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Skip to Level 2',
+              onTap: () => _handleTextSubmission(
+                text: '⚡ SKIP TO LEVEL 2',
                 action: _onUserAlreadyKnowsAlphabet,
               ),
             ),
@@ -436,8 +445,8 @@ class _PocketDay1Step1AvatarChatPageState
               backgroundColor: const Color(0xFF9333EA), // Vibrant Purple
               borderColor: const Color(0xFFC084FC),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Game',
+              onTap: () => _handleTextSubmission(
+                text: '🎈 PLAY BALLOON GAME',
                 action: _startBalloonGameMode,
               ),
             ),
@@ -449,8 +458,8 @@ class _PocketDay1Step1AvatarChatPageState
               backgroundColor: const Color(0xFF0284C7), // Vibrant Cyan Blue
               borderColor: const Color(0xFF38BDF8),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Speaking',
+              onTap: () => _handleTextSubmission(
+                text: '🗣️ SPEAKING CHAT',
                 action: _startTeachingLettersSequence,
               ),
             ),
@@ -510,7 +519,10 @@ class _PocketDay1Step1AvatarChatPageState
               backgroundColor: const Color(0xFF1E293B),
               borderColor: const Color(0xFF38BDF8),
               textColor: const Color(0xFF7DD3FC),
-              onTap: _startTeachingLettersSequence,
+              onTap: () => _handleTextSubmission(
+                text: '🗣️ SWITCH TO SPEAKING CHAT',
+                action: _startTeachingLettersSequence,
+              ),
             ),
           ],
         ),
@@ -979,6 +991,9 @@ class _PocketDay1Step1AvatarChatPageState
 
   void _startTeachingLettersSequence() {
     _currentLetterIndex = 0;
+    if (!_hasShownMicGuide) {
+      _showMicGuideArrow = true;
+    }
     _presentLetterAtCurrentIndex();
   }
 
@@ -1014,32 +1029,8 @@ class _PocketDay1Step1AvatarChatPageState
           textEn: replyEn,
           textNative: replyMl,
           audioText: '$letter! Repeat after me: $letter for $word!',
-          speakThisPrompt: 'Speak into mic or tap below 👇',
-          inBubbleOptions: [
-            Step1InBubbleOption(
-              labelEn: '🎙️ SAY: "$letter for $word" $emoji',
-              labelNative: 'മൈക്കിലൂടെ പറയൂ അല്ലെങ്കിൽ ഇവിടെ ടാപ്പ് ചെയ്യൂ',
-              icon: emoji,
-              isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF1E3A8A),
-              borderColor: const Color(0xFF38BDF8),
-              textColor: const Color(0xFFE0F2FE),
-              onTap: () => _handleVoiceSubmission(
-                voiceText: '$letter for $word $emoji',
-                action: _advanceToNextLetter,
-              ),
-            ),
-            Step1InBubbleOption(
-              labelEn: '⚡ SKIP TO LEVEL 2 ➔',
-              labelNative: 'നേരിട്ട് ലെവൽ 2-ലേക്ക് പോകാം',
-              icon: '⚡',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF1E293B),
-              borderColor: Colors.white24,
-              textColor: const Color(0xFFFFD700),
-              onTap: _completeStep1AndDriveToLevel2,
-            ),
-          ],
+          speakThisPrompt: '🎙️ Tap the mic below & say: "$letter for $word"',
+          inBubbleOptions: null, // NO tap answer button - learner must speak into mic!
         ),
       );
     });
@@ -1105,13 +1096,18 @@ class _PocketDay1Step1AvatarChatPageState
     _scrollToBottom();
   }
 
-  /// Handles voice input submission (either from floating mic or in-bubble answer card)
+  /// Handles voice input submission (creates a clean USER VOICE message bubble with NO text subtitle)
   void _handleVoiceSubmission({
     required String voiceText,
     required VoidCallback action,
   }) {
     HapticFeedback.mediumImpact();
     PocketGameAudioService.instance.playCoinSound();
+
+    if (_showMicGuideArrow) {
+      _showMicGuideArrow = false;
+      _hasShownMicGuide = true;
+    }
 
     setState(() {
       _isAnalyzing = false;
@@ -1134,11 +1130,45 @@ class _PocketDay1Step1AvatarChatPageState
     });
   }
 
+  /// Handles text button selection submission (creates a clean USER TEXT message bubble)
+  void _handleTextSubmission({
+    required String text,
+    required VoidCallback action,
+  }) {
+    HapticFeedback.mediumImpact();
+    PocketGameAudioService.instance.playCoinSound();
+
+    setState(() {
+      _isAnalyzing = false;
+      _isProcessingVoice = false;
+      _messages.add(
+        Step1ChatMessage(
+          id: 'user_text_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: false,
+          textEn: text,
+          isVoiceMessage: false,
+        ),
+      );
+    });
+    _scrollToBottom();
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      action();
+    });
+  }
+
   /// Cross-Platform Safe Voice Microphone Input (Windows Desktop, Android, iOS):
   /// Audio Directive: When tapping voice, record speech and show a Send button.
   /// Never auto-submit while user is still speaking!
   void _onMicButtonPressed() async {
     HapticFeedback.heavyImpact();
+    if (_showMicGuideArrow) {
+      setState(() {
+        _showMicGuideArrow = false;
+        _hasShownMicGuide = true;
+      });
+    }
     if (_isListening) {
       // Tapping mic while recording confirms and sends!
       _onConfirmAndSendVoice();
@@ -1196,6 +1226,10 @@ class _PocketDay1Step1AvatarChatPageState
       _isListening = false;
       _liveRecordedWords = '';
       _isProcessingVoice = false;
+      if (_showMicGuideArrow) {
+        _showMicGuideArrow = false;
+        _hasShownMicGuide = true;
+      }
     });
   }
 
@@ -1211,6 +1245,10 @@ class _PocketDay1Step1AvatarChatPageState
     setState(() {
       _isListening = false;
       _isProcessingVoice = false;
+      if (_showMicGuideArrow) {
+        _showMicGuideArrow = false;
+        _hasShownMicGuide = true;
+      }
     });
 
     final normalized = PocketSpeechNormalizer.normalize(words);
@@ -1878,9 +1916,75 @@ class _PocketDay1Step1AvatarChatPageState
         ),
       );
     } else {
+      // User Message Bubble: Either Text Bubble or Voice Note Bubble
+      if (!msg.isVoiceMessage) {
+        // 💬 User Text Bubble (When user taps an in-bubble option button)
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 14, left: 48),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF047857), Color(0xFF065F46)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(4),
+                      bottomLeft: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF059669).withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    msg.textEn,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                ),
+                child: const Center(
+                  child: Text('👤', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       // 🎙️ User Audio / Voice Note Message Bubble (WhatsApp/Telegram style)
-      // As requested in user audio: "ചാറ്റ് ടെക്സ്റ്റ് ബബിൾ ആയിട്ട് പോകരുത്, വോയ്സ് ബബിൾ ആയിട്ട് പോണം...
-      // വോയ്സ് ബബിൾ പോകുമ്പോൾ ഇവര് എന്തെങ്കിലും തെറ്റൊക്കെ പറഞ്ഞിട്ടുണ്ടെങ്കിലും അത് സ്കിപ്പ് ആയിക്കോളും."
+      // Strictly NO transcription text displayed inside or below the bubble!
       return Padding(
         padding: const EdgeInsets.only(bottom: 14, left: 36),
         child: Row(
@@ -1914,110 +2018,85 @@ class _PocketDay1Step1AvatarChatPageState
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Play / Speak Button
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            _speak(msg.textEn);
-                          },
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.2),
-                              border: Border.all(color: Colors.white, width: 1.2),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.play_arrow_rounded,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // Audio Waveform Visual Bars
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (final h in [
-                              6.0,
-                              14.0,
-                              20.0,
-                              10.0,
-                              16.0,
-                              22.0,
-                              12.0,
-                              8.0,
-                              18.0,
-                              14.0,
-                              7.0
-                            ]) ...[
-                              Container(
-                                width: 3,
-                                height: h,
-                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        // Duration & Voice Note Badge
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '0:03',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Voice Note 🎙️',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFFA7F3D0),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (msg.textEn.isNotEmpty) ...[
-                      const SizedBox(height: 5),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                    // Play / Speak Button
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _speak(msg.textEn);
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.2),
+                          border: Border.all(color: Colors.white, width: 1.2),
                         ),
-                        child: Text(
-                          '"${msg.textEn}"',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 11.5,
-                            fontStyle: FontStyle.italic,
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 22,
                           ),
                         ),
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: 10),
+                    // Audio Waveform Visual Bars
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final h in [
+                          6.0,
+                          14.0,
+                          20.0,
+                          10.0,
+                          16.0,
+                          22.0,
+                          12.0,
+                          8.0,
+                          18.0,
+                          14.0,
+                          7.0
+                        ]) ...[
+                          Container(
+                            width: 3,
+                            height: h,
+                            margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(width: 10),
+                    // Duration & Voice Note Badge
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '0:02',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Voice Note 🎙️',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFA7F3D0),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -2247,9 +2326,7 @@ class _PocketDay1Step1AvatarChatPageState
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _liveRecordedWords.isNotEmpty
-                        ? '🎙️ "$_liveRecordedWords"'
-                        : 'Say: "$_currentExpectedVoicePhrase"',
+                    '🎙️ Listening... (Say: "$_currentExpectedVoicePhrase")',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
@@ -2309,6 +2386,77 @@ class _PocketDay1Step1AvatarChatPageState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // 🟢 Animated Green Downward Arrow pointing to Mic Button (First-time guidance!)
+        if (_showMicGuideArrow && !_hasShownMicGuide && !_isListening) ...[
+          AnimatedBuilder(
+            animation: _arrowBounceController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, -(_arrowBounceController.value * 8)),
+                child: child,
+              );
+            },
+            child: GestureDetector(
+              onTap: _onMicButtonPressed,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF047857), Color(0xFF10B981)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFF34D399), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                      blurRadius: 16,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.arrow_downward_rounded,
+                            color: Colors.white, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Tap Mic & Say: "$_currentExpectedVoicePhrase"',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.arrow_downward_rounded,
+                            color: Colors.white, size: 20),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'മൈക്കിൽ തൊട്ട് ഉച്ചരിക്കൂ 🎙️',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFA7F3D0),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+
         // Prompt banner above mic: "Say: ..."
         Container(
           margin: const EdgeInsets.only(bottom: 8),

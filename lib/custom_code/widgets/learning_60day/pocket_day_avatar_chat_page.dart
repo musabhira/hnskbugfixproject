@@ -15,6 +15,9 @@ import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'games/pocket_20days_40games_spec.dart';
 import 'games/pocket_universal_arcade_engine_page.dart';
+import 'games/pocket_vocab_open_world_drive_page.dart';
+import 'pocket_master_curriculum_90.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 
 /// 💬 Chat Message Model for Days 3 to 16 Unified Avatar Conversational Engine
 class DayChatMessage {
@@ -2263,6 +2266,95 @@ class PocketDays3To16Registry {
       ],
     ),
   };
+
+  /// Returns the statically defined or dynamically synthesized spec for any day (1 to 90)
+  static DayCurriculumSpec getSpec(int day) {
+    if (specs.containsKey(day)) {
+      return specs[day]!;
+    }
+    // Dynamically synthesize a rich DayCurriculumSpec for Days 51 to 90
+    // from PocketMasterCurriculum90 and Pocket90DayVocabCurriculum!
+    final master = PocketMasterCurriculum90.getDay(day);
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
+
+    final titleEn = 'Day $day: ${master.title}';
+    final titleMl = 'ഡേ $day: ${master.grammarConcept} പരിശീലിക്കാം';
+    final greetingEn =
+        'Welcome to Day $day! 🌟 Today we master ${master.grammarConcept} and expand our spoken English fluency!';
+    final greetingMl =
+        'ഡേ $day ലേക്ക് സ്വാഗതം! 🌟 ${master.grammarConcept} ഇന്ന് ആഴത്തിൽ പഠിച്ച് സംസാരിക്കാൻ തുടങ്ങാം!';
+    final greetingAudio =
+        'Welcome to Day $day! Today we master ${master.grammarConcept}.';
+
+    final explanationEn = master.theoryExplanationEn.isNotEmpty
+        ? master.theoryExplanationEn
+        : master.focusArea;
+    final explanationMl = master.theoryExplanationMl.isNotEmpty
+        ? master.theoryExplanationMl
+        : master.whyItMatters;
+
+    final drill1 = master.speakingDrill.isNotEmpty
+        ? master.speakingDrill
+        : 'I practice speaking English with confidence.';
+    final drill2 = master.sentenceEvolution.isNotEmpty
+        ? master.sentenceEvolution[0].replaceAll(RegExp(r'^[🟢🟡🟣]\s*Basic:\s*'), '')
+        : (vocab.isNotEmpty ? vocab[0].exampleSentence : 'Daily practice brings complete fluency.');
+    final drill3 = master.sentenceEvolution.length > 1
+        ? master.sentenceEvolution[1].replaceAll(RegExp(r'^[🟢🟡🟣]\s*Fluent:\s*'), '')
+        : (vocab.length > 1 ? vocab[1].exampleSentence : 'I speak English naturally and clearly.');
+    final drill4 = master.sentenceEvolution.length > 2
+        ? master.sentenceEvolution[2].replaceAll(RegExp(r'^[🟢🟡🟣]\s*Advanced:\s*'), '')
+        : (vocab.length > 2 ? vocab[2].exampleSentence : 'We express complex thoughts with ease.');
+
+    final mistake = master.commonMistakes.isNotEmpty
+        ? master.commonMistakes[0]
+        : 'She don\'t know the rule.';
+    final correction = master.mistakeCorrections.isNotEmpty
+        ? master.mistakeCorrections[0]
+        : 'She doesn\'t know the rule.';
+
+    return DayCurriculumSpec(
+      day: day,
+      topicEmoji: '🌟',
+      titleEn: titleEn,
+      titleMl: titleMl,
+      greetingEn: greetingEn,
+      greetingMl: greetingMl,
+      greetingAudio: greetingAudio,
+      blueprintTitle: '${master.grammarConcept.toUpperCase()} BLUEPRINT',
+      blueprintExplanationEn: explanationEn,
+      blueprintExplanationMl: explanationMl,
+      blueprintRules: [
+        {'subject': 'Focus Concept', 'en': master.focusArea, 'ml': master.whyItMatters},
+        {'subject': 'Core Pattern', 'en': drill2, 'ml': 'ശരിയായ വാക്യം'},
+        {'subject': 'Common Correction', 'en': correction, 'ml': 'ശരിയായ പ്രയോഗം'},
+      ],
+      drills: [
+        {'en': drill1, 'ml': 'സ്പീക്കിംഗ് ഡ്രിൽ 1', 'rule': master.grammarConcept},
+        {'en': drill2, 'ml': 'സ്പീക്കിംഗ് ഡ്രിൽ 2', 'rule': master.grammarConcept},
+        {'en': drill3, 'ml': 'സ്പീക്കിംഗ് ഡ്രിൽ 3', 'rule': master.grammarConcept},
+        {'en': drill4, 'ml': 'സ്പീക്കിംഗ് ഡ്രിൽ 4', 'rule': master.grammarConcept},
+      ],
+      quizQuestions: [
+        {
+          'qEn': 'Question 1: Spot the grammatically accurate sentence:',
+          'qMl': 'ചോദ്യം 1: ശരിയായ വാക്യം തിരഞ്ഞെടുക്കുക:',
+          'audio': 'Question 1: Choose the correct sentence.',
+          'correct': correction,
+          'wrong': mistake,
+          'tip': 'Always observe the grammar rule for ${master.grammarConcept}!',
+        },
+        {
+          'qEn': 'Question 2: Complete the spoken sentence for today\'s concept:',
+          'qMl': 'ചോദ്യം 2: ശരിയായ പ്രയോഗം ഏതാണ്?',
+          'audio': 'Question 2: Select the natural expression.',
+          'correct': drill3,
+          'wrong': 'I do not understanding this sentence.',
+          'tip': 'Natural fluent communication requires accurate grammatical structure!',
+        },
+      ],
+    );
+  }
 }
 
 /// 🐱 Unified Conversational Avatar Chat Page for Days 3 through 16
@@ -2307,6 +2399,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   late final stt.SpeechToText _speech;
   late final AnimationController _pulseController;
   late final AnimationController _micWaveController;
+  late final AnimationController _arrowBounceController;
 
   final List<DayChatMessage> _messages = [];
 
@@ -2315,6 +2408,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   bool _isListening = false;
   bool _isAnalyzing = false;
   bool _speechAvailable = false;
+  bool _showMicGuideArrow = false;
+  bool _hasShownMicGuide = false;
 
   String _userName = 'Hira';
   String _currentExpectedVoicePhrase = 'Yes';
@@ -2336,8 +2431,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _spec = PocketDays3To16Registry.specs[widget.day] ??
-        PocketDays3To16Registry.specs[3]!;
+    _arrowBounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
+
+    _spec = PocketDays3To16Registry.getSpec(widget.day);
 
     _initUserName();
     _initTts();
@@ -2424,6 +2523,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     _scrollController.dispose();
     _pulseController.dispose();
     _micWaveController.dispose();
+    _arrowBounceController.dispose();
     _tts.stop();
     try {
       if (_speechAvailable) _speech.stop();
@@ -2511,8 +2611,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Speaking Chat',
+              onTap: () => _handleTextSubmission(
+                text: '🗣️ SPEAKING CHAT & DRILLS',
                 action: _showBlueprintCard,
               ),
             ),
@@ -2524,16 +2624,40 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF1E293B),
               borderColor: const Color(0xFF60A5FA),
               textColor: const Color(0xFF93C5FD),
-              onTap: () {
-                PocketUniversalArcadeEnginePage.launch(
-                  context,
-                  day: widget.day,
-                  gameIndex: 1,
-                  onCompleted: () {
-                    _showBlueprintCard();
-                  },
-                );
-              },
+              onTap: () => _handleTextSubmission(
+                text: '🎮 PLAY $gameTitle',
+                action: () {
+                  PocketUniversalArcadeEnginePage.launch(
+                    context,
+                    day: widget.day,
+                    gameIndex: 1,
+                    onCompleted: () {
+                      _showBlueprintCard();
+                    },
+                  );
+                },
+              ),
+            ),
+            DayInBubbleOption(
+              labelEn: '🚗 OPEN-WORLD VOCAB QUEST',
+              labelNative: 'ഓപ്പൺ വേൾഡ് റൈഡ് & പദാവലി ➔',
+              icon: '🚗',
+              isHighlightedAnswer: false,
+              backgroundColor: const Color(0xFF1E293B),
+              borderColor: const Color(0xFFF59E0B),
+              textColor: const Color(0xFFFBBF24),
+              onTap: () => _handleTextSubmission(
+                text: '🚗 OPEN-WORLD VOCAB QUEST',
+                action: () {
+                  PocketVocabOpenWorldDrivePage.show(
+                    context,
+                    day: widget.day,
+                    onCompleted: () {
+                      _showBlueprintCard();
+                    },
+                  );
+                },
+              ),
             ),
             DayInBubbleOption(
               labelEn: '⚡ I ALREADY KNOW THIS (TEST ME)',
@@ -2543,8 +2667,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF1E293B),
               borderColor: Colors.white24,
               textColor: const Color(0xFFFFD700),
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Test me',
+              onTap: () => _handleTextSubmission(
+                text: '⚡ I ALREADY KNOW THIS (TEST ME)',
                 action: _startMiniQuiz,
               ),
             ),
@@ -2586,9 +2710,15 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: 'Start Drills',
-                action: _startNextDrill,
+              onTap: () => _handleTextSubmission(
+                text: '🎙️ START SPEAKING DRILLS ➔',
+                action: () {
+                  setState(() {
+                    _showMicGuideArrow = true;
+                    _hasShownMicGuide = false;
+                  });
+                  _startNextDrill();
+                },
               ),
             ),
           ],
@@ -2734,22 +2864,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           textNative: promptMl,
           audioText: 'Please say: $target',
           cardContent: _buildDrillCard(target, ml, rule),
-          speakThisPrompt: 'SPEAK THIS ALOUD 👇',
-          inBubbleOptions: [
-            DayInBubbleOption(
-              labelEn: '🗣️ "$target"',
-              labelNative: 'ടാപ്പ് ചെയ്ത് പറയാം',
-              icon: '🎙️',
-              isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF047857),
-              borderColor: const Color(0xFF34D399),
-              textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: target,
-                action: _onDrillPassed,
-              ),
-            ),
-          ],
+          speakThisPrompt: '🎙️ Tap the mic below and say: "$target"',
+          inBubbleOptions: null, // SPEECH-FIRST! No tap answer bypass button!
         ),
       );
     });
@@ -2863,8 +2979,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
-              onTap: () => _handleVoiceSubmission(
-                voiceText: correct,
+              onTap: () => _handleTextSubmission(
+                text: '✅ "$correct"',
                 action: () {
                   PocketGameAudioService.instance.playCorrectSound();
                   HapticFeedback.heavyImpact();
@@ -2885,10 +3001,13 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               backgroundColor: const Color(0xFF1E293B),
               borderColor: Colors.white24,
               textColor: Colors.white70,
-              onTap: () {
-                PocketGameAudioService.instance.playIncorrectSound();
-                _speak('Oops! $tip');
-              },
+              onTap: () => _handleTextSubmission(
+                text: '❌ "$wrong"',
+                action: () {
+                  PocketGameAudioService.instance.playIncorrectSound();
+                  _speak('Oops! $tip');
+                },
+              ),
             ),
           ],
         ),
@@ -2956,9 +3075,32 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     _scrollToBottom();
   }
 
-  // =========================================================================
-  // 🎙️ SPEECH RECOGNITION & STRICT PRONUNCIATION EVALUATION
-  // =========================================================================
+  /// Handles option button selection submission (creates a clean USER TEXT message bubble)
+  void _handleTextSubmission({
+    required String text,
+    required VoidCallback action,
+  }) {
+    HapticFeedback.mediumImpact();
+    PocketGameAudioService.instance.playCoinSound();
+
+    setState(() {
+      _showMicGuideArrow = false;
+      _messages.add(
+        DayChatMessage(
+          id: 'user_text_${DateTime.now().millisecondsSinceEpoch}',
+          isAvatar: false,
+          textEn: text,
+          isVoiceMessage: false,
+        ),
+      );
+    });
+    _scrollToBottom();
+
+    Future.delayed(const Duration(milliseconds: 320), () {
+      if (!mounted) return;
+      action();
+    });
+  }
 
   Future<void> _handleVoiceSubmission({
     required String voiceText,
@@ -2976,6 +3118,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
 
     // Show learner message
     setState(() {
+      _showMicGuideArrow = false;
+      _hasShownMicGuide = true;
       _messages.add(
         DayChatMessage(
           id: 'user_${DateTime.now().millisecondsSinceEpoch}',
@@ -3058,6 +3202,13 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   }
 
   void _toggleLiveListening() async {
+    if (_showMicGuideArrow) {
+      setState(() {
+        _showMicGuideArrow = false;
+        _hasShownMicGuide = true;
+      });
+    }
+
     if (!_speechAvailable) {
       // Graceful fallback on non-mobile platforms (e.g. Windows desktop development)
       HapticFeedback.selectionClick();
@@ -3381,49 +3532,202 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   }
 
   Widget _buildLearnerBubble(DayChatMessage msg) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF047857), Color(0xFF065F46)],
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              border: Border.all(
-                color: const Color(0xFF34D399).withValues(alpha: 0.5),
-                width: 1.2,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (msg.isVoiceMessage) ...[
-                  const Icon(Icons.mic_rounded, color: Colors.white, size: 16),
-                  const SizedBox(width: 6),
-                ],
-                Flexible(
-                  child: Text(
-                    msg.textEn,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+    if (!msg.isVoiceMessage) {
+      // 💬 User Text Bubble (When user taps an in-bubble option button)
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14, left: 48),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF047857), Color(0xFF065F46)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(4),
+                    bottomLeft: Radius.circular(18),
+                    bottomRight: Radius.circular(18),
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF059669).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
+                  ],
+                ),
+                child: Text(
+                  msg.textEn,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.2,
                   ),
                 ),
-              ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                ),
+              ),
+              child: const Center(
+                child: Text('👤', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 🎙️ User Audio / Voice Note Message Bubble (WhatsApp style)
+    // Strictly NO transcription text displayed inside or below the bubble!
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14, left: 36),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF065F46), Color(0xFF047857)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(6),
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                border: Border.all(
+                  color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF059669).withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Play / Speak Button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _speak(msg.textEn);
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.2),
+                        border: Border.all(color: Colors.white, width: 1.2),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Audio Waveform Visual Bars
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final h in [
+                        6.0,
+                        14.0,
+                        20.0,
+                        10.0,
+                        16.0,
+                        22.0,
+                        12.0,
+                        8.0,
+                        18.0,
+                        14.0,
+                        7.0
+                      ]) ...[
+                        Container(
+                          width: 3,
+                          height: h,
+                          margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(width: 10),
+                  // Duration & Voice Note Badge
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '0:02',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Voice Note 🎙️',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFA7F3D0),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF059669)],
+              ),
+            ),
+            child: const Center(
+              child: Text('👤', style: TextStyle(fontSize: 16)),
             ),
           ),
         ],
@@ -3438,81 +3742,157 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
         color: Color(0xFF111827),
         border: Border(top: BorderSide(color: Colors.white12, width: 1)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.record_voice_over_rounded,
-                      color: Color(0xFF38BDF8), size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _isListening
-                          ? 'Listening to you... Speak now! 🎙️'
-                          : 'Target: "$_currentExpectedVoicePhrase"',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                        color: _isListening
-                            ? const Color(0xFF34D399)
-                            : Colors.white70,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: _toggleLiveListening,
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (ctx, child) {
-                return Container(
-                  width: 48,
-                  height: 48,
+          // 🟢 Animated Green Downward Arrow pointing to Mic Button (First-time guidance!)
+          if (_showMicGuideArrow && !_hasShownMicGuide && !_isListening) ...[
+            AnimatedBuilder(
+              animation: _arrowBounceController,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, -(_arrowBounceController.value * 8)),
+                  child: child,
+                );
+              },
+              child: GestureDetector(
+                onTap: _toggleLiveListening,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: _isListening
-                          ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                          : [const Color(0xFF10B981), const Color(0xFF047857)],
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF047857), Color(0xFF10B981)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(24),
+                    border:
+                        Border.all(color: const Color(0xFF34D399), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: (_isListening
-                                ? const Color(0xFFEF4444)
-                                : const Color(0xFF10B981))
-                            .withValues(
-                                alpha: 0.3 + (_pulseController.value * 0.3)),
-                        blurRadius: 10,
-                        spreadRadius: 2,
+                        color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                        blurRadius: 16,
+                        spreadRadius: 3,
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Icon(
-                      _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                      color: Colors.white,
-                      size: 24,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.arrow_downward_rounded,
+                              color: Colors.white, size: 20),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Tap Mic & Say: "$_currentExpectedVoicePhrase"',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_downward_rounded,
+                              color: Colors.white, size: 20),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'മൈക്കിൽ തൊട്ട് ഉച്ചരിക്കൂ 🎙️',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFA7F3D0),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
                     ),
                   ),
-                );
-              },
-            ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.record_voice_over_rounded,
+                          color: Color(0xFF38BDF8), size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _isListening
+                              ? 'Listening to you... Speak now! 🎙️'
+                              : 'Target: "$_currentExpectedVoicePhrase"',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: _isListening
+                                ? const Color(0xFF34D399)
+                                : Colors.white70,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _toggleLiveListening,
+                child: AnimatedBuilder(
+                  animation: _micWaveController,
+                  builder: (ctx, child) {
+                    return Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: _isListening
+                              ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
+                              : [const Color(0xFF10B981), const Color(0xFF047857)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_isListening
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFF10B981))
+                                .withValues(
+                                    alpha: 0.3 + (_micWaveController.value * 0.3)),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -4002,6 +4382,406 @@ class PocketDay50Step1AvatarChatPage extends StatelessWidget {
       PocketDayAvatarChatPage.show(context, day: 50, userId: userId, onStepFinished: onStepFinished);
   @override
   Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 50, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay51Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay51Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 51, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 51, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay52Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay52Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 52, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 52, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay53Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay53Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 53, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 53, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay54Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay54Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 54, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 54, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay55Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay55Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 55, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 55, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay56Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay56Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 56, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 56, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay57Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay57Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 57, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 57, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay58Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay58Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 58, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 58, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay59Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay59Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 59, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 59, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay60Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay60Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 60, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 60, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay61Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay61Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 61, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 61, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay62Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay62Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 62, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 62, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay63Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay63Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 63, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 63, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay64Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay64Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 64, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 64, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay65Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay65Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 65, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 65, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay66Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay66Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 66, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 66, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay67Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay67Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 67, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 67, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay68Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay68Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 68, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 68, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay69Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay69Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 69, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 69, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay70Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay70Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 70, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 70, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay71Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay71Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 71, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 71, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay72Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay72Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 72, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 72, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay73Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay73Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 73, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 73, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay74Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay74Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 74, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 74, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay75Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay75Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 75, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 75, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay76Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay76Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 76, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 76, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay77Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay77Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 77, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 77, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay78Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay78Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 78, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 78, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay79Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay79Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 79, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 79, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay80Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay80Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 80, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 80, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay81Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay81Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 81, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 81, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay82Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay82Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 82, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 82, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay83Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay83Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 83, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 83, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay84Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay84Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 84, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 84, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay85Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay85Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 85, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 85, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay86Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay86Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 86, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 86, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay87Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay87Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 87, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 87, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay88Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay88Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 88, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 88, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay89Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay89Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 89, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 89, userId: userId, onStepFinished: onStepFinished);
+}
+
+class PocketDay90Step1AvatarChatPage extends StatelessWidget {
+  final String? userId;
+  final Function(int)? onStepFinished;
+  const PocketDay90Step1AvatarChatPage({super.key, this.userId, this.onStepFinished});
+  static Future<void> show(BuildContext context, {String? userId, Function(int)? onStepFinished}) =>
+      PocketDayAvatarChatPage.show(context, day: 90, userId: userId, onStepFinished: onStepFinished);
+  @override
+  Widget build(BuildContext context) => PocketDayAvatarChatPage(day: 90, userId: userId, onStepFinished: onStepFinished);
 }
 
 

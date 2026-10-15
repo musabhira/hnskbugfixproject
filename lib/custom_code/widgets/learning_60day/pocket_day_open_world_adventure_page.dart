@@ -39,6 +39,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_d
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_vocab_open_world_drive_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -2438,8 +2439,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 1 on Days 3 to 50: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
-      if (day >= 3 && day <= 50 && s == 1) {
+      // Step 1 on Days 3 to 90: Launches Dedicated Conversational Avatar Chat (User Audio Directive!)
+      if (day >= 3 && day <= 90 && s == 1) {
         await PocketDayAvatarChatPage.show(
           context,
           day: day,
@@ -2459,6 +2460,20 @@ class _PocketDayOpenWorldAdventurePageState
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 2 on Days 2 to 90: Launches Dedicated 5-Ride Open-World Vocab Quest!
+      if (day >= 2 && day <= 90 && s == 2) {
+        await PocketVocabOpenWorldDrivePage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onCompleted: () {
+            _onStepCompleted(2);
           },
         );
         await _loadState(preserveCarPosition: true);
@@ -2504,8 +2519,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 6 on Day 1 & Day 2: Launches Dedicated English Hub Group Chat (User Audio Directive!)
-      if ((day == 1 || day == 2) && s == 6) {
+      // Step 6 on Days 1 to 90: Launches Dedicated English Hub Group Chat (User Audio Directive!)
+      if (day >= 1 && day <= 90 && s == 6) {
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -2527,8 +2542,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 7 on Days 1 to 50: Launches Dedicated House Defense Shield Command (User Audio Directive!)
-      if (day >= 1 && day <= 50 && s == 7) {
+      // Step 7 on Days 1 to 90: Launches Dedicated House Defense Shield Command (User Audio Directive!)
+      if (day >= 1 && day <= 90 && s == 7) {
         await PocketHouseDefenseChatPage.show(
           context,
           day: day,
