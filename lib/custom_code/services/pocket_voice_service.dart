@@ -17,14 +17,14 @@ class PocketVoiceService {
   PocketVoiceService._internal();
 
   static const String prefKeyVoicePersona = 'tutor_voice_persona';
-  String _currentPersona = 'female';
+  String _currentPersona = 'indian';
 
   String get currentPersona => _currentPersona;
 
   Future<String> getSelectedPersona() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _currentPersona = prefs.getString(prefKeyVoicePersona) ?? 'female';
+      _currentPersona = prefs.getString(prefKeyVoicePersona) ?? 'indian';
     } catch (_) {}
     return _currentPersona;
   }
@@ -88,29 +88,7 @@ class PocketVoiceService {
           await _applyVoiceCandidates(tts, ['katherine', 'catherine', 'lee', 'en-au-x-aud', 'en-au', 'australian']);
           break;
 
-        case 'indian':
-          await tts.setLanguage('en-IN');
-          await tts.setSpeechRate(isIos ? 0.49 : 0.46);
-          await tts.setPitch(1.08); // Clear, familiar Indian English
-          await _applyVoiceCandidates(tts, ['rishi', 'veena', 'en-in-x-cfl#female', 'en-in-x-enc#female', 'en-in', 'indian']);
-          break;
-
-        case 'storyteller':
-          await tts.setLanguage('en-US');
-          await tts.setSpeechRate(isIos ? 0.41 : 0.38); // Gentle, slow, highly intelligible pace
-          await tts.setPitch(0.98); // Calm, soothing tone
-          await _applyVoiceCandidates(tts, ['samantha', 'ava', 'allison', 'susan', 'female']);
-          break;
-
-        case 'coach':
-          await tts.setLanguage('en-US');
-          await tts.setSpeechRate(isIos ? 0.52 : 0.49); // Energetic, motivating pace
-          await tts.setPitch(1.15); // Enthusiastic, vibrant coach
-          await _applyVoiceCandidates(tts, ['daniel', 'alex', 'oliver', 'en-us-x-sfg#male', 'male']);
-          break;
-
         case 'female':
-        default:
           await tts.setLanguage('en-US');
           await tts.setSpeechRate(isIos ? 0.49 : 0.46);
           await tts.setPitch(1.12); // Smooth, pleasant female pitch
@@ -125,6 +103,24 @@ class PocketVoiceService {
             'tpf',
             'iob',
             'female'
+          ]);
+          break;
+
+        case 'indian':
+        default:
+          await tts.setLanguage('en-IN');
+          await tts.setSpeechRate(isIos ? 0.49 : 0.46);
+          await tts.setPitch(1.08); // Clear, familiar Indian English
+          await _applyVoiceCandidates(tts, [
+            'en-in',
+            'en_in',
+            'rishi',
+            'veena',
+            'neerja',
+            'prabhat',
+            'cfl#female',
+            'enc#female',
+            'indian'
           ]);
           break;
       }

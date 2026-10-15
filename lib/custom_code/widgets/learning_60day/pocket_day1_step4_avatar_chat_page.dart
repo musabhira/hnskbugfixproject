@@ -578,6 +578,19 @@ class _PocketDay1Step4AvatarChatPageState
     }
   }
 
+  void _cancelRecording() async {
+    HapticFeedback.lightImpact();
+    _recordingTimer?.cancel();
+    try {
+      if (_speechAvailable) await _speech.stop();
+    } catch (_) {}
+    setState(() {
+      _isRecording = false;
+      _recordingSeconds = 0;
+      _spokenText = '';
+    });
+  }
+
   // =========================================================================
   // 🎨 UI BUILD
   // =========================================================================
@@ -1035,6 +1048,119 @@ class _PocketDay1Step4AvatarChatPageState
     final mins = (_recordingSeconds ~/ 60).toString().padLeft(2, '0');
     final secs = (_recordingSeconds % 60).toString().padLeft(2, '0');
 
+    if (_isRecording) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: const Color(0xFF8B5CF6), width: 1.8),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: _cancelRecording,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.1),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'RECORDING ($mins:$secs)',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    _spokenText.isNotEmpty
+                        ? '🎙️ "$_spokenText"'
+                        : 'Say: "$_currentExpectedVoicePhrase"',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _startListeningToCentralMic,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.6),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'SEND',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.send_rounded, color: Colors.white, size: 14),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
@@ -1044,95 +1170,32 @@ class _PocketDay1Step4AvatarChatPageState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (_isRecording) ...[
-            // 🔴 Active Recording Indicator Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.20),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFEF4444), width: 1.2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Speak: ',
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, child) => Container(
-                      width: 9,
-                      height: 9,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.redAccent.withValues(alpha: 0.6 + (_pulseController.value * 0.4)),
-                            blurRadius: 6,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                    ),
+              Flexible(
+                child: Text(
+                  '"$_currentExpectedVoicePhrase"',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'RECORDING ($mins:$secs) • TAP BUTTON TO SEND',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFCA5A5),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                _spokenText.isNotEmpty
-                    ? '"$_spokenText"'
-                    : 'Listening... Speak: "$_currentExpectedVoicePhrase"',
-                style: GoogleFonts.outfit(
-                  color: _spokenText.isNotEmpty ? const Color(0xFF34D399) : Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ] else ...[
-            // 🎙️ Idle Prompt
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Speak: ',
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-                ),
-                Flexible(
-                  child: Text(
-                    '"$_currentExpectedVoicePhrase"',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w900,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Tap mic below to record your voice',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 10.5),
-            ),
-          ],
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Tap mic below to record your voice',
+            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10.5),
+          ),
           const SizedBox(height: 8),
           Center(
             child: GestureDetector(
@@ -1140,33 +1203,26 @@ class _PocketDay1Step4AvatarChatPageState
               child: AnimatedBuilder(
                 animation: _pulseController,
                 builder: (context, child) {
-                  final scale = _isRecording ? 1.0 + (_pulseController.value * 0.12) : 1.0;
-                  return Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: _isRecording
-                              ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                              : [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
+                  return Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.55),
+                          blurRadius: 10,
+                          spreadRadius: 1,
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_isRecording ? Colors.redAccent : const Color(0xFF8B5CF6))
-                                .withValues(alpha: 0.55),
-                            blurRadius: _isRecording ? 16 : 10,
-                            spreadRadius: _isRecording ? 3 : 1,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _isRecording ? Icons.send_rounded : Icons.mic_rounded,
-                        color: Colors.white,
-                        size: _isRecording ? 26 : 28,
-                      ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.mic_rounded,
+                      color: Colors.white,
+                      size: 28,
                     ),
                   );
                 },
