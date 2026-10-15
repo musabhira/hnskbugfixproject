@@ -1031,7 +1031,75 @@ class _PocketDay1Step5AvatarChatPageState
         ),
       );
     } else {
-      // 🟢 REALISTIC INSTAGRAM / WHATSAPP STYLE VOICE NOTE BUBBLE (User Audio Directive!)
+      // User Message Bubble: Either Text Bubble or Voice Note Bubble
+      if (!msg.isVoiceMessage) {
+        // 💬 User Text Bubble (When user taps an option or text button)
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12, left: 48),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0369A1), Color(0xFF075985)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(4),
+                      bottomLeft: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    msg.textEn,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 30,
+                height: 30,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                  ),
+                ),
+                child: const Center(
+                  child: Text('👤', style: TextStyle(fontSize: 13)),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // 🎙️ REALISTIC WHATSAPP / INSTAGRAM STYLE VOICE NOTE BUBBLE (User Audio Directive!)
+      // Strictly NO transcription text displayed inside or below the bubble!
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
@@ -1058,63 +1126,46 @@ class _PocketDay1Step5AvatarChatPageState
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: Colors.white24,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _speak(msg.textEn);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Colors.white24,
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 8),
-                      // Animated audio waveform simulation
-                      Row(
-                        children: [8, 16, 24, 14, 28, 18, 22, 12, 20, 10, 16, 24, 10].map((h) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                            width: 3,
-                            height: h.toDouble(),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '0:04',
-                        style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 14),
-                    ],
-                  ),
-                  if (msg.voiceTranscript != null && msg.voiceTranscript!.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '"${msg.voiceTranscript!}"',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
                     ),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
+                  // Animated audio waveform simulation
+                  Row(
+                    children: [8, 16, 24, 14, 28, 18, 22, 12, 20, 10, 16, 24, 10].map((h) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        width: 3,
+                        height: h.toDouble(),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '0:04',
+                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 14),
                 ],
               ),
             ),

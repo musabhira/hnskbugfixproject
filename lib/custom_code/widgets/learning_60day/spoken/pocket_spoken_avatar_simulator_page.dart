@@ -53,12 +53,14 @@ class _ChatMessageItem {
   final String text;
   final String? translationMl;
   final String? tip;
+  final bool isVoiceMessage;
 
   _ChatMessageItem({
     required this.isAvatar,
     required this.text,
     this.translationMl,
     this.tip,
+    this.isVoiceMessage = false,
   });
 }
 
@@ -193,7 +195,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
     });
   }
 
-  Future<void> _onSelectResponse(String optionText) async {
+  Future<void> _onSelectResponse(String optionText, {bool isVoice = false}) async {
     HapticFeedback.lightImpact();
 
     setState(() {
@@ -202,12 +204,15 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         _ChatMessageItem(
           isAvatar: false,
           text: optionText,
+          isVoiceMessage: isVoice,
         ),
       );
     });
 
     _scrollToBottom();
-    await _speakText(optionText);
+    if (!isVoice) {
+      await _speakText(optionText);
+    }
 
     // Short natural pause before avatar replies
     await Future.delayed(const Duration(milliseconds: 900));
@@ -446,7 +451,10 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         _speechError = null;
       });
 
-      await _onSelectResponse(normalizedSpk.isNotEmpty ? normalizedSpk : _spokenText.trim());
+      await _onSelectResponse(
+        normalizedSpk.isNotEmpty ? normalizedSpk : _spokenText.trim(),
+        isVoice: true,
+      );
     }
   }
 
@@ -759,51 +767,164 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   }
 
   Widget _buildUserBubble(_ChatMessageItem msg) {
+    if (!msg.isVoiceMessage) {
+      // 💬 User Text Bubble (When user taps an option chip)
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0369A1), Color(0xFF075985)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(4),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        msg.text,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFF0284C7),
+              ),
+              child: const Center(child: Text('👤', style: TextStyle(fontSize: 15))),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 🎙️ Voice Note Bubble (When user speaks aloud into mic)
+    // Strictly NO transcription text displayed inside or below the bubble!
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF059669), Color(0xFF10B981)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(4),
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                    blurRadius: 10,
-                  ),
-                ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF047857), Color(0xFF10B981)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      msg.text,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                      ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(4),
+                bottomLeft: Radius.circular(18),
+                bottomRight: Radius.circular(18),
+              ),
+              border: Border.all(
+                color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _speakText(msg.text);
+                  },
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: Colors.white24,
+                      shape: BoxShape.circle,
                     ),
+                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.check_rounded, color: Colors.white, size: 16),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                // Animated audio waveform simulation
+                Row(
+                  children: [8, 16, 22, 14, 26, 18, 24, 12, 20, 10, 16, 22, 10].map((h) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      width: 3,
+                      height: h.toDouble(),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '0:03',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Voice Note',
+                        style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),
@@ -1041,7 +1162,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _onSelectResponse(opt),
+                  onTap: () => _onSelectResponse(opt, isVoice: false),
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     width: double.infinity,

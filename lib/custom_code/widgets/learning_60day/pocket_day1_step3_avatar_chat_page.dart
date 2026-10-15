@@ -378,8 +378,8 @@ class _PocketDay1Step3AvatarChatPageState
               borderColor: isCorrect ? const Color(0xFF34D399) : Colors.white24,
               textColor: Colors.white,
               onTap: () {
-                _handleVoiceSubmission(
-                  voiceText: opt,
+                _handleTextSubmission(
+                  text: opt,
                   action: () => _handleHuntAnswer(isCorrect, opt),
                 );
               },
