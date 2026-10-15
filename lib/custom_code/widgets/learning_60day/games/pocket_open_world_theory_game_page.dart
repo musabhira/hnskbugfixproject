@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import '../pocket_master_curriculum_90.dart';
 
-/// 🌟 Particle model for open world energy sparks and bursts
+/// 🌟 Particle model for open world energy sparks and exhausts
 class QuestWorldParticle {
   double x;
   double y;
@@ -29,16 +31,13 @@ class QuestWorldParticle {
 
 /// 🌍 2D Open-World Linguistic Discovery Quest Game
 ///
-/// User Audio Directive:
-/// "തിയറി ആയിട്ട് എന്തെങ്കിലും ഇപ്പൊ നിലവിലുണ്ടോ എന്നുള്ളത് നോക്കുക.
-///  തിയറി ആയിട്ടുള്ളത് ഉണ്ടെങ്കിൽ അതിനെ ഗെയിം ആയി കൺവെർട്ട് ചെയ്യണം.
-///  ഓപ്പൺ ഗെയിം ആയിരിക്കണം... ഗെയിം കളിച്ചുകൊണ്ടേ പഠിക്കാൻ കഴിയണം!"
-///
-/// Replaces passive theory reading with an active 2D open-world game:
-/// - Open World Exploration: Joystick / touch navigation across scenic open realm.
-/// - Station 1: The Speech Code Matrix (Grammar Formula Tile Charging)
-/// - Station 2: The Mother-Tongue Error Hunter (Shoot/Fix common regional errors)
-/// - Station 3: The Sentence Evolution Sanctuary (Step through 3 fluency portals)
+/// Features:
+/// - 2D Open World Exploration with responsive virtual joystick & quick teleport shortcuts
+/// - Flame architectural houses & defense towers at each station
+/// - Station 1: Syntactic Formula Power Citadel (Interactive rune charging)
+/// - Station 2: Mother-Tongue Error Hunter Arena (Regional error eradication)
+/// - Station 3: Sentence Evolution Grand Palace (3 Fluency tiers with native TTS)
+/// - Rock-solid 60fps performance with RepaintBoundaries & lightweight physics
 class PocketOpenWorldTheoryGamePage extends StatefulWidget {
   final int day;
   final VoidCallback? onQuestCompleted;
@@ -86,6 +85,7 @@ class _PocketOpenWorldTheoryGamePageState
   static const double _worldHeight = 1200.0;
   double _playerX = 350.0;
   double _playerY = 650.0;
+  double _playerAngle = 0.0;
   double _cameraX = 0.0;
   double _cameraY = 0.0;
 
@@ -105,7 +105,7 @@ class _PocketOpenWorldTheoryGamePageState
   late List<String> _targetFormulaTiles;
 
   // Station 2: Error Hunter State
-  final int _currentMistakeIndex = 0;
+  int _currentMistakeIndex = 0;
   late List<Map<String, String>> _mistakeChallenges;
 
   // Station 3: Evolution Gate State
@@ -133,7 +133,8 @@ class _PocketOpenWorldTheoryGamePageState
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
-    _speakVoiceGuidance('Welcome to the Day ${widget.day} Open Realm. Explore the world and discover the speech secrets!');
+    _speakVoiceGuidance(
+        'Welcome to the Day ${widget.day} Open World Quest! Explore the realm and charge the linguistic stations!');
   }
 
   void _initStationData() {
@@ -145,8 +146,8 @@ class _PocketOpenWorldTheoryGamePageState
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
         .toList();
-    if (_targetFormulaTiles.isEmpty) {
-      _targetFormulaTiles = ['Subject', 'Verb', 'Object'];
+    if (_targetFormulaTiles.isEmpty || _targetFormulaTiles.length < 2) {
+      _targetFormulaTiles = ['Subject (Who)', 'Verb (Action)', 'Object / Goal'];
     }
 
     _mistakeChallenges = [];
@@ -167,12 +168,17 @@ class _PocketOpenWorldTheoryGamePageState
         {
           'wrong': 'I did not went there yesterday.',
           'correct': 'I did not go there yesterday.',
-          'rule': 'After did/didn\'t, always use the base form (V1).',
+          'rule': 'After did / didn\'t, always use the base verb (V1).',
         },
         {
           'wrong': 'She do not understand the plan.',
           'correct': 'She does not understand the plan.',
-          'rule': 'Singular subjects take does/doesn\'t.',
+          'rule': 'Third person singular (he/she/it) takes does / doesn\'t.',
+        },
+        {
+          'wrong': 'I am knowing the answer.',
+          'correct': 'I know the answer.',
+          'rule': 'State verbs (know, believe, understand) are rarely used in continuous (-ing) forms.',
         },
       ];
     }
@@ -199,32 +205,43 @@ class _PocketOpenWorldTheoryGamePageState
     setState(() {
       // 1. Apply Joystick Movement
       if (_isDraggingJoystick && _joystickDelta != Offset.zero) {
-        final speed = 4.8;
+        const speed = 5.2;
         _playerX = (_playerX + _joystickDelta.dx * speed).clamp(80.0, _worldWidth - 80.0);
         _playerY = (_playerY + _joystickDelta.dy * speed).clamp(120.0, _worldHeight - 120.0);
+        _playerAngle = math.atan2(_joystickDelta.dy, _joystickDelta.dx);
+
+        // Spawn occasional flame tire particles
+        if (_random.nextDouble() < 0.4) {
+          _spawnParticles(
+            _playerX - math.cos(_playerAngle) * 20,
+            _playerY - math.sin(_playerAngle) * 20,
+            const Color(0xFFFF9800),
+            count: 3,
+          );
+        }
       }
 
-      // 2. Camera follow player smoothly
+      // 2. Camera smoothly tracks player
       final screenW = MediaQuery.of(context).size.width;
       final screenH = MediaQuery.of(context).size.height;
       final targetCamX = _playerX - (screenW / 2);
       final targetCamY = _playerY - (screenH / 2);
-      _cameraX += (targetCamX - _cameraX) * 0.12;
-      _cameraY += (targetCamY - _cameraY) * 0.12;
+      _cameraX += (targetCamX - _cameraX) * 0.14;
+      _cameraY += (targetCamY - _cameraY) * 0.14;
       _cameraX = _cameraX.clamp(0.0, _worldWidth - screenW);
       _cameraY = _cameraY.clamp(0.0, _worldHeight - screenH);
 
       // 3. Proximity detection to 3 World Stations
-      _checkStationProximity(1, 500.0, 650.0);
-      _checkStationProximity(2, 1350.0, 550.0);
-      _checkStationProximity(3, 2200.0, 680.0);
+      _checkStationProximity(1, 520.0, 650.0);
+      _checkStationProximity(2, 1400.0, 560.0);
+      _checkStationProximity(3, 2280.0, 680.0);
 
       // 4. Update particles
       for (int i = _particles.length - 1; i >= 0; i--) {
         final p = _particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.life -= 0.035;
+        p.life -= 0.045;
         if (p.life <= 0) {
           _particles.removeAt(i);
         }
@@ -234,22 +251,22 @@ class _PocketOpenWorldTheoryGamePageState
 
   void _checkStationProximity(int stationId, double sx, double sy) {
     final dist = math.sqrt(math.pow(_playerX - sx, 2) + math.pow(_playerY - sy, 2));
-    if (dist < 130.0) {
+    if (dist < 150.0) {
       if (!_isInsideStationProximity || _proximityStationId != stationId) {
         _isInsideStationProximity = true;
         _proximityStationId = stationId;
         HapticFeedback.selectionClick();
       }
-    } else if (_proximityStationId == stationId && dist >= 150.0) {
+    } else if (_proximityStationId == stationId && dist >= 180.0) {
       _isInsideStationProximity = false;
       _proximityStationId = null;
     }
   }
 
-  void _spawnParticles(double x, double y, Color color) {
-    for (int i = 0; i < 22; i++) {
+  void _spawnParticles(double x, double y, Color color, {int count = 18}) {
+    for (int i = 0; i < count; i++) {
       final angle = _random.nextDouble() * math.pi * 2;
-      final speed = _random.nextDouble() * 5.0 + 2.0;
+      final speed = _random.nextDouble() * 4.5 + 1.5;
       _particles.add(
         QuestWorldParticle(
           x: x,
@@ -258,10 +275,20 @@ class _PocketOpenWorldTheoryGamePageState
           vy: math.sin(angle) * speed,
           life: 1.0,
           color: color,
-          size: _random.nextDouble() * 5.0 + 3.0,
+          size: _random.nextDouble() * 4.5 + 2.5,
         ),
       );
     }
+  }
+
+  void _teleportTo(double targetX, double targetY) {
+    HapticFeedback.heavyImpact();
+    PocketGameAudioService.instance.playCoinSound();
+    setState(() {
+      _playerX = targetX;
+      _playerY = targetY;
+    });
+    _spawnParticles(targetX, targetY, const Color(0xFF38BDF8), count: 28);
   }
 
   @override
@@ -356,27 +383,44 @@ class _PocketOpenWorldTheoryGamePageState
                     children: [
                       Text(
                         'POWERED FORMULA CORE:',
-                        style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                            color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Wrap(
                         alignment: WrapAlignment.center,
                         spacing: 8,
+                        runSpacing: 8,
                         children: _targetFormulaTiles.map((tile) {
                           final isAssembled = _assembledFormulaTiles.contains(tile);
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             decoration: BoxDecoration(
                               color: isAssembled ? const Color(0xFF10B981) : Colors.white12,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              isAssembled ? tile : '???',
-                              style: GoogleFonts.outfit(
-                                color: isAssembled ? Colors.black : Colors.white54,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isAssembled ? const Color(0xFFFFD700) : Colors.white24,
+                                width: 1.2,
                               ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isAssembled ? Icons.check_circle_rounded : Icons.lock_outline_rounded,
+                                  size: 14,
+                                  color: isAssembled ? Colors.black : Colors.white38,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isAssembled ? tile : '??? [LOCKED]',
+                                  style: GoogleFonts.outfit(
+                                    color: isAssembled ? Colors.black : Colors.white54,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -387,7 +431,7 @@ class _PocketOpenWorldTheoryGamePageState
                 const SizedBox(height: 16),
 
                 Text(
-                  'TAP AVAILABLE SYNTAX BLOCKS TO ACTIVATE:',
+                  'TAP SYNTAX BLOCKS TO ACTIVATE CORE:',
                   style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -408,6 +452,7 @@ class _PocketOpenWorldTheoryGamePageState
                           ? null
                           : () {
                               HapticFeedback.lightImpact();
+                              PocketGameAudioService.instance.playCoinSound();
                               setModalState(() {
                                 _assembledFormulaTiles.add(tile);
                               });
@@ -420,7 +465,8 @@ class _PocketOpenWorldTheoryGamePageState
                                   _station1Completed = true;
                                 });
                                 HapticFeedback.heavyImpact();
-                                _speakVoiceGuidance('Formula Core fully charged! Head east to the Error Hunter Arena!');
+                                _speakVoiceGuidance(
+                                    'Formula Core fully charged! Head to Station 2: Error Hunter Arena!');
                               }
                             },
                       child: Text(tile, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
@@ -439,8 +485,10 @@ class _PocketOpenWorldTheoryGamePageState
                     ),
                     onPressed: () {
                       Navigator.pop(ctx);
+                      _teleportTo(1400.0, 560.0);
                     },
-                    child: Text('CONTINUE QUEST TO ARENA 2 ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                    child: Text('TRAVEL TO STATION 2 (ERROR HUNTER) ➔',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
                   ),
               ],
             ),
@@ -495,7 +543,7 @@ class _PocketOpenWorldTheoryGamePageState
                             ),
                           ),
                           Text(
-                            'Spot & Eradicate Mother-Tongue Errors',
+                            'Challenge ${_currentMistakeIndex + 1} of ${_mistakeChallenges.length} • Eradicate Speech Traps',
                             style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
                           ),
                         ],
@@ -519,22 +567,36 @@ class _PocketOpenWorldTheoryGamePageState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'DETECTED ANOMALOUS SPEECH PATTERN:',
-                        style: GoogleFonts.outfit(color: const Color(0xFFEF4444), fontSize: 10, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'DETECTED REGIONAL ERROR PATTERN:',
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFEF4444), fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         '❌ "${challenge['wrong']}"',
-                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.bold),
                       ),
+                      if (challenge['rule'] != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '💡 ${challenge['rule']}',
+                          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 Text(
-                  'SELECT THE AUTHENTIC FLUENT SENTENCE TO STRIKE:',
+                  'SELECT AUTHENTIC SENTENCE TO STRIKE:',
                   style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -542,25 +604,28 @@ class _PocketOpenWorldTheoryGamePageState
                 ...options.map((opt) {
                   final isCorrect = opt == challenge['correct'];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E293B),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         side: const BorderSide(color: Colors.white24),
                       ),
                       onPressed: () {
                         if (isCorrect) {
                           HapticFeedback.heavyImpact();
+                          PocketGameAudioService.instance.playCoinSound();
                           setState(() {
                             _score += 100;
                             _station2Completed = true;
+                            _currentMistakeIndex = (_currentMistakeIndex + 1) % _mistakeChallenges.length;
                             _spawnParticles(_playerX, _playerY, const Color(0xFF10B981));
                           });
                           _speakVoiceGuidance('Target neutralized! Excellent grammatical accuracy!');
                           Navigator.pop(ctx);
+                          _teleportTo(2280.0, 680.0);
                         } else {
                           HapticFeedback.vibrate();
                           _spawnParticles(_playerX, _playerY, const Color(0xFFEF4444));
@@ -568,19 +633,19 @@ class _PocketOpenWorldTheoryGamePageState
                             const SnackBar(
                               content: Text('❌ That pattern still contains the error! Try again.'),
                               backgroundColor: Color(0xFFEF4444),
-                              duration: Duration(milliseconds: 1200),
+                              duration: Duration(milliseconds: 1400),
                             ),
                           );
                         }
                       },
                       child: Row(
                         children: [
-                          const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 18),
+                          const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               opt,
-                              style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -638,7 +703,7 @@ class _PocketOpenWorldTheoryGamePageState
                             ),
                           ),
                           Text(
-                            'Basic ➔ Intermediate ➔ Sovereign Native Mastery',
+                            'Basic ➔ Natural Conversational ➔ Sovereign Native Mastery',
                             style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
                           ),
                         ],
@@ -660,8 +725,8 @@ class _PocketOpenWorldTheoryGamePageState
                         : (idx == 0
                             ? '🟢 Basic: I study English daily.'
                             : (idx == 1
-                                ? '🟡 Intermediate: I actively practice conversational speaking every morning.'
-                                : '🟣 Native Master: I effortlessly articulate complex thoughts without hesitation.'));
+                                ? '🟡 Conversational: I actively practice spoken English every single morning.'
+                                : '🟣 Sovereign Native: I articulate complex thoughts effortlessly with zero hesitation.'));
                     final isUnlocked = idx <= _currentEvolutionTier;
 
                     return Container(
@@ -682,13 +747,13 @@ class _PocketOpenWorldTheoryGamePageState
                               sent,
                               style: GoogleFonts.inter(
                                 color: isUnlocked ? Colors.white : Colors.white38,
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 22),
                             onPressed: isUnlocked ? () => _speakVoiceGuidance(sent) : null,
                           ),
                         ],
@@ -707,6 +772,7 @@ class _PocketOpenWorldTheoryGamePageState
                   ),
                   onPressed: () {
                     HapticFeedback.heavyImpact();
+                    PocketGameAudioService.instance.playCoinSound();
                     setState(() {
                       _score += 150;
                       _station3Completed = true;
@@ -752,11 +818,13 @@ class _PocketOpenWorldTheoryGamePageState
 
           // 2. PARTICLE OVERLAY
           Positioned.fill(
-            child: CustomPaint(
-              painter: _QuestWorldParticlePainter(
-                particles: _particles,
-                camX: _cameraX,
-                camY: _cameraY,
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _QuestWorldParticlePainter(
+                  particles: _particles,
+                  camX: _cameraX,
+                  camY: _cameraY,
+                ),
               ),
             ),
           ),
@@ -769,14 +837,22 @@ class _PocketOpenWorldTheoryGamePageState
             child: _buildTopRealmHud(),
           ),
 
-          // 4. VIRTUAL JOYSTICK (BOTTOM-LEFT)
+          // 4. QUICK TELEPORT SHORTCUT PILLS
+          Positioned(
+            top: 74,
+            left: 14,
+            right: 14,
+            child: _buildQuickTeleportBar(),
+          ),
+
+          // 5. VIRTUAL JOYSTICK (BOTTOM-LEFT)
           Positioned(
             bottom: 30,
             left: 24,
             child: _buildVirtualJoystick(),
           ),
 
-          // 5. ACTIVE STATION INTERACT PROMPT (BOTTOM-RIGHT)
+          // 6. ACTIVE STATION INTERACT PROMPT (BOTTOM-RIGHT)
           if (_isInsideStationProximity && _proximityStationId != null)
             Positioned(
               bottom: 36,
@@ -794,10 +870,10 @@ class _PocketOpenWorldTheoryGamePageState
   Widget _buildTopRealmHud() {
     return SafeArea(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+          color: const Color(0xFF0F172A).withValues(alpha: 0.94),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           boxShadow: [
@@ -859,13 +935,14 @@ class _PocketOpenWorldTheoryGamePageState
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFFD700), width: 1),
               ),
               child: Text(
-                '⭐ $_score',
+                '$_score XP',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
                 ),
               ),
             ),
@@ -893,6 +970,56 @@ class _PocketOpenWorldTheoryGamePageState
     );
   }
 
+  Widget _buildQuickTeleportBar() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          _buildTeleportPill('⚡ S1: FORMULA LAB', 520.0, 650.0, const Color(0xFFFFD700), _station1Completed),
+          const SizedBox(width: 8),
+          _buildTeleportPill('🎯 S2: ERROR HUNTER', 1400.0, 560.0, const Color(0xFFEF4444), _station2Completed),
+          const SizedBox(width: 8),
+          _buildTeleportPill('🟣 S3: EVOLUTION GATE', 2280.0, 680.0, const Color(0xFFA855F7), _station3Completed),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeleportPill(String title, double tx, double ty, Color accent, bool isDone) {
+    return GestureDetector(
+      onTap: () => _teleportTo(tx, ty),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDone ? const Color(0xFF10B981) : accent, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(isDone ? '✓ ' : '📍 ', style: const TextStyle(fontSize: 11)),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                color: isDone ? const Color(0xFF10B981) : Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 10.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // 2D OPEN WORLD CANVAS
   // ---------------------------------------------------------------------------
@@ -912,19 +1039,19 @@ class _PocketOpenWorldTheoryGamePageState
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFF0C4A6E), // Azure daytime sky top
-                      Color(0xFF0369A1), // Sky horizon
-                      Color(0xFF065F46), // Green valley foothills
-                      Color(0xFF064E3B), // Deep lush meadow terrain
+                      Color(0xFF075985), // Daytime sky top
+                      Color(0xFF0284C7), // Horizon
+                      Color(0xFF047857), // Rolling green foothills
+                      Color(0xFF064E3B), // Deep lush meadow base
                     ],
-                    stops: [0.0, 0.35, 0.55, 1.0],
+                    stops: [0.0, 0.30, 0.55, 1.0],
                   ),
                 ),
               ),
 
-              // 2. Rolling hills backdrop
+              // 2. Rolling hills backdrop CustomPaint
               Positioned(
-                top: 400,
+                top: 360,
                 left: 0,
                 right: 0,
                 bottom: 0,
@@ -933,43 +1060,72 @@ class _PocketOpenWorldTheoryGamePageState
                 ),
               ),
 
-              // 3. Station 1: Speech Code Matrix (x: 500, y: 650)
+              // 3. Highway ribbon connecting Station 1 -> 2 -> 3
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _WorldHighwayPainter(),
+                ),
+              ),
+
+              // 4. Station 1: Speech Formula Core Citadel (x: 520, y: 650)
               _buildStationPillar(
                 id: 1,
-                x: 500.0,
+                x: 520.0,
                 y: 650.0,
                 emoji: '⚡',
                 title: 'Speech Formula Core',
                 accentColor: const Color(0xFFFFD700),
                 isCompleted: _station1Completed,
+                houseWidget: SizedBox(
+                  width: 140,
+                  height: 105,
+                  child: PocketAvatarHouseWidget(
+                    day: widget.day,
+                    width: 140,
+                    height: 105,
+                    lightsOn: true,
+                  ),
+                ),
               ),
 
-              // 4. Station 2: Error Hunter Arena (x: 1350, y: 550)
+              // 5. Station 2: Error Hunter Defense Fortress (x: 1400, y: 560)
               _buildStationPillar(
                 id: 2,
-                x: 1350.0,
-                y: 550.0,
+                x: 1400.0,
+                y: 560.0,
                 emoji: '🎯',
-                title: 'Error Hunter Arena',
+                title: 'Error Hunter Citadel',
                 accentColor: const Color(0xFFEF4444),
                 isCompleted: _station2Completed,
+                fortressShield: true,
               ),
 
-              // 5. Station 3: Sentence Evolution Gate (x: 2200, y: 680)
+              // 6. Station 3: Sentence Evolution Grand Palace (x: 2280, y: 680)
               _buildStationPillar(
                 id: 3,
-                x: 2200.0,
+                x: 2280.0,
                 y: 680.0,
                 emoji: '🟣',
-                title: 'Sentence Evolution Gate',
+                title: 'Sentence Evolution Palace',
                 accentColor: const Color(0xFFA855F7),
                 isCompleted: _station3Completed,
+                houseWidget: const SizedBox(
+                  width: 160,
+                  height: 120,
+                  child: PocketAvatarHouseWidget(
+                    day: 90,
+                    isPresident: true,
+                    width: 160,
+                    height: 120,
+                    lightsOn: true,
+                  ),
+                ),
               ),
 
-              // 6. Player Avatar / Vehicle
+              // 7. Player Avatar / Sporty Buggy
               Positioned(
-                left: _playerX - 26,
-                top: _playerY - 26,
+                left: _playerX - 30,
+                top: _playerY - 30,
                 child: _buildPlayerAvatar(),
               ),
             ],
@@ -987,14 +1143,52 @@ class _PocketOpenWorldTheoryGamePageState
     required String title,
     required Color accentColor,
     required bool isCompleted,
+    Widget? houseWidget,
+    bool fortressShield = false,
   }) {
     return Positioned(
-      left: x - 60,
-      top: y - 80,
+      left: x - 90,
+      top: y - 130,
       child: GestureDetector(
         onTap: () => _openActiveStationModal(id),
         child: Column(
           children: [
+            // Architectural Building / Fortress
+            if (houseWidget != null)
+              houseWidget
+            else if (fortressShield)
+              Container(
+                width: 130,
+                height: 90,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF334155), Color(0xFF0F172A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFEF4444), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('🏰 🛡️', style: TextStyle(fontSize: 26)),
+                    SizedBox(height: 4),
+                    Text('RADAR FORTRESS',
+                        style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w900)),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 8),
+
+            // Pulsing Interactive Energy Core
             AnimatedBuilder(
               animation: _pulseController,
               builder: (ctx, _) {
@@ -1002,8 +1196,8 @@ class _PocketOpenWorldTheoryGamePageState
                 return Transform.scale(
                   scale: scale,
                   child: Container(
-                    width: 76,
-                    height: 76,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [accentColor, accentColor.withValues(alpha: 0.6)],
@@ -1017,16 +1211,16 @@ class _PocketOpenWorldTheoryGamePageState
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: accentColor.withValues(alpha: 0.5),
-                          blurRadius: 18,
-                          spreadRadius: 3,
+                          color: accentColor.withValues(alpha: 0.45),
+                          blurRadius: 14,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
                     child: Center(
                       child: Text(
                         isCompleted ? '✓' : emoji,
-                        style: const TextStyle(fontSize: 32),
+                        style: const TextStyle(fontSize: 28),
                       ),
                     ),
                   ),
@@ -1037,7 +1231,7 @@ class _PocketOpenWorldTheoryGamePageState
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                color: const Color(0xFF0F172A).withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: accentColor.withValues(alpha: 0.5)),
               ),
@@ -1057,31 +1251,29 @@ class _PocketOpenWorldTheoryGamePageState
   }
 
   Widget _buildPlayerAvatar() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+    return Transform.rotate(
+      angle: _playerAngle,
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+          ),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFFFFD700), width: 2.2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+              blurRadius: 14,
+              spreadRadius: 2,
             ),
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFFFD700), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
-                blurRadius: 14,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: const Center(
-            child: Text('🏎️', style: TextStyle(fontSize: 26)),
-          ),
+          ],
         ),
-      ],
+        child: const Center(
+          child: Text('🏎️', style: TextStyle(fontSize: 30)),
+        ),
+      ),
     );
   }
 
@@ -1097,7 +1289,7 @@ class _PocketOpenWorldTheoryGamePageState
         });
       },
       onPanUpdate: (details) {
-        final radius = 45.0;
+        const radius = 45.0;
         final rawOffset = details.localPosition - const Offset(55, 55);
         final dist = rawOffset.distance;
         final clamped = dist > radius ? rawOffset / dist * radius : rawOffset;
@@ -1115,9 +1307,9 @@ class _PocketOpenWorldTheoryGamePageState
         width: 110,
         height: 110,
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+          color: const Color(0xFF0F172A).withValues(alpha: 0.85),
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 2),
         ),
         child: Center(
           child: Transform.translate(
@@ -1240,6 +1432,43 @@ class _WorldHillsPainter extends CustomPainter {
     path.lineTo(0, size.height);
     path.close();
     canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _WorldHighwayPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // S-curve Cobblestone Highway connecting stations
+    final path = Path();
+    path.moveTo(350, 650);
+    path.cubicTo(450, 650, 500, 650, 520, 650); // To S1
+    path.cubicTo(800, 650, 1100, 560, 1400, 560); // To S2
+    path.cubicTo(1700, 560, 2000, 680, 2280, 680); // To S3
+
+    final roadBorder = Paint()
+      ..color = Colors.white.withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 36
+      ..strokeCap = StrokeCap.round;
+
+    final roadInner = Paint()
+      ..color = const Color(0xFF1E293B).withValues(alpha: 0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 24
+      ..strokeCap = StrokeCap.round;
+
+    final dashPaint = Paint()
+      ..color = const Color(0xFFFFD700).withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(path, roadBorder);
+    canvas.drawPath(path, roadInner);
+    canvas.drawPath(path, dashPaint);
   }
 
   @override

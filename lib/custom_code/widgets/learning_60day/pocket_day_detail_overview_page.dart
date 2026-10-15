@@ -672,6 +672,16 @@ class _PocketDayDetailOverviewPageState
               height: 1.4,
             ),
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildOpenWorldStationChip('⚡ S1: Formula', const Color(0xFFFFD700)),
+              const SizedBox(width: 6),
+              _buildOpenWorldStationChip('🎯 S2: Error Hunter', const Color(0xFFEF4444)),
+              const SizedBox(width: 6),
+              _buildOpenWorldStationChip('🟣 S3: Evolution', const Color(0xFFA855F7)),
+            ],
+          ),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
@@ -685,7 +695,7 @@ class _PocketDayDetailOverviewPageState
                 'ENTER OPEN-WORLD QUEST NOW ➔',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
-                  fontSize: 14,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0.5,
                 ),
@@ -700,6 +710,30 @@ class _PocketDayDetailOverviewPageState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOpenWorldStationChip(String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1.2),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

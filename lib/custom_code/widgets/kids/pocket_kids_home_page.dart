@@ -297,15 +297,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     final screenSize = MediaQuery.of(context).size;
     final curMatrix = _mapTransformController.value;
     final curScale = curMatrix.getMaxScaleOnAxis();
-    final targetScale = (curScale * factor).clamp(0.20, 2.2);
-
-    if (targetScale <= 0.32) {
-      HapticFeedback.mediumImpact();
-      setState(() => _isGlobeMode = true);
-      return;
-    } else if (_isGlobeMode) {
-      setState(() => _isGlobeMode = false);
-    }
+    final targetScale = (curScale * factor).clamp(0.58, 2.0);
 
     final curTranslation = curMatrix.getTranslation();
     final centerX = screenSize.width / 2;
@@ -813,103 +805,109 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     return Stack(
       children: [
         // 🗺️ 100-DAY GOOGLE MAP-LIKE 2D INTERACTIVE PAN & ZOOM CANVAS
-        InteractiveViewer(
-          transformationController: _mapTransformController,
-          minScale: 0.20,
-          maxScale: 2.2,
-          boundaryMargin: const EdgeInsets.all(800),
-          constrained: false,
-          onInteractionUpdate: (details) {
-            final currentScale = _mapTransformController.value.getMaxScaleOnAxis();
-            if (currentScale <= 0.32 && !_isGlobeMode) {
-              setState(() => _isGlobeMode = true);
-            } else if (currentScale > 0.35 && _isGlobeMode) {
-              setState(() => _isGlobeMode = false);
-            }
-          },
-          child: SizedBox(
-            width: worldWidth,
-            height: _totalCanvasHeight,
-            child: Stack(
-              children: [
-                // 1. Continuous Cartoon Mountain Road & Biome Painter
-                IgnorePointer(
-                  child: CustomPaint(
-                    size: Size(worldWidth, _totalCanvasHeight),
-                    painter: _KidsAdventureMountainRoadPainter(
-                      totalDays: _totalDays,
-                      unlockedDay: unlockedDay,
-                      nodeSpacingY: _nodeSpacingY,
-                      topPadding: _topPadding,
-                      bottomPadding: _bottomPadding,
-                      screenWidth: worldWidth,
-                    ),
-                  ),
-                ),
-
-                // 2. Day 100 Summit Golden Castle Banner
-                Positioned(
-                  top: 40,
-                  left: 20,
-                  right: 20,
-                  child: _buildSummitCastleCard(worldWidth),
-                ),
-
-                // 3. Day 1 Basecamp Welcome Sign
-                Positioned(
-                  top: _getNodeY(1) + 80,
-                  left: 24,
-                  right: 24,
-                  child: _buildBasecampCard(),
-                ),
-
-                // 4. Architectural English Houses along the path (All 100 Days)
-                ...List.generate(_totalDays, (index) {
-                  final day = index + 1;
-                  return _buildRoadmapHouse(day, worldWidth, unlockedDay);
-                }),
-
-                // 5. Fortress Exam Gates between Day N and Day N+1 (Days 1 to 99)
-                ...List.generate(_totalDays - 1, (index) {
-                  final day = index + 1;
-                  return _buildRoadmapGate(day, worldWidth, unlockedDay);
-                }),
-
-                // 6. Zone Banners across the Mountain Passes
-                ..._buildZoneMilestonePasses(worldWidth),
-
-                // 7. Interactive Day Nodes (Day 1 to 100)
-                ...List.generate(_totalDays, (index) {
-                  final dayNumber = index + 1;
-                  final nodeX = _getNodeX(dayNumber, worldWidth);
-                  final nodeY = _getNodeY(dayNumber);
-                  final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(dayNumber);
-                  final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
-                  final isCurrent = dayNumber == unlockedDay;
-                  final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
-
-                  return Positioned(
-                    left: nodeX - 44,
-                    top: nodeY - 44,
-                    child: GestureDetector(
-                      onTap: () => _onTapDayNode(dayNumber),
-                      child: _buildDayNode(
-                        dayNumber: dayNumber,
-                        isUnlocked: isUnlocked,
-                        isCurrent: isCurrent,
-                        isMidnightLocked: isMidnightLocked,
-                        stars: stars,
-                        kidAvatar: kidAvatar,
+        // When in Globe Mode, hide InteractiveViewer to avoid dual rendering on GPU!
+        Visibility(
+          visible: !_isGlobeMode,
+          maintainState: true,
+          child: InteractiveViewer(
+            transformationController: _mapTransformController,
+            minScale: 0.58,
+            maxScale: 2.0,
+            boundaryMargin: const EdgeInsets.symmetric(horizontal: 400, vertical: 600),
+            constrained: false,
+            child: SizedBox(
+              width: worldWidth,
+              height: _totalCanvasHeight,
+              child: Stack(
+                children: [
+                  // 1. Continuous Cartoon Mountain Road & Biome Painter (Cached in GPU layer)
+                  IgnorePointer(
+                    child: RepaintBoundary(
+                      child: CustomPaint(
+                        size: Size(worldWidth, _totalCanvasHeight),
+                        painter: _KidsAdventureMountainRoadPainter(
+                          totalDays: _totalDays,
+                          unlockedDay: unlockedDay,
+                          nodeSpacingY: _nodeSpacingY,
+                          topPadding: _topPadding,
+                          bottomPadding: _bottomPadding,
+                          screenWidth: worldWidth,
+                        ),
                       ),
                     ),
-                  );
-                }),
-              ],
+                  ),
+
+                  // 2. Day 100 Summit Golden Castle Banner (Fixed Width & Height for rock-solid stability)
+                  Positioned(
+                    top: 40,
+                    left: (worldWidth - math.min(worldWidth - 40, 460.0)) / 2,
+                    width: math.min(worldWidth - 40, 460.0),
+                    height: 380.0,
+                    child: RepaintBoundary(
+                      child: _buildSummitCastleCard(math.min(worldWidth - 40, 460.0)),
+                    ),
+                  ),
+
+                  // 3. Day 1 Basecamp Welcome Sign
+                  Positioned(
+                    top: _getNodeY(1) + 80,
+                    left: 24,
+                    right: 24,
+                    child: RepaintBoundary(
+                      child: _buildBasecampCard(),
+                    ),
+                  ),
+
+                  // 4. Architectural English Houses along the path (All 100 Days)
+                  ...List.generate(_totalDays, (index) {
+                    final day = index + 1;
+                    return _buildRoadmapHouse(day, worldWidth, unlockedDay);
+                  }),
+
+                  // 5. Fortress Exam Gates between Day N and Day N+1 (Days 1 to 99)
+                  ...List.generate(_totalDays - 1, (index) {
+                    final day = index + 1;
+                    return _buildRoadmapGate(day, worldWidth, unlockedDay);
+                  }),
+
+                  // 6. Zone Banners across the Mountain Passes
+                  ..._buildZoneMilestonePasses(worldWidth),
+
+                  // 7. Interactive Day Nodes (Day 1 to 100)
+                  ...List.generate(_totalDays, (index) {
+                    final dayNumber = index + 1;
+                    final nodeX = _getNodeX(dayNumber, worldWidth);
+                    final nodeY = _getNodeY(dayNumber);
+                    final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(dayNumber);
+                    final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
+                    final isCurrent = dayNumber == unlockedDay;
+                    final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
+
+                    return Positioned(
+                      left: nodeX - 44,
+                      top: nodeY - 44,
+                      child: RepaintBoundary(
+                        child: GestureDetector(
+                          onTap: () => _onTapDayNode(dayNumber),
+                          child: _buildDayNode(
+                            dayNumber: dayNumber,
+                            isUnlocked: isUnlocked,
+                            isCurrent: isCurrent,
+                            isMidnightLocked: isMidnightLocked,
+                            stars: stars,
+                            kidAvatar: kidAvatar,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
           ),
         ),
 
-        // 🌍 3D-STYLED ROTATING CARTOON EARTH GLOBE OVERLAY (Visible when zoomed out or toggled)
+        // 🌍 3D-STYLED ROTATING CARTOON EARTH GLOBE OVERLAY (Visible ONLY when toggled explicitly)
         if (_isGlobeMode)
           Positioned.fill(
             child: _buildRotatingEarthGlobe(unlockedDay),
@@ -1679,55 +1677,70 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   // --- Summit Golden Castle Card ---
   Widget _buildSummitCastleCard(double screenWidth) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      width: screenWidth,
+      height: 380,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFD700), Color(0xFFF59E0B), Color(0xFFEC4899)],
+          colors: [Color(0xFFB45309), Color(0xFFDC2626), Color(0xFF7C2D12)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.45),
-            blurRadius: 20,
+            color: const Color(0xFFFF5722).withValues(alpha: 0.45),
+            blurRadius: 16,
             spreadRadius: 2,
           ),
         ],
-        border: Border.all(color: Colors.white, width: 3),
+        border: Border.all(color: const Color(0xFFFFD700), width: 3),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('👑 🦁 🏰', style: TextStyle(fontSize: 36)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🔥 👑 🔥', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Text(
+                'KING LION PALACE (DAY 100 BOSS)',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
-          Text(
-            'KING LION PALACE (DAY 100 BOSS)',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.8,
+          const SizedBox(
+            width: 180,
+            height: 120,
+            child: PocketAvatarHouseWidget(
+              day: 90,
+              isPresident: true,
+              width: 180,
+              height: 120,
+              lightsOn: true,
             ),
           ),
-          const SizedBox(height: 8),
-          const PocketAvatarHouseWidget(
-            day: 90,
-            isPresident: true,
-            width: 200,
-            height: 140,
-            lightsOn: true,
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'Climb to the summit to challenge King Lion in the Royal Spoken English Boss Battle!',
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.95),
-              fontSize: 12,
+              fontSize: 11.5,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -1872,58 +1885,59 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     return Positioned(
       left: houseLeft,
       top: houseTop,
-      child: GestureDetector(
-        onTap: () => _showHouseDetailDialog(day, isUnlocked),
-        child: SizedBox(
-          width: houseWidth,
-          height: houseHeight + 36.0,
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.topCenter,
-            children: [
-              // 1. Terrain Ground Shadow Footing (Gives the house a solid physical standing on the mountain)
-              Positioned(
-                bottom: 28,
-                left: 12,
-                right: 12,
-                height: 18,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        blurRadius: 16,
-                        spreadRadius: 4,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 2. Warm Flame Glow behind the house when Unlocked or Completed
-              if (isUnlocked)
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTap: () => _showHouseDetailDialog(day, isUnlocked),
+          child: SizedBox(
+            width: houseWidth,
+            height: houseHeight + 36.0,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
+              children: [
+                // 1. Terrain Ground Shadow Footing (Gives the house a solid physical standing on the mountain)
                 Positioned(
-                  top: 8,
-                  left: 8,
-                  right: 8,
-                  height: houseHeight - 16,
+                  bottom: 28,
+                  left: 12,
+                  right: 12,
+                  height: 18,
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(100),
                       boxShadow: [
                         BoxShadow(
-                          color: isCompleted
-                              ? const Color(0xFFFF5722).withValues(alpha: 0.35)
-                              : const Color(0xFFFFD700).withValues(alpha: 0.28),
-                          blurRadius: 26,
-                          spreadRadius: 6,
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 6,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                   ),
                 ),
+
+                // 2. Warm Flame Glow behind the house (Focused on active / recent houses to keep 60fps)
+                if (isCurrent || (isUnlocked && (day - currentDay).abs() <= 1))
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    right: 8,
+                    height: houseHeight - 16,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isCurrent
+                                ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                                : const Color(0xFFFF9800).withValues(alpha: 0.20),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
               // 3. Direct Architectural House on Mountain Ground (NO BOX/PETTI CONTAINER!)
               SizedBox(
@@ -2059,7 +2073,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   void _showHouseDetailDialog(int day, bool isUnlocked) {
@@ -2142,7 +2157,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     return Positioned(
       left: gateLeft,
       top: gateTop,
-      child: GestureDetector(
+      child: RepaintBoundary(
+        child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () async {
           HapticFeedback.heavyImpact();
@@ -2392,7 +2408,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   // --- Zone Milestone Banners across Mountain Passes ---
@@ -2413,28 +2430,30 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
         top: y,
         left: 28,
         right: 28,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: (z['color'] as Color).withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+        child: RepaintBoundary(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: (z['color'] as Color).withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              z['title'] as String,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
               ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            z['title'] as String,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
             ),
           ),
         ),
@@ -2861,14 +2880,14 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF38BDF8).withValues(alpha: 0.65),
-            blurRadius: 40,
-            spreadRadius: 8,
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.55),
+            blurRadius: 20,
+            spreadRadius: 4,
           ),
           BoxShadow(
-            color: const Color(0xFF0284C7).withValues(alpha: 0.40),
-            blurRadius: 80,
-            spreadRadius: 20,
+            color: const Color(0xFF0284C7).withValues(alpha: 0.30),
+            blurRadius: 36,
+            spreadRadius: 8,
           ),
         ],
       ),
