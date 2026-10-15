@@ -33,6 +33,8 @@ import 'pocket_day1_step3_avatar_chat_page.dart';
 import 'pocket_day1_step4_avatar_chat_page.dart';
 import 'pocket_day1_step5_avatar_chat_page.dart';
 import 'pocket_day2_step1_avatar_chat_page.dart';
+import 'pocket_day2_step3_avatar_chat_page.dart';
+import 'pocket_day2_step4_avatar_chat_page.dart';
 import 'pocket_day_avatar_chat_page.dart';
 import 'pocket_house_defense_chat_page.dart';
 import 'games/pocket_vocab_open_world_drive_page.dart';
@@ -605,9 +607,29 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
+    // 🔍 User Audio Directive: Day 2 Step 3 uses dedicated conversational avatar chat interface for Day 2 Letter & Word Hunt!
+    if (widget.day == 2 && _activeStep == 3) {
+      return PocketDay2Step3AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(3);
+        },
+      );
+    }
+
     // 🎙️ User Audio Directive: Day 1 Step 4 uses the conversational avatar chat interface for Spoken English!
     if (widget.day == 1 && _activeStep == 4) {
       return PocketDay1Step4AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(4);
+        },
+      );
+    }
+
+    // 🎙️ User Audio Directive: Day 2 Step 4 uses dedicated conversational avatar chat interface for Day 2 Spoken English!
+    if (widget.day == 2 && _activeStep == 4) {
+      return PocketDay2Step4AvatarChatPage(
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(4);

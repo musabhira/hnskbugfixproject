@@ -322,7 +322,12 @@ class _PocketVocabOpenWorldDrivePageState
       _checkpoints = vocabCheckpoints;
     }
 
-    // Set initial ride mode according to user selection or cyclic day theme (User Audio Directive!)
+    // 1 dedicated game theme per day (User Audio Directive!)
+    // Day 1: Highway Sports Cruiser (Car)
+    // Day 2: 4x4 Off-Road Safari Jeep (with oncoming traffic!)
+    // Day 3: Skyward Flight Airplane
+    // Day 4: Cosmic Star Rocket
+    // Day 5: Forest Trail Nature Explorer
     if (widget.initialRideMode == 'jeep') {
       _currentRideMode = RideMode.jeep;
     } else if (widget.initialRideMode == 'airplane') {
@@ -334,17 +339,17 @@ class _PocketVocabOpenWorldDrivePageState
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final modeCycle = widget.day % 5;
-      if (modeCycle == 2) {
+      final cycle = (widget.day - 1) % 5;
+      if (cycle == 0) {
+        _currentRideMode = RideMode.car;
+      } else if (cycle == 1) {
         _currentRideMode = RideMode.jeep;
-      } else if (modeCycle == 4) {
+      } else if (cycle == 2) {
         _currentRideMode = RideMode.airplane;
-      } else if (modeCycle == 3) {
-        _currentRideMode = RideMode.walking;
-      } else if (modeCycle == 0) {
+      } else if (cycle == 3) {
         _currentRideMode = RideMode.rocket;
       } else {
-        _currentRideMode = RideMode.car;
+        _currentRideMode = RideMode.walking;
       }
     }
 
@@ -367,21 +372,6 @@ class _PocketVocabOpenWorldDrivePageState
       duration: const Duration(milliseconds: 16),
     )..addListener(_gameLoop);
     _gameLoopController.repeat();
-  }
-
-  void _switchRideMode(RideMode mode) {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _currentRideMode = mode;
-    });
-    final titles = {
-      RideMode.car: 'Highway Sports Cruiser selected!',
-      RideMode.jeep: '4x4 Off-Road Safari Jeep selected!',
-      RideMode.airplane: 'Skyward Flight Airplane selected!',
-      RideMode.walking: 'Nature Trail Explorer selected!',
-      RideMode.rocket: 'Cosmic Star Rocket selected!',
-    };
-    _speak(titles[mode] ?? 'New ride selected!');
   }
 
   Future<void> _initAudioService() async {
@@ -608,26 +598,34 @@ class _PocketVocabOpenWorldDrivePageState
         : _checkpoints.last;
     final wrd = (currentItem['word'] ?? '').toString().toLowerCase();
 
-    final cleanSpoken = _spokenText.toLowerCase().replaceAll(RegExp(r"[^\w\s']"), '').trim();
+    final normSpoken = PocketSpeechNormalizer.normalize(_spokenText);
+    final cleanSpoken = PocketSpeechNormalizer.clean(normSpoken.isNotEmpty ? normSpoken : _spokenText);
 
     if (cleanSpoken.isEmpty) {
-      setState(() {
-        _isRecording = false;
-        _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and say: "$sentence"';
-      });
-      PocketGameAudioService.instance.playIncorrectSound();
-      await _speak('Please speak into the mic: $sentence');
-      return;
+      if (!isMobile || !_speechAvailable) {
+        // Desktop / Simulator / Web test fallback
+        _spokenText = sentence;
+      } else {
+        setState(() {
+          _isRecording = false;
+          _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and say: "$sentence"';
+        });
+        PocketGameAudioService.instance.playIncorrectSound();
+        await _speak('Please speak into the mic: $sentence');
+        return;
+      }
     }
 
-    // Accurate Speech Verification
+    // Accurate Speech Verification with Accent Tolerance (e.g., "I live in Kerala")
     final evalResult = PocketPronunciationEvaluator.evaluate(
       targetSentence: sentence,
       spokenText: _spokenText,
     );
 
-    final containsKeyword = cleanSpoken.contains(wrd);
-    final isPassed = evalResult.accuracyPercentage >= 45 || containsKeyword;
+    final containsKeyword = cleanSpoken.contains(wrd) || normSpoken.contains(wrd);
+    final isFuzzy = PocketSpeechNormalizer.isFuzzyMatch(cleanSpoken, sentence, thresholdPercentage: 35) ||
+        PocketSpeechNormalizer.isFuzzyMatch(normSpoken, sentence, thresholdPercentage: 35);
+    final isPassed = evalResult.accuracyPercentage >= 35 || containsKeyword || isFuzzy;
 
     if (!isPassed) {
       final focus = evalResult.focusWords.take(2).join(', ');
@@ -887,13 +885,13 @@ class _PocketVocabOpenWorldDrivePageState
 
         const SizedBox(height: 6),
 
-        // 🚀 Chic Ride Mode Switcher Pill (User Audio Directive: Choose car, jeep, plane, walk, or rocket!)
+        // 🚀 Dedicated Day Vehicle & World Badge (User Audio Directive: 1 dedicated game theme per day!)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.45), width: 1.2),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 1.2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
@@ -901,21 +899,13 @@ class _PocketVocabOpenWorldDrivePageState
               ),
             ],
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildRidePill(RideMode.car, '🏎️ Racer'),
-                const SizedBox(width: 3),
-                _buildRidePill(RideMode.jeep, '🚙 4x4 Jeep'),
-                const SizedBox(width: 3),
-                _buildRidePill(RideMode.airplane, '✈️ Sky Plane'),
-                const SizedBox(width: 3),
-                _buildRidePill(RideMode.walking, '🚶 Forest Trail'),
-                const SizedBox(width: 3),
-                _buildRidePill(RideMode.rocket, '🚀 Star Rocket'),
-              ],
+          child: Text(
+            _getRideModeTitle(),
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF38BDF8),
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.4,
             ),
           ),
         ),
@@ -923,31 +913,19 @@ class _PocketVocabOpenWorldDrivePageState
     );
   }
 
-  Widget _buildRidePill(RideMode mode, String label) {
-    final isSelected = _currentRideMode == mode;
-    return GestureDetector(
-      onTap: () => _switchRideMode(mode),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0284C7) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF38BDF8) : Colors.transparent,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: isSelected ? Colors.white : Colors.white60,
-            fontSize: 10,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-          ),
-        ),
-      ),
-    );
+  String _getRideModeTitle() {
+    switch (_currentRideMode) {
+      case RideMode.car:
+        return '🏎️ Day ${widget.day} • Highway Sports Cruiser';
+      case RideMode.jeep:
+        return '🚙 Day ${widget.day} • 4x4 Off-Road Safari Jeep';
+      case RideMode.airplane:
+        return '✈️ Day ${widget.day} • Skyward Flight Airplane';
+      case RideMode.rocket:
+        return '🚀 Day ${widget.day} • Cosmic Star Rocket';
+      case RideMode.walking:
+        return '🚶 Day ${widget.day} • Forest Trail Nature Explorer';
+    }
   }
 
   /// 🎙️ Minimal Centered Floating Action Button with Mic (Appears at stopped checkpoint)

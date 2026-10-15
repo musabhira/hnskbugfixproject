@@ -207,6 +207,8 @@ class _PocketHouseDefenseChatPageState
     _checkExistingDefense();
   }
 
+  int get targetShieldCount => widget.day.clamp(1, 5);
+
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();
     final isActive = prefs.getBool('pocket_house_${widget.day}_defense_active') ?? false;
@@ -214,7 +216,7 @@ class _PocketHouseDefenseChatPageState
       setState(() {
         _isShieldArmed = true;
         _shieldHp = 100;
-        _activeQuestions = _curatedBank.take(5).toList();
+        _activeQuestions = _curatedBank.take(targetShieldCount).toList();
       });
     } else {
       // Speak brief initial prompt
@@ -253,7 +255,7 @@ class _PocketHouseDefenseChatPageState
     HapticFeedback.heavyImpact();
     await _tts.stop();
 
-    final questions = _curatedBank.take(5).toList();
+    final questions = _curatedBank.take(targetShieldCount).toList();
     setState(() {
       _activeQuestions = questions;
       _isChoosingMode = false;
@@ -264,7 +266,7 @@ class _PocketHouseDefenseChatPageState
     await _saveDefenseQuestions(questions);
 
     _speak(
-      "Excellent choice! House number ${widget.day} defense shield is fully activated. Shield health is 100 percent.",
+      "Excellent choice! House number ${widget.day} defense shield is fully activated with $targetShieldCount defense ${targetShieldCount == 1 ? 'question' : 'questions'}. Shield health is 100 percent.",
     );
   }
 
@@ -822,7 +824,7 @@ class _PocketHouseDefenseChatPageState
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'Instantly arms 5 high-yield Spoken English questions (+20 HP each -> 100 HP Shield).',
+                            'Instantly arms $targetShieldCount high-yield Spoken English ${targetShieldCount == 1 ? 'question' : 'questions'} (100 HP Shield).',
                             style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
                           ),
                         ],
@@ -991,7 +993,7 @@ class _PocketHouseDefenseChatPageState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'House 1 Defense Shield (5 Questions)',
+                          'House ${widget.day} Defense Shield ($targetShieldCount ${targetShieldCount == 1 ? 'Question' : 'Questions'})',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 16,
@@ -1048,7 +1050,7 @@ class _PocketHouseDefenseChatPageState
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'QUESTION #${i + 1} • +20 HP',
+                                  'QUESTION #${i + 1} • SHIELD #${i + 1}',
                                   style: GoogleFonts.outfit(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
@@ -1304,7 +1306,7 @@ class _PocketHouseDefenseChatPageState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Choose 5 Defense Questions',
+                              'Choose $targetShieldCount Defense ${targetShieldCount == 1 ? 'Question' : 'Questions'}',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -1312,9 +1314,9 @@ class _PocketHouseDefenseChatPageState
                               ),
                             ),
                             Text(
-                              'Selected: ${selectedIds.length} / 5',
+                              'Selected: ${selectedIds.length} / $targetShieldCount',
                               style: GoogleFonts.inter(
-                                color: selectedIds.length == 5
+                                color: selectedIds.length == targetShieldCount
                                     ? const Color(0xFF34D399)
                                     : const Color(0xFFFFD700),
                                 fontSize: 12,
@@ -1348,7 +1350,7 @@ class _PocketHouseDefenseChatPageState
                               if (isSel) {
                                 selectedIds.remove(q.id);
                               } else {
-                                if (selectedIds.length < 5) {
+                                if (selectedIds.length < targetShieldCount) {
                                   selectedIds.add(q.id);
                                 }
                               }
@@ -1413,13 +1415,13 @@ class _PocketHouseDefenseChatPageState
                       height: 50,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedIds.length == 5
+                          backgroundColor: selectedIds.length == targetShieldCount
                               ? const Color(0xFF10B981)
                               : Colors.white24,
                           foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        onPressed: selectedIds.length == 5
+                        onPressed: selectedIds.length == targetShieldCount
                             ? () async {
                                 final chosen = _curatedBank
                                     .where((q) => selectedIds.contains(q.id))

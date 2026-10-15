@@ -123,6 +123,7 @@ class _PocketDay2Step1AvatarChatPageState
   bool _isSoundMuted = false;
   bool _isListening = false;
   bool _speechAvailable = false;
+  bool _isSubmittingVoice = false;
   String _liveRecordedWords = '';
 
   bool _showMicGuideArrow = false;
@@ -1121,6 +1122,9 @@ class _PocketDay2Step1AvatarChatPageState
   }
 
   void _onConfirmAndSendVoice() async {
+    if (_isSubmittingVoice) return;
+    _isSubmittingVoice = true;
+
     HapticFeedback.mediumImpact();
     try {
       if (_speechAvailable) await _speech.stop();
@@ -1142,7 +1146,10 @@ class _PocketDay2Step1AvatarChatPageState
     // Beginner-friendly lenient pass: praise learner and advance drill
     _handleVoiceSubmission(
       voiceText: finalVoiceText,
-      action: _onDrillPassed,
+      action: () {
+        _isSubmittingVoice = false;
+        _onDrillPassed();
+      },
     );
   }
 
@@ -1175,14 +1182,11 @@ class _PocketDay2Step1AvatarChatPageState
               setState(() {
                 _liveRecordedWords = words;
               });
-              if (result.finalResult) {
-                _onConfirmAndSendVoice();
-              }
             }
           },
           listenOptions: stt.SpeechListenOptions(
-            listenFor: const Duration(seconds: 15),
-            pauseFor: const Duration(seconds: 3),
+            listenFor: const Duration(seconds: 20),
+            pauseFor: const Duration(seconds: 4),
             partialResults: true,
             listenMode: stt.ListenMode.confirmation,
             cancelOnError: true,
@@ -1197,13 +1201,10 @@ class _PocketDay2Step1AvatarChatPageState
   }
 
   void _simulateVoiceFallback() {
-    // Graceful simulation for Desktop / Web test environments
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted && _isListening) {
-        _liveRecordedWords = _currentExpectedVoicePhrase;
-        _onConfirmAndSendVoice();
-      }
-    });
+    // Graceful simulation for Desktop / Web test environments: prepare words, do not auto-send
+    if (mounted && _liveRecordedWords.isEmpty) {
+      _liveRecordedWords = _currentExpectedVoicePhrase;
+    }
   }
 
   // =========================================================================
@@ -1836,22 +1837,59 @@ class _PocketDay2Step1AvatarChatPageState
                 child: AnimatedBuilder(
                   animation: _micWaveController,
                   builder: (context, child) {
+                    if (_isListening) {
+                      return Container(
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(25),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                          ),
+                          border: Border.all(color: const Color(0xFFFCA5A5), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEF4444).withValues(
+                                alpha: 0.4 + (_micWaveController.value * 0.3),
+                              ),
+                              blurRadius: 12 + (_micWaveController.value * 8),
+                              spreadRadius: _micWaveController.value * 3,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'SEND',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                     return Container(
                       width: 54,
                       height: 54,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: _isListening
-                              ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
-                              : [const Color(0xFF10B981), const Color(0xFF059669)],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: (_isListening
-                                    ? const Color(0xFFEF4444)
-                                    : const Color(0xFF10B981))
-                                .withValues(
+                            color: const Color(0xFF10B981).withValues(
                               alpha: 0.3 + (_micWaveController.value * 0.3),
                             ),
                             blurRadius: 10 + (_micWaveController.value * 8),
@@ -1859,8 +1897,8 @@ class _PocketDay2Step1AvatarChatPageState
                           ),
                         ],
                       ),
-                      child: Icon(
-                        _isListening ? Icons.stop_rounded : Icons.mic_rounded,
+                      child: const Icon(
+                        Icons.mic_rounded,
                         color: Colors.white,
                         size: 26,
                       ),

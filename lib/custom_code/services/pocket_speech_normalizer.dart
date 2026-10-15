@@ -70,7 +70,15 @@ class PocketSpeechNormalizer {
     s = s.replaceAll("what's", 'what is');
     s = s.replaceAll("let's", 'let us');
 
-    // 5. Clean up extra punctuation and collapse whitespace
+    // 5. Common regional/dialectal STT normalizations (e.g. "I live in Kerala")
+    s = s.replaceAll(RegExp(r'\bleave\s+in\s+kerala\b'), 'live in kerala');
+    s = s.replaceAll(RegExp(r'\blive\s+in\s+care\s*la\b'), 'live in kerala');
+    s = s.replaceAll(RegExp(r'\blive\s+in\s+karala\b'), 'live in kerala');
+    s = s.replaceAll(RegExp(r'\blive\s+in\s+keralam\b'), 'live in kerala');
+    s = s.replaceAll(RegExp(r'\bliving\s+in\s+kerala\b'), 'live in kerala');
+    s = s.replaceAll(RegExp(r'\bleaving\s+in\s+kerala\b'), 'live in kerala');
+
+    // 6. Clean up extra punctuation and collapse whitespace
     return s
         .replaceAll(RegExp(r"[^\w'\s]"), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -143,6 +151,19 @@ class PocketSpeechNormalizer {
       // In case of any unexpected format or regex error, fail gracefully without crashing
       return false;
     }
+  }
+
+  /// Convenience wrapper for fuzzy matching with positional parameters
+  static bool isFuzzyMatch(
+    String spokenText,
+    String targetSentence, {
+    int thresholdPercentage = 50,
+  }) {
+    return isMatch(
+      spokenText: spokenText,
+      targetSentence: targetSentence,
+      thresholdPercentage: thresholdPercentage,
+    );
   }
 
   static bool _isPhoneticallyClose(String a, String b) {
