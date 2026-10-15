@@ -927,34 +927,6 @@ class _PocketDay1Step3AvatarChatPageState
         ),
       );
     } else {
-      // 🟢 USER MESSAGE BUBBLE ON RIGHT
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF059669), Color(0xFF10B981)],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-    } else {
       // 🎙️ User Audio / Voice Note Message Bubble (WhatsApp/Telegram style)
       return Padding(
         padding: const EdgeInsets.only(bottom: 12, left: 36),
