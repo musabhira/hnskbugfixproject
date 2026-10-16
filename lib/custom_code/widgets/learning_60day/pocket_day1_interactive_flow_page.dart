@@ -637,9 +637,10 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 📖 User Audio Directive: Day 1 Step 5 uses the conversational avatar chat interface for Reading Room!
-    if (widget.day == 1 && _activeStep == 5) {
+    // 📖 User Audio Directive: Days 1 to 90 Step 5 uses the conversational avatar chat interface for Reading Room!
+    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 5) {
       return PocketDay1Step5AvatarChatPage(
+        day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(5);

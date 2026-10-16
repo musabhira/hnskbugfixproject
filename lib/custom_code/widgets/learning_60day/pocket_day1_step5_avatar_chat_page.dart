@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 
 /// 💬 Chat Message Model for Step 5 Reading Room
 class Step5ChatMessage {
@@ -68,17 +69,20 @@ class Step5InBubbleOption {
 /// 5. Once spoken, voice automatically closes and posts as a realistic WhatsApp/Instagram Voice Note bubble.
 /// 6. Continuous ambient background music (BGM) with BGM toggle & TTS toggle in the top bar.
 class PocketDay1Step5AvatarChatPage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step5AvatarChatPage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -86,6 +90,7 @@ class PocketDay1Step5AvatarChatPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketDay1Step5AvatarChatPage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -176,6 +181,88 @@ class _PocketDay1Step5AvatarChatPageState
       'readAloudTarget': 'The sun is bright. The happy crow flies high in the blue sky.',
     },
   ];
+
+  /// Returns 3 tailored illustrated story passages for any day from 1 to 90
+  static List<Map<String, dynamic>> getStoryPassagesForDay(int day, bool isBeginner) {
+    if (day <= 1) {
+      return isBeginner ? beginnerPassages : storyPassages;
+    }
+
+    if (day == 2) {
+      return [
+        {
+          'part': 1,
+          'title': 'My Beautiful Home & Town 🏡',
+          'bannerEmoji': '🏡 🌿 🏙️',
+          'paragraphEn':
+              'One pleasant morning, I stepped outside my home. The green hills and gentle breeze welcomed the sunrise. I am from a vibrant place filled with kind and welcoming people.',
+          'readAloudTarget':
+              'One pleasant morning, I stepped outside my home. The green hills welcomed the sunrise.',
+        },
+        {
+          'part': 2,
+          'title': 'The Flowing River & Quiet Street 🌊',
+          'bannerEmoji': '🌊 🌴 🚶',
+          'paragraphEn':
+              'Near my house, there is a clear flowing river. Children laugh as they walk to school under the shaded palms. I enjoy greeting my neighbors with a warm and polite smile.',
+          'readAloudTarget':
+              'Near my house, there is a clear flowing river. I enjoy greeting my neighbors with a smile.',
+        },
+        {
+          'part': 3,
+          'title': 'Evening Warmth & Family Time 🌅',
+          'bannerEmoji': '🌅 👨‍👩‍👦 ✨',
+          'paragraphEn':
+              'In the evening, golden light covers the rooftops. My family gathers together to share stories and warm food. Living in this peaceful place brings great joy to our hearts.',
+          'readAloudTarget':
+              'In the evening, golden light covers the rooftops. My family gathers together to share stories.',
+        },
+      ];
+    }
+
+    // Days 3 to 90: Dynamically generate 3 chapters matching the day curriculum vocabulary
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
+    final w0 = vocab.isNotEmpty ? vocab[0] : null;
+    final w1 = vocab.length > 1 ? vocab[1] : null;
+    final w2 = vocab.length > 2 ? vocab[2] : null;
+    final w3 = vocab.length > 3 ? vocab[3] : null;
+    final w4 = vocab.length > 4 ? vocab[4] : null;
+    final w5 = vocab.length > 5 ? vocab[5] : null;
+
+    final s0 = w0?.exampleSentence ?? 'I practice speaking English every day.';
+    final s1 = w1?.exampleSentence ?? 'Learning new expressions gives me confidence.';
+    final s2 = w2?.exampleSentence ?? 'Clear pronunciation helps people understand me.';
+    final s3 = w3?.exampleSentence ?? 'We share thoughtful ideas with our friends.';
+    final s4 = w4?.exampleSentence ?? 'Consistent daily reading improves our vocabulary.';
+    final s5 = w5?.exampleSentence ?? 'Every step forward brings us closer to fluency.';
+
+    return [
+      {
+        'part': 1,
+        'title': 'Day $day Story • Chapter 1: Morning Discovery ☀️',
+        'bannerEmoji': '☀️ 🌿 📖',
+        'paragraphEn':
+            'Every journey begins with a single bright step. Today we explore new ideas and vocabulary. $s0 $s1',
+        'readAloudTarget': '$s0 $s1',
+      },
+      {
+        'part': 2,
+        'title': 'Day $day Story • Chapter 2: Life & Practice 💬',
+        'bannerEmoji': '💬 🌟 🚶',
+        'paragraphEn':
+            'During our afternoon walks, conversations unfold naturally. $s2 $s3 Active listening makes every dialogue meaningful.',
+        'readAloudTarget': '$s2 $s3',
+      },
+      {
+        'part': 3,
+        'title': 'Day $day Story • Chapter 3: Mastery & Joy 🏆',
+        'bannerEmoji': '🌅 🏆 ✨',
+        'paragraphEn':
+            'As the sun sets, we reflect on everything we discovered today. $s4 $s5 Dedication transforms daily practice into true mastery.',
+        'readAloudTarget': '$s4 $s5',
+      },
+    ];
+  }
 
   @override
   void initState() {
@@ -346,7 +433,7 @@ class _PocketDay1Step5AvatarChatPageState
   }
 
   void _sendStoryPart() {
-    final activeList = _isBeginnerMode ? beginnerPassages : storyPassages;
+    final activeList = getStoryPassagesForDay(widget.day, _isBeginnerMode);
     if (_currentStoryPartIndex >= activeList.length) {
       _showReadingFinishedCelebration();
       return;
@@ -560,53 +647,33 @@ class _PocketDay1Step5AvatarChatPageState
       PocketGameAudioService.instance.playIncorrectSound();
       final focus = evalResult.focusWords.take(3).join(', ');
 
-      final correctionEn =
-          'I heard: "$voiceText"\n\n'
-          'Let\'s try reading this part again! Speak clearly into the mic:\n'
-          '"$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus on: $focus" : ""}';
-      final correctionMl =
-          'ശ്രമിക്കൂ! ഈ ഭാഗം വീണ്ടും വായിക്കാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം:\n"$_currentExpectedVoicePhrase"';
+      final feedbackEn =
+          'Good effort, $_userName! Here is the authentic pronunciation:\n\n'
+          '"$_currentExpectedVoicePhrase"${focus.isNotEmpty ? "\n\n💡 Focus sound: $focus" : ""}\n\n'
+          'Great job trying! Let\'s continue to the next part 📖';
+      final feedbackMl =
+          'നല്ല ശ്രമം! ശരിയായ ഉച്ചാരണം കേട്ടു മനസ്സിലാക്കൂ. നമുക്ക് അടുത്ത വരിയിലേക്ക് പോകാം! 🌟';
 
       setState(() {
         _messages.add(
           Step5ChatMessage(
-            id: 'reading_retry_${DateTime.now().millisecondsSinceEpoch}',
+            id: 'reading_feedback_${DateTime.now().millisecondsSinceEpoch}',
             isAvatar: true,
-            textEn: correctionEn,
-            textNative: correctionMl,
-            audioText: 'Good try. Let us continue.',
-            inBubbleOptions: [
-              Step5InBubbleOption(
-                labelEn: '🎙️ RETRY READING',
-                labelNative: 'വീണ്ടും വായിക്കാം',
-                icon: '🔄',
-                isHighlighted: false,
-                backgroundColor: const Color(0xFFEF4444),
-                borderColor: const Color(0xFFFCA5A5),
-                textColor: Colors.white,
-                onTap: () {
-                  _startListeningToCentralMic();
-                },
-              ),
-              Step5InBubbleOption(
-                labelEn: '✨ CONTINUE ANYWAY ➔',
-                labelNative: 'മുന്നോട്ട് പോകാം',
-                icon: '🚀',
-                isHighlighted: true,
-                backgroundColor: const Color(0xFF10B981),
-                borderColor: const Color(0xFF6EE7B7),
-                textColor: Colors.white,
-                onTap: () {
-                  _handleReadingSuccess();
-                },
-              ),
-            ],
+            textEn: feedbackEn,
+            textNative: feedbackMl,
+            audioText: 'Good effort, $_userName! Here is how to say it: $_currentExpectedVoicePhrase',
           ),
         );
       });
 
-      _speak('Good try! Let us continue.');
+      _speak('Good effort, $_userName! Here is how to say it: $_currentExpectedVoicePhrase');
       _scrollToBottom();
+
+      // Smoothly advance to next part after coaching (as requested by user)
+      Future.delayed(const Duration(milliseconds: 2400), () {
+        if (!mounted) return;
+        _handleReadingSuccess();
+      });
       return;
     }
 
@@ -713,13 +780,16 @@ class _PocketDay1Step5AvatarChatPageState
           await _speech.stop();
         } catch (_) {}
       }
-      final phraseToSend = _spokenText.trim().isNotEmpty
-          ? _spokenText.trim()
-          : _currentExpectedVoicePhrase;
+      final phraseToSend = _spokenText.trim();
 
       setState(() {
         _isRecording = false;
       });
+
+      if (phraseToSend.isEmpty) {
+        _speak('I could not hear you clearly, $_userName. Tap the mic and read aloud.');
+        return;
+      }
 
       _handleUserVoiceSubmission(phraseToSend);
       return;
@@ -1265,17 +1335,13 @@ class _PocketDay1Step5AvatarChatPageState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _spokenText.isNotEmpty
-                        ? '"$_spokenText"'
-                        : 'Reading: "$_currentExpectedVoicePhrase"',
+                    'Listening... Read aloud clearly into mic 🎙️',
                     style: GoogleFonts.outfit(
-                      color: _spokenText.isNotEmpty ? const Color(0xFF34D399) : Colors.white70,
+                      color: const Color(0xFF34D399),
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ] else ...[
                   Row(
@@ -1300,10 +1366,9 @@ class _PocketDay1Step5AvatarChatPageState
                       color: Colors.white,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
+                      height: 1.3,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],

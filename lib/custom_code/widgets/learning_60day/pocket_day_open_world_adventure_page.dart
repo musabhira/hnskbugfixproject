@@ -2546,10 +2546,11 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 5 on Day 1: Launches Dedicated Reading Room Avatar Chat (User Audio Directive!)
-      if (day == 1 && s == 5) {
+      // Step 5 on Days 1 to 90: Launches Dedicated Reading Room Avatar Chat (User Audio Directive!)
+      if (day >= 1 && day <= 90 && s == 5) {
         await PocketDay1Step5AvatarChatPage.show(
           context,
+          day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
