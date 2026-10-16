@@ -409,9 +409,10 @@ class _PocketDay1Step4AvatarChatPageState
     _scrollToBottom();
   }
 
+  int _failedDrillAttempts = 0;
+
   void _handleUserVoiceSubmission(String voiceText) {
     HapticFeedback.mediumImpact();
-    PocketGameAudioService.instance.playCoinSound();
 
     // 🟢 Posts as realistic WhatsApp/Instagram-style Voice Note Message on the right!
     setState(() {
@@ -427,10 +428,54 @@ class _PocketDay1Step4AvatarChatPageState
     });
     _scrollToBottom();
 
+    final drill = spokenDrills[_currentDialogueIndex.clamp(0, spokenDrills.length - 1)];
+    final target = drill['targetReply'] as String;
+    final targetMl = drill['targetReplyMl'] as String;
+    final avatar = drill['avatar'] as String;
+    final icon = drill['icon'] as String;
+    final color = drill['color'] as Color;
+
+    final isCorrect = PocketSpeechNormalizer.isFuzzyMatch(
+      voiceText,
+      target,
+      thresholdPercentage: 35,
+    );
+
     // Natural conversation pause before avatar replies
     Future.delayed(const Duration(milliseconds: 700), () {
       if (!mounted) return;
-      _handleSpokenAnswerSuccess();
+
+      if (isCorrect || _failedDrillAttempts >= 1) {
+        // Correct or gentle advance after coaching
+        _failedDrillAttempts = 0;
+        PocketGameAudioService.instance.playCoinSound();
+        _handleSpokenAnswerSuccess();
+      } else {
+        // Gentle correction for mistakes without breaking conversation
+        _failedDrillAttempts++;
+        HapticFeedback.lightImpact();
+
+        final retryEn = 'Good try, $_userName! Let\'s say it like this:\n\n"$target"\n\nTap the mic below and try again! 🎙️';
+        final retryMl = 'നല്ല ശ്രമം! നമുക്ക് ഒന്നുകൂടി പറഞ്ഞു നോക്കാം:\n"$targetMl"';
+
+        setState(() {
+          _messages.add(
+            Step4ChatMessage(
+              id: 'spoken_retry_${DateTime.now().millisecondsSinceEpoch}',
+              isAvatar: true,
+              avatarName: avatar,
+              avatarIcon: icon,
+              avatarColor: color,
+              textEn: retryEn,
+              textNative: retryMl,
+              audioText: 'Good try, $_userName! Let\'s say it like this: $target. Try again!',
+            ),
+          );
+        });
+
+        _speak('Good try, $_userName! Let\'s say it like this: $target. Try again!');
+        _scrollToBottom();
+      }
     });
   }
 
@@ -542,13 +587,16 @@ class _PocketDay1Step4AvatarChatPageState
           await _speech.stop();
         } catch (_) {}
       }
-      final phraseToSend = _spokenText.trim().isNotEmpty
-          ? _spokenText.trim()
-          : _currentExpectedVoicePhrase;
+      final phraseToSend = _spokenText.trim();
 
       setState(() {
         _isRecording = false;
       });
+
+      if (phraseToSend.isEmpty) {
+        _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
+        return;
+      }
 
       _handleUserVoiceSubmission(phraseToSend);
       return;
@@ -1178,9 +1226,7 @@ class _PocketDay1Step4AvatarChatPageState
                     ],
                   ),
                   Text(
-                    _spokenText.isNotEmpty
-                        ? '🎙️ "$_spokenText"'
-                        : 'Say: "$_currentExpectedVoicePhrase"',
+                    'Listening... Speak clearly into mic 🎙️',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
@@ -1241,31 +1287,18 @@ class _PocketDay1Step4AvatarChatPageState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Speak: ',
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-              ),
-              Flexible(
-                child: Text(
-                  '"$_currentExpectedVoicePhrase"',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          Text(
+            '🎙️ Spoken English Practice',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFFFFD700),
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
-            'Tap mic below to record your voice',
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10.5),
+            'Tap the mic below to speak your answer',
+            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
           ),
           const SizedBox(height: 8),
           Center(

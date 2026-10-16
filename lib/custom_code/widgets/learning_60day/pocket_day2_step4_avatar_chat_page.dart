@@ -380,6 +380,8 @@ class _PocketDay2Step4AvatarChatPageState
     }
   }
 
+  int _failedDrillAttempts = 0;
+
   Future<void> _startRecording() async {
     HapticFeedback.heavyImpact();
     setState(() {
@@ -414,15 +416,7 @@ class _PocketDay2Step4AvatarChatPageState
             cancelOnError: true,
           ),
         );
-      } catch (_) {
-        if (mounted && _spokenText.isEmpty) {
-          _spokenText = _currentExpectedVoicePhrase;
-        }
-      }
-    } else {
-      if (mounted && _spokenText.isEmpty) {
-        _spokenText = _currentExpectedVoicePhrase;
-      }
+      } catch (_) {}
     }
   }
 
@@ -440,9 +434,14 @@ class _PocketDay2Step4AvatarChatPageState
     setState(() => _isRecording = false);
 
     final raw = _spokenText.trim();
-    final words = raw.isNotEmpty ? raw : _currentExpectedVoicePhrase;
-    final normalized = PocketSpeechNormalizer.normalize(words);
-    final finalVoiceText = normalized.isNotEmpty ? normalized : words;
+    if (raw.isEmpty) {
+      _isSubmittingVoice = false;
+      _speak('I could not hear you clearly, $_userName. Tap the mic and speak aloud.');
+      return;
+    }
+
+    final normalized = PocketSpeechNormalizer.normalize(raw);
+    final finalVoiceText = normalized.isNotEmpty ? normalized : raw;
 
     // Add pure WhatsApp style Voice Note Bubble (NO raw transcript container)
     setState(() {
@@ -457,9 +456,7 @@ class _PocketDay2Step4AvatarChatPageState
     });
     _scrollToBottom();
 
-    PocketGameAudioService.instance.playCoinSound();
-
-    Future.delayed(const Duration(milliseconds: 900), () {
+    Future.delayed(const Duration(milliseconds: 700), () {
       _isSubmittingVoice = false;
       if (!mounted) return;
       _onVoiceResponseReceived(finalVoiceText);
@@ -467,41 +464,80 @@ class _PocketDay2Step4AvatarChatPageState
   }
 
   void _onVoiceResponseReceived(String spokenResponse) {
-    HapticFeedback.heavyImpact();
-    PocketGameAudioService.instance.playCorrectSound();
+    final drill = spokenDrills[_currentDialogueIndex.clamp(0, spokenDrills.length - 1)];
+    final target = drill['targetReply'] as String;
+    final targetMl = drill['targetReplyMl'] as String;
+    final icon = drill['icon'] as String;
+    final color = drill['color'] as Color;
 
-    final praises = [
-      'Very natural pronunciation! 🌟',
-      'Spot on, $_userName! Excellent rhythm! 👏',
-      'Brilliant speaking! Clear and fluent! 💎',
-      'I loved your answer! Super confident! 🚀',
-      'Wonderful progress! Keep it up! ✨',
-      'Flawless delivery! High score! 🏆',
-    ];
-    final praiseEn = praises[_currentDialogueIndex % praises.length];
+    final isCorrect = PocketSpeechNormalizer.isFuzzyMatch(
+      spokenResponse,
+      target,
+      thresholdPercentage: 35,
+    );
 
-    setState(() {
-      _messages.add(
-        Day2Step4ChatMessage(
-          id: 'praise_${DateTime.now().millisecondsSinceEpoch}',
-          isAvatar: true,
-          avatarIcon: '🐱',
-          avatarColor: const Color(0xFF10B981),
-          textEn: '$praiseEn\nYour English is flowing so well!',
-          textNative: 'വളരെ നന്നായി സംസാരിച്ചു! താങ്കളുടെ ഉച്ചാരണം വളരെ മികച്ചതാണ്! 🌟',
-          audioText: praiseEn,
-        ),
-      );
-      _currentDialogueIndex++;
-    });
+    if (isCorrect || _failedDrillAttempts >= 1) {
+      _failedDrillAttempts = 0;
+      HapticFeedback.heavyImpact();
+      PocketGameAudioService.instance.playCorrectSound();
 
-    _speak(praiseEn);
-    _scrollToBottom();
+      final praises = [
+        'Very natural pronunciation! 🌟',
+        'Spot on, $_userName! Excellent rhythm! 👏',
+        'Brilliant speaking! Clear and fluent! 💎',
+        'I loved your answer! Super confident! 🚀',
+        'Wonderful progress! Keep it up! ✨',
+        'Flawless delivery! High score! 🏆',
+      ];
+      final praiseEn = praises[_currentDialogueIndex % praises.length];
 
-    Future.delayed(const Duration(milliseconds: 2000), () {
-      if (!mounted) return;
-      _sendCurrentAvatarQuestion();
-    });
+      setState(() {
+        _messages.add(
+          Day2Step4ChatMessage(
+            id: 'praise_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: true,
+            avatarIcon: '🐱',
+            avatarColor: const Color(0xFF10B981),
+            textEn: '$praiseEn\nYour English is flowing so well!',
+            textNative: 'വളരെ നന്നായി സംസാരിച്ചു! താങ്കളുടെ ഉച്ചാരണം വളരെ മികച്ചതാണ്! 🌟',
+            audioText: praiseEn,
+          ),
+        );
+        _currentDialogueIndex++;
+      });
+
+      _speak(praiseEn);
+      _scrollToBottom();
+
+      Future.delayed(const Duration(milliseconds: 2000), () {
+        if (!mounted) return;
+        _sendCurrentAvatarQuestion();
+      });
+    } else {
+      // Gentle correction for mistakes without breaking conversation
+      _failedDrillAttempts++;
+      HapticFeedback.lightImpact();
+
+      final retryEn = 'Good try, $_userName! Let\'s say it like this:\n\n"$target"\n\nTap the mic below and try again! 🎙️';
+      final retryMl = 'നല്ല ശ്രമം! നമുക്ക് ഒന്നുകൂടി പറഞ്ഞു നോക്കാം:\n"$targetMl"';
+
+      setState(() {
+        _messages.add(
+          Day2Step4ChatMessage(
+            id: 'spoken_retry_${DateTime.now().millisecondsSinceEpoch}',
+            isAvatar: true,
+            avatarIcon: icon,
+            avatarColor: color,
+            textEn: retryEn,
+            textNative: retryMl,
+            audioText: 'Good try, $_userName! Let\'s say it like this: $target. Try again!',
+          ),
+        );
+      });
+
+      _speak('Good try, $_userName! Let\'s say it like this: $target. Try again!');
+      _scrollToBottom();
+    }
   }
 
   void _showAllDrillsCompleted() {
@@ -1010,10 +1046,10 @@ class _PocketDay2Step4AvatarChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _isRecording ? 'RECORDING VOICE...' : 'TARGET SENTENCE:',
+                  _isRecording ? 'RECORDING VOICE...' : '🎙️ SPOKEN ENGLISH STUDIO',
                   style: GoogleFonts.inter(
-                    color: _isRecording ? const Color(0xFFF87171) : const Color(0xFF94A3B8),
-                    fontSize: 10,
+                    color: _isRecording ? const Color(0xFFF87171) : const Color(0xFFFFD700),
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
                   ),
@@ -1021,12 +1057,12 @@ class _PocketDay2Step4AvatarChatPageState
                 const SizedBox(height: 2),
                 Text(
                   _isRecording
-                      ? 'Listening (${_recordingSeconds}s)... Tap SEND when finished'
-                      : '"$_currentExpectedVoicePhrase"',
+                      ? 'Listening (${_recordingSeconds}s)... Tap SEND when finished 🎙️'
+                      : 'Tap the mic to record your answer',
                   style: GoogleFonts.outfit(
-                    color: _isRecording ? Colors.white : const Color(0xFF38BDF8),
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
+                    color: _isRecording ? Colors.white : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -3801,7 +3801,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                               color: Colors.white, size: 20),
                           const SizedBox(width: 6),
                           Text(
-                            'Tap Mic & Say: "$_currentExpectedVoicePhrase"',
+                            'Tap Mic to Speak Answer 🎙️',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 13,
@@ -3849,8 +3849,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                       Expanded(
                         child: Text(
                           _isListening
-                              ? 'Listening to you... Speak now! 🎙️'
-                              : 'Target: "$_currentExpectedVoicePhrase"',
+                              ? 'Listening to you... Speak clearly! 🎙️'
+                              : 'Tap mic to speak your answer',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(

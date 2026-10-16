@@ -664,13 +664,16 @@ class _PocketDay1Step3AvatarChatPageState
       if (_speechAvailable) await _speech.stop();
     } catch (_) {}
 
-    final raw = _liveRecordedWords.trim();
-    final words = raw.isNotEmpty ? raw : _currentExpectedVoicePhrase;
-
     setState(() => _isListening = false);
 
-    final normalized = PocketSpeechNormalizer.normalize(words);
-    final finalSpoken = normalized.isEmpty ? words : normalized;
+    final raw = _liveRecordedWords.trim();
+    if (raw.isEmpty) {
+      _speak('I could not hear you clearly. Tap the mic and speak aloud.');
+      return;
+    }
+
+    final normalized = PocketSpeechNormalizer.normalize(raw);
+    final finalSpoken = normalized.isEmpty ? raw : normalized;
 
     _handleVoiceSubmission(
       voiceText: finalSpoken,
@@ -1223,7 +1226,7 @@ class _PocketDay1Step3AvatarChatPageState
                     ],
                   ),
                   Text(
-                    '🎙️ Listening... (Say: "$_currentExpectedVoicePhrase")',
+                    '🎙️ Listening... Speak clearly into mic',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
@@ -1284,22 +1287,13 @@ class _PocketDay1Step3AvatarChatPageState
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Speak or Tap: ',
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-              ),
-              Text(
-                '"$_currentExpectedVoicePhrase"',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
+          Text(
+            'Tap mic below to speak your answer',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 8),
           Center(

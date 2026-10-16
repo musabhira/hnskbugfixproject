@@ -2339,7 +2339,7 @@ class _PocketDay1Step1AvatarChatPageState
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '🎙️ Listening... (Say: "$_currentExpectedVoicePhrase")',
+                    '🎙️ Listening... Speak clearly into mic',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.outfit(
@@ -2441,7 +2441,7 @@ class _PocketDay1Step1AvatarChatPageState
                             color: Colors.white, size: 20),
                         const SizedBox(width: 6),
                         Text(
-                          'Tap Mic & Say: "$_currentExpectedVoicePhrase"',
+                          'Tap Mic to Speak Answer 🎙️',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 13,
@@ -2501,7 +2501,7 @@ class _PocketDay1Step1AvatarChatPageState
               ),
               const SizedBox(width: 7),
               Text(
-                'Say: "$_currentExpectedVoicePhrase"',
+                'Tap mic to speak your answer',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontSize: 12,

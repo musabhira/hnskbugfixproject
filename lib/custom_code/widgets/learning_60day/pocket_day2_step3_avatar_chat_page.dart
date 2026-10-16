@@ -678,9 +678,15 @@ class _PocketDay2Step3AvatarChatPageState
     } catch (_) {}
 
     final raw = _liveRecordedWords.trim();
-    final words = raw.isNotEmpty ? raw : _currentExpectedVoicePhrase;
-    final normalized = PocketSpeechNormalizer.normalize(words);
-    final finalVoiceText = normalized.isNotEmpty ? normalized : words;
+    if (raw.isEmpty) {
+      _isSubmittingVoice = false;
+      setState(() => _isListening = false);
+      _speak('I could not hear you clearly. Tap the mic and speak aloud.');
+      return;
+    }
+
+    final normalized = PocketSpeechNormalizer.normalize(raw);
+    final finalVoiceText = normalized.isNotEmpty ? normalized : raw;
 
     setState(() {
       _isListening = false;
@@ -1191,9 +1197,9 @@ class _PocketDay2Step3AvatarChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'TARGET WORD:',
+                  _isListening ? 'RECORDING VOICE...' : '🎙️ VOCABULARY HUNT',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF94A3B8),
+                    color: _isListening ? const Color(0xFFF87171) : const Color(0xFFFFD700),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
@@ -1201,11 +1207,13 @@ class _PocketDay2Step3AvatarChatPageState
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '"$_currentExpectedVoicePhrase"',
+                  _isListening
+                      ? 'Listening... Tap SEND when finished 🎙️'
+                      : 'Tap mic below to speak your answer',
                   style: GoogleFonts.outfit(
-                    color: const Color(0xFF38BDF8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    color: _isListening ? Colors.white : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -75,6 +75,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   bool _isRecording = false;
   String _spokenText = '';
   String? _speechError;
+  int _failedExchangeAttempts = 0;
   int _recordingSeconds = 0;
   Timer? _recordTimer;
   stt.SpeechToText? _speech;
@@ -168,6 +169,8 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
 
     final exchange = _plan.exchanges[index];
     setState(() {
+      _failedExchangeAttempts = 0;
+      _speechError = null;
       _currentIndex = index;
       _chatHistory.add(
         _ChatMessageItem(
@@ -417,17 +420,14 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
 
       if (cleanSpk.isEmpty) {
         PocketGameAudioService.instance.playIncorrectSound();
-        setState(() {
-          _speechError = 'Microphone did not detect your voice.\nPlease tap the mic and speak: "$targetPhrase"';
-        });
-        await _speakText('Please speak into the mic: $targetPhrase');
+        await _speakText('I could not hear you clearly. Please tap the mic and speak aloud.');
         return;
       }
 
       final isMatch = PocketSpeechNormalizer.isMatch(
         spokenText: _spokenText,
         targetSentence: targetPhrase,
-        thresholdPercentage: 40,
+        thresholdPercentage: 35,
       );
 
       final evalResult = PocketPronunciationEvaluator.evaluate(
@@ -435,21 +435,28 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         spokenText: _spokenText,
       );
 
-      if (!isMatch && evalResult.accuracyPercentage < 40) {
+      if (!isMatch && evalResult.accuracyPercentage < 35 && _failedExchangeAttempts < 1) {
+        _failedExchangeAttempts++;
         PocketGameAudioService.instance.playIncorrectSound();
-        final focus = evalResult.focusWords.take(2).join(', ');
+        HapticFeedback.lightImpact();
+
         setState(() {
-          _speechError = 'You said: "$_spokenText"\nExpected: "$targetPhrase"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
+          _chatHistory.add(
+            _ChatMessageItem(
+              isAvatar: true,
+              text: 'Good try! Let\'s say it like this:\n\n"$targetPhrase"\n\nTap the mic below and try again! 🎙️',
+              translationMl: 'നല്ല ശ്രമം! നമുക്ക് ഒന്നുകൂടി പറഞ്ഞു നോക്കാം: "$targetPhrase"',
+            ),
+          );
         });
-        await _speakText('Not quite right. Please say: $targetPhrase');
+        _scrollToBottom();
+        await _speakText('Good try! Let\'s say it like this: $targetPhrase. Try again!');
         return;
       }
 
-      // Passed!
+      // Passed or 2nd attempt coach pass
+      _failedExchangeAttempts = 0;
       PocketGameAudioService.instance.playCorrectSound();
-      setState(() {
-        _speechError = null;
-      });
 
       await _onSelectResponse(
         normalizedSpk.isNotEmpty ? normalizedSpk : _spokenText.trim(),
@@ -1049,36 +1056,15 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _spokenText.isNotEmpty ? '“$_spokenText”' : 'Listening... Speak aloud now',
+                    'Listening... Speak clearly into mic 🎙️',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      color: _spokenText.isNotEmpty ? const Color(0xFFFFD700) : Colors.white60,
+                      color: Colors.white70,
                       fontSize: 12,
-                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
-                if (_speechError != null && !_isRecording)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFEF4444)),
-                      ),
-                      child: Text(
-                        _speechError!,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFFCA5A5),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
