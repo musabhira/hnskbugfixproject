@@ -50,6 +50,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manage
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
+import 'chat/pocket_homes_reels_feed_widget.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -1227,7 +1228,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         ),
                       )
                     : _currentIndex == 0
-                        ? const PocketEnglishStoreRoomPage()
+                        ? PocketHomesReelsFeedWidget(
+                            userLevel: _getEffectiveNavDay(),
+                            isActive: _currentIndex == 0,
+                          )
                         : _currentIndex == 2
                             ? EnglishLearningGroupChatWidget(
                                 onCancel: () =>
@@ -4876,7 +4880,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildNavItem(
-                  icon: material.Icons.auto_stories_rounded,
+                  icon: material.Icons.cottage_rounded,
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
                 ),

@@ -17,13 +17,16 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/flame_english_house_game.dart';
 import '../learning_60day/pocket_citadel_attack_page.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../learning_60day/pocket_world_street_page.dart';
 import '../../services/pocket_president_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
+import 'pocket_reels_content_engine.dart';
 
-/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, or Public Vibe (Audio Directive)
-enum ReelItemType { home, game, vibe }
+/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, or Vocab
+enum ReelItemType { home, game, vibe, story, interview, speakChallenge, vocabCard }
 
 class ReelVibeItem {
   final String id;
@@ -95,21 +98,73 @@ class ReelFeedItem {
   final PocketNeighbor? neighbor;
   final ReelGameCard? gameCard;
   final ReelVibeCard? vibeCard;
+  final ReelStoryCard? storyCard;
+  final ReelInterviewCard? interviewCard;
+  final ReelSpeakChallengeCard? speakChallengeCard;
+  final ReelVocabCard? vocabCard;
 
   const ReelFeedItem.home(this.neighbor)
       : type = ReelItemType.home,
         gameCard = null,
-        vibeCard = null;
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
 
   const ReelFeedItem.game(this.gameCard)
       : type = ReelItemType.game,
         neighbor = null,
-        vibeCard = null;
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
 
   const ReelFeedItem.vibe(this.vibeCard)
       : type = ReelItemType.vibe,
         neighbor = null,
-        gameCard = null;
+        gameCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
+
+  const ReelFeedItem.story(this.storyCard)
+      : type = ReelItemType.story,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
+
+  const ReelFeedItem.interview(this.interviewCard)
+      : type = ReelItemType.interview,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        storyCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
+
+  const ReelFeedItem.speakChallenge(this.speakChallengeCard)
+      : type = ReelItemType.speakChallenge,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        vocabCard = null;
+
+  const ReelFeedItem.vocab(this.vocabCard)
+      : type = ReelItemType.vocabCard,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null;
 }
 
 /// 🏰 PocketHomesReelsFeedWidget
@@ -165,6 +220,18 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   final Map<String, List<String>> _sentenceBuilderUserOrder = {}; // gameId -> selected words in order
   final Map<String, bool?> _sentenceBuilderResults = {}; // gameId -> isCorrect
 
+  // Content Audio Narration (TTS) & Interactive Voice Recognition (STT)
+  final FlutterTts _flutterTts = FlutterTts();
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _speechInitialized = false;
+  bool _isListening = false;
+  String _activeSpeechChallengeId = '';
+  String _recognizedSpokenWords = '';
+  final Map<String, bool?> _speakChallengeResults = {}; // cardId -> isPassed
+  final Map<String, String> _speakChallengeUserText = {}; // cardId -> recognized transcript
+  bool _isTtsSpeaking = false;
+  String? _currentTtsCardId;
+
   List<ReelFeedItem> _feedItems = [];
   int _dynamicHomeBatchSeed = 100;
 
@@ -191,12 +258,88 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     // Audio Directive: Music in Homes must always be ON by default, uninhibited by global settings
     PocketGameAudioService.instance.setMuted(false, persist: false);
 
+    _initTtsAndSpeech();
     _initAll();
 
     if (widget.isActive) {
       final initialId = widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
       _playHomeMusic(initialId);
     }
+  }
+
+  Future<void> _initTtsAndSpeech() async {
+    try {
+      await _flutterTts.setLanguage("en-US");
+      await _flutterTts.setSpeechRate(0.48);
+      await _flutterTts.setPitch(1.0);
+      await _flutterTts.setVolume(1.0);
+      _flutterTts.setStartHandler(() {
+        if (mounted) setState(() => _isTtsSpeaking = true);
+      });
+      _flutterTts.setCompletionHandler(() {
+        if (mounted) {
+          setState(() {
+            _isTtsSpeaking = false;
+            _currentTtsCardId = null;
+          });
+        }
+      });
+      _flutterTts.setCancelHandler(() {
+        if (mounted) {
+          setState(() {
+            _isTtsSpeaking = false;
+            _currentTtsCardId = null;
+          });
+        }
+      });
+      _flutterTts.setErrorHandler((_) {
+        if (mounted) {
+          setState(() {
+            _isTtsSpeaking = false;
+            _currentTtsCardId = null;
+          });
+        }
+      });
+    } catch (_) {}
+
+    try {
+      _speechInitialized = await _speechToText.initialize(
+        onError: (_) {
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (_) {
+      _speechInitialized = false;
+    }
+  }
+
+  void _stopAllAudioAndSpeech() {
+    try {
+      _flutterTts.stop();
+    } catch (_) {}
+    try {
+      if (_isListening) _speechToText.stop();
+    } catch (_) {}
+    _isTtsSpeaking = false;
+    _isListening = false;
+    _currentTtsCardId = null;
+  }
+
+  Future<void> _awardPocketScore(int points) async {
+    try {
+      final uid = _supabase.auth.currentUser?.id;
+      if (uid != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'user_pocket_score_$uid';
+        final current = prefs.getInt(key) ?? 0;
+        await prefs.setInt(key, current + points);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -210,6 +353,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         }
       } else {
         _pauseBgm();
+        _stopAllAudioAndSpeech();
       }
     }
   }
@@ -218,6 +362,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _pauseBgm();
+      _stopAllAudioAndSpeech();
     } else if (state == AppLifecycleState.resumed && !_isHomesAudioMuted && widget.isActive) {
       if (_currentlyPlayingHouseId != null) {
         _playHomeMusic(_currentlyPlayingHouseId!);
@@ -247,6 +392,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     PocketGameAudioService.instance.stop();
+    _stopAllAudioAndSpeech();
     _verticalPageController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -254,6 +400,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   Future<void> _initAll() async {
     await PocketReelsGameEngine.init();
+    await PocketReelsContentEngine.init();
     await _loadUserLanguage();
     await _loadViewedHistoryAndFeed();
   }
@@ -680,8 +827,18 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
+    // Fetch high-value learning content batches (anti-repetition prioritized)
+    final stories = PocketReelsContentEngine.getStories(count: 8);
+    final interviews = PocketReelsContentEngine.getInterviews(count: 8);
+    final speakChallenges = PocketReelsContentEngine.getSpeakChallenges(count: 8);
+    final vocabCards = PocketReelsContentEngine.getVocabCards(count: 8);
+
     final List<ReelFeedItem> combinedFeed = [];
     int gameIdx = 0;
+    int storyIdx = 0;
+    int interviewIdx = 0;
+    int speakIdx = 0;
+    int vocabIdx = 0;
     int vibeIdx = 0;
 
     // If deep linking to a specific game, insert it right at top
@@ -696,12 +853,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     for (int i = 0; i < combinedNeighbors.length; i++) {
       combinedFeed.add(ReelFeedItem.home(combinedNeighbors[i]));
 
-      if ((i + 1) % 2 == 0 && gameIdx < games.length) {
-        combinedFeed.add(ReelFeedItem.game(games[gameIdx]));
-        gameIdx++;
-      } else if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
-        combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx]));
-        vibeIdx++;
+      // Diverse learning interleaving cycle: Game ➔ Story ➔ Interview ➔ Speak ➔ Vocab
+      final cycle = i % 5;
+      if (cycle == 0 && gameIdx < games.length) {
+        combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
+      } else if (cycle == 1 && storyIdx < stories.length) {
+        combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
+      } else if (cycle == 2 && interviewIdx < interviews.length) {
+        combinedFeed.add(ReelFeedItem.interview(interviews[interviewIdx++]));
+      } else if (cycle == 3 && speakIdx < speakChallenges.length) {
+        combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+      } else if (cycle == 4 && vocabIdx < vocabCards.length) {
+        combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+      }
+
+      if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
+        combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
       }
     }
 
@@ -710,6 +877,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         _feedItems = combinedFeed;
         _isLoading = false;
       });
+
+      if (combinedFeed.isNotEmpty) {
+        _recordItemViewed(combinedFeed.first);
+      }
 
       // Play music for the first slide if it is a home and widget is active
       if (widget.isActive && combinedFeed.isNotEmpty) {
@@ -721,7 +892,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
   }
 
-  /// ➕ Infinite Lazy Loading: Appends fresh unseen homes & multi-type games seamlessly
+  /// ➕ Infinite Lazy Loading: Appends fresh unseen homes, games, stories, & speaking challenges seamlessly
   Future<void> _loadMoreFeedItems() async {
     if (_isLoadingMore) return;
     _isLoadingMore = true;
@@ -734,15 +905,32 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         minGap: 6,
       );
 
-      final newGames = PocketReelsGameEngine.getNextGameBatch(count: 6);
+      final newGames = PocketReelsGameEngine.getNextGameBatch(count: 4);
+      final newStories = PocketReelsContentEngine.getStories(count: 3);
+      final newInterviews = PocketReelsContentEngine.getInterviews(count: 3);
+      final newSpeak = PocketReelsContentEngine.getSpeakChallenges(count: 3);
+      final newVocab = PocketReelsContentEngine.getVocabCards(count: 3);
+
       final List<ReelFeedItem> newBatch = [];
       int gIdx = 0;
+      int sIdx = 0;
+      int iIdx = 0;
+      int spIdx = 0;
+      int vIdx = 0;
 
       for (int i = 0; i < unseenNewRobots.length; i++) {
         newBatch.add(ReelFeedItem.home(unseenNewRobots[i]));
-        if ((i + 1) % 2 == 0 && gIdx < newGames.length) {
-          newBatch.add(ReelFeedItem.game(newGames[gIdx]));
-          gIdx++;
+        final c = i % 5;
+        if (c == 0 && gIdx < newGames.length) {
+          newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
+        } else if (c == 1 && sIdx < newStories.length) {
+          newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
+        } else if (c == 2 && iIdx < newInterviews.length) {
+          newBatch.add(ReelFeedItem.interview(newInterviews[iIdx++]));
+        } else if (c == 3 && spIdx < newSpeak.length) {
+          newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
+        } else if (c == 4 && vIdx < newVocab.length) {
+          newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
         }
       }
 
@@ -1099,6 +1287,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
   }
 
+  void _recordItemViewed(ReelFeedItem item) {
+    if (item.type == ReelItemType.home && item.neighbor != null) {
+      _recordHomeViewed(item.neighbor!.id);
+    } else if (item.type == ReelItemType.game && item.gameCard != null) {
+      PocketReelsGameEngine.markGameViewed(item.gameCard!.id);
+    } else if (item.type == ReelItemType.story && item.storyCard != null) {
+      PocketReelsContentEngine.markContentViewed(item.storyCard!.id);
+    } else if (item.type == ReelItemType.interview && item.interviewCard != null) {
+      PocketReelsContentEngine.markContentViewed(item.interviewCard!.id);
+    } else if (item.type == ReelItemType.speakChallenge && item.speakChallengeCard != null) {
+      PocketReelsContentEngine.markContentViewed(item.speakChallengeCard!.id);
+    } else if (item.type == ReelItemType.vocabCard && item.vocabCard != null) {
+      PocketReelsContentEngine.markContentViewed(item.vocabCard!.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -1167,14 +1371,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             itemCount: _feedItems.length,
             onPageChanged: (index) {
               HapticFeedback.selectionClick();
+              _stopAllAudioAndSpeech();
 
-              // Track viewed homes and handle ambient music
+              // Track viewed items and handle ambient music
               final item = _feedItems[index];
+              _recordItemViewed(item);
+
               if (item.type == ReelItemType.home && item.neighbor != null) {
-                _recordHomeViewed(item.neighbor!.id);
                 _playHomeMusic(item.neighbor!.id);
-              } else if (item.type == ReelItemType.game || item.type == ReelItemType.vibe) {
-                // Pause background music during games or vibes for clear audio focus
+              } else {
+                // Pause background music during games, stories, interviews, speaking, or vibes for crystal clear audio
                 _pauseBgm();
               }
 
@@ -1189,6 +1395,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 return _buildInteractiveGameSlide(item.gameCard!, index);
               } else if (item.type == ReelItemType.vibe && item.vibeCard != null) {
                 return _buildVibeReelSlide(item.vibeCard!, index);
+              } else if (item.type == ReelItemType.story && item.storyCard != null) {
+                return _buildStorySlide(item.storyCard!, index);
+              } else if (item.type == ReelItemType.interview && item.interviewCard != null) {
+                return _buildInterviewSlide(item.interviewCard!, index);
+              } else if (item.type == ReelItemType.speakChallenge && item.speakChallengeCard != null) {
+                return _buildSpeakChallengeSlide(item.speakChallengeCard!, index);
+              } else if (item.type == ReelItemType.vocabCard && item.vocabCard != null) {
+                return _buildVocabSlide(item.vocabCard!, index);
               }
               return _buildHouseReelSlide(item.neighbor!, index);
             },
@@ -2615,6 +2829,1655 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ],
       ),
+    );
+  }
+
+  // =========================================================================
+  // 📚 STORY, INTERVIEW, SPEAKING & VOCAB REEL SLIDES
+  // =========================================================================
+
+  Future<void> _playTtsForCard(String cardId, String text) async {
+    HapticFeedback.lightImpact();
+    if (_isTtsSpeaking && _currentTtsCardId == cardId) {
+      await _flutterTts.stop();
+      if (mounted) {
+        setState(() {
+          _isTtsSpeaking = false;
+          _currentTtsCardId = null;
+        });
+      }
+      return;
+    }
+
+    await _flutterTts.stop();
+    if (mounted) {
+      setState(() {
+        _isTtsSpeaking = true;
+        _currentTtsCardId = cardId;
+      });
+    }
+
+    await _flutterTts.speak(text);
+  }
+
+  Future<void> _toggleSpeechChallenge(ReelSpeakChallengeCard card) async {
+    if (_isListening && _activeSpeechChallengeId == card.id) {
+      await _stopListeningAndEvaluate(card);
+      return;
+    }
+
+    _stopAllAudioAndSpeech();
+    HapticFeedback.heavyImpact();
+
+    if (!_speechInitialized) {
+      try {
+        _speechInitialized = await _speechToText.initialize();
+      } catch (_) {
+        _speechInitialized = false;
+      }
+    }
+
+    if (!_speechInitialized) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Microphone access unavailable or speech permission denied.'),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isListening = true;
+      _activeSpeechChallengeId = card.id;
+      _recognizedSpokenWords = '';
+    });
+
+    try {
+      await _speechToText.listen(
+        onResult: (result) {
+          if (mounted) {
+            setState(() {
+              _recognizedSpokenWords = result.recognizedWords;
+              _speakChallengeUserText[card.id] = result.recognizedWords;
+            });
+            if (result.finalResult) {
+              _stopListeningAndEvaluate(card);
+            }
+          }
+        },
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.confirmation,
+          cancelOnError: true,
+          partialResults: true,
+        ),
+      );
+    } catch (_) {
+      if (mounted) setState(() => _isListening = false);
+    }
+  }
+
+  Future<void> _stopListeningAndEvaluate(ReelSpeakChallengeCard card) async {
+    try {
+      await _speechToText.stop();
+    } catch (_) {}
+
+    final spoken = (_speakChallengeUserText[card.id] ?? _recognizedSpokenWords).trim().toLowerCase();
+    final target = card.targetSpeech.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), '');
+    final targetWords = target.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final spokenWords = spoken.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toSet();
+
+    int matchedWords = 0;
+    for (final word in targetWords) {
+      if (spokenWords.contains(word)) matchedWords++;
+    }
+
+    final ratio = targetWords.isNotEmpty ? matchedWords / targetWords.length : 0.0;
+    final isPassed = ratio >= 0.4 || (targetWords.isNotEmpty && spoken.contains(targetWords.first));
+
+    if (mounted) {
+      setState(() {
+        _isListening = false;
+        _speakChallengeResults[card.id] = isPassed;
+      });
+    }
+
+    if (isPassed) {
+      HapticFeedback.heavyImpact();
+      await _awardPocketScore(card.pointsReward);
+      PocketReelsContentEngine.markContentViewed(card.id);
+    } else {
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  /// 📖 1. Short Inspirational Story Slide with Audio Read-Along & Dynamic Takeaway
+  Widget _buildStorySlide(ReelStoryCard story, int index) {
+    final isSpeakingThis = _isTtsSpeaking && _currentTtsCardId == story.id;
+
+    return Stack(
+      children: [
+        // Background Gradient (Deep Amber / Indigo Starlight)
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF0F172A),
+                  Color(0xFF1E1B4B),
+                  Color(0xFF172554),
+                  Color(0xFF070B0D),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+
+        // Main Story Scrollable Content
+        Positioned.fill(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category Tag & Audio Read-Along Pill
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFF59E0B), width: 1),
+                            ),
+                            child: Text(
+                              story.category,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFBBF24),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => _playTtsForCard(story.id, story.fullReadText),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: isSpeakingThis
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.white24,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isSpeakingThis ? Icons.volume_up_rounded : Icons.headphones_rounded,
+                                    size: 14,
+                                    color: isSpeakingThis ? Colors.black : Colors.white70,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isSpeakingThis ? 'Reading ⏸️' : 'Read Along 🎧',
+                                    style: GoogleFonts.outfit(
+                                      color: isSpeakingThis ? Colors.black : Colors.white70,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Title
+                      Text(
+                        story.title,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Story Paragraphs Box
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A).withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: story.paragraphs.map((para) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Text(
+                                para,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 13.5,
+                                  height: 1.5,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Key Vocab Chips
+                      if (story.keyVocab.isNotEmpty) ...[
+                        Text(
+                          'KEY VOCABULARY IN STORY',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: story.keyVocab.map((v) {
+                            final word = v['word'] ?? '';
+                            final phonetic = v['phonetic'] ?? '';
+                            return GestureDetector(
+                              onTap: () => _playTtsForCard('vocab_$word', word),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.volume_up_rounded, size: 12, color: Color(0xFF38BDF8)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$word $phonetic',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF7DD3FC),
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+
+                      // Moral & Dynamic Native Takeaway Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                              const Color(0xFFD97706).withValues(alpha: 0.08),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('💡', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '${_userNativeLanguage.toUpperCase()} TAKEAWAY',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFBBF24),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              story.getMoral(_userNativeLanguage),
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Moral: "${story.moralEn}"',
+                              style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 11.5,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Continue Button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _stopAllAudioAndSpeech();
+                          if (_verticalPageController.hasClients) {
+                            _verticalPageController.nextPage(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'CONTINUE REEL FEED',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Right-Side Action Rail (Audio Read, Share, Like)
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Audio Toggle Button
+              GestureDetector(
+                onTap: () => _playTtsForCard(story.id, story.fullReadText),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSpeakingThis
+                        ? const Color(0xFFFFFC00)
+                        : Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Icon(
+                    isSpeakingThis ? Icons.pause_rounded : Icons.headphones_rounded,
+                    color: isSpeakingThis ? Colors.black : Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Like Button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Story saved to Favorites!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Share Button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '📖 ${story.title}\n${story.paragraphs.first}\n\n💡 Moral: ${story.moralEn}',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 💼 2. Interview & Workplace Communication Q&A Slide
+  Widget _buildInterviewSlide(ReelInterviewCard interview, int index) {
+    final isSpeakingThis = _isTtsSpeaking && _currentTtsCardId == interview.id;
+
+    return Stack(
+      children: [
+        // Background Gradient (Deep Navy / Executive Slate)
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF0F172A),
+                  Color(0xFF1E293B),
+                  Color(0xFF0B192C),
+                  Color(0xFF070B0D),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+
+        // Main Content
+        Positioned.fill(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category Tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                        ),
+                        child: Text(
+                          interview.category,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Interview Question Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.5),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🎯', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    interview.question,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Context: ${interview.situationContext}',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // STAR Breakdown
+                      Text(
+                        '⭐ STAR METHOD BREAKDOWN',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      _buildStarTile('S - Situation', interview.starSituation, const Color(0xFF38BDF8)),
+                      const SizedBox(height: 6),
+                      _buildStarTile('A - Action Taken', interview.starAction, const Color(0xFFF59E0B)),
+                      const SizedBox(height: 6),
+                      _buildStarTile('R - Key Result', interview.starResult, const Color(0xFF10B981)),
+                      const SizedBox(height: 14),
+
+                      // Listen to Model Answer Button
+                      GestureDetector(
+                        onTap: () => _playTtsForCard(interview.id, interview.fullSpokenAnswer),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                          decoration: BoxDecoration(
+                            color: isSpeakingThis
+                                ? const Color(0xFFFFFC00)
+                                : const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.white24,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isSpeakingThis ? Icons.volume_up_rounded : Icons.play_arrow_rounded,
+                                color: isSpeakingThis ? Colors.black : const Color(0xFFFFFC00),
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  isSpeakingThis ? 'Speaking Answer... Tap to Pause' : 'Hear Native Spoken Answer 🗣️',
+                                  style: GoogleFonts.outfit(
+                                    color: isSpeakingThis ? Colors.black : Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Power Phrases
+                      if (interview.powerPhrases.isNotEmpty) ...[
+                        Text(
+                          'POWER PHRASES TO USE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: interview.powerPhrases.map((phrase) {
+                            return GestureDetector(
+                              onTap: () => _playTtsForCard('p_$phrase', phrase),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white10,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.white24),
+                                ),
+                                child: Text(
+                                  '"$phrase"',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+
+                      // Dynamic Native Language Career Tip Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E3A8A).withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${_userNativeLanguage.toUpperCase()} CAREER TIP 💼',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF7DD3FC),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              interview.getTip(_userNativeLanguage),
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Continue Button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _stopAllAudioAndSpeech();
+                          if (_verticalPageController.hasClients) {
+                            _verticalPageController.nextPage(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'CONTINUE REEL FEED',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Right Rail
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => _playTtsForCard(interview.id, interview.fullSpokenAnswer),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSpeakingThis ? const Color(0xFFFFFC00) : Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Icon(
+                    isSpeakingThis ? Icons.pause_rounded : Icons.volume_up_rounded,
+                    color: isSpeakingThis ? Colors.black : Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Interview Q&A Saved!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '💼 Interview Vault\nQuestion: "${interview.question}"\nModel Answer:\n${interview.fullSpokenAnswer}',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStarTile(String label, String text, Color accentColor) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.outfit(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            text,
+            style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🗣️ 3. Interactive Chatbot Speaking Challenge Slide (Speech Recognition + AI Coach)
+  Widget _buildSpeakChallengeSlide(ReelSpeakChallengeCard challenge, int index) {
+    final isListeningThis = _isListening && _activeSpeechChallengeId == challenge.id;
+    final hasPassed = _speakChallengeResults[challenge.id] == true;
+    final hasFailed = _speakChallengeResults[challenge.id] == false;
+    final userSpoken = _speakChallengeUserText[challenge.id] ?? _recognizedSpokenWords;
+
+    return Stack(
+      children: [
+        // Background Gradient (Vibrant Emerald / Deep Cyan Matrix)
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF064E3B),
+                  Color(0xFF0F172A),
+                  Color(0xFF022C22),
+                  Color(0xFF070B0D),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+
+        Positioned.fill(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Coach Header Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(challenge.coachAvatar, style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text(
+                              challenge.coachName,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF34D399),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // AI Coach Speech Bubble
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('💬', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                challenge.coachPrompt,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  height: 1.35,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'SPEAK THIS CLEARLY ALOUD 🎙️',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Target Speech Glowing Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: hasPassed
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF06B6D4).withValues(alpha: 0.6),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (hasPassed ? const Color(0xFF10B981) : const Color(0xFF06B6D4))
+                                  .withValues(alpha: 0.25),
+                              blurRadius: 16,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '"${challenge.targetSpeech}"',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                height: 1.3,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '/${challenge.phoneticGuide}/',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF7DD3FC),
+                                fontSize: 11.5,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Dynamic Native Guidance Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_userNativeLanguage.toUpperCase()} TIP: ${challenge.getGuidance(_userNativeLanguage)}',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            height: 1.3,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Big Glowing Microphone Button
+                      GestureDetector(
+                        onTap: () => _toggleSpeechChallenge(challenge),
+                        child: AnimatedBuilder(
+                          animation: _pulseController,
+                          builder: (context, _) {
+                            final pulse = isListeningThis ? _pulseController.value : 0.0;
+                            return Container(
+                              width: 72 + (pulse * 8),
+                              height: 72 + (pulse * 8),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: isListeningThis
+                                      ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
+                                      : [const Color(0xFF10B981), const Color(0xFF059669)],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isListeningThis ? const Color(0xFFEF4444) : const Color(0xFF10B981))
+                                        .withValues(alpha: 0.5 + (pulse * 0.3)),
+                                    blurRadius: 18 + (pulse * 12),
+                                    spreadRadius: pulse * 4,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  isListeningThis ? Icons.mic_rounded : Icons.mic_none_rounded,
+                                  color: Colors.white,
+                                  size: 34,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      Text(
+                        isListeningThis
+                            ? 'Listening... Speak into mic!'
+                            : (hasPassed ? 'Passed! Tap to practice again' : 'Tap Mic & Speak the sentence'),
+                        style: GoogleFonts.outfit(
+                          color: isListeningThis ? const Color(0xFFEF4444) : Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      // User Speech Transcript
+                      if (userSpoken.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: hasPassed ? const Color(0xFF10B981) : Colors.white24,
+                            ),
+                          ),
+                          child: Text(
+                            'You said: "$userSpoken"',
+                            style: GoogleFonts.inter(
+                              color: hasPassed ? const Color(0xFF34D399) : Colors.white,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      // Success or Retry Feedback
+                      if (hasPassed) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFF10B981)),
+                          ),
+                          child: Text(
+                            '🎉 Fantastic Pronunciation! +${challenge.pointsReward} Pocket Score!',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF34D399),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ] else if (hasFailed) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.orange),
+                          ),
+                          child: Text(
+                            'Keep going! Tap mic and say the full sentence clearly.',
+                            style: GoogleFonts.outfit(color: Colors.orange, fontSize: 12),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 16),
+
+                      // Continue Button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _stopAllAudioAndSpeech();
+                          if (_verticalPageController.hasClients) {
+                            _verticalPageController.nextPage(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'CONTINUE REEL FEED',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Right Rail
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Listen to Correct Pronunciation
+              GestureDetector(
+                onTap: () => _playTtsForCard(challenge.id, challenge.targetSpeech),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Speaking Challenge Saved!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '🗣️ AI Speaking Challenge\nSituation: ${challenge.situation}\nSay: "${challenge.targetSpeech}"',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// ⚡ 4. Power Vocabulary & Idiom Slide with Dynamic Multi-Language Meaning
+  Widget _buildVocabSlide(ReelVocabCard vocab, int index) {
+    return Stack(
+      children: [
+        // Background Gradient (Deep Royal Amethyst / Obsidian)
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF3B0764),
+                  Color(0xFF1E1B4B),
+                  Color(0xFF0F172A),
+                  Color(0xFF070B0D),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+
+        Positioned.fill(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Part of Speech Tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA855F7).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFA855F7), width: 1),
+                        ),
+                        child: Text(
+                          vocab.partOfSpeech.toUpperCase(),
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFC084FC),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Word with Speaker Icon
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              vocab.word,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                height: 1.15,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => _playTtsForCard(vocab.id, vocab.word),
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFFFFFC00),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(Icons.volume_up_rounded, color: Colors.black, size: 20),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Phonetic
+                      Text(
+                        vocab.phonetic,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFE9D5FF),
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Definition Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'DEFINITION (ENGLISH)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white54,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              vocab.definitionEn,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Example Context Sentence Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('💬', style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'EXAMPLE SENTENCE',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFC084FC),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '"${vocab.contextSentence}"',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontStyle: FontStyle.italic,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Dynamic Native Language Meaning Box (Strictly Zero Hardcoding)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFA855F7).withValues(alpha: 0.18),
+                              const Color(0xFF7E22CE).withValues(alpha: 0.08),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.4)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🌐', style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '${_userNativeLanguage.toUpperCase()} MEANING',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFE9D5FF),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              vocab.getMeaning(_userNativeLanguage),
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Pro Tip
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          '💡 Pro Tip: ${vocab.proTip}',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFFFC00),
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Continue Button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _stopAllAudioAndSpeech();
+                          if (_verticalPageController.hasClients) {
+                            _verticalPageController.nextPage(
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutCubic,
+                            );
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'CONTINUE REEL FEED',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Right Rail
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => _playTtsForCard(vocab.id, vocab.word),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.volume_up_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Vocabulary Word Saved!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '⚡ Word of the Day: ${vocab.word} (${vocab.partOfSpeech})\nDefinition: ${vocab.definitionEn}\nExample: "${vocab.contextSentence}"',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.65),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
