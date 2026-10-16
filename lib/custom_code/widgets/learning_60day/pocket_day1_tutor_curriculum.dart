@@ -5,6 +5,7 @@ import 'daily_vocab_item.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'curriculum_data/day_1_curriculum_data.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
+import 'games/pocket_20days_40games_spec.dart';
 
 /// 🎯 3 Clear Syllabus Tracks for Day 1
 /// User Directive:
@@ -682,8 +683,29 @@ class Day1Curriculum {
           var icon = map['icon']?.toString() ?? '📚';
           var gameType = map['gameType']?.toString() ?? 'generic';
 
-          // Step 3 Meadow runner hunt synthesis
-          if (stepNum == 3 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
+          // Step 3 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
+          if (stepNum == 3 && day > 1) {
+            final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+              (g) => g.day == day && g.gameIndex == 1,
+              orElse: () => DayGameSpec(
+                day: day,
+                gameIndex: 1,
+                title: 'Day $day English Quest',
+                emoji: '🎮',
+                genre: GameGenre.runner,
+                englishTarget: 'Sentence Structure & Spoken English',
+                descriptionEn: 'Interactive action gaming applied to English mastery.',
+                descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
+                controlMechanism: 'Touch controls',
+              ),
+            );
+            titleEn = '${gameSpec.title} ${gameSpec.emoji}';
+            titleMl = '${gameSpec.title} ${gameSpec.emoji}';
+            descEn = '${gameSpec.englishTarget} - ${gameSpec.descriptionEn}';
+            descMl = gameSpec.descriptionMl;
+            icon = gameSpec.emoji;
+            gameType = 'game_arena';
+          } else if (stepNum == 3 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
             final targetObjects = (map['targetObjects'] as List?)?.map((e) => e.toString()).toList() ?? [];
             final nounsList = (cachedDay['vocabulary']?['nouns'] as List?)?.cast<Map<String, dynamic>>() ?? [];
             final nounMeaningMap = {
@@ -844,6 +866,30 @@ class Day1Curriculum {
       var descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
       var icon = map['icon']?.toString() ?? '📚';
       var gameType = map['gameType']?.toString() ?? 'generic';
+      // Step 3 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
+      if (stepNum == 3 && day > 1) {
+        final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+          (g) => g.day == day && g.gameIndex == 1,
+          orElse: () => DayGameSpec(
+            day: day,
+            gameIndex: 1,
+            title: 'Day $day English Quest',
+            emoji: '🎮',
+            genre: GameGenre.runner,
+            englishTarget: 'Sentence Structure & Spoken English',
+            descriptionEn: 'Interactive action gaming applied to English mastery.',
+            descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
+            controlMechanism: 'Touch controls',
+          ),
+        );
+        titleEn = '${gameSpec.title} ${gameSpec.emoji}';
+        titleMl = '${gameSpec.title} ${gameSpec.emoji}';
+        descEn = '${gameSpec.englishTarget} - ${gameSpec.descriptionEn}';
+        descMl = gameSpec.descriptionMl;
+        icon = gameSpec.emoji;
+        gameType = 'game_arena';
+      }
+
       // Step 4 on Days 1 to 90: Spoken English
       if (stepNum == 4) {
         titleEn = '🎙️ Spoken English Conversational Chat';

@@ -2356,6 +2356,23 @@ class _PocketDayOpenWorldAdventurePageState
       );
     }
     if (widget.day >= 1 && widget.day <= 90) {
+      if (s == 3 && widget.day > 1) {
+        final g = Pocket20Days40GamesRegistry.allGames.firstWhere(
+          (item) => item.day == widget.day && item.gameIndex == 1,
+          orElse: () => DayGameSpec(
+            day: widget.day,
+            gameIndex: 1,
+            title: 'Day ${widget.day} English Quest',
+            emoji: '🎮',
+            genre: GameGenre.runner,
+            englishTarget: 'Practice',
+            descriptionEn: '',
+            descriptionMl: '',
+            controlMechanism: '',
+          ),
+        );
+        return _StepInfo('${g.title} ${g.emoji}', g.emoji, const Color(0xFF38BDF8));
+      }
       final steps = Day1Curriculum.getSteps(_day1Track, widget.day);
       if (s >= 1 && s <= steps.length) {
         final st = steps[s - 1];
