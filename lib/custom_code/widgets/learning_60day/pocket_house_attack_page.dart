@@ -71,7 +71,7 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
   List<HouseShieldQuestion> _battleQuestions = [];
   int _currentQIdx = 0;
   int? _selectedOption;
-  bool _inBattle = false;
+  final bool _inBattle = false;
   bool _battleCompleted = false;
   bool _isVictory = false;
   int _correctAnswers = 0;
@@ -218,17 +218,41 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
     }
   }
 
-  void _launchDirectAttack() {
+  Future<void> _launchDirectAttack() async {
     HapticFeedback.heavyImpact();
-    setState(() {
-      _inChatIntro = false;
-      _inBattle = true;
-      _currentQIdx = 0;
-      _selectedOption = null;
-      _correctAnswers = 0;
-      _battleCompleted = false;
-    });
-    _speakQuestion();
+    if (_target == null) {
+      await _fetchTargetOpponent();
+    }
+    final target = _target;
+    if (target == null) return;
+    if (!mounted) return;
+
+    // Navigate DIRECTLY to that target's Attack Profile (PocketCitadelAttackPage)!
+    // Audio Directive: "ഈ അറ്റാക്ക് പ്രൊഫൈൽ ഇല്ലേ, അതിലേക്ക് പോവണം ട്ടോ. അതിൽ പോയിട്ട് അറ്റാക്ക് ചെയ്യുക."
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketCitadelAttackPage(
+          neighbor: target,
+          attackerDay: widget.day,
+        ),
+      ),
+    );
+
+    // If passed or beginner courage pass (Level <= 20)
+    if (result == true || widget.day <= 20) {
+      final stepNum = widget.day == 1 ? 9 : 8;
+      widget.onStepFinished?.call(stepNum);
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _inChatIntro = false;
+        });
+      }
+    }
   }
 
   Future<void> _speak(String text) async {
@@ -237,18 +261,6 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
       await _tts.stop();
       await _tts.speak(text);
     } catch (_) {}
-  }
-
-  void _startBattle() {
-    HapticFeedback.heavyImpact();
-    setState(() {
-      _inBattle = true;
-      _currentQIdx = 0;
-      _selectedOption = null;
-      _correctAnswers = 0;
-      _battleCompleted = false;
-    });
-    _speakQuestion();
   }
 
   void _speakQuestion() {
@@ -1079,7 +1091,7 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 4,
               ),
-              onPressed: _startBattle,
+              onPressed: _launchDirectAttack,
               icon: const Icon(Icons.flash_on_rounded, size: 22),
               label: Text(
                 'ATTACK HOUSE #${target.day} GATES ⚔️',
@@ -1098,20 +1110,10 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PocketCitadelAttackPage(
-                      neighbor: target,
-                      attackerDay: widget.day,
-                    ),
-                  ),
-                );
-              },
+              onPressed: _launchDirectAttack,
               icon: const Icon(Icons.castle_rounded, color: Color(0xFF38BDF8), size: 18),
               label: Text(
-                'Open Full Graphic Citadel Siege View ➔',
+                'Open Full Attack Profile & Citadel Siege ➔',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF38BDF8),
                   fontSize: 12,
