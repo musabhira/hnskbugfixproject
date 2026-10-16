@@ -28,6 +28,9 @@ class ReelGameCard {
   final Map<String, String> nativeExplanations; // 'Malayalam', 'Tamil', 'Hindi', 'English'
   final String contextHint; // Subtle hint or situational clue
   final String? funnyNote; // Humorous takeaway or conversational tip
+  final String? speakerName; // Character name e.g. "Sparky Tiger", "Pandy Panda", "King Lion"
+  final String? speakerAvatar; // Character avatar emoji e.g. "🐯", "🐼", "🦁"
+  final String? speakerRole; // Character role e.g. "Phonics Buddy", "Manners Guide", "Kingdom Sovereign"
 
   const ReelGameCard({
     required this.id,
@@ -41,6 +44,9 @@ class ReelGameCard {
     required this.nativeExplanations,
     required this.contextHint,
     this.funnyNote,
+    this.speakerName,
+    this.speakerAvatar,
+    this.speakerRole,
   });
 
   String getExplanation(String lang) {
@@ -843,6 +849,697 @@ class PocketReelsGameEngine {
         'English': 'Wear (V1) -> Wore (V2) -> Worn (V3). Never say "weared"! 👔',
       },
       contextHint: 'Irregular past: Wear -> Wore',
+    ),
+  ];
+
+  /// 🧸 Kids Dedicated Communication & Chat Comeback Games (Prioritizes unviewed cards)
+  static List<ReelGameCard> getKidsCommunicationGames({int count = 8}) {
+    final allCards = List<ReelGameCard>.from(_curatedKidsCommunicationGames);
+    final unseen = allCards.where((g) => !_viewedGameIds.contains(g.id)).toList();
+    unseen.shuffle(_random);
+    if (unseen.length >= count) return unseen.take(count).toList();
+
+    final seen = allCards.where((g) => _viewedGameIds.contains(g.id)).toList();
+    seen.shuffle(_random);
+    final combined = [...unseen, ...seen];
+    if (combined.length >= count) return combined.take(count).toList();
+
+    while (combined.length < count) {
+      combined.add(_generateDynamicKidChatGame(combined.length + 1));
+    }
+    return combined.take(count).toList();
+  }
+
+  /// 🌟 Dynamically generates endless variety of English challenges for kids
+  static ReelGameCard _generateDynamicKidChatGame(int seed) {
+    final companions = [
+      {'name': 'Sparky Tiger', 'avatar': '🐯', 'role': 'Phonics Buddy'},
+      {'name': 'Pandy Panda', 'avatar': '🐼', 'role': 'Manners Guide'},
+      {'name': 'Bouncy Bunny', 'avatar': '🐰', 'role': 'Story Explorer'},
+      {'name': 'King Lion', 'avatar': '🦁', 'role': 'Kingdom Sovereign'},
+      {'name': 'Puppy Max', 'avatar': '🐶', 'role': 'Playground Scout'},
+    ];
+    final comp = companions[seed % companions.length];
+    final dynId = 'dyn_kid_chat_${DateTime.now().millisecondsSinceEpoch}_$seed';
+
+    return ReelGameCard(
+      id: dynId,
+      gameType: ReelGameType.smartReply,
+      category: 'ANIMAL BUDDY CHAT 💬',
+      speakerName: comp['name'],
+      speakerAvatar: comp['avatar'],
+      speakerRole: comp['role'],
+      contextSituation: '${comp['name']} ${comp['avatar']} sent you a friendly message',
+      prompt: 'Hello my awesome friend! Are you having fun learning English with me today?',
+      options: [
+        'Yes, I love learning with you! It is super fun! 🌟🎉',
+        'I am not here today.',
+        'Learning is only for grown-ups.',
+        'No, go away.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കൂട്ടുകാരോട് സന്തോഷത്തോടെ "Yes, I love learning with you! It is super fun!" എന്ന് ആത്മവിശ്വാസത്തോടെ പറയാം! 🌟💖',
+        'Tamil': 'நண்பர்களிடம் உற்சாகமாக "Yes, I love learning with you!" என்று கூறலாம்! 🌟💖',
+        'Hindi': 'दोस्त से उत्साहपूर्वक कहें "Yes, I love learning with you! It is super fun!" 🌟💖',
+        'English': 'Positive communication! Expressing joy and enthusiasm makes conversational English delightful! 🌟💖',
+      },
+      contextHint: 'Friendly enthusiasm and joy',
+      funnyNote: 'Animal buddies love chatting with you! 🐾',
+    );
+  }
+
+  // =========================================================================
+  // 🧸 CURATED KIDS COMMUNICATION & CHAT GAMES DATASET (24+ High-Yield Cards)
+  // =========================================================================
+  static const List<ReelGameCard> _curatedKidsCommunicationGames = [
+    // --- 1. SHARING CRAYONS (Sparky Tiger) ---
+    ReelGameCard(
+      id: 'kid_chat_crayons_1',
+      gameType: ReelGameType.smartReply,
+      category: 'SHARING IS CARING 🎨',
+      speakerName: 'Sparky Tiger',
+      speakerAvatar: '🐯',
+      speakerRole: 'Phonics Buddy',
+      contextSituation: 'Sparky reaches towards your art kit while coloring a jungle tree',
+      prompt: 'Hey buddy! Can I borrow your blue coloring pencil for a minute?',
+      options: [
+        'Sure! Here you go, buddy! ✏️✨',
+        'No way, blue is my secret color!',
+        'Pencils are made of wood.',
+        'I do not speak to tigers.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കൂട്ടുകാരുമായി സന്തോഷത്തോടെ പങ്കുവെക്കാൻ "Sure! Here you go, buddy!" എന്ന് മാന്യമായി പറയാം! 🎨💖',
+        'Tamil': 'நண்பர்களுடன் பகிர்ந்துகொள்ள "Sure! Here you go, buddy!" என்று அன்பாக கூறலாம்! 🎨💖',
+        'Hindi': 'दोस्तों के साथ बांटने के लिए "Sure! Here you go, buddy!" कहना सबसे अच्छा है! 🎨💖',
+        'English': 'Polite sharing with friends! Saying "Sure, here you go!" makes everyone happy and builds great friendship! 🎨💖',
+      },
+      contextHint: 'Polite sharing formula: "Sure, here you go!"',
+      funnyNote: 'Sharing makes coloring twice as fun! 🎨',
+    ),
+
+    // --- 2. DROPPED ICE CREAM (Pandy Panda) ---
+    ReelGameCard(
+      id: 'kid_chat_icecream_2',
+      gameType: ReelGameType.smartReply,
+      category: 'EMPATHY & KINDNESS 🍦',
+      speakerName: 'Pandy Panda',
+      speakerAvatar: '🐼',
+      speakerRole: 'Manners Guide',
+      contextSituation: 'Pandy accidentally dropped his strawberry cone on the playground grass',
+      prompt: 'Oh no! My ice cream fell on the grass! 😢🍦',
+      options: [
+        'Don\'t worry, Pandy! We can share mine! 🍦💖',
+        'Haha! You are clumsy!',
+        'Grass likes strawberry flavor.',
+        'Go buy ten more.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'സങ്കടപ്പെട്ടിരിക്കുന്ന കൂട്ടുകാരനെ ആശ്വസിപ്പിക്കാൻ "Don\'t worry, we can share mine!" എന്ന് പറയുക! 🍦💖',
+        'Tamil': 'வருத்தப்படும் நண்பருக்கு "Don\'t worry, we can share mine!" என்று ஆறுதல் கூறலாம்! 🍦💖',
+        'Hindi': 'दुखी दोस्त को सहारा देने के लिए कहें "Don\'t worry, we can share mine!" 🍦💖',
+        'English': 'Kindness matters! Cheering up a friend with "Don\'t worry, we can share mine!" shows real caring. 🍦💖',
+      },
+      contextHint: 'Comforting an upset friend with sharing',
+      funnyNote: 'Kind words taste sweeter than ice cream! 🍨',
+    ),
+
+    // --- 3. PLAYGROUND RACE (Bouncy Bunny) ---
+    ReelGameCard(
+      id: 'kid_chat_playground_race_3',
+      gameType: ReelGameType.smartReply,
+      category: 'PLAYGROUND ENERGY 🏁',
+      speakerName: 'Bouncy Bunny',
+      speakerAvatar: '🐰',
+      speakerRole: 'Story Explorer',
+      contextSituation: 'Bouncy jumps up and down by the starting line near the apple tree',
+      prompt: 'Are you ready to race me to the big apple tree? 🌳🏁',
+      options: [
+        'Ready, set, go! Catch me if you can! 🏃‍♂️💨',
+        'Trees do not have legs.',
+        'I am going to sleep here.',
+        'No running allowed in the kingdom.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കളിസ്ഥലത്ത് ഓട്ടമത്സരം തുടങ്ങുമ്പോൾ പറയുന്ന രസകരമായ വാചകമാണ് "Ready, set, go! Catch me if you can!" 🏃‍♂️💨',
+        'Tamil': 'விளையாட்டு தொடங்கும் போது "Ready, set, go! Catch me if you can!" என்று உற்சாகமாக கூறலாம்! 🏃‍♂️💨',
+        'Hindi': 'रेस शुरू करते समय कहें "Ready, set, go! Catch me if you can!" 🏃‍♂️💨',
+        'English': 'Playful challenge! "Ready, set, go! Catch me if you can!" is full of fun and playground energy! 🏃‍♂️💨',
+      },
+      contextHint: 'Standard countdown for fun kids races',
+      funnyNote: 'Bunnies hop fast, but your English is faster! 🐰⚡',
+    ),
+
+    // --- 4. ROYAL PALACE GREETING (King Lion) ---
+    ReelGameCard(
+      id: 'kid_chat_king_lion_palace_4',
+      gameType: ReelGameType.smartReply,
+      category: 'ROYAL GREETING 👑',
+      speakerName: 'King Lion',
+      speakerAvatar: '🦁',
+      speakerRole: 'Kingdom Sovereign',
+      contextSituation: 'King Lion welcomes you to the Golden Palace with a regal nod',
+      prompt: 'Welcome to my Golden Palace, young cub! How was your school today? 🏰',
+      options: [
+        'It was wonderful, Your Majesty! I learned new English words! 🌟',
+        'School is boring, give me coins.',
+        'Who are you wearing a crown?',
+        'I forgot what happened.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'രാജാവിനോട് ആദരവോടെ സംസാരിക്കാൻ "It was wonderful, Your Majesty!" എന്ന് പറയാം! 👑✨',
+        'Tamil': 'மரியாதையுடன் "It was wonderful, Your Majesty!" என்று உற்சாகமாக கூறலாம்! 👑✨',
+        'Hindi': 'सम्मानपूर्वक कहें "It was wonderful, Your Majesty! I learned new words!" 👑✨',
+        'English': 'Respectful and proud response! "It was wonderful, Your Majesty!" shows great confidence and manners! 👑✨',
+      },
+      contextHint: 'Polite honorific for a king: "Your Majesty"',
+      funnyNote: 'King Lion loves enthusiastic learners! 🦁👑',
+    ),
+
+    // --- 5. BANANAS & FOOD TASTES (Milo Monkey) ---
+    ReelGameCard(
+      id: 'kid_chat_milo_banana_5',
+      gameType: ReelGameType.smartReply,
+      category: 'FOOD & TASTES 🍌',
+      speakerName: 'Milo Monkey',
+      speakerAvatar: '🐵',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'Milo hangs upside down munching on fresh yellow fruit',
+      prompt: 'Bananas are super sweet! What is your favorite fruit to eat? 🍌',
+      options: [
+        'I love juicy red apples! They are so crunchy! 🍎😋',
+        'I only eat stones and mud.',
+        'Bananas are yellow so I am angry.',
+        'Fruit is too healthy for me.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'നമുക്കിഷ്ടപ്പെട്ട ഭക്ഷണത്തെക്കുറിച്ച് പറയാൻ "I love juicy red apples! They are crunchy!" എന്ന് ഉപയോഗിക്കാം! 🍎😋',
+        'Tamil': 'விருப்பமான உணவைப்பற்றி "I love juicy red apples!" என்று சுவையாக விளக்கலாம்! 🍎😋',
+        'Hindi': 'अपनी पसंद बताने के लिए कहें "I love juicy red apples! They are crunchy!" 🍎😋',
+        'English': 'Expressing food favorites with descriptive adjectives like "juicy" and "crunchy" makes English lively! 🍎😋',
+      },
+      contextHint: 'Adjectives for food: "juicy" and "crunchy"',
+      funnyNote: 'Monkeys love fruit, and so do healthy kids! 🍌🍏',
+    ),
+
+    // --- 6. LOST BALL DIRECTION (Puppy Max) ---
+    ReelGameCard(
+      id: 'kid_chat_puppy_ball_6',
+      gameType: ReelGameType.smartReply,
+      category: 'HELPING A FRIEND 🎾',
+      speakerName: 'Puppy Max',
+      speakerAvatar: '🐶',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'Max is running around sniffing the lawn for his favorite red ball',
+      prompt: 'Woof woof! I lost my red ball! Have you seen where it rolled? 🎾',
+      options: [
+        'Look right behind the green bush! There it is! 🌿👀',
+        'Balls are round so they disappear.',
+        'I hid your ball in my pocket.',
+        'Go bark somewhere else doggy.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഒരു സാധനം എവിടെയാണെന്ന് വഴി കാണിക്കാൻ "Look right behind the bush! There it is!" എന്ന് പറയാം! 🌿👀',
+        'Tamil': 'பொருளை சுட்டிக்காட்ட "Look right behind the bush! There it is!" என வழிகாட்டலாம்! 🌿👀',
+        'Hindi': 'दिशा दिखाने के लिए कहें "Look right behind the bush! There it is!" 🌿👀',
+        'English': 'Giving clear directional help! "Look behind the bush! There it is!" uses great prepositional phrases. 🌿👀',
+      },
+      contextHint: 'Directional phrase: "behind the bush"',
+      funnyNote: 'Good doggy Max wagged his tail happily! 🐶❤️',
+    ),
+
+    // --- 7. BEDTIME MANNERS (Oliver Owl) ---
+    ReelGameCard(
+      id: 'kid_chat_oliver_night_7',
+      gameType: ReelGameType.smartReply,
+      category: 'BEDTIME MANNERS 🌙',
+      speakerName: 'Oliver Owl',
+      speakerAvatar: '🦉',
+      speakerRole: 'Bedtime Guide',
+      contextSituation: 'Oliver perches on the chimney as the moon and stars twinkle in the dark sky',
+      prompt: 'Whoo-whoo! The stars are out and it is time for bed. What do we say at night? 🌙',
+      options: [
+        'Good night and sweet dreams, Oliver! 🌟🛌',
+        'Good morning sunshine wake up!',
+        'Why do owls stay awake at night?',
+        'Goodbye forever.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഉറങ്ങാൻ പോകുമ്പോൾ എല്ലാവർക്കും ആശംസിക്കാൻ "Good night and sweet dreams!" എന്ന് പറയണം! 🌙🛌',
+        'Tamil': 'இரவில் விடைபெறும்போது "Good night and sweet dreams!" என்று கூற வேண்டும்! 🌙🛌',
+        'Hindi': 'सोते समय विनम्रता से कहें "Good night and sweet dreams!" 🌙🛌',
+        'English': 'The universal polite bedtime wish: "Good night and sweet dreams!" wraps the day in warmth and love. 🌙🛌',
+      },
+      contextHint: 'Night greeting: "Good night and sweet dreams"',
+      funnyNote: 'Time to count fluffy sheep and dream in English! 🐑💤',
+    ),
+
+    // --- 8. WELCOMING TO PLAY (Freddy Fox) ---
+    ReelGameCard(
+      id: 'kid_chat_fox_blocks_8',
+      gameType: ReelGameType.smartReply,
+      category: 'JOINING PLAY 🧱',
+      speakerName: 'Freddy Fox',
+      speakerAvatar: '🦊',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'Freddy walks into the playroom holding colorful wooden building blocks',
+      prompt: 'Excuse me! That castle looks amazing. May I play blocks with you? 🏰',
+      options: [
+        'Of course! Come join in, let\'s build the tower together! 🏰✨',
+        'No, all the blocks belong only to me.',
+        'Foxes are not allowed to build castles.',
+        'I am breaking the castle now.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കളിക്കാൻ വരുന്നവരെ സ്വാഗതം ചെയ്യാൻ "Of course! Come join in, let\'s build together!" എന്ന് പറയുക! 🏰✨',
+        'Tamil': 'நண்பர்களை விளையாட அழைக்க "Of course! Come join in!" என்று கூறலாம்! 🏰✨',
+        'Hindi': 'खेल में शामिल करने के लिए कहें "Of course! Come join in, let\'s build together!" 🏰✨',
+        'English': 'Welcoming friends to play! "Of course! Come join in!" builds teamwork and social joy. 🏰✨',
+      },
+      contextHint: 'Welcoming phrase: "Of course! Come join in!"',
+      funnyNote: 'Two architects build higher than one! 🧱🏰',
+    ),
+
+    // --- 9. MAGIC WORDS (Starlight Unicorn) ---
+    ReelGameCard(
+      id: 'kid_chat_unicorn_magic_9',
+      gameType: ReelGameType.smartReply,
+      category: 'MAGIC WORDS ✨',
+      speakerName: 'Starlight Unicorn',
+      speakerAvatar: '🦄',
+      speakerRole: 'Kingdom Sovereign',
+      contextSituation: 'Starlight Unicorn hands you a sparkling golden star badge for speaking clearly',
+      prompt: 'Here is a magical star for your hard work! What is the golden magic word? ⭐',
+      options: [
+        'Thank you so much! I appreciate it! 🙏💖',
+        'Give me five more right now.',
+        'I already had three stars.',
+        'Stars are made of gas.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'സമ്മാനങ്ങൾ ലഭിക്കുമ്പോൾ നന്ദി പറയാൻ "Thank you so much!" എന്ന മാജിക് വാക്ക് ഉപയോഗിക്കുക! 🙏💖',
+        'Tamil': 'பரிசு பெறும்போது "Thank you so much!" என்ற மேஜிக் வார்த்தையை மறக்காமல் சொல்லுங்கள்! 🙏💖',
+        'Hindi': 'उपहार मिलने पर हमेशा कहें "Thank you so much!" 🙏💖',
+        'English': 'The magic word of gratitude: "Thank you so much!" opens every heart with warmth and politeness! 🙏💖',
+      },
+      contextHint: 'The golden word of gratitude: "Thank you"',
+      funnyNote: 'Magic words sparkle brighter than diamonds! 💎✨',
+    ),
+
+    // --- 10. WEATHER TALK (Barnaby Bear) ---
+    ReelGameCard(
+      id: 'kid_chat_bear_rain_10',
+      gameType: ReelGameType.smartReply,
+      category: 'WEATHER TALK 🌧️',
+      speakerName: 'Barnaby Bear',
+      speakerAvatar: '🐻',
+      speakerRole: 'Story Explorer',
+      contextSituation: 'Raindrops tap on the window as dark clouds drift over the forest',
+      prompt: 'Pitter-patter! Rain is falling! What should we take before stepping outside? 🌧️',
+      options: [
+        'Grab your umbrella and wear your rain boots! ☔🥾',
+        'Take a bottle of sunscreen lotion.',
+        'Wear sunglasses and a beach hat.',
+        'Leave the front door wide open.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'മഴക്കാലത്ത് പുറത്തിറങ്ങുമ്പോൾ "Grab your umbrella and wear rain boots!" എന്ന് ഓർമ്മിപ്പിക്കാം! ☔🥾',
+        'Tamil': 'மழை நேரத்தில் "Grab your umbrella and wear rain boots!" என்று கூறலாம்! ☔🥾',
+        'Hindi': 'बारिश में बाहर जाते समय कहें "Grab your umbrella and rain boots!" ☔🥾',
+        'English': 'Weather awareness! "Grab your umbrella and rain boots!" connects English vocabulary with daily life. ☔🥾',
+      },
+      contextHint: 'Rainy gear: umbrella & boots',
+      funnyNote: 'Splash in puddles safely with bright boots! 🌧️🥾',
+    ),
+
+    // --- 11. PHONICS RHYME (Flipper Dolphin) ---
+    ReelGameCard(
+      id: 'kid_chat_dolphin_rhyme_11',
+      gameType: ReelGameType.smartReply,
+      category: 'PHONICS RHYME 🎶',
+      speakerName: 'Flipper Dolphin',
+      speakerAvatar: '🐬',
+      speakerRole: 'Phonics Buddy',
+      contextSituation: 'Flipper leaps out of the crystal ocean with a splash of sea foam',
+      prompt: 'Splash! Listen to the sound: "STAR"! Which word rhymes with "STAR"? ⭐',
+      options: [
+        'CAR! Star and Car rhyme with the /ɑːr/ sound! 🚗✨',
+        'MOON! Moon rhymes with Star.',
+        'FISH! Because I am in water.',
+        'TREE!',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Star", "Car" എന്നീ വാക്കുകൾ അവസാനിക്കുന്നത് ഒരേ ശബ്ദത്തിലാണ് (/ɑːr/). ഇതിനെയാണ് Rhyme എന്ന് വിളിക്കുന്നത്! 🚗⭐',
+        'Tamil': '"Star" மற்றும் "Car" ஒரே ஓசையில் முடிவடையும் Rhyming வார்த்தைகள்! 🚗⭐',
+        'Hindi': '"Star" और "Car" एक जैसे तुकांत (Rhyming) शब्द हैं! 🚗⭐',
+        'English': 'Rhyming fun! "Star" and "Car" share the exact same ending phonics sound /-ɑːr/! 🚗⭐',
+      },
+      contextHint: 'Rhyme sounds like: Star, Car, Far',
+      funnyNote: 'Drive a star-car across the sky! 🚗✨',
+    ),
+
+    // --- 12. POLITE SCARF ASSISTANCE (Pip Penguin) ---
+    ReelGameCard(
+      id: 'kid_chat_penguin_scarf_12',
+      gameType: ReelGameType.smartReply,
+      category: 'POLITE MANNERS 🧣',
+      speakerName: 'Pip Penguin',
+      speakerAvatar: '🐧',
+      speakerRole: 'Manners Guide',
+      contextSituation: 'Pip is sitting on an ice block shivering in the cold mountain air',
+      prompt: 'Brrr, it is chilly on the glacier! Could you please pass me my warm red scarf? ❄️',
+      options: [
+        'Here you go, Pip! Wrap it up nice and warm! 🧣❤️',
+        'Penguins are supposed to be cold.',
+        'No, scarves are boring.',
+        'I used your scarf to clean the floor.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ആരെങ്കിലും സഹായം ചോദിക്കുമ്പോൾ സന്തോഷത്തോടെ "Here you go! Wrap it up nice and warm!" എന്ന് മറുപടി നൽകാം! 🧣❤️',
+        'Tamil': 'உதவி செய்யும்போது "Here you go!" என்று புன்னகையுடன் கூறலாம்! 🧣❤️',
+        'Hindi': 'मदद करते समय कहें "Here you go! Wrap it up nice and warm!" 🧣❤️',
+        'English': 'Warm and helpful! "Here you go, wrap it up nice and warm!" is kind and full of sweet empathy. 🧣❤️',
+      },
+      contextHint: 'Helpful response: "Here you go!"',
+      funnyNote: 'A warm scarf keeps penguins singing happy songs! 🐧🧣',
+    ),
+
+    // --- 13. SILLY JOKE & LAUGHTER (Dino Rex) ---
+    ReelGameCard(
+      id: 'kid_chat_dino_roar_13',
+      gameType: ReelGameType.smartReply,
+      category: 'SILLY JOKE & LAUGHTER 😄',
+      speakerName: 'Dino Rex',
+      speakerAvatar: '🦖',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'Rex tries to do a big ferocious roar, but it comes out as a tiny squeak',
+      prompt: 'Squeeeak! Oh dear, my big scary dinosaur roar turned into a mouse squeak! 🐭🦖',
+      options: [
+        'Haha that was so cute, Rex! You are a sweet dino! 🦖💖',
+        'You are not a real dinosaur anymore.',
+        'Mice are scary, run away!',
+        'Roar louder or I am leaving.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'തമാശ നിറഞ്ഞ സന്ദർഭങ്ങളിൽ കൂട്ടുകാരനെ ചിരിപ്പിക്കാൻ "Haha that was so cute! You are a sweet dino!" എന്ന് പറയാം! 😄🦖',
+        'Tamil': 'நகைச்சுவையான நேரத்தில் "Haha that was so cute!" என்று உற்சாகப்படுத்தலாம்! 😄🦖',
+        'Hindi': 'हंसी-मजाक में कहें "Haha that was so cute, you are a sweet dino!" 😄🦖',
+        'English': 'Lighthearted humor! "Haha that was so cute, you are a sweet dino!" makes laughter easy and fun! 😄🦖',
+      },
+      contextHint: 'Friendly laughter: "That was so cute!"',
+      funnyNote: 'Even T-Rex can have a squeaky day! 🦖🐭',
+    ),
+
+    // --- 14. CLASSROOM PERMISSION (Wise Owl Teacher) ---
+    ReelGameCard(
+      id: 'kid_chat_teacher_permission_14',
+      gameType: ReelGameType.smartReply,
+      category: 'CLASSROOM ENGLISH 🏫',
+      speakerName: 'Wise Owl Teacher',
+      speakerAvatar: '🦉',
+      speakerRole: 'Bedtime Guide',
+      contextSituation: 'You feel thirsty during English reading time in the classroom',
+      prompt: 'You are thirsty during reading time. How do you politely ask teacher? 💧',
+      options: [
+        'May I please go drink some water, Teacher? 🙋‍♂️💧',
+        'Give me water right now.',
+        'I am leaving the room bye.',
+        'Water is wet.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ക്ലാസ്സ് മുറിയിൽ ടീച്ചറോട് മാന്യമായി അനുവാദം ചോദിക്കാൻ "May I please go drink some water?" എന്ന് ഉപയോഗിക്കുക! 🏫💧',
+        'Tamil': 'ஆசிரியரிடம் அனுமதி கேட்க "May I please go drink some water?" என்பதே நாகரீகமான முறை! 🏫💧',
+        'Hindi': 'कक्षा में अनुमति लेने के लिए कहें "May I please go drink some water, Teacher?" 🏫💧',
+        'English': 'Essential classroom etiquette: "May I please..." is the most polite and natural way to ask permission! 🏫💧',
+      },
+      contextHint: 'Polite permission formula: "May I please..."',
+      funnyNote: 'Teachers always smile when you say "May I please"! 🦉🍎',
+    ),
+
+    // --- 15. DRAWING COMPLIMENT (Daisy Duck) ---
+    ReelGameCard(
+      id: 'kid_chat_drawing_compliment_15',
+      gameType: ReelGameType.smartReply,
+      category: 'GIVING COMPLIMENTS 🎨',
+      speakerName: 'Daisy Duck',
+      speakerAvatar: '🦆',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'Daisy proudly shows you her new painting with a bright sunflower',
+      prompt: 'Look at my new painting! I used yellow, green, and orange! Do you like it? 🌻',
+      options: [
+        'Wow, Daisy! Your painting is so colorful and bright! 🌈🎨',
+        'I have seen better sunflowers.',
+        'You used too much yellow.',
+        'Painting is a waste of paper.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കൂട്ടുകാരന്റെ ചിത്രരചനയെ പ്രശംസിക്കാൻ "Wow! Your painting is so colorful and bright!" എന്ന് പറയാം! 🌈✨',
+        'Tamil': 'நண்பரின் ஓவியத்தைப் பாராட்ட "Wow! Your painting is so colorful and bright!" என உற்சாகப்படுத்துங்கள்! 🌈✨',
+        'Hindi': 'दोस्त की कला की तारीफ करें: "Wow! Your painting is so colorful and bright!" 🌈✨',
+        'English': 'Positive affirmations! Saying "Wow, your painting is so colorful and bright!" encourages creativity and builds warm friendship! 🌈✨',
+      },
+      contextHint: 'Compliment: "colorful and bright"',
+      funnyNote: 'Kind words make artwork shine even brighter! 🎨✨',
+    ),
+
+    // --- 16. SAYING SORRY (Leo Lion Cub) ---
+    ReelGameCard(
+      id: 'kid_chat_accidental_bump_16',
+      gameType: ReelGameType.smartReply,
+      category: 'SAYING SORRY 🤝',
+      speakerName: 'Leo Lion Cub',
+      speakerAvatar: '🦁',
+      speakerRole: 'Phonics Buddy',
+      contextSituation: 'While running towards the swings, you accidentally bumped into Leo',
+      prompt: 'Oops! You bumped into Leo by accident. What is the right thing to say? 🥺',
+      options: [
+        'I am so sorry, Leo! Are you okay? 🤝❤️',
+        'Watch where you are walking!',
+        'It was not my fault, you were standing there.',
+        'Run away quickly.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'അറിയാതെ തട്ടിയാൽ മാപ്പ് പറയാൻ "I am so sorry! Are you okay?" എന്ന് സ്നേഹത്തോടെ ചോദിക്കുക! 🤝❤️',
+        'Tamil': 'தற்செயலாக மோதினால் "I am so sorry! Are you okay?" என்று மன்னிப்பு கேட்க வேண்டும்! 🤝❤️',
+        'Hindi': 'अनजाने में टकराने पर कहें "I am so sorry! Are you okay?" 🤝❤️',
+        'English': 'Manners and apology: "I am so sorry, are you okay?" resolves accidents immediately with kindness and maturity. 🤝❤️',
+      },
+      contextHint: 'Heartfelt apology: "I am so sorry! Are you okay?"',
+      funnyNote: 'A true hero knows how to say sorry! 🦁🤝',
+    ),
+
+    // --- 17. ORDERING ICE CREAM (Sunny Squirrel) ---
+    ReelGameCard(
+      id: 'kid_chat_icecream_order_17',
+      gameType: ReelGameType.smartReply,
+      category: 'ORDERING SNACKS 🍦',
+      speakerName: 'Sunny Squirrel',
+      speakerAvatar: '🐿️',
+      speakerRole: 'Playground Scout',
+      contextSituation: 'The ice-cream cart rings its bell in the sunny park',
+      prompt: 'Hello there, young buddy! What flavor of ice cream would you like today? 🍦',
+      options: [
+        'Could I please have one chocolate scoop in a cone? 🍦🍫',
+        'Throw an ice cream at me.',
+        'Give it fast.',
+        'Ice cream is cold.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കടകളിൽ പോയി മാന്യമായി ഓർഡർ ചെയ്യാൻ "Could I please have..." എന്ന് ഉപയോഗിക്കുക! 🍦🍫',
+        'Tamil': 'மரியாதையாக கேட்க "Could I please have..." என்று தொடங்குங்கள்! 🍦🍫',
+        'Hindi': 'शालीनता से मांगने के लिए कहें "Could I please have one chocolate scoop in a cone?" 🍦🍫',
+        'English': 'Polite ordering formula: "Could I please have..." is native, polite, and universally appreciated! 🍦🍫',
+      },
+      contextHint: 'Polite ordering phrase: "Could I please have..."',
+      funnyNote: 'Polite kids get the biggest chocolate scoops! 🍨😋',
+    ),
+
+    // --- 18. PLAYFUL RIDDLE (Gizmo Fox) ---
+    ReelGameCard(
+      id: 'kid_chat_riddle_cheesy_18',
+      gameType: ReelGameType.smartReply,
+      category: 'PLAYFUL RIDDLE 🧀',
+      speakerName: 'Gizmo Fox',
+      speakerAvatar: '🦊',
+      speakerRole: 'Story Explorer',
+      contextSituation: 'Gizmo winks with a giggle while holding up a puzzle riddle card',
+      prompt: 'Riddle time! What building has the most stories in the whole world? 📚🏢',
+      options: [
+        'The Library! Because it is filled with storybooks! 📖✨',
+        'The Golden Castle.',
+        'A tall skyscraper.',
+        'My bedroom.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'രസകരമായ വാക്ക് കളി: "Stories" എന്നാൽ കെട്ടിടത്തിന്റെ നിലകൾ എന്നും കഥകൾ എന്നും അർത്ഥമുണ്ട്. അതിനാൽ "The Library" ആണ് ശരി! 📖😄',
+        'Tamil': '"Stories" என்பதற்கு மாடிகள் மற்றும் கதைகள் என இரு பொருள் உண்டு. எனவே "The Library" என்பதே பதில்! 📖😄',
+        'Hindi': '"Stories" के दो अर्थ होते हैं - कहानियां और मंजिलें. इसलिए "Library" सही जवाब है! 📖😄',
+        'English': 'Clever double meaning! "Stories" means both floors of a building and tales in books! The library has the most stories! 📖😄',
+      },
+      contextHint: 'Double meaning: "stories" in books vs "stories" in building',
+      funnyNote: 'Reading books gives you superpower knowledge! 📚⚡',
+    ),
+
+    // --- 19. COMFORTING A KITTEN (Barnaby Bear) ---
+    ReelGameCard(
+      id: 'kid_chat_lost_pet_19',
+      gameType: ReelGameType.smartReply,
+      category: 'COMPASSION & COMFORT 🐱',
+      speakerName: 'Barnaby Bear',
+      speakerAvatar: '🐻',
+      speakerRole: 'Story Explorer',
+      contextSituation: 'Little kitten Mimi climbed onto a low garden branch and meows softly',
+      prompt: 'Look, poor Mimi is stuck on the low branch! How can we comfort her? 🐱',
+      options: [
+        'Don\'t be afraid, little kitty! We will help you down safely! 🐾❤️',
+        'Jump down and hit the ground.',
+        'Stay in the tree forever.',
+        'Cats should learn how to fly.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഭയന്നിരിക്കുന്ന ജീവികളോട് സ്നേഹത്തോടെ "Don\'t be afraid, we will help you down!" എന്ന് പറയുക! 🐾💖',
+        'Tamil': 'அன்புடன் "Don\'t be afraid, we will help you down!" என்று தைரியம் கூறலாம்! 🐾💖',
+        'Hindi': 'सांत्वना देते हुए कहें "Don\'t be afraid, we will help you down safely!" 🐾💖',
+        'English': 'Gentle compassion: "Don\'t be afraid, we will help you down safely!" calms distress and shows great leadership! 🐾💖',
+      },
+      contextHint: 'Comforting phrase: "Don\'t be afraid"',
+      funnyNote: 'Mimi purred and gave Barnaby a soft high-five! 🐾🐱',
+    ),
+
+    // --- 20. MORNING ENERGY (Sparky Tiger) ---
+    ReelGameCard(
+      id: 'kid_chat_morning_energy_20',
+      gameType: ReelGameType.smartReply,
+      category: 'MORNING ENTHUSIASM ☀️',
+      speakerName: 'Sparky Tiger',
+      speakerAvatar: '🐯',
+      speakerRole: 'Phonics Buddy',
+      contextSituation: 'The morning sun rises golden over the green hills as Sparky stretches with energy',
+      prompt: 'Good morning, best buddy! The sun is shining bright! Are you ready for fun? ☀️',
+      options: [
+        'Good morning, Sparky! Let\'s make today super awesome! 🚀🌟',
+        'Go away sun, I want darkness.',
+        'Morning is too bright.',
+        'I am staying in bed for a week.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'പ്രഭാതത്തിൽ ഊർജ്ജസ്വലമായി "Good morning! Let\'s make today super awesome!" എന്ന് ആശംസിക്കുക! ☀️🚀',
+        'Tamil': 'காலை வேளையில் "Good morning! Let\'s make today super awesome!" என்று புத்துணர்ச்சியுடன் கூறலாம்! ☀️🚀',
+        'Hindi': 'सुबह की ताजगी के साथ कहें "Good morning! Let\'s make today super awesome!" ☀️🚀',
+        'English': 'High morning energy: "Good morning, let\'s make today super awesome!" sets a positive tone for great English learning! ☀️🚀',
+      },
+      contextHint: 'Enthusiastic morning greeting',
+      funnyNote: 'Rise and shine, superstar learner! 🌟☀️',
+    ),
+
+    // --- 21. SENTENCE BUILDER: CAN I PLAY (Bouncy Bunny) ---
+    ReelGameCard(
+      id: 'kid_sent_play_21',
+      gameType: ReelGameType.sentenceBuilder,
+      category: 'SENTENCE BUILDER 🧩',
+      speakerName: 'Bouncy Bunny',
+      speakerAvatar: '🐰',
+      speakerRole: 'Story Explorer',
+      prompt: 'Tap words in order to form the polite playground question:',
+      options: ['play', 'can', 'with', 'I', 'please', 'you'],
+      correctSentenceWords: ['can', 'I', 'please', 'play', 'with', 'you'],
+      nativeExplanations: {
+        'Malayalam': 'ശരിയായ വാക്യം: "Can I please play with you?" (കൂട്ടുകാരോട് കളിയിൽ പങ്കുചേരാൻ ചോദിക്കുന്ന മാന്യമായ വാചകം) ⚽✨',
+        'Tamil': 'சரியான வாக்கியம்: "Can I please play with you?" ⚽✨',
+        'Hindi': 'सही वाक्य: "Can I please play with you?" ⚽✨',
+        'English': 'Natural playground invitation: "Can I please play with you?" is courteous, open, and friendly! ⚽✨',
+      },
+      contextHint: 'Question order: Can + I + please + play + with + you?',
+      funnyNote: 'Everyone says YES when you ask politely! 🐰⚽',
+    ),
+
+    // --- 22. SENTENCE BUILDER: READING BOOKS (Wise Owl) ---
+    ReelGameCard(
+      id: 'kid_sent_books_22',
+      gameType: ReelGameType.sentenceBuilder,
+      category: 'SENTENCE BUILDER 🧩',
+      speakerName: 'Oliver Owl',
+      speakerAvatar: '🦉',
+      speakerRole: 'Bedtime Guide',
+      prompt: 'Arrange words into a happy sentence about reading:',
+      options: ['English', 'read', 'to', 'love', 'I', 'books'],
+      correctSentenceWords: ['I', 'love', 'to', 'read', 'English', 'books'],
+      nativeExplanations: {
+        'Malayalam': 'ശരിയായ ക്രമം: "I love to read English books." (ഇംഗ്ലീഷ് പുസ്തകങ്ങൾ വായിക്കാൻ എനിക്കിഷ്ടമാണ്) 📚💖',
+        'Tamil': 'சரியான வரிசை: "I love to read English books." 📚💖',
+        'Hindi': 'सही क्रम: "I love to read English books." 📚💖',
+        'English': 'Fluent word order: Subject (I) + Verb (love to read) + Object (English books). 📚💖',
+      },
+      contextHint: 'Subject + love to + verb + object',
+      funnyNote: 'Books take you on magical flying carpet journeys! 📖✨',
+    ),
+
+    // --- 23. PHONICS: SILENT K IN KNIFE (Sparky Tiger) ---
+    ReelGameCard(
+      id: 'kid_phonics_silent_k_23',
+      gameType: ReelGameType.phonicsRiddle,
+      category: 'PHONICS SECRET 🤫',
+      speakerName: 'Sparky Tiger',
+      speakerAvatar: '🐯',
+      speakerRole: 'Phonics Buddy',
+      prompt: 'Which word has a SILENT letter that you do NOT say out loud?',
+      options: [
+        'KNIFE (Silent K) 🤫',
+        'TIGER 🐯',
+        'APPLE 🍎',
+        'BALL ⚽',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"KNIFE" എന്ന വാക്കിലെ ആദ്യത്തെ "K" ഉച്ചരിക്കില്ല (Silent K). "നൈഫ്" (/naɪf/) എന്നാണ് പറയേണ്ടത്! 🤫',
+        'Tamil': '"KNIFE" என்பதில் "K" அமைதியாக இருக்கும், உச்சரிக்கப்படாது! /naɪf/ 🤫',
+        'Hindi': '"KNIFE" में "K" साइलेंट होता है, इसे "नाइफ" बोलते हैं! 🤫',
+        'English': 'The letter "K" is completely silent in "knife", "knee", and "knot"! 🤫',
+      },
+      contextHint: 'Look for words starting with "Kn-"',
+      funnyNote: 'Silent letters are like ninjas hiding in the alphabet! 🥷✨',
+    ),
+
+    // --- 24. SENTENCE BUILDER: WATER REQUEST (Pandy Panda) ---
+    ReelGameCard(
+      id: 'kid_sent_water_24',
+      gameType: ReelGameType.sentenceBuilder,
+      category: 'SENTENCE BUILDER 🧩',
+      speakerName: 'Pandy Panda',
+      speakerAvatar: '🐼',
+      speakerRole: 'Manners Guide',
+      prompt: 'Tap words to ask for a glass of water politely:',
+      options: ['water', 'may', 'of', 'glass', 'I', 'a', 'have', 'please'],
+      correctSentenceWords: ['may', 'I', 'please', 'have', 'a', 'glass', 'of', 'water'],
+      nativeExplanations: {
+        'Malayalam': 'ശരിയായ വാക്യം: "May I please have a glass of water?" (മാന്യമായ ഇംഗ്ലീഷ് ശൈലി) 💧✨',
+        'Tamil': 'சரியான வாக்கியம்: "May I please have a glass of water?" 💧✨',
+        'Hindi': 'सही वाक्य: "May I please have a glass of water?" 💧✨',
+        'English': 'Polite dining request: "May I please have a glass of water?" is perfect etiquette! 💧✨',
+      },
+      contextHint: 'May + I + please + have + a glass of water',
+      funnyNote: 'Good manners refresh the heart! 💧🐼',
     ),
   ];
 }

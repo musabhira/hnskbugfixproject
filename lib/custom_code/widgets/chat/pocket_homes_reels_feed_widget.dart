@@ -275,6 +275,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       await _flutterTts.setVolume(1.0);
       _flutterTts.setStartHandler(() {
         if (mounted) setState(() => _isTtsSpeaking = true);
+        _pauseBgm();
       });
       _flutterTts.setCompletionHandler(() {
         if (mounted) {
@@ -282,6 +283,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             _isTtsSpeaking = false;
             _currentTtsCardId = null;
           });
+        }
+        if (!_isHomesAudioMuted && widget.isActive) {
+          _resumeBgm();
         }
       });
       _flutterTts.setCancelHandler(() {
@@ -291,6 +295,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             _currentTtsCardId = null;
           });
         }
+        if (!_isHomesAudioMuted && widget.isActive) {
+          _resumeBgm();
+        }
       });
       _flutterTts.setErrorHandler((_) {
         if (mounted) {
@@ -299,6 +306,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             _currentTtsCardId = null;
           });
         }
+        if (!_isHomesAudioMuted && widget.isActive) {
+          _resumeBgm();
+        }
       });
     } catch (_) {}
 
@@ -306,10 +316,16 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       _speechInitialized = await _speechToText.initialize(
         onError: (_) {
           if (mounted) setState(() => _isListening = false);
+          if (!_isHomesAudioMuted && widget.isActive) {
+            _resumeBgm();
+          }
         },
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
             if (mounted) setState(() => _isListening = false);
+            if (!_isHomesAudioMuted && widget.isActive) {
+              _resumeBgm();
+            }
           }
         },
       );
@@ -380,12 +396,27 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     PocketGameAudioService.instance.pause();
   }
 
+  void _resumeBgm() {
+    if (_isHomesAudioMuted || !widget.isActive) return;
+    if (PocketGameAudioService.instance.isPlayingNotifier.value) return;
+    if (PocketKidsService.isKidAccount) {
+      PocketGameAudioService.instance.playAmbientBgm();
+    } else if (_currentlyPlayingHouseId != null) {
+      PocketGameAudioService.instance.playHomeTheme(_currentlyPlayingHouseId!, forceUnmute: true);
+    } else {
+      PocketGameAudioService.instance.playAmbientBgm();
+    }
+  }
+
   void _toggleBgmMute() {
     HapticFeedback.lightImpact();
     setState(() {
       _isHomesAudioMuted = !_isHomesAudioMuted;
     });
     PocketGameAudioService.instance.setMuted(_isHomesAudioMuted, persist: false);
+    if (!_isHomesAudioMuted && widget.isActive) {
+      _resumeBgm();
+    }
   }
 
   @override
@@ -582,10 +613,18 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     // Ordered sequence: Unviewed first, Seen at the very bottom!
     final combinedNeighbors = [...distributedUnviewed, ...distributedSeen];
 
-    // 6. Interleave diverse multi-type learning games every 2 houses
-    final games = PocketReelsGameEngine.getNextGameBatch(
-      count: (combinedNeighbors.length / 2).ceil() + 4,
-    );
+    final bool isKid = PocketKidsService.isKidAccount;
+
+    // 6. Mode-tailored games batch:
+    // For kids: abundant conversational chat comeback games & animal buddy challenges!
+    // For adults: career interview prep, tricky grammar & fluency blitz!
+    final List<ReelGameCard> games = isKid
+        ? PocketReelsGameEngine.getKidsCommunicationGames(
+            count: combinedNeighbors.length + 8,
+          )
+        : PocketReelsGameEngine.getNextGameBatch(
+            count: (combinedNeighbors.length / 2).ceil() + 4,
+          );
 
     // Check if deep linking to a specific neighbor or game
     if (widget.initialNeighbor != null) {
@@ -828,10 +867,18 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
 
     // Fetch high-value learning content batches (anti-repetition prioritized)
-    final stories = PocketReelsContentEngine.getStories(count: 8);
-    final interviews = PocketReelsContentEngine.getInterviews(count: 8);
-    final speakChallenges = PocketReelsContentEngine.getSpeakChallenges(count: 8);
-    final vocabCards = PocketReelsContentEngine.getVocabCards(count: 8);
+    final List<ReelStoryCard> stories = isKid
+        ? PocketReelsContentEngine.getKidsStories(count: 6)
+        : PocketReelsContentEngine.getStories(count: 8);
+    final List<ReelInterviewCard> interviews = isKid
+        ? const [] // Strictly zero adult job interviews in kids mode
+        : PocketReelsContentEngine.getInterviews(count: 8);
+    final List<ReelSpeakChallengeCard> speakChallenges = isKid
+        ? PocketReelsContentEngine.getKidsSpeakChallenges(count: 8)
+        : PocketReelsContentEngine.getSpeakChallenges(count: 8);
+    final List<ReelVocabCard> vocabCards = isKid
+        ? PocketReelsContentEngine.getKidsVocabCards(count: 8)
+        : PocketReelsContentEngine.getVocabCards(count: 8);
 
     final List<ReelFeedItem> combinedFeed = [];
     int gameIdx = 0;
@@ -845,7 +892,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     if (widget.initialGameId != null) {
       final specificGame = games.firstWhere(
         (g) => g.id == widget.initialGameId,
-        orElse: () => games.isNotEmpty ? games.first : PocketReelsGameEngine.getNextGameBatch(count: 1).first,
+        orElse: () => games.isNotEmpty
+            ? games.first
+            : (isKid
+                ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1).first
+                : PocketReelsGameEngine.getNextGameBatch(count: 1).first),
       );
       combinedFeed.add(ReelFeedItem.game(specificGame));
     }
@@ -853,22 +904,43 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     for (int i = 0; i < combinedNeighbors.length; i++) {
       combinedFeed.add(ReelFeedItem.home(combinedNeighbors[i]));
 
-      // Diverse learning interleaving cycle: Game ➔ Story ➔ Interview ➔ Speak ➔ Vocab
-      final cycle = i % 5;
-      if (cycle == 0 && gameIdx < games.length) {
-        combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
-      } else if (cycle == 1 && storyIdx < stories.length) {
-        combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
-      } else if (cycle == 2 && interviewIdx < interviews.length) {
-        combinedFeed.add(ReelFeedItem.interview(interviews[interviewIdx++]));
-      } else if (cycle == 3 && speakIdx < speakChallenges.length) {
-        combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
-      } else if (cycle == 4 && vocabIdx < vocabCards.length) {
-        combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
-      }
+      if (isKid) {
+        // 🧸 KIDS COMMUNICATION-RICH STREAM:
+        // Always supply a fun Kids Communication / Chat Comeback game after each home!
+        if (gameIdx < games.length) {
+          combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
+        }
 
-      if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
-        combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+        // Interleave animal speak challenge, vocab card, or fable every 2-3 homes
+        if (i % 3 == 0 && speakIdx < speakChallenges.length) {
+          combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+        } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
+          combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+        } else if (i % 3 == 2 && storyIdx < stories.length) {
+          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
+        }
+
+        if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
+          combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+        }
+      } else {
+        // 🏰 ADULT LEARNING CYCLE: Game ➔ Story ➔ Interview ➔ Speak ➔ Vocab
+        final cycle = i % 5;
+        if (cycle == 0 && gameIdx < games.length) {
+          combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
+        } else if (cycle == 1 && storyIdx < stories.length) {
+          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
+        } else if (cycle == 2 && interviewIdx < interviews.length) {
+          combinedFeed.add(ReelFeedItem.interview(interviews[interviewIdx++]));
+        } else if (cycle == 3 && speakIdx < speakChallenges.length) {
+          combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
+        } else if (cycle == 4 && vocabIdx < vocabCards.length) {
+          combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+        }
+
+        if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
+          combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
+        }
       }
     }
 
@@ -882,11 +954,13 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         _recordItemViewed(combinedFeed.first);
       }
 
-      // Play music for the first slide if it is a home and widget is active
-      if (widget.isActive && combinedFeed.isNotEmpty) {
+      // Play music for the first slide if widget is active
+      if (widget.isActive && combinedFeed.isNotEmpty && !_isHomesAudioMuted) {
         final firstItem = combinedFeed.first;
         if (firstItem.type == ReelItemType.home && firstItem.neighbor != null) {
           _playHomeMusic(firstItem.neighbor!.id);
+        } else {
+          _resumeBgm();
         }
       }
     }
@@ -898,39 +972,81 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     _isLoadingMore = true;
 
     try {
-      _dynamicHomeBatchSeed += 30;
-      final newRobots = _generateFullSpectrumHomes(count: 18, seedOffset: _dynamicHomeBatchSeed);
-      final unseenNewRobots = _distributeWithLevelGap(
-        newRobots.where((r) => !_viewedHomeIds.contains(r.id)).toList(),
-        minGap: 6,
-      );
-
-      final newGames = PocketReelsGameEngine.getNextGameBatch(count: 4);
-      final newStories = PocketReelsContentEngine.getStories(count: 3);
-      final newInterviews = PocketReelsContentEngine.getInterviews(count: 3);
-      final newSpeak = PocketReelsContentEngine.getSpeakChallenges(count: 3);
-      final newVocab = PocketReelsContentEngine.getVocabCards(count: 3);
-
+      final bool isKid = PocketKidsService.isKidAccount;
       final List<ReelFeedItem> newBatch = [];
-      int gIdx = 0;
-      int sIdx = 0;
-      int iIdx = 0;
-      int spIdx = 0;
-      int vIdx = 0;
 
-      for (int i = 0; i < unseenNewRobots.length; i++) {
-        newBatch.add(ReelFeedItem.home(unseenNewRobots[i]));
-        final c = i % 5;
-        if (c == 0 && gIdx < newGames.length) {
-          newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
-        } else if (c == 1 && sIdx < newStories.length) {
-          newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
-        } else if (c == 2 && iIdx < newInterviews.length) {
-          newBatch.add(ReelFeedItem.interview(newInterviews[iIdx++]));
-        } else if (c == 3 && spIdx < newSpeak.length) {
-          newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
-        } else if (c == 4 && vIdx < newVocab.length) {
-          newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
+      if (isKid) {
+        // Kids mode lazy loading: animal companion homes & rich kids communication challenges
+        final kidRobots = PocketKidsRobotsData.robotsAndHomies;
+        final newHomes = List<KidMate>.from(kidRobots)..shuffle(math.Random());
+        final newGames = PocketReelsGameEngine.getKidsCommunicationGames(count: 6);
+        final newSpeak = PocketReelsContentEngine.getKidsSpeakChallenges(count: 3);
+        final newVocab = PocketReelsContentEngine.getKidsVocabCards(count: 3);
+
+        int gIdx = 0;
+        int spIdx = 0;
+        int vIdx = 0;
+
+        for (int i = 0; i < math.min(newHomes.length, 6); i++) {
+          final mate = newHomes[i];
+          final n = PocketNeighbor(
+            id: '${mate.id}_extra_${DateTime.now().millisecondsSinceEpoch}_$i',
+            name: mate.name,
+            day: mate.dayLevel,
+            streak: mate.dayLevel,
+            rank: mate.ageGroup == '4-6' ? 'Junior Cub' : 'Star Explorer',
+            paletteId: _randomPalette(mate.dayLevel),
+            statusMessage: mate.bio,
+            hasActiveShield: true,
+            isPocketRobo: true,
+            hp: 100,
+            maxHp: 100,
+          );
+          newBatch.add(ReelFeedItem.home(n));
+
+          if (gIdx < newGames.length) {
+            newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
+          }
+          if (i % 2 == 0 && spIdx < newSpeak.length) {
+            newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
+          } else if (i % 2 == 1 && vIdx < newVocab.length) {
+            newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
+          }
+        }
+      } else {
+        _dynamicHomeBatchSeed += 30;
+        final newRobots = _generateFullSpectrumHomes(count: 18, seedOffset: _dynamicHomeBatchSeed);
+        final unseenNewRobots = _distributeWithLevelGap(
+          newRobots.where((r) => !_viewedHomeIds.contains(r.id)).toList(),
+          minGap: 6,
+        );
+
+        final newGames = PocketReelsGameEngine.getNextGameBatch(count: 4);
+        final newStories = PocketReelsContentEngine.getStories(count: 3);
+        final newInterviews = PocketReelsContentEngine.getInterviews(count: 3);
+        final newSpeak = PocketReelsContentEngine.getSpeakChallenges(count: 3);
+        final newVocab = PocketReelsContentEngine.getVocabCards(count: 3);
+
+        int gIdx = 0;
+        int sIdx = 0;
+        int iIdx = 0;
+        int spIdx = 0;
+        int vIdx = 0;
+
+        for (int i = 0; i < unseenNewRobots.length; i++) {
+          newBatch.add(ReelFeedItem.home(unseenNewRobots[i]));
+          final c = i % 5;
+          if (c == 0 && gIdx < newGames.length) {
+            newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
+          } else if (c == 1 && sIdx < newStories.length) {
+            newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
+          } else if (c == 2 && iIdx < newInterviews.length) {
+            newBatch.add(ReelFeedItem.interview(newInterviews[iIdx++]));
+          } else if (c == 3 && spIdx < newSpeak.length) {
+            newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
+          } else if (c == 4 && vIdx < newVocab.length) {
+            newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
+          }
         }
       }
 
@@ -1380,8 +1496,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               if (item.type == ReelItemType.home && item.neighbor != null) {
                 _playHomeMusic(item.neighbor!.id);
               } else {
-                // Pause background music during games, stories, interviews, speaking, or vibes for crystal clear audio
-                _pauseBgm();
+                // Keep background music running smoothly across games, challenges & vibes!
+                if (!_isHomesAudioMuted && !PocketGameAudioService.instance.isPlayingNotifier.value) {
+                  _resumeBgm();
+                }
               }
 
               // Infinite lazy loading when near the end
@@ -2416,7 +2534,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ElevatedButton(
                 onPressed: currentOrder.length != targetWords.length
                     ? null
-                    : () {
+                    : () async {
                         HapticFeedback.heavyImpact();
                         bool correct = true;
                         for (int i = 0; i < targetWords.length; i++) {
@@ -2425,10 +2543,23 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                             break;
                           }
                         }
+                        final wasUnanswered = _sentenceBuilderResults[card.id] == null;
                         setState(() {
                           _sentenceBuilderResults[card.id] = correct;
                         });
                         PocketReelsGameEngine.markGameViewed(card.id);
+
+                        if (wasUnanswered) {
+                          if (correct) {
+                            PocketGameAudioService.instance.playCorrectSound();
+                            await _awardPocketScore(25);
+                            if (PocketKidsService.isKidAccount) {
+                              await PocketKidsService.addStars(5);
+                            }
+                          } else {
+                            PocketGameAudioService.instance.playIncorrectSound();
+                          }
+                        }
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFFC00),
@@ -2455,6 +2586,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final selectedIdx = _selectedAnswers[card.id];
     final hasAnswered = selectedIdx != null;
     final isCorrect = hasAnswered && selectedIdx == card.correctOptionIndex;
+    final bool isKid = PocketKidsService.isKidAccount;
+    final isTtsThis = _isTtsSpeaking && _currentTtsCardId == card.id;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -2479,41 +2612,160 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ),
           ),
 
-        // Conversation Prompt Bubble
+        // 💬 Chat Bubble Card with Character Avatar & Speech Bubble (Malayalam Voice Instruction)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: const Color(0xFF1E293B).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1.5),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('🗣️', style: TextStyle(fontSize: 28)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  card.prompt,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              // Character Header Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(18),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.6), width: 1.5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          card.speakerAvatar ?? '💬',
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            card.speakerName ?? 'Friend',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            card.speakerRole ?? 'Incoming Message',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 🔊 TTS Listen Button
+                    GestureDetector(
+                      onTap: () => _playTtsForCard(card.id, card.prompt),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isTtsThis
+                              ? const Color(0xFFFFFC00)
+                              : Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isTtsThis
+                                ? const Color(0xFFFFFC00)
+                                : Colors.white24,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isTtsThis ? Icons.volume_up_rounded : Icons.volume_up_outlined,
+                              color: isTtsThis ? Colors.black : const Color(0xFFFFFC00),
+                              size: 15,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isTtsThis ? 'Listening' : 'Listen',
+                              style: GoogleFonts.outfit(
+                                color: isTtsThis ? Colors.black : Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Speech Bubble Content
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(14),
+                      bottomLeft: Radius.circular(14),
+                      bottomRight: Radius.circular(14),
+                    ),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Text(
+                    '"${card.prompt}"',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
         Text(
-          'Choose the best witty / natural English reply:',
-          style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5),
+          isKid
+              ? '⭐ What should you say back? Pick the best reply:'
+              : 'Choose the best witty / natural English reply:',
+          style: GoogleFonts.outfit(
+            color: isKid ? const Color(0xFFFFFC00) : Colors.white70,
+            fontSize: 12,
+            fontWeight: isKid ? FontWeight.w600 : FontWeight.normal,
+          ),
         ),
         const SizedBox(height: 10),
 
@@ -2641,12 +2893,26 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
-        onTap: () {
+        onTap: () async {
+          if (hasAnswered) return;
           HapticFeedback.mediumImpact();
+          final wasUnanswered = _selectedAnswers[card.id] == null;
           setState(() {
             _selectedAnswers[card.id] = optIdx;
           });
           PocketReelsGameEngine.markGameViewed(card.id);
+
+          if (wasUnanswered) {
+            if (optIdx == card.correctOptionIndex) {
+              PocketGameAudioService.instance.playCorrectSound();
+              await _awardPocketScore(25);
+              if (PocketKidsService.isKidAccount) {
+                await PocketKidsService.addStars(5);
+              }
+            } else {
+              PocketGameAudioService.instance.playIncorrectSound();
+            }
+          }
         },
         child: Container(
           width: double.infinity,
@@ -2721,6 +2987,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   Widget _buildExplanationBox(ReelGameCard card, bool isCorrect) {
+    final bool isKid = PocketKidsService.isKidAccount;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -2748,6 +3016,29 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   fontSize: 12,
                 ),
               ),
+              if (isCorrect && isKid) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '⭐ +5 Stars Earned!',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               Text(
                 '($_userNativeLanguage)',
@@ -2809,7 +3100,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'CONTINUE TO NEXT HOME',
+                    isKid ? 'CONTINUE TO NEXT REEL' : 'CONTINUE TO NEXT HOME',
                     style: GoogleFonts.outfit(
                       color: Colors.black,
                       fontWeight: FontWeight.w900,

@@ -196,6 +196,39 @@ class PocketReelsContentEngine {
     return [...unseen, ...seen].take(count).toList();
   }
 
+  /// 🗣️ Get Spoken English Animal Buddy Challenges for Kids
+  static List<ReelSpeakChallengeCard> getKidsSpeakChallenges({int count = 4}) {
+    final unseen = _curatedKidsSpeakChallenges.where((s) => !_viewedItemIds.contains(s.id)).toList();
+    unseen.shuffle(_random);
+    if (unseen.length >= count) return unseen.take(count).toList();
+
+    final seen = _curatedKidsSpeakChallenges.where((s) => _viewedItemIds.contains(s.id)).toList();
+    seen.shuffle(_random);
+    return [...unseen, ...seen].take(count).toList();
+  }
+
+  /// ⚡ Get Kids Fun Vocabulary Batch
+  static List<ReelVocabCard> getKidsVocabCards({int count = 4}) {
+    final unseen = _curatedKidsVocabCards.where((v) => !_viewedItemIds.contains(v.id)).toList();
+    unseen.shuffle(_random);
+    if (unseen.length >= count) return unseen.take(count).toList();
+
+    final seen = _curatedKidsVocabCards.where((v) => _viewedItemIds.contains(v.id)).toList();
+    seen.shuffle(_random);
+    return [...unseen, ...seen].take(count).toList();
+  }
+
+  /// 📖 Get Kids Mini Stories Batch
+  static List<ReelStoryCard> getKidsStories({int count = 4}) {
+    final unseen = _curatedKidsStories.where((s) => !_viewedItemIds.contains(s.id)).toList();
+    unseen.shuffle(_random);
+    if (unseen.length >= count) return unseen.take(count).toList();
+
+    final seen = _curatedKidsStories.where((s) => _viewedItemIds.contains(s.id)).toList();
+    seen.shuffle(_random);
+    return [...unseen, ...seen].take(count).toList();
+  }
+
   // =========================================================================
   // 📚 CURATED HIGH-YIELD CONTENT DATASETS
   // =========================================================================
@@ -430,6 +463,239 @@ class PocketReelsContentEngine {
         'Hindi': 'हर छोटी बात पर बारीकी से ध्यान देने वाला; अति सावधान.',
       },
       proTip: 'A top power word to include in your resume to highlight your work quality.',
+    ),
+  ];
+
+  // =========================================================================
+  // 🧸 CURATED KIDS CONTENT DATASETS
+  // =========================================================================
+
+  static final List<ReelStoryCard> _curatedKidsStories = [
+    const ReelStoryCard(
+      id: 'kid_story_turtle',
+      title: 'The Little Turtle Who Kept Walking 🐢',
+      category: 'PATIENCE & PERSEVERANCE 🐢',
+      paragraphs: [
+        'A little green turtle wanted to see the golden summit castle high on the mountain.',
+        'The fast rabbits chuckled and said: "You have tiny legs, you will never make it to the top!"',
+        'The little turtle did not feel sad. Step by step, slow and steady, he kept walking forward.',
+        'By evening, the turtle reached the mountain castle and watched the most glorious rainbow in the sky!',
+      ],
+      moralEn: 'Slow and steady progress always wins. Never give up on your dreams!',
+      nativeMorals: {
+        'Malayalam': 'പതുക്കെയാണെങ്കിലും ലക്ഷ്യബോധത്തോടെ മുന്നോട്ട് പോയാൽ വിജയം സുനിശ്ചിതമാണ്! 🐢🌈',
+        'Tamil': 'விடாமுயற்சியுடன் தொடர்ந்து சென்றால் நிச்சயம் வெற்றி பெறலாம்! 🐢🌈',
+        'Hindi': 'धैर्य और निरंतर प्रयास से कठिन से कठिन लक्ष्य भी हासिल हो जाता है! 🐢🌈',
+      },
+      keyVocab: [
+        {'word': 'Steady', 'phonetic': '/ˈstɛd.i/', 'meaningEn': 'Moving at a constant and reliable speed'},
+        {'word': 'Summit', 'phonetic': '/ˈsʌm.ɪt/', 'meaningEn': 'The highest point of a hill or mountain'},
+      ],
+      fullReadText:
+          'A little green turtle wanted to see the summit castle. The fast rabbits said he could not do it. But the turtle walked step by step without stopping. By evening, he reached the golden summit castle and saw a glorious rainbow! Slow and steady wins the race!',
+    ),
+    const ReelStoryCard(
+      id: 'kid_story_sharing_squirrel',
+      title: 'Sammy Squirrel\'s Sweet Acorn 🐿️',
+      category: 'SHARING & FRIENDSHIP 🌰',
+      paragraphs: [
+        'Sammy Squirrel found a giant golden acorn under the old oak tree.',
+        'His tummy was hungry, but he saw his little friend Pip shivering in the cold breeze without food.',
+        'Sammy smiled, split the big acorn in half, and handed the bigger piece to Pip.',
+        'Pip smiled happily, and together they enjoyed the most delicious meal ever. Kindness makes everything sweeter!',
+      ],
+      moralEn: 'Sharing your blessings with friends brings twice as much joy to your own heart.',
+      nativeMorals: {
+        'Malayalam': 'നമ്മുടെ പക്കലുള്ളത് കൂട്ടുകാരുമായി പങ്കുവെക്കുമ്പോൾ ഇരട്ടി സന്തോഷം ലഭിക്കും! 🐿️💖',
+        'Tamil': 'நண்பர்களுடன் பகிர்ந்து உண்ணும்போது மகிழ்ச்சி இரட்டிப்பாகும்! 🐿️💖',
+        'Hindi': 'दूसरों के साथ बांटने से खुशियां दोगुनी हो जाती हैं! 🐿️💖',
+      },
+      keyVocab: [
+        {'word': 'Shivering', 'phonetic': '/ˈʃɪv.ər.ɪŋ/', 'meaningEn': 'Shaking slightly because of cold or fear'},
+        {'word': 'Delicious', 'phonetic': '/dɪˈlɪʃ.əs/', 'meaningEn': 'Highly pleasant to the taste'},
+      ],
+      fullReadText:
+          'Sammy Squirrel found a big golden acorn. He saw his friend Pip cold and hungry. Sammy shared the acorn with Pip. Sharing food and friendship brings double happiness to everyone!',
+    ),
+  ];
+
+  static final List<ReelSpeakChallengeCard> _curatedKidsSpeakChallenges = [
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_tiger',
+      coachName: 'Sparky Tiger 🐯',
+      coachAvatar: '🐯',
+      situation: 'Meeting your tiger buddy in the flower meadow',
+      coachPrompt: 'Sparky smiles and waves his paw! Say this friendly greeting into your mic:',
+      targetSpeech: 'Hello Sparky, let us play together!',
+      phoneticGuide: 'həˈləʊ ˈspɑːki lɛt ʌs pleɪ təˈɡɛðə',
+      nativeGuidance: {
+        'Malayalam': 'മൈക്കിലേക്ക് വ്യക്തമായി "Hello Sparky, let us play together!" എന്ന് പറയൂ!',
+        'Tamil': 'தெளிவாக "Hello Sparky, let us play together!" என்று பேசுங்கள்!',
+        'Hindi': 'माइक में स्पष्ट रूप से बोलें: "Hello Sparky, let us play together!"',
+      },
+      pointsReward: 25,
+    ),
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_king',
+      coachName: 'King Lion 🦁',
+      coachAvatar: '🦁',
+      situation: 'Climbing the Golden Mountain Summit',
+      coachPrompt: 'King Lion roars proudly from the summit! Say this brave sentence aloud:',
+      targetSpeech: 'I am ready to climb the golden mountain!',
+      phoneticGuide: 'aɪ æm ˈrɛdi tuː klaɪm ðə ˈɡəʊldən ˈmaʊntɪn',
+      nativeGuidance: {
+        'Malayalam': 'ആത്മവിശ്വാസത്തോടെ ഉച്ചത്തിൽ പറയൂ: "I am ready to climb the golden mountain!"',
+        'Tamil': 'தைரியமாக "I am ready to climb the golden mountain!" என்று கூறுங்கள்!',
+        'Hindi': 'पूरे आत्मविश्वास से बोलें: "I am ready to climb the golden mountain!"',
+      },
+      pointsReward: 25,
+    ),
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_panda',
+      coachName: 'Pandy Panda 🐼',
+      coachAvatar: '🐼',
+      situation: 'Sharing snacks at the picnic table',
+      coachPrompt: 'Pandy offers you a sweet bamboo cookie. Say thank you politely into the mic:',
+      targetSpeech: 'Thank you for sharing with me!',
+      phoneticGuide: 'θæŋk juː fɔː ˈʃeərɪŋ wɪð miː',
+      nativeGuidance: {
+        'Malayalam': 'മാന്യമായി നന്ദി പറയൂ: "Thank you for sharing with me!"',
+        'Tamil': 'அன்புடன் நன்றி சொல்லுங்கள்: "Thank you for sharing with me!"',
+        'Hindi': 'शालीनता से धन्यवाद कहें: "Thank you for sharing with me!"',
+      },
+      pointsReward: 25,
+    ),
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_bunny',
+      coachName: 'Bouncy Bunny 🐰',
+      coachAvatar: '🐰',
+      situation: 'Hopping high in the meadow',
+      coachPrompt: 'Bouncy hops over a little stream! Say this energetic sentence:',
+      targetSpeech: 'Look at me hop, I can jump so high!',
+      phoneticGuide: 'lʊk æt miː hɒp aɪ kæn dʒʌmp səʊ haɪ',
+      nativeGuidance: {
+        'Malayalam': 'സന്തോഷത്തോടെ മൈക്കിലേക്ക് പറയൂ: "Look at me hop, I can jump so high!"',
+        'Tamil': 'மகிழ்ச்சியாக "Look at me hop, I can jump so high!" என்று பேசுங்கள்!',
+        'Hindi': 'उत्साह से बोलें: "Look at me hop, I can jump so high!"',
+      },
+      pointsReward: 25,
+    ),
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_puppy',
+      coachName: 'Puppy Max 🐶',
+      coachAvatar: '🐶',
+      situation: 'Playing fetch on the grass',
+      coachPrompt: 'Max wags his tail eagerly holding his ball! Shout playfully:',
+      targetSpeech: 'Fetch the red ball, good puppy!',
+      phoneticGuide: 'fɛtʃ ðə rɛd bɔːl ɡʊd ˈpʌpi',
+      nativeGuidance: {
+        'Malayalam': 'നായക്കുട്ടിയോട് സ്നേഹത്തോടെ പറയൂ: "Fetch the red ball, good puppy!"',
+        'Tamil': 'நட்போடு "Fetch the red ball, good puppy!" என்று கூறுங்கள்!',
+        'Hindi': 'प्यार से बोलें: "Fetch the red ball, good puppy!"',
+      },
+      pointsReward: 25,
+    ),
+    const ReelSpeakChallengeCard(
+      id: 'kid_speak_owl',
+      coachName: 'Oliver Owl 🦉',
+      coachAvatar: '🦉',
+      situation: 'Saying good night under the stars',
+      coachPrompt: 'Oliver watches over the kingdom! Whisper this gentle night greeting:',
+      targetSpeech: 'Good night sweet stars, see you tomorrow!',
+      phoneticGuide: 'ɡʊd naɪt swiːt stɑːz siː juː təˈmɒrəʊ',
+      nativeGuidance: {
+        'Malayalam': 'ഉറങ്ങാൻ പോകുമ്പോൾ പറയൂ: "Good night sweet stars, see you tomorrow!"',
+        'Tamil': 'அமைதியாக "Good night sweet stars, see you tomorrow!" என்று சொல்லுங்கள்!',
+        'Hindi': 'सोने से पहले बोलें: "Good night sweet stars, see you tomorrow!"',
+      },
+      pointsReward: 25,
+    ),
+  ];
+
+  static final List<ReelVocabCard> _curatedKidsVocabCards = [
+    const ReelVocabCard(
+      id: 'kid_vocab_brave',
+      word: 'Brave',
+      partOfSpeech: 'Adjective 🦁',
+      phonetic: '/breɪv/',
+      definitionEn: 'Ready to face danger or pain with courage; not afraid.',
+      contextSentence: 'The little lion was brave and stepped forward to speak English.',
+      nativeMeanings: {
+        'Malayalam': 'ധൈര്യശാലിയായ; ഒന്നിനെയും ഭയപ്പെടാത്ത.',
+        'Tamil': 'துணிச்சலான; எதற்கும் அஞ்சாத.',
+        'Hindi': 'बहादुर; साहसी.',
+      },
+      proTip: 'A superpower word for all our adventure explorers! 🦁✨',
+    ),
+    const ReelVocabCard(
+      id: 'kid_vocab_kind',
+      word: 'Kind',
+      partOfSpeech: 'Adjective 💖',
+      phonetic: '/kaɪnd/',
+      definitionEn: 'Having or showing a friendly, generous, and considerate nature.',
+      contextSentence: 'Pandy Panda is very kind and always shares his snacks with friends.',
+      nativeMeanings: {
+        'Malayalam': 'ദയയുള്ള; സ്നേഹവും കരുണയും കാണിക്കുന്ന.',
+        'Tamil': 'அன்பான; கருணை உள்ளம் கொண்ட.',
+        'Hindi': 'दयालु; परोपकारी स्वभाव वाला.',
+      },
+      proTip: 'Kindness is a language that everyone can understand! 💖🎋',
+    ),
+    const ReelVocabCard(
+      id: 'kid_vocab_curious',
+      word: 'Curious',
+      partOfSpeech: 'Adjective 🧐',
+      phonetic: '/ˈkjʊə.ri.əs/',
+      definitionEn: 'Eager to know or learn something new and exciting.',
+      contextSentence: 'The curious kitten explored every corner of the enchanted castle.',
+      nativeMeanings: {
+        'Malayalam': 'പുതിയ കാര്യങ്ങൾ അറിയാൻ അതീവ കൗതുകമുള്ള.',
+        'Tamil': 'புதியவற்றை அறிந்துகொள்ள ஆர்வம் கொண்ட.',
+        'Hindi': 'जिज्ञासु; नई चीजें सीखने को उत्सुक.',
+      },
+      proTip: 'Great learners are always curious and ask good questions! 🧐✨',
+    ),
+    const ReelVocabCard(
+      id: 'kid_vocab_cheerful',
+      word: 'Cheerful',
+      partOfSpeech: 'Adjective ☀️',
+      phonetic: '/ˈtʃɪə.fəl/',
+      definitionEn: 'Noticeably happy, smiling, and optimistic.',
+      contextSentence: 'Sparky Tiger woke up with a cheerful smile on his face.',
+      nativeMeanings: {
+        'Malayalam': 'സന്തോഷവും ഉന്മേഷവുമുള്ള; പ്രസന്നവദനനായ.',
+        'Tamil': 'மகிழ்ச்சியான மற்றும் உற்சாகமான.',
+        'Hindi': 'हंसमुख; प्रसन्नचित्त.',
+      },
+      proTip: 'A cheerful attitude makes learning English a breeze! ☀️🐯',
+    ),
+    const ReelVocabCard(
+      id: 'kid_vocab_generous',
+      word: 'Generous',
+      partOfSpeech: 'Adjective 🎁',
+      phonetic: '/ˈdʒɛn.ər.əs/',
+      definitionEn: 'Showing a readiness to give more of something than is strictly necessary.',
+      contextSentence: 'The generous squirrel gave two large acorns to his buddy.',
+      nativeMeanings: {
+        'Malayalam': 'ഉദാരമനസ്സുള്ള; മറ്റുള്ളവർക്ക് സന്തോഷത്തോടെ നൽകുന്ന.',
+        'Tamil': 'தாராள மனப்பான்மை கொண்ட.',
+        'Hindi': 'उदार; खुले दिल वाला.',
+      },
+      proTip: 'Being generous with words and smiles wins every heart! 🎁🐿️',
+    ),
+    const ReelVocabCard(
+      id: 'kid_vocab_marvelous',
+      word: 'Marvelous',
+      partOfSpeech: 'Adjective ✨',
+      phonetic: '/ˈmɑː.vəl.əs/',
+      definitionEn: 'Causing great wonder; extraordinary and extremely good.',
+      contextSentence: 'You did a marvelous job speaking English today!',
+      nativeMeanings: {
+        'Malayalam': 'അത്ഭുതകരമായ; അതിവിശിഷ്ടമായ.',
+        'Tamil': 'அற்புதமான; பிரமிக்கத்தக்க.',
+        'Hindi': 'अद्भुत; शानदार.',
+      },
+      proTip: 'Use "marvelous" instead of just "good" when praising your friends! ✨🌟',
     ),
   ];
 }
