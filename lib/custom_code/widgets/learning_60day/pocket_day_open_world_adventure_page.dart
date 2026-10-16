@@ -20,6 +20,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_alphabet_phonics_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_day_arcade_game_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_20days_40games_spec.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_practice_speaking_card.dart';
@@ -2367,7 +2368,24 @@ class _PocketDayOpenWorldAdventurePageState
       case 2:
         return const _StepInfo('10 Core Words', '📚', Color(0xFFFF8906));
       case 3:
-        return const _StepInfo('Phonics Drills', '🔤', Color(0xFF38BDF8));
+        if (widget.day == 1) {
+          return const _StepInfo('Phonics Drills', '🔤', Color(0xFF38BDF8));
+        }
+        final g = Pocket20Days40GamesRegistry.allGames.firstWhere(
+          (item) => item.day == widget.day && item.gameIndex == 1,
+          orElse: () => DayGameSpec(
+            day: widget.day,
+            gameIndex: 1,
+            title: 'Action Game',
+            emoji: '🎮',
+            genre: GameGenre.runner,
+            englishTarget: 'Practice',
+            descriptionEn: '',
+            descriptionMl: '',
+            controlMechanism: '',
+          ),
+        );
+        return _StepInfo(g.title, g.emoji, const Color(0xFF38BDF8));
       case 4:
         return const _StepInfo('Fluency Gym', '🗣️', Color(0xFF10B981));
       case 5:

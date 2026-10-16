@@ -10,6 +10,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'games/meadow_runner_game_page.dart';
+import 'games/pocket_20days_40games_spec.dart';
+import 'games/pocket_universal_arcade_engine_page.dart';
+import 'games/english_realm/english_realm_manifest.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 
 /// 💬 Chat message model for Step 3 Word & Letter Hunt
@@ -177,90 +180,49 @@ class _PocketDay1Step3AvatarChatPageState
       ];
     }
 
-    if (day == 2) {
-      return const [
-        {
-          'target': 'K',
-          'emoji': '🌴',
-          'promptEn': 'Find Letter K! 🌴',
-          'promptMl': 'അക്ഷരം K കണ്ടെത്തുക!',
-          'options': ['L 🌿', 'K 🌴', 'M 🎵', 'H 🏡'],
-          'correct': 'K',
-          'clue': 'Letter K for Kerala',
-        },
-        {
-          'target': 'City',
-          'emoji': '🏙️',
-          'promptEn': 'Find the word: City 🏙️',
-          'promptMl': 'City (നഗരം) കണ്ടെത്തുക!',
-          'options': ['Tree 🌳', 'City 🏙️', 'Road 🛣️', 'Sky ☁️'],
-          'correct': 'City',
-          'clue': 'A large town with tall buildings',
-        },
-        {
-          'target': 'Family',
-          'emoji': '👨‍👩‍👦',
-          'promptEn': 'Find the word: Family 👨‍👩‍👦',
-          'promptMl': 'Family (കുടുംബം) കണ്ടെത്തുക!',
-          'options': ['Friend 🤝', 'Family 👨‍👩‍👦', 'Neighbor 🏡', 'Teacher 📚'],
-          'correct': 'Family',
-          'clue': 'Parents and children living together with love',
-        },
-        {
-          'target': 'Home',
-          'emoji': '🏡',
-          'promptEn': 'Find the word: Home 🏡',
-          'promptMl': 'Home (വീട്) കണ്ടെത്തുക!',
-          'options': ['Shop 🏬', 'Home 🏡', 'Park 🏞️', 'School 🏫'],
-          'correct': 'Home',
-          'clue': 'The place where you live peacefully',
-        },
-        {
-          'target': 'River',
-          'emoji': '🌊',
-          'promptEn': 'Find the word: River 🌊',
-          'promptMl': 'River (നദി) കണ്ടെത്തുക!',
-          'options': ['Hill ⛰️', 'River 🌊', 'Road 🛣️', 'Field 🌾'],
-          'correct': 'River',
-          'clue': 'Flowing stream of fresh water',
-        },
-        {
-          'target': 'Tree',
-          'emoji': '🌳',
-          'promptEn': 'Find the word: Tree 🌳',
-          'promptMl': 'Tree (മരം) കണ്ടെത്തുക!',
-          'options': ['Flower 🌸', 'Tree 🌳', 'Grass 🌿', 'Fruit 🍎'],
-          'correct': 'Tree',
-          'clue': 'Tall plant with a trunk and green leaves',
-        },
-      ];
+    // 🌟 Days 2 to 90: Dedicated unique sentence & grammar challenges from EnglishRealmManifest (Zero duplicates!)
+    if (day > 1) {
+      try {
+        final realmGames = EnglishRealmManifest.getGamesForDay(day);
+        if (realmGames.isNotEmpty && realmGames.first.rounds.isNotEmpty) {
+          final realmRounds = realmGames.first.rounds;
+          final List<Map<String, dynamic>> list = [];
+          final emojis = ['🎯', '✨', '🔥', '🌟', '💎', '🚀', '⚡', '🏆', '🧩', '🌲', '🚂', '🚗'];
+          for (int i = 0; i < realmRounds.length && i < 6; i++) {
+            final r = realmRounds[i];
+            String correct = '';
+            if (r.solution is int &&
+                (r.solution as int) >= 0 &&
+                (r.solution as int) < r.options.length) {
+              correct = r.options[r.solution as int];
+            } else if (r.solution is String) {
+              correct = r.solution as String;
+            } else if (r.options.isNotEmpty) {
+              correct = r.options.first;
+            }
+
+            final e = emojis[(i + day) % emojis.length];
+            list.add({
+              'target': correct,
+              'emoji': e,
+              'promptEn': r.promptEn,
+              'promptMl': r.promptMl,
+              'options': List<String>.from(r.options),
+              'correct': correct,
+              'clue': r.explanationEn,
+            });
+          }
+          if (list.isNotEmpty) return list;
+        }
+      } catch (_) {}
     }
 
-    // Days 3 to 90: Dynamic tailored hunt rounds synthesized from Pocket90DayVocabCurriculum
+    // Days 2 to 90 Fallback: Synthesized curriculum rounds
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final emojis = ['⭐', '💎', '🚀', '🌟', '🏆', '🎯', '⚡', '🔥', '📚', '✨', '🌈', '💡', '🛡️', '🔑'];
     final rounds = <Map<String, dynamic>>[];
 
-    // Round 1: Letter Hunt for first word's starting letter
-    final firstWord = vocab.isNotEmpty ? vocab.first.word : 'Action';
-    final targetLetter = firstWord.isNotEmpty ? firstWord[0].toUpperCase() : 'A';
-    rounds.add({
-      'target': targetLetter,
-      'emoji': emojis[(day * 3) % emojis.length],
-      'promptEn': 'Find Letter $targetLetter! 🔍',
-      'promptMl': 'അക്ഷരം $targetLetter കണ്ടെത്തുക!',
-      'options': [
-        '$targetLetter ${emojis[(day) % emojis.length]}',
-        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 3) % 26))} ${emojis[(day + 1) % emojis.length]}',
-        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 7) % 26))} ${emojis[(day + 2) % emojis.length]}',
-        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 11) % 26))} ${emojis[(day + 3) % emojis.length]}',
-      ]..shuffle(),
-      'correct': targetLetter,
-      'clue': 'Letter $targetLetter in "$firstWord"',
-    });
-
-    // Rounds 2 to 6: 5 Vocabulary Word Hunts from day's curriculum
-    for (int i = 0; i < 5 && i < vocab.length; i++) {
+    for (int i = 0; i < 6 && i < vocab.length; i++) {
       final item = vocab[i];
       final e = emojis[(i + day) % emojis.length];
       final distractor1 = vocab[(i + 2) % vocab.length].word;
@@ -270,7 +232,7 @@ class _PocketDay1Step3AvatarChatPageState
       rounds.add({
         'target': item.word,
         'emoji': e,
-        'promptEn': 'Find the word: ${item.word} $e',
+        'promptEn': 'Find the phrase for: ${item.word} $e',
         'promptMl': '${item.word} (${item.malayalamMeaning}) കണ്ടെത്തുക!',
         'options': [
           '${item.word} $e',
@@ -279,7 +241,7 @@ class _PocketDay1Step3AvatarChatPageState
           '$distractor3 ${emojis[(i + 3) % emojis.length]}',
         ]..shuffle(),
         'correct': item.word,
-        'clue': item.definition.isNotEmpty ? item.definition : 'Practice word: ${item.word}',
+        'clue': item.exampleSentence.isNotEmpty ? item.exampleSentence : item.definition,
       });
     }
 
@@ -407,14 +369,41 @@ class _PocketDay1Step3AvatarChatPageState
   // =========================================================================
 
   void _startWelcomeHuntFlow() {
-    final promptEn =
-        'Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter & Word Hunt! 🔍\n\n'
-        'Would you like to hunt words in this chat or explore the open 2D Meadow Runner game? 🌳';
-    final promptMl =
-        'ഹായ് $_userName! ഡേ ${widget.day} സ്റ്റെപ്പ് 3-ലേക്ക് സ്വാഗതം! നമുക്ക് വാക്കുകളും അക്ഷരങ്ങളും വേട്ടയാടി കണ്ടെത്താം!\n\n'
-        'ഇവിടെ ചാറ്റിൽ കളിക്കണോ അതോ 2D മെഡോ റണ്ണർ ഗെയിമിലേക്ക് പോകണോ? 🌿';
+    final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+      (g) => g.day == widget.day && g.gameIndex == 1,
+      orElse: () => DayGameSpec(
+        day: widget.day,
+        gameIndex: 1,
+        title: 'Day ${widget.day} English Quest',
+        emoji: '🎮',
+        genre: GameGenre.runner,
+        englishTarget: 'Sentence Structure & Spoken English',
+        descriptionEn: 'Interactive action gaming applied to English mastery.',
+        descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
+        controlMechanism: 'Touch controls',
+      ),
+    );
 
-    _currentExpectedVoicePhrase = 'Chat Hunt or Meadow Game';
+    final isDay1 = widget.day == 1;
+    final promptEn = isDay1
+        ? 'Hi $_userName! Welcome to Day 1 Step 3: Phonics & Letter Hunt! 🔍\n\n'
+            'Would you like to hunt words in this chat or explore the open 2D Meadow Runner game? 🌳'
+        : 'Hi $_userName! Welcome to Day ${widget.day} Step 3: ${gameSpec.title} ${gameSpec.emoji}!\n\n'
+            'Today\'s Focus: ${gameSpec.englishTarget}.\n\n'
+            'How would you like to master today\'s topic?\n'
+            '• 🎮 2D Action Arcade: ${gameSpec.title}\n'
+            '• 💬 Sentence & Grammar Challenge in chat!';
+
+    final promptMl = isDay1
+        ? 'ഹായ് $_userName! ഡേ 1 സ്റ്റെപ്പ് 3-ലേക്ക് സ്വാഗതം! നമുക്ക് വാക്കുകളും അക്ഷരങ്ങളും വേട്ടയാടി കണ്ടെത്താം!\n\n'
+            'ഇവിടെ ചാറ്റിൽ കളിക്കണോ അതോ 2D മെഡോ റണ്ണർ ഗെയിമിലേക്ക് പോകണോ? 🌿'
+        : 'ഹായ് $_userName! ഡേ ${widget.day} സ്റ്റെപ്പ് 3: ${gameSpec.title} ${gameSpec.emoji}-ലേക്ക് സ്വാഗതം!\n\n'
+            'ഇന്നത്തെ വിഷയം: ${gameSpec.englishTarget}.\n\n'
+            'ഇഷ്ടമുള്ള രീതി തെരഞ്ഞെടുക്കൂ:\n'
+            '• 🎮 2D ഗെയിം: ${gameSpec.title}\n'
+            '• 💬 വാക്യ നിർമ്മാണ ചാറ്റ് ചലഞ്ച്!';
+
+    _currentExpectedVoicePhrase = isDay1 ? 'Chat Hunt or Meadow Game' : gameSpec.title;
 
     setState(() {
       _messages.clear();
@@ -424,33 +413,41 @@ class _PocketDay1Step3AvatarChatPageState
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter and Word Hunt! Let\'s find hidden words!',
-          speakThisPrompt: 'Choose how to hunt:',
+          audioText: isDay1
+              ? 'Hi $_userName! Welcome to Day 1 Step 3: Phonics and Letter Hunt! Let\'s find hidden words!'
+              : 'Hi $_userName! Welcome to Day ${widget.day} Step 3: ${gameSpec.title}! Let\'s master ${gameSpec.englishTarget}!',
+          speakThisPrompt: 'Choose how to train:',
           inBubbleOptions: [
             Step3InBubbleOption(
-              labelEn: '🔍 CHAT HUNT CHALLENGE',
-              labelNative: 'ചാറ്റിൽ വേട്ടയാടാം! 💬',
-              icon: '🔍',
+              labelEn: isDay1
+                  ? '🔍 CHAT HUNT CHALLENGE'
+                  : '💬 SENTENCE CHALLENGE 🧩',
+              labelNative: isDay1 ? 'ചാറ്റിൽ വേട്ടയാടാം! 💬' : 'ചാറ്റിൽ വാക്യങ്ങൾ നിർമ്മിക്കാം! 💬',
+              icon: isDay1 ? '🔍' : '🧩',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF0284C7),
               borderColor: const Color(0xFF38BDF8),
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
-                text: '🔍 CHAT HUNT CHALLENGE',
+                text: isDay1 ? '🔍 CHAT HUNT CHALLENGE' : '💬 SENTENCE CHALLENGE 🧩',
                 action: _startChatHuntRounds,
               ),
             ),
             Step3InBubbleOption(
-              labelEn: '🌳 2D MEADOW RUNNER GAME',
-              labelNative: 'മെഡോ ഗെയിം കളിക്കാം! 🕹️',
-              icon: '🏃',
+              labelEn: isDay1
+                  ? '🌳 2D MEADOW RUNNER GAME'
+                  : '🎮 PLAY 2D ${gameSpec.title.toUpperCase()} ${gameSpec.emoji}',
+              labelNative: isDay1 ? 'മെഡോ ഗെയിം കളിക്കാം! 🕹️' : '${gameSpec.title} 2D ഗെയിം! 🕹️',
+              icon: gameSpec.emoji,
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
-                text: '🌳 2D MEADOW RUNNER GAME',
-                action: _launchMeadowRunnerGame,
+                text: isDay1
+                    ? '🌳 2D MEADOW RUNNER GAME'
+                    : '🎮 PLAY 2D ${gameSpec.title.toUpperCase()} ${gameSpec.emoji}',
+                action: _launchDedicated2DGame,
               ),
             ),
           ],
@@ -458,7 +455,9 @@ class _PocketDay1Step3AvatarChatPageState
       );
     });
 
-    _speak('Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter and Word Hunt! Let\'s find hidden words!');
+    _speak(isDay1
+        ? 'Hi $_userName! Welcome to Day 1 Step 3: Phonics and Letter Hunt! Let\'s find hidden words!'
+        : 'Hi $_userName! Welcome to Day ${widget.day} Step 3: ${gameSpec.title}!');
     _scrollToBottom();
   }
 
@@ -579,12 +578,32 @@ class _PocketDay1Step3AvatarChatPageState
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    final replyEn =
-        '🏆 OUTSTANDING, $_userName! You mastered all 6 rounds of Letter & Word Hunt!\n\n'
-        'Step 3 is complete! Now let\'s proceed to Step 4: Spoken English Chat! 🎙️';
-    final replyMl =
-        'അഭിനന്ദനങ്ങൾ, $_userName! സ്റ്റെപ്പ് 3 പൂർത്തിയായി!\n\n'
-        'ഇനി നമുക്ക് സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് കടക്കാം! 🎙️';
+    final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+      (g) => g.day == widget.day && g.gameIndex == 1,
+      orElse: () => DayGameSpec(
+        day: widget.day,
+        gameIndex: 1,
+        title: 'Day ${widget.day} English Quest',
+        emoji: '🎮',
+        genre: GameGenre.runner,
+        englishTarget: 'Sentence Structure & Spoken English',
+        descriptionEn: '',
+        descriptionMl: '',
+        controlMechanism: '',
+      ),
+    );
+
+    final replyEn = widget.day == 1
+        ? '🏆 OUTSTANDING, $_userName! You mastered all 6 rounds of Letter & Word Hunt!\n\n'
+            'Step 3 is complete! Now let\'s proceed to Step 4: Spoken English Chat! 🎙️'
+        : '🏆 OUTSTANDING, $_userName! You mastered Day ${widget.day} Step 3: ${gameSpec.title} ${gameSpec.emoji}!\n\n'
+            'Target "${gameSpec.englishTarget}" is complete! Now let\'s proceed to Step 4: Spoken English Chat! 🎙️';
+
+    final replyMl = widget.day == 1
+        ? 'അഭിനന്ദനങ്ങൾ, $_userName! സ്റ്റെപ്പ് 3 പൂർത്തിയായി!\n\n'
+            'ഇനി നമുക്ക് സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് കടക്കാം! 🎙️'
+        : 'അഭിനന്ദനങ്ങൾ, $_userName! ഡേ ${widget.day} സ്റ്റെപ്പ് 3 (${gameSpec.title}) വിജയകരമായി പൂർത്തിയായി!\n\n'
+            'ഇനി നമുക്ക് സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് കടക്കാം! 🎙️';
 
     _currentExpectedVoicePhrase = 'Proceed to Step 4';
 
@@ -615,6 +634,43 @@ class _PocketDay1Step3AvatarChatPageState
 
     _speak('Outstanding, $_userName! You completed Step 3! Let\'s go to Step 4 Spoken English!');
     _scrollToBottom();
+  }
+
+  Future<void> _launchDedicated2DGame() async {
+    HapticFeedback.heavyImpact();
+    await _tts.stop();
+
+    if (widget.day == 1) {
+      return _launchMeadowRunnerGame();
+    }
+
+    final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+      (g) => g.day == widget.day && g.gameIndex == 1,
+      orElse: () => DayGameSpec(
+        day: widget.day,
+        gameIndex: 1,
+        title: 'Day ${widget.day} English Quest',
+        emoji: '🎮',
+        genre: GameGenre.runner,
+        englishTarget: 'Sentence Structure & Spoken English',
+        descriptionEn: 'Interactive action gaming applied to English mastery.',
+        descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
+        controlMechanism: 'Touch controls',
+      ),
+    );
+
+    if (!mounted) return;
+    await PocketUniversalArcadeEnginePage.launch(
+      context,
+      day: widget.day,
+      gameIndex: 1,
+      spec: gameSpec,
+      onCompleted: () {
+        if (mounted) {
+          _showHuntCompletedDialogue();
+        }
+      },
+    );
   }
 
   Future<void> _launchMeadowRunnerGame() async {
@@ -854,54 +910,78 @@ class _PocketDay1Step3AvatarChatPageState
   }
 
   Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        border: Border(bottom: BorderSide(color: Colors.white12)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.pop(context),
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+    final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
+            (g) => g.day == widget.day && g.gameIndex == 1,
+            orElse: () => DayGameSpec(
+              day: widget.day,
+              gameIndex: 1,
+              title: 'Day ${widget.day} English Quest',
+              emoji: '🎮',
+              genre: GameGenre.runner,
+              englishTarget: 'Sentence Structure & Spoken English',
+              descriptionEn: '',
+              descriptionMl: '',
+              controlMechanism: '',
             ),
-            child: const Text('🔍', style: TextStyle(fontSize: 16)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          );
+          final isDay1 = widget.day == 1;
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: Colors.white12)),
+            ),
+            child: Row(
               children: [
-                Text(
-                  'STEP 3: WORD & LETTER HUNT',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+                  onPressed: () => Navigator.pop(context),
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(isDay1 ? '🔍' : gameSpec.emoji, style: const TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isDay1
+                            ? 'DAY 1 STEP 3: PHONICS HUNT 🔤'
+                            : 'DAY ${widget.day} STEP 3: ${gameSpec.title.toUpperCase()}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        isDay1
+                            ? 'Phonics & Letter Hunt Quest'
+                            : '${gameSpec.emoji} ${gameSpec.englishTarget}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'CyberCat Discovery Quest',
-                  style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
           // 🎵 BGM Music Toggle (User Audio Directive!)
           ValueListenableBuilder<bool>(
             valueListenable: PocketGameAudioService.instance.isMutedNotifier,

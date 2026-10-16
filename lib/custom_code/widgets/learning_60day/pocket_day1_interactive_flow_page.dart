@@ -20,6 +20,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'games/meadow_runner_game_page.dart';
+import 'games/pocket_20days_40games_spec.dart';
 import 'games/word_catcher_game_page.dart';
 import 'games/word_catcher_models.dart';
 import 'pocket_day_detail_overview_page.dart';
@@ -230,7 +231,25 @@ class _PocketDay1InteractiveFlowPageState
           }
         }
       } else if (step == 3) {
-        _speak('Game 1: Letter Hunt Run.');
+        if (widget.day == 1) {
+          _speak('Game 1: Letter Hunt Run.');
+        } else {
+          final g = Pocket20Days40GamesRegistry.allGames.firstWhere(
+            (item) => item.day == widget.day && item.gameIndex == 1,
+            orElse: () => DayGameSpec(
+              day: widget.day,
+              gameIndex: 1,
+              title: 'Day ${widget.day} English Quest',
+              emoji: '🎮',
+              genre: GameGenre.runner,
+              englishTarget: 'Practice',
+              descriptionEn: '',
+              descriptionMl: '',
+              controlMechanism: '',
+            ),
+          );
+          _speak('Step 3: ${g.title}.');
+        }
       } else if (step == 4) {
         _speak('Step 4: Spoken English Conversational Chat.');
       }

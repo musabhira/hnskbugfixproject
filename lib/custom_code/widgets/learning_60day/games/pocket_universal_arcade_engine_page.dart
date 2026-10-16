@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'pocket_20days_40games_spec.dart';
+import 'english_realm/english_realm_manifest.dart';
 import '../pocket_90day_vocab_curriculum.dart';
 import '../pocket_master_curriculum_90.dart';
 
@@ -132,6 +133,9 @@ class _PocketUniversalArcadeEnginePageState
   double _bossHp = 1.0;
   double _playerHp = 1.0;
 
+  // 9. AIRPLANE SKY FLIGHT
+  int _flightLane = 1; // 0: Left, 1: Center, 2: Right
+
   @override
   void initState() {
     super.initState();
@@ -185,6 +189,15 @@ class _PocketUniversalArcadeEnginePageState
         _signDistance += 0.013;
         if (_signDistance >= 1.0 && !_isAnswerChecking) {
           _handleRunnerLaneHit();
+        }
+      }
+
+      // Airplane sky flight approach
+      if (_activeSpec.genre == GameGenre.flying ||
+          _activeSpec.genre == GameGenre.skySelection) {
+        _signDistance += 0.012;
+        if (_signDistance >= 1.0 && !_isAnswerChecking) {
+          _handleFlightLaneHit();
         }
       }
 
@@ -306,9 +319,57 @@ class _PocketUniversalArcadeEnginePageState
   }
 
   List<_ArcadeChallengeRound> _generateRoundsForDay(int day, DayGameSpec spec) {
+    final List<_ArcadeChallengeRound> list = [];
+
+    // 🌟 Priority 1: Handcrafted authentic Sentence & Grammar Rounds from EnglishRealmManifest (Zero Repetition!)
+    try {
+      final realmGames = EnglishRealmManifest.getGamesForDay(day);
+      if (realmGames.isNotEmpty) {
+        final realmGame = realmGames.firstWhere(
+          (g) => g.gameIndex == spec.gameIndex,
+          orElse: () => realmGames.first,
+        );
+        if (realmGame.rounds.isNotEmpty) {
+          for (final r in realmGame.rounds) {
+            if (r.options.isNotEmpty) {
+              int cIdx = 0;
+              if (r.solution is int &&
+                  (r.solution as int) >= 0 &&
+                  (r.solution as int) < r.options.length) {
+                cIdx = r.solution as int;
+              } else if (r.solution is String) {
+                final found = r.options.indexWhere(
+                  (opt) =>
+                      opt.trim().toLowerCase() ==
+                      (r.solution as String).trim().toLowerCase(),
+                );
+                if (found >= 0) cIdx = found;
+              }
+              final opts = List<String>.from(r.options);
+              while (opts.length < 3) {
+                opts.add('Option ${opts.length + 1}');
+              }
+
+              list.add(
+                _ArcadeChallengeRound(
+                  promptEn: r.promptEn,
+                  promptMl: r.promptMl,
+                  voiceLeadIn: r.audioVoiceText ?? r.promptEn,
+                  targetWord: r.contextSnippet ?? realmGame.englishTopic,
+                  options: opts,
+                  correctIndex: cIdx.clamp(0, opts.length - 1),
+                  explanationEn: r.explanationEn,
+                ),
+              );
+            }
+          }
+          if (list.isNotEmpty) return list;
+        }
+      }
+    } catch (_) {}
+
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final masterDay = PocketMasterCurriculum90.getDay(day);
-    final List<_ArcadeChallengeRound> list = [];
 
     final targetWord1 = vocab.isNotEmpty ? vocab[0].word : 'Begin';
     final targetWord2 = vocab.length > 1 ? vocab[1].word : 'Explore';
@@ -485,6 +546,7 @@ class _PocketUniversalArcadeEnginePageState
       _playerHp = 1.0;
       _signDistance = 0.0;
       _blockY = 0.0;
+      _flightLane = 1;
     });
     _speakCurrentPrompt();
   }
@@ -516,6 +578,15 @@ class _PocketUniversalArcadeEnginePageState
       _handleCorrectAnswer();
     } else {
       _handleWrongAnswer('Missed target token!');
+    }
+  }
+
+  void _handleFlightLaneHit() {
+    final current = _rounds[_currentChallengeIndex];
+    if (_flightLane == current.correctIndex) {
+      _handleCorrectAnswer();
+    } else {
+      _handleWrongAnswer('Flew through wrong sky ring!');
     }
   }
 
@@ -688,9 +759,12 @@ class _PocketUniversalArcadeEnginePageState
 
       case GameGenre.shooting:
       case GameGenre.archery:
-      case GameGenre.skySelection:
       case GameGenre.slashing:
         return _buildTargetShootingCanvas(round);
+
+      case GameGenre.flying:
+      case GameGenre.skySelection:
+        return _buildSkyFlightCanvas(round);
 
       case GameGenre.boating:
       case GameGenre.riverCrossing:
@@ -730,7 +804,6 @@ class _PocketUniversalArcadeEnginePageState
       case GameGenre.survival:
       case GameGenre.iceBreaker:
       case GameGenre.collecting:
-      case GameGenre.flying:
         return _buildDetectiveRadarCanvas(round);
     }
   }
@@ -1588,6 +1661,210 @@ class _PocketUniversalArcadeEnginePageState
   }
 
   // ---------------------------------------------------------------------------
+  // 9. AIRPLANE SKY FLIGHT CANVAS (Supersonic Sky Waypoint Flight)
+  // ---------------------------------------------------------------------------
+  Widget _buildSkyFlightCanvas(_ArcadeChallengeRound round) {
+    return LayoutBuilder(
+      builder: (ctx, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        final laneWidth = w / 3.0;
+
+        return Stack(
+          children: [
+            // Sky gradient: twilight / stratosphere
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF020617),
+                    Color(0xFF0F172A),
+                    Color(0xFF1E3A8A),
+                    Color(0xFF0284C7),
+                  ],
+                ),
+              ),
+            ),
+
+            // Animated Sky Streamers / Clouds
+            CustomPaint(
+              size: Size(w, h),
+              painter: _SkyCloudsPainter(scrollY: _roadScrollY),
+            ),
+
+            // Approaching Sky Waypoint Rings (Target Words in 3 aerial corridors)
+            Positioned(
+              top: h * 0.12 + (_signDistance * (h * 0.52)),
+              left: 0,
+              right: 0,
+              child: Opacity(
+                opacity: _signDistance.clamp(0.25, 1.0),
+                child: Row(
+                  children: List.generate(3, (idx) {
+                    final text = idx < round.options.length ? round.options[idx] : '...';
+                    final isCorrect = idx == round.correctIndex;
+                    return Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: isCorrect
+                                ? [const Color(0xFF065F46), const Color(0xFF047857)]
+                                : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isCorrect ? const Color(0xFF34D399) : const Color(0xFF38BDF8),
+                            width: 2.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isCorrect ? const Color(0xFF34D399) : const Color(0xFF38BDF8))
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isCorrect ? '🪐 WAYPOINT RING' : '☁️ AIR CORRIDOR',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              text,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+
+            // Player's Supersonic Flight Jet
+            Positioned(
+              bottom: h * 0.32,
+              left: _flightLane * laneWidth + (laneWidth / 2.0) - 28,
+              child: _buildFlightJetWidget(),
+            ),
+
+            // Flight Corridor Touch Areas (Left, Center, Right)
+            Positioned.fill(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => setState(() => _flightLane = 0),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => setState(() => _flightLane = 1),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () => setState(() => _flightLane = 2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFlightJetWidget() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 56,
+          height: 82,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF38BDF8), Color(0xFF1D4ED8)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.7),
+                blurRadius: 18,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Cockpit canopy
+              Container(
+                width: 24,
+                height: 18,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE0F2FE), Color(0xFF0284C7)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              const Text('✈️', style: TextStyle(fontSize: 24)),
+              // Jet Thruster Afterburner
+              Container(
+                width: 14,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B),
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.9),
+                      blurRadius: 6,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // BOTTOM INTERACTIVE CONTROLS CARD
   // ---------------------------------------------------------------------------
   Widget _buildBottomInteractiveControls(_ArcadeChallengeRound current) {
@@ -1651,10 +1928,13 @@ class _PocketUniversalArcadeEnginePageState
             final isFalling = _activeSpec.genre == GameGenre.fallingBlocks ||
                 _activeSpec.genre == GameGenre.factorySorting ||
                 _activeSpec.genre == GameGenre.machineFixing;
+            final isFlying = _activeSpec.genre == GameGenre.flying ||
+                _activeSpec.genre == GameGenre.skySelection;
 
             final isSelected = (isDriving && _carLane == idx) ||
                 (isRunner && _runnerLane == idx) ||
-                (isFalling && _selectedSlot == idx);
+                (isFalling && _selectedSlot == idx) ||
+                (isFlying && _flightLane == idx);
 
             return Container(
               margin: const EdgeInsets.only(bottom: 6),
@@ -1676,6 +1956,8 @@ class _PocketUniversalArcadeEnginePageState
                     setState(() => _runnerLane = idx);
                   } else if (isFalling) {
                     setState(() => _selectedSlot = idx);
+                  } else if (isFlying) {
+                    setState(() => _flightLane = idx);
                   } else if (idx == current.correctIndex) {
                     _handleCorrectAnswer();
                   } else {
@@ -1820,6 +2102,46 @@ class _RoadStripesPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RoadStripesPainter oldDelegate) =>
+      oldDelegate.scrollY != scrollY;
+}
+
+class _SkyCloudsPainter extends CustomPainter {
+  final double scrollY;
+  _SkyCloudsPainter({required this.scrollY});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.12)
+      ..style = PaintingStyle.fill;
+
+    final windPaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.25)
+      ..strokeWidth = 2;
+
+    final lane1X = size.width / 3.0;
+    final lane2X = (size.width / 3.0) * 2.0;
+
+    // Corridor dashed guidance lines
+    for (double y = -60 + scrollY; y < size.height; y += 45) {
+      canvas.drawLine(Offset(lane1X, y), Offset(lane1X, y + 22), windPaint);
+      canvas.drawLine(Offset(lane2X, y), Offset(lane2X, y + 22), windPaint);
+    }
+
+    // Drifting clouds
+    for (double y = -100 + (scrollY * 1.5); y < size.height + 100; y += 140) {
+      canvas.drawCircle(Offset(size.width * 0.2, y), 24, cloudPaint);
+      canvas.drawCircle(Offset(size.width * 0.24, y - 6), 32, cloudPaint);
+      canvas.drawCircle(Offset(size.width * 0.28, y), 22, cloudPaint);
+
+      canvas.drawCircle(Offset(size.width * 0.78, y + 60), 28, cloudPaint);
+      canvas.drawCircle(Offset(size.width * 0.83, y + 54), 36, cloudPaint);
+      canvas.drawCircle(Offset(size.width * 0.88, y + 60), 26, cloudPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SkyCloudsPainter oldDelegate) =>
       oldDelegate.scrollY != scrollY;
 }
 
