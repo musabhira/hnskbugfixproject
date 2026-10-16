@@ -478,6 +478,42 @@
         "hi": "घर की सुरक्षा के लिए 5 डिफेंस प्रश्न लगाएं!",
         "ta": "வீட்டைப் பாதுகாக்க 5 டிஃபென்ஸ் கேள்விகளை அமைக்கவும்!"
       }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_8_pocket_talk",
+      "title": {
+        "en": "Poketalk: 4-Day Spoken Pact",
+        "ml": "പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് 📞",
+        "hi": "पॉकेटटॉक: 4-दिवसीय बोलचाल समझौता",
+        "ta": "பாக்கெட் டாக்: 4 நாள் பேச்சு ஒப்பந்தம்"
+      },
+      "icon": "📞",
+      "gameType": "pocket_talk_action",
+      "description": {
+        "en": "Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!",
+        "ml": "കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!",
+        "hi": "कार्ड स्वाइप करें और 4-दिवसीय बातचीत का साथी खोजें!",
+        "ta": "அரட்டை கூட்டாளரைக் கண்டறிய அட்டைகளை ஸ்வைப் செய்யவும்!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_citadel_attack",
+      "title": {
+        "en": "House Attack Quest: Raid Rival Citadel",
+        "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം ⚔️",
+        "hi": "हाउस अटैक क्वेस्ट: गढ़ पर हमला",
+        "ta": "ஹவுஸ் அட்டாக் குவெஸ்ட்: கோட்டை மீதான தாக்குதல்"
+      },
+      "icon": "⚔️",
+      "gameType": "house_attack_quest",
+      "description": {
+        "en": "Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!",
+        "ml": "ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!",
+        "hi": "स्तर 12-15+ गढ़ पर हमला करें और पॉकेट स्कोर जीतें!",
+        "ta": "நிலை 12-15+ கோட்டையைத் தாக்கி பாக்கெட் ஸ்கோரைப் பெறுங்கள்!"
+      }
     }
   ],
   "houseGateExam": {

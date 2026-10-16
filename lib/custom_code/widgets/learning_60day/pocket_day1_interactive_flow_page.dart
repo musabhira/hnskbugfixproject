@@ -36,6 +36,7 @@ import 'pocket_day2_step1_avatar_chat_page.dart';
 import 'pocket_day_avatar_chat_page.dart';
 import 'pocket_house_defense_chat_page.dart';
 import 'games/pocket_vocab_open_world_drive_page.dart';
+import 'pocket_house_attack_page.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -984,9 +985,38 @@ class _PocketDay1InteractiveFlowPageState
   // ACTIVE STEP CONTENT ROUTER
   // -------------------------------------------------------------
   Widget _buildActiveStepContent(Day1StepModel step) {
+    if (step.type == 'house_attack_quest' || step.type == 'citadel_attack_raid' || step.data['id'] == 'step_9_citadel_attack') {
+      return _buildHouseAttackStep(step);
+    }
+
+    if (widget.day == 1) {
+      switch (_activeStep) {
+        case 1:
+          return _buildStep1Alphabet(step);
+        case 2:
+          return _buildStep2VocabBank(step);
+        case 3:
+          return _buildStep3GameHunt(step);
+        case 4:
+          return _buildStep4GameMatchBuild(step);
+        case 5:
+          return _buildStep5ReadingRoom(step);
+        case 6:
+          return _buildStep9GroupChat(step); // Step 6: English Hub Community Chat
+        case 7:
+          return _buildStep10HouseDefense(step); // Step 7: House Defense Shield
+        case 8:
+          return _buildStep8PocketTalk(step); // Step 8: PocketTalk 4-Day Pact
+        case 9:
+          return _buildHouseAttackStep(step); // Step 9: House Attack Quest
+        default:
+          return const SizedBox.shrink();
+      }
+    }
+
     switch (_activeStep) {
       case 1:
-        return widget.day > 1 ? _buildStep1ConceptRoom(step) : _buildStep1Alphabet(step);
+        return _buildStep1ConceptRoom(step);
       case 2:
         return _buildStep2VocabBank(step);
       case 3:
@@ -1000,14 +1030,76 @@ class _PocketDay1InteractiveFlowPageState
       case 7:
         return _buildStep7RandomCall(step);
       case 8:
-        return _buildStep8PocketTalk(step);
+        return _buildHouseAttackStep(step);
       case 9:
-        return _buildStep9GroupChat(step);
+        return _buildStep8PocketTalk(step);
       case 10:
         return _buildStep10HouseDefense(step);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildHouseAttackStep(Day1StepModel step) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF43F5E), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF43F5E).withValues(alpha: 0.25),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text('⚔️', style: TextStyle(fontSize: 44)),
+          const SizedBox(height: 12),
+          Text(
+            step.titleEn,
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _nativeLanguage == 'Malayalam' ? step.descriptionMl : step.descriptionEn,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF43F5E),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                await PocketHouseAttackPage.show(
+                  context,
+                  day: widget.day,
+                  userId: widget.userId,
+                  onStepFinished: (finished) {
+                    _markStepCompleted(step.stepNumber);
+                  },
+                );
+              },
+              icon: const Icon(Icons.flash_on_rounded, size: 20),
+              label: Text(
+                'LAUNCH CITADEL ATTACK QUEST ➔',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // -------------------------------------------------------------

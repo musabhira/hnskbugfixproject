@@ -800,6 +800,26 @@ class Day1Curriculum {
             gameType = 'house_defense_chat';
           }
 
+          // Step 8: PocketTalk 4-Day Pact & Peer Practice
+          if (stepNum == 8) {
+            titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+            titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+            descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
+            descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+            icon = '📞';
+            gameType = 'pocket_talk_action';
+          }
+
+          // Step 9: House Attack Quest: Raid Rival Citadel (Available from Day 1!)
+          if (stepNum == 9) {
+            titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+            titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+            descEn = 'Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!';
+            descMl = 'ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!';
+            icon = '⚔️';
+            gameType = 'house_attack_quest';
+          }
+
           return Day1StepModel(
             stepNumber: stepNum,
             titleEn: titleEn,
@@ -849,6 +869,20 @@ class Day1Curriculum {
         descMl = 'ഹൗസ് 1 സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
         icon = '🛡️';
         gameType = 'house_defense_chat';
+      } else if (stepNum == 8) {
+        titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+        titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+        descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
+        descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+        icon = '📞';
+        gameType = 'pocket_talk_action';
+      } else if (stepNum == 9) {
+        titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+        titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+        descEn = 'Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!';
+        descMl = 'ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!';
+        icon = '⚔️';
+        gameType = 'house_attack_quest';
       }
 
       return Day1StepModel(

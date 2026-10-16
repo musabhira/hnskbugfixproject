@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -5732,10 +5733,26 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 );
                                 _startCombatTimer();
                               } else {
-                                await PocketFortressDefenseService.recordFailedAttackCooldown(
-                                  widget.neighbor.id,
-                                  hours: 6,
-                                );
+                                if (_attackerDay <= 20) {
+                                  // User Audio Directive: Beginners up to level 20 pass on attempt and receive 24h presidential protection on target!
+                                  await PocketFortressDefenseService.placeUnderPresidentialProtection(
+                                    widget.neighbor.id,
+                                    hours: 24,
+                                  );
+                                  try {
+                                    final myId = SupaFlow.client.auth.currentUser?.id;
+                                    if (myId != null) {
+                                      await PocketFortressDefenseService.recordTrainingPoints(50, myId);
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.setBool('pocket_day_${myId}_${_attackerDay}_step_attack_done', true);
+                                    }
+                                  } catch (_) {}
+                                } else {
+                                  await PocketFortressDefenseService.recordFailedAttackCooldown(
+                                    widget.neighbor.id,
+                                    hours: 6,
+                                  );
+                                }
                                 if (mounted) {
                                   setState(() => _raidStep = -1);
                                 }
@@ -5947,14 +5964,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     border: Border.all(color: Colors.amber.withValues(alpha: 0.6)),
                   ),
                   child: Row(
-                    children: const [
-                      Text('⏳', style: TextStyle(fontSize: 18)),
-                      SizedBox(width: 8),
+                    children: [
+                      Text(_attackerDay <= 20 ? '🛡️' : '⏳', style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '6-Hour Citadel Lockdown Enforced!\nYou exhausted your second chance. Return after 6 hours to attack again.',
+                          _attackerDay <= 20
+                              ? 'Beginner Courage Pass! (Level $_attackerDay ≤ 20)\nYou bravely launched an attack on House #${widget.neighbor.day}! Attempting the raid builds confidence. +50 Pocket Score awarded! Step Passed! ✓'
+                              : '6-Hour Citadel Lockdown Enforced!\nYou exhausted your second chance. Return after 6 hours to attack again.',
                           style: TextStyle(
-                            color: Color(0xFFFCD34D),
+                            color: _attackerDay <= 20 ? const Color(0xFF34D399) : const Color(0xFFFCD34D),
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
@@ -5969,16 +5988,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF334155),
+                      backgroundColor: _attackerDay <= 20 ? const Color(0xFF10B981) : const Color(0xFF334155),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {
                       HapticFeedback.selectionClick();
                       setState(() => _isQuestionSheetOpen = false);
-                      Navigator.pop(context, false);
+                      Navigator.pop(context, _attackerDay <= 20 ? true : false);
                     },
-                    child: const Text('ACKNOWLEDGE & RETREAT 🛡️', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      _attackerDay <= 20
+                          ? 'CLAIM +50 PS & COMPLETE ATTACK QUEST ➔'
+                          : 'ACKNOWLEDGE & RETREAT 🛡️',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],

@@ -621,19 +621,19 @@ class PocketFortressDefenseService {
   /// - Level 51+ User: Target Level 85-90
   static int getRecommendedTargetLevel(int userDay) {
     final day = userDay.clamp(1, 90);
-    if (day < 4) {
-      return 4; // House 4 minimum combat tier
+    if (day <= 3) {
+      // User Audio Directive: Beginners at Day 1-3 attack a minimum Level 12 to 15+ target citadel!
+      return 12 + (day % 4); // 12 to 15
     } else if (day <= 6) {
-      // Audio Directive: Level 4 to 10 combat
-      return 4 + (day % 4); // 4 to 7
+      return 15 + (day % 4); // 15 to 18
     } else if (day <= 10) {
-      return 7 + (day % 4); // 7 to 10
+      return 18 + ((day - 6) * 2); // 18 to 26
     } else if (day <= 20) {
-      return 15 + ((day - 10) * 1.5).round().clamp(0, 15); // 15 to 30
+      return 26 + ((day - 10) * 1.5).round().clamp(0, 15); // 26 to 41
     } else if (day <= 35) {
-      return 35 + ((day - 20) * 1.2).round().clamp(0, 18); // 35 to 53
+      return 42 + ((day - 20) * 1.2).round().clamp(0, 18); // 42 to 60
     } else if (day <= 50) {
-      return 60 + ((day - 35) * 1.2).round().clamp(0, 20); // 60 to 80
+      return 62 + ((day - 35) * 1.2).round().clamp(0, 20); // 62 to 80
     } else {
       return math.min(90, 80 + (day % 11)); // 80 to 90
     }
@@ -2052,15 +2052,14 @@ class PocketFortressDefenseService {
   }
 
   // ============================================================
-  // 👮‍♂️ 26-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio Directive)
-  // "പിന്നെ ഒരു രണ്ടു ദിവസം സമയം കൊടുക്കണം. അതിനുള്ളിൽ ഇവര് റിക്കവർ ചെയ്യാൻ വേണ്ടിയിട്ട്
-  // 'പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ' കൊടുക്കും. കാവൽക്കാർ പ്രസിഡൻസിന്റെ പോലീസ് കാവലുകള്
-  // വന്നിട്ട് നിൽക്കും എന്നിട്ട് പ്രൊട്ടക്ട് ചെയ്യും. 26 മണിക്കൂർ പ്രൊട്ടക്ട് ചെയ്യും."
+  // 👮‍♂️ 24-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio Directive)
+  // "പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ 24 മണിക്കൂറാണ് ഒരു യൂസർക്ക്...
+  // അതേ യൂസറെ രണ്ടാമത് അറ്റാക്ക് ചെയ്യാൻ പറ്റില്ല 24 മണിക്കൂർ കഴിയാതെ..."
   // ============================================================
   static const String _presidentialProtectionPrefix = 'pocket_pres_protection_';
-  static const int kPresidentialProtectionHours = 26;
+  static const int kPresidentialProtectionHours = 24;
 
-  /// Place a breached house under 26-hour Presidential Police Protection
+  /// Place a breached house under 24-hour Presidential Police Protection
   static Future<void> placeUnderPresidentialProtection(
     String houseId, {
     int hours = kPresidentialProtectionHours,

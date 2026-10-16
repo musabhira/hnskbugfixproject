@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -168,7 +169,8 @@ class _PocketHouseDefenseChatPageState
     if (day == 1) return _defaultDay1Bank;
     final list = <HouseShieldQuestion>[];
     final gates = ['vocab_gate', 'grammar_defusal', 'speed_blitz', 'idiom_shield', 'riddle_sphinx'];
-    for (int i = 0; i < 10; i++) {
+    final count = math.max(10, day + 5);
+    for (int i = 0; i < count; i++) {
       final gate = gates[i % gates.length];
       list.add(PocketDefenseQuestionBank.getRandomHouseShieldQuestion(
         gate,
@@ -207,7 +209,9 @@ class _PocketHouseDefenseChatPageState
     _checkExistingDefense();
   }
 
-  int get targetShieldCount => widget.day.clamp(1, 5);
+  /// 🛡️ User Audio Directive: Each day completed adds 1 defense!
+  /// Day 1 has 1 defense, Day 10 has 10 defenses, Day 90 has 90 defenses!
+  int get targetShieldCount => widget.day.clamp(1, 90);
 
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();

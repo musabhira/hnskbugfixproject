@@ -40,6 +40,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_vocab_open_world_drive_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -222,7 +224,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 7 : 10);
+  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 9 : 10);
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -2567,6 +2569,50 @@ class _PocketDayOpenWorldAdventurePageState
             _onStepCompleted(finishedStep);
           },
         );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 8 on Day 1: Launches Dedicated PocketTalk Card Swiper Dialog (User Audio Directive!)
+      if (day == 1 && s == 8) {
+        await PocketTalkCardSwiperDialog.show(context);
+        await _onStepCompleted(8);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 9 on Day 1: Launches Dedicated House Attack Quest (User Audio Directive!)
+      if (day == 1 && s == 9) {
+        await PocketHouseAttackPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 8 on Days 2 to 90: Launches Dedicated House Attack Quest (Citadel Raids)
+      if (day >= 2 && day <= 90 && s == 8) {
+        await PocketHouseAttackPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 9 on Days 2 to 90: Launches Dedicated PocketTalk / Social Arena
+      if (day >= 2 && day <= 90 && s == 9) {
+        await PocketTalkCardSwiperDialog.show(context);
+        await _onStepCompleted(9);
         await _loadState(preserveCarPosition: true);
         return;
       }
