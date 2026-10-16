@@ -668,22 +668,29 @@ class PocketFortressDefenseService {
         if (res.isNotEmpty) {
           final list = res.cast<Map<String, dynamic>>();
           list.shuffle();
-          final p = list.first;
-          final pDay = (p['learning_day'] as num?)?.toInt() ?? targetLevel;
-          return PocketNeighbor(
-            id: p['user_id']?.toString() ?? 'user_$targetLevel',
-            name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
-            day: pDay,
-            streak: (p['streak'] as num?)?.toInt() ?? pDay,
-            rank: p['rank']?.toString() ?? 'Knight',
-            paletteId: p['palette_id']?.toString() ?? 'stone_castle',
-            isMe: false,
-            hasActiveShield: true,
-            statusMessage: p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
-            isPocketRobo: false,
-            hp: 100,
-            maxHp: 100,
-          );
+          for (final p in list) {
+            final uid = p['user_id']?.toString();
+            if (uid == null || uid.isEmpty) continue;
+            // Check if protected locally or in Supabase
+            final isProtected = await isUnderPresidentialProtection(uid);
+            if (isProtected) continue;
+
+            final pDay = (p['learning_day'] as num?)?.toInt() ?? targetLevel;
+            return PocketNeighbor(
+              id: uid,
+              name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
+              day: pDay,
+              streak: (p['streak'] as num?)?.toInt() ?? pDay,
+              rank: p['rank']?.toString() ?? 'Knight',
+              paletteId: p['palette_id']?.toString() ?? 'stone_castle',
+              isMe: false,
+              hasActiveShield: true,
+              statusMessage: p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
+              isPocketRobo: false,
+              hp: 100,
+              maxHp: 100,
+            );
+          }
         }
       } catch (_) {}
     }
@@ -2064,17 +2071,54 @@ class PocketFortressDefenseService {
     String houseId, {
     int hours = kPresidentialProtectionHours,
   }) async {
+    // Robots NEVER get Presidential Protection (User Audio Directive)
+    if (houseId.startsWith('pocket_robo') || houseId.startsWith('kid_bot_') || houseId.startsWith('rival_citadel')) {
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
-    final expiry = DateTime.now().add(Duration(hours: hours)).millisecondsSinceEpoch;
-    await prefs.setInt('$_presidentialProtectionPrefix$houseId', expiry);
+    final expiryTime = DateTime.now().add(Duration(hours: hours));
+    await prefs.setInt('$_presidentialProtectionPrefix$houseId', expiryTime.millisecondsSinceEpoch);
+
+    try {
+      await SupaFlow.client.from('pocket_homes').update({
+        'last_attacked_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('user_id', houseId);
+    } catch (_) {}
   }
 
   /// Check if house is actively guarded by Presidential Police
   static Future<bool> isUnderPresidentialProtection(String houseId) async {
+    // Robots NEVER have Presidential Protection (User Audio Directive: "പക്ഷെ റോബോട്ടുകൾക്ക് പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ഇല്ല")
+    if (houseId.startsWith('pocket_robo') || houseId.startsWith('kid_bot_') || houseId.startsWith('rival_citadel')) {
+      return false;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final expiry = prefs.getInt('$_presidentialProtectionPrefix$houseId');
-    if (expiry == null) return false;
-    return DateTime.now().millisecondsSinceEpoch < expiry;
+    if (expiry != null && DateTime.now().millisecondsSinceEpoch < expiry) {
+      return true;
+    }
+
+    // Check remote Supabase pocket_homes last_attacked_at
+    try {
+      final res = await SupaFlow.client
+          .from('pocket_homes')
+          .select('last_attacked_at')
+          .eq('user_id', houseId)
+          .maybeSingle();
+      if (res != null && res['last_attacked_at'] != null) {
+        final lastAtk = DateTime.tryParse(res['last_attacked_at'].toString());
+        if (lastAtk != null) {
+          final diff = DateTime.now().difference(lastAtk);
+          if (diff.inHours < kPresidentialProtectionHours) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    return false;
   }
 
   /// Get minutes remaining in 48-hour Presidential Police Protection

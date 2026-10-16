@@ -62,7 +62,8 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
   final FlutterTts _tts = FlutterTts();
 
   PocketNeighbor? _target;
-  int _shuffleSeed = 0;
+  bool _inChatIntro = true;
+  int _chatState = 0;
   bool _isLoadingTarget = true;
   bool _isTargetProtected = false;
   int _protectionMinutesLeft = 0;
@@ -127,6 +128,11 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
         }
       }
     } catch (_) {}
+    if (_soundEnabled) {
+      _speak(
+        'Hi $_userName! We are going to attack a rival house now! Here we don\'t attack with weapons, we attack with English power! Are you ready?',
+      );
+    }
   }
 
   Future<void> _fetchTargetOpponent() async {
@@ -134,7 +140,6 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
     try {
       final neighbor = await PocketFortressDefenseService.getRecommendedRivalTarget(
         userDay: widget.day,
-        shuffleOffset: _shuffleSeed,
       );
 
       final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(neighbor.id);
@@ -203,16 +208,27 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
     }
   }
 
-  Future<void> _shuffleTarget() async {
+  void _onUserRepliesAttack() {
     HapticFeedback.mediumImpact();
-    SystemSound.play(SystemSoundType.click);
     setState(() {
-      _shuffleSeed++;
-      _inBattle = false;
+      _chatState = 1;
+    });
+    if (_soundEnabled) {
+      _speak('Awesome, $_userName! Click the button below to launch the attack!');
+    }
+  }
+
+  void _launchDirectAttack() {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _inChatIntro = false;
+      _inBattle = true;
       _currentQIdx = 0;
       _selectedOption = null;
+      _correctAnswers = 0;
+      _battleCompleted = false;
     });
-    await _fetchTargetOpponent();
+    _speakQuestion();
   }
 
   Future<void> _speak(String text) async {
@@ -278,12 +294,26 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
 
     final score = isFullVictory ? 100 : (isBeginnerPass ? 60 : 20);
 
-    // Place target house under 24-hour Presidential Protection!
-    // "പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ 24 മണിക്കൂറാണ് ഒരു യൂസർക്ക്... അതേ യൂസറെ രണ്ടാമത് അറ്റാക്ക് ചെയ്യാൻ പറ്റില്ല 24 മണിക്കൂർ കഴിയാതെ..."
+    // Place target house under 24-hour Presidential Protection (Humans only)!
+    // "പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ 24 മണിക്കൂറാണ് ഒരു യൂസർക്ക്... അതേ യൂസറെ രണ്ടാമത് അറ്റാക്ക് ചെയ്യാൻ പറ്റില്ല 24 മണിക്കൂർ കഴിയാതെ... പക്ഷെ റോബോട്ടുകൾക്ക് പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ഇല്ല"
     await PocketFortressDefenseService.placeUnderPresidentialProtection(
       target.id,
       hours: 24,
     );
+
+    // If human target, deduct defender home HP & mark damaged in Supabase
+    if (target.isPocketRobo != true && !target.id.startsWith('pocket_robo') && !target.id.startsWith('kid_bot_')) {
+      try {
+        final currentHp = target.hp;
+        final newHp = math.max(0, currentHp - 40);
+        await _supabase.from('pocket_homes').update({
+          'hp': newHp,
+          'is_damaged': true,
+          'last_attacked_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', target.id);
+      } catch (_) {}
+    }
 
     // Award score points
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
@@ -339,7 +369,9 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                   ? _buildLoadingState()
                   : (_battleCompleted
                       ? _buildResolutionView()
-                      : (_inBattle ? _buildBattleView() : _buildTargetOverview())),
+                      : (_inChatIntro
+                          ? _buildChatIntroView()
+                          : (_inBattle ? _buildBattleView() : _buildTargetOverview()))),
             ),
           ],
         ),
@@ -400,8 +432,8 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
               children: [
                 Text(
                   widget.day == 1
-                      ? 'Step 9: Rival Citadel Attack'
-                      : 'Step 8: Rival Citadel Attack',
+                      ? 'Step 9: House Attack ⚔️'
+                      : 'Step 8: House Attack ⚔️',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -409,9 +441,11 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                   ),
                 ),
                 Text(
-                  _target != null
-                      ? 'Targeting House #${_target!.day} • ${_target!.name}'
-                      : 'Matchmaking Rival Citadel...',
+                  _inChatIntro
+                      ? 'CyberCat 🐱 • Mission Briefing'
+                      : (_target != null
+                          ? 'House #${_target!.day} • ${_target!.name}'
+                          : 'Target Matched'),
                   style: GoogleFonts.inter(
                     color: const Color(0xFFFDA4AF),
                     fontSize: 11,
@@ -424,47 +458,7 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
             ),
           ),
 
-          // 🎲 SHUFFLE BUTTON (Audio Directive: Top prominent shuffle button)
-          if (!_inBattle) ...[
-            InkWell(
-              onTap: _shuffleTarget,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🎲', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'SHUFFLE',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11.5,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-          ],
-
-          // Sound Toggle
+          // Sound Toggle (No shuffle button as commanded: direct attack!)
           IconButton(
             onPressed: () {
               setState(() => _soundEnabled = !_soundEnabled);
@@ -478,6 +472,292 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
           ),
         ],
       ),
+    );
+  }
+
+  /// 💬 WhatsApp-Style Conversational Avatar Chat Entry (User Audio Directive)
+  Widget _buildChatIntroView() {
+    return Container(
+      color: const Color(0xFF0B1120),
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              children: [
+                // 1. CyberCat Greeting Bubble
+                _buildCyberCatMessageBubble(
+                  textEn:
+                      'Hi $_userName! We are going to attack a rival house now! Here we don\'t attack with weapons, we attack with ENGLISH power! Are you ready?',
+                  textMl:
+                      'ഹായ് $_userName! നമ്മൾ ഇപ്പോൾ ഒരു വീടിനെ അറ്റാക്ക് ചെയ്യാൻ പോവുകയാണ്! ഇവിടെ നമ്മൾ അറ്റാക്ക് ചെയ്യുന്നത് തോക്കുകൊണ്ടോ വാളുകൊണ്ടോ അല്ല, നമ്മുടെ ഇംഗ്ലീഷ് കൊണ്ടാണ്! Are you ready?',
+                  child: _chatState == 0
+                      ? Column(
+                          children: [
+                            const SizedBox(height: 12),
+                            const Divider(color: Colors.white24, height: 1),
+                            const SizedBox(height: 12),
+                            InkWell(
+                              onTap: _onUserRepliesAttack,
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFF43F5E), Color(0xFFBE123C)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFF43F5E).withValues(alpha: 0.4),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('⚔️', style: TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Attack! ⚔️',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
+
+                // 2. User Response Bubble (if _chatState >= 1)
+                if (_chatState >= 1) ...[
+                  const SizedBox(height: 18),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF059669), Color(0xFF10B981)],
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(18),
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(4),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'Attack! ⚔️',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 3. CyberCat Reply & Direct Launch Button
+                  const SizedBox(height: 18),
+                  _buildCyberCatMessageBubble(
+                    textEn: 'Awesome! Click this button to launch the attack!',
+                    textMl: 'ഗംഭീരം! ഈ ബട്ടണിൽ ക്ലിക്ക് ചെയ്ത് അറ്റാക്ക് തുടങ്ങൂ!',
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 14),
+                        const Divider(color: Colors.white24, height: 1),
+                        const SizedBox(height: 14),
+                        AnimatedBuilder(
+                          animation: _pulseController,
+                          builder: (context, child) {
+                            final scale = 1.0 + (_pulseController.value * 0.035);
+                            return Transform.scale(
+                              scale: scale,
+                              child: child,
+                            );
+                          },
+                          child: InkWell(
+                            onTap: _launchDirectAttack,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFE11D48), Color(0xFF9F1239)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF43F5E).withValues(alpha: 0.5),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.flash_on_rounded, color: Color(0xFFFFD700), size: 24),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          'Please Click This ➔ Launch Attack ⚔️',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 14.5,
+                                            letterSpacing: 0.5,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'ഇതിൽ ക്ലിക്ക് ചെയ്ത് അറ്റാക്ക് ചെയ്യുക ➔',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCyberCatMessageBubble({
+    required String textEn,
+    required String textMl,
+    Widget? child,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: const Center(
+            child: Text('🐱', style: TextStyle(fontSize: 22)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'CyberCat 🐱',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _speak(textEn),
+                      icon: const Icon(Icons.volume_up_rounded, color: Colors.white70, size: 18),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  textEn,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.5,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  textMl,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFCBD5E1),
+                    fontSize: 12.5,
+                    height: 1.4,
+                  ),
+                ),
+                if (child != null) child,
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
