@@ -200,13 +200,14 @@ class PocketHomesReelsFeedWidget extends StatefulWidget {
 }
 
 class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final SupabaseClient _supabase = Supabase.instance.client;
   late PageController _verticalPageController;
-  bool _isLoading = true;
   bool _isLoadingMore = false;
   String _userNativeLanguage = 'Malayalam';
   late AnimationController _pulseController;
+  late AnimationController _jumpController;
+  late Animation<double> _jumpAnimation;
 
   final Set<String> _viewedHomeIds = {};
   final Set<String> _protectedHomeIds = {};
@@ -255,14 +256,26 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
+    // 🟢 Bouncing Jumping Green Arrow Controller (User Audio Directive)
+    _jumpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    )..repeat(reverse: true);
+    _jumpAnimation = Tween<double>(begin: 0.0, end: 7.0).animate(
+      CurvedAnimation(parent: _jumpController, curve: Curves.easeInOut),
+    );
+
     // Audio Directive: Music in Homes must always be ON by default, uninhibited by global settings
     PocketGameAudioService.instance.setMuted(false, persist: false);
 
-    _initTtsAndSpeech();
-    _initAll();
+    // ⚡ INSTANT IN-MEMORY SEED FEED (Zero Spinner / Zero Delay - User Audio Directive)
+    _feedItems = _generateInstantSeedFeed();
 
-    if (widget.isActive) {
-      final initialId = widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
+    _initTtsAndSpeech();
+    _initAll(); // Silent background enrich with live Supabase profiles
+
+    if (widget.isActive && _feedItems.isNotEmpty) {
+      final initialId = widget.initialHouseId ?? widget.initialNeighbor?.id ?? _feedItems.first.neighbor?.id ?? 'house_default';
       _playHomeMusic(initialId);
     }
   }
@@ -426,7 +439,63 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     _stopAllAudioAndSpeech();
     _verticalPageController.dispose();
     _pulseController.dispose();
+    _jumpController.dispose();
     super.dispose();
+  }
+
+  /// 📜 Smooth Scroll to next reel (User Audio Directive: tap anywhere / green button to advance)
+  void _scrollToNextReel() {
+    HapticFeedback.selectionClick();
+    if (_verticalPageController.hasClients) {
+      _verticalPageController.nextPage(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  /// 🟢 Jumping Bouncy Green Arrow Button (User Audio Directive: energetic pulse & tap to scroll down)
+  Widget _buildJumpingArrowButton({double size = 44}) {
+    return AnimatedBuilder(
+      animation: _jumpAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _jumpAnimation.value),
+          child: child,
+        );
+      },
+      child: GestureDetector(
+        onTap: _scrollToNextReel,
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF00E676), Color(0xFF10B981)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF00E676).withValues(alpha: 0.55),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.black,
+              size: size * 0.65,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _initAll() async {
@@ -462,9 +531,127 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     } catch (_) {}
   }
 
-  Future<void> _loadViewedHistoryAndFeed() async {
-    setState(() => _isLoading = true);
+  /// ⚡ INSTANT SEED FEED (Zero Spinner / Zero Delay / High Optimization - User Audio Directive)
+  List<ReelFeedItem> _generateInstantSeedFeed() {
+    final bool isKid = PocketKidsService.isKidAccount;
+    final List<ReelFeedItem> items = [];
 
+    if (isKid) {
+      final kidsRobots = PocketKidsRobotsData.robotsAndHomies;
+      final kidsGames = PocketReelsGameEngine.getKidsCommunicationGames(count: 14);
+      final kidsStories = PocketReelsContentEngine.getKidsStories(count: 4);
+      final kidsVocab = PocketReelsContentEngine.getKidsVocabCards(count: 4);
+      final kidsSpeak = PocketReelsContentEngine.getKidsSpeakChallenges(count: 4);
+
+      int gIdx = 0;
+      int sIdx = 0;
+      int vIdx = 0;
+      int spkIdx = 0;
+
+      // King Lion Sovereign Palace first
+      items.add(
+        const ReelFeedItem.home(
+          PocketNeighbor(
+            id: 'king_lion',
+            name: 'King Lion Palace 🦁 👑',
+            day: 100,
+            streak: 100,
+            rank: 'Supreme King',
+            paletteId: 'royal_gold',
+            isMe: false,
+            hasActiveShield: true,
+            statusMessage: 'Official Sovereign Palace of King Lion. Welcome young cubs!',
+            isPocketRobo: true,
+            hp: 10000,
+            maxHp: 10000,
+            isVip: true,
+          ),
+        ),
+      );
+
+      if (kidsGames.isNotEmpty) items.add(ReelFeedItem.game(kidsGames[gIdx++]));
+
+      for (int i = 0; i < kidsRobots.length; i++) {
+        final mate = kidsRobots[i];
+        items.add(
+          ReelFeedItem.home(
+            PocketNeighbor(
+              id: mate.id,
+              name: mate.name,
+              day: mate.dayLevel,
+              streak: mate.dayLevel,
+              rank: mate.ageGroup == '4-6'
+                  ? 'Junior Cub'
+                  : (mate.ageGroup == '6-8' ? 'Mountain Scout' : 'Star Explorer'),
+              paletteId: _randomPalette(mate.dayLevel),
+              statusMessage: mate.bio,
+              hasActiveShield: true,
+              isPocketRobo: true,
+              hp: 100,
+              maxHp: 100,
+            ),
+          ),
+        );
+
+        if (gIdx < kidsGames.length) {
+          items.add(ReelFeedItem.game(kidsGames[gIdx++]));
+        }
+
+        if (i % 3 == 0 && spkIdx < kidsSpeak.length) {
+          items.add(ReelFeedItem.speakChallenge(kidsSpeak[spkIdx++]));
+        } else if (i % 3 == 1 && vIdx < kidsVocab.length) {
+          items.add(ReelFeedItem.vocab(kidsVocab[vIdx++]));
+        } else if (i % 3 == 2 && sIdx < kidsStories.length) {
+          items.add(ReelFeedItem.story(kidsStories[sIdx++]));
+        }
+      }
+    } else {
+      // 🏰 ADULT INSTANT SEED STREAM: Level-Matched Spoken English + Robot homes
+      final adultRobots = _generateFullSpectrumHomes(count: 24);
+      final spokenGames = PocketReelsGameEngine.getSpokenCommunicationGames(
+        userLevel: widget.userLevel,
+        count: 16,
+      );
+      final stories = PocketReelsContentEngine.getStories(count: 4);
+      final vocabs = PocketReelsContentEngine.getVocabCards(count: 4);
+      final speakChalls = PocketReelsContentEngine.getSpeakChallenges(count: 4);
+
+      int gIdx = 0;
+      int sIdx = 0;
+      int vIdx = 0;
+      int spkIdx = 0;
+
+      if (widget.initialNeighbor != null) {
+        items.add(ReelFeedItem.home(widget.initialNeighbor!));
+      } else {
+        items.add(ReelFeedItem.home(PocketNeighbor.createPresident()));
+      }
+
+      if (spokenGames.isNotEmpty) items.add(ReelFeedItem.game(spokenGames[gIdx++]));
+
+      for (int i = 0; i < adultRobots.length; i++) {
+        items.add(ReelFeedItem.home(adultRobots[i]));
+
+        // Pair every home with a spoken communication comeback game
+        if (gIdx < spokenGames.length) {
+          items.add(ReelFeedItem.game(spokenGames[gIdx++]));
+        }
+
+        if (i % 3 == 0 && spkIdx < speakChalls.length) {
+          items.add(ReelFeedItem.speakChallenge(speakChalls[spkIdx++]));
+        } else if (i % 3 == 1 && vIdx < vocabs.length) {
+          items.add(ReelFeedItem.vocab(vocabs[vIdx++]));
+        } else if (i % 3 == 2 && sIdx < stories.length) {
+          items.add(ReelFeedItem.story(stories[sIdx++]));
+        }
+      }
+    }
+
+    return items;
+  }
+
+  Future<void> _loadViewedHistoryAndFeed() async {
+    // Note: Do NOT set _isLoading = true here, keep feed instant!
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedViewed = prefs.getStringList('pm_viewed_homes_ids') ?? [];
@@ -622,8 +809,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         ? PocketReelsGameEngine.getKidsCommunicationGames(
             count: combinedNeighbors.length + 8,
           )
-        : PocketReelsGameEngine.getNextGameBatch(
-            count: (combinedNeighbors.length / 2).ceil() + 4,
+        : PocketReelsGameEngine.getSpokenCommunicationGames(
+            userLevel: widget.userLevel,
+            count: combinedNeighbors.length + 8,
           );
 
     // Check if deep linking to a specific neighbor or game
@@ -870,9 +1058,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final List<ReelStoryCard> stories = isKid
         ? PocketReelsContentEngine.getKidsStories(count: 6)
         : PocketReelsContentEngine.getStories(count: 8);
-    final List<ReelInterviewCard> interviews = isKid
-        ? const [] // Strictly zero adult job interviews in kids mode
-        : PocketReelsContentEngine.getInterviews(count: 8);
     final List<ReelSpeakChallengeCard> speakChallenges = isKid
         ? PocketReelsContentEngine.getKidsSpeakChallenges(count: 8)
         : PocketReelsContentEngine.getSpeakChallenges(count: 8);
@@ -883,7 +1068,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final List<ReelFeedItem> combinedFeed = [];
     int gameIdx = 0;
     int storyIdx = 0;
-    int interviewIdx = 0;
     int speakIdx = 0;
     int vocabIdx = 0;
     int vibeIdx = 0;
@@ -896,7 +1080,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             ? games.first
             : (isKid
                 ? PocketReelsGameEngine.getKidsCommunicationGames(count: 1).first
-                : PocketReelsGameEngine.getNextGameBatch(count: 1).first),
+                : PocketReelsGameEngine.getSpokenCommunicationGames(userLevel: widget.userLevel, count: 1).first),
       );
       combinedFeed.add(ReelFeedItem.game(specificGame));
     }
@@ -924,18 +1108,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
         }
       } else {
-        // 🏰 ADULT LEARNING CYCLE: Game ➔ Story ➔ Interview ➔ Speak ➔ Vocab
-        final cycle = i % 5;
-        if (cycle == 0 && gameIdx < games.length) {
+        // 🏰 ADULT SPOKEN COMMUNICATION STREAM:
+        // Pair every single home with a Level-Matched Spoken English Dialogue Game!
+        if (gameIdx < games.length) {
           combinedFeed.add(ReelFeedItem.game(games[gameIdx++]));
-        } else if (cycle == 1 && storyIdx < stories.length) {
-          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
-        } else if (cycle == 2 && interviewIdx < interviews.length) {
-          combinedFeed.add(ReelFeedItem.interview(interviews[interviewIdx++]));
-        } else if (cycle == 3 && speakIdx < speakChallenges.length) {
+        }
+
+        // Interleave light bite-sized content every 2-3 homes (Speak challenge, Vocab card, or short Story bite)
+        // Note: Bulky HR interviews ("Tell me about yourself") are excluded per User Audio Directive.
+        if (i % 3 == 0 && speakIdx < speakChallenges.length) {
           combinedFeed.add(ReelFeedItem.speakChallenge(speakChallenges[speakIdx++]));
-        } else if (cycle == 4 && vocabIdx < vocabCards.length) {
+        } else if (i % 3 == 1 && vocabIdx < vocabCards.length) {
           combinedFeed.add(ReelFeedItem.vocab(vocabCards[vocabIdx++]));
+        } else if (i % 3 == 2 && storyIdx < stories.length) {
+          combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
         }
 
         if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
@@ -947,7 +1133,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     if (mounted) {
       setState(() {
         _feedItems = combinedFeed;
-        _isLoading = false;
       });
 
       if (combinedFeed.isNotEmpty) {
@@ -1021,31 +1206,33 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           minGap: 6,
         );
 
-        final newGames = PocketReelsGameEngine.getNextGameBatch(count: 4);
+        final newGames = PocketReelsGameEngine.getSpokenCommunicationGames(
+          userLevel: widget.userLevel,
+          count: 8,
+        );
         final newStories = PocketReelsContentEngine.getStories(count: 3);
-        final newInterviews = PocketReelsContentEngine.getInterviews(count: 3);
         final newSpeak = PocketReelsContentEngine.getSpeakChallenges(count: 3);
         final newVocab = PocketReelsContentEngine.getVocabCards(count: 3);
 
         int gIdx = 0;
         int sIdx = 0;
-        int iIdx = 0;
         int spIdx = 0;
         int vIdx = 0;
 
         for (int i = 0; i < unseenNewRobots.length; i++) {
           newBatch.add(ReelFeedItem.home(unseenNewRobots[i]));
-          final c = i % 5;
-          if (c == 0 && gIdx < newGames.length) {
+
+          // Pair each home with a level-matched spoken dialogue game
+          if (gIdx < newGames.length) {
             newBatch.add(ReelFeedItem.game(newGames[gIdx++]));
-          } else if (c == 1 && sIdx < newStories.length) {
-            newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
-          } else if (c == 2 && iIdx < newInterviews.length) {
-            newBatch.add(ReelFeedItem.interview(newInterviews[iIdx++]));
-          } else if (c == 3 && spIdx < newSpeak.length) {
+          }
+
+          if (i % 3 == 0 && spIdx < newSpeak.length) {
             newBatch.add(ReelFeedItem.speakChallenge(newSpeak[spIdx++]));
-          } else if (c == 4 && vIdx < newVocab.length) {
+          } else if (i % 3 == 1 && vIdx < newVocab.length) {
             newBatch.add(ReelFeedItem.vocab(newVocab[vIdx++]));
+          } else if (i % 3 == 2 && sIdx < newStories.length) {
+            newBatch.add(ReelFeedItem.story(newStories[sIdx++]));
           }
         }
       }
@@ -1421,25 +1608,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Container(
-        color: const Color(0xFF070B0D),
-        child: const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Discovering Homes & Challenges...',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ],
-          ),
-        ),
-      );
+    // ⚡ ZERO SPINNER / HIGH OPTIMIZATION (User Audio Directive):
+    // Feed is pre-loaded on frame 1. Never show blocking spinner or "Discovering Homes & Challenges".
+    if (_feedItems.isEmpty) {
+      _feedItems = _generateInstantSeedFeed();
     }
 
     if (_feedItems.isEmpty) {
@@ -1626,8 +1798,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final isPresident = neighbor.id == 'pocket_president';
     final isDaytime = (index % 2 == 0); // Alternating light and dark modes
 
-    return Stack(
-      children: [
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
         // 🌄 1. Living Citadel Scenery (Alternates between Day Sunlit Meadow and Night Twilight)
         Positioned.fill(
           child: Container(
@@ -1958,6 +2133,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 const SizedBox(height: 14),
               ],
 
+              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+              _buildJumpingArrowButton(size: 46),
+              const SizedBox(height: 14),
+
               // ✈️ Minimal Share Button (Instagram Reels style)
               GestureDetector(
                 onTap: () => _onShareHomeTapped(neighbor),
@@ -2235,113 +2414,122 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   /// 🎮 Interactive Multi-Type Mini-Game Slide (Clean non-blocking parent scrolling - User Audio Directive)
   Widget _buildInteractiveGameSlide(ReelGameCard card, int index) {
-    return Stack(
-      children: [
-        // Background Gradient
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0A0F1E),
-                  Color(0xFF131D33),
-                  Color(0xFF0F172A),
-                  Color(0xFF070B0D),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-        ),
-
-        // Main Game Content (Centered, inner scrolling disabled so parent PageView receives 100% of vertical gestures!)
-        Positioned.fill(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Center(
-                child: SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: _buildGameContentForType(card),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF0A0F1E),
+                    Color(0xFF131D33),
+                    Color(0xFF0F172A),
+                    Color(0xFF070B0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
           ),
-        ),
 
-        // Bottom Centered Subtle Swipe Up Hint
-        Positioned(
-          bottom: 16,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Row(
+          // Main Game Content (Centered, inner scrolling disabled so parent PageView receives 100% of vertical gestures!)
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: _buildGameContentForType(card),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom Centered Subtle Swipe Up Hint
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white24, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Swipe up for next Reel',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white30,
+                      fontSize: 10.5,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Bottom-Right Floating Jumping Arrow & Minimal Share Button
+          Positioned(
+            right: 18,
+            bottom: 24,
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white24, size: 16),
-                const SizedBox(width: 4),
+                // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+                _buildJumpingArrowButton(size: 46),
+                const SizedBox(height: 14),
+
+                // ✈️ Minimal Share Button (Instagram style)
+                GestureDetector(
+                  onTap: () => _onShareGameTapped(card),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      border: Border.all(color: Colors.white24, width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.share_outlined, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 3),
                 Text(
-                  'Swipe up for next Reel',
+                  'Share',
                   style: GoogleFonts.outfit(
-                    color: Colors.white30,
-                    fontSize: 10.5,
-                    letterSpacing: 0.3,
+                    color: Colors.white70,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-
-        // Bottom-Right Floating Minimal Share Button
-        Positioned(
-          right: 18,
-          bottom: 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ✈️ Minimal Share Button (Instagram style)
-              GestureDetector(
-                onTap: () => _onShareGameTapped(card),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.7),
-                    border: Border.all(color: Colors.white24, width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.share_outlined, color: Colors.white, size: 20),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Share',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -3250,35 +3438,38 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   Widget _buildStorySlide(ReelStoryCard story, int index) {
     final isSpeakingThis = _isTtsSpeaking && _currentTtsCardId == story.id;
 
-    return Stack(
-      children: [
-        // Background Gradient (Deep Amber / Indigo Starlight)
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0F172A),
-                  Color(0xFF1E1B4B),
-                  Color(0xFF172554),
-                  Color(0xFF070B0D),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background Gradient (Deep Amber / Indigo Starlight)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF0F172A),
+                    Color(0xFF1E1B4B),
+                    Color(0xFF172554),
+                    Color(0xFF070B0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
 
-        // Main Story Scrollable Content
-        Positioned.fill(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
-              child: Center(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
+          // Main Story Scrollable Content (Inner scroll disabled so parent PageView handles 100% swipe gestures)
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -3536,13 +3727,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
-        // Right-Side Action Rail (Audio Read, Share, Like)
+        // Right-Side Action Rail (Jumping Arrow, Audio Read, Like, Share)
         Positioned(
           right: 14,
           bottom: MediaQuery.of(context).padding.bottom + 24,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 🟢 Bouncing/Jumping Green Arrow Button (User Audio Directive: right above audio button)
+              _buildJumpingArrowButton(size: 46),
+              const SizedBox(height: 14),
+
               // Audio Toggle Button
               GestureDetector(
                 onTap: () => _playTtsForCard(story.id, story.fullReadText),
@@ -3615,41 +3810,45 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   /// 💼 2. Interview & Workplace Communication Q&A Slide
   Widget _buildInterviewSlide(ReelInterviewCard interview, int index) {
     final isSpeakingThis = _isTtsSpeaking && _currentTtsCardId == interview.id;
 
-    return Stack(
-      children: [
-        // Background Gradient (Deep Navy / Executive Slate)
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF0F172A),
-                  Color(0xFF1E293B),
-                  Color(0xFF0B192C),
-                  Color(0xFF070B0D),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background Gradient (Deep Navy / Executive Slate)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF0F172A),
+                    Color(0xFF1E293B),
+                    Color(0xFF0B192C),
+                    Color(0xFF070B0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
 
-        // Main Content
-        Positioned.fill(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
-              child: Center(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+          // Main Content
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3907,13 +4106,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
-        // Right Rail
+        // Right Rail (Jumping Arrow, Audio Read, Like, Share)
         Positioned(
           right: 14,
           bottom: MediaQuery.of(context).padding.bottom + 24,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+              _buildJumpingArrowButton(size: 46),
+              const SizedBox(height: 14),
+
               GestureDetector(
                 onTap: () => _playTtsForCard(interview.id, interview.fullSpokenAnswer),
                 child: Container(
@@ -3978,8 +4181,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStarTile(String label, String text, Color accentColor) {
     return Container(
@@ -4014,34 +4218,37 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final hasFailed = _speakChallengeResults[challenge.id] == false;
     final userSpoken = _speakChallengeUserText[challenge.id] ?? _recognizedSpokenWords;
 
-    return Stack(
-      children: [
-        // Background Gradient (Vibrant Emerald / Deep Cyan Matrix)
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF064E3B),
-                  Color(0xFF0F172A),
-                  Color(0xFF022C22),
-                  Color(0xFF070B0D),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background Gradient (Vibrant Emerald / Deep Cyan Matrix)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF064E3B),
+                    Color(0xFF0F172A),
+                    Color(0xFF022C22),
+                    Color(0xFF070B0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
 
-        Positioned.fill(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
-              child: Center(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -4339,13 +4546,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
-        // Right Rail
+        // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
         Positioned(
           right: 14,
           bottom: MediaQuery.of(context).padding.bottom + 24,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+              _buildJumpingArrowButton(size: 46),
+              const SizedBox(height: 14),
+
               // Listen to Correct Pronunciation
               GestureDetector(
                 onTap: () => _playTtsForCard(challenge.id, challenge.targetSpeech),
@@ -4407,39 +4618,43 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   /// ⚡ 4. Power Vocabulary & Idiom Slide with Dynamic Multi-Language Meaning
   Widget _buildVocabSlide(ReelVocabCard vocab, int index) {
-    return Stack(
-      children: [
-        // Background Gradient (Deep Royal Amethyst / Obsidian)
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF3B0764),
-                  Color(0xFF1E1B4B),
-                  Color(0xFF0F172A),
-                  Color(0xFF070B0D),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _scrollToNextReel,
+      child: Stack(
+        children: [
+          // Background Gradient (Deep Royal Amethyst / Obsidian)
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF3B0764),
+                    Color(0xFF1E1B4B),
+                    Color(0xFF0F172A),
+                    Color(0xFF070B0D),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
 
-        Positioned.fill(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
-              child: Center(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
+          Positioned.fill(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 68, top: 16, bottom: 24),
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -4702,13 +4917,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
-        // Right Rail
+        // Right Rail (Jumping Arrow, Pronunciation, Like, Share)
         Positioned(
           right: 14,
           bottom: MediaQuery.of(context).padding.bottom + 24,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 🟢 Energetic Bouncing/Jumping Green Arrow Button (User Audio Directive: tap to advance)
+              _buildJumpingArrowButton(size: 46),
+              const SizedBox(height: 14),
+
               GestureDetector(
                 onTap: () => _playTtsForCard(vocab.id, vocab.word),
                 child: Container(
@@ -4769,8 +4988,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }
 
 class _PocketReelVibeSlideView extends StatefulWidget {
@@ -5106,13 +5326,43 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
           ),
         ),
 
-        // 6. Right Side Action Rail (Home Visit, Like, Share)
+        // 6. Right Side Action Rail (Next Reel Arrow, Home Visit, Like, Share)
         Positioned(
           right: 14,
           bottom: MediaQuery.of(context).padding.bottom + 24,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 🟢 Green Arrow Button to Next Reel (User Audio Directive: tap to advance)
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  widget.onNextReel();
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00E676), Color(0xFF10B981)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E676).withValues(alpha: 0.5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.keyboard_arrow_down_rounded, color: Colors.black, size: 28),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+
               // 🏰 Home Visit Action Button (User Audio Directive: Must visit author's house / citadel)
               GestureDetector(
                 onTap: () {

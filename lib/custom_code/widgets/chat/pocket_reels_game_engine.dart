@@ -32,6 +32,9 @@ class ReelGameCard {
   final String? speakerAvatar; // Character avatar emoji e.g. "🐯", "🐼", "🦁"
   final String? speakerRole; // Character role e.g. "Phonics Buddy", "Manners Guide", "Kingdom Sovereign"
 
+  final int minLevel;
+  final int maxLevel;
+
   const ReelGameCard({
     required this.id,
     required this.gameType,
@@ -47,6 +50,8 @@ class ReelGameCard {
     this.speakerName,
     this.speakerAvatar,
     this.speakerRole,
+    this.minLevel = 1,
+    this.maxLevel = 90,
   });
 
   String getExplanation(String lang) {
@@ -909,9 +914,556 @@ class PocketReelsGameEngine {
     );
   }
 
+  /// 🗣️ Level-Matched Spoken English Communication & Dialogue Games for Adults (User Audio Directive)
+  /// Matches the learner's day/level:
+  /// - Beginner (Day 1-15): Basic introductions, greetings, everyday courtesies, simple questions
+  /// - Intermediate (Day 16-45): Workplace, cafe, phone calls, social opinions, polite requests
+  /// - Advanced (Day 46-90): Diplomatic business comebacks, negotiations, strategic communication
+  static List<ReelGameCard> getSpokenCommunicationGames({
+    required int userLevel,
+    int count = 8,
+  }) {
+    final allCards = List<ReelGameCard>.from(_curatedSpokenCommunicationGames);
+
+    // Filter cards matching user level tier
+    final levelMatched = allCards
+        .where((g) => g.minLevel <= userLevel && userLevel <= g.maxLevel)
+        .toList();
+    final candidatePool = levelMatched.isNotEmpty ? levelMatched : allCards;
+
+    final unseen = candidatePool.where((g) => !_viewedGameIds.contains(g.id)).toList();
+    unseen.shuffle(_random);
+    if (unseen.length >= count) return unseen.take(count).toList();
+
+    final seen = candidatePool.where((g) => _viewedGameIds.contains(g.id)).toList();
+    seen.shuffle(_random);
+    final combined = [...unseen, ...seen];
+    if (combined.length >= count) return combined.take(count).toList();
+
+    while (combined.length < count) {
+      combined.add(_generateDynamicSpokenGame(combined.length + 1, userLevel));
+    }
+    return combined.take(count).toList();
+  }
+
+  static ReelGameCard _generateDynamicSpokenGame(int seed, int userLevel) {
+    final dynId = 'dyn_spoken_${DateTime.now().millisecondsSinceEpoch}_$seed';
+    if (userLevel <= 15) {
+      return ReelGameCard(
+        id: dynId,
+        gameType: ReelGameType.smartReply,
+        category: 'DAILY CHAT 💬',
+        speakerName: 'Priya 👩‍💼',
+        speakerAvatar: '👩‍💼',
+        speakerRole: 'Colleague',
+        prompt: 'Good morning! Did you catch the morning news today?',
+        options: [
+          'Good morning! No, I did not get time to read it. 📰',
+          'Morning is good, I don\'t know news.',
+          'News is not caught by me.',
+          'I am not news reader.',
+        ],
+        correctOptionIndex: 0,
+        nativeExplanations: {
+          'Malayalam': 'ലളിതമായി മറുപടി പറയാൻ "No, I did not get time to read it" എന്ന് സ്വാഭാവികമായി പറയുക! 📰',
+          'Tamil': 'இயல்பாக "No, I did not get time to read it" என்று கூறலாம்! 📰',
+          'Hindi': 'सहज रूप से कहें "No, I did not get time to read it" 📰',
+          'English': 'Natural everyday spoken reply: "No, I didn\'t get time to read it."',
+        },
+        contextHint: 'Natural morning courtesy',
+        minLevel: 1,
+        maxLevel: 15,
+      );
+    } else {
+      return ReelGameCard(
+        id: dynId,
+        gameType: ReelGameType.smartReply,
+        category: 'WORKPLACE DIALOGUE 💼',
+        speakerName: 'Arun 👨‍💻',
+        speakerAvatar: '👨‍💻',
+        speakerRole: 'Project Lead',
+        prompt: 'Could we wrap up this discussion and send the final notes?',
+        options: [
+          'Sure, I will summarize our action items and email everyone! ✉️',
+          'Yes, finish discussion now.',
+          'Notes will put by me soon.',
+          'I am going to wrap it quickly.',
+        ],
+        correctOptionIndex: 0,
+        nativeExplanations: {
+          'Malayalam': 'മീറ്റിംഗ് കഴിഞ്ഞ് നോട്ടുകൾ അയക്കാൻ "I will summarize our action items and email everyone" എന്ന് പ്രൊഫഷണലായി പറയുക! ✉️',
+          'Tamil': '"I will summarize our action items and email everyone" என்று தொழில்முறையாக கூறவும்! ✉️',
+          'Hindi': '"I will summarize our action items and email everyone" एक पेशेवर उत्तर है! ✉️',
+          'English': 'Polite professional summary response.',
+        },
+        contextHint: 'Professional meeting follow-up',
+        minLevel: 16,
+        maxLevel: 90,
+      );
+    }
+  }
+
   // =========================================================================
-  // 🧸 CURATED KIDS COMMUNICATION & CHAT GAMES DATASET (24+ High-Yield Cards)
+  // 🗣️ CURATED SPOKEN ENGLISH COMMUNICATION DATASET (30+ Level-Matched Cards)
   // =========================================================================
+  static const List<ReelGameCard> _curatedSpokenCommunicationGames = [
+    // --- TIER 1: BEGINNER (Days 1 - 15) ---
+    ReelGameCard(
+      id: 'spoken_chat_name',
+      gameType: ReelGameType.smartReply,
+      category: 'DAILY INTRODUCTIONS 👋',
+      speakerName: 'Rahul 👨‍💼',
+      speakerAvatar: '👨‍💼',
+      speakerRole: 'New Colleague',
+      prompt: 'Hi there! I am new to this building. What is your name?',
+      options: [
+        'Hi! My name is Rahul, nice to meet you! 😊',
+        'I am having name Rahul.',
+        'My name Rahul is.',
+        'Name is my Rahul.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ആദ്യമായി പേര് പറയുമ്പോൾ "My name is..." അല്ലെങ്കിൽ "I am..." എന്ന് ലളിതമായി പറയുക! 😊',
+        'Tamil': 'பெயரைக் கூறும்போது "My name is..." அல்லது "I am..." என எளிமையாக கூறவும்! 😊',
+        'Hindi': 'नाम बताते समय "My name is..." या "I am..." कहना सबसे सही तरीका है! 😊',
+        'English': 'Standard natural English introduction: "My name is..." or "I am..."',
+      },
+      contextHint: 'Friendly personal introduction',
+      funnyNote: 'First impressions matter! Smile and say your name clearly! 🌟',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_origin',
+      gameType: ReelGameType.smartReply,
+      category: 'MEETING PEOPLE 🌴',
+      speakerName: 'Ananya 👩‍💻',
+      speakerAvatar: '👩‍💻',
+      speakerRole: 'Tech Lead',
+      prompt: 'Your accent sounds so friendly! Where are you from?',
+      options: [
+        'I am from Kerala, India! 🌴',
+        'I from Kerala coming.',
+        'Kerala is my from place.',
+        'I am in Kerala from.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'സ്വദേശം പറയുമ്പോൾ "I am from..." അല്ലെങ്കിൽ "I come from..." എന്ന് ഉപയോഗിക്കുക! 🌴',
+        'Tamil': 'சொந்த ஊரை கூற "I am from..." என்று சொல்லுங்கள்! 🌴',
+        'Hindi': 'अपने स्थान के बारे में बताने के लिए "I am from..." कहें! 🌴',
+        'English': 'Use "I am from [Place]" to state your origin naturally.',
+      },
+      contextHint: 'Stating where you are from',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_how_are_you',
+      gameType: ReelGameType.smartReply,
+      category: 'MORNING GREETINGS ☕',
+      speakerName: 'David 👨‍💼',
+      speakerAvatar: '👨‍💼',
+      speakerRole: 'Manager',
+      prompt: 'Good morning! How are you doing today?',
+      options: [
+        'I am doing great, thank you! How about you? ☕',
+        'I am doing goodly today.',
+        'Today is doing me fine.',
+        'I am fine doing.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"How are you doing?" എന്ന് ചോദിച്ചാൽ "I am doing great, thank you! How about you?" എന്ന് തിരിച്ചു ചോദിക്കുന്നത് സ്വാഭാവിക ശൈലിയാണ്! ☕',
+        'Tamil': '"I am doing great, thank you! How about you?" என கேட்பது மரியாதையானது! ☕',
+        'Hindi': 'जवाब में "I am doing great, thank you! How about you?" पूछना शिष्टाचार है! ☕',
+        'English': 'Natural response acknowledging the question and asking back politely.',
+      },
+      contextHint: 'Warm polite morning conversation',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_water',
+      gameType: ReelGameType.smartReply,
+      category: 'EVERYDAY COURTESY 💧',
+      speakerName: 'Priya 👩‍🎓',
+      speakerAvatar: '👩‍🎓',
+      speakerRole: 'Classmate',
+      prompt: 'Could you please pass me that water bottle on the table?',
+      options: [
+        'Sure! Here you go! 💧',
+        'Take water go.',
+        'Water is giving to you.',
+        'Yes, I am passing.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ആരെങ്കിലും ചോദിച്ച വസ്തു നൽകി കൊടുക്കുമ്പോൾ "Here you go!" അല്ലെങ്കിൽ "Here it is!" എന്ന് പറയുക! 💧',
+        'Tamil': 'பொருளை கொடுக்கும்போது "Here you go!" என்று கூறுங்கள்! 💧',
+        'Hindi': 'चीज देते समय "Here you go!" कहना सबसे स्वाभाविक तरीका है! 💧',
+        'English': 'Standard idiom when handing something over to someone: "Here you go!"',
+      },
+      contextHint: 'Handing an object over politely',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_breakfast',
+      gameType: ReelGameType.smartReply,
+      category: 'CASUAL CHIT-CHAT 🥪',
+      speakerName: 'Alex 👨‍💻',
+      speakerAvatar: '👨‍💻',
+      speakerRole: 'Coworker',
+      prompt: 'It is already 11 AM! Did you have breakfast today?',
+      options: [
+        'Yes, I had breakfast around 9 AM! 🥪',
+        'Yes, I was eat breakfast.',
+        'I did have taken breakfast.',
+        'Yes, breakfast has eaten.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'കഴിഞ്ഞ കാര്യത്തെക്കുറിച്ച് പറയുമ്പോൾ സിമ്പിൾ പാസ്റ്റ് "I had breakfast" അല്ലെങ്കിൽ "I ate breakfast" എന്ന് പറയുക! 🥪',
+        'Tamil': 'கடந்த காலத்தை குறிப்பிட "I had breakfast" என்று கூறுங்கள்! 🥪',
+        'Hindi': 'भूतकाल के लिए "I had breakfast" का प्रयोग करें! 🥪',
+        'English': 'Simple past tense: "I had breakfast" or "I ate breakfast."',
+      },
+      contextHint: 'Past action answer',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_help_thanks',
+      gameType: ReelGameType.smartReply,
+      category: 'POLITE GRATITUDE 🙏',
+      speakerName: 'Sarah 👩‍⚕️',
+      speakerAvatar: '👩‍⚕️',
+      speakerRole: 'Doctor',
+      prompt: 'Thank you so much for helping me carry these medical files!',
+      options: [
+        'You are very welcome! Happy to help! 😊',
+        'No thanks needed.',
+        'Welcome to you.',
+        'It is not problem.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Thank you" എന്ന് പറഞ്ഞാൽ മാന്യമായി "You are very welcome!" അല്ലെങ്കിൽ "Happy to help!" എന്ന് മറുപടി നൽകാം! 😊',
+        'Tamil': 'நன்றிக்கு பதிலாக "You are very welcome!" அல்லது "Happy to help!" எனலாம்! 😊',
+        'Hindi': 'धन्यवाद का उत्तर "You are very welcome!" कहकर दें! 😊',
+        'English': 'Best natural reply to thank you: "You are very welcome!"',
+      },
+      contextHint: 'Graceful reply to gratitude',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_restroom',
+      gameType: ReelGameType.smartReply,
+      category: 'GIVING DIRECTIONS 🚻',
+      speakerName: 'Tourist 🎒',
+      speakerAvatar: '🎒',
+      speakerRole: 'Visitor',
+      prompt: 'Excuse me, could you tell me where the restroom is?',
+      options: [
+        'It is down the hallway on your left! 🚻',
+        'Go left hallway restroom.',
+        'Restroom is there going.',
+        'Left side hall restroom is.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'വഴി പറഞ്ഞു കൊടുക്കുമ്പോൾ "It is down the hallway on your left" എന്ന് വ്യക്തമായി പറയുക! 🚻',
+        'Tamil': 'வழிகாட்டும்போது "It is down the hallway on your left" என்று தெளிவாக சொல்லுங்கள்! 🚻',
+        'Hindi': 'दिशा बताते समय कहें "It is down the hallway on your left"! 🚻',
+        'English': 'Clear directional phrase: "It is down the hallway on your left."',
+      },
+      contextHint: 'Clear polite directions',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_apology_late',
+      gameType: ReelGameType.smartReply,
+      category: 'HANDLING APOLOGIES 🤝',
+      speakerName: 'Vikram 👨‍💼',
+      speakerAvatar: '👨‍💼',
+      speakerRole: 'Team Member',
+      prompt: 'I am so sorry I was ten minutes late to our study group!',
+      options: [
+        'No worries at all! We just started reviewing chapter 2. 🤝',
+        'Don\'t be sorry again.',
+        'Late is okay for me.',
+        'No issue is there.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ആരെങ്കിലും വൈകിയതിന് ക്ഷമ ചോദിച്ചാൽ "No worries at all!" അല്ലെങ്കിൽ "That is totally fine!" എന്ന് സൗഹൃദത്തോടെ മറുപടി നൽകാം! 🤝',
+        'Tamil': 'மன்னிப்பு கேட்கும்போது "No worries at all!" என்று நட்புணர்வை காட்டுங்கள்! 🤝',
+        'Hindi': '"No worries at all!" कहकर सामने वाले को सहज महसूस कराएं! 🤝',
+        'English': '"No worries at all" graciously diffuses an apology.',
+      },
+      contextHint: 'Gracious friendly response',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_coffee_preference',
+      gameType: ReelGameType.smartReply,
+      category: 'CAFE & ORDERING ☕',
+      speakerName: 'Barista ☕',
+      speakerAvatar: '☕',
+      speakerRole: 'Cafe Host',
+      prompt: 'Welcome! Would you prefer tea or coffee this morning?',
+      options: [
+        'I would prefer a hot coffee with milk, please! ☕',
+        'Coffee is my like.',
+        'I like to drink coffee please.',
+        'Coffee I am taking.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഓർഡർ ചെയ്യുമ്പോൾ "I would prefer..." അല്ലെങ്കിൽ "I would like..." എന്ന് മാന്യമായി ഉപയോഗിക്കുക! ☕',
+        'Tamil': 'ஆர்டர் செய்யும்போது "I would prefer..." என்று நாகரீகமாக கூறுங்கள்! ☕',
+        'Hindi': 'पसंद बताने के लिए "I would prefer..." कहना सबसे विनम्र है! ☕',
+        'English': '"I would prefer [Item], please" is the standard polite order structure.',
+      },
+      contextHint: 'Polite ordering expression',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_time',
+      gameType: ReelGameType.smartReply,
+      category: 'ASKING THE TIME ⏰',
+      speakerName: 'Commuter ⌚',
+      speakerAvatar: '⌚',
+      speakerRole: 'Metro Passenger',
+      prompt: 'Excuse me, do you have the time by any chance?',
+      options: [
+        'Yes, it is exactly 4:15 PM! ⏰',
+        'Yes, time is with me.',
+        'I have time now.',
+        'Clock is 4:15.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Do you have the time?" എന്നാൽ "സമയം എത്രയായി?" എന്നാണ് അർത്ഥം! "Yes, it is 4:15 PM" എന്ന് പറയുക! ⏰',
+        'Tamil': '"Do you have the time?" என்றால் நேரம் என்ன என்று அர்த்தம்! ⏰',
+        'Hindi': '"Do you have the time?" का मतलब समय पूछना है! "It is 4:15 PM" कहें! ⏰',
+        'English': '"Do you have the time?" means "What time is it?". Answer with the current time.',
+      },
+      contextHint: 'Understanding common idiomatic time inquiries',
+      minLevel: 1,
+      maxLevel: 15,
+    ),
+
+    // --- TIER 2: INTERMEDIATE (Days 16 - 45) ---
+    ReelGameCard(
+      id: 'spoken_chat_reschedule',
+      gameType: ReelGameType.smartReply,
+      category: 'WORKPLACE SCHEDULING 📅',
+      speakerName: 'Meera 👩‍💼',
+      speakerAvatar: '👩‍💼',
+      speakerRole: 'Project Manager',
+      prompt: 'Our 2 PM meeting conflicts with a client demo. Could we reschedule to 3:30 PM?',
+      options: [
+        'Sure, 3:30 PM works perfectly for me! 📅',
+        'Yes, I will work that time.',
+        '3:30 PM is my working time.',
+        'Time is OK for work.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'സമയം സൗകര്യപ്രദമാണെന്ന് പറയാൻ "3:30 PM works perfectly for me" എന്ന സ്വാഭാവിക പ്രയോഗം ഉപയോഗിക്കുക! 📅',
+        'Tamil': '"3:30 PM works perfectly for me" என்று அலுவலக ரீதியாக கூறலாம்! 📅',
+        'Hindi': '"3:30 PM works perfectly for me" कहना सबसे पेशेवर तरीका है! 📅',
+        'English': '"[Time] works perfectly for me" is the most natural way to accept a meeting time.',
+      },
+      contextHint: 'Accepting a revised schedule naturally',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_phone_message',
+      gameType: ReelGameType.smartReply,
+      category: 'PHONE ETIQUETTE 📞',
+      speakerName: 'Receptionist ☎️',
+      speakerAvatar: '☎️',
+      speakerRole: 'Office Front Desk',
+      prompt: 'I am afraid Mr. John is in a conference right now. May I take a message?',
+      options: [
+        'Yes please, could you ask him to call me back when he is free? 📞',
+        'Yes, take my call back.',
+        'Tell him to call me fast.',
+        'Message is please call me.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഫോണിൽ സന്ദേശം നൽകുമ്പോൾ "Could you ask him to call me back when he is free?" എന്ന് മാന്യമായി പറയുക! 📞',
+        'Tamil': 'போன் காலில் "Could you ask him to call me back" என்று நாகரீகமாக தெரிவிக்கவும்! 📞',
+        'Hindi': 'मैसेज छोड़ते समय "Could you ask him to call me back" कहें! 📞',
+        'English': 'Professional phone message request: "Could you ask him to call me back..."',
+      },
+      contextHint: 'Polite telephone message request',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_feedback',
+      gameType: ReelGameType.smartReply,
+      category: 'CONSTRUCTIVE FEEDBACK 💡',
+      speakerName: 'Sanjay 👨‍💻',
+      speakerAvatar: '👨‍💻',
+      speakerRole: 'Designer',
+      prompt: 'I just finished the first slide deck draft. What do you think?',
+      options: [
+        'The flow is great, but let us simplify slide 4 to make it punchier! 💡',
+        'Slide 4 is very big words.',
+        'I am thinking slide 4 is not good.',
+        'Presentation is like that only.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'പോസിറ്റീവ് ആയ കാര്യങ്ങൾ അഭിനന്ദിച്ച ശേഷം തിരുത്തലുകൾ നിർദ്ദേശിക്കുന്നതാണ് മികച്ച രീതി (The flow is great, but let us...)! 💡',
+        'Tamil': 'முதலில் பாராட்டி பிறகு மாற்றங்களை பரிந்துரைப்பது சிறந்த அணுகுமுறை! 💡',
+        'Hindi': 'पहले तारीफ करें फिर सुधार का सुझाव दें (Sandwich feedback method)! 💡',
+        'English': 'Constructive feedback acknowledges strong points before suggesting improvements.',
+      },
+      contextHint: 'Diplomatic constructive feedback',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_volume',
+      gameType: ReelGameType.smartReply,
+      category: 'CONSIDERATE SPEAKING 🎧',
+      speakerName: 'Desk Neighbor 💻',
+      speakerAvatar: '💻',
+      speakerRole: 'Coworker',
+      prompt: 'Would you mind turning down the speaker volume just a little bit?',
+      options: [
+        'Not at all, apologies for that! I will use headphones. 🎧',
+        'Yes, I mind.',
+        'Volume is not loud.',
+        'I am decreasing it now only.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Would you mind...?" എന്ന് ചോദിച്ചാൽ "എനിക്ക് ബുദ്ധിമുട്ടില്ല" എന്ന് പറയാൻ "Not at all!" എന്ന് മറുപടി നൽകുക! 🎧',
+        'Tamil': '"Would you mind...?" என்பதற்கு "எனக்கு எந்த ஆட்சேபனையும் இல்லை" என கூற "Not at all!" என தொடங்குங்கள்! 🎧',
+        'Hindi': '"Would you mind...?" का विनम्र उत्तर "Not at all" से शुरू होता है! 🎧',
+        'English': 'Answering "Not at all" means you are happy to comply with the request.',
+      },
+      contextHint: 'Agreeing to a polite request',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_decline_lunch',
+      gameType: ReelGameType.smartReply,
+      category: 'POLITE REFUSAL 🥗',
+      speakerName: 'Kavita 👩‍🔬',
+      speakerAvatar: '👩‍🔬',
+      speakerRole: 'Team Mate',
+      prompt: 'A few of us are heading to the cafeteria for lunch. Care to join?',
+      options: [
+        'I would love to, but I have a client call in 15 minutes! Next time for sure! 🥗',
+        'No, I am not eating with you.',
+        'I am having prior work today.',
+        'Lunch is not free for me.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ക്ഷണം നിരസിക്കുമ്പോൾ വിഷമം തോന്നാത്ത രീതിയിൽ "I would love to, but... Next time for sure!" എന്ന് മറുപടി നൽകുക! 🥗',
+        'Tamil': 'அழைப்பை நாகரீகமாக மறுக்க "I would love to, but... Next time for sure!" எனலாம்! 🥗',
+        'Hindi': 'शालीनता से मना करने के लिए "I would love to, but... Next time for sure!" कहें! 🥗',
+        'English': 'Politely declining invitations involves appreciating the invite and giving a brief reason.',
+      },
+      contextHint: 'Soft, polite decline of an invitation',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_clarify',
+      gameType: ReelGameType.smartReply,
+      category: 'SEEKING CLARITY 🎯',
+      speakerName: 'Director 👔',
+      speakerAvatar: '👔',
+      speakerRole: 'Executive',
+      prompt: 'We need to streamline the downstream pipeline before the third quarter.',
+      options: [
+        'Could you please elaborate on which specific deliverables we should prioritize? 🎯',
+        'What are you talking about?',
+        'I did not get your meaning.',
+        'Say again please.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'വ്യക്തത കുറവുള്ളപ്പോൾ "Could you please elaborate on...?" എന്ന് ചോദിക്കുന്നത് ആത്മവിശ്വാസമുള്ള ശൈലിയാണ്! 🎯',
+        'Tamil': 'விளக்கம் கேட்க "Could you please elaborate on..." என்பது சரியான முறை! 🎯',
+        'Hindi': 'विस्तार से समझने के लिए "Could you please elaborate on...?" पूछें! 🎯',
+        'English': '"Could you please elaborate on..." is executive and polished.',
+      },
+      contextHint: 'Professional inquiry for more details',
+      minLevel: 16,
+      maxLevel: 45,
+    ),
+
+    // --- TIER 3: ADVANCED (Days 46 - 90) ---
+    ReelGameCard(
+      id: 'spoken_chat_deadline_negotiation',
+      gameType: ReelGameType.smartReply,
+      category: 'STRATEGIC DIPLOMACY ⚖️',
+      speakerName: 'VP Product 💼',
+      speakerAvatar: '💼',
+      speakerRole: 'Vice President',
+      prompt: 'The client wants the entire release date moved up by two weeks! Can we deliver?',
+      options: [
+        'We can achieve that if we prioritize the core MVP features and defer the secondary add-ons. ⚖️',
+        'Tell them it is completely impossible.',
+        'We will work all night without sleep.',
+        'Client is always changing their mind.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'മുഴുവൻ കാര്യവും നിഷേധിക്കുന്നതിന് പകരം, സാധ്യമായ പരിഹാരം നിർദ്ദേശിക്കുക (We can achieve that if we prioritize...)! ⚖️',
+        'Tamil': 'நேரடியாக மறுக்காமல், சாத்தியமான மாற்று வழியை முன்மொழியுங்கள்! ⚖️',
+        'Hindi': 'नकारने के बजाय व्यावहारिक समाधान पेश करें! ⚖️',
+        'English': 'Executive trade-off negotiation: scope vs. timeline.',
+      },
+      contextHint: 'Constructive trade-off negotiation',
+      minLevel: 46,
+      maxLevel: 90,
+    ),
+    ReelGameCard(
+      id: 'spoken_chat_disagreement',
+      gameType: ReelGameType.smartReply,
+      category: 'RESPECTFUL DISSENT 📊',
+      speakerName: 'Senior Architect 🏛️',
+      speakerAvatar: '🏛️',
+      speakerRole: 'Principal Engineer',
+      prompt: 'I believe we should discard the old architecture and rebuild from scratch immediately.',
+      options: [
+        'I understand your perspective; however, a gradual migration would carry far less risk for existing users. 📊',
+        'You are completely wrong about this.',
+        'I don\'t agree with your thinking at all.',
+        'Rebuilding is a terrible idea.',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'വിയോജിപ്പ് പ്രകടിപ്പിക്കുമ്പോൾ മറ്റൊരാളുടെ കാഴ്ചപ്പാടിനെ അംഗീകരിച്ച് ബദൽ നിർദ്ദേശം വെക്കുക (I understand your perspective; however...)! 📊',
+        'Tamil': 'எதிர்க்கருத்தை தெரிவிக்க "I understand your perspective; however..." என தொடங்குவது சிறந்த தலைமைப் பண்பு! 📊',
+        'Hindi': 'सहमति-असहमति को संतुलित तरीके से पेश करें! 📊',
+        'English': 'Diplomatic disagreement acknowledging other viewpoints first.',
+      },
+      contextHint: 'Diplomatic professional disagreement',
+      minLevel: 46,
+      maxLevel: 90,
+    ),
+  ];
   static const List<ReelGameCard> _curatedKidsCommunicationGames = [
     // --- 1. SHARING CRAYONS (Sparky Tiger) ---
     ReelGameCard(
