@@ -927,7 +927,7 @@ class _PocketActivePassivePracticeCardState
                                     ? (_isCorrect
                                         ? 'PERFECT PRONUNCIATION!'
                                         : 'ALMOST THERE — TRY AGAIN')
-                                    : 'YOU SAID:',
+                                    : 'VOICE RECORDED:',
                                 style: GoogleFonts.outfit(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,
@@ -941,15 +941,7 @@ class _PocketActivePassivePracticeCardState
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '"$_recognizedWords"',
-                            style: GoogleFonts.outfit(
-                              fontSize: 13,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.white,
-                            ),
-                          ),
+
                           const SizedBox(height: 6),
                           Text(
                             'Target Answer: "${ex.targetWord}"',

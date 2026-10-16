@@ -263,7 +263,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isSpeakingTts = false;
   bool _isListening = false;
-  String _spokenText = '';
   double _speechAccuracy = 0.0;
   bool _hasSpeechAttempted = false;
   PronunciationEvaluationResult? _pronunciationResult;
@@ -330,7 +329,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
     if (available) {
       setState(() {
         _isListening = true;
-        _spokenText = '';
         _hasSpeechAttempted = true;
         _pronunciationResult = null;
       });
@@ -342,7 +340,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
             spokenText: result.recognizedWords,
           );
           setState(() {
-            _spokenText = result.recognizedWords;
             _speechAccuracy = eval.accuracyPercentage / 100.0;
             _pronunciationResult = eval;
           });
@@ -558,7 +555,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
                     selected: isCur,
                     onSelected: (_) => setState(() {
                       _activeVerbIndex = i;
-                      _spokenText = '';
                       _hasSpeechAttempted = false;
                     }),
                     selectedColor: const Color(0xFFFFD700),
@@ -759,7 +755,7 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'You said: "${_spokenText.isEmpty ? 'Listening...' : _spokenText}"',
+                                _speechAccuracy >= 0.65 ? 'Voice Verified' : 'Voice Input Received',
                                 style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
                               ),
                               Text(
@@ -840,7 +836,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
       child: InkWell(
         onTap: () => setState(() {
           _selectedTenseIndex = index;
-          _spokenText = '';
           _hasSpeechAttempted = false;
         }),
         borderRadius: BorderRadius.circular(10),

@@ -1154,7 +1154,7 @@ class _PocketSentenceStructurePracticeCardState
             ),
             const SizedBox(height: 12),
 
-            if (_recognizedWords.isNotEmpty || _isExerciseAnswered) ...[
+            if (_isExerciseAnswered) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1176,9 +1176,6 @@ class _PocketSentenceStructurePracticeCardState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_recognizedWords.isNotEmpty)
-                      Text('"$_recognizedWords"',
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13)),
                     if (_isExerciseAnswered) ...[
                       const SizedBox(height: 4),
                       Text(

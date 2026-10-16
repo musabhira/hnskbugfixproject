@@ -862,16 +862,6 @@ class _PocketPracticeSpeakingCardState
                       ],
                     ),
                   ),
-                ] else if (_recognizedWords.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    'Heard: "$_recognizedWords"',
-                    style: GoogleFonts.inter(
-                      color: Colors.white54,
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
                 ],
 
                 const SizedBox(height: 12),

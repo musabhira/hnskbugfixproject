@@ -586,7 +586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about this in today\'s lesson.',
+        exampleSentence: 'This is a great idea.',
         phonetic: '/this/',
       ),
       DailyVocabItem(
@@ -598,7 +598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about that in today\'s lesson.',
+        exampleSentence: 'That car is very fast.',
         phonetic: '/that/',
       ),
       DailyVocabItem(
@@ -610,7 +610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇവ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about these in today\'s lesson.',
+        exampleSentence: 'These books are very interesting.',
         phonetic: '/these/',
       ),
       DailyVocabItem(
@@ -622,7 +622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about those in today\'s lesson.',
+        exampleSentence: 'Those birds are flying high.',
         phonetic: '/those/',
       ),
       DailyVocabItem(
@@ -634,7 +634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വസ്തു',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about thing in today\'s lesson.',
+        exampleSentence: 'Take this thing with you.',
         phonetic: '/thing/',
       ),
       DailyVocabItem(
@@ -711,7 +711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അടുക്കള',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about kitchen in today\'s lesson.',
+        exampleSentence: 'The kitchen is clean and bright.',
         phonetic: '/kitchen/',
       ),
       DailyVocabItem(
@@ -723,7 +723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കിടപ്പുമുറി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bedroom in today\'s lesson.',
+        exampleSentence: 'I sleep peacefully in my bedroom.',
         phonetic: '/bedroom/',
       ),
       DailyVocabItem(
@@ -735,7 +735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഹാൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about hall in today\'s lesson.',
+        exampleSentence: 'Please wait in the main hall.',
         phonetic: '/hall/',
       ),
       DailyVocabItem(
@@ -747,7 +747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വാതിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about door in today\'s lesson.',
+        exampleSentence: 'Please close the front door.',
         phonetic: '/door/',
       ),
       DailyVocabItem(
@@ -759,7 +759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ജനൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about window in today\'s lesson.',
+        exampleSentence: 'Open the window for fresh air.',
         phonetic: '/window/',
       ),
       DailyVocabItem(
@@ -836,7 +836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്ലേറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about plate in today\'s lesson.',
+        exampleSentence: 'Put the hot food on the plate.',
         phonetic: '/plate/',
       ),
       DailyVocabItem(
@@ -848,7 +848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about cup in today\'s lesson.',
+        exampleSentence: 'I drink a warm cup of coffee.',
         phonetic: '/cup/',
       ),
       DailyVocabItem(
@@ -860,7 +860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കസേര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about chair in today\'s lesson.',
+        exampleSentence: 'Please take a comfortable chair.',
         phonetic: '/chair/',
       ),
       DailyVocabItem(
@@ -872,7 +872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മേശ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about table in today\'s lesson.',
+        exampleSentence: 'Keep the notebook on the table.',
         phonetic: '/table/',
       ),
       DailyVocabItem(
@@ -884,7 +884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഫോൺ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about phone in today\'s lesson.',
+        exampleSentence: 'Answer the phone when it rings.',
         phonetic: '/phone/',
       ),
       DailyVocabItem(
@@ -961,7 +961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംഖ്യ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about number in today\'s lesson.',
+        exampleSentence: 'What is your contact number?',
         phonetic: '/number/',
       ),
       DailyVocabItem(
@@ -973,7 +973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about money in today\'s lesson.',
+        exampleSentence: 'Save money for your future.',
         phonetic: '/money/',
       ),
       DailyVocabItem(
@@ -985,7 +985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നാണയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about coin in today\'s lesson.',
+        exampleSentence: 'He flipped a silver coin.',
         phonetic: '/coin/',
       ),
       DailyVocabItem(
@@ -997,7 +997,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വില',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about price in today\'s lesson.',
+        exampleSentence: 'The price is very affordable.',
         phonetic: '/price/',
       ),
       DailyVocabItem(
@@ -1009,7 +1009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആകെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about total in today\'s lesson.',
+        exampleSentence: 'What is the total amount?',
         phonetic: '/total/',
       ),
       DailyVocabItem(
@@ -1086,7 +1086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിറം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about color in today\'s lesson.',
+        exampleSentence: 'What is your favorite color?',
         phonetic: '/color/',
       ),
       DailyVocabItem(
@@ -1098,7 +1098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ചുവപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about red in today\'s lesson.',
+        exampleSentence: 'She drives a bright red car.',
         phonetic: '/red/',
       ),
       DailyVocabItem(
@@ -1110,7 +1110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നീല',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about blue in today\'s lesson.',
+        exampleSentence: 'The clear sky is deep blue.',
         phonetic: '/blue/',
       ),
       DailyVocabItem(
@@ -1122,7 +1122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പച്ച',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about green in today\'s lesson.',
+        exampleSentence: 'The garden has lush green grass.',
         phonetic: '/green/',
       ),
       DailyVocabItem(
@@ -1134,7 +1134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കറുപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about black in today\'s lesson.',
+        exampleSentence: 'He wears a smart black jacket.',
         phonetic: '/black/',
       ),
       DailyVocabItem(
@@ -1211,7 +1211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇന്ന്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about today in today\'s lesson.',
+        exampleSentence: 'Today is a wonderful day to learn.',
         phonetic: '/today/',
       ),
       DailyVocabItem(
@@ -1223,7 +1223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നാളെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about tomorrow in today\'s lesson.',
+        exampleSentence: 'I will meet you tomorrow morning.',
         phonetic: '/tomorrow/',
       ),
       DailyVocabItem(
@@ -1235,7 +1235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇന്നലെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about yesterday in today\'s lesson.',
+        exampleSentence: 'Yesterday was quite busy for me.',
         phonetic: '/yesterday/',
       ),
       DailyVocabItem(
@@ -1247,7 +1247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആഴ്ച',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about week in today\'s lesson.',
+        exampleSentence: 'I study English every week.',
         phonetic: '/week/',
       ),
       DailyVocabItem(
@@ -1259,7 +1259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മണിക്കൂർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about hour in today\'s lesson.',
+        exampleSentence: 'We practiced for one hour.',
         phonetic: '/hour/',
       ),
       DailyVocabItem(
@@ -1336,7 +1336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പല്ലുകൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about teeth in today\'s lesson.',
+        exampleSentence: 'Brush your teeth twice every day.',
         phonetic: '/teeth/',
       ),
       DailyVocabItem(
@@ -1348,7 +1348,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സോപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about soap in today\'s lesson.',
+        exampleSentence: 'Wash your hands thoroughly with soap.',
         phonetic: '/soap/',
       ),
       DailyVocabItem(
@@ -1372,7 +1372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വസ്ത്രങ്ങൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about clothes in today\'s lesson.',
+        exampleSentence: 'Wear comfortable clothes today.',
         phonetic: '/clothes/',
       ),
       DailyVocabItem(
@@ -1384,7 +1384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബാഗ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bag in today\'s lesson.',
+        exampleSentence: 'Pack your laptop in the bag.',
         phonetic: '/bag/',
       ),
       DailyVocabItem(
@@ -1461,7 +1461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വൈകുന്നേരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about evening in today\'s lesson.',
+        exampleSentence: 'Let us walk in the cool evening.',
         phonetic: '/evening/',
       ),
       DailyVocabItem(
@@ -1473,7 +1473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ചായ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about tea in today\'s lesson.',
+        exampleSentence: 'I enjoy a hot cup of black tea.',
         phonetic: '/tea/',
       ),
       DailyVocabItem(
@@ -1485,7 +1485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വാർത്ത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about news in today\'s lesson.',
+        exampleSentence: 'Did you hear the exciting news?',
         phonetic: '/news/',
       ),
       DailyVocabItem(
@@ -1497,7 +1497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംഗീതം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about music in today\'s lesson.',
+        exampleSentence: 'Listening to music relaxes my mind.',
         phonetic: '/music/',
       ),
       DailyVocabItem(
@@ -1509,7 +1509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിശ്രമം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about rest in today\'s lesson.',
+        exampleSentence: 'Take some rest after working hard.',
         phonetic: '/rest/',
       ),
       DailyVocabItem(
@@ -1586,7 +1586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശീലം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about habit in today\'s lesson.',
+        exampleSentence: 'Reading daily is an excellent habit.',
         phonetic: '/habit/',
       ),
       DailyVocabItem(
@@ -1598,7 +1598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പതിവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about routine in today\'s lesson.',
+        exampleSentence: 'Follow a healthy morning routine.',
         phonetic: '/routine/',
       ),
       DailyVocabItem(
@@ -1610,7 +1610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കടമ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about duty in today\'s lesson.',
+        exampleSentence: 'It is our duty to speak politely.',
         phonetic: '/duty/',
       ),
       DailyVocabItem(
@@ -1622,7 +1622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ജോലി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about job in today\'s lesson.',
+        exampleSentence: 'He landed an exciting new job.',
         phonetic: '/job/',
       ),
       DailyVocabItem(
@@ -1634,7 +1634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കഴിവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about skill in today\'s lesson.',
+        exampleSentence: 'Speaking English is a valuable skill.',
         phonetic: '/skill/',
       ),
       DailyVocabItem(
@@ -1711,7 +1711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രശ്നം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about problem in today\'s lesson.',
+        exampleSentence: 'Every problem has a smart solution.',
         phonetic: '/problem/',
       ),
       DailyVocabItem(
@@ -1723,7 +1723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തെറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about mistake in today\'s lesson.',
+        exampleSentence: 'Learn from your mistake and move on.',
         phonetic: '/mistake/',
       ),
       DailyVocabItem(
@@ -1735,7 +1735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബുദ്ധിമുട്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about trouble in today\'s lesson.',
+        exampleSentence: 'Stay calm when facing trouble.',
         phonetic: '/trouble/',
       ),
       DailyVocabItem(
@@ -1747,7 +1747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നുണ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about lie in today\'s lesson.',
+        exampleSentence: 'Always speak the truth, never lie.',
         phonetic: '/lie/',
       ),
       DailyVocabItem(
@@ -1759,7 +1759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സത്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about truth in today\'s lesson.',
+        exampleSentence: 'Always tell the simple truth.',
         phonetic: '/truth/',
       ),
       DailyVocabItem(
@@ -1836,7 +1836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ചോറ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about rice in today\'s lesson.',
+        exampleSentence: 'We eat steamed rice for lunch.',
         phonetic: '/rice/',
       ),
       DailyVocabItem(
@@ -1848,7 +1848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കറി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about curry in today\'s lesson.',
+        exampleSentence: 'This vegetable curry tastes delicious.',
         phonetic: '/curry/',
       ),
       DailyVocabItem(
@@ -1860,7 +1860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about milk in today\'s lesson.',
+        exampleSentence: 'A glass of warm milk is healthy.',
         phonetic: '/milk/',
       ),
       DailyVocabItem(
@@ -1872,7 +1872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പഞ്ചസാര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about sugar in today\'s lesson.',
+        exampleSentence: 'Add a little sugar to the tea.',
         phonetic: '/sugar/',
       ),
       DailyVocabItem(
@@ -1884,7 +1884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about salt in today\'s lesson.',
+        exampleSentence: 'Add a pinch of salt to the soup.',
         phonetic: '/salt/',
       ),
       DailyVocabItem(
@@ -1961,7 +1961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പെട്ടി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about box in today\'s lesson.',
+        exampleSentence: 'Put the old toys in the cardboard box.',
         phonetic: '/box/',
       ),
       DailyVocabItem(
@@ -1973,7 +1973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മൂല',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about corner in today\'s lesson.',
+        exampleSentence: 'Place the lamp in the quiet corner.',
         phonetic: '/corner/',
       ),
       DailyVocabItem(
@@ -1985,7 +1985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മതിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about wall in today\'s lesson.',
+        exampleSentence: 'Hang the colorful portrait on the wall.',
         phonetic: '/wall/',
       ),
       DailyVocabItem(
@@ -1997,7 +1997,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തറ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about floor in today\'s lesson.',
+        exampleSentence: 'Keep the living room floor tidy.',
         phonetic: '/floor/',
       ),
       DailyVocabItem(
@@ -2009,7 +2009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മേൽക്കൂര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about roof in today\'s lesson.',
+        exampleSentence: 'Raindrops drum gently on the roof.',
         phonetic: '/roof/',
       ),
       DailyVocabItem(
@@ -2086,7 +2086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കാർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about car in today\'s lesson.',
+        exampleSentence: 'We drive our electric car to work.',
         phonetic: '/car/',
       ),
       DailyVocabItem(
@@ -2098,7 +2098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബൈക്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bike in today\'s lesson.',
+        exampleSentence: 'He rides his mountain bike to school.',
         phonetic: '/bike/',
       ),
       DailyVocabItem(
@@ -2110,7 +2110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാട്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about song in today\'s lesson.',
+        exampleSentence: 'Sing a cheerful English song.',
         phonetic: '/song/',
       ),
       DailyVocabItem(
@@ -2122,7 +2122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭാഷ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about language in today\'s lesson.',
+        exampleSentence: 'English is a global language of opportunity.',
         phonetic: '/language/',
       ),
       DailyVocabItem(
@@ -2134,7 +2134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശക്തി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about power in today\'s lesson.',
+        exampleSentence: 'Knowledge gives you confidence and power.',
         phonetic: '/power/',
       ),
       DailyVocabItem(
@@ -2211,7 +2211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സഹായം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about favor in today\'s lesson.',
+        exampleSentence: 'Could you please do me a favor?',
         phonetic: '/favor/',
       ),
       DailyVocabItem(
@@ -2223,7 +2223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സന്ദേശം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about message in today\'s lesson.',
+        exampleSentence: 'I received your important text message.',
         phonetic: '/message/',
       ),
       DailyVocabItem(
@@ -2235,7 +2235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അഭ്യർത്ഥന',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about request in today\'s lesson.',
+        exampleSentence: 'Submit your leave request today.',
         phonetic: '/request/',
       ),
       DailyVocabItem(
@@ -2247,7 +2247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഫയൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about file in today\'s lesson.',
+        exampleSentence: 'Save the document in your work file.',
         phonetic: '/file/',
       ),
       DailyVocabItem(
@@ -2259,7 +2259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലിങ്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about link in today\'s lesson.',
+        exampleSentence: 'Click the link to join our call.',
         phonetic: '/link/',
       ),
       DailyVocabItem(
@@ -2336,7 +2336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പദ്ധതി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about plan in today\'s lesson.',
+        exampleSentence: 'We made a solid weekly study plan.',
         phonetic: '/plan/',
       ),
       DailyVocabItem(
@@ -2348,7 +2348,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലക്ഷ്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about goal in today\'s lesson.',
+        exampleSentence: 'Set a clear goal and work hard.',
         phonetic: '/goal/',
       ),
       DailyVocabItem(
@@ -2360,7 +2360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്വപ്നം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about dream in today\'s lesson.',
+        exampleSentence: 'Follow your dream with courage.',
         phonetic: '/dream/',
       ),
       DailyVocabItem(
@@ -2461,7 +2461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിനോദം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about hobby in today\'s lesson.',
+        exampleSentence: 'Photography is my favorite creative hobby.',
         phonetic: '/hobby/',
       ),
       DailyVocabItem(
@@ -2473,7 +2473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കളി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about game in today\'s lesson.',
+        exampleSentence: 'Let us play an interactive vocab game.',
         phonetic: '/game/',
       ),
       DailyVocabItem(
@@ -2485,7 +2485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സിനിമ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about movie in today\'s lesson.',
+        exampleSentence: 'We watched an inspiring movie last night.',
         phonetic: '/movie/',
       ),
       DailyVocabItem(
@@ -2497,7 +2497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'യാത്ര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about travel in today\'s lesson.',
+        exampleSentence: 'Traveling broadens your worldview.',
         phonetic: '/travel/',
       ),
       DailyVocabItem(
@@ -2586,7 +2586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എന്ത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about what in today\'s lesson.',
+        exampleSentence: 'What would you like to achieve today?',
         phonetic: '/what/',
       ),
       DailyVocabItem(
@@ -2598,7 +2598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എവിടെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about where in today\'s lesson.',
+        exampleSentence: 'Where are you planning to go?',
         phonetic: '/where/',
       ),
       DailyVocabItem(
@@ -2610,7 +2610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്ഥലം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about place in today\'s lesson.',
+        exampleSentence: 'This peaceful park is a lovely place.',
         phonetic: '/place/',
       ),
       DailyVocabItem(
@@ -2622,7 +2622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മേൽവിലാസം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about address in today\'s lesson.',
+        exampleSentence: 'Please share your current office address.',
         phonetic: '/address/',
       ),
       DailyVocabItem(
@@ -2634,7 +2634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മാപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about map in today\'s lesson.',
+        exampleSentence: 'Follow the map to reach the destination.',
         phonetic: '/map/',
       ),
       DailyVocabItem(
@@ -2711,7 +2711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എപ്പോൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about when in today\'s lesson.',
+        exampleSentence: 'When does the training session begin?',
         phonetic: '/when/',
       ),
       DailyVocabItem(
@@ -2723,7 +2723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എന്തുകൊണ്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about why in today\'s lesson.',
+        exampleSentence: 'Why is regular practice so important?',
         phonetic: '/why/',
       ),
       DailyVocabItem(
@@ -2735,7 +2735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കാരണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about reason in today\'s lesson.',
+        exampleSentence: 'Tell me the reason for your decision.',
         phonetic: '/reason/',
       ),
       DailyVocabItem(
@@ -2747,7 +2747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തീയതി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about date in today\'s lesson.',
+        exampleSentence: 'What is the date of our interview?',
         phonetic: '/date/',
       ),
       DailyVocabItem(
@@ -2759,7 +2759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സമയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about schedule in today\'s lesson.',
+        exampleSentence: 'Let us schedule our next meeting.',
         phonetic: '/schedule/',
       ),
       DailyVocabItem(
@@ -2836,7 +2836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആര്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about who in today\'s lesson.',
+        exampleSentence: 'Who is leading the team discussion today?',
         phonetic: '/who/',
       ),
       DailyVocabItem(
@@ -2848,7 +2848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഏത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about which in today\'s lesson.',
+        exampleSentence: 'Which option do you prefer most?',
         phonetic: '/which/',
       ),
       DailyVocabItem(
@@ -2860,7 +2860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വ്യക്തി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about person in today\'s lesson.',
+        exampleSentence: 'She is a warm and helpful person.',
         phonetic: '/person/',
       ),
       DailyVocabItem(
@@ -2872,7 +2872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തിരഞ്ഞെടുപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about choice in today\'s lesson.',
+        exampleSentence: 'Making the right choice takes wisdom.',
         phonetic: '/choice/',
       ),
       DailyVocabItem(
@@ -2884,7 +2884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വസ്തു',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about item in today\'s lesson.',
+        exampleSentence: 'Check each item on your packing list.',
         phonetic: '/item/',
       ),
       DailyVocabItem(
@@ -2961,7 +2961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എങ്ങനെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about how in today\'s lesson.',
+        exampleSentence: 'How can I assist you with this project?',
         phonetic: '/how/',
       ),
       DailyVocabItem(
@@ -2973,7 +2973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ദൂരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about distance in today\'s lesson.',
+        exampleSentence: 'What is the total distance to the hotel?',
         phonetic: '/distance/',
       ),
       DailyVocabItem(
@@ -2985,7 +2985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭാരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about weight in today\'s lesson.',
+        exampleSentence: 'Check the luggage weight before flying.',
         phonetic: '/weight/',
       ),
       DailyVocabItem(
@@ -2997,7 +2997,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വേഗത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about speed in today\'s lesson.',
+        exampleSentence: 'Drive at a safe and steady speed.',
         phonetic: '/speed/',
       ),
       DailyVocabItem(
@@ -3086,7 +3086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ചന്ത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about market in today\'s lesson.',
+        exampleSentence: 'Buy fresh vegetables from the local market.',
         phonetic: '/market/',
       ),
       DailyVocabItem(
@@ -3098,7 +3098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കട',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about shop in today\'s lesson.',
+        exampleSentence: 'Visit the bookstore around the corner.',
         phonetic: '/shop/',
       ),
       DailyVocabItem(
@@ -3110,7 +3110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പച്ചക്കറി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about vegetable in today\'s lesson.',
+        exampleSentence: 'Eat fresh green vegetables every day.',
         phonetic: '/vegetable/',
       ),
       DailyVocabItem(
@@ -3122,7 +3122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പഴം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fruit in today\'s lesson.',
+        exampleSentence: 'Fresh fruit provides natural energy.',
         phonetic: '/fruit/',
       ),
       DailyVocabItem(
@@ -3134,7 +3134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bill in today\'s lesson.',
+        exampleSentence: 'Please bring the dinner bill.',
         phonetic: '/bill/',
       ),
       DailyVocabItem(
@@ -3211,7 +3211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇടത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about left in today\'s lesson.',
+        exampleSentence: 'Turn left at the next traffic signal.',
         phonetic: '/left/',
       ),
       DailyVocabItem(
@@ -3223,7 +3223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വലത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about right in today\'s lesson.',
+        exampleSentence: 'Take a right turn after the bank.',
         phonetic: '/right/',
       ),
       DailyVocabItem(
@@ -3235,7 +3235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നേരെ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about straight in today\'s lesson.',
+        exampleSentence: 'Go straight for two hundred meters.',
         phonetic: '/straight/',
       ),
       DailyVocabItem(
@@ -3247,7 +3247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സിഗ്നൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about signal in today\'s lesson.',
+        exampleSentence: 'Wait patiently until the signal turns green.',
         phonetic: '/signal/',
       ),
       DailyVocabItem(
@@ -3259,7 +3259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കവല',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about junction in today\'s lesson.',
+        exampleSentence: 'Meet me near the busy road junction.',
         phonetic: '/junction/',
       ),
       DailyVocabItem(
@@ -3336,7 +3336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തലവേദന',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about headache in today\'s lesson.',
+        exampleSentence: 'Rest quietly if you have a headache.',
         phonetic: '/headache/',
       ),
       DailyVocabItem(
@@ -3348,7 +3348,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പനി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fever in today\'s lesson.',
+        exampleSentence: 'Drink warm water to recover from fever.',
         phonetic: '/fever/',
       ),
       DailyVocabItem(
@@ -3360,7 +3360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ജലദോഷം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about cold in today\'s lesson.',
+        exampleSentence: 'Wear a warm jacket in the cold weather.',
         phonetic: '/cold/',
       ),
       DailyVocabItem(
@@ -3372,7 +3372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വേദന',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about pain in today\'s lesson.',
+        exampleSentence: 'Tell the doctor where you feel pain.',
         phonetic: '/pain/',
       ),
       DailyVocabItem(
@@ -3384,7 +3384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഡോക്ടർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about doctor in today\'s lesson.',
+        exampleSentence: 'Consult an experienced doctor today.',
         phonetic: '/doctor/',
       ),
       DailyVocabItem(
@@ -3461,7 +3461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഗുളിക',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about tablet in today\'s lesson.',
+        exampleSentence: 'Take this vitamin tablet after breakfast.',
         phonetic: '/tablet/',
       ),
       DailyVocabItem(
@@ -3473,7 +3473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സിറപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about syrup in today\'s lesson.',
+        exampleSentence: 'Drink one spoon of herbal cough syrup.',
         phonetic: '/syrup/',
       ),
       DailyVocabItem(
@@ -3485,7 +3485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മെഡിക്കൽ ഷോപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about pharmacy in today\'s lesson.',
+        exampleSentence: 'Buy medicines from the trusted pharmacy.',
         phonetic: '/pharmacy/',
       ),
       DailyVocabItem(
@@ -3497,7 +3497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അളവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about dose in today\'s lesson.',
+        exampleSentence: 'Take the exact prescribed dose on time.',
         phonetic: '/dose/',
       ),
       DailyVocabItem(
@@ -3509,7 +3509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കുറിപ്പടി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about prescription in today\'s lesson.',
+        exampleSentence: 'Show the doctor prescription to the chemist.',
         phonetic: '/prescription/',
       ),
       DailyVocabItem(
@@ -3586,7 +3586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കാലാവസ്ഥ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about weather in today\'s lesson.',
+        exampleSentence: 'The morning weather is cool and breezy.',
         phonetic: '/weather/',
       ),
       DailyVocabItem(
@@ -3598,7 +3598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വെയിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about sun in today\'s lesson.',
+        exampleSentence: 'The bright sun shines warmly today.',
         phonetic: '/sun/',
       ),
       DailyVocabItem(
@@ -3610,7 +3610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കാറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about wind in today\'s lesson.',
+        exampleSentence: 'A gentle breeze of wind rustles the trees.',
         phonetic: '/wind/',
       ),
       DailyVocabItem(
@@ -3622,7 +3622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മേഘം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about cloud in today\'s lesson.',
+        exampleSentence: 'Fluffy white clouds drift across the sky.',
         phonetic: '/cloud/',
       ),
       DailyVocabItem(
@@ -3711,7 +3711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഗേറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about gate in today\'s lesson.',
+        exampleSentence: 'Enter through the main security gate.',
         phonetic: '/gate/',
       ),
       DailyVocabItem(
@@ -3723,7 +3723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പരീക്ഷ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about exam in today\'s lesson.',
+        exampleSentence: 'Prepare diligently for your speaking exam.',
         phonetic: '/exam/',
       ),
       DailyVocabItem(
@@ -3735,7 +3735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബാഡ്ജ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about badge in today\'s lesson.',
+        exampleSentence: 'Wear your official employee badge proudly.',
         phonetic: '/badge/',
       ),
       DailyVocabItem(
@@ -3747,7 +3747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഷീൽഡ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about shield in today\'s lesson.',
+        exampleSentence: 'Truth and honesty act as your shield.',
         phonetic: '/shield/',
       ),
       DailyVocabItem(
@@ -3836,7 +3836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭൂതകാലം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about past in today\'s lesson.',
+        exampleSentence: 'Learn from the past and focus on the future.',
         phonetic: '/past/',
       ),
       DailyVocabItem(
@@ -3848,7 +3848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവസ്ഥ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about state in today\'s lesson.',
+        exampleSentence: 'He answered in a calm state of mind.',
         phonetic: '/state/',
       ),
       DailyVocabItem(
@@ -3860,7 +3860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മനോഭാവം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about mood in today\'s lesson.',
+        exampleSentence: 'A good conversation lifts your mood.',
         phonetic: '/mood/',
       ),
       DailyVocabItem(
@@ -3872,7 +3872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വികാരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about feeling in today\'s lesson.',
+        exampleSentence: 'I have a great feeling about this deal.',
         phonetic: '/feeling/',
       ),
       DailyVocabItem(
@@ -3884,7 +3884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഓർമ്മ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about memory in today\'s lesson.',
+        exampleSentence: 'Cherish every sweet memory of childhood.',
         phonetic: '/memory/',
       ),
       DailyVocabItem(
@@ -3973,7 +3973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'യാത്ര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about trip in today\'s lesson.',
+        exampleSentence: 'We planned a memorable road trip.',
         phonetic: '/trip/',
       ),
       DailyVocabItem(
@@ -3985,7 +3985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അത്താഴം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about dinner in today\'s lesson.',
+        exampleSentence: 'Let us enjoy a healthy family dinner.',
         phonetic: '/dinner/',
       ),
       DailyVocabItem(
@@ -3997,7 +3997,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഷോ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about show in today\'s lesson.',
+        exampleSentence: 'The tech product show was impressive.',
         phonetic: '/show/',
       ),
       DailyVocabItem(
@@ -4009,7 +4009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പരിപാടി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about event in today\'s lesson.',
+        exampleSentence: 'Attend the annual community networking event.',
         phonetic: '/event/',
       ),
       DailyVocabItem(
@@ -4086,7 +4086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ചോദ്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about question in today\'s lesson.',
+        exampleSentence: 'Ask any question with confidence.',
         phonetic: '/question/',
       ),
       DailyVocabItem(
@@ -4098,7 +4098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉത്തരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about answer in today\'s lesson.',
+        exampleSentence: 'Give a clear and honest answer.',
         phonetic: '/answer/',
       ),
       DailyVocabItem(
@@ -4122,7 +4122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കളി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about match in today\'s lesson.',
+        exampleSentence: 'The color of your tie matches your shirt.',
         phonetic: '/match/',
       ),
       DailyVocabItem(
@@ -4223,7 +4223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ന്യായീകരണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about excuse in today\'s lesson.',
+        exampleSentence: 'Do not make excuses when you are late.',
         phonetic: '/excuse/',
       ),
       DailyVocabItem(
@@ -4235,7 +4235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കുറ്റം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fault in today\'s lesson.',
+        exampleSentence: 'Admit your fault with genuine humility.',
         phonetic: '/fault/',
       ),
       DailyVocabItem(
@@ -4247,7 +4247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംശയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about doubt in today\'s lesson.',
+        exampleSentence: 'Clear your doubt with the instructor.',
         phonetic: '/doubt/',
       ),
       DailyVocabItem(
@@ -4259,7 +4259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അറിയിപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about notice in today\'s lesson.',
+        exampleSentence: 'Did you notice the improvement in his speech?',
         phonetic: '/notice/',
       ),
       DailyVocabItem(
@@ -4336,7 +4336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ദിവസം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about day in today\'s lesson.',
+        exampleSentence: 'Every single day brings new opportunities.',
         phonetic: '/day/',
       ),
       DailyVocabItem(
@@ -4372,7 +4372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ട്രാഫിക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about traffic in today\'s lesson.',
+        exampleSentence: 'Start early to avoid peak city traffic.',
         phonetic: '/traffic/',
       ),
       DailyVocabItem(
@@ -4461,7 +4461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കുട്ടിക്കാലം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about childhood in today\'s lesson.',
+        exampleSentence: 'She has fond memories of her happy childhood.',
         phonetic: '/childhood/',
       ),
       DailyVocabItem(
@@ -4473,7 +4473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്കൂൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about school in today\'s lesson.',
+        exampleSentence: 'We studied together in the village school.',
         phonetic: '/school/',
       ),
       DailyVocabItem(
@@ -4586,7 +4586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിമിഷം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about moment in today\'s lesson.',
+        exampleSentence: 'Pause and enjoy this beautiful moment.',
         phonetic: '/moment/',
       ),
       DailyVocabItem(
@@ -4598,7 +4598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അപകടം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about accident in today\'s lesson.',
+        exampleSentence: 'Drive cautiously to avoid any road accident.',
         phonetic: '/accident/',
       ),
       DailyVocabItem(
@@ -4622,7 +4622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കൊടുങ്കാറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about storm in today\'s lesson.',
+        exampleSentence: 'The heavy storm passed away by morning.',
         phonetic: '/storm/',
       ),
       DailyVocabItem(
@@ -4634,7 +4634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശബ്ദം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about sound in today\'s lesson.',
+        exampleSentence: 'The gentle sound of flowing water is calming.',
         phonetic: '/sound/',
       ),
       DailyVocabItem(
@@ -4711,7 +4711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംഭവം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about incident in today\'s lesson.',
+        exampleSentence: 'Report the security incident right away.',
         phonetic: '/incident/',
       ),
       DailyVocabItem(
@@ -4723,7 +4723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കഥ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about story in today\'s lesson.',
+        exampleSentence: 'Grandfather narrated an inspiring moral story.',
         phonetic: '/story/',
       ),
       DailyVocabItem(
@@ -4735,7 +4735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഞെട്ടൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about shock in today\'s lesson.',
+        exampleSentence: 'The surprise promotion was a pleasant shock.',
         phonetic: '/shock/',
       ),
       DailyVocabItem(
@@ -4747,7 +4747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആളുകൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about crowd in today\'s lesson.',
+        exampleSentence: 'A cheering crowd gathered at the stadium.',
         phonetic: '/crowd/',
       ),
       DailyVocabItem(
@@ -4759,7 +4759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവസാനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about end in today\'s lesson.',
+        exampleSentence: 'We reached the successful end of the chapter.',
         phonetic: '/end/',
       ),
       DailyVocabItem(
@@ -4836,7 +4836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭാവി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about future in today\'s lesson.',
+        exampleSentence: 'Your future depends on what you do today.',
         phonetic: '/future/',
       ),
       DailyVocabItem(
@@ -4860,7 +4860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തീരുമാനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about decision in today\'s lesson.',
+        exampleSentence: 'Take a firm and thoughtful decision.',
         phonetic: '/decision/',
       ),
       DailyVocabItem(
@@ -4961,7 +4961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉദ്ദേശ്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about intention in today\'s lesson.',
+        exampleSentence: 'Act with a pure and positive intention.',
         phonetic: '/intention/',
       ),
       DailyVocabItem(
@@ -4973,7 +4973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഒരുക്കം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about preparation in today\'s lesson.',
+        exampleSentence: 'Good preparation builds lasting confidence.',
         phonetic: '/preparation/',
       ),
       DailyVocabItem(
@@ -4985,7 +4985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ടിക്കറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about ticket in today\'s lesson.',
+        exampleSentence: 'Book your train ticket well in advance.',
         phonetic: '/ticket/',
       ),
       DailyVocabItem(
@@ -5009,7 +5009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ടാർഗെറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about target in today\'s lesson.',
+        exampleSentence: 'Hit your quarterly performance target.',
         phonetic: '/target/',
       ),
       DailyVocabItem(
@@ -5086,7 +5086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സൈസ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about size in today\'s lesson.',
+        exampleSentence: 'Choose the right size that fits you best.',
         phonetic: '/size/',
       ),
       DailyVocabItem(
@@ -5098,7 +5098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഷർട്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about shirt in today\'s lesson.',
+        exampleSentence: 'Iron your formal blue shirt.',
         phonetic: '/shirt/',
       ),
       DailyVocabItem(
@@ -5122,7 +5122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ട്രയൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about trial in today\'s lesson.',
+        exampleSentence: 'Try the blazer in the trial room.',
         phonetic: '/trial/',
       ),
       DailyVocabItem(
@@ -5134,7 +5134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കിഴിവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about discount in today\'s lesson.',
+        exampleSentence: 'The store offers a twenty percent discount.',
         phonetic: '/discount/',
       ),
       DailyVocabItem(
@@ -5211,7 +5211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മെനു',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about menu in today\'s lesson.',
+        exampleSentence: 'Look at the lunch menu before ordering.',
         phonetic: '/menu/',
       ),
       DailyVocabItem(
@@ -5223,7 +5223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സപ്ലയർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about waiter in today\'s lesson.',
+        exampleSentence: 'The polite waiter served our food quickly.',
         phonetic: '/waiter/',
       ),
       DailyVocabItem(
@@ -5259,7 +5259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ടിപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about tip in today\'s lesson.',
+        exampleSentence: 'Leave a generous tip for good service.',
         phonetic: '/tip/',
       ),
       DailyVocabItem(
@@ -5336,7 +5336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബസ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bus in today\'s lesson.',
+        exampleSentence: 'Catch the morning bus to the city center.',
         phonetic: '/bus/',
       ),
       DailyVocabItem(
@@ -5348,7 +5348,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ട്രെയിൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about train in today\'s lesson.',
+        exampleSentence: 'The express train arrives on platform four.',
         phonetic: '/train/',
       ),
       DailyVocabItem(
@@ -5360,7 +5360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്ലാറ്റ്ഫോം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about platform in today\'s lesson.',
+        exampleSentence: 'Wait safely behind the line on the platform.',
         phonetic: '/platform/',
       ),
       DailyVocabItem(
@@ -5372,7 +5372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സീറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about seat in today\'s lesson.',
+        exampleSentence: 'Please reserve a window seat for me.',
         phonetic: '/seat/',
       ),
       DailyVocabItem(
@@ -5384,7 +5384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്റ്റേഷൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about station in today\'s lesson.',
+        exampleSentence: 'I will pick you up at the railway station.',
         phonetic: '/station/',
       ),
       DailyVocabItem(
@@ -5461,7 +5461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എയർപോർട്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about airport in today\'s lesson.',
+        exampleSentence: 'Arrive at the airport two hours before departure.',
         phonetic: '/airport/',
       ),
       DailyVocabItem(
@@ -5473,7 +5473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഫ്ലൈറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about flight in today\'s lesson.',
+        exampleSentence: 'Our flight departs on schedule.',
         phonetic: '/flight/',
       ),
       DailyVocabItem(
@@ -5485,7 +5485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാസ്പോർട്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about passport in today\'s lesson.',
+        exampleSentence: 'Keep your passport in a safe pouch.',
         phonetic: '/passport/',
       ),
       DailyVocabItem(
@@ -5509,7 +5509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലഗേജ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about luggage in today\'s lesson.',
+        exampleSentence: 'Collect your luggage from the carousel.',
         phonetic: '/luggage/',
       ),
       DailyVocabItem(
@@ -5586,7 +5586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മുറി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about room in today\'s lesson.',
+        exampleSentence: 'Book a quiet room with a balcony view.',
         phonetic: '/room/',
       ),
       DailyVocabItem(
@@ -5598,7 +5598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'താക്കോൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about key in today\'s lesson.',
+        exampleSentence: 'Leave your hotel room key at reception.',
         phonetic: '/key/',
       ),
       DailyVocabItem(
@@ -5610,7 +5610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'റിസപ്ഷൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about reception in today\'s lesson.',
+        exampleSentence: 'Inquire at the hotel reception desk.',
         phonetic: '/reception/',
       ),
       DailyVocabItem(
@@ -5622,7 +5622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വൈഫൈ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about wifi in today\'s lesson.',
+        exampleSentence: 'Connect your phone to the high-speed wifi.',
         phonetic: '/wifi/',
       ),
       DailyVocabItem(
@@ -5634,7 +5634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രഭാതഭക്ഷണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about breakfast in today\'s lesson.',
+        exampleSentence: 'A healthy breakfast kickstarts your day.',
         phonetic: '/breakfast/',
       ),
       DailyVocabItem(
@@ -5711,7 +5711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അപ്പോയിന്റ്മെന്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about appointment in today\'s lesson.',
+        exampleSentence: 'I have a dentist appointment at five.',
         phonetic: '/appointment/',
       ),
       DailyVocabItem(
@@ -5735,7 +5735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കലണ്ടർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about calendar in today\'s lesson.',
+        exampleSentence: 'Mark the project launch date on your calendar.',
         phonetic: '/calendar/',
       ),
       DailyVocabItem(
@@ -5747,7 +5747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഓർമ്മപ്പെടുത്തൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about reminder in today\'s lesson.',
+        exampleSentence: 'Set a timely reminder for your phone call.',
         phonetic: '/reminder/',
       ),
       DailyVocabItem(
@@ -5836,7 +5836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ക്ഷണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about invitation in today\'s lesson.',
+        exampleSentence: 'Thank you for the warm wedding invitation.',
         phonetic: '/invitation/',
       ),
       DailyVocabItem(
@@ -5848,7 +5848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാർട്ടി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about party in today\'s lesson.',
+        exampleSentence: 'We hosted a lively anniversary party.',
         phonetic: '/party/',
       ),
       DailyVocabItem(
@@ -5872,7 +5872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അതിഥി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about guest in today\'s lesson.',
+        exampleSentence: 'Treat every guest with warmth and hospitality.',
         phonetic: '/guest/',
       ),
       DailyVocabItem(
@@ -5884,7 +5884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വാരാന്ത്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about weekend in today\'s lesson.',
+        exampleSentence: 'Spend the relaxing weekend with family.',
         phonetic: '/weekend/',
       ),
       DailyVocabItem(
@@ -5961,7 +5961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിനയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about politeness in today\'s lesson.',
+        exampleSentence: 'Politeness opens doors that strength cannot.',
         phonetic: '/politeness/',
       ),
       DailyVocabItem(
@@ -5985,7 +5985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബഹുമാനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about respect in today\'s lesson.',
+        exampleSentence: 'Treat every human being with deep respect.',
         phonetic: '/respect/',
       ),
       DailyVocabItem(
@@ -5997,7 +5997,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശബ്ദരീതി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about tone in today\'s lesson.',
+        exampleSentence: 'Speak in a calm, confident, and warm tone.',
         phonetic: '/tone/',
       ),
       DailyVocabItem(
@@ -6086,7 +6086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉപദേശം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about advice in today\'s lesson.',
+        exampleSentence: 'Seek wise advice from senior mentors.',
         phonetic: '/advice/',
       ),
       DailyVocabItem(
@@ -6098,7 +6098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആരോഗ്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about health in today\'s lesson.',
+        exampleSentence: 'Good health is your greatest wealth.',
         phonetic: '/health/',
       ),
       DailyVocabItem(
@@ -6110,7 +6110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭക്ഷണരീതി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about diet in today\'s lesson.',
+        exampleSentence: 'Maintain a balanced and nutritious diet.',
         phonetic: '/diet/',
       ),
       DailyVocabItem(
@@ -6211,7 +6211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിയമം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about rule in today\'s lesson.',
+        exampleSentence: 'Always obey the classroom safety rule.',
         phonetic: '/rule/',
       ),
       DailyVocabItem(
@@ -6223,7 +6223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിയമം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about law in today\'s lesson.',
+        exampleSentence: 'Every citizen must follow the rule of law.',
         phonetic: '/law/',
       ),
       DailyVocabItem(
@@ -6235,7 +6235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഹെൽമെറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about helmet in today\'s lesson.',
+        exampleSentence: 'Always wear a protective helmet while riding.',
         phonetic: '/helmet/',
       ),
       DailyVocabItem(
@@ -6259,7 +6259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലൈസൻസ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about license in today\'s lesson.',
+        exampleSentence: 'Carry your valid driving license.',
         phonetic: '/license/',
       ),
       DailyVocabItem(
@@ -6348,7 +6348,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിഷമം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about regret in today\'s lesson.',
+        exampleSentence: 'Do not live with regret for past mistakes.',
         phonetic: '/regret/',
       ),
       DailyVocabItem(
@@ -6360,7 +6360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നന്ദി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about thanks in today\'s lesson.',
+        exampleSentence: 'Express sincere thanks for every kind gesture.',
         phonetic: '/thanks/',
       ),
       DailyVocabItem(
@@ -6372,7 +6372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവസരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about chance in today\'s lesson.',
+        exampleSentence: 'Seize every good chance to practice speaking.',
         phonetic: '/chance/',
       ),
       DailyVocabItem(
@@ -6384,7 +6384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അടുത്ത തവണ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about next time in today\'s lesson.',
+        exampleSentence: 'We will surely perform even better next time.',
         phonetic: '/next time/',
       ),
       DailyVocabItem(
@@ -6461,7 +6461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വികാരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about emotion in today\'s lesson.',
+        exampleSentence: 'Manage your emotion with steady breathing.',
         phonetic: '/emotion/',
       ),
       DailyVocabItem(
@@ -6473,7 +6473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സന്തോഷം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about happy in today\'s lesson.',
+        exampleSentence: 'I am truly happy with your great progress.',
         phonetic: '/happy/',
       ),
       DailyVocabItem(
@@ -6485,7 +6485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഭയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fear in today\'s lesson.',
+        exampleSentence: 'Conquer your fear of public speaking.',
         phonetic: '/fear/',
       ),
       DailyVocabItem(
@@ -6497,7 +6497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ധൈര്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about courage in today\'s lesson.',
+        exampleSentence: 'It takes true courage to stand up for truth.',
         phonetic: '/courage/',
       ),
       DailyVocabItem(
@@ -6509,7 +6509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സമാധാനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about peace in today\'s lesson.',
+        exampleSentence: 'Inner peace comes from contentment.',
         phonetic: '/peace/',
       ),
       DailyVocabItem(
@@ -6586,7 +6586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രശ്നം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about issue in today\'s lesson.',
+        exampleSentence: 'We resolved the software issue quickly.',
         phonetic: '/issue/',
       ),
       DailyVocabItem(
@@ -6598,7 +6598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കേടുപാട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about damage in today\'s lesson.',
+        exampleSentence: 'Inspect the vehicle for any minor damage.',
         phonetic: '/damage/',
       ),
       DailyVocabItem(
@@ -6610,7 +6610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സേവനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about service in today\'s lesson.',
+        exampleSentence: 'Customer service is our highest priority.',
         phonetic: '/service/',
       ),
       DailyVocabItem(
@@ -6634,7 +6634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മാനേജർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about manager in today\'s lesson.',
+        exampleSentence: 'Discuss the report with your team manager.',
         phonetic: '/manager/',
       ),
       DailyVocabItem(
@@ -6711,7 +6711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബാങ്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about bank in today\'s lesson.',
+        exampleSentence: 'Deposit the cash in your savings bank account.',
         phonetic: '/bank/',
       ),
       DailyVocabItem(
@@ -6723,7 +6723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അക്കൗണ്ട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about account in today\'s lesson.',
+        exampleSentence: 'Check your bank account balance regularly.',
         phonetic: '/account/',
       ),
       DailyVocabItem(
@@ -6735,7 +6735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'എടിഎം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about atm in today\'s lesson.',
+        exampleSentence: 'Withdraw cash from the nearest ATM.',
         phonetic: '/atm/',
       ),
       DailyVocabItem(
@@ -6747,7 +6747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബാക്കി തുക',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about balance in today\'s lesson.',
+        exampleSentence: 'Maintain balance between work and personal life.',
         phonetic: '/balance/',
       ),
       DailyVocabItem(
@@ -6759,7 +6759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about cash in today\'s lesson.',
+        exampleSentence: 'Do you accept card payment or only cash?',
         phonetic: '/cash/',
       ),
       DailyVocabItem(
@@ -6836,7 +6836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മൊബൈൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about mobile in today\'s lesson.',
+        exampleSentence: 'Charge your mobile phone before leaving.',
         phonetic: '/mobile/',
       ),
       DailyVocabItem(
@@ -6848,7 +6848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബാറ്ററി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about battery in today\'s lesson.',
+        exampleSentence: 'The laptop battery lasts for eight hours.',
         phonetic: '/battery/',
       ),
       DailyVocabItem(
@@ -6884,7 +6884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാസ്‌വേഡ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about password in today\'s lesson.',
+        exampleSentence: 'Use a strong and unique password.',
         phonetic: '/password/',
       ),
       DailyVocabItem(
@@ -6961,7 +6961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വാലറ്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about wallet in today\'s lesson.',
+        exampleSentence: 'Keep your wallet securely in your pocket.',
         phonetic: '/wallet/',
       ),
       DailyVocabItem(
@@ -6973,7 +6973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പോലീസ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about police in today\'s lesson.',
+        exampleSentence: 'Dial emergency services to contact the police.',
         phonetic: '/police/',
       ),
       DailyVocabItem(
@@ -6985,7 +6985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അടിയന്തരാവസ്ഥ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about emergency in today\'s lesson.',
+        exampleSentence: 'Stay calm during any sudden emergency.',
         phonetic: '/emergency/',
       ),
       DailyVocabItem(
@@ -7009,7 +7009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അപകടം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about danger in today\'s lesson.',
+        exampleSentence: 'Beware of the danger ahead on the road.',
         phonetic: '/danger/',
       ),
       DailyVocabItem(
@@ -7086,7 +7086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലക്ഷണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about symptom in today\'s lesson.',
+        exampleSentence: 'Fever is a common symptom of seasonal flu.',
         phonetic: '/symptom/',
       ),
       DailyVocabItem(
@@ -7098,7 +7098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ക്ലിനിക്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about clinic in today\'s lesson.',
+        exampleSentence: 'Visit the community healthcare clinic.',
         phonetic: '/clinic/',
       ),
       DailyVocabItem(
@@ -7110,7 +7110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അണുബാധ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about infection in today\'s lesson.',
+        exampleSentence: 'Keep the minor wound clean to prevent infection.',
         phonetic: '/infection/',
       ),
       DailyVocabItem(
@@ -7223,7 +7223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രതികരണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about reflex in today\'s lesson.',
+        exampleSentence: 'Daily speech practice sharpens your verbal reflexes.',
         phonetic: '/reflex/',
       ),
       DailyVocabItem(
@@ -7235,7 +7235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഒഴുക്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fluency in today\'s lesson.',
+        exampleSentence: 'Daily conversations lead to effortless English fluency.',
         phonetic: '/fluency/',
       ),
       DailyVocabItem(
@@ -7259,7 +7259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആത്മവിശ്വാസം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about confidence in today\'s lesson.',
+        exampleSentence: 'Believe in yourself and speak with bold confidence.',
         phonetic: '/confidence/',
       ),
       DailyVocabItem(
@@ -7336,7 +7336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അപരിചിതൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about stranger in today\'s lesson.',
+        exampleSentence: 'Greet the stranger with a warm smile.',
         phonetic: '/stranger/',
       ),
       DailyVocabItem(
@@ -7360,7 +7360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'യാത്ര',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about journey in today\'s lesson.',
+        exampleSentence: 'Enjoy every step of your language learning journey.',
         phonetic: '/journey/',
       ),
       DailyVocabItem(
@@ -7372,7 +7372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിഷയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about topic in today\'s lesson.',
+        exampleSentence: 'Choose an engaging topic for discussion.',
         phonetic: '/topic/',
       ),
       DailyVocabItem(
@@ -7473,7 +7473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലെവൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about level in today\'s lesson.',
+        exampleSentence: 'You have officially advanced to the next level.',
         phonetic: '/level/',
       ),
       DailyVocabItem(
@@ -7509,7 +7509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിജയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about success in today\'s lesson.',
+        exampleSentence: 'Consistency is the secret key to lasting success.',
         phonetic: '/success/',
       ),
       DailyVocabItem(
@@ -7586,7 +7586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രവൃത്തി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about action in today\'s lesson.',
+        exampleSentence: 'Take positive action towards your goals today.',
         phonetic: '/action/',
       ),
       DailyVocabItem(
@@ -7598,7 +7598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഫലം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about result in today\'s lesson.',
+        exampleSentence: 'Hard work produces an outstanding result.',
         phonetic: '/result/',
       ),
       DailyVocabItem(
@@ -7610,7 +7610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പൂർത്തീകരണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about completion in today\'s lesson.',
+        exampleSentence: 'Celebrate the successful completion of the course.',
         phonetic: '/completion/',
       ),
       DailyVocabItem(
@@ -7622,7 +7622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ജോലി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about task in today\'s lesson.',
+        exampleSentence: 'Complete your assigned task before evening.',
         phonetic: '/task/',
       ),
       DailyVocabItem(
@@ -7634,7 +7634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവസ്ഥ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about status in today\'s lesson.',
+        exampleSentence: 'Update the project status in the team tracker.',
         phonetic: '/status/',
       ),
       DailyVocabItem(
@@ -7723,7 +7723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ജീവിതം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about life in today\'s lesson.',
+        exampleSentence: 'Live a meaningful and purposeful life.',
         phonetic: '/life/',
       ),
       DailyVocabItem(
@@ -7735,7 +7735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സാഹസികത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about adventure in today\'s lesson.',
+        exampleSentence: 'Exploring new horizons is a thrilling adventure.',
         phonetic: '/adventure/',
       ),
       DailyVocabItem(
@@ -7747,7 +7747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിദേശം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about abroad in today\'s lesson.',
+        exampleSentence: 'She dreams of pursuing higher studies abroad.',
         phonetic: '/abroad/',
       ),
       DailyVocabItem(
@@ -7848,7 +7848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മെയിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about mail in today\'s lesson.',
+        exampleSentence: 'Check your incoming business mail.',
         phonetic: '/mail/',
       ),
       DailyVocabItem(
@@ -7872,7 +7872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിവരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about update in today\'s lesson.',
+        exampleSentence: 'Share the latest milestone update with stakeholders.',
         phonetic: '/update/',
       ),
       DailyVocabItem(
@@ -7961,7 +7961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കാലയളവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about duration in today\'s lesson.',
+        exampleSentence: 'The flight duration is around three hours.',
         phonetic: '/duration/',
       ),
       DailyVocabItem(
@@ -7973,7 +7973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വർഷം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about year in today\'s lesson.',
+        exampleSentence: 'Set bold resolutions for the new year.',
         phonetic: '/year/',
       ),
       DailyVocabItem(
@@ -7985,7 +7985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മാസം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about month in today\'s lesson.',
+        exampleSentence: 'We review team goals at the end of each month.',
         phonetic: '/month/',
       ),
       DailyVocabItem(
@@ -8009,7 +8009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തുടക്കം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about beginning in today\'s lesson.',
+        exampleSentence: 'Every expert was once a nervous beginner.',
         phonetic: '/beginning/',
       ),
       DailyVocabItem(
@@ -8086,7 +8086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പുരോഗതി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about progress in today\'s lesson.',
+        exampleSentence: 'Track your daily vocabulary progress.',
         phonetic: '/progress/',
       ),
       DailyVocabItem(
@@ -8098,7 +8098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തുടർച്ച',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about continuity in today\'s lesson.',
+        exampleSentence: 'Continuity of daily practice guarantees mastery.',
         phonetic: '/continuity/',
       ),
       DailyVocabItem(
@@ -8122,7 +8122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശ്രമം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about effort in today\'s lesson.',
+        exampleSentence: 'Your sincere effort will yield remarkable fruit.',
         phonetic: '/effort/',
       ),
       DailyVocabItem(
@@ -8134,7 +8134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്ട്രോക്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about streak in today\'s lesson.',
+        exampleSentence: 'Keep your ninety-day practice streak alive.',
         phonetic: '/streak/',
       ),
       DailyVocabItem(
@@ -8211,7 +8211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തൊഴിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about career in today\'s lesson.',
+        exampleSentence: 'Build a rewarding and impactful professional career.',
         phonetic: '/career/',
       ),
       DailyVocabItem(
@@ -8235,7 +8235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പദവി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about role in today\'s lesson.',
+        exampleSentence: 'He assumed the leadership role with dignity.',
         phonetic: '/role/',
       ),
       DailyVocabItem(
@@ -8247,7 +8247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ടീം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about team in today\'s lesson.',
+        exampleSentence: 'Our dedicated team collaborated effectively.',
         phonetic: '/team/',
       ),
       DailyVocabItem(
@@ -8259,7 +8259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കമ്പനി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about company in today\'s lesson.',
+        exampleSentence: 'Work with integrity for your company.',
         phonetic: '/company/',
       ),
       DailyVocabItem(
@@ -8384,7 +8384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ബന്ധം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about connection in today\'s lesson.',
+        exampleSentence: 'Build a strong professional connection.',
         phonetic: '/connection/',
       ),
       DailyVocabItem(
@@ -8473,7 +8473,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വെല്ലുവിളി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about challenge in today\'s lesson.',
+        exampleSentence: 'Embrace every difficult challenge with enthusiasm.',
         phonetic: '/challenge/',
       ),
       DailyVocabItem(
@@ -8497,7 +8497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിജയം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about victory in today\'s lesson.',
+        exampleSentence: 'Perseverance always leads to sweet victory.',
         phonetic: '/victory/',
       ),
       DailyVocabItem(
@@ -8509,7 +8509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വസ്തുത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about fact in today\'s lesson.',
+        exampleSentence: 'State the plain facts clearly in your presentation.',
         phonetic: '/fact/',
       ),
       DailyVocabItem(
@@ -8586,7 +8586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിബന്ധന',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about condition in today\'s lesson.',
+        exampleSentence: 'The agreement is subject to mutually agreed conditions.',
         phonetic: '/condition/',
       ),
       DailyVocabItem(
@@ -8723,7 +8723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സങ്കൽപ്പം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about imagination in today\'s lesson.',
+        exampleSentence: 'Imagination is more important than mere knowledge.',
         phonetic: '/imagination/',
       ),
       DailyVocabItem(
@@ -8747,7 +8747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലോകം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about world in today\'s lesson.',
+        exampleSentence: 'English connects you with people across the world.',
         phonetic: '/world/',
       ),
       DailyVocabItem(
@@ -8759,7 +8759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്വാതന്ത്ര്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about freedom in today\'s lesson.',
+        exampleSentence: 'Financial freedom requires disciplined saving.',
         phonetic: '/freedom/',
       ),
       DailyVocabItem(
@@ -8848,7 +8848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഊഹം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about guess in today\'s lesson.',
+        exampleSentence: 'Make an educated guess based on evidence.',
         phonetic: '/guess/',
       ),
       DailyVocabItem(
@@ -8961,7 +8961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'യുക്തി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about logic in today\'s lesson.',
+        exampleSentence: 'Apply sound logic to solve complex problems.',
         phonetic: '/logic/',
       ),
       DailyVocabItem(
@@ -8973,7 +8973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിഗമനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about deduction in today\'s lesson.',
+        exampleSentence: 'Her sharp deduction solved the puzzle.',
         phonetic: '/deduction/',
       ),
       DailyVocabItem(
@@ -9009,7 +9009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'തെളിവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about proof in today\'s lesson.',
+        exampleSentence: 'Provide concrete proof to support your claim.',
         phonetic: '/proof/',
       ),
       DailyVocabItem(
@@ -9086,7 +9086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അറിയിപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about announcement in today\'s lesson.',
+        exampleSentence: 'Listen carefully to the flight announcement.',
         phonetic: '/announcement/',
       ),
       DailyVocabItem(
@@ -9223,7 +9223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ലൈൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about line in today\'s lesson.',
+        exampleSentence: 'Please form a single orderly line at the ticket counter.',
         phonetic: '/line/',
       ),
       DailyVocabItem(
@@ -9336,7 +9336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വോയ്‌സ് മെയിൽ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about voicemail in today\'s lesson.',
+        exampleSentence: 'Leave a short voicemail with your contact number.',
         phonetic: '/voicemail/',
       ),
       DailyVocabItem(
@@ -9360,7 +9360,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ക്ലയന്റ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about client in today\'s lesson.',
+        exampleSentence: 'Listen attentively to the client feedback.',
         phonetic: '/client/',
       ),
       DailyVocabItem(
@@ -9372,7 +9372,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അടിയന്തിരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about urgent in today\'s lesson.',
+        exampleSentence: 'This is an urgent matter that requires immediate attention.',
         phonetic: '/urgent/',
       ),
       DailyVocabItem(
@@ -9461,7 +9461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കോഫി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about coffee in today\'s lesson.',
+        exampleSentence: 'Let us grab a warm cup of coffee.',
         phonetic: '/coffee/',
       ),
       DailyVocabItem(
@@ -9497,7 +9497,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഇടവേള',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about break in today\'s lesson.',
+        exampleSentence: 'Take a short five-minute break to refresh your eyes.',
         phonetic: '/break/',
       ),
       DailyVocabItem(
@@ -9509,7 +9509,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സഹപ്രവർത്തകൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about colleague in today\'s lesson.',
+        exampleSentence: 'Collaborate respectfully with every colleague.',
         phonetic: '/colleague/',
       ),
       DailyVocabItem(
@@ -9586,7 +9586,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്റ്റാൻഡ് അപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about standup in today\'s lesson.',
+        exampleSentence: 'Attend the morning standup meeting on time.',
         phonetic: '/standup/',
       ),
       DailyVocabItem(
@@ -9634,7 +9634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഡെഡ്‌ലൈൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about deadline in today\'s lesson.',
+        exampleSentence: 'Submit the final deliverables before the strict deadline.',
         phonetic: '/deadline/',
       ),
       DailyVocabItem(
@@ -9711,7 +9711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അഭിപ്രായം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about opinion in today\'s lesson.',
+        exampleSentence: 'Express your reasoned opinion with polite confidence.',
         phonetic: '/opinion/',
       ),
       DailyVocabItem(
@@ -9735,7 +9735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നിലപാട്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about viewpoint in today\'s lesson.',
+        exampleSentence: 'Appreciate diverse viewpoints in the boardroom.',
         phonetic: '/viewpoint/',
       ),
       DailyVocabItem(
@@ -9759,7 +9759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സമീപനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about approach in today\'s lesson.',
+        exampleSentence: 'Adopt a constructive and diplomatic approach.',
         phonetic: '/approach/',
       ),
       DailyVocabItem(
@@ -9836,7 +9836,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംവാദം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about debate in today\'s lesson.',
+        exampleSentence: 'Engage in a respectful and stimulating debate.',
         phonetic: '/debate/',
       ),
       DailyVocabItem(
@@ -9848,7 +9848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നയതന്ത്രം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about diplomacy in today\'s lesson.',
+        exampleSentence: 'Diplomacy is the art of letting someone have your way.',
         phonetic: '/diplomacy/',
       ),
       DailyVocabItem(
@@ -9860,7 +9860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വാദം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about argument in today\'s lesson.',
+        exampleSentence: 'Support your argument with verified data.',
         phonetic: '/argument/',
       ),
       DailyVocabItem(
@@ -9884,7 +9884,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'യോജിപ്പ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about consensus in today\'s lesson.',
+        exampleSentence: 'The committee reached a unanimous consensus.',
         phonetic: '/consensus/',
       ),
       DailyVocabItem(
@@ -9961,7 +9961,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സ്ലൈഡ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about slide in today\'s lesson.',
+        exampleSentence: 'Display the summary charts on the next slide.',
         phonetic: '/slide/',
       ),
       DailyVocabItem(
@@ -9973,7 +9973,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രസന്റേഷൻ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about presentation in today\'s lesson.',
+        exampleSentence: 'Deliver your executive presentation smoothly.',
         phonetic: '/presentation/',
       ),
       DailyVocabItem(
@@ -9985,7 +9985,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കേൾവിക്കാർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about audience in today\'s lesson.',
+        exampleSentence: 'Maintain direct eye contact with your audience.',
         phonetic: '/audience/',
       ),
       DailyVocabItem(
@@ -10009,7 +10009,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അവലോകനം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about overview in today\'s lesson.',
+        exampleSentence: 'Provide a concise overview of the quarterly results.',
         phonetic: '/overview/',
       ),
       DailyVocabItem(
@@ -10098,7 +10098,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അഭ്യർത്ഥി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about candidate in today\'s lesson.',
+        exampleSentence: 'She is an exceptional candidate for the senior role.',
         phonetic: '/candidate/',
       ),
       DailyVocabItem(
@@ -10110,7 +10110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വിവരണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about pitch in today\'s lesson.',
+        exampleSentence: 'Deliver a compelling elevator pitch to investors.',
         phonetic: '/pitch/',
       ),
       DailyVocabItem(
@@ -10122,7 +10122,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'താൽപര്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about passion in today\'s lesson.',
+        exampleSentence: 'Pursue your genuine passion with relentless dedication.',
         phonetic: '/passion/',
       ),
       DailyVocabItem(
@@ -10211,7 +10211,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കരുത്ത്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about strength in today\'s lesson.',
+        exampleSentence: 'Recognize and leverage your greatest personal strength.',
         phonetic: '/strength/',
       ),
       DailyVocabItem(
@@ -10223,7 +10223,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ദൗർബല്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about weakness in today\'s lesson.',
+        exampleSentence: 'Transform your weakness into an area of steady growth.',
         phonetic: '/weakness/',
       ),
       DailyVocabItem(
@@ -10235,7 +10235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'വളർച്ച',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about growth in today\'s lesson.',
+        exampleSentence: 'Embrace challenges as opportunities for exponential growth.',
         phonetic: '/growth/',
       ),
       DailyVocabItem(
@@ -10247,7 +10247,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അച്ചടക്കം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about discipline in today\'s lesson.',
+        exampleSentence: 'Self-discipline bridges the gap between goals and achievements.',
         phonetic: '/discipline/',
       ),
       DailyVocabItem(
@@ -10259,7 +10259,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശ്രദ്ധ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about focus in today\'s lesson.',
+        exampleSentence: 'Maintain laser focus on your highest priorities.',
         phonetic: '/focus/',
       ),
       DailyVocabItem(
@@ -10336,7 +10336,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സാഹചര്യം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about situation in today\'s lesson.',
+        exampleSentence: 'Assess the challenging situation before reacting.',
         phonetic: '/situation/',
       ),
       DailyVocabItem(
@@ -10384,7 +10384,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നേട്ടം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about achievement in today\'s lesson.',
+        exampleSentence: 'Graduation is a proud milestone achievement.',
         phonetic: '/achievement/',
       ),
       DailyVocabItem(
@@ -10461,7 +10461,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംസ്കാരം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about culture in today\'s lesson.',
+        exampleSentence: 'Foster a culture of mutual trust and excellence.',
         phonetic: '/culture/',
       ),
       DailyVocabItem(
@@ -10485,7 +10485,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രതീക്ഷ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about expectation in today\'s lesson.',
+        exampleSentence: 'Strive to exceed client expectations consistently.',
         phonetic: '/expectation/',
       ),
       DailyVocabItem(
@@ -10598,7 +10598,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പാക്കേജ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about package in today\'s lesson.',
+        exampleSentence: 'The company offered an attractive compensation package.',
         phonetic: '/package/',
       ),
       DailyVocabItem(
@@ -10610,7 +10610,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഓഫർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about offer in today\'s lesson.',
+        exampleSentence: 'Accept the job offer with formal appreciation.',
         phonetic: '/offer/',
       ),
       DailyVocabItem(
@@ -10622,7 +10622,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ആനുകൂല്യങ്ങൾ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about benefits in today\'s lesson.',
+        exampleSentence: 'The company provides comprehensive healthcare benefits.',
         phonetic: '/benefits/',
       ),
       DailyVocabItem(
@@ -10634,7 +10634,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'കരാർ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about agreement in today\'s lesson.',
+        exampleSentence: 'Both parties signed the mutual partnership agreement.',
         phonetic: '/agreement/',
       ),
       DailyVocabItem(
@@ -10711,7 +10711,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശൈലി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about idiom in today\'s lesson.',
+        exampleSentence: 'Using a clever idiom enriches your conversation.',
         phonetic: '/idiom/',
       ),
       DailyVocabItem(
@@ -10723,7 +10723,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രയോഗം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about expression in today\'s lesson.',
+        exampleSentence: 'Her facial expression showed genuine delight.',
         phonetic: '/expression/',
       ),
       DailyVocabItem(
@@ -10735,7 +10735,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'അർത്ഥം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about meaning in today\'s lesson.',
+        exampleSentence: 'Clarify the exact contextual meaning of the phrase.',
         phonetic: '/meaning/',
       ),
       DailyVocabItem(
@@ -10747,7 +10747,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഒഴുക്ക്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about flow in today\'s lesson.',
+        exampleSentence: 'Speak with a natural and effortless conversational flow.',
         phonetic: '/flow/',
       ),
       DailyVocabItem(
@@ -10759,7 +10759,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'നേറ്റീവ്',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about native in today\'s lesson.',
+        exampleSentence: 'Listen carefully to native English speakers.',
         phonetic: '/native/',
       ),
       DailyVocabItem(
@@ -10848,7 +10848,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉപമ',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about metaphor in today\'s lesson.',
+        exampleSentence: 'The author used a poetic metaphor to describe hope.',
         phonetic: '/metaphor/',
       ),
       DailyVocabItem(
@@ -10860,7 +10860,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സംഭാഷണം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about conversation in today\'s lesson.',
+        exampleSentence: 'Engage in stimulating and thoughtful conversation.',
         phonetic: '/conversation/',
       ),
       DailyVocabItem(
@@ -10872,7 +10872,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'സമ്പന്നത',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about richness in today\'s lesson.',
+        exampleSentence: 'Read classic literature to appreciate the richness of English.',
         phonetic: '/richness/',
       ),
       DailyVocabItem(
@@ -11086,7 +11086,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'പ്രസംഗം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about speech in today\'s lesson.',
+        exampleSentence: 'His keynote speech inspired thousands of young minds.',
         phonetic: '/speech/',
       ),
       DailyVocabItem(
@@ -11110,7 +11110,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ശബ്ദം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about voice in today\'s lesson.',
+        exampleSentence: 'Speak up and let your authentic voice be heard.',
         phonetic: '/voice/',
       ),
       DailyVocabItem(
@@ -11134,7 +11134,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'ഉറച്ച വിശ്വാസം',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about conviction in today\'s lesson.',
+        exampleSentence: 'Express your core beliefs with unwavering conviction.',
         phonetic: '/conviction/',
       ),
       DailyVocabItem(
@@ -11235,7 +11235,7 @@ class Pocket90DayVocabCurriculum {
         hindiMeaning: 'മാസ്റ്ററി',
         teluguMeaning: '',
         kannadaMeaning: '',
-        exampleSentence: 'We learned about mastery in today\'s lesson.',
+        exampleSentence: 'Dedication and daily practice lead to complete mastery.',
         phonetic: '/mastery/',
       ),
       DailyVocabItem(

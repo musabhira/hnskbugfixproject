@@ -4216,7 +4216,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final isListeningThis = _isListening && _activeSpeechChallengeId == challenge.id;
     final hasPassed = _speakChallengeResults[challenge.id] == true;
     final hasFailed = _speakChallengeResults[challenge.id] == false;
-    final userSpoken = _speakChallengeUserText[challenge.id] ?? _recognizedSpokenWords;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -4439,28 +4438,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                         ),
                       ),
 
-                      // User Speech Transcript
-                      if (userSpoken.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: hasPassed ? const Color(0xFF10B981) : Colors.white24,
-                            ),
-                          ),
-                          child: Text(
-                            'You said: "$userSpoken"',
-                            style: GoogleFonts.inter(
-                              color: hasPassed ? const Color(0xFF34D399) : Colors.white,
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      ],
 
                       // Success or Retry Feedback
                       if (hasPassed) ...[

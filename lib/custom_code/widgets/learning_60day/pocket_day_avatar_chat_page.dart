@@ -3162,7 +3162,6 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             isAvatar: true,
             textEn:
                 'Pronunciation Check (${evalResult.accuracyPercentage}%):\n'
-                'You said: "$voiceText"\n'
                 'Target: "$target"\n\n'
                 '${evalResult.feedbackTip}',
             textNative: 'ശ്രമിക്കൂ! വീണ്ടും പറയാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം.',

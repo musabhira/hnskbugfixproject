@@ -1900,13 +1900,6 @@ class _PocketDayOpenWorldAdventurePageState
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (liveTranscript.isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              '"$liveTranscript"',
-                              style: GoogleFonts.inter(color: const Color(0xFFFEF08A), fontSize: 11.5),
-                            ),
-                          ],
                         ],
                       ),
                     ),

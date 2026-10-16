@@ -304,7 +304,7 @@ class _PocketVocabOpenWorldDrivePageState
 
     // Populate day-specific unique vocabulary items (User Audio Directive!)
     final dayItems = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
-    if (widget.day > 1 && dayItems.isNotEmpty) {
+    if (dayItems.isNotEmpty) {
       final emojis = ['💎', '🚀', '🌟', '🏆', '🎯', '⚡', '🔥', '📚', '🎨', '✨', '🌍', '🔮', '🛡️', '🔑', '🌈', '💡'];
       _checkpoints = dayItems.asMap().entries.map((entry) {
         final idx = entry.key;
@@ -631,7 +631,7 @@ class _PocketVocabOpenWorldDrivePageState
       final focus = evalResult.focusWords.take(2).join(', ');
       setState(() {
         _isRecording = false;
-        _speechError = 'You said: "$_spokenText"\nExpected: "$sentence"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
+        _speechError = 'Please say: "$sentence"${focus.isNotEmpty ? "\nFocus on: $focus" : ""}';
       });
       PocketGameAudioService.instance.playIncorrectSound();
       await _speak('Not quite right. Say: $sentence');
@@ -1038,12 +1038,10 @@ class _PocketVocabOpenWorldDrivePageState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _spokenText.isNotEmpty
-                      ? '“$_spokenText”'
-                      : 'Speak aloud into your mic...',
+                  '🎙️ Speak aloud into your mic...',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
-                    color: _spokenText.isNotEmpty ? const Color(0xFFFFD700) : Colors.white60,
+                    color: Colors.white70,
                     fontSize: 12,
                     fontStyle: FontStyle.italic,
                   ),

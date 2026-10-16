@@ -910,28 +910,7 @@ class _PocketPrepositionsPracticeCardState
                             ),
                           ),
                         ),
-                        if (_recognizedWords.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'You said: "$_recognizedWords"',
-                            style: GoogleFonts.inter(
-                              color: Colors.white70,
-                              fontSize: 10.5,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
-                  ),
-                ] else if (_recognizedWords.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    'Heard: "$_recognizedWords"',
-                    style: GoogleFonts.inter(
-                      color: Colors.white54,
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],

@@ -746,17 +746,6 @@ class _PocketConjunctionsPracticeCardState
                             fontSize: 11,
                           ),
                         ),
-                        if (_recognizedWords.isNotEmpty && !_isCorrect) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            'You said: "$_recognizedWords"',
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),
