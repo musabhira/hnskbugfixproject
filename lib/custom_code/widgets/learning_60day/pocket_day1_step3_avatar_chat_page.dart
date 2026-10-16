@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'games/meadow_runner_game_page.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 
 /// 💬 Chat message model for Step 3 Word & Letter Hunt
 class Step3ChatMessage {
@@ -60,17 +61,20 @@ class Step3InBubbleOption {
 
 /// 🔍 Step 3: Conversational Avatar Chat for Letter & Word Hunt
 class PocketDay1Step3AvatarChatPage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step3AvatarChatPage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -78,6 +82,7 @@ class PocketDay1Step3AvatarChatPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketDay1Step3AvatarChatPage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -111,62 +116,175 @@ class _PocketDay1Step3AvatarChatPageState
   String _currentExpectedVoicePhrase = 'Yes';
   int _currentHuntRound = 0; // 0 to 5 for 6 rounds
 
-  static const List<Map<String, dynamic>> huntRounds = [
-    {
-      'target': 'M',
-      'emoji': '🎵',
-      'promptEn': 'Find Letter M! 🎵',
-      'promptMl': 'അക്ഷരം M കണ്ടെത്തുക!',
-      'options': ['N 🎶', 'M 🎵', 'P 🎨', 'Q 👑'],
-      'correct': 'M',
-      'clue': 'Letter M for Music',
-    },
-    {
-      'target': 'Bed',
-      'emoji': '🛏️',
-      'promptEn': 'Find the word: Bed 🛏️',
-      'promptMl': 'Bed (കിടക്ക) കണ്ടെത്തുക!',
-      'options': ['Box 📦', 'Bed 🛏️', 'Ring 💍', 'Key 🗝️'],
-      'correct': 'Bed',
-      'clue': 'A soft place where you sleep tonight',
-    },
-    {
-      'target': 'Cup',
-      'emoji': '☕',
-      'promptEn': 'Find the word: Cup ☕',
-      'promptMl': 'Cup (കപ്പ്) കണ്ടെത്തുക!',
-      'options': ['Cup ☕', 'Bell 🔔', 'Fan 🪭', 'Boat ⛵'],
-      'correct': 'Cup',
-      'clue': 'Small container for tea or coffee',
-    },
-    {
-      'target': 'Shoe',
-      'emoji': '👟',
-      'promptEn': 'Find the word: Shoe 👟',
-      'promptMl': 'Shoe (ഷൂ) കണ്ടെത്തുക!',
-      'options': ['Lamp 💡', 'Shoe 👟', 'Lock 🔒', 'Coin 🪙'],
-      'correct': 'Shoe',
-      'clue': 'Comfortable footwear worn on feet',
-    },
-    {
-      'target': 'Train',
-      'emoji': '🚆',
-      'promptEn': 'Find the word: Train 🚆',
-      'promptMl': 'Train (ട്രെയിൻ) കണ്ടെത്തുക!',
-      'options': ['Ship 🚢', 'Train 🚆', 'Bus 🚌', 'Plane ✈️'],
-      'correct': 'Train',
-      'clue': 'Long rail vehicle that travels fast on tracks',
-    },
-    {
-      'target': 'Bag',
-      'emoji': '🎒',
-      'promptEn': 'Find the word: Bag 🎒',
-      'promptMl': 'Bag (ബാഗ്) കണ്ടെത്തുക!',
-      'options': ['Bag 🎒', 'Cap 🧢', 'Pot 🏺', 'Flag 🚩'],
-      'correct': 'Bag',
-      'clue': 'Item used to carry books and belongings',
-    },
-  ];
+  /// 🔍 90-Day Progressive Letter & Word Hunt Rounds (User Audio Directive!)
+  static List<Map<String, dynamic>> getHuntRoundsForDay(int day) {
+    if (day == 1) {
+      return const [
+        {
+          'target': 'M',
+          'emoji': '🎵',
+          'promptEn': 'Find Letter M! 🎵',
+          'promptMl': 'അക്ഷരം M കണ്ടെത്തുക!',
+          'options': ['N 🎶', 'M 🎵', 'P 🎨', 'Q 👑'],
+          'correct': 'M',
+          'clue': 'Letter M for Music',
+        },
+        {
+          'target': 'Bed',
+          'emoji': '🛏️',
+          'promptEn': 'Find the word: Bed 🛏️',
+          'promptMl': 'Bed (കിടക്ക) കണ്ടെത്തുക!',
+          'options': ['Box 📦', 'Bed 🛏️', 'Ring 💍', 'Key 🗝️'],
+          'correct': 'Bed',
+          'clue': 'A soft place where you sleep tonight',
+        },
+        {
+          'target': 'Cup',
+          'emoji': '☕',
+          'promptEn': 'Find the word: Cup ☕',
+          'promptMl': 'Cup (കപ്പ്) കണ്ടെത്തുക!',
+          'options': ['Cup ☕', 'Bell 🔔', 'Fan 🪭', 'Boat ⛵'],
+          'correct': 'Cup',
+          'clue': 'Small container for tea or coffee',
+        },
+        {
+          'target': 'Shoe',
+          'emoji': '👟',
+          'promptEn': 'Find the word: Shoe 👟',
+          'promptMl': 'Shoe (ഷൂ) കണ്ടെത്തുക!',
+          'options': ['Lamp 💡', 'Shoe 👟', 'Lock 🔒', 'Coin 🪙'],
+          'correct': 'Shoe',
+          'clue': 'Comfortable footwear worn on feet',
+        },
+        {
+          'target': 'Train',
+          'emoji': '🚆',
+          'promptEn': 'Find the word: Train 🚆',
+          'promptMl': 'Train (ട്രെയിൻ) കണ്ടെത്തുക!',
+          'options': ['Ship 🚢', 'Train 🚆', 'Bus 🚌', 'Plane ✈️'],
+          'correct': 'Train',
+          'clue': 'Long rail vehicle that travels fast on tracks',
+        },
+        {
+          'target': 'Bag',
+          'emoji': '🎒',
+          'promptEn': 'Find the word: Bag 🎒',
+          'promptMl': 'Bag (ബാഗ്) കണ്ടെത്തുക!',
+          'options': ['Bag 🎒', 'Cap 🧢', 'Pot 🏺', 'Flag 🚩'],
+          'correct': 'Bag',
+          'clue': 'Item used to carry books and belongings',
+        },
+      ];
+    }
+
+    if (day == 2) {
+      return const [
+        {
+          'target': 'K',
+          'emoji': '🌴',
+          'promptEn': 'Find Letter K! 🌴',
+          'promptMl': 'അക്ഷരം K കണ്ടെത്തുക!',
+          'options': ['L 🌿', 'K 🌴', 'M 🎵', 'H 🏡'],
+          'correct': 'K',
+          'clue': 'Letter K for Kerala',
+        },
+        {
+          'target': 'City',
+          'emoji': '🏙️',
+          'promptEn': 'Find the word: City 🏙️',
+          'promptMl': 'City (നഗരം) കണ്ടെത്തുക!',
+          'options': ['Tree 🌳', 'City 🏙️', 'Road 🛣️', 'Sky ☁️'],
+          'correct': 'City',
+          'clue': 'A large town with tall buildings',
+        },
+        {
+          'target': 'Family',
+          'emoji': '👨‍👩‍👦',
+          'promptEn': 'Find the word: Family 👨‍👩‍👦',
+          'promptMl': 'Family (കുടുംബം) കണ്ടെത്തുക!',
+          'options': ['Friend 🤝', 'Family 👨‍👩‍👦', 'Neighbor 🏡', 'Teacher 📚'],
+          'correct': 'Family',
+          'clue': 'Parents and children living together with love',
+        },
+        {
+          'target': 'Home',
+          'emoji': '🏡',
+          'promptEn': 'Find the word: Home 🏡',
+          'promptMl': 'Home (വീട്) കണ്ടെത്തുക!',
+          'options': ['Shop 🏬', 'Home 🏡', 'Park 🏞️', 'School 🏫'],
+          'correct': 'Home',
+          'clue': 'The place where you live peacefully',
+        },
+        {
+          'target': 'River',
+          'emoji': '🌊',
+          'promptEn': 'Find the word: River 🌊',
+          'promptMl': 'River (നദി) കണ്ടെത്തുക!',
+          'options': ['Hill ⛰️', 'River 🌊', 'Road 🛣️', 'Field 🌾'],
+          'correct': 'River',
+          'clue': 'Flowing stream of fresh water',
+        },
+        {
+          'target': 'Tree',
+          'emoji': '🌳',
+          'promptEn': 'Find the word: Tree 🌳',
+          'promptMl': 'Tree (മരം) കണ്ടെത്തുക!',
+          'options': ['Flower 🌸', 'Tree 🌳', 'Grass 🌿', 'Fruit 🍎'],
+          'correct': 'Tree',
+          'clue': 'Tall plant with a trunk and green leaves',
+        },
+      ];
+    }
+
+    // Days 3 to 90: Dynamic tailored hunt rounds synthesized from Pocket90DayVocabCurriculum
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
+    final emojis = ['⭐', '💎', '🚀', '🌟', '🏆', '🎯', '⚡', '🔥', '📚', '✨', '🌈', '💡', '🛡️', '🔑'];
+    final rounds = <Map<String, dynamic>>[];
+
+    // Round 1: Letter Hunt for first word's starting letter
+    final firstWord = vocab.isNotEmpty ? vocab.first.word : 'Action';
+    final targetLetter = firstWord.isNotEmpty ? firstWord[0].toUpperCase() : 'A';
+    rounds.add({
+      'target': targetLetter,
+      'emoji': emojis[(day * 3) % emojis.length],
+      'promptEn': 'Find Letter $targetLetter! 🔍',
+      'promptMl': 'അക്ഷരം $targetLetter കണ്ടെത്തുക!',
+      'options': [
+        '$targetLetter ${emojis[(day) % emojis.length]}',
+        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 3) % 26))} ${emojis[(day + 1) % emojis.length]}',
+        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 7) % 26))} ${emojis[(day + 2) % emojis.length]}',
+        '${String.fromCharCode(65 + ((targetLetter.codeUnitAt(0) - 65 + 11) % 26))} ${emojis[(day + 3) % emojis.length]}',
+      ]..shuffle(),
+      'correct': targetLetter,
+      'clue': 'Letter $targetLetter in "$firstWord"',
+    });
+
+    // Rounds 2 to 6: 5 Vocabulary Word Hunts from day's curriculum
+    for (int i = 0; i < 5 && i < vocab.length; i++) {
+      final item = vocab[i];
+      final e = emojis[(i + day) % emojis.length];
+      final distractor1 = vocab[(i + 2) % vocab.length].word;
+      final distractor2 = vocab[(i + 4) % vocab.length].word;
+      final distractor3 = vocab[(i + 6) % vocab.length].word;
+
+      rounds.add({
+        'target': item.word,
+        'emoji': e,
+        'promptEn': 'Find the word: ${item.word} $e',
+        'promptMl': '${item.word} (${item.malayalamMeaning}) കണ്ടെത്തുക!',
+        'options': [
+          '${item.word} $e',
+          '$distractor1 ${emojis[(i + 1) % emojis.length]}',
+          '$distractor2 ${emojis[(i + 2) % emojis.length]}',
+          '$distractor3 ${emojis[(i + 3) % emojis.length]}',
+        ]..shuffle(),
+        'correct': item.word,
+        'clue': item.definition.isNotEmpty ? item.definition : 'Practice word: ${item.word}',
+      });
+    }
+
+    return rounds;
+  }
 
   @override
   void initState() {
@@ -290,10 +408,10 @@ class _PocketDay1Step3AvatarChatPageState
 
   void _startWelcomeHuntFlow() {
     final promptEn =
-        'Hi $_userName! Welcome to Step 3: Letter & Word Hunt! 🔍\n\n'
+        'Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter & Word Hunt! 🔍\n\n'
         'Would you like to hunt words in this chat or explore the open 2D Meadow Runner game? 🌳';
     final promptMl =
-        'ഹായ് $_userName! സ്റ്റെപ്പ് 3-ലേക്ക് സ്വാഗതം! നമുക്ക് വാക്കുകളും അക്ഷരങ്ങളും വേട്ടയാടി കണ്ടെത്താം!\n\n'
+        'ഹായ് $_userName! ഡേ ${widget.day} സ്റ്റെപ്പ് 3-ലേക്ക് സ്വാഗതം! നമുക്ക് വാക്കുകളും അക്ഷരങ്ങളും വേട്ടയാടി കണ്ടെത്താം!\n\n'
         'ഇവിടെ ചാറ്റിൽ കളിക്കണോ അതോ 2D മെഡോ റണ്ണർ ഗെയിമിലേക്ക് പോകണോ? 🌿';
 
     _currentExpectedVoicePhrase = 'Chat Hunt or Meadow Game';
@@ -306,7 +424,7 @@ class _PocketDay1Step3AvatarChatPageState
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Hi $_userName! Welcome to Step 3: Letter and Word Hunt! Let\'s find hidden words!',
+          audioText: 'Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter and Word Hunt! Let\'s find hidden words!',
           speakThisPrompt: 'Choose how to hunt:',
           inBubbleOptions: [
             Step3InBubbleOption(
@@ -340,7 +458,7 @@ class _PocketDay1Step3AvatarChatPageState
       );
     });
 
-    _speak('Hi $_userName! Welcome to Step 3: Letter and Word Hunt! Let\'s find hidden words!');
+    _speak('Hi $_userName! Welcome to Day ${widget.day} Step 3: Letter and Word Hunt! Let\'s find hidden words!');
     _scrollToBottom();
   }
 
@@ -350,12 +468,13 @@ class _PocketDay1Step3AvatarChatPageState
   }
 
   void _sendNextHuntQuestion() {
-    if (_currentHuntRound >= huntRounds.length) {
+    final activeRounds = getHuntRoundsForDay(widget.day);
+    if (_currentHuntRound >= activeRounds.length) {
       _showHuntCompletedDialogue();
       return;
     }
 
-    final roundData = huntRounds[_currentHuntRound];
+    final roundData = activeRounds[_currentHuntRound];
     final target = roundData['target'] as String;
     final emoji = roundData['emoji'] as String;
     final promptEn = roundData['promptEn'] as String;
@@ -502,14 +621,23 @@ class _PocketDay1Step3AvatarChatPageState
     HapticFeedback.heavyImpact();
     await _tts.stop();
 
-    final roundsData = [
-      {"round": 1, "target": "A", "prompt": {"en": "Find Letter A 🍎", "ml": "A കണ്ടെത്തുക"}, "options": ["B", "A", "C", "D"], "correct": "A"},
-      {"round": 2, "target": "Bed", "prompt": {"en": "Find the word: Bed 🛏️", "ml": "Bed കണ്ടെത്തുക"}, "options": ["Crow", "Grapes", "Bed", "Apple"], "correct": "Bed"},
-      {"round": 3, "target": "Crow", "prompt": {"en": "Find the word: Crow 🐦‍⬛", "ml": "Crow കണ്ടെത്തുക"}, "options": ["Water", "Crow", "Dog", "Cat"], "correct": "Crow"},
-      {"round": 4, "target": "Grapes", "prompt": {"en": "Find the word: Grapes 🍇", "ml": "Grapes കണ്ടെത്തുക"}, "options": ["Grapes", "Book", "House", "Sun"], "correct": "Grapes"},
-      {"round": 5, "target": "Water", "prompt": {"en": "Find the word: Water 💧", "ml": "Water കണ്ടെത്തുക"}, "options": ["Milk", "Bed", "Water", "Fish"], "correct": "Water"},
-      {"round": 6, "target": "Friend", "prompt": {"en": "Find the word: Friend 🤝", "ml": "Friend കണ്ടെത്തുക"}, "options": ["Door", "Friend", "Table", "Clock"], "correct": "Friend"},
-    ];
+    final activeRounds = getHuntRoundsForDay(widget.day);
+    final roundsData = activeRounds.asMap().entries.map((entry) {
+      final idx = entry.key + 1;
+      final r = entry.value;
+      final rawOptions = (r['options'] as List).map((o) {
+        final str = o.toString();
+        // Remove trailing emoji for cleaner tile text in 2D game
+        return str.replaceAll(RegExp(r'\s+[^\w\s].*'), '').trim();
+      }).toList();
+      return {
+        "round": idx,
+        "target": r['target'],
+        "prompt": {"en": r['promptEn'], "ml": r['promptMl']},
+        "options": rawOptions,
+        "correct": r['correct'],
+      };
+    }).toList();
 
     if (!mounted) return;
     await Navigator.push(
@@ -678,8 +806,9 @@ class _PocketDay1Step3AvatarChatPageState
     _handleVoiceSubmission(
       voiceText: finalSpoken,
       action: () {
-        if (_currentHuntRound < huntRounds.length) {
-          final roundData = huntRounds[_currentHuntRound];
+        final activeRounds = getHuntRoundsForDay(widget.day);
+        if (_currentHuntRound < activeRounds.length) {
+          final roundData = activeRounds[_currentHuntRound];
           final correct = roundData['correct'] as String;
           final isMatch = PocketSpeechNormalizer.isMatch(
             spokenText: finalSpoken,

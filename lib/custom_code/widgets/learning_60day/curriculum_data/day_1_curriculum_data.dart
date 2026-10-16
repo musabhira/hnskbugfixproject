@@ -309,20 +309,20 @@ class Day1CurriculumJsonData {
     },
     {
       "stepNumber": 4,
-      "id": "step_4_game_match_build",
+      "id": "step_4_spoken_english",
       "title": {
-        "en": "GAME 2: Match & Sentence Builder",
-        "ml": "ഗെയിം 2: യോജിപ്പിക്കലും വാക്യം നിർമ്മാണവും",
-        "hi": "गेम 2: मिलान और वाक्य निर्माण",
-        "ta": "விளையாட்டு 2: வாக்கியம் உருவாக்குதல்"
+        "en": "🎙️ Spoken English Conversational Chat",
+        "ml": "🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം",
+        "hi": "🎙️ स्पोकन इंग्लिश बातचीत",
+        "ta": "🎙️ ஆங்கிலத்தில் பேசுதல் பயிற்சி"
       },
-      "icon": "🧩",
-      "gameType": "game_match_build",
+      "icon": "🎙️",
+      "gameType": "spoken_chat",
       "description": {
-        "en": "6 Interactive puzzle challenges: Match objects to names and unscramble words to build real sentences.",
-        "ml": "6 പസിൽ വെല്ലുവിളികൾ: വാക്കുകൾ യോജിപ്പിക്കുക, അർത്ഥവത്തായ വാക്യങ്ങൾ നിർമ്മിക്കുക.",
-        "hi": "6 पहेलियां: शब्दों का मिलान करें और वाक्य बनाएं।",
-        "ta": "6 புதிர்கள்: வார்த்தைகளை பொருத்தி வாக்கியங்களை உருவாக்கவும்."
+        "en": "Voice-first 1-on-1 spoken conversation with CyberCat: speak into the microphone to build fluency.",
+        "ml": "സൈബർകാറ്റുമായി 1-on-1 സംഭാഷണം: മൈക്കിലൂടെ സംസാരിച്ച് ഇംഗ്ലീഷ് പ്രാവീണ്യം നേടുക.",
+        "hi": "साइबरकैट के साथ 1-on-1 बातचीत: आत्मविश्वास से अंग्रेजी बोलें।",
+        "ta": "சைபர்கேட்டுடன் உரையாடல்: ஆங்கிலத்தில் சரளமாக பேசுங்கள்."
       },
       "rounds": [
         {

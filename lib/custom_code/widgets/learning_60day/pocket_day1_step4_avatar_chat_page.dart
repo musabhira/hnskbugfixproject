@@ -6,6 +6,9 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
+import 'pocket_master_curriculum_90.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 
 /// 💬 Chat Message Model for Step 4 Spoken English
 class Step4ChatMessage {
@@ -72,17 +75,20 @@ class Step4InBubbleOption {
 /// 5. Simple, encouraging beginner-friendly questions.
 /// 6. Fully responsive text wrapping with zero clipping or overflow.
 class PocketDay1Step4AvatarChatPage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step4AvatarChatPage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -90,6 +96,7 @@ class PocketDay1Step4AvatarChatPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketDay1Step4AvatarChatPage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -123,74 +130,197 @@ class _PocketDay1Step4AvatarChatPageState
 
   String _userName = 'Hira';
   int _currentDialogueIndex = 0;
-  String _currentExpectedVoicePhrase = 'I am fine';
 
-  // 🗣️ Super simple, encouraging Day 1 beginner spoken drills (Avatar: CyberCat only)
-  static const List<Map<String, dynamic>> spokenDrills = [
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'Hello! How are you feeling today? 🌅',
-      'questionMl': 'ഹലോ! ഇന്ന് സുഖമാണോ?',
-      'targetReply': 'I am fine, thank you.',
-      'targetReplyMl': 'എനിക്ക് സുഖമാണ്, നന്ദി.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'What is your name, my friend? 🤝',
-      'questionMl': 'നിന്റെ പേരെന്താണ്?',
-      'targetReply': 'My name is Alex.',
-      'targetReplyMl': 'എന്റെ പേര് അലക്സ് എന്നാണ്.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'Are you a student? 🎒',
-      'questionMl': 'നീ ഒരു വിദ്യാർത്ഥിയാണോ?',
-      'targetReply': 'Yes, I am a student.',
-      'targetReplyMl': 'അതെ, ഞാൻ ഒരു വിദ്യാർത്ഥിയാണ്.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'Do you like sweet green grapes? 🍇',
-      'questionMl': 'നിനക്ക് മധുരമുള്ള മുന്തിരി ഇഷ്ടമാണോ?',
-      'targetReply': 'Yes, I like grapes.',
-      'targetReplyMl': 'അതെ, എനിക്ക് മുന്തിരി ഇഷ്ടമാണ്.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'Are you feeling thirsty? 💧',
-      'questionMl': 'നിനക്ക് ദാഹിക്കുന്നുണ്ടോ?',
-      'targetReply': 'Yes, please give me water.',
-      'targetReplyMl': 'അതെ, എനിക്ക് വെള്ളം തരൂ.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'What is on your study table? 📖',
-      'questionMl': 'നിന്റെ മേശപ്പുറത്ത് എന്താണുള്ളത്?',
-      'targetReply': 'This is a book.',
-      'targetReplyMl': 'ഇത് ഒരു പുസ്തകമാണ്.',
-    },
-    {
-      'avatar': 'CyberCat',
-      'icon': '🐱',
-      'color': Color(0xFF0284C7),
-      'questionEn': 'You spoke very well today! Have a great day! ☀️',
-      'questionMl': 'നീ ഇന്ന് വളരെ നന്നായി സംസാരിച്ചു! നല്ലൊരു ദിവസം ആശംസിക്കുന്നു!',
-      'targetReply': 'Thank you, goodbye!',
-      'targetReplyMl': 'നന്ദി, വീണ്ടും കാണാം!',
-    },
-  ];
+  /// 🎙️ 90-Day Progressive Spoken English Conversational Exchanges (User Audio Directive!)
+  static List<Map<String, dynamic>> getSpokenDrillsForDay(int day) {
+    if (day == 1) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Hello! How are you feeling today? 🌅',
+          'questionMl': 'ഹലോ! ഇന്ന് സുഖമാണോ?',
+          'targetReply': 'I am fine, thank you.',
+          'targetReplyMl': 'എനിക്ക് സുഖമാണ്, നന്ദി.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What is your name, my friend? 🤝',
+          'questionMl': 'നിന്റെ പേരെന്താണ്?',
+          'targetReply': 'My name is Alex.',
+          'targetReplyMl': 'എന്റെ പേര് അലക്സ് എന്നാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Are you a student? 🎒',
+          'questionMl': 'നീ ഒരു വിദ്യാർത്ഥിയാണോ?',
+          'targetReply': 'Yes, I am a student.',
+          'targetReplyMl': 'അതെ, ഞാൻ ഒരു വിദ്യാർത്ഥിയാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Do you like sweet green grapes? 🍇',
+          'questionMl': 'നിനക്ക് മധുരമുള്ള മുന്തിരി ഇഷ്ടമാണോ?',
+          'targetReply': 'Yes, I like grapes.',
+          'targetReplyMl': 'അതെ, എനിക്ക് മുന്തിരി ഇഷ്ടമാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Are you feeling thirsty? 💧',
+          'questionMl': 'നിനക്ക് ദാഹിക്കുന്നുണ്ടോ?',
+          'targetReply': 'Yes, please give me water.',
+          'targetReplyMl': 'അതെ, എനിക്ക് വെള്ളം തരൂ.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What is on your study table? 📖',
+          'questionMl': 'നിന്റെ മേശപ്പുറത്ത് എന്താണുള്ളത്?',
+          'targetReply': 'This is a book.',
+          'targetReplyMl': 'ഇത് ഒരു പുസ്തകമാണ്.',
+        },
+      ];
+    }
+
+    if (day == 2) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Hello! Where are you from, my friend? 🌍',
+          'questionMl': 'ഹലോ! നിങ്ങൾ എവിടെ നിന്നാണ്?',
+          'targetReply': 'I am from Kerala.',
+          'targetReplyMl': 'ഞാൻ കേരളത്തിൽ നിന്നാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Do you live in a city or a peaceful town? 🏙️',
+          'questionMl': 'നിങ്ങൾ നഗരത്തിലാണോ അതോ പട്ടണത്തിലാണോ താമസിക്കുന്നത്?',
+          'targetReply': 'I live in a beautiful city.',
+          'targetReplyMl': 'ഞാൻ മനോഹരമായ ഒരു നഗരത്തിലാണ് താമസിക്കുന്നത്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Tell me about your home. Who do you stay with? 👨‍👩‍👦',
+          'questionMl': 'നിങ്ങൾ ആരുടെ കൂടെയാണ് താമസിക്കുന്നത്?',
+          'targetReply': 'I stay with my family.',
+          'targetReplyMl': 'ഞാൻ എന്റെ കുടുംബത്തോടൊപ്പമാണ് താമസിക്കുന്നത്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Do you like staying at home in the evening? 🏡',
+          'questionMl': 'വൈകുന്നേരങ്ങളിൽ വീട്ടിൽ സമയം ചെലവഴിക്കാൻ ഇഷ്ടമാണോ?',
+          'targetReply': 'My home is cozy and warm.',
+          'targetReplyMl': 'എന്റെ വീട് സുഖകരവും സന്തോഷം നിറഞ്ഞതുമാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Do you come home on time after work or study? ⏰',
+          'questionMl': 'ജോലി അല്ലെങ്കിൽ പഠനം കഴിഞ്ഞ് കൃത്യസമയത്ത് വീട്ടിൽ എത്താറുണ്ടോ?',
+          'targetReply': 'I reach home on time.',
+          'targetReplyMl': 'ഞാൻ കൃത്യസമയത്ത് വീട്ടിൽ എത്താറുണ്ട്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'You spoke with such confidence today! See you tomorrow! 🌟',
+          'questionMl': 'വളരെ ആത്മവിശ്വാസത്തോടെ സംസാരിച്ചു! നാളെ വീണ്ടും കാണാം!',
+          'targetReply': 'Thank you, see you tomorrow!',
+          'targetReplyMl': 'നന്ദി, നാളെ കാണാം!',
+        },
+      ];
+    }
+
+    // Days 3–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
+    final master = PocketMasterCurriculum90.getDay(day);
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
+
+    final v0 = vocab.isNotEmpty ? vocab[0] : null;
+    final v1 = vocab.length > 1 ? vocab[1] : null;
+
+    final evo = master.sentenceEvolution.isNotEmpty
+        ? master.sentenceEvolution.first.replaceAll(RegExp(r'^[🟢🟡🟣]\s*Basic:\s*'), '').trim()
+        : 'I practice speaking English with confidence.';
+
+    return [
+      {
+        'avatar': 'CyberCat',
+        'icon': '🐱',
+        'color': const Color(0xFF0284C7),
+        'questionEn': 'Hello! Welcome to Day $day! Are you ready to practice ${master.grammarConcept}? 🌟',
+        'questionMl': 'ഹലോ! ഡേ $day ലേക്ക് സ്വാഗതം! നമുക്ക് ${master.grammarConcept} ഇന്ന് പരിശീലിക്കാം!',
+        'targetReply': 'Yes, I am ready to practice ${master.grammarConcept}.',
+        'targetReplyMl': 'അതെ, ഞാൻ പരിശീലിക്കാൻ തയ്യാറാണ്.',
+      },
+      if (v0 != null)
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': const Color(0xFF0284C7),
+          'questionEn': 'Let\'s use our new word "${v0.word}" (${v0.definition}). Speak this sentence aloud: 💬',
+          'questionMl': '"${v0.word}" (${v0.malayalamMeaning}) ഉപയോഗിച്ചുള്ള വാചകം ഉറക്കെ പറയൂ:',
+          'targetReply': v0.exampleSentence.isNotEmpty ? v0.exampleSentence : 'This is ${v0.word}.',
+          'targetReplyMl': v0.malayalamMeaning,
+        },
+      if (v1 != null)
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': const Color(0xFF0284C7),
+          'questionEn': 'Wonderful! How about our word "${v1.word}" (${v1.malayalamMeaning})? Try saying: ✨',
+          'questionMl': '"${v1.word}" ഉൾപ്പെടുത്തിയുള്ള അടുത്ത വാചകം പറയൂ:',
+          'targetReply': v1.exampleSentence.isNotEmpty ? v1.exampleSentence : 'I understand ${v1.word}.',
+          'targetReplyMl': v1.malayalamMeaning,
+        },
+      {
+        'avatar': 'CyberCat',
+        'icon': '🐱',
+        'color': const Color(0xFF0284C7),
+        'questionEn': 'Now try today\'s core fluency drill: "${master.focusArea}". Speak clearly into the mic: 🎙️',
+        'questionMl': 'ഇന്നത്തെ പ്രധാന സംഭാഷണ പരിശീലന വാചകം മൈക്കിലൂടെ വ്യക്തമായി പറയൂ:',
+        'targetReply': master.speakingDrill.isNotEmpty ? master.speakingDrill : 'I communicate with clarity.',
+        'targetReplyMl': 'വ്യക്തമായി സംസാരിക്കുന്നു.',
+      },
+      {
+        'avatar': 'CyberCat',
+        'icon': '🐱',
+        'color': const Color(0xFF0284C7),
+        'questionEn': 'Terrific! ${master.peerChatMission.isNotEmpty ? master.peerChatMission : "Now speak this natural conversation phrase:"} 🗣️',
+        'questionMl': 'മികച്ച താളം! ഈ വാചകം കൂടി ഉറക്കെ സംസാരിക്കൂ:',
+        'targetReply': evo,
+        'targetReplyMl': 'സമ്പൂർണ്ണ വാചകം.',
+      },
+      {
+        'avatar': 'CyberCat',
+        'icon': '🐱',
+        'color': const Color(0xFF0284C7),
+        'questionEn': 'Outstanding speaking today on Day $day! Your fluency grows stronger every single day! 🏆',
+        'questionMl': 'ഡേ $day-ൽ മികച്ച പ്രകടനം! നിന്റെ സംസാരശേഷി വളരെ മെച്ചപ്പെടുന്നുണ്ട്!',
+        'targetReply': 'Thank you, CyberCat! I will keep practicing every day!',
+        'targetReplyMl': 'നന്ദി, ഞാൻ എന്നും തുടർന്ന് സംസാരിക്കും!',
+      },
+    ];
+  }
 
   @override
   void initState() {
@@ -330,13 +460,11 @@ class _PocketDay1Step4AvatarChatPageState
 
   void _startSpokenChatIntro() {
     final introEn =
-        'Welcome to Step 4: Spoken English Chat, $_userName! 🎙️\n\n'
+        'Welcome to Day ${widget.day} Step 4: Spoken English Chat, $_userName! 🎙️\n\n'
         'We learn spoken English by speaking! Tap the Start button below to begin.';
     final introMl =
-        'സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് സ്വാഗതം, $_userName! 🎙️\n\n'
+        'ഡേ ${widget.day} സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് സ്വാഗതം, $_userName! 🎙️\n\n'
         'ഇംഗ്ലീഷ് സംസാരിച്ചു തന്നെ പഠിക്കാം! താഴെയുള്ള ബട്ടൺ ടാപ്പ് ചെയ്ത് ആരംഭിക്കാം!';
-
-    _currentExpectedVoicePhrase = 'Start Speaking';
 
     setState(() {
       _messages.clear();
@@ -349,7 +477,7 @@ class _PocketDay1Step4AvatarChatPageState
           avatarColor: const Color(0xFF0284C7),
           textEn: introEn,
           textNative: introMl,
-          audioText: 'Welcome to Step 4: Spoken English Chat! Let\'s speak English together!',
+          audioText: 'Welcome to Day ${widget.day} Step 4: Spoken English Chat! Let\'s speak English together!',
           inBubbleOptions: [
             Step4InBubbleOption(
               labelEn: '🎙️ START SPEAKING PRACTICE ➔',
@@ -366,17 +494,18 @@ class _PocketDay1Step4AvatarChatPageState
       );
     });
 
-    _speak('Welcome to Step 4: Spoken English Chat! Let\'s speak English together!');
+    _speak('Welcome to Day ${widget.day} Step 4: Spoken English Chat! Let\'s speak English together!');
     _scrollToBottom();
   }
 
   void _sendNextSpokenDrill() {
-    if (_currentDialogueIndex >= spokenDrills.length) {
+    final activeDrills = getSpokenDrillsForDay(widget.day);
+    if (_currentDialogueIndex >= activeDrills.length) {
       _showSpokenCompletionDialogue();
       return;
     }
 
-    final drill = spokenDrills[_currentDialogueIndex];
+    final drill = activeDrills[_currentDialogueIndex];
     final avatar = drill['avatar'] as String;
     final icon = drill['icon'] as String;
     final color = drill['color'] as Color;
@@ -384,8 +513,6 @@ class _PocketDay1Step4AvatarChatPageState
     final qMl = drill['questionMl'] as String;
     final target = drill['targetReply'] as String;
     final targetMl = drill['targetReplyMl'] as String;
-
-    _currentExpectedVoicePhrase = target;
 
     // 🛑 Note: As explicitly instructed by user, DO NOT add answer buttons inside bubble!
     setState(() {
@@ -428,7 +555,8 @@ class _PocketDay1Step4AvatarChatPageState
     });
     _scrollToBottom();
 
-    final drill = spokenDrills[_currentDialogueIndex.clamp(0, spokenDrills.length - 1)];
+    final activeDrills = getSpokenDrillsForDay(widget.day);
+    final drill = activeDrills[_currentDialogueIndex.clamp(0, activeDrills.length - 1)];
     final target = drill['targetReply'] as String;
     final targetMl = drill['targetReplyMl'] as String;
     final avatar = drill['avatar'] as String;
@@ -492,7 +620,8 @@ class _PocketDay1Step4AvatarChatPageState
     final praiseEn = praises[_currentDialogueIndex % praises.length];
     final praiseMl = 'വളരെ മികച്ച ഉച്ചാരണം! അഭിനന്ദനങ്ങൾ!';
 
-    final drill = spokenDrills[(_currentDialogueIndex - 1).clamp(0, spokenDrills.length - 1)];
+    final activeDrills = getSpokenDrillsForDay(widget.day);
+    final drill = activeDrills[(_currentDialogueIndex - 1).clamp(0, activeDrills.length - 1)];
     final avatar = drill['avatar'] as String;
     final icon = drill['icon'] as String;
     final color = drill['color'] as Color;
@@ -532,8 +661,6 @@ class _PocketDay1Step4AvatarChatPageState
     final replyMl =
         'ഗംഭീരം, $_userName! നിങ്ങൾ എല്ലാ സംഭാഷണങ്ങളും മൈക്കിലൂടെ ഉറക്കെ പറഞ്ഞു പരിശീലിച്ചു!\n\n'
         'ഇനി നമുക്ക് സ്റ്റെപ്പ് 5: റീഡിംഗ് റൂമിലേക്ക് കടക്കാം! 📖';
-
-    _currentExpectedVoicePhrase = 'Proceed to Step 5';
 
     setState(() {
       _messages.add(

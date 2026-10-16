@@ -756,6 +756,16 @@ class Day1Curriculum {
             };
           }
 
+          // Step 4 on Days 1 to 90: Spoken English Conversational Chat (User Audio Directive!)
+          if (stepNum == 4) {
+            titleEn = '🎙️ Spoken English Conversational Chat';
+            titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
+            descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
+            descMl = 'യഥാർത്ഥ ജീവിതത്തിലെ സംഭാഷണങ്ങൾ മൈക്കിലൂടെ സംസാരിച്ച് പരിശീലിക്കുക!';
+            icon = '🎙️';
+            gameType = 'spoken_chat';
+          }
+
           // Step 6 on Day 1: English Hub Community Chat (User Audio Directive!)
           if (day == 1 && stepNum == 6) {
             titleEn = '💬 English Hub Community Chat';
@@ -814,6 +824,15 @@ class Day1Curriculum {
       var descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
       var icon = map['icon']?.toString() ?? '📚';
       var gameType = map['gameType']?.toString() ?? 'generic';
+      // Step 4 on Days 1 to 90: Spoken English
+      if (stepNum == 4) {
+        titleEn = '🎙️ Spoken English Conversational Chat';
+        titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
+        descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
+        descMl = 'യഥാർത്ഥ ജീവിതത്തിലെ സംഭാഷണങ്ങൾ മൈക്കിലൂടെ സംസാരിച്ച് പരിശീലിക്കുക!';
+        icon = '🎙️';
+        gameType = 'spoken_chat';
+      }
 
       // Day 1: Step 6 is English Hub, Step 7 is House Defense
       if (stepNum == 6) {

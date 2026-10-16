@@ -769,12 +769,12 @@ class _PocketDayDetailOverviewPageState
       },
       {
         'num': '4',
-        'name': 'Today Lesson • Day ${widget.day} Step 4: Interactive Grammar Simulator',
-        'short': 'Sentence Builder Simulator',
-        'desc': 'Real-time sentence reconstruction, drag-and-drop syntax & game arenas.',
-        'icon': '🎮',
-        'badge': 'INTERACTIVE QUEST',
-        'color': '0xFFF59E0B',
+        'name': 'Today Lesson • Day ${widget.day} Step 4: Spoken English Conversational Gym',
+        'short': 'Spoken English Gym',
+        'desc': 'Interactive 1-on-1 spoken conversational practice with CyberCat & real-world voice note drills.',
+        'icon': '🎙️',
+        'badge': 'SPOKEN ENGLISH',
+        'color': '0xFF10B981',
       },
       {
         'num': '5',

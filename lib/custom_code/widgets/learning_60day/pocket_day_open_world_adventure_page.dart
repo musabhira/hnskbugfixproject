@@ -34,8 +34,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step4_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step5_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step1_avatar_chat_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step3_avatar_chat_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step4_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
@@ -2494,10 +2492,11 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 3 on Day 1: Launches Dedicated Conversational Avatar Chat + Hunt Game (User Audio Directive!)
-      if (day == 1 && s == 3) {
+      // Step 3 on Days 1 to 90: Launches Dedicated Conversational Avatar Chat + Hunt Game (User Audio Directive!)
+      if (day >= 1 && day <= 90 && s == 3) {
         await PocketDay1Step3AvatarChatPage.show(
           context,
+          day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
@@ -2507,36 +2506,11 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 3 on Day 2: Launches Dedicated Conversational Avatar Chat + Hunt Game for Day 2!
-      if (day == 2 && s == 3) {
-        await PocketDay2Step3AvatarChatPage.show(
-          context,
-          userId: widget.userId ?? _supabase.auth.currentUser?.id,
-          onStepFinished: (finishedStep) {
-            _onStepCompleted(finishedStep);
-          },
-        );
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-
-      // Step 4 on Day 1: Launches Dedicated Spoken English Avatar Chat (User Audio Directive!)
-      if (day == 1 && s == 4) {
+      // Step 4 on Days 1 to 90: Launches Dedicated Spoken English Avatar Chat (User Audio Directive!)
+      if (day >= 1 && day <= 90 && s == 4) {
         await PocketDay1Step4AvatarChatPage.show(
           context,
-          userId: widget.userId ?? _supabase.auth.currentUser?.id,
-          onStepFinished: (finishedStep) {
-            _onStepCompleted(finishedStep);
-          },
-        );
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-
-      // Step 4 on Day 2: Launches Dedicated Spoken English Avatar Chat for Day 2!
-      if (day == 2 && s == 4) {
-        await PocketDay2Step4AvatarChatPage.show(
-          context,
+          day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);

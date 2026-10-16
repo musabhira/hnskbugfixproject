@@ -720,16 +720,6 @@ class _PocketDay1Step2AvatarChatPageState
               textColor: Colors.white,
               onTap: _launchOpenWorldDriveGame,
             ),
-            Step2InBubbleOption(
-              labelEn: '🗣️ SWITCH TO SPEAKING CHAT',
-              labelNative: 'സംസാരിച്ചു പഠിക്കുന്നതിലേക്ക് മാറ്റുക',
-              icon: '💬',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF1E293B),
-              borderColor: const Color(0xFF38BDF8),
-              textColor: const Color(0xFF7DD3FC),
-              onTap: _startTeachingVocabSequence,
-            ),
           ],
         ),
       );
