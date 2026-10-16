@@ -202,12 +202,13 @@ class _PocketDay1Step3AvatarChatPageState
             }
 
             final e = emojis[(i + day) % emojis.length];
+            final shuffledOpts = List<String>.from(r.options)..shuffle();
             list.add({
               'target': correct,
               'emoji': e,
               'promptEn': r.promptEn,
               'promptMl': r.promptMl,
-              'options': List<String>.from(r.options),
+              'options': shuffledOpts,
               'correct': correct,
               'clue': r.explanationEn,
             });
@@ -484,10 +485,12 @@ class _PocketDay1Step3AvatarChatPageState
 
     _currentExpectedVoicePhrase = target;
 
+    final isDay1 = widget.day == 1;
+    final totalRounds = activeRounds.length;
     final questionTextEn =
-        '🎯 Round ${_currentHuntRound + 1} of 6:\n$promptEn\nClue: "$clue" $emoji';
+        '🎯 Round ${_currentHuntRound + 1} of $totalRounds:\n$promptEn\nClue: "$clue" $emoji';
     final questionTextMl =
-        'റൗണ്ട് ${_currentHuntRound + 1} / 6:\n$promptMl\nസൂചന: $clue';
+        'റൗണ്ട് ${_currentHuntRound + 1} / $totalRounds:\n$promptMl\nസൂചന: $clue';
 
     setState(() {
       _messages.add(
@@ -497,16 +500,22 @@ class _PocketDay1Step3AvatarChatPageState
           textEn: questionTextEn,
           textNative: questionTextMl,
           audioText: promptEn,
-          speakThisPrompt: 'Speak or Tap the Correct Item: "$target"',
+          speakThisPrompt: isDay1
+              ? 'Speak or Tap the Correct Item: "$target"'
+              : 'Speak or Tap the correct answer 🎙️',
           inBubbleOptions: options.map((opt) {
-            final isCorrect = opt.contains(correct);
+            final cleanOpt = opt.replaceAll(RegExp(r'\s+[^\w\s].*'), '').trim().toLowerCase();
+            final cleanCorrect = correct.replaceAll(RegExp(r'\s+[^\w\s].*'), '').trim().toLowerCase();
+            final isCorrect = cleanOpt == cleanCorrect ||
+                opt.trim().toLowerCase() == correct.trim().toLowerCase();
+
             return Step3InBubbleOption(
               labelEn: opt,
-              labelNative: isCorrect ? 'ഇത് ശരിയാണ്! ✨' : '',
-              icon: isCorrect ? '🎯' : '📦',
-              isHighlightedAnswer: isCorrect,
-              backgroundColor: isCorrect ? const Color(0xFF047857) : const Color(0xFF1E293B),
-              borderColor: isCorrect ? const Color(0xFF34D399) : Colors.white24,
+              labelNative: '',
+              icon: isDay1 ? '🎯' : '🔘',
+              isHighlightedAnswer: false,
+              backgroundColor: const Color(0xFF1E293B),
+              borderColor: const Color(0xFF38BDF8).withValues(alpha: 0.6),
               textColor: Colors.white,
               onTap: () {
                 _handleTextSubmission(
