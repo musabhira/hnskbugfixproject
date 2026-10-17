@@ -778,8 +778,28 @@ class Day1Curriculum {
             };
           }
 
-          // Step 4 on Days 1 to 90: Spoken English Conversational Chat (User Audio Directive!)
-          if (stepNum == 4) {
+          // Step 2 on Day 1: Flame Sentence Builder Game (User Audio Directive!)
+          if (day == 1 && stepNum == 2) {
+            titleEn = '🧩 Sentence Builder Game (Flame Engine)';
+            titleMl = '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)';
+            descEn = 'Assemble conversational English sentences with interactive Flame engine touch tiles!';
+            descMl = 'ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
+            icon = '🧩';
+            gameType = 'flame_sentence_builder';
+          }
+
+          // Step 3 on Day 1: Essential Words & Spelling Challenge (User Audio Directive!)
+          if (day == 1 && stepNum == 3) {
+            titleEn = '👂 Essential Words & Spelling Challenge';
+            titleMl = '👂 എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്';
+            descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
+            descMl = 'ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക, തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക!';
+            icon = '👂';
+            gameType = 'essential_spelling';
+          }
+
+          // Step 4 on Days 2 to 90: Spoken English Conversational Chat (User Audio Directive!)
+          if (day > 1 && stepNum == 4) {
             titleEn = '🎙️ Spoken English Conversational Chat';
             titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
             descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
@@ -788,15 +808,8 @@ class Day1Curriculum {
             gameType = 'spoken_chat';
           }
 
-          // Step 6 on Day 1: English Hub Community Chat (User Audio Directive!)
-          if (day == 1 && stepNum == 6) {
-            titleEn = '💬 English Hub Community Chat';
-            titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-            descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-            descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-            icon = '💬';
-            gameType = 'group_chat_action';
-          } else if (stepNum == 6) {
+          // Step 6 on Days 2 to 90: Spoken Vocal Gym
+          if (day > 1 && stepNum == 6) {
             titleEn = '🎙️ Spoken English Vocal Gym';
             titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
             descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
@@ -812,8 +825,18 @@ class Day1Curriculum {
             );
           }
 
-          // Step 7 on Day 1: House 1 Defense Shield Command (User Audio Directive!)
-          if (day == 1 && stepNum == 7) {
+          // Step 8 on Day 1: English Hub Community Chat (User Audio Directive!)
+          if (day == 1 && stepNum == 8) {
+            titleEn = '💬 English Hub Community Chat';
+            titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+            descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+            descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+            icon = '💬';
+            gameType = 'group_chat_action';
+          }
+
+          // Step 9 on Day 1: House 1 Defense Shield Command (User Audio Directive!)
+          if (day == 1 && stepNum == 9) {
             titleEn = '🛡️ House 1 Defense Shield Command';
             titleMl = '🛡️ ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
             descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield House 1 from rival attacks!';
@@ -822,8 +845,8 @@ class Day1Curriculum {
             gameType = 'house_defense_chat';
           }
 
-          // Step 8: PocketTalk 4-Day Pact & Peer Practice
-          if (stepNum == 8) {
+          // Step 10 on Day 1: PocketTalk 4-Day Pact & Peer Practice
+          if (day == 1 && stepNum == 10) {
             titleEn = '📞 Poketalk: 4-Day Spoken Pact';
             titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
             descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
@@ -832,14 +855,40 @@ class Day1Curriculum {
             gameType = 'pocket_talk_action';
           }
 
-          // Step 9: House Attack Quest: Raid Rival Citadel (Available from Day 1!)
-          if (stepNum == 9) {
+          // Step 11 on Day 1: House Attack Quest: Raid Rival Citadel (Available from Day 1!)
+          if (day == 1 && stepNum == 11) {
             titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
             titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
             descEn = 'Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!';
             descMl = 'ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!';
             icon = '⚔️';
             gameType = 'house_attack_quest';
+          }
+
+          // Steps 7, 8, 9 on Days 2 to 90:
+          if (day > 1 && stepNum == 7) {
+            titleEn = '🛡️ House Defense Shield Command';
+            titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+            descEn = 'Equip defense questions with CyberCat to shield your estate!';
+            descMl = 'വീട് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് സജ്ജമാക്കുക!';
+            icon = '🛡️';
+            gameType = 'house_defense_chat';
+          }
+          if (day > 1 && stepNum == 8) {
+            titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+            titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+            descEn = 'Raid a rival citadel, answer defense questions, and breach shields!';
+            descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
+            icon = '⚔️';
+            gameType = 'house_attack_quest';
+          }
+          if (day > 1 && stepNum == 9) {
+            titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+            titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+            descEn = 'Swipe learner cards and connect for live practice!';
+            descMl = 'പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+            icon = '📞';
+            gameType = 'pocket_talk_action';
           }
 
           return Day1StepModel(

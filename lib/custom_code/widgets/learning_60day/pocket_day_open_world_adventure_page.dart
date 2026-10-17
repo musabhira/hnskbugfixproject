@@ -49,6 +49,8 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day_1_curriculum_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -225,7 +227,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 9 : 10);
+  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 11 : 10);
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -2495,10 +2497,136 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 2 on Day 1: Launches Dedicated Conversational Avatar Chat + Word Game (User Audio Directive!)
+      // Step 2 on Day 1: Launches Flame-Powered Sentence Building Game (User Audio Directive!)
       if (day == 1 && s == 2) {
+        await PocketDay1SentenceBuilderGamePage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 3 on Day 1: Launches Essential Words & Spelling Challenge Game (User Audio Directive!)
+      if (day == 1 && s == 3) {
+        await PocketDay1EssentialSpellingPage.show(
+          context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 4 on Day 1: Launches 50+ Beginner Words Avatar Chat (Previous Step 2)
+      if (day == 1 && s == 4) {
         await PocketDay1Step2AvatarChatPage.show(
           context,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 5 on Day 1: Launches Letter & Word Hunt (Previous Step 3)
+      if (day == 1 && s == 5) {
+        await PocketDay1Step3AvatarChatPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 6 on Day 1: Launches Spoken English Conversational Chat (Previous Step 4)
+      if (day == 1 && s == 6) {
+        await PocketDay1Step4AvatarChatPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 7 on Day 1: Launches Reading Room (Previous Step 5)
+      if (day == 1 && s == 7) {
+        await PocketDay1Step5AvatarChatPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 8 on Day 1: Launches English Hub Group Chat (Previous Step 6)
+      if (day == 1 && s == 8) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => Scaffold(
+              backgroundColor: const Color(0xFF0A1118),
+              body: SafeArea(
+                child: EnglishLearningGroupChatWidget(
+                  onCancel: () {
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+        await _onStepCompleted(8);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 9 on Day 1: Launches House Defense Shield Command (Previous Step 7)
+      if (day == 1 && s == 9) {
+        await PocketHouseDefenseChatPage.show(
+          context,
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onStepFinished: (finishedStep) {
+            _onStepCompleted(finishedStep);
+          },
+        );
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 10 on Day 1: Launches PocketTalk Card Swiper Dialog (Previous Step 8)
+      if (day == 1 && s == 10) {
+        await PocketTalkCardSwiperDialog.show(context);
+        await _onStepCompleted(10);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+
+      // Step 11 on Day 1: Launches House Attack Quest (Previous Step 9)
+      if (day == 1 && s == 11) {
+        await PocketHouseAttackPage.show(
+          context,
+          day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
@@ -2522,8 +2650,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 3 on Days 1 to 90: Launches Dedicated Conversational Avatar Chat + Hunt Game (User Audio Directive!)
-      if (day >= 1 && day <= 90 && s == 3) {
+      // Step 3 on Days 2 to 90: Launches Dedicated Conversational Avatar Chat + Hunt Game (User Audio Directive!)
+      if (day >= 2 && day <= 90 && s == 3) {
         await PocketDay1Step3AvatarChatPage.show(
           context,
           day: day,
@@ -2536,8 +2664,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 4 on Days 1 to 90: Launches Dedicated Spoken English Avatar Chat (User Audio Directive!)
-      if (day >= 1 && day <= 90 && s == 4) {
+      // Step 4 on Days 2 to 90: Launches Dedicated Spoken English Avatar Chat (User Audio Directive!)
+      if (day >= 2 && day <= 90 && s == 4) {
         await PocketDay1Step4AvatarChatPage.show(
           context,
           day: day,
@@ -2550,8 +2678,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 5 on Days 1 to 90: Launches Dedicated Reading Room Avatar Chat (User Audio Directive!)
-      if (day >= 1 && day <= 90 && s == 5) {
+      // Step 5 on Days 2 to 90: Launches Dedicated Reading Room Avatar Chat (User Audio Directive!)
+      if (day >= 2 && day <= 90 && s == 5) {
         await PocketDay1Step5AvatarChatPage.show(
           context,
           day: day,
@@ -2564,8 +2692,8 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 6 on Days 1 to 90: Launches Dedicated English Hub Group Chat (User Audio Directive!)
-      if (day >= 1 && day <= 90 && s == 6) {
+      // Step 6 on Days 2 to 90: Launches Dedicated English Hub Group Chat (User Audio Directive!)
+      if (day >= 2 && day <= 90 && s == 6) {
         await Navigator.push(
           context,
           MaterialPageRoute(
@@ -2581,37 +2709,14 @@ class _PocketDayOpenWorldAdventurePageState
             ),
           ),
         );
-        // User Audio Directive: Entering English Hub, chatting/viewing and returning marks Step 6 as completed!
         await _onStepCompleted(6);
         await _loadState(preserveCarPosition: true);
         return;
       }
 
-      // Step 7 on Days 1 to 90: Launches Dedicated House Defense Shield Command (User Audio Directive!)
-      if (day >= 1 && day <= 90 && s == 7) {
+      // Step 7 on Days 2 to 90: Launches Dedicated House Defense Shield Command (User Audio Directive!)
+      if (day >= 2 && day <= 90 && s == 7) {
         await PocketHouseDefenseChatPage.show(
-          context,
-          day: day,
-          userId: widget.userId ?? _supabase.auth.currentUser?.id,
-          onStepFinished: (finishedStep) {
-            _onStepCompleted(finishedStep);
-          },
-        );
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-
-      // Step 8 on Day 1: Launches Dedicated PocketTalk Card Swiper Dialog (User Audio Directive!)
-      if (day == 1 && s == 8) {
-        await PocketTalkCardSwiperDialog.show(context);
-        await _onStepCompleted(8);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-
-      // Step 9 on Day 1: Launches Dedicated House Attack Quest (User Audio Directive!)
-      if (day == 1 && s == 9) {
-        await PocketHouseAttackPage.show(
           context,
           day: day,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,

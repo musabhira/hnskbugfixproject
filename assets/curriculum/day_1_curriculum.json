@@ -162,7 +162,45 @@
     },
     {
       "stepNumber": 2,
-      "id": "step_2_vocab_50",
+      "id": "step_2_sentence_builder",
+      "title": {
+        "en": "GAME 1: Sentence Builder (Flame Engine)",
+        "ml": "ഗെയിം 1: സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)",
+        "hi": "गेम 1: वाक्य निर्माता",
+        "ta": "விளையாட்டு 1: வாக்கிய அமைப்பு"
+      },
+      "icon": "🧩",
+      "gameType": "flame_sentence_builder",
+      "canBeSkipped": false,
+      "description": {
+        "en": "Assemble conversational English sentences tile by tile with smooth interactive Flame engine animations, haptic feedback, and audio.",
+        "ml": "ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് വാക്കുകൾ യോജിപ്പിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക.",
+        "hi": "इंटरैक्टिव फ्लेम गेम के साथ वाक्यों का निर्माण करें।",
+        "ta": "வாக்கியங்களை சரியான வரிசையில் அமைக்கவும்."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_essential_spelling",
+      "title": {
+        "en": "GAME 2: Essential Words & Spelling Challenge",
+        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്",
+        "hi": "गेम 2: आवश्यक शब्द और वर्तनी चुनौती",
+        "ta": "விளையாட்டு 2: அத்தியாவசிய சொற்கள் & எழுத்துப்பிழை சோதனை"
+      },
+      "icon": "👂",
+      "gameType": "essential_spelling",
+      "canBeSkipped": false,
+      "description": {
+        "en": "Listen to native audio pronunciation for high-utility core words (fast, does, first, five, found, gave) and pass the spelling challenge exam.",
+        "ml": "ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക (does, fast, first, five, found, gave), തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക.",
+        "hi": "आवश्यक शब्दों का उच्चारण सुनें और वर्तनी परीक्षा पूरी करें।",
+        "ta": "வார்த்தைகளைக் கேட்டு எழுத்துப் பயிற்சியை முடிக்கவும்."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_vocab_50",
       "title": {
         "en": "50+ Essential Beginner Words",
         "ml": "50+ നിത്യോപയോഗ അടിസ്ഥാന വാക്കുകൾ",
@@ -237,8 +275,8 @@
       ]
     },
     {
-      "stepNumber": 3,
-      "id": "step_3_game_hunt",
+      "stepNumber": 5,
+      "id": "step_5_game_hunt",
       "title": {
         "en": "GAME 1: Letter & Word Hunt",
         "ml": "ഗെയിം 1: അക്ഷര & പദ വേട്ട",
@@ -263,8 +301,8 @@
       ]
     },
     {
-      "stepNumber": 4,
-      "id": "step_4_game_match_build",
+      "stepNumber": 6,
+      "id": "step_6_spoken_english",
       "title": {
         "en": "GAME 2: Match & Sentence Builder",
         "ml": "ഗെയിം 2: യോജിപ്പിക്കലും വാക്യം നിർമ്മാണവും",
@@ -327,8 +365,8 @@
       ]
     },
     {
-      "stepNumber": 5,
-      "id": "step_5_reading_book",
+      "stepNumber": 7,
+      "id": "step_7_reading_book",
       "title": {
         "en": "Reading Room: The Crow and the Grapes",
         "ml": "റീഡിംഗ് റൂം: കാക്കയും മുന്തിരിയും (പുസ്തക വായന)",
@@ -444,8 +482,8 @@
       }
     },
     {
-      "stepNumber": 6,
-      "id": "step_6_english_hub",
+      "stepNumber": 8,
+      "id": "step_8_english_hub",
       "title": {
         "en": "English Hub Community Chat",
         "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ് 💬",
@@ -462,8 +500,8 @@
       }
     },
     {
-      "stepNumber": 7,
-      "id": "step_7_house_defense",
+      "stepNumber": 9,
+      "id": "step_9_house_defense",
       "title": {
         "en": "House 1 Defense Shield Command",
         "ml": "ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ് 🛡️",
@@ -480,8 +518,8 @@
       }
     },
     {
-      "stepNumber": 8,
-      "id": "step_8_pocket_talk",
+      "stepNumber": 10,
+      "id": "step_10_pocket_talk",
       "title": {
         "en": "Poketalk: 4-Day Spoken Pact",
         "ml": "പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് 📞",
@@ -498,8 +536,8 @@
       }
     },
     {
-      "stepNumber": 9,
-      "id": "step_9_citadel_attack",
+      "stepNumber": 11,
+      "id": "step_11_citadel_attack",
       "title": {
         "en": "House Attack Quest: Raid Rival Citadel",
         "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം ⚔️",

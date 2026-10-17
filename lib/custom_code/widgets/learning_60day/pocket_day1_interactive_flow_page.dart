@@ -38,6 +38,8 @@ import 'pocket_day_avatar_chat_page.dart';
 import 'pocket_house_defense_chat_page.dart';
 import 'games/pocket_vocab_open_world_drive_page.dart';
 import 'pocket_house_attack_page.dart';
+import 'games/sentence_builder_flame_game.dart';
+import 'games/pocket_essential_spelling_game_page.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -312,7 +314,7 @@ class _PocketDay1InteractiveFlowPageState
     }
 
     final Map<int, bool> completed = {};
-    for (int s = 1; s <= 10; s++) {
+    for (int s = 1; s <= 11; s++) {
       final key = 'pocket_day_${uid ?? "guest"}_1_step_${s}_done';
       completed[s] = prefs.getBool(key) ?? false;
     }
@@ -417,7 +419,7 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
 
-    if (stepIndex >= 10) {
+    if (stepIndex >= 11) {
       await _onDay1FullyCompleted();
     } else {
       if (widget.singleStepOnly) {
@@ -594,9 +596,9 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🐱 User Audio Directive: Day 1 Step 2 uses the conversational onboarding-style avatar chat interface for Vocabulary!
+    // 🧩 User Audio Directive: Day 1 Step 2 launches Flame-Powered Sentence Building Game!
     if (widget.day == 1 && _activeStep == 2) {
-      return PocketDay1Step2AvatarChatPage(
+      return PocketDay1SentenceBuilderGamePage(
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(2);
@@ -604,7 +606,110 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🚗 User Audio Directive: Days 2 to 90 Step 2 launches Open-World Vocab Quest with 5 ride modes & thematic landmarks!
+    // 👂 User Audio Directive: Day 1 Step 3 launches Essential Words & Spelling Challenge Game!
+    if (widget.day == 1 && _activeStep == 3) {
+      return PocketDay1EssentialSpellingPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(3);
+        },
+      );
+    }
+
+    // 🐱 Day 1 Step 4: 50+ Essential Beginner Words (Previous Step 2)
+    if (widget.day == 1 && _activeStep == 4) {
+      return PocketDay1Step2AvatarChatPage(
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(4);
+        },
+      );
+    }
+
+    // 🔍 Day 1 Step 5: Letter & Word Hunt (Previous Step 3)
+    if (widget.day == 1 && _activeStep == 5) {
+      return PocketDay1Step3AvatarChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(5);
+        },
+      );
+    }
+
+    // 🎙️ Day 1 Step 6: Spoken English Conversational Chat (Previous Step 4)
+    if (widget.day == 1 && _activeStep == 6) {
+      return PocketDay1Step4AvatarChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(6);
+        },
+      );
+    }
+
+    // 📖 Day 1 Step 7: Reading Room (Previous Step 5)
+    if (widget.day == 1 && _activeStep == 7) {
+      return PocketDay1Step5AvatarChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(7);
+        },
+      );
+    }
+
+    // 💬 Day 1 Step 8: English Hub Community Chat (Previous Step 6)
+    if (widget.day == 1 && _activeStep == 8) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A1118),
+        body: SafeArea(
+          child: EnglishLearningGroupChatWidget(
+            onCancel: () {
+              _markStepCompleted(8);
+            },
+          ),
+        ),
+      );
+    }
+
+    // 🛡️ Day 1 Step 9: House Defense Shield Command (Previous Step 7)
+    if (widget.day == 1 && _activeStep == 9) {
+      return PocketHouseDefenseChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(9);
+        },
+      );
+    }
+
+    // 📞 Day 1 Step 10: Poketalk: 4-Day Spoken Pact (Previous Step 8)
+    if (widget.day == 1 && _activeStep == 10) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await PocketTalkCardSwiperDialog.show(context);
+        _markStepCompleted(10);
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A1118),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+        ),
+      );
+    }
+
+    // ⚔️ Day 1 Step 11: House Attack Quest: Raid Rival Citadel (Previous Step 9)
+    if (widget.day == 1 && _activeStep == 11) {
+      return PocketHouseAttackPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(11);
+        },
+      );
+    }
+
+    // 🚗 Days 2 to 90 Step 2: Open-World Vocab Quest with 5 ride modes & thematic landmarks!
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 2) {
       return PocketVocabOpenWorldDrivePage(
         day: widget.day,
@@ -615,8 +720,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🔍 User Audio Directive: Days 1 to 90 Step 3 uses the conversational avatar chat interface for Letter & Word Hunt!
-    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 3) {
+    // 🔍 Days 2 to 90 Step 3: Letter & Word Hunt!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 3) {
       return PocketDay1Step3AvatarChatPage(
         day: widget.day,
         userId: widget.userId,
@@ -626,8 +731,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🎙️ User Audio Directive: Days 1 to 90 Step 4 uses the conversational avatar chat interface for Spoken English!
-    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 4) {
+    // 🎙️ Days 2 to 90 Step 4: Spoken English!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 4) {
       return PocketDay1Step4AvatarChatPage(
         day: widget.day,
         userId: widget.userId,
@@ -637,8 +742,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 📖 User Audio Directive: Days 1 to 90 Step 5 uses the conversational avatar chat interface for Reading Room!
-    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 5) {
+    // 📖 Days 2 to 90 Step 5: Reading Room!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 5) {
       return PocketDay1Step5AvatarChatPage(
         day: widget.day,
         userId: widget.userId,
@@ -648,8 +753,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 💬 User Audio Directive: Days 1 to 90 Step 6 uses English Hub Community Chat!
-    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 6) {
+    // 💬 Days 2 to 90 Step 6: English Hub Community Chat!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 6) {
       return Scaffold(
         backgroundColor: const Color(0xFF0A1118),
         body: SafeArea(
@@ -662,8 +767,8 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🛡️ User Audio Directive: Days 1 to 90 Step 7 uses Dedicated House Defense Shield Command!
-    if (widget.day >= 1 && widget.day <= 90 && _activeStep == 7) {
+    // 🛡️ Days 2 to 90 Step 7: Dedicated House Defense Shield Command!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 7) {
       return PocketHouseDefenseChatPage(
         day: widget.day,
         userId: widget.userId,
