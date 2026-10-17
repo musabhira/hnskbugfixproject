@@ -684,7 +684,7 @@ class HouseMasterComponent extends Component {
     final double totalBuildingH = groundY - buildingApexY;
     final double availableH = canvasSize.y - 42.0;
     final double availableW = canvasSize.x * 0.94;
-    final double scale = math.min(availableW / totalBuildingW, availableH / totalBuildingH).clamp(0.65, 1.05);
+    final double scale = math.min(availableW / totalBuildingW, availableH / totalBuildingH).clamp(0.20, 1.05);
 
     canvas.save();
     canvas.translate(cx, groundY);

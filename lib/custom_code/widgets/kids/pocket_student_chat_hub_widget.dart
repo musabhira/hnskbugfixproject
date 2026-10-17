@@ -36,6 +36,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_scor
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
+import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 💬 Pocket Kids Chat Hub - Ported Directly from Adult Chat System
 /// Features:
@@ -2825,16 +2827,25 @@ class _KidsChatHeaderDelegate extends SliverPersistentHeaderDelegate {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Text(
-                                          'POCKET MATES',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.3,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                'POCKET MATES',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontSize: 15.0,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            _buildAdultSwitchBadge(context),
+                                          ],
                                         ),
                                         Text(
                                           'STUDENT REALM 🎒',
@@ -3062,6 +3073,64 @@ class _KidsChatHeaderDelegate extends SliverPersistentHeaderDelegate {
         ),
       ),
     );
+  }
+
+  Widget _buildAdultSwitchBadge(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _promptSwitchToAdult(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF38BDF8), width: 1.1),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              material.Icons.lock_outline_rounded,
+              color: Color(0xFF38BDF8),
+              size: 11,
+            ),
+            const SizedBox(width: 3),
+            Text(
+              'ADULT',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF38BDF8),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _promptSwitchToAdult(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final unlocked = await PocketParentalPatternLock.verifyOrSetup(
+      context,
+      title: 'Parent Verification 🔒',
+      subtitle: 'Draw pattern lock to switch back to Adult Mode.',
+    );
+    if (unlocked) {
+      await PocketKidsService.activateAdultAccount();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          material.MaterialPageRoute(builder: (_) => const HomePageWidget()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   Widget _buildHeaderIconButton(

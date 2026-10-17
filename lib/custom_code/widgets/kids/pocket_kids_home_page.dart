@@ -12,7 +12,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_study_tool
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_student_chat_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
@@ -24,6 +23,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dia
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_visit_modal.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -64,6 +65,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   final ScrollController _scrollController = ScrollController();
   int _currentTab = 2; // 0 = Homes, 1 = Chat, 2 = Target (Center Trail), 3 = Tools, 4 = Profile
   bool _isGlobeMode = false;
+  int _activeTrailSubTab = 0; // 0 = Roadmap, 1 = Canyon Game, 2 = Global Rank
+  late final PageController _trailSubPageController;
 
   static const int _totalDays = 100;
   static const double _nodeSpacingY = 540.0;
@@ -89,6 +92,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   @override
   void initState() {
     super.initState();
+    _trailSubPageController = PageController(initialPage: 0);
     _bounceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -349,6 +353,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
   @override
   void dispose() {
+    _trailSubPageController.dispose();
     PocketKidsService.kidPremiumNotifier.removeListener(_onPremiumChanged);
     _bounceController.dispose();
     _earthRotationController.dispose();
@@ -773,7 +778,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     userLevel: unlockedDay,
                   ),
                   const PocketStudentChatHubWidget(),
-                  _buildMountainTrailStack(
+                  _buildTrailSectionWithSubTabs(
                     screenWidth: screenWidth,
                     kidName: kidName,
                     kidAvatar: kidAvatar,
@@ -789,6 +794,169 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             ),
             _buildBottomNav(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrailSectionWithSubTabs({
+    required double screenWidth,
+    required String kidName,
+    required String kidAvatar,
+    required int kidStars,
+    required KidsHouse currentHouse,
+    required int unlockedDay,
+    required Map<int, int> completedDays,
+  }) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Stack(
+      children: [
+        // 📱 PageView with 3 sub-pages: 0 = Roadmap, 1 = Canyon Game, 2 = Global Rank
+        Positioned.fill(
+          child: PageView(
+            controller: _trailSubPageController,
+            onPageChanged: (idx) {
+              if (mounted && _activeTrailSubTab != idx) {
+                setState(() => _activeTrailSubTab = idx);
+              }
+            },
+            children: [
+              // Page 0: 🗺️ 100-Day Adventure Mountain Roadmap
+              _buildMountainTrailStack(
+                screenWidth: screenWidth,
+                kidName: kidName,
+                kidAvatar: kidAvatar,
+                kidStars: kidStars,
+                currentHouse: currentHouse,
+                unlockedDay: unlockedDay,
+                completedDays: completedDays,
+              ),
+
+              // Page 1: 🏔️ Mountain Canyon Dirt Bike Game (Under 17 Only)
+              Padding(
+                padding: EdgeInsets.only(top: topPadding + 52),
+                child: const PocketWorldRankingTrailWidget(
+                  mode: RankingTrailMode.world,
+                  isUnder17Only: true,
+                ),
+              ),
+
+              // Page 2: 🏅 Junior Global Leaderboard (Under 17 Only)
+              Padding(
+                padding: EdgeInsets.only(top: topPadding + 52),
+                child: const PocketGlobalRankListView(
+                  isUnder17Only: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 🏆 Segmented Tabs Bar at Top: 🗺️ Roadmap vs 🏔️ Canyon Game vs 🏅 Global Rank (Under 17)
+        Positioned(
+          top: topPadding + 6,
+          left: 12,
+          right: 12,
+          child: _buildTrailSegmentedTabs(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTrailSegmentedTabs() {
+    return Container(
+      height: 38,
+      padding: const EdgeInsets.all(3.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildSegmentedTabItem(
+            index: 0,
+            icon: '🗺️',
+            label: 'Roadmap',
+            activeGradient: const [Color(0xFF10B981), Color(0xFF059669)],
+          ),
+          _buildSegmentedTabItem(
+            index: 1,
+            icon: '🏔️',
+            label: 'Canyon Game',
+            activeGradient: const [Color(0xFFFFD700), Color(0xFFF59E0B)],
+          ),
+          _buildSegmentedTabItem(
+            index: 2,
+            icon: '🏅',
+            label: 'Global Rank',
+            activeGradient: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedTabItem({
+    required int index,
+    required String icon,
+    required String label,
+    required List<Color> activeGradient,
+  }) {
+    final isSelected = _activeTrailSubTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _trailSubPageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+          );
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            gradient: isSelected ? LinearGradient(colors: activeGradient) : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: activeGradient.first.withValues(alpha: 0.4),
+                      blurRadius: 6,
+                    ),
+                  ]
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 11)),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? Colors.white : Colors.white60,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -931,7 +1099,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           // 🌟 TOP HUD BAR (Minimal, Cartoonic, Super Clean)
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.only(top: 48, left: 10, right: 10, bottom: 8),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),

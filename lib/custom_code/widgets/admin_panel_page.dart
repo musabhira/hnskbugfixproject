@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -6728,6 +6729,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       icon: const Icon(Icons.psychology_rounded, size: 16),
                       label: const Text('Run Human Engine',
                           style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final current =
+                            await PocketRankingService.isRobotsEnabledInWorldRanking();
+                        await PocketRankingService.setRobotsEnabledInWorldRanking(!current);
+                        if (!mounted) return;
+                        setState(() {});
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(!current
+                                ? '🤖 World Ranking Robots ENABLED (Mixed in for testing)'
+                                : '👤 World Ranking Robots DISABLED (Humans only)'),
+                            backgroundColor:
+                                !current ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4338CA),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.leaderboard_rounded, size: 16),
+                      label: FutureBuilder<bool>(
+                        future: PocketRankingService.isRobotsEnabledInWorldRanking(),
+                        builder: (ctx, snap) => Text(
+                          'World Rank Bots: ${snap.data == true ? "ON" : "OFF"}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ],
                 ),

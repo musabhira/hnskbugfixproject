@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -3406,6 +3407,52 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 🏅 Get cached Global Rank of the defender (Audio Directive)
+  int? get _defenderGlobalRank {
+    if (widget.neighbor.isPresident) return 1;
+    return PocketRankingService.getCachedGlobalRank(widget.neighbor.id);
+  }
+
+  /// 🏅 Sleek Global Rank Badge Widget for Citadel Attack page
+  Widget _buildGlobalRankBadge({double fontSize = 9.5}) {
+    final rank = _defenderGlobalRank;
+    final rankText = rank != null
+        ? 'Global Rank #$rank'
+        : (widget.neighbor.isPresident ? 'Global Rank #1 👑' : 'Global Rank');
+    final isTop3 = (rank != null && rank <= 3) || widget.neighbor.isPresident;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: isTop3
+            ? const Color(0xFFFFD700).withValues(alpha: 0.22)
+            : const Color(0xFF0284C7).withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isTop3
+              ? const Color(0xFFFFD700).withValues(alpha: 0.7)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(isTop3 ? '👑' : '🏅', style: TextStyle(fontSize: fontSize)),
+          const SizedBox(width: 3),
+          Text(
+            rankText,
+            style: GoogleFonts.outfit(
+              color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFFBAE6FD),
+              fontWeight: FontWeight.w800,
+              fontSize: fontSize,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _testFireIronDome() async {
     if (_ironDomeController.isAnimating) return;
     setState(() => _isIronDomeFiring = true);
@@ -4460,7 +4507,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           children: [
             // Level & PS Minimal Row (User Directive: No "You Level 7" or "VS", just Level & PS)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -4475,7 +4522,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       letterSpacing: 0.2,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
+                  _buildGlobalRankBadge(),
+                  const SizedBox(width: 6),
                   Container(
                     width: 3.5,
                     height: 3.5,
@@ -4484,7 +4533,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       color: Colors.white38,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -4887,6 +4936,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 4),
+                                  _buildGlobalRankBadge(fontSize: 8.5),
                                 ],
                               ),
                               const SizedBox(height: 1),
@@ -5059,6 +5110,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ],
             ),
             const SizedBox(height: 16),
+            _buildStatRow(
+              'Global Rank',
+              _defenderGlobalRank != null
+                  ? 'Global Rank #$_defenderGlobalRank'
+                  : (widget.neighbor.isPresident ? 'Global Rank #1 👑' : 'Global Challenger'),
+            ),
             _buildStatRow('Citadel Level', 'Level ${widget.neighbor.day}'),
             _buildStatRow('Pocket Score', 'PS $_defenderScore'),
             _buildStatRow('Study Streak', '🔥 ${widget.neighbor.streak} Days'),

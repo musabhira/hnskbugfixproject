@@ -1163,96 +1163,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 1
-                  ? Container(
-                      height: 38,
-                      margin: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Button 1: 🏆 Mates Rank (Opens followed friends ranking trail)
-                          material.FloatingActionButton.extended(
-                            heroTag: 'mates_ranking_trail_fab',
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              PocketWorldRankingTrailWidget.showMatesRankingModal(
-                                context,
-                                userId: _currentUserId,
-                              );
-                            },
-                            backgroundColor: const Color(0xFFFFD700),
-                            foregroundColor: material.Colors.black,
-                            elevation: 4,
-                            highlightElevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(19),
-                            ),
-                            icon: const Text('🏆', style: TextStyle(fontSize: 14)),
-                            label: Text(
-                              'Mates Rank',
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 12,
-                                color: material.Colors.black,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-
-                          // Button 2: 🎭 Random English Chat
-                          material.FloatingActionButton.extended(
-                            heroTag: 'adult_anon_chat_fab',
-                            onPressed: () async {
-                              final isAuth =
-                                  await AuthAlertBox.checkAuthAndShowAlert(
-                                context: context,
-                                customMessage:
-                                    "Please login to start Anonymous English Chat",
-                              );
-                              if (isAuth && mounted) {
-                                material.Navigator.push(
-                                  context,
-                                  material.MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AnonymousEnglishChatPage(),
-                                  ),
-                                );
-                              }
-                            },
-                            backgroundColor: const Color(0xFF1E293B),
-                            foregroundColor: material.Colors.white,
-                            elevation: 4,
-                            highlightElevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(19),
-                              side: const BorderSide(
-                                  color: Colors.white24, width: 0.8),
-                            ),
-                            icon: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('🎭',
-                                    style: TextStyle(fontSize: 13)),
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            label: Text(
-                              'Random',
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: material.Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
+                  ? material.FloatingActionButton.extended(
+                      heroTag: 'mates_ranking_fab',
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        PocketWorldRankingTrailWidget.showMatesRankingModal(
+                          context,
+                          userId: _currentUserId,
+                        );
+                      },
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: material.Colors.black,
+                      elevation: 4,
+                      highlightElevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      icon: const Text('🏆', style: TextStyle(fontSize: 14)),
+                      label: Text(
+                        'Mates Rank',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          color: material.Colors.black,
+                        ),
                       ),
                     )
                   : null,

@@ -14,7 +14,6 @@ import 'pocket_world_street_page.dart';
 import 'pocket_open_world_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
-import 'pocket_arsenal_store_modal.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
@@ -55,6 +54,7 @@ import 'pocket_day1_interactive_flow_page.dart';
 import 'pocket_home_visit_modal.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
 import 'pocket_world_ranking_trail_widget.dart';
+import 'pocket_global_rank_list_view.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -2649,13 +2649,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
           ),
 
-          // 2. 🏆 App-Wide World Ranking Trail
+          // 2. 🏔️ Mountain Canyon Dirt Bike Game (World Ranking Trail)
           Padding(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 104,
+              top: MediaQuery.of(context).padding.top + 76,
             ),
             child: PocketWorldRankingTrailWidget(
               mode: RankingTrailMode.world,
+              currentUserId: widget.userId,
+            ),
+          ),
+
+          // 3. 🏅 Global Leaderboard Tile List (Audio Directive)
+          Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 76,
+            ),
+            child: PocketGlobalRankListView(
               currentUserId: widget.userId,
             ),
           ),
@@ -3150,44 +3160,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 🏪 Minimal Store Button
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    PocketArsenalStoreModal.show(
-                      context,
-                      currentDay: prog.currentDay,
-                      onPurchased: () async {
-                        await _loadData();
-                      },
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🏪', style: TextStyle(fontSize: 11)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Store',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
                 // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
                 ValueListenableBuilder<bool>(
                   valueListenable: PocketGameAudioService.instance.isMutedNotifier,
@@ -3221,7 +3193,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
             const SizedBox(height: 6),
 
-            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🏆 World Rank
+            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🏔️ Canyon Game vs 🏅 Global Rank (Audio Directive)
             Container(
               height: 32,
               decoration: BoxDecoration(
@@ -3254,12 +3226,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('🗺️', style: TextStyle(fontSize: 11)),
-                            const SizedBox(width: 4),
+                            const Text('🗺️', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
                             Text(
                               'Roadmap',
                               style: GoogleFonts.outfit(
-                                fontSize: 11.5,
+                                fontSize: 11.0,
                                 fontWeight: FontWeight.w800,
                                 color: _activeTargetTab == 0
                                     ? Colors.black
@@ -3272,7 +3244,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
 
-                  // Tab 1: World Rank
+                  // Tab 1: Canyon Game
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -3295,14 +3267,55 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('🏆', style: TextStyle(fontSize: 11)),
-                            const SizedBox(width: 4),
+                            const Text('🏔️', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
                             Text(
-                              'World Rank',
+                              'Canyon Game',
                               style: GoogleFonts.outfit(
-                                fontSize: 11.5,
+                                fontSize: 11.0,
                                 fontWeight: FontWeight.w800,
                                 color: _activeTargetTab == 1
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tab 2: Global Rank (Audio Directive: "Global Rank mathi, World Rank alla")
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 2
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏅', style: TextStyle(fontSize: 10.5)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Global Rank',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 2
                                     ? Colors.black
                                     : Colors.white70,
                               ),
@@ -3316,33 +3329,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
             ),
 
-            const SizedBox(height: 6),
-
-            // 🎯 Minimal Horizontal Level Milestones Strip (Shown on Roadmap)
-            if (_activeTargetTab == 0)
-              _buildMilestonesStrip(prog)
-            else
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                child: Row(
-                  children: [
-                    const Text('👑', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        'Live 1 to N Global Leaderboard • Tap House to Attack Citadel',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // 🎯 Minimal Horizontal Level Milestones Strip (Only Shown on Roadmap tab)
+            if (_activeTargetTab == 0) ...[
+              const SizedBox(height: 6),
+              _buildMilestonesStrip(prog),
+            ],
           ],
         ),
       ),

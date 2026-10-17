@@ -110,7 +110,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Could not load ranking trail.';
+          _errorMessage = 'Could not load ranking.';
         });
       }
     }
@@ -206,9 +206,27 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     // Sort descending by score
     members.sort((a, b) => b.pocketScore.compareTo(a.pocketScore));
 
+    // Resolve Global Rank for both members in 1-on-1 chat
+    final finalized = <ChatTrailMember>[];
+    for (int i = 0; i < members.length; i++) {
+      final m = members[i];
+      final gRank = await PocketRankingService.fetchUserGlobalRank(m.userId, m.pocketScore);
+      finalized.add(ChatTrailMember(
+        userId: m.userId,
+        name: m.name,
+        profileImageUrl: m.profileImageUrl,
+        pocketScore: m.pocketScore,
+        level: m.level,
+        globalRank: gRank,
+        avatarConfig: m.avatarConfig,
+        isCurrentUser: m.isCurrentUser,
+        isRobot: m.isRobot,
+      ));
+    }
+
     if (mounted) {
       setState(() {
-        _rankedMembers = members;
+        _rankedMembers = finalized;
         _isLoading = false;
       });
     }
@@ -396,7 +414,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
               ),
               const SizedBox(height: 6),
               Text(
-                'Start chatting and completing English missions to populate the ranking trail!',
+                'Start chatting and completing English missions to climb the ranking!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
               ),
@@ -541,7 +559,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                     ),
                     const Spacer(),
                     Text(
-                      '${_rankedMembers.length} Mates on Trail',
+                      '${_rankedMembers.length} Mates Ranked',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         color: Colors.white54,
@@ -626,9 +644,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
             ? const Color(0xFFE2E8F0)
             : (isRank3 ? const Color(0xFFF97316) : const Color(0xFF64748B)));
 
-    final rankBadgeText = isRank1
-        ? '👑 #1'
-        : (isRank2 ? '🥈 #2' : (isRank3 ? '🥉 #3' : '#$rank'));
+    final rankBadgeText = '#$rank';
 
     return Column(
       children: [
@@ -685,14 +701,6 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                           ),
                         ),
                       ),
-
-                      // Crown for Rank 1 on top of the house
-                      if (isRank1)
-                        Positioned(
-                          top: -16,
-                          left: (houseWidth / 2) - 15,
-                          child: const Text('👑', style: TextStyle(fontSize: 24)),
-                        ),
 
                       // Resident Avatar Guardian Chip (bottom-right of house)
                       Positioned(
@@ -783,13 +791,16 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Rank Badge & Current User Marker
-                        Row(
+                        // Rank Badge & Global Rank (Responsive Wrap, no redundant 'YOU' badge)
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: rankColor.withValues(alpha: 0.2),
+                                color: rankColor.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: rankColor, width: 0.8),
                               ),
@@ -802,10 +813,8 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                                 ),
                               ),
                             ),
-                            // Global Rank Badge
-                            const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
@@ -815,7 +824,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                                 ),
                               ),
                               child: Text(
-                                '🌐 #${member.globalRank}',
+                                'Global Rank #${member.globalRank}',
                                 style: GoogleFonts.outfit(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -823,24 +832,6 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                                 ),
                               ),
                             ),
-                            if (member.isCurrentUser) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'YOU',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                         const SizedBox(height: 6),

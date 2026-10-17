@@ -8,7 +8,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
-import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
+import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// ⚙️ Pocket Kids Settings & Parental Hub
 ///
@@ -88,7 +88,7 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
       await PocketKidsService.activateAdultAccount();
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const WelcomeOnboardingPage()),
+          MaterialPageRoute(builder: (_) => const HomePageWidget()),
           (route) => false,
         );
       }

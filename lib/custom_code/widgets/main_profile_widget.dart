@@ -33,7 +33,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -2891,6 +2891,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
+        _buildGlobalRankRibbon(textColor, btnColor),
         headerContent,
         if (!_isPublicProfileView) ...[
           Learning60DayProfileCard(
@@ -2916,6 +2917,82 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           _buildOtherUserCitadelSection(day, textColor, btnColor),
         ],
       ],
+    );
+  }
+
+  /// 🏅 Global Rank Ribbon displayed prominently in Main Profile (Audio Directive)
+  Widget _buildGlobalRankRibbon(Color textColor, Color btnColor) {
+    final targetId = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    final rank = PocketRankingService.getCachedGlobalRank(targetId);
+    final isTop3 = rank != null && rank <= 3;
+    final score = (_profileData?['pocket_score'] as num?)?.toInt() ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isTop3
+                ? const Color(0xFFFFD700).withValues(alpha: 0.7)
+                : const Color(0xFF0284C7).withValues(alpha: 0.4),
+            width: isTop3 ? 1.4 : 1.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFF0284C7),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                isTop3 ? '👑 TOP RANK' : '🏅 GLOBAL',
+                style: GoogleFonts.outfit(
+                  color: isTop3 ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 9.5,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              rank != null ? 'Global Rank #$rank' : 'Global Challenger',
+              style: GoogleFonts.outfit(
+                color: isTop3 ? const Color(0xFFFFD700) : Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+              ),
+            ),
+            const Spacer(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🪙', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 4),
+                Text(
+                  '$score PS',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

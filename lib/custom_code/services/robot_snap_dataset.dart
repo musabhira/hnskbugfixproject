@@ -43,6 +43,50 @@ class RobotSnapDataset {
   /// Total count of curated aesthetic snaps in memory
   static int get totalCuratedSnaps => _curatedSnapPool.length;
 
+  /// 📚 High-value spoken English learning snaps (Idioms, native speaking hacks & phrasal verbs)
+  static const List<RobotSnapItem> _learningEnglishSnaps = [
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80',
+      caption: '📚 Idiom of the Day: "Hit the books" = to start studying hard! "I have an English test tomorrow, gotta hit the books!" ✍️',
+      category: SnapCategory.englishMastery,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+      caption: '💡 Speaking Secret: Instead of "very tired", say "I\'m exhausted!" or "I\'m beat!" Sounds 10x more natural 🔥',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
+      caption: '🎯 Phrasal Verb: "Figure out" = to solve or understand something. "Don\'t worry, we will figure it out together!" 🤝',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+      caption: '⚡ Native Flow: "Bite the bullet" = to face a challenging situation with courage. Step outside your comfort zone and speak! 🗣️',
+      category: SnapCategory.englishMastery,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
+      caption: '📖 Daily Slang: "No cap" = no lie / for real! "That was no cap the best English speaking practice ever!" 😎',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80',
+      caption: '✨ Fluency Rule: Don\'t translate in your head. Associate objects directly with English words. Start with things around you right now! 🧠',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
+      caption: '🎙️ Pronunciation Tip: Blend words! "What are you doing?" naturally sounds like "Whatcha doin?" Practice saying it smoothly! 🎧',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1491841573634-28140fc7ced7?w=800&q=80',
+      caption: '🌟 Golden Idiom: "Break the ice" = start a friendly conversation with someone new! Go chat with a mate today! 🧊🔥',
+      category: SnapCategory.englishMastery,
+    ),
+  ];
+
   /// 📸 Vast curated pool of 500+ aesthetic Unsplash photography items
   /// Unsplash IDs with w=800&q=80 for lightning fast, beautiful loading
   static const List<RobotSnapItem> _curatedSnapPool = [
@@ -614,54 +658,38 @@ class RobotSnapDataset {
         break;
     }
 
-    // Filter available pool to strictly UNSEEN items
-    final candidatePool = _curatedSnapPool.where((item) {
-      return preferredCategories.contains(item.category) && !seenSet.contains(item.imageUrl);
-    }).toList();
-
-    // If candidate pool exhausted, fall back to any unseen item in entire curated pool
-    final fallbackPool = _curatedSnapPool.where((item) => !seenSet.contains(item.imageUrl)).toList();
+    // 📚 Prioritize valuable spoken English learning snaps over random lifestyle photos
+    final learningPool = _learningEnglishSnaps.where((item) => !seenSet.contains(item.caption)).toList();
+    final candidatePool = _curatedSnapPool.where((item) =>
+        preferredCategories.contains(item.category) &&
+        !seenSet.contains(item.caption) &&
+        !seenSet.contains(item.imageUrl)).toList();
 
     String chosenUrl;
     String chosenCaption;
 
-    // 25% chance to use dynamic Pollinations AI for fresh generation, or if curated pool runs low
-    final useAi = (_random.nextDouble() < 0.25) || (fallbackPool.length < 5);
-
-    if (useAi) {
-      final promptThemes = [
-        'cozy modern study cafe with laptop, latte art, and books',
-        'futuristic holographic library with neon reading desks',
-        'peaceful botanical garden courtyard in morning sunlight',
-        'cyberpunk city rooftop looking out over digital neon towers',
-        'mountain balcony view with notebook and fresh herbal tea',
-        'art studio with vibrant color palettes and inspirational sketches',
-        'urban street corner with aesthetic coffee kiosk at sunset',
-        'minimalist Scandinavian desk setup with notebook and houseplants',
-        'rainy window view with warm indoor reading lamp and tea mug',
-        'sunlit university campus walkway lined with autumn leaves',
-        'starry night sky seen from a cozy modern glass observatory',
-        'athletic track sprint at golden hour with morning dew',
-      ];
-      final theme = promptThemes[_random.nextInt(promptThemes.length)];
-      chosenUrl = generatePollinationsAiSnapUrl(robot: robot, themeDescription: theme);
-      chosenCaption = userPreferredCaption ?? '⚡ Live from my study station! Snap me back 🔥';
+    if (learningPool.isNotEmpty) {
+      final picked = learningPool[_random.nextInt(learningPool.length)];
+      chosenUrl = picked.imageUrl;
+      chosenCaption = userPreferredCaption ?? picked.caption;
     } else if (candidatePool.isNotEmpty) {
       final picked = candidatePool[_random.nextInt(candidatePool.length)];
       chosenUrl = picked.imageUrl;
       chosenCaption = userPreferredCaption ?? picked.caption;
-    } else if (fallbackPool.isNotEmpty) {
-      final picked = fallbackPool[_random.nextInt(fallbackPool.length)];
-      chosenUrl = picked.imageUrl;
-      chosenCaption = userPreferredCaption ?? picked.caption;
     } else {
-      // If all curated images have been seen, generate infinite unique AI snap
-      final theme = 'modern aesthetic lifestyle photography in urban creative studio at golden hour';
+      // Dynamic AI learning snap generator
+      final promptThemes = [
+        'inspirational study desk with typography note on learning English fluency',
+        'clean minimalist creative workspace with books and glowing golden light',
+        'vintage library reading table with glowing desk lamp and open notebook',
+      ];
+      final theme = promptThemes[_random.nextInt(promptThemes.length)];
       chosenUrl = generatePollinationsAiSnapUrl(robot: robot, themeDescription: theme);
-      chosenCaption = userPreferredCaption ?? '⚡ Always learning, always building fluency! 🚀';
+      chosenCaption = userPreferredCaption ?? '⚡ Practice speaking today! Small daily progress brings massive fluency 🚀';
     }
 
     // Mark as seen permanently - NEVER trim so user NEVER receives a duplicate snap!
+    seenSet.add(chosenCaption);
     seenSet.add(chosenUrl);
     await prefs.setStringList(seenKey, seenSet.toList());
 

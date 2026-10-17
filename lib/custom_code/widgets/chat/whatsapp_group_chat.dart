@@ -54,6 +54,7 @@ import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
@@ -5375,24 +5376,37 @@ Draft: "$draft"''';
           ],
         ),
         body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+          decoration: BoxDecoration(
+            gradient: PocketKidsService.isKidAccount
+                ? const LinearGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1), Color(0xFF0F172A)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )
+                : const LinearGradient(
+                    colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
           ),
           child: Stack(
             children: [
-              // Refined, subtle dark wallpaper doodle background
+              // Refined wallpaper: Kids Nature Scenery or Adult Doodle Wallpaper
               Positioned.fill(
-                child: CustomPaint(
-                  painter: PocketDoodleBackgroundPainter(
-                    color: Colors.white,
-                    isDark: true,
-                    opacityMultiplier: 0.22,
-                  ),
-                ),
+                child: PocketKidsService.isKidAccount
+                    ? const PocketKidsNatureSceneryBackground(
+                        showSun: false,
+                        showTrees: true,
+                        hillHeightFraction: 0.28,
+                        glassOverlayOpacity: 0.20,
+                      )
+                    : CustomPaint(
+                        painter: PocketDoodleBackgroundPainter(
+                          color: Colors.white,
+                          isDark: true,
+                          opacityMultiplier: 0.22,
+                        ),
+                      ),
               ),
               Column(
                 children: [
@@ -5429,11 +5443,12 @@ Draft: "$draft"''';
   }
 
   Widget _buildChatHeaderTabs() {
+    final isKid = PocketKidsService.isKidAccount;
     return Container(
       width: double.infinity,
       height: 44,
       decoration: BoxDecoration(
-        color: const Color(0xFF121B22),
+        color: isKid ? const Color(0xFF0F172A) : const Color(0xFF121B22),
         border: Border(
           bottom: BorderSide(
             color: Colors.white.withValues(alpha: 0.08),
@@ -5444,9 +5459,12 @@ Draft: "$draft"''';
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF070B0E),
+          color: isKid ? const Color(0xFF1E293B) : const Color(0xFF070B0E),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white12, width: 0.8),
+          border: Border.all(
+            color: isKid ? const Color(0xFF38BDF8).withValues(alpha: 0.4) : Colors.white12,
+            width: 0.8,
+          ),
         ),
         child: Row(
           children: [
@@ -5465,7 +5483,7 @@ Draft: "$draft"''';
                   duration: const Duration(milliseconds: 180),
                   decoration: BoxDecoration(
                     color: _activeChatTabIndex == 0
-                        ? const Color(0xFFFFD600)
+                        ? (isKid ? const Color(0xFF38BDF8) : const Color(0xFFFFD600))
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -5477,17 +5495,17 @@ Draft: "$draft"''';
                         Icons.chat_bubble_rounded,
                         size: 13,
                         color: _activeChatTabIndex == 0
-                            ? Colors.black
+                            ? (isKid ? Colors.white : Colors.black)
                             : Colors.white70,
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Chat',
+                        isKid ? 'Student Chat' : 'Chat',
                         style: GoogleFonts.outfit(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: _activeChatTabIndex == 0
-                              ? Colors.black
+                              ? (isKid ? Colors.white : Colors.black)
                               : Colors.white70,
                         ),
                       ),
@@ -5521,12 +5539,12 @@ Draft: "$draft"''';
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        _activeChatTabIndex == 1 ? '👑' : '🏆',
+                        isKid ? '🏅' : (_activeChatTabIndex == 1 ? '👑' : '🏆'),
                         style: const TextStyle(fontSize: 13),
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Ranking Trail',
+                        isKid ? 'Trail Ranking' : 'Ranking',
                         style: GoogleFonts.outfit(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
