@@ -38,6 +38,13 @@ class WorldRankingLedgeNode {
   late Rect fullHitRect;
   late Rect badgeHitRect; // User Audio Directive: Only badge tap opens profile
 
+  // 🪵 Mountain Wooden Plank Descent Ramp (പലക) connecting down to next terrace (User Audio Directive)
+  double rampStartX = 0.0;
+  double rampStartY = 0.0;
+  double rampEndX = 0.0;
+  double rampEndY = 0.0;
+  bool hasRamp = false;
+
   WorldRankingLedgeNode({
     required this.index,
     required this.rank,
@@ -512,8 +519,10 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
   double get _maxScrollY => math.max(0.0, _totalWorldHeight - size.y);
 
   /// 🏔️ Build Alternating Cliff Terraces with Large Architectural Houses
-  /// User Audio Directive: "കുറച്ചുകൂടി സ്പേസ് കൊടുത്താൽ ബെറ്റർ ആകും... അവിടെ സ്പേസ് ഇല്ല, വണ്ടി ഇറങ്ങണം"
-  /// Provides spacious 170+ px driving runways on each terrace and deeper canyon drop!
+  /// User Audio Directive: "ആ വീട് കുറച്ച് വലുതാക്കിയിട്ട് തന്നെ പ്ലേസ് ചെയ്യാം. വീട് വലുതാക്കി കാണിക്കണം കേട്ടോ.
+  /// ഇറങ്ങാൻ ആയിട്ട് ഒരു പലക പോലെ എന്തെങ്കിലും വെച്ചിട്ട്, ആ പലകയിൽ കൂടെ ഇറങ്ങിയിട്ട് അങ്ങനെ അങ്ങനെ ആക്കാൻ പറ്റുമോ?"
+  /// - Grand Storybook Cottages: 180px wide x 135px tall (100% prominent & majestic)
+  /// - Wooden Plank Descent Ramps (പലക): Connect each terrace down to the next terrace!
   void _buildWorldNodes() {
     if (size.x <= 0 || size.y <= 0) return;
 
@@ -521,34 +530,52 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
     final screenW = size.x;
     const double startOffsetY = 320.0;
-    const double stepY = 310.0; // Ample vertical room for deep, steep canyon drops!
+    const double stepY = 260.0; // Perfect vertical pitch for smooth downhill wooden plank descent
     double currentY = startOffsetY;
     final totalCount = users.length;
 
-    // Gracefully scaled house size so the road runway is 3x wider (Audio Directive)
-    const double houseW = 138.0;
-    const double houseH = 108.0;
+    // Storybook house size: BIG and prominent as requested by user ("വീട് വലുതാക്കി കാണിക്കണം കേട്ടോ")
+    const double houseW = 180.0;
+    const double houseH = 135.0;
 
     for (int i = 0; i < users.length; i++) {
       final user = users[i];
       final rank = i + 1;
-      final isRank1 = rank == 1;
+      final isLast = (i == users.length - 1);
 
       // Alternating cliffs: Left (even) vs Right (odd)
-      final bool isLeft;
-      final double ledgeW;
+      final bool isLeft = (i % 2 == 0);
       final double houseX;
       final double houseY = currentY - houseH - 2.0;
 
-      if (isRank1) {
-        // Summit pinnacle plateau: grand and wide
-        isLeft = true;
+      // Wooden Plank Descent Ramp (പലക) geometry connecting to the next terrace below
+      double rampStartX = 0.0;
+      double rampStartY = currentY;
+      double rampEndX = 0.0;
+      double rampEndY = currentY + stepY;
+      bool hasRamp = false;
+
+      final double ledgeW;
+
+      if (isLast) {
+        // Canyon Floor: Spans full width
         houseX = (screenW - houseW) / 2.0;
-        ledgeW = screenW * 0.94;
+        ledgeW = screenW;
+        hasRamp = false;
+      } else if (isLeft) {
+        // Even Level: House on Left, Ramp starts after house and slopes down to right
+        houseX = 12.0;
+        rampStartX = math.max(houseX + houseW + 8.0, screenW * 0.44);
+        rampEndX = screenW - 16.0;
+        hasRamp = true;
+        ledgeW = rampStartX + 14.0;
       } else {
-        isLeft = (i % 2 == 0);
-        houseX = isLeft ? 14.0 : (screenW - houseW - 14.0);
-        ledgeW = screenW * 0.88; // Wide spacious cliff terrace with 170+ px driving runway!
+        // Odd Level: House on Right, Ramp starts before house and slopes down to left
+        houseX = screenW - houseW - 12.0;
+        rampStartX = math.min(houseX - 8.0, screenW * 0.56);
+        rampEndX = 16.0;
+        hasRamp = true;
+        ledgeW = screenW - (rampStartX - 14.0);
       }
 
       // Large, detailed architectural house component
@@ -580,6 +607,12 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         houseH: houseH,
       );
 
+      node.rampStartX = rampStartX;
+      node.rampStartY = rampStartY;
+      node.rampEndX = rampEndX;
+      node.rampEndY = rampEndY;
+      node.hasRamp = hasRamp;
+
       _ledgeNodes.add(node);
       currentY += stepY;
     }
@@ -601,10 +634,10 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final vocabData = kCanyonVocabCatalog[i % kCanyonVocabCatalog.length];
       final gemColor = gemColors[i % gemColors.length];
 
-      // 1. Gem along the wide terrace road runway
+      // 1. Gem along the terrace road in front of the house
       final roadGemX = node.isLeft
-          ? (node.houseX + node.houseW + 55.0)
-          : (node.houseX - 55.0);
+          ? (node.houseX + 45.0)
+          : (node.houseX + node.houseW - 45.0);
       _vocabGems.add(CanyonVocabGem(
         id: i * 2,
         x: roadGemX.clamp(32.0, screenW - 32.0),
@@ -616,25 +649,21 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         color: gemColor,
       ));
 
-      // 2. Gem hovering in mid-air on the jump to next terrace
-      if (i < _ledgeNodes.length - 1) {
-        final nextNode = _ledgeNodes[i + 1];
-        final jumpVocabData = kCanyonVocabCatalog[(i + 7) % kCanyonVocabCatalog.length];
-        final startX = node.isLeft ? (node.width - 8.0) : (screenW - node.width + 8.0);
-        final targetX = nextNode.isLeft
-            ? (nextNode.houseX + nextNode.houseW + 48.0)
-            : (nextNode.houseX - 48.0);
-        final midJumpX = (startX + targetX) / 2.0;
-        final midJumpY = (node.y + nextNode.y) / 2.0 - 55.0; // peak of parabolic leap!
+      // 2. Gem placed directly on the wooden plank ramp (പലക)
+      if (node.hasRamp) {
+        final rampVocabData =
+            kCanyonVocabCatalog[(i + 7) % kCanyonVocabCatalog.length];
+        final midRampX = (node.rampStartX + node.rampEndX) / 2.0;
+        final midRampY = (node.rampStartY + node.rampEndY) / 2.0 - 18.0;
         _vocabGems.add(CanyonVocabGem(
           id: i * 2 + 1,
-          x: midJumpX.clamp(40.0, screenW - 40.0),
-          y: midJumpY,
-          word: jumpVocabData['word']!,
-          phonetic: jumpVocabData['phonetic']!,
-          malayalam: jumpVocabData['malayalam']!,
-          spokenExample: jumpVocabData['example']!,
-          color: const Color(0xFFFFD700), // Golden airborne gem
+          x: midRampX.clamp(36.0, screenW - 36.0),
+          y: midRampY,
+          word: rampVocabData['word']!,
+          phonetic: rampVocabData['phonetic']!,
+          malayalam: rampVocabData['malayalam']!,
+          spokenExample: rampVocabData['example']!,
+          color: const Color(0xFFFFD700), // Golden glowing gem on wooden plank ramp
         ));
       }
     }
@@ -645,7 +674,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       _arcProgress = 0.0;
       _isAirborne = false;
       final summit = _ledgeNodes[0];
-      _bikeX = summit.houseX + summit.houseW + 36.0;
+      _bikeX = summit.houseX + 35.0;
       _bikeY = summit.y - 14.0;
       _isFacingRight = true;
     }
@@ -810,46 +839,93 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
     if (!_isAirborne) {
       final currentNode = _ledgeNodes[_bikeNodeIndex];
-      _bikeY = currentNode.y - 14.0;
+      final isLastNode = (_bikeNodeIndex >= _ledgeNodes.length - 1);
+      final screenW = size.x;
 
       // Suspension spring recovery
       if (_suspensionBounce < 1.0) {
         _suspensionBounce = math.min(1.0, _suspensionBounce + dt * 4.5);
       }
-      _bikeTilt *= math.pow(0.80, dt * 60);
+
+      double groundY = currentNode.y - 14.0;
+      double targetTilt = 0.0;
+
+      // Surface geometry: terrace plateau vs. downhill wooden plank ramp (പലക)
+      if (!isLastNode && currentNode.hasRamp) {
+        if (currentNode.isLeft) {
+          // Even Level (House on Left): Wooden plank ramp starts at rampStartX and slopes down to right to rampEndX
+          if (_bikeX >= currentNode.rampStartX) {
+            final rampSpan = (currentNode.rampEndX - currentNode.rampStartX).clamp(10.0, 1000.0);
+            final t = ((_bikeX - currentNode.rampStartX) / rampSpan).clamp(0.0, 1.0);
+            groundY = currentNode.rampStartY +
+                t * (currentNode.rampEndY - currentNode.rampStartY) - 14.0;
+            final angle = math.atan2(
+              currentNode.rampEndY - currentNode.rampStartY,
+              currentNode.rampEndX - currentNode.rampStartX,
+            );
+            targetTilt = _isFacingRight ? angle * 0.75 : -angle * 0.75;
+
+            // Gravity assistance pulling dirt bike downhill down the wooden planks
+            if (_isFacingRight) {
+              _bikeVx += 240.0 * dt;
+            }
+          }
+        } else {
+          // Odd Level (House on Right): Wooden plank ramp starts at rampStartX and slopes down to left to rampEndX
+          if (_bikeX <= currentNode.rampStartX) {
+            final rampSpan = (currentNode.rampStartX - currentNode.rampEndX).clamp(10.0, 1000.0);
+            final t = ((currentNode.rampStartX - _bikeX) / rampSpan).clamp(0.0, 1.0);
+            groundY = currentNode.rampStartY +
+                t * (currentNode.rampEndY - currentNode.rampStartY) - 14.0;
+            final angle = math.atan2(
+              currentNode.rampEndY - currentNode.rampStartY,
+              currentNode.rampStartX - currentNode.rampEndX,
+            );
+            targetTilt = !_isFacingRight ? -angle * 0.75 : angle * 0.75;
+
+            // Gravity assistance pulling dirt bike downhill down the wooden planks
+            if (!_isFacingRight) {
+              _bikeVx -= 240.0 * dt;
+            }
+          }
+        }
+      }
+
+      _bikeY = groundY;
+      _bikeTilt += (targetTilt - _bikeTilt) * (dt * 12.0).clamp(0.0, 1.0);
 
       // Handle drive input
       if (steerInput < -0.1) {
-        _bikeVx -= 700.0 * dt;
+        _bikeVx -= 720.0 * dt;
         _isFacingRight = false;
         _idleDriveTimer = 0.0;
       } else if (steerInput > 0.1) {
-        _bikeVx += 700.0 * dt;
+        _bikeVx += 720.0 * dt;
         _isFacingRight = true;
         _idleDriveTimer = 0.0;
       } else {
         _bikeVx *= math.pow(0.85, dt * 60);
         _idleDriveTimer += dt;
 
-        // Auto-cruise down canyon if idle for 2.2 seconds (keeps trail alive)
-        if (_idleDriveTimer > 2.2 && _ledgeNodes.length > 1) {
+        // Auto-cruise down canyon if idle for 2.0 seconds (keeps trail moving)
+        if (_idleDriveTimer > 2.0 && _ledgeNodes.length > 1) {
           if (currentNode.isLeft) {
-            _bikeVx = 150.0;
+            _bikeVx = 160.0;
             _isFacingRight = true;
           } else {
-            _bikeVx = -150.0;
+            _bikeVx = -160.0;
             _isFacingRight = false;
           }
         }
       }
 
-      _bikeVx = _bikeVx.clamp(-320.0, 320.0);
+      _bikeVx = _bikeVx.clamp(-340.0, 340.0);
       _bikeX += _bikeVx * dt;
       _wheelRotation += (_bikeVx / 14.0) * dt;
 
-      // Dust puffs from rear tire while driving on grass
+      // Dust / Sawdust puffs from rear tire while driving on grass / timber planks
       _dustTimer += dt;
-      if (_bikeVx.abs() > 35.0 && _dustTimer > 0.05) {
+      if (_bikeVx.abs() > 30.0 && _dustTimer > 0.05) {
         _dustTimer = 0.0;
         final rng = math.Random();
         final rearX = _bikeX + (_isFacingRight ? -18.0 : 18.0);
@@ -862,74 +938,97 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         ));
       }
 
-      // Terrace boundary checks & Cliff Edge Auto-Jump (User Audio Directive: "വണ്ടി ഡ്രൈവ് ചെയ്യുന്ന സമയത്ത് ഓട്ടോമാറ്റിക് അടിയിലേക്ക് എത്തണം")
-      final screenW = size.x;
-      if (currentNode.isLeft) {
-        // Mountain back wall on the left - soft spring cushion and turn towards downhill trail!
-        if (_bikeX < 26.0) {
-          _bikeX = 26.0;
-          _bikeVx = 140.0;
-          _isFacingRight = true;
-          _triggerBikeWallCushion(_bikeX, _bikeY);
-        }
-        // Reached right cliff edge -> Launch into canyon!
-        final cliffX = currentNode.width - 14.0;
-        if (_bikeX >= cliffX && _ledgeNodes.length > 1) {
-          _launchBikeJump();
+      // Check Terrace transitions via Wooden Plank Ramps & Screen Boundary Wrap
+      if (!isLastNode && currentNode.hasRamp) {
+        if (currentNode.isLeft) {
+          // Left mountain wall cushion
+          if (_bikeX < 14.0) {
+            _bikeX = 14.0;
+            _bikeVx = 160.0;
+            _isFacingRight = true;
+            _triggerBikeWallCushion(_bikeX, _bikeY);
+          }
+          // Reached end of wooden plank ramp on the right -> Smoothly arrive at next terrace!
+          if (_bikeX >= currentNode.rampEndX) {
+            _bikeNodeIndex++;
+            final nextNode = _ledgeNodes[_bikeNodeIndex];
+            _bikeX = currentNode.rampEndX;
+            _bikeY = nextNode.y - 14.0;
+            _isFacingRight = false; // Turn left for next terrace
+            _bikeVx = -220.0;
+            _bikeTilt = 0.0;
+            _suspensionBounce = 0.65;
+            currentCombo++;
+            _triggerBikeLandingImpact(_bikeX, _bikeY);
+          }
+        } else {
+          // Right mountain wall cushion
+          if (_bikeX > screenW - 14.0) {
+            _bikeX = screenW - 14.0;
+            _bikeVx = -160.0;
+            _isFacingRight = false;
+            _triggerBikeWallCushion(_bikeX, _bikeY);
+          }
+          // Reached end of wooden plank ramp on the left -> Smoothly arrive at next terrace!
+          if (_bikeX <= currentNode.rampEndX) {
+            _bikeNodeIndex++;
+            final nextNode = _ledgeNodes[_bikeNodeIndex];
+            _bikeX = currentNode.rampEndX;
+            _bikeY = nextNode.y - 14.0;
+            _isFacingRight = true; // Turn right for next terrace
+            _bikeVx = 220.0;
+            _bikeTilt = 0.0;
+            _suspensionBounce = 0.65;
+            currentCombo++;
+            _triggerBikeLandingImpact(_bikeX, _bikeY);
+          }
         }
       } else {
-        // Mountain back wall on the right - soft spring cushion and turn towards downhill trail!
-        if (_bikeX > screenW - 26.0) {
-          _bikeX = screenW - 26.0;
-          _bikeVx = -140.0;
+        // Last Node: Canyon Floor
+        if (_bikeX < 20.0) {
+          _bikeX = 20.0;
+          _bikeVx = 160.0;
+          _isFacingRight = true;
+        } else if (_bikeX > screenW - 20.0) {
+          _bikeX = screenW - 20.0;
+          _bikeVx = -160.0;
           _isFacingRight = false;
-          _triggerBikeWallCushion(_bikeX, _bikeY);
-        }
-        // Reached left cliff edge -> Launch into canyon!
-        final cliffX = (screenW - currentNode.width) + 14.0;
-        if (_bikeX <= cliffX && _ledgeNodes.length > 1) {
-          _launchBikeJump();
+          _triggerCanyonConqueredCelebration();
         }
       }
     } else {
-      // 🚀 AIRBORNE: Grand Parabolic Canyon Leap
-      const double leapDuration = 1.05;
+      // 🚀 AIRBORNE: Gentle Downhill Canyon Leap
+      const double leapDuration = 0.95;
       _arcProgress += dt / leapDuration;
 
       final fromNode = _ledgeNodes[_bikeNodeIndex];
       final nextIndex = (_bikeNodeIndex + 1) % _ledgeNodes.length;
       final toNode = _ledgeNodes[nextIndex];
 
-      final startX = fromNode.isLeft ? fromNode.width - 8.0 : (size.x - fromNode.width + 8.0);
+      final startX = fromNode.isLeft ? fromNode.rampStartX : fromNode.rampStartX;
       final startY = fromNode.y - 14.0;
-
-      // Destination landing spot on the spacious terrace road runway (NOT in cottage!)
-      final targetX = toNode.isLeft
-          ? (toNode.houseX + toNode.houseW + 48.0)
-          : (toNode.houseX - 48.0);
+      final targetX = toNode.isLeft ? 24.0 : (size.x - 24.0);
       final targetY = toNode.y - 14.0;
 
       final t = _arcProgress.clamp(0.0, 1.0);
       final linearX = startX + (targetX - startX) * t;
       final linearY = startY + (targetY - startY) * t;
-      final double peakHeight = math.max(75.0, (targetY - startY).abs() * 0.32 + 55.0);
+      const double peakHeight = 35.0; // Realistic downhill hop, NOT shooting into sky!
       final arcOffset = 4 * peakHeight * t * (1 - t);
 
-      // Fine user mid-air steering influence
       if (steerInput.abs() > 0.05) {
-        _bikeX = linearX + steerInput * 30.0 * math.sin(t * math.pi);
+        _bikeX = linearX + steerInput * 20.0 * math.sin(t * math.pi);
       } else {
         _bikeX = linearX;
       }
       _bikeY = linearY - arcOffset;
 
-      // In-air wheel spin & dynamic motocross pitch
       _wheelRotation += 16.0 * dt;
       final dirSign = (targetX >= startX) ? 1.0 : -1.0;
       if (t < 0.45) {
-        _bikeTilt = -0.30 * dirSign; // Wheelie takeoff
+        _bikeTilt = -0.22 * dirSign;
       } else {
-        _bikeTilt = 0.22 * dirSign; // Front wheel dips for landing
+        _bikeTilt = 0.20 * dirSign;
       }
 
       // Smooth landing on destination terrace!
@@ -939,19 +1038,17 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         _bikeNodeIndex = nextIndex;
         _bikeX = targetX;
         _bikeY = targetY;
-        _suspensionBounce = 0.58; // Spring compression bounce
+        _suspensionBounce = 0.65;
         _bikeTilt = 0.0;
 
-        // Auto-turn and accelerate along the new terrace road down the canyon!
         if (toNode.isLeft) {
           _isFacingRight = true;
-          _bikeVx = 160.0;
+          _bikeVx = 200.0;
         } else {
           _isFacingRight = false;
-          _bikeVx = -160.0;
+          _bikeVx = -200.0;
         }
         currentCombo++;
-
         _triggerBikeLandingImpact(targetX, targetY);
       }
     }
@@ -1019,6 +1116,46 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     }
   }
 
+  void _triggerCanyonConqueredCelebration() {
+    HapticFeedback.heavyImpact();
+    SystemSound.play(SystemSoundType.click);
+
+    _floatingTexts.add(_FloatingScoreText(
+      x: size.x * 0.5,
+      y: _bikeY - 45.0,
+      text: '🏆 CANYON CONQUERED! +250 PTS',
+      color: const Color(0xFFFFD700),
+    ));
+
+    final rng = math.Random();
+    for (int i = 0; i < 24; i++) {
+      final angle = rng.nextDouble() * 2 * math.pi;
+      final spd = 70.0 + rng.nextDouble() * 140.0;
+      _sparks.add(_BounceSpark(
+        x: _bikeX,
+        y: _bikeY - 14.0,
+        vx: math.cos(angle) * spd,
+        vy: math.sin(angle) * spd - 30.0,
+        size: 3.8 + rng.nextDouble() * 2.5,
+        color: rng.nextBool() ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+      ));
+    }
+
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (_ledgeNodes.isNotEmpty) {
+        _bikeNodeIndex = 0;
+        final summit = _ledgeNodes[0];
+        _bikeX = summit.houseX + 35.0;
+        _bikeY = summit.y - 14.0;
+        _bikeVx = 0.0;
+        _isFacingRight = true;
+        _isAirborne = false;
+        isFollowingBike = true;
+        targetCameraY = 0.0;
+      }
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Canvas Rendering Pipeline
   // ---------------------------------------------------------------------------
@@ -1046,27 +1183,30 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     // 4. Rocky Cliff Terraces with Lush Overhanging Grass
     _renderRockyCliffsAndTerraces(canvas, viewTop, viewBottom);
 
-    // 5. Parabolic Dashed Trajectory Trail & Target Landing Rings
+    // 5. 🪵 Heavy Timber Wooden Plank Descent Ramps (പലക) connecting terraces
+    _renderPlankRamps(canvas, viewTop, viewBottom);
+
+    // 6. Parabolic Dashed Trajectory Trail & Target Landing Rings
     _renderDashedTrajectoryTrail(canvas, viewTop, viewBottom);
 
-    // 6. Big, Beautiful Storybook Houses
+    // 7. Big, Beautiful Storybook Houses
     _renderPlayerHouses(canvas, viewTop, viewBottom);
 
-    // 7. Ultra-Minimal House Badges: [ 👑 #1  Name  •  🪙 Score ]
+    // 8. Ultra-Minimal House Badges: [ 👑 #1  Name  •  🪙 Score ]
     _renderMinimalHouseBadges(canvas, viewTop, viewBottom);
 
-    // 8. 🚩 Storybook Wooden Waypoint Signboards in front of cottages (100% visible, no tree obstruction)
+    // 9. 🚩 Storybook Wooden Waypoint Signboards in front of cottages (100% visible, no tree obstruction)
     _renderTerraceSignboards(canvas, viewTop, viewBottom);
 
-    // 9. 💎 Floating English Vocabulary Gems along Canyon
+    // 10. 💎 Floating English Vocabulary Gems along Canyon
     _renderCanyonVocabGems(canvas, viewTop, viewBottom);
 
-    // 10. 💨 Dust Puffs from Bike Tires
+    // 11. 💨 Dust Puffs from Bike Tires
     for (final dp in _dustPuffs) {
       dp.render(canvas);
     }
 
-    // 11. 🏍️ Mountain Trial Dirt Bike & Motocross Rider
+    // 12. 🏍️ Mountain Trial Dirt Bike & Motocross Rider
     _renderMountainTrialBike(canvas);
 
     for (final ft in _floatingTexts) {
@@ -1078,7 +1218,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
     canvas.restore();
 
-    // 12. 🌟 Active Spoken English Vocabulary Toast HUD (Screen Coordinates)
+    // 13. 🌟 Active Spoken English Vocabulary Toast HUD (Screen Coordinates)
     _renderActiveVocabToastHUD(canvas);
   }
 
@@ -1280,6 +1420,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     for (final node in _ledgeNodes) {
       if (node.y + 160 < topY || node.y - 120 > bottomY) continue;
 
+      final isLastNode = (node.index == _ledgeNodes.length - 1);
       final isLeft = node.isLeft;
       final ly = node.y;
       final lw = node.width;
@@ -1297,7 +1438,12 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         ).createShader(Rect.fromLTWH(0, ly - 20, screenW, 140));
 
       final rockPath = Path();
-      if (isLeft) {
+      if (isLastNode) {
+        rockPath.moveTo(0, ly - 18);
+        rockPath.lineTo(screenW, ly - 18);
+        rockPath.lineTo(screenW, ly + 150);
+        rockPath.lineTo(0, ly + 150);
+      } else if (isLeft) {
         rockPath.moveTo(0, ly - 18);
         rockPath.lineTo(lw, ly - 18);
         rockPath.lineTo(lw - 22, ly + 45);
@@ -1320,7 +1466,10 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final rockCrackPaint = Paint()
         ..color = const Color(0xFF0B1220).withValues(alpha: 0.70)
         ..strokeWidth = 2.0;
-      if (isLeft) {
+      if (isLastNode) {
+        canvas.drawLine(Offset(screenW * 0.35, ly + 25), Offset(screenW * 0.30, ly + 85), rockCrackPaint);
+        canvas.drawLine(Offset(screenW * 0.65, ly + 25), Offset(screenW * 0.70, ly + 85), rockCrackPaint);
+      } else if (isLeft) {
         canvas.drawLine(Offset(lw * 0.75, ly + 15), Offset(lw * 0.65, ly + 75), rockCrackPaint);
         canvas.drawLine(Offset(lw * 0.45, ly + 35), Offset(lw * 0.40, ly + 95), rockCrackPaint);
       } else {
@@ -1334,7 +1483,12 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final grassShadowPaint = Paint()..color = const Color(0xFF15803D);
 
       final grassPath = Path();
-      if (isLeft) {
+      if (isLastNode) {
+        grassPath.moveTo(0, ly - 22);
+        grassPath.lineTo(screenW, ly - 22);
+        grassPath.lineTo(screenW, ly + 6);
+        grassPath.lineTo(0, ly + 6);
+      } else if (isLeft) {
         grassPath.moveTo(0, ly - 22);
         grassPath.lineTo(lw + 8, ly - 22);
         grassPath.quadraticBezierTo(lw + 14, ly - 8, lw + 4, ly + 6);
@@ -1361,7 +1515,9 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         ..color = const Color(0xFF86EFAC)
         ..strokeWidth = 2.8
         ..style = PaintingStyle.stroke;
-      if (isLeft) {
+      if (isLastNode) {
+        canvas.drawLine(Offset(0, ly - 21), Offset(screenW, ly - 21), highlightPaint);
+      } else if (isLeft) {
         canvas.drawLine(Offset(0, ly - 21), Offset(lw + 6, ly - 21), highlightPaint);
       } else {
         final startX = screenW - lw;
@@ -1380,6 +1536,238 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       // 4. Wooden Fence & Vintage Street Lamp
       _renderWoodenFence(canvas, node);
       _renderStreetLamp(canvas, node);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. 🪵 Heavy Timber Wooden Plank Descent Ramps (പലക) connecting terraces
+  // User Audio Directive: "ഒരു പലക പോലെ എന്തെങ്കിലും വെച്ചിട്ട്, ആ പലകയിൽ കൂടെ ഇറങ്ങിയിട്ട്
+  // പിന്നെ ഇവിടുന്ന് അങ്ങോട്ട് പലക പോലെ വെച്ചിട്ട് അങ്ങനെ അങ്ങനെ ആക്കാൻ പറ്റുമോ?"
+  // ---------------------------------------------------------------------------
+
+  void _renderPlankRamps(Canvas canvas, double topY, double bottomY) {
+    if (_ledgeNodes.length < 2) return;
+
+    for (int i = 0; i < _ledgeNodes.length - 1; i++) {
+      final node = _ledgeNodes[i];
+      if (!node.hasRamp) continue;
+
+      final sx = node.rampStartX;
+      final sy = node.rampStartY;
+      final ex = node.rampEndX;
+      final ey = node.rampEndY;
+
+      final minY = math.min(sy, ey);
+      final maxY = math.max(sy, ey);
+      if (maxY < topY - 120 || minY > bottomY + 120) continue;
+
+      final dx = ex - sx;
+      final dy = ey - sy;
+      final rampLength = math.sqrt(dx * dx + dy * dy);
+      if (rampLength < 10.0) continue;
+
+      final rampAngle = math.atan2(dy, dx);
+      final isCurrentRamp = (i == _bikeNodeIndex);
+
+      // 1. Structural Timber Pillar Supports & Brackets anchored into rock
+      _renderRampSupportPillars(canvas, sx, sy, ex, ey, rampAngle, rampLength);
+
+      // 2. Heavy Timber Stringers (Base Under-Beams)
+      final stringerPaint = Paint()
+        ..color = const Color(0xFF451A03)
+        ..strokeWidth = 6.0
+        ..strokeCap = StrokeCap.round;
+      final stringerTopPaint = Paint()
+        ..color = const Color(0xFF78350F)
+        ..strokeWidth = 4.0
+        ..strokeCap = StrokeCap.round;
+
+      final nx = -math.sin(rampAngle);
+      final ny = math.cos(rampAngle);
+
+      // Bottom shadow stringer
+      canvas.drawLine(
+        Offset(sx + nx * 5.0, sy + ny * 5.0),
+        Offset(ex + nx * 5.0, ey + ny * 5.0),
+        stringerPaint,
+      );
+      // Main top stringer
+      canvas.drawLine(
+        Offset(sx, sy),
+        Offset(ex, ey),
+        stringerTopPaint,
+      );
+
+      // 3. Individual Heavy Wooden Cross Planks (പലകകൾ)
+      const double plankSpacing = 13.0;
+      final int plankCount = (rampLength / plankSpacing).floor();
+
+      final plankWoodPaints = [
+        Paint()..color = const Color(0xFF92400E), // Rich warm timber
+        Paint()..color = const Color(0xFF78350F), // Dark rustic wood
+        Paint()..color = const Color(0xFFB45309), // Amber cedar
+        Paint()..color = const Color(0xFFA16207), // Golden teak
+      ];
+
+      final plankShadowPaint = Paint()..color = const Color(0xFF3B1804);
+      final plankHighlightPaint = Paint()..color = const Color(0xFFD97706);
+      final nailPaint = Paint()..color = const Color(0xFFE2E8F0);
+
+      for (int p = 0; p <= plankCount; p++) {
+        final t = p / plankCount;
+        final px = sx + dx * t;
+        final py = sy + dy * t;
+
+        canvas.save();
+        canvas.translate(px, py);
+        canvas.rotate(rampAngle);
+
+        // Drop shadow for each plank
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: const Offset(1.5, 2.5), width: 9.0, height: 26.0),
+            const Radius.circular(1.5),
+          ),
+          plankShadowPaint,
+        );
+
+        // Main wood plank body
+        final woodPaint = plankWoodPaints[(p + i * 3) % plankWoodPaints.length];
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset.zero, width: 9.0, height: 26.0),
+            const Radius.circular(1.5),
+          ),
+          woodPaint,
+        );
+
+        // Plank top highlight grain line
+        canvas.drawLine(
+          const Offset(-3.5, -11.0),
+          const Offset(-3.5, 11.0),
+          plankHighlightPaint,
+        );
+
+        // Silver iron nail studs
+        canvas.drawCircle(const Offset(0, -9.0), 1.2, nailPaint);
+        canvas.drawCircle(const Offset(0, 9.0), 1.2, nailPaint);
+
+        // Subtle downhill directional chevron indicator every 5th plank
+        if (p > 2 && p < plankCount - 2 && p % 5 == 0) {
+          final chevronPaint = Paint()
+            ..color = isCurrentRamp ? const Color(0xFFFFD700) : Colors.white54
+            ..strokeWidth = 2.0
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round;
+          final chevronPath = Path()
+            ..moveTo(-2, -5)
+            ..lineTo(3, 0)
+            ..lineTo(-2, 5);
+          canvas.drawPath(chevronPath, chevronPaint);
+        }
+
+        // 4. Timber Guard Posts with Warm Lanterns every 8 planks
+        if (p > 1 && p < plankCount && p % 8 == 0) {
+          _renderRampLanternPost(canvas, isCurrentRamp);
+        }
+
+        canvas.restore();
+      }
+
+      // 5. Landing Target Star on the terrace where the ramp arrives
+      _renderRampLandingMarker(canvas, ex, ey, isCurrentRamp);
+    }
+  }
+
+  void _renderRampSupportPillars(
+    Canvas canvas,
+    double sx,
+    double sy,
+    double ex,
+    double ey,
+    double angle,
+    double length,
+  ) {
+    final pillarPaint = Paint()
+      ..color = const Color(0xFF2E1504)
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+    final bracePaint = Paint()
+      ..color = const Color(0xFF451A03)
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round;
+
+    final dx = ex - sx;
+    final dy = ey - sy;
+
+    final fractions = [0.25, 0.50, 0.75];
+    for (final f in fractions) {
+      final px = sx + dx * f;
+      final py = sy + dy * f;
+      final dropH = 35.0 + f * 25.0;
+      canvas.drawLine(
+        Offset(px, py),
+        Offset(px, py + dropH),
+        pillarPaint,
+      );
+      canvas.drawLine(
+        Offset(px - 10, py + 12),
+        Offset(px + 10, py + dropH * 0.8),
+        bracePaint,
+      );
+    }
+  }
+
+  void _renderRampLanternPost(Canvas canvas, bool isCurrentRamp) {
+    final postPaint = Paint()
+      ..color = const Color(0xFF2E1504)
+      ..strokeWidth = 2.8
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(const Offset(0, -13.0), const Offset(0, -32.0), postPaint);
+
+    final glowPaint = Paint()
+      ..color = const Color(0xFFFBBF24).withValues(alpha: isCurrentRamp ? 0.45 : 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    canvas.drawCircle(const Offset(0, -30.0), 12.0, glowPaint);
+
+    final lanternPaint = Paint()..color = const Color(0xFFF59E0B);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: const Offset(0, -30.0), width: 7.0, height: 9.0),
+        const Radius.circular(1.5),
+      ),
+      lanternPaint,
+    );
+  }
+
+  void _renderRampLandingMarker(Canvas canvas, double ex, double ey, bool isCurrentRamp) {
+    final ringPaint = Paint()
+      ..color = (isCurrentRamp ? const Color(0xFFFFD700) : Colors.white60)
+          .withValues(alpha: isCurrentRamp ? 0.85 : 0.35)
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke;
+
+    final glowPaint = Paint()
+      ..color = (isCurrentRamp ? const Color(0xFFFFD700) : Colors.white)
+          .withValues(alpha: isCurrentRamp ? 0.40 : 0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    canvas.drawCircle(Offset(ex, ey - 14.0), 15.0, glowPaint);
+    canvas.drawCircle(Offset(ex, ey - 14.0), 13.0, ringPaint);
+
+    if (isCurrentRamp) {
+      final chevronPainter = TextPainter(
+        text: const TextSpan(
+          text: '⭐',
+          style: TextStyle(fontSize: 11),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      chevronPainter.paint(
+        canvas,
+        Offset(ex - chevronPainter.width / 2, ey - 14.0 - chevronPainter.height / 2),
+      );
     }
   }
 
