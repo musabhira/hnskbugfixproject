@@ -35,6 +35,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kid_avatar_card
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_score_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
 
 /// 💬 Pocket Kids Chat Hub - Ported Directly from Adult Chat System
 /// Features:
@@ -1423,29 +1424,28 @@ class _PocketStudentChatHubWidgetState
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              cardBorderColor,
-                              cardBorderColor.withValues(alpha: 0.6),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cardBorderColor.withValues(alpha: 0.3),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(2.2),
+                      LivingSpreadingAura(
+                        color: cardBorderColor,
+                        size: 52,
+                        speed: 0.8,
+                        intensity: 0.9,
                         child: Container(
-                          decoration: const BoxDecoration(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Color(0xFF0F172A),
+                            color: const Color(0xFF0F172A),
+                            border: Border.all(
+                              color: cardBorderColor.withValues(alpha: 0.75),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cardBorderColor.withValues(alpha: 0.35),
+                                blurRadius: 10,
+                                spreadRadius: 1.2,
+                              ),
+                            ],
                           ),
                           child: ClipOval(
                             child: isMentor
@@ -1453,13 +1453,13 @@ class _PocketStudentChatHubWidgetState
                                     config: PocketKidsAvatarSystem
                                         .getAvatarConfigForDay(100),
                                     size: 46,
-                                    showAura: false,
+                                    showAura: true,
                                   )
                                 : (animalBot != null
                                     ? VectorAvatarWidget(
                                         config: animalBot.vectorAvatarConfig,
                                         size: 46,
-                                        showAura: false,
+                                        showAura: true,
                                       )
                                     : (conversation.imageUrl != null &&
                                             conversation.imageUrl!.isNotEmpty
@@ -1480,6 +1480,7 @@ class _PocketStudentChatHubWidgetState
                                                         conversation
                                                             .avatarConfig!),
                                                 size: 46,
+                                                showAura: true,
                                               )
                                             : Center(
                                                 child: Text(

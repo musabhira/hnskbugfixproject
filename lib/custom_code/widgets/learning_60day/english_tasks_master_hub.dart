@@ -54,6 +54,7 @@ import 'pocket_day1_tutor_curriculum.dart';
 import 'pocket_day1_interactive_flow_page.dart';
 import 'pocket_home_visit_modal.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
+import 'pocket_world_ranking_trail_widget.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -300,6 +301,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
 
+  // 🏆 Target Segmented Tabs (0 = Roadmap, 1 = World Rank)
+  int _activeTargetTab = 0;
+  late final PageController _targetTabPageController;
+
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
   Duration _timeUntilMidnight = Learning60DayService.getRemainingTimeUntilMidnight();
@@ -334,6 +339,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   @override
   void initState() {
     super.initState();
+    _targetTabPageController = PageController(initialPage: 0);
     _bobController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1300),
@@ -363,6 +369,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   @override
   void dispose() {
     PocketGameAudioService.instance.pause();
+    _targetTabPageController.dispose();
     _midnightTicker?.cancel();
     _bobController.dispose();
     _scrollController.dispose();
@@ -2542,8 +2549,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       backgroundColor: const Color(0xFF0A1118),
       body: Stack(
         children: [
-          // 1. The Scrollable Game World Map with Pull-to-Refresh
-          RefreshIndicator(
+          // 📱 Swipeable View: Page 0 = Roadmap, Page 1 = World Rank
+          Positioned.fill(
+            child: PageView(
+              controller: _targetTabPageController,
+              onPageChanged: (index) {
+                if (mounted && _activeTargetTab != index) {
+                  setState(() => _activeTargetTab = index);
+                }
+              },
+              children: [
+                // 1. The Scrollable Game World Map with Pull-to-Refresh
+                RefreshIndicator(
             onRefresh: _loadData,
             color: const Color(0xFFFFD700),
             backgroundColor: const Color(0xFF13172A),
@@ -2598,6 +2615,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 if (_isDayInViewport(day, minY, maxY))
                                   _buildRoadmapHomeVisit(day, screenWidth, targetActiveDay),
 
+                              // 🌟 Prominent Resident Guardian Avatars (User Audio Directive: after Home Visit with generous space!)
+                              for (int day = 1; day <= _totalDays; day++)
+                                if (_isDayInViewport(day, minY, maxY))
+                                  _buildRoadmapResidentAvatar(day, screenWidth, targetActiveDay),
+
                               // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
                               for (int day = 1; day < _totalDays; day++)
                                 if (_isDayInViewport(day, minY, maxY))
@@ -2627,6 +2649,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
           ),
 
+          // 2. 🏆 App-Wide World Ranking Trail
+          Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 104,
+            ),
+            child: PocketWorldRankingTrailWidget(
+              mode: RankingTrailMode.world,
+              currentUserId: widget.userId,
+            ),
+          ),
+        ],
+      ),
+    ),
+
               // Subtle non-blocking loading shimmer beneath top HUD
               if (_isLoading || _isRefreshing)
                 Positioned(
@@ -2643,11 +2679,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
               _buildTopHUD(prog),
 
-                // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 16,
+                // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button (Only on Roadmap)
+                if (_activeTargetTab == 0)
+                  Positioned(
+                    left: 12,
+                    right: 12,
+                    bottom: 16,
                   child: Row(
                     children: [
                       // Left actions: Battle, Open World, Time Machine
@@ -2738,7 +2775,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
 
                 // 4. 🚀 Mobile Fast Scroll Scrubber Bar on right side (User Audio Directive!)
-                _buildFastScrollScrubber(screenWidth, MediaQuery.of(context).size.height),
+                if (_activeTargetTab == 0)
+                  _buildFastScrollScrubber(screenWidth, MediaQuery.of(context).size.height),
               ],
             ),
     );
@@ -3183,8 +3221,128 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
             const SizedBox(height: 6),
 
-            // 🎯 Minimal Horizontal Level Milestones Strip
-            _buildMilestonesStrip(prog),
+            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🏆 World Rank
+            Container(
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFF070B0E),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: Colors.white12, width: 0.8),
+              ),
+              child: Row(
+                children: [
+                  // Tab 0: Roadmap
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 0
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🗺️', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Roadmap',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 0
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tab 1: World Rank
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _targetTabPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
+                          color: _activeTargetTab == 1
+                              ? const Color(0xFFFFD700)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏆', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'World Rank',
+                              style: GoogleFonts.outfit(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: _activeTargetTab == 1
+                                    ? Colors.black
+                                    : Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            // 🎯 Minimal Horizontal Level Milestones Strip (Shown on Roadmap)
+            if (_activeTargetTab == 0)
+              _buildMilestonesStrip(prog)
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                child: Row(
+                  children: [
+                    const Text('👑', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        'Live 1 to N Global Leaderboard • Tap House to Attack Citadel',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -4784,6 +4942,109 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   fontSize: 9.5,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌟 Prominent Resident Guardian Avatar along the mountain path (User Audio Directive!)
+  /// Placed with larger size (52px) after Home Visit with generous breathing room.
+  /// Tapping it opens the Holographic NFT Collectible Trading Card Dialog.
+  Widget _buildRoadmapResidentAvatar(int day, double screenWidth, int currentDay) {
+    if (day > _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isCompleted = _isDayCompleted(day);
+    final isCurrent = (day == currentDay);
+
+    const double avatarSize = 52.0;
+    final double avatarLeft = (nodeX - (avatarSize / 2.0)).clamp(12.0, screenWidth - avatarSize - 12.0);
+    // Placed after Home Visit with clean breathing space (User Audio Directive!)
+    final double avatarTop = nodeY - 130.0;
+
+    final config = _getAvatarForDay(day);
+
+    final borderColor = isCurrent
+        ? const Color(0xFFFFFC00)
+        : (isCompleted
+            ? const Color(0xFF10B981)
+            : (isUnlocked ? const Color(0xFF38BDF8) : Colors.white24));
+
+    return Positioned(
+      left: avatarLeft,
+      top: avatarTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _openAvatarCard(day);
+        },
+        child: SizedBox(
+          width: avatarSize,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: avatarSize,
+                height: avatarSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      borderColor,
+                      borderColor.withValues(alpha: 0.5),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: borderColor.withValues(alpha: isCurrent ? 0.45 : 0.25),
+                      blurRadius: isCurrent ? 14 : 8,
+                      spreadRadius: isCurrent ? 2 : 1,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(2.4),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF0F172A),
+                  ),
+                  child: ClipOval(
+                    child: VectorAvatarWidget(
+                      config: config,
+                      size: avatarSize - 5,
+                      showAura: isCurrent || isCompleted,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              // Floating Day / Guardian Pill Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: borderColor.withValues(alpha: 0.8),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'DAY $day',
+                  style: GoogleFonts.outfit(
+                    color: borderColor,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.4,
+                  ),
                 ),
               ),
             ],

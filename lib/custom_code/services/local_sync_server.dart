@@ -320,8 +320,21 @@ class LocalSyncServer {
       final String msgId = newData['id'].toString();
       final bool exists = current.any((m) => m['id'].toString() == msgId);
       if (!exists) {
-        final List<dynamic> updated = [newData, ...current];
-        if (updated.length > 1000) updated.removeLast();
+        List<dynamic> updated = [newData, ...current];
+        final gid = groupId.toString().toLowerCase();
+        if (gid.contains('english') || gid.contains('hub')) {
+          final cutoff = DateTime.now().subtract(const Duration(minutes: 35));
+          updated = updated.where((m) {
+            final ca = m['created_at'];
+            if (ca != null) {
+              final dt = DateTime.tryParse(ca.toString());
+              if (dt != null) return dt.isAfter(cutoff);
+            }
+            return true;
+          }).toList();
+        } else if (updated.length > 1000) {
+          updated.removeLast();
+        }
         saveMessages(currentUserId, groupId, updated);
       }
 

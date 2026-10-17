@@ -67,6 +67,7 @@ import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.d
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/chat_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -101,6 +102,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
 class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
   static const Color accentColor = Color(0xFFFFFC00);
+  static const Color appBarColor = Color(0xFF121B22);
   final _supabase = Supabase.instance.client;
   String get _groupMessagesTable =>
       PocketKidsService.isKidAccount ? 'kids_group_messages' : 'group_messages';
@@ -129,6 +131,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   List<Map<String, dynamic>> _filteredMembers = [];
   bool _showMentionSuggestions = false;
   String? _mentionQuery;
+
+  // 🏆 Segmented Chat / Ranking Trail View State
+  int _activeChatTabIndex = 0; // 0 = Chat, 1 = Ranking Trail
+  late final PageController _chatTabPageController;
 
   // Mate Fluency Streak & Conversation Starters
   int _mateStreakDays = 1;
@@ -598,6 +604,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
+    _chatTabPageController = PageController(initialPage: 0);
     InAppNotificationService.currentActiveChatId = widget.groupId;
     // Audio Directive: Chat conversations should be silent (no game BGM)
     PocketGameAudioService.instance.pause();
@@ -961,6 +968,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    _chatTabPageController.dispose();
     super.dispose();
   }
 
@@ -4874,7 +4882,7 @@ Draft: "$draft"''';
       ),
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawerEnableOpenDragGesture: widget.groupId.startsWith('p:'),
+        endDrawerEnableOpenDragGesture: false,
         endDrawer: widget.groupId.startsWith('p:')
             ? _buildFriendshipDashboardDrawer(context)
             : null,
@@ -5366,42 +5374,189 @@ Draft: "$draft"''';
             ),
           ],
         ),
-        body: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          onHorizontalDragEnd: (details) {
-            final velocity = details.primaryVelocity ?? 0;
-            if (velocity < -250) {
-              // Right-to-Left swipe across chat opens Friendship & Connection Dashboard Drawer
-              if (widget.groupId.startsWith('p:')) {
-                _scaffoldKey.currentState?.openEndDrawer();
-              }
-            }
-          },
-          behavior: HitTestBehavior.translucent,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-            child: Stack(
-              children: [
-                // Refined, subtle dark wallpaper doodle background
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: PocketDoodleBackgroundPainter(
-                      color: Colors.white,
-                      isDark: true,
-                      opacityMultiplier: 0.22,
-                    ),
+          ),
+          child: Stack(
+            children: [
+              // Refined, subtle dark wallpaper doodle background
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: PocketDoodleBackgroundPainter(
+                    color: Colors.white,
+                    isDark: true,
+                    opacityMultiplier: 0.22,
                   ),
                 ),
-                Column(
-                  children: [
-                    if (_isKidMode && !widget.groupId.startsWith('p:'))
-                      _buildPocketGangHeaderRibbon()
+              ),
+              Column(
+                children: [
+                  // 📌 Stable Segmented Tab Bar (Chat / Ranking Trail)
+                  _buildChatHeaderTabs(),
+
+                  // 📱 Swipeable View (Page 0: Chat, Page 1: Ranking Trail)
+                  Expanded(
+                    child: PageView(
+                      controller: _chatTabPageController,
+                      onPageChanged: (index) {
+                        if (mounted && _activeChatTabIndex != index) {
+                          safeSetState(() => _activeChatTabIndex = index);
+                        }
+                      },
+                      children: [
+                        _buildMainChatConversationView(chatMessagesAsync),
+                        ChatRankingTrailWidget(
+                          groupId: widget.groupId,
+                          groupName: widget.groupName,
+                          currentUserId: _currentUserId,
+                          initialMembers: _groupMembers,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatHeaderTabs() {
+    return Container(
+      width: double.infinity,
+      height: 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFF121B22),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1.0,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF070B0E),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white12, width: 0.8),
+        ),
+        child: Row(
+          children: [
+            // Tab 1: Chat
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _chatTabPageController.animateToPage(
+                    0,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: _activeChatTabIndex == 0
+                        ? const Color(0xFFFFD600)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_rounded,
+                        size: 13,
+                        color: _activeChatTabIndex == 0
+                            ? Colors.black
+                            : Colors.white70,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Chat',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: _activeChatTabIndex == 0
+                              ? Colors.black
+                              : Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Tab 2: Ranking Trail
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _chatTabPageController.animateToPage(
+                    1,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: _activeChatTabIndex == 1
+                        ? const Color(0xFFFFD600)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _activeChatTabIndex == 1 ? '👑' : '🏆',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Ranking Trail',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: _activeChatTabIndex == 1
+                              ? Colors.black
+                              : Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainChatConversationView(
+      AsyncValue<List<ChatMessage>> chatMessagesAsync) {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          Column(
+            children: [
+          if (_isKidMode && !widget.groupId.startsWith('p:'))
+            _buildPocketGangHeaderRibbon()
                     else if (_isEnglishHubGroup)
                       _buildEnglishHubHeaderRibbon()
                     else if (widget.groupId.startsWith('p:'))
@@ -5653,10 +5808,7 @@ Draft: "$draft"''';
                   ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 
   bool _isSameDay(DateTime d1, DateTime d2) {
@@ -8212,7 +8364,7 @@ Draft: "$draft"''';
       ),
     ),
   );
-  }
+}
 
   Widget _buildEmojiPicker() {
     return SizedBox(

@@ -280,8 +280,9 @@ class PocketKidsService {
   }
 
   /// Whether current user can exit Kids Mode back to Adult Mode
-  /// Any user/parent who solves the Parental Gate challenge can return to Adult Mode smoothly!
-  static bool get canExitToAdultAccount => true;
+  /// Pure Kid / Student accounts cannot exit to Adult Mode!
+  /// Only parents who switched from Adult Mode can return to Adult Mode smoothly.
+  static bool get canExitToAdultAccount => !_isPureKidAccount;
 
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;
@@ -1109,7 +1110,7 @@ class PocketKidsService {
             name: kName,
             ageGroup: kAge,
             avatar: kAvatar,
-            isPureKid: accType == 'pure_kid' || accType == 'student',
+            isPureKid: accType == 'pure_kid' || accType == 'student' || accType == 'kid',
           );
           return true;
         } else if (accType == 'adult') {

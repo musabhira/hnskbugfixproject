@@ -85,6 +85,44 @@ class EnglishHubLevelGroupService {
     return 90;
   }
 
+  static final Set<String> _knownHubGroupIds = {
+    'english_hub_all_learners',
+  };
+
+  /// Register an English Hub group ID dynamically into known set
+  static void registerHubGroupId(String? groupId) {
+    if (groupId != null && groupId.isNotEmpty) {
+      _knownHubGroupIds.add(groupId);
+    }
+  }
+
+  /// Check whether a group ID or group Name corresponds to an English Hub group
+  static bool isEnglishHub(String? groupId, {String? groupName}) {
+    if (groupId != null && groupId.isNotEmpty) {
+      if (groupId.startsWith('p:')) return false;
+      final lowerId = groupId.toLowerCase();
+      if (lowerId.contains('english_hub') ||
+          lowerId.contains('english') ||
+          lowerId.contains('hub')) {
+        return true;
+      }
+      if (_knownHubGroupIds.contains(groupId)) {
+        return true;
+      }
+    }
+    if (groupName != null && groupName.isNotEmpty) {
+      final lowerName = groupName.toLowerCase();
+      if (lowerName.contains('english hub') ||
+          lowerName.contains('english learning') ||
+          lowerName.contains('english practice') ||
+          lowerName.contains('english') ||
+          lowerName.contains('hub')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /// 🌟 Returns the VectorAvatarConfig corresponding to the group's highest level.
   static VectorAvatarConfig getEnglishHubAvatarConfig(String groupName, [int? explicitMaxLevel]) {
     final targetLevel = getEnglishHubTargetLevel(groupName, explicitMaxLevel);

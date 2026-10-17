@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/kids_chat_groups_provider.dart';
 import 'whats_app_groups_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 import 'chat_models.dart';
 
@@ -38,9 +39,22 @@ class ChatMessages extends _$ChatMessages {
   String get _conversationsTable => _isKid ? 'kids_conversations' : 'conversations';
   String get _groupsTable => _isKid ? 'kids_groups' : 'groups';
 
+  bool get _isEnglishHubGroup {
+    if (_isKid) return false;
+    if (groupId.startsWith('p:')) return false;
+    final lowerId = groupId.toLowerCase();
+    if (lowerId.contains('english_hub') ||
+        lowerId.contains('english') ||
+        lowerId.contains('hub')) {
+      return true;
+    }
+    return EnglishHubLevelGroupService.isEnglishHub(groupId);
+  }
+
   // Performance optimizations
   static const int _pageSize = 50; // Load 50 messages at a time
   int _currentPage = 0;
+  int _pollCount = 0;
   bool _hasMoreMessages = true;
   bool _isLoadingMore = false;
   bool get hasMoreMessages => _hasMoreMessages;
@@ -209,6 +223,12 @@ class ChatMessages extends _$ChatMessages {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       try {
+        _pollCount++;
+        // Periodic background cleanup for English Hub messages (every ~3 mins)
+        if (_isEnglishHubGroup && _pollCount % 36 == 0) {
+          unawaited(cleanupOldMessages());
+        }
+
         // Fetch latest messages (Page 0)
         final latestMessages = await _fetchMessages(forceLatest: true);
 
@@ -238,8 +258,14 @@ class ChatMessages extends _$ChatMessages {
             }
           }
 
-          final combinedList = combinedMap.values.toList()
+          var combinedList = combinedMap.values.toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          // 🧹 For English Hub: filter out anything older than 35 mins
+          if (_isEnglishHubGroup) {
+            final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
+            combinedList = combinedList.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+          }
 
           // Only update state if content is different
           if (combinedList.length != currentMessages.length ||
@@ -463,10 +489,19 @@ class ChatMessages extends _$ChatMessages {
           .from(isPersonal ? _messagesTable : _groupMessagesTable)
           .select(selectQuery);
 
-      final response = await (isPersonal
-              ? query.or(
-                  'and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)')
-              : query.eq('group_id', actualId))
+      var baseQuery = isPersonal
+          ? query.or(
+              'and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)')
+          : query.eq('group_id', actualId);
+
+      // 🧹 English Hub 15-20 min cloud limit: only fetch messages newer than 20 mins to prevent backlog flood
+      if (_isEnglishHubGroup) {
+        final hubCutoff = DateTime.now().subtract(const Duration(minutes: 20)).toUtc().toIso8601String();
+        baseQuery = baseQuery.gte('created_at', hubCutoff);
+        unawaited(cleanupOldMessages());
+      }
+
+      final response = await baseQuery
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
 
@@ -522,8 +557,14 @@ class ChatMessages extends _$ChatMessages {
         for (var m in remoteMessages) m.id: m,
       };
 
-      final combined = combinedMap.values.toList();
+      var combined = combinedMap.values.toList();
       combined.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      // 🧹 For English Hub, prune messages older than 35 mins from local display
+      if (_isEnglishHubGroup) {
+        final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
+        combined = combined.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+      }
 
       if (isInitial) {
         _saveToCache(combined);
@@ -545,8 +586,12 @@ class ChatMessages extends _$ChatMessages {
     final uid = ref.read(currentUserIdProvider);
 
     try {
-      // Delete from Supabase messages older than 12 hours
-      final cutoffTime = DateTime.now().subtract(const Duration(hours: 12));
+      // 🧹 For English Hub: delete messages older than 15 minutes from Supabase
+      // For other chats: delete messages older than 12 hours
+      final cutoffDuration = _isEnglishHubGroup
+          ? const Duration(minutes: 15)
+          : const Duration(hours: 12);
+      final cutoffTime = DateTime.now().subtract(cutoffDuration).toUtc();
 
       if (isPersonal) {
         if (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId)) {
@@ -566,7 +611,7 @@ class ChatMessages extends _$ChatMessages {
             .lt('created_at', cutoffTime.toIso8601String());
       }
 
-      debugPrint('Supabase 12h cleanup completed for: $groupId');
+      debugPrint('Supabase ${_isEnglishHubGroup ? "15m English Hub" : "12h"} cleanup completed for: $groupId');
     } catch (e) {
       debugPrint('Error during database cleanup: $e');
     }
@@ -1270,15 +1315,26 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
-  // Cache Logic: Persist messages locally for 34h+ history
+  // Cache Logic: Persist messages locally for 34h+ history (or 35m local TTL for English Hub)
   Future<List<ChatMessage>> _loadFromCache() async {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return [];
     final prefix = _isKid ? 'kids_' : 'adult_';
     final cachedData = LocalSyncServer().getCachedMessages(uid, groupId, prefix: prefix);
-    return cachedData
+    final allMessages = cachedData
         .map((m) => ChatMessage.fromJson(Map<String, dynamic>.from(m)))
         .toList();
+
+    if (_isEnglishHubGroup) {
+      final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
+      final validMessages = allMessages.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+      if (validMessages.length < allMessages.length) {
+        unawaited(LocalSyncServer().saveMessages(uid, groupId, validMessages, prefix: prefix));
+      }
+      return validMessages;
+    }
+
+    return allMessages;
   }
 
   Future<void> updateOptimisticMessage(String optimisticId, String fileUrl) async {
@@ -1304,7 +1360,12 @@ class ChatMessages extends _$ChatMessages {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return;
     final prefix = _isKid ? 'kids_' : 'adult_';
-    await LocalSyncServer().saveMessages(uid, groupId, messages, prefix: prefix);
+    List<ChatMessage> toSave = messages;
+    if (_isEnglishHubGroup) {
+      final localCutoff = DateTime.now().subtract(const Duration(minutes: 35));
+      toSave = messages.where((m) => m.createdAt.isAfter(localCutoff)).toList();
+    }
+    await LocalSyncServer().saveMessages(uid, groupId, toSave, prefix: prefix);
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {

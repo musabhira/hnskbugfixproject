@@ -14,13 +14,16 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kid_avatar_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_visit_modal.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -864,6 +867,18 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     return _buildRoadmapHouse(day, worldWidth, unlockedDay);
                   }),
 
+                  // 🏰 Dedicated Home Visit Buttons (Spaced cleanly before the house)
+                  ...List.generate(_totalDays, (index) {
+                    final day = index + 1;
+                    return _buildRoadmapHomeVisit(day, worldWidth, unlockedDay);
+                  }),
+
+                  // 🌟 Prominent Resident Guardian Avatars (User Audio Directive: complete copy of adult avatar system!)
+                  ...List.generate(_totalDays, (index) {
+                    final day = index + 1;
+                    return _buildRoadmapResidentAvatar(day, worldWidth, unlockedDay);
+                  }),
+
                   // 5. Fortress Exam Gates between Day N and Day N+1 (Days 1 to 99)
                   ...List.generate(_totalDays - 1, (index) {
                     final day = index + 1;
@@ -1267,49 +1282,51 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     ),
                   ],
 
-                  // 👨‍👩‍👧 Switch to Adult Mode Button (Parental Gate Protected)
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => _showParentalGate(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF38BDF8),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.25),
-                            blurRadius: 6,
+                  // 👨‍👩‍👧 Switch to Adult Mode Button (Parental Gate Protected - Visible ONLY if parent switched, hidden for pure kid accounts!)
+                  if (PocketKidsService.canExitToAdultAccount) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _showParentalGate(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.swap_horiz_rounded,
-                            color: Color(0xFF38BDF8),
-                            size: 16,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFF38BDF8),
+                            width: 1.2,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'ADULT',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.25),
+                              blurRadius: 6,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.swap_horiz_rounded,
+                              color: Color(0xFF38BDF8),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'ADULT',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -1878,10 +1895,6 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     // Placed above the stepping stone node with clear breathing room
     final double houseTop = nodeY - houseHeight - 74.0;
 
-    final mate = (day - 1 < PocketKidsRobotsData.robotsAndHomies.length)
-        ? PocketKidsRobotsData.robotsAndHomies[day - 1]
-        : null;
-
     return Positioned(
       left: houseLeft,
       top: houseTop,
@@ -1951,67 +1964,57 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                 ),
               ),
 
-              // 4. Resident Vector Avatar Buddy Badge (Tappable Collectible Card!)
-              if (mate != null)
-                Positioned(
-                  top: -8,
-                  right: 4,
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      PocketKidAvatarCardDialog.show(
-                        context,
-                        day: day,
-                        mateId: mate.id,
-                        mateName: mate.name,
-                        mateBio: mate.bio,
-                      );
-                    },
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isUnlocked ? const Color(0xFFFFD700) : Colors.white24,
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            blurRadius: 8,
-                          ),
-                        ],
+              // 4. Resident Vector Avatar Buddy Badge (Tappable Collectible Card - Full Parity with Adult Avatar System!)
+              Positioned(
+                top: -8,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () => _openAvatarCard(day),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ClipOval(
-                            child: VectorAvatarWidget(
-                              config: PocketKidsAvatarSystem.getAvatarConfigForDay(day),
-                              size: 20,
-                              showAura: false,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'DAY $day',
-                            style: GoogleFonts.outfit(
-                              color: isUnlocked
-                                  ? const Color(0xFFFFD700)
-                                  : Colors.white70,
-                              fontSize: 9.0,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isUnlocked ? const Color(0xFFFFD700) : Colors.white24,
+                        width: 1.4,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipOval(
+                          child: VectorAvatarWidget(
+                            config: VectorAvatarConfig.getEvolutionAvatarForStage(day),
+                            size: 20,
+                            showAura: false,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'DAY $day',
+                          style: GoogleFonts.outfit(
+                            color: isUnlocked
+                                ? const Color(0xFFFFD700)
+                                : Colors.white70,
+                            fontSize: 9.0,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
+              ),
 
               // 5. Standing House Label Banner
               Positioned(
@@ -2136,6 +2139,184 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             child: Text('Close', style: GoogleFonts.outfit(color: Colors.white54)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _openAvatarCard(int day) {
+    HapticFeedback.selectionClick();
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    final config = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+    NftTradingCardDialog.show(
+      context,
+      day: day,
+      config: config,
+      userId: uid,
+      isOwner: true,
+    );
+  }
+
+  /// 🏰 Dedicated Home Visit Button (Spaced cleanly before the house - Full Parity with Adult Mode)
+  Widget _buildRoadmapHomeVisit(int day, double screenWidth, int currentDay) {
+    if (day > _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+
+    const double btnWidth = 110.0;
+    final double btnLeft = (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
+    final double btnTop = nodeY - 65.0;
+
+    return Positioned(
+      left: btnLeft,
+      top: btnTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+          PocketHomeVisitModal.show(
+            context,
+            day: day,
+            userCurrentDay: currentDay,
+            currentUserId: uid,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🏰', style: TextStyle(fontSize: 10)),
+              const SizedBox(width: 4),
+              Text(
+                'HOME VISIT',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF38BDF8),
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🌟 Prominent Resident Guardian Avatar along the mountain path (User Audio Directive!)
+  /// Placed with larger size (52px) after Home Visit with generous breathing room.
+  /// Tapping it opens the Holographic NFT Collectible Trading Card Dialog (Complete copy of adult avatar system!).
+  Widget _buildRoadmapResidentAvatar(int day, double screenWidth, int currentDay) {
+    if (day > _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+    final isUnlocked = day <= currentDay;
+    final isCompleted = day < currentDay;
+    final isCurrent = (day == currentDay);
+
+    const double avatarSize = 52.0;
+    final double avatarLeft = (nodeX - (avatarSize / 2.0)).clamp(12.0, screenWidth - avatarSize - 12.0);
+    // Placed after Home Visit with clean breathing space (User Audio Directive!)
+    final double avatarTop = nodeY - 130.0;
+
+    final config = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+
+    final borderColor = isCurrent
+        ? const Color(0xFFFFFC00)
+        : (isCompleted
+            ? const Color(0xFF10B981)
+            : (isUnlocked ? const Color(0xFF38BDF8) : Colors.white24));
+
+    return Positioned(
+      left: avatarLeft,
+      top: avatarTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _openAvatarCard(day),
+        child: SizedBox(
+          width: avatarSize,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: avatarSize,
+                height: avatarSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      borderColor,
+                      borderColor.withValues(alpha: 0.5),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: borderColor.withValues(alpha: isCurrent ? 0.45 : 0.25),
+                      blurRadius: isCurrent ? 14 : 8,
+                      spreadRadius: isCurrent ? 2 : 1,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(2.4),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF0F172A),
+                  ),
+                  child: ClipOval(
+                    child: VectorAvatarWidget(
+                      config: config,
+                      size: avatarSize - 5,
+                      showAura: isCurrent || isCompleted,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              // Floating Day / Guardian Pill Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: borderColor.withValues(alpha: 0.8),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'DAY $day',
+                  style: GoogleFonts.outfit(
+                    color: borderColor,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
