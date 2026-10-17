@@ -84,6 +84,9 @@ class PocketRankingService {
 
   /// 🔍 Get cached global rank for any user if available
   static int? getCachedGlobalRank(String userId) {
+    if (userId == _supabase.auth.currentUser?.id && _cachedMyGlobalRank != null) {
+      return _cachedMyGlobalRank;
+    }
     if (_cachedGlobalTop.isEmpty) return null;
     final idx = _cachedGlobalTop.indexWhere((u) => u.userId == userId);
     if (idx != -1) return _cachedGlobalTop[idx].globalRank;
@@ -412,18 +415,56 @@ class PocketRankingService {
   }
 
   /// 🌐 Calculate exact Global Rank for a specific real human user
+  /// Takes into account ALL humans from database + ALL robots, exactly matching fetchGlobalLeaderboard!
   static Future<int> fetchUserGlobalRank(
     String userId, [
     int? userScore,
     bool isUnder17 = false,
   ]) async {
-    if (_cachedMyGlobalRank != null &&
-        userId == _supabase.auth.currentUser?.id &&
-        userScore == null) {
-      return _cachedMyGlobalRank!;
+    // 1. If global leaderboard is already cached, search for the user directly
+    if (_cachedGlobalTop.isNotEmpty && _cachedIsUnder17 == isUnder17) {
+      final idx = _cachedGlobalTop.indexWhere((u) => u.userId == userId);
+      if (idx != -1) {
+        final r = _cachedGlobalTop[idx].globalRank;
+        if (userId == _supabase.auth.currentUser?.id) {
+          _cachedMyGlobalRank = r;
+        }
+        return r;
+      }
     }
 
+    // 2. If cache is empty, load it to synchronize all users accurately
+    if (_cachedGlobalTop.isEmpty) {
+      try {
+        final leaderboard = await fetchGlobalLeaderboard(isUnder17: isUnder17);
+        final idx = leaderboard.indexWhere((u) => u.userId == userId);
+        if (idx != -1) {
+          final r = leaderboard[idx].globalRank;
+          if (userId == _supabase.auth.currentUser?.id) {
+            _cachedMyGlobalRank = r;
+          }
+          return r;
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('Leaderboard fetch note for rank: $e');
+      }
+    }
+
+    // 3. Fallback: unified calculation = (humans above) + (robots above) + 1
     int score = userScore ?? await PocketFortressDefenseService.getUnifiedScore(userId);
+
+    final robotsEnabled = await isRobotsEnabledInWorldRanking();
+    int robotCountAbove = 0;
+    if (robotsEnabled) {
+      final allRobots = PocketRobotService.getAll90Robots();
+      for (final robot in allRobots) {
+        final dynLvl = robot.level;
+        final rScore = dynLvl * 420 + (robot.id.hashCode.abs() % 130);
+        if (rScore > score) {
+          robotCountAbove++;
+        }
+      }
+    }
 
     try {
       final countRes = await _supabase
@@ -431,13 +472,13 @@ class PocketRankingService {
           .count(CountOption.exact)
           .gt('pocket_score', score);
 
-      final rank = countRes + 1;
+      final rank = countRes + robotCountAbove + 1;
       if (userId == _supabase.auth.currentUser?.id) {
         _cachedMyGlobalRank = rank;
       }
       return rank;
     } catch (_) {
-      return 1;
+      return robotCountAbove + 1;
     }
   }
 

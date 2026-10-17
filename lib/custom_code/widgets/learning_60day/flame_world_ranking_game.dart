@@ -471,14 +471,26 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
   /// 🏎️ Drive towards the cliff edge of whichever terrace the player is currently on
   void driveForward() {
+    driveDownhill();
+  }
+
+  /// 🏔️ Smoothly drive down the canyon towards the next terrace below (User Audio Directive: "വണ്ടി ഡ്രൈവ് ചെയ്യുന്ന സമയത്ത് ഓട്ടോമാറ്റിക് അടിയിലേക്ക് എത്തണം")
+  void driveDownhill() {
     if (_ledgeNodes.isEmpty) return;
     isFollowingBike = true;
     velocityY = 0.0;
+    _idleDriveTimer = 0.0;
     final currentNode = _ledgeNodes[_bikeNodeIndex];
     if (currentNode.isLeft) {
-      tapDriveRight();
+      // Downhill on left terrace is driving RIGHT towards cliff ramp
+      _isFacingRight = true;
+      _bikeVx = (_bikeVx.abs() < 120.0) ? 220.0 : math.min(380.0, _bikeVx + 110.0);
+      steerInput = 1.0;
     } else {
-      tapDriveLeft();
+      // Downhill on right terrace is driving LEFT towards cliff ramp
+      _isFacingRight = false;
+      _bikeVx = (_bikeVx.abs() < 120.0) ? -220.0 : math.max(-380.0, _bikeVx - 110.0);
+      steerInput = -1.0;
     }
   }
 
@@ -500,22 +512,22 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
   double get _maxScrollY => math.max(0.0, _totalWorldHeight - size.y);
 
   /// 🏔️ Build Alternating Cliff Terraces with Large Architectural Houses
-  /// User Audio Directive: Lower the atmosphere so Rank 1 house roof apex has plenty
-  /// of open headroom & sky and is NOT cut off by top tabs!
+  /// User Audio Directive: "കുറച്ചുകൂടി സ്പേസ് കൊടുത്താൽ ബെറ്റർ ആകും... അവിടെ സ്പേസ് ഇല്ല, വണ്ടി ഇറങ്ങണം"
+  /// Provides spacious 170+ px driving runways on each terrace and deeper canyon drop!
   void _buildWorldNodes() {
     if (size.x <= 0 || size.y <= 0) return;
 
     _ledgeNodes.clear();
 
     final screenW = size.x;
-    // Lower atmosphere: start at 320.0 so Rank 1 house (140px tall) has 180px of clear sky above it!
     const double startOffsetY = 320.0;
-    const double stepY = 270.0; // Ample vertical room for houses & grand arcs
+    const double stepY = 310.0; // Ample vertical room for deep, steep canyon drops!
     double currentY = startOffsetY;
     final totalCount = users.length;
 
-    const double houseW = 185.0;
-    const double houseH = 140.0;
+    // Gracefully scaled house size so the road runway is 3x wider (Audio Directive)
+    const double houseW = 138.0;
+    const double houseH = 108.0;
 
     for (int i = 0; i < users.length; i++) {
       final user = users[i];
@@ -529,14 +541,14 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final double houseY = currentY - houseH - 2.0;
 
       if (isRank1) {
-        // Summit pinnacle plateau
+        // Summit pinnacle plateau: grand and wide
         isLeft = true;
         houseX = (screenW - houseW) / 2.0;
-        ledgeW = math.max(screenW * 0.82, houseX + houseW + 65.0);
+        ledgeW = screenW * 0.94;
       } else {
         isLeft = (i % 2 == 0);
-        houseX = isLeft ? 16.0 : (screenW - houseW - 16.0);
-        ledgeW = math.max(screenW * 0.68, houseW + 65.0);
+        houseX = isLeft ? 14.0 : (screenW - houseW - 14.0);
+        ledgeW = screenW * 0.88; // Wide spacious cliff terrace with 170+ px driving runway!
       }
 
       // Large, detailed architectural house component
@@ -589,10 +601,10 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final vocabData = kCanyonVocabCatalog[i % kCanyonVocabCatalog.length];
       final gemColor = gemColors[i % gemColors.length];
 
-      // 1. Gem along the terrace road
+      // 1. Gem along the wide terrace road runway
       final roadGemX = node.isLeft
-          ? (node.houseX + node.houseW + 36.0)
-          : (node.houseX - 36.0);
+          ? (node.houseX + node.houseW + 55.0)
+          : (node.houseX - 55.0);
       _vocabGems.add(CanyonVocabGem(
         id: i * 2,
         x: roadGemX.clamp(32.0, screenW - 32.0),
@@ -609,7 +621,9 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         final nextNode = _ledgeNodes[i + 1];
         final jumpVocabData = kCanyonVocabCatalog[(i + 7) % kCanyonVocabCatalog.length];
         final startX = node.isLeft ? (node.width - 8.0) : (screenW - node.width + 8.0);
-        final targetX = nextNode.houseX + nextNode.houseW * 0.5;
+        final targetX = nextNode.isLeft
+            ? (nextNode.houseX + nextNode.houseW + 48.0)
+            : (nextNode.houseX - 48.0);
         final midJumpX = (startX + targetX) / 2.0;
         final midJumpY = (node.y + nextNode.y) / 2.0 - 55.0; // peak of parabolic leap!
         _vocabGems.add(CanyonVocabGem(
@@ -625,14 +639,15 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       }
     }
 
-    // Reset dirt bike at Rank 1 summit terrace
+    // Reset dirt bike at Rank 1 summit terrace road
     if (_ledgeNodes.isNotEmpty) {
       _bikeNodeIndex = 0;
       _arcProgress = 0.0;
       _isAirborne = false;
       final summit = _ledgeNodes[0];
-      _bikeX = summit.houseX + summit.houseW * 0.5;
+      _bikeX = summit.houseX + summit.houseW + 36.0;
       _bikeY = summit.y - 14.0;
+      _isFacingRight = true;
     }
   }
 
@@ -847,12 +862,15 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         ));
       }
 
-      // Terrace boundary checks & Cliff Edge Auto-Jump (User Audio Directive: "ജമ്പ് ഒന്നും കൊടുക്കണ്ട, അടിയിലേക്ക് വരിക")
+      // Terrace boundary checks & Cliff Edge Auto-Jump (User Audio Directive: "വണ്ടി ഡ്രൈവ് ചെയ്യുന്ന സമയത്ത് ഓട്ടോമാറ്റിക് അടിയിലേക്ക് എത്തണം")
       final screenW = size.x;
       if (currentNode.isLeft) {
-        if (_bikeX < 24.0) {
-          _bikeX = 24.0;
-          _bikeVx = 0.0;
+        // Mountain back wall on the left - soft spring cushion and turn towards downhill trail!
+        if (_bikeX < 26.0) {
+          _bikeX = 26.0;
+          _bikeVx = 140.0;
+          _isFacingRight = true;
+          _triggerBikeWallCushion(_bikeX, _bikeY);
         }
         // Reached right cliff edge -> Launch into canyon!
         final cliffX = currentNode.width - 14.0;
@@ -860,9 +878,12 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
           _launchBikeJump();
         }
       } else {
-        if (_bikeX > screenW - 24.0) {
-          _bikeX = screenW - 24.0;
-          _bikeVx = 0.0;
+        // Mountain back wall on the right - soft spring cushion and turn towards downhill trail!
+        if (_bikeX > screenW - 26.0) {
+          _bikeX = screenW - 26.0;
+          _bikeVx = -140.0;
+          _isFacingRight = false;
+          _triggerBikeWallCushion(_bikeX, _bikeY);
         }
         // Reached left cliff edge -> Launch into canyon!
         final cliffX = (screenW - currentNode.width) + 14.0;
@@ -882,8 +903,10 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       final startX = fromNode.isLeft ? fromNode.width - 8.0 : (size.x - fromNode.width + 8.0);
       final startY = fromNode.y - 14.0;
 
-      // Destination landing spot in front of cottage
-      final targetX = toNode.houseX + toNode.houseW * 0.5;
+      // Destination landing spot on the spacious terrace road runway (NOT in cottage!)
+      final targetX = toNode.isLeft
+          ? (toNode.houseX + toNode.houseW + 48.0)
+          : (toNode.houseX - 48.0);
       final targetY = toNode.y - 14.0;
 
       final t = _arcProgress.clamp(0.0, 1.0);
@@ -919,18 +942,34 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         _suspensionBounce = 0.58; // Spring compression bounce
         _bikeTilt = 0.0;
 
-        // Auto-turn around to face along the new terrace road (User Audio Directive!)
+        // Auto-turn and accelerate along the new terrace road down the canyon!
         if (toNode.isLeft) {
           _isFacingRight = true;
-          _bikeVx = 120.0;
+          _bikeVx = 160.0;
         } else {
           _isFacingRight = false;
-          _bikeVx = -120.0;
+          _bikeVx = -160.0;
         }
         currentCombo++;
 
         _triggerBikeLandingImpact(targetX, targetY);
       }
+    }
+  }
+
+  void _triggerBikeWallCushion(double x, double y) {
+    HapticFeedback.lightImpact();
+    final rng = math.Random();
+    for (int i = 0; i < 4; i++) {
+      final angle = rng.nextDouble() * math.pi;
+      _sparks.add(_BounceSpark(
+        x: x,
+        y: y,
+        vx: math.cos(angle) * 35.0,
+        vy: -math.sin(angle) * 35.0,
+        size: 2.4,
+        color: const Color(0xFF38BDF8),
+      ));
     }
   }
 
@@ -1329,13 +1368,13 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         canvas.drawLine(Offset(startX - 6, ly - 21), Offset(screenW, ly - 21), highlightPaint);
       }
 
-      // 3. Lush Pine Trees
+      // 3. Lush Pine Trees (placed at mountain edge behind house to keep canyon runway open)
       if (isLeft) {
-        _drawPineTree(canvas, node.houseX + node.houseW + 18.0, ly - 18.0, 34.0, 58.0);
-        _drawPineTree(canvas, node.houseX + node.houseW + 36.0, ly - 18.0, 26.0, 44.0);
+        _drawPineTree(canvas, node.houseX + 18.0, ly - 18.0, 26.0, 48.0);
+        _drawPineTree(canvas, node.houseX - 4.0, ly - 18.0, 20.0, 36.0);
       } else {
-        _drawPineTree(canvas, node.houseX - 28.0, ly - 18.0, 34.0, 58.0);
-        _drawPineTree(canvas, node.houseX - 44.0, ly - 18.0, 26.0, 44.0);
+        _drawPineTree(canvas, node.houseX + node.houseW - 18.0, ly - 18.0, 26.0, 48.0);
+        _drawPineTree(canvas, node.houseX + node.houseW + 4.0, ly - 18.0, 20.0, 36.0);
       }
 
       // 4. Wooden Fence & Vintage Street Lamp
@@ -1697,8 +1736,8 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       ..color = const Color(0xFF92400E)
       ..strokeWidth = 2.6;
 
-    final startX = node.isLeft ? node.houseX + node.houseW + 2 : node.houseX - 52;
-    final endX = node.isLeft ? node.houseX + node.houseW + 54 : node.houseX - 2;
+    final startX = node.isLeft ? (node.houseX - 8.0) : (node.houseX + node.houseW + 2.0);
+    final endX = node.isLeft ? (node.houseX + 18.0) : (node.houseX + node.houseW + 28.0);
     final ly = node.y;
 
     canvas.drawLine(Offset(startX, ly - 14), Offset(endX, ly - 14), railPaint);
@@ -1717,8 +1756,8 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
   void _renderStreetLamp(Canvas canvas, WorldRankingLedgeNode node) {
     final lampX = node.isLeft
-        ? node.houseX + node.houseW + 62.0
-        : node.houseX - 62.0;
+        ? node.houseX + node.houseW + 10.0
+        : node.houseX - 10.0;
     final ly = node.y;
 
     final polePaint = Paint()
@@ -1760,7 +1799,9 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
 
       final startX = from.isLeft ? from.width - 8.0 : (size.x - from.width + 8.0);
       final startY = from.y - 14.0;
-      final endX = to.houseX + to.houseW * 0.5;
+      final endX = to.isLeft
+          ? (to.houseX + to.houseW + 48.0)
+          : (to.houseX - 48.0);
       final endY = to.y - 14.0;
 
       final peakHeight = math.max(75.0, (endY - startY).abs() * 0.32 + 55.0);

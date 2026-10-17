@@ -206,6 +206,9 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     // Sort descending by score
     members.sort((a, b) => b.pocketScore.compareTo(a.pocketScore));
 
+    // Pre-warm global leaderboard to ensure true global rank across humans + robots
+    await PocketRankingService.fetchGlobalLeaderboard();
+
     // Resolve Global Rank for both members in 1-on-1 chat
     final finalized = <ChatTrailMember>[];
     for (int i = 0; i < members.length; i++) {
@@ -236,6 +239,9 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     final supabase = SupaFlow.client;
     final List<ChatTrailMember> members = [];
 
+    // Pre-warm global leaderboard once so all group members resolve in memory (Audio Directive)
+    await PocketRankingService.fetchGlobalLeaderboard();
+
     // Use initialMembers if provided and not empty
     List rawMembers = widget.initialMembers ?? [];
     if (rawMembers.isEmpty) {
@@ -249,6 +255,11 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     for (final m in rawMembers) {
       final uid = m['user_id']?.toString() ?? '';
       if (uid.isEmpty) continue;
+
+      // 🚫 Exclude robots from group ranking list (User Audio Directive: "റോബോട്ടുകളുടെ റാങ്കിംഗ് ഗ്ലോബൽ റാങ്കിൽ മാത്രം കാണിച്ചാൽ മതി. ഗ്രൂപ്പിന്റെ റാങ്കിംഗിൽ നിന്ന് ഒഴിവാക്കിയിട്ട്...")
+      if (PocketRobotService.isRobotId(uid) || PocketPresidentService.isPresidentId(uid)) {
+        continue;
+      }
 
       dynamic profileData = m['profile'];
       if (profileData is List && profileData.isNotEmpty) {
@@ -278,7 +289,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
       ));
     }
 
-    // If English Hub group has few members, complement with active learners from profile table
+    // If English Hub group has few members, complement with active human learners from profile table
     final isHub = widget.groupId.toLowerCase().contains('english') ||
         widget.groupId.toLowerCase().contains('hub');
     if (members.length < 3 && isHub) {
@@ -291,7 +302,12 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
 
         for (final row in (topLearners as List)) {
           final uid = row['user_id']?.toString() ?? '';
-          if (uid.isEmpty || members.any((m) => m.userId == uid)) continue;
+          if (uid.isEmpty ||
+              PocketRobotService.isRobotId(uid) ||
+              PocketPresidentService.isPresidentId(uid) ||
+              members.any((m) => m.userId == uid)) {
+            continue;
+          }
           final name = row['name']?.toString() ?? 'Learner';
           final score = (row['pocket_score'] as num?)?.toInt() ??
               (row['learning_points'] as num?)?.toInt() ??
@@ -319,7 +335,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     // Sort descending by Pocket Score
     members.sort((a, b) => b.pocketScore.compareTo(a.pocketScore));
 
-    // Resolve Global Rank for each member
+    // Resolve exact Global Rank for each member (against global humans + robots)
     final finalized = <ChatTrailMember>[];
     for (int i = 0; i < members.length; i++) {
       final m = members[i];

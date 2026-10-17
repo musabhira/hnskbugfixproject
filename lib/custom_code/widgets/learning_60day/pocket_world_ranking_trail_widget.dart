@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -166,8 +167,26 @@ class _PocketWorldRankingTrailWidgetState
     }
   }
 
+  Timer? _descentHoldTimer;
+
+  void _startDescentHold() {
+    HapticFeedback.mediumImpact();
+    _flameGame?.driveDownhill();
+    _descentHoldTimer?.cancel();
+    _descentHoldTimer = Timer.periodic(const Duration(milliseconds: 140), (_) {
+      _flameGame?.driveDownhill();
+    });
+  }
+
+  void _stopDescentHold() {
+    _descentHoldTimer?.cancel();
+    _descentHoldTimer = null;
+    _flameGame?.steerNeutral();
+  }
+
   @override
   void dispose() {
+    _descentHoldTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -480,16 +499,19 @@ class _PocketWorldRankingTrailWidgetState
     );
   }
 
-  /// 🕹️ On-Screen Arrow Controls (◀ / ▶) for steering the dirt bike (No jump button needed, auto-jumps at cliff edge)
+  /// 🕹️ On-Screen Dirt Bike Controls:
+  /// - ◀ TURN / REVERSE
+  /// - 🚀 DRIVE DOWN ⏩ (Continuous descent down canyon terraces, jumps and loops!)
+  /// - TURN ▶ / FORWARD
   Widget _buildSteeringControls() {
     return Positioned(
       bottom: 74,
-      left: 18,
-      right: 18,
+      left: 14,
+      right: 14,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ◀ Left Drive Button
+          // ◀ Left Steer / Turn Button
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -499,31 +521,31 @@ class _PocketWorldRankingTrailWidgetState
             onTapUp: (_) => _flameGame?.steerNeutral(),
             onTapCancel: () => _flameGame?.steerNeutral(),
             child: Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+                color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white24, width: 1.2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.arrow_back_rounded, color: Color(0xFFFFD700), size: 24),
-                  const SizedBox(width: 5),
+                  Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
+                  SizedBox(width: 4),
                   Text(
-                    '◀ DRIVE',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                    'TURN',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -532,7 +554,59 @@ class _PocketWorldRankingTrailWidgetState
             ),
           ),
 
-          // ▶ Right Drive Button
+          const SizedBox(width: 10),
+
+          // 🏍️ Large Golden "DRIVE DOWN" Button (User Audio Directive: "വണ്ടി ഡ്രൈവ് ചെയ്യുന്ന സമയത്ത് ഓട്ടോമാറ്റിക് അടിയിലേക്ക് എത്തണം")
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _flameGame?.driveDownhill();
+              },
+              onTapDown: (_) => _startDescentHold(),
+              onTapUp: (_) => _stopDescentHold(),
+              onTapCancel: () => _stopDescentHold(),
+              child: Container(
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.two_wheeler_rounded, color: Color(0xFF0F172A), size: 24),
+                    const SizedBox(width: 7),
+                    Text(
+                      'DRIVE DOWN ⏩',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF0F172A),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // ▶ Right Steer / Turn Button
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -542,34 +616,34 @@ class _PocketWorldRankingTrailWidgetState
             onTapUp: (_) => _flameGame?.steerNeutral(),
             onTapCancel: () => _flameGame?.steerNeutral(),
             child: Container(
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+                color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white24, width: 1.2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'DRIVE ▶',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
+                    'TURN',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  const Icon(Icons.arrow_forward_rounded, color: Color(0xFFFFD700), size: 24),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 20),
                 ],
               ),
             ),
