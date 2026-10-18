@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -173,7 +174,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 15, vsync: this);
+    _tabController = TabController(length: 16, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -721,6 +722,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.track_changes_rounded),
                 text: '🎯 Targets & Curricula'),
+            Tab(
+                icon: Icon(Icons.sports_esports_rounded),
+                text: '🎮 Games Hub'),
           ],
         ),
       ),
@@ -742,6 +746,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildRobotsTab(),
           _buildMonetizationTab(),
           _buildCurriculumTargetsTab(),
+          const AdminGamesHubWidget(),
         ],
       ),
     );
