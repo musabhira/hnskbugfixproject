@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import '../pocket_fortress_defense_service.dart';
+import '../curriculum_data/pocket_90day_sentence_builder_data.dart';
 
 /// 🧩 Sentence Challenge Question Model
 class SentenceChallengeRound {
@@ -153,25 +154,30 @@ class SentenceBuilderFlameGame extends FlameGame {
 /// 🎮 Full-Screen Sentence Builder Interactive Page
 /// Recreates screenshots 3 and 4 with high fidelity, Flame animations,
 /// realistic touch feedback, sound effects, and Malayalam audio translation.
-class PocketDay1SentenceBuilderGamePage extends StatefulWidget {
+/// Expanded across ALL 90 DAYS with progressive difficulty!
+class PocketSentenceBuilderGamePage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
-  const PocketDay1SentenceBuilderGamePage({
+  const PocketSentenceBuilderGamePage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
     return Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PocketDay1SentenceBuilderGamePage(
+        builder: (_) => PocketSentenceBuilderGamePage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -180,12 +186,15 @@ class PocketDay1SentenceBuilderGamePage extends StatefulWidget {
   }
 
   @override
-  State<PocketDay1SentenceBuilderGamePage> createState() =>
-      _PocketDay1SentenceBuilderGamePageState();
+  State<PocketSentenceBuilderGamePage> createState() =>
+      _PocketSentenceBuilderGamePageState();
 }
 
-class _PocketDay1SentenceBuilderGamePageState
-    extends State<PocketDay1SentenceBuilderGamePage>
+/// Backward compatibility alias for Day 1
+typedef PocketDay1SentenceBuilderGamePage = PocketSentenceBuilderGamePage;
+
+class _PocketSentenceBuilderGamePageState
+    extends State<PocketSentenceBuilderGamePage>
     with TickerProviderStateMixin {
   late final SentenceBuilderFlameGame _flameGame;
   final FlutterTts _flutterTts = FlutterTts();
@@ -207,106 +216,8 @@ class _PocketDay1SentenceBuilderGamePageState
   // Hint state
   String? _hintHighlightedTileId;
 
-  // 6 Curated High-Utility Conversational Rounds (Screenshots 3 & 4 match exactly!)
-  late final List<SentenceChallengeRound> _rounds = [
-    // Round 1: Screenshot 4 exact sentence!
-    SentenceChallengeRound(
-      id: 1,
-      sentence: "Who asked you ?",
-      translationMl: "ആരാണ് നിന്നോട് ചോദിച്ചത്?",
-      hint: "Start with the question word 'Who'",
-      tiles: const [
-        SentenceTileData(id: 'r1_who', word: 'Who', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r1_asked', word: 'asked', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r1_you', word: 'you', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r1_q', word: '?', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-
-    // Round 2: Screenshot 3 exact sentence!
-    SentenceChallengeRound(
-      id: 2,
-      sentence: "Did you put the milk in the refrigerator ?",
-      translationMl: "നീ പാല് ഫ്രിഡ്ജിൽ വെച്ചോ?",
-      hint: "Question starts with past auxiliary 'Did'",
-      tiles: const [
-        SentenceTileData(id: 'r2_did', word: 'Did', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r2_you', word: 'you', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r2_put', word: 'put', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r2_the1', word: 'the', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r2_milk', word: 'milk', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r2_in', word: 'in', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r2_the2', word: 'the', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r2_fridge', word: 'refrigerator', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r2_q', word: '?', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-
-    // Round 3: Practical daily inquiry
-    SentenceChallengeRound(
-      id: 3,
-      sentence: "What are you doing today ?",
-      translationMl: "നീ ഇന്ന് എന്താണ് ചെയ്യുന്നത്?",
-      hint: "Start with 'What'",
-      tiles: const [
-        SentenceTileData(id: 'r3_what', word: 'What', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r3_are', word: 'are', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r3_you', word: 'you', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r3_doing', word: 'doing', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r3_today', word: 'today', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r3_q', word: '?', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-
-    // Round 4: Polite request
-    SentenceChallengeRound(
-      id: 4,
-      sentence: "Can you help me please ?",
-      translationMl: "എന്നെ ഒന്നു സഹായിക്കാമോ?",
-      hint: "Start with modal verb 'Can'",
-      tiles: const [
-        SentenceTileData(id: 'r4_can', word: 'Can', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r4_you', word: 'you', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r4_help', word: 'help', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r4_me', word: 'me', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r4_please', word: 'please', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r4_q', word: '?', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-
-    // Round 5: Past question
-    SentenceChallengeRound(
-      id: 5,
-      sentence: "Where did you go yesterday ?",
-      translationMl: "നീ ഇന്നലെ എവിടെയാണ് പോയത്?",
-      hint: "Start with question word 'Where'",
-      tiles: const [
-        SentenceTileData(id: 'r5_where', word: 'Where', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r5_did', word: 'did', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r5_you', word: 'you', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r5_go', word: 'go', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r5_yesterday', word: 'yesterday', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r5_q', word: '?', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-
-    // Round 6: Motivation & Fluency Declaration
-    SentenceChallengeRound(
-      id: 6,
-      sentence: "I want to speak English fluently .",
-      translationMl: "എനിക്ക് നന്നായി ഇംഗ്ലീഷ് സംസാരിക്കണം.",
-      hint: "Start with subject 'I'",
-      tiles: const [
-        SentenceTileData(id: 'r6_i', word: 'I', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r6_want', word: 'want', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r6_to', word: 'to', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r6_speak', word: 'speak', colorType: SentenceTileColor.cyan),
-        SentenceTileData(id: 'r6_english', word: 'English', colorType: SentenceTileColor.magenta),
-        SentenceTileData(id: 'r6_fluently', word: 'fluently', colorType: SentenceTileColor.green),
-        SentenceTileData(id: 'r6_dot', word: '.', colorType: SentenceTileColor.cyan),
-      ],
-    ),
-  ];
+  // 90-Day Progressive Sentence Rounds (Loaded dynamically with 0 duplicates!)
+  late final List<SentenceChallengeRound> _rounds;
 
   @override
   void initState() {
@@ -319,6 +230,7 @@ class _PocketDay1SentenceBuilderGamePageState
       duration: const Duration(milliseconds: 400),
     );
 
+    _rounds = Pocket90DaySentenceBuilderData.getSentencesForDay(widget.day);
     _loadRound(_currentRoundIdx);
   }
 
@@ -510,7 +422,7 @@ class _PocketDay1SentenceBuilderGamePageState
   Future<void> _showAllCompletedDialog() async {
     final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_1_step_2_done', true);
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
     await PocketFortressDefenseService.recordTrainingPoints(30, uid);
 
     widget.onStepFinished?.call(2);
@@ -531,7 +443,7 @@ class _PocketDay1SentenceBuilderGamePageState
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Sentence Builder Mastered!',
+                'Day ${widget.day} Sentence Builder Mastered!',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -546,7 +458,7 @@ class _PocketDay1SentenceBuilderGamePageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Brilliant job! You completed all 6 sentence building rounds with native grammar order.',
+              'Brilliant job! You completed all ${_rounds.length} sentence building rounds with native grammar order.',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
             ),
             const SizedBox(height: 12),
@@ -700,12 +612,16 @@ class _PocketDay1SentenceBuilderGamePageState
             icon: const Icon(Icons.close_rounded, color: Colors.white, size: 36),
           ),
 
-          // Beginner title + progress indicator dots
+          // Difficulty title + progress indicator dots
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Beginner',
+                widget.day <= 15
+                    ? 'Beginner • Day ${widget.day}'
+                    : (widget.day <= 50
+                        ? 'Intermediate • Day ${widget.day}'
+                        : 'Advanced • Day ${widget.day}'),
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF00E5FF),
                   fontWeight: FontWeight.bold,

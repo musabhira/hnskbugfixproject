@@ -668,8 +668,6 @@ class Day1Curriculum {
   // 1. STEPS (100% JSON-Driven from Day1CurriculumJsonData)
   // -------------------------------------------------------------
   static List<Day1StepModel> getSteps([Day1Track? track, int day = 1]) {
-    final currentTrack = track ?? Day1Track.middle;
-
     final cachedDay = PocketDayCurriculumService.getCachedDay(day) ?? (day == 1 ? Day1CurriculumJsonData.rawMap : null);
     if (cachedDay != null && cachedDay['steps'] != null) {
         final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
@@ -683,8 +681,8 @@ class Day1Curriculum {
           var icon = map['icon']?.toString() ?? '📚';
           var gameType = map['gameType']?.toString() ?? 'generic';
 
-          // Step 3 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
-          if (stepNum == 3 && day > 1) {
+          // Step 5 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
+          if (stepNum == 5 && day > 1) {
             final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
               (g) => g.day == day && g.gameIndex == 1,
               orElse: () => DayGameSpec(
@@ -705,7 +703,7 @@ class Day1Curriculum {
             descMl = gameSpec.descriptionMl;
             icon = gameSpec.emoji;
             gameType = 'game_arena';
-          } else if (stepNum == 3 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
+          } else if (stepNum == 5 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
             final targetObjects = (map['targetObjects'] as List?)?.map((e) => e.toString()).toList() ?? [];
             final nounsList = (cachedDay['vocabulary']?['nouns'] as List?)?.cast<Map<String, dynamic>>() ?? [];
             final nounMeaningMap = {
@@ -778,8 +776,8 @@ class Day1Curriculum {
             };
           }
 
-          // Step 2 on Day 1: Flame Sentence Builder Game (User Audio Directive!)
-          if (day == 1 && stepNum == 2) {
+          // Step 2 on ALL DAYS (1 to 90): Flame Sentence Builder Game (User Audio Directive!)
+          if (stepNum == 2) {
             titleEn = '🧩 Sentence Builder Game (Flame Engine)';
             titleMl = '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)';
             descEn = 'Assemble conversational English sentences with interactive Flame engine touch tiles!';
@@ -788,8 +786,8 @@ class Day1Curriculum {
             gameType = 'flame_sentence_builder';
           }
 
-          // Step 3 on Day 1: Essential Words & Spelling Challenge (User Audio Directive!)
-          if (day == 1 && stepNum == 3) {
+          // Step 3 on ALL DAYS (1 to 90): Essential Words & Spelling Challenge (User Audio Directive!)
+          if (stepNum == 3) {
             titleEn = '👂 Essential Words & Spelling Challenge';
             titleMl = '👂 എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്';
             descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
@@ -798,8 +796,18 @@ class Day1Curriculum {
             gameType = 'essential_spelling';
           }
 
-          // Step 4 on Days 2 to 90: Spoken English Conversational Chat (User Audio Directive!)
+          // Step 4 on Days 2 to 90: Core Vocabulary Vault / Open World Drive
           if (day > 1 && stepNum == 4) {
+            titleEn = '📚 Core Vocabulary Vault';
+            titleMl = '📚 പ്രധാന വാക്കുകൾ';
+            descEn = 'Master 10 progressive high-utility English words for Day $day!';
+            descMl = 'ദിവസം $day ലെ പ്രധാന വാക്കുകൾ പഠിക്കുക!';
+            icon = '📚';
+            gameType = 'vocab_quest';
+          }
+
+          // Step 6 on Days 1 to 90: Spoken English Conversational Chat
+          if (stepNum == 6) {
             titleEn = '🎙️ Spoken English Conversational Chat';
             titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
             descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
@@ -808,25 +816,8 @@ class Day1Curriculum {
             gameType = 'spoken_chat';
           }
 
-          // Step 6 on Days 2 to 90: Spoken Vocal Gym
-          if (day > 1 && stepNum == 6) {
-            titleEn = '🎙️ Spoken English Vocal Gym';
-            titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
-            descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
-            descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പ്രാക്ടീസ് ചെയ്യുക!';
-            icon = '🎙️';
-            gameType = 'speech_analyzer';
-
-            map['challenges'] = synthesizeSpokenWorkoutChallenges(
-              track: currentTrack,
-              day: day,
-              dayData: cachedDay,
-              existingStepData: map,
-            );
-          }
-
-          // Step 8 on Day 1: English Hub Community Chat (User Audio Directive!)
-          if (day == 1 && stepNum == 8) {
+          // Step 8 on ALL DAYS (1 to 90): English Hub Community Chat (User Audio Directive!)
+          if (stepNum == 8) {
             titleEn = '💬 English Hub Community Chat';
             titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
             descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
@@ -835,18 +826,18 @@ class Day1Curriculum {
             gameType = 'group_chat_action';
           }
 
-          // Step 9 on Day 1: House 1 Defense Shield Command (User Audio Directive!)
-          if (day == 1 && stepNum == 9) {
-            titleEn = '🛡️ House 1 Defense Shield Command';
-            titleMl = '🛡️ ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-            descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield House 1 from rival attacks!';
-            descMl = 'ഹൗസ് 1 സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+          // Step 9 on ALL DAYS (1 to 90): House Defense Shield Command (User Audio Directive!)
+          if (stepNum == 9) {
+            titleEn = '🛡️ House Defense Shield Command';
+            titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+            descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
+            descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
             icon = '🛡️';
             gameType = 'house_defense_chat';
           }
 
-          // Step 10 on Day 1: PocketTalk 4-Day Pact & Peer Practice
-          if (day == 1 && stepNum == 10) {
+          // Step 10 on ALL DAYS (1 to 90): PocketTalk 4-Day Pact & Peer Practice
+          if (stepNum == 10) {
             titleEn = '📞 Poketalk: 4-Day Spoken Pact';
             titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
             descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
@@ -855,40 +846,14 @@ class Day1Curriculum {
             gameType = 'pocket_talk_action';
           }
 
-          // Step 11 on Day 1: House Attack Quest: Raid Rival Citadel (Available from Day 1!)
-          if (day == 1 && stepNum == 11) {
+          // Step 11 on ALL DAYS (1 to 90): House Attack Quest: Raid Rival Citadel
+          if (stepNum == 11) {
             titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
             titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-            descEn = 'Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!';
-            descMl = 'ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!';
-            icon = '⚔️';
-            gameType = 'house_attack_quest';
-          }
-
-          // Steps 7, 8, 9 on Days 2 to 90:
-          if (day > 1 && stepNum == 7) {
-            titleEn = '🛡️ House Defense Shield Command';
-            titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-            descEn = 'Equip defense questions with CyberCat to shield your estate!';
-            descMl = 'വീട് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് സജ്ജമാക്കുക!';
-            icon = '🛡️';
-            gameType = 'house_defense_chat';
-          }
-          if (day > 1 && stepNum == 8) {
-            titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-            titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-            descEn = 'Raid a rival citadel, answer defense questions, and breach shields!';
+            descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
             descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
             icon = '⚔️';
             gameType = 'house_attack_quest';
-          }
-          if (day > 1 && stepNum == 9) {
-            titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-            titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-            descEn = 'Swipe learner cards and connect for live practice!';
-            descMl = 'പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-            icon = '📞';
-            gameType = 'pocket_talk_action';
           }
 
           return Day1StepModel(
@@ -915,8 +880,38 @@ class Day1Curriculum {
       var descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
       var icon = map['icon']?.toString() ?? '📚';
       var gameType = map['gameType']?.toString() ?? 'generic';
-      // Step 3 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
-      if (stepNum == 3 && day > 1) {
+      // Step 2 on ALL DAYS (1 to 90): Flame Sentence Builder Game (User Audio Directive!)
+      if (stepNum == 2) {
+        titleEn = '🧩 Sentence Builder Game (Flame Engine)';
+        titleMl = '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)';
+        descEn = 'Assemble conversational English sentences with interactive Flame engine touch tiles!';
+        descMl = 'ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
+        icon = '🧩';
+        gameType = 'flame_sentence_builder';
+      }
+
+      // Step 3 on ALL DAYS (1 to 90): Essential Words & Spelling Challenge (User Audio Directive!)
+      if (stepNum == 3) {
+        titleEn = '👂 Essential Words & Spelling Challenge';
+        titleMl = '👂 എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്';
+        descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
+        descMl = 'ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക, തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക!';
+        icon = '👂';
+        gameType = 'essential_spelling';
+      }
+
+      // Step 4 on Days 2 to 90: Core Vocabulary Vault
+      if (day > 1 && stepNum == 4) {
+        titleEn = '📚 Core Vocabulary Vault';
+        titleMl = '📚 പ്രധാന വാക്കുകൾ';
+        descEn = 'Master 10 progressive high-utility English words for Day $day!';
+        descMl = 'ദിവസം $day ലെ പ്രധാന വാക്കുകൾ പഠിക്കുക!';
+        icon = '📚';
+        gameType = 'vocab_quest';
+      }
+
+      // Step 5 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
+      if (stepNum == 5 && day > 1) {
         final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
           (g) => g.day == day && g.gameIndex == 1,
           orElse: () => DayGameSpec(
@@ -939,8 +934,8 @@ class Day1Curriculum {
         gameType = 'game_arena';
       }
 
-      // Step 4 on Days 1 to 90: Spoken English
-      if (stepNum == 4) {
+      // Step 6 on Days 1 to 90: Spoken English Conversational Chat
+      if (stepNum == 6) {
         titleEn = '🎙️ Spoken English Conversational Chat';
         titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
         descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
@@ -949,33 +944,33 @@ class Day1Curriculum {
         gameType = 'spoken_chat';
       }
 
-      // Day 1: Step 6 is English Hub, Step 7 is House Defense
-      if (stepNum == 6) {
+      // Step 8 on ALL DAYS (1 to 90): English Hub Community Chat (User Audio Directive!)
+      if (stepNum == 8) {
         titleEn = '💬 English Hub Community Chat';
         titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
         descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
         descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
         icon = '💬';
         gameType = 'group_chat_action';
-      } else if (stepNum == 7) {
-        titleEn = '🛡️ House 1 Defense Shield Command';
-        titleMl = '🛡️ ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-        descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield House 1 from rival attacks!';
-        descMl = 'ഹൗസ് 1 സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+      } else if (stepNum == 9) {
+        titleEn = '🛡️ House Defense Shield Command';
+        titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+        descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
+        descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
         icon = '🛡️';
         gameType = 'house_defense_chat';
-      } else if (stepNum == 8) {
+      } else if (stepNum == 10) {
         titleEn = '📞 Poketalk: 4-Day Spoken Pact';
         titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
         descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
         descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
         icon = '📞';
         gameType = 'pocket_talk_action';
-      } else if (stepNum == 9) {
+      } else if (stepNum == 11) {
         titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
         titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-        descEn = 'Raid a rival citadel (Level 12-15+), shuffle targets, answer defense questions, and breach their shields for Pocket Score!';
-        descMl = 'ലെവൽ 12-15+ വീടുകളെ അറ്റാക്ക് ചെയ്യുക, ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി ഷീൽഡ് ഭേദിച്ച് പോക്കറ്റ് സ്കോർ നേടുക!';
+        descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
+        descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
         icon = '⚔️';
         gameType = 'house_attack_quest';
       }

@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 import '../pocket_fortress_defense_service.dart';
+import '../pocket_90day_vocab_curriculum.dart';
 
 /// 📖 Essential Word Item Model
 class EssentialWordModel {
@@ -53,25 +54,29 @@ class LetterTileItem {
 ///    - Dedicated arcade sound effects (tile pop, correct snap chime, error buzz, victory fanfare).
 ///    - Interactive controls: Audio Replay 👂, Backspace ⌫, Shuffle 🔄, Clear 🗑️.
 ///    - Score ring, floating avatar mascot, and XP reward animations.
-class PocketDay1EssentialSpellingPage extends StatefulWidget {
+class PocketEssentialSpellingPage extends StatefulWidget {
+  final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
-  const PocketDay1EssentialSpellingPage({
+  const PocketEssentialSpellingPage({
     super.key,
+    this.day = 1,
     this.userId,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
     return Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PocketDay1EssentialSpellingPage(
+        builder: (_) => PocketEssentialSpellingPage(
+          day: day,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -80,21 +85,27 @@ class PocketDay1EssentialSpellingPage extends StatefulWidget {
   }
 
   @override
-  State<PocketDay1EssentialSpellingPage> createState() =>
-      _PocketDay1EssentialSpellingPageState();
+  State<PocketEssentialSpellingPage> createState() =>
+      _PocketEssentialSpellingPageState();
 }
 
-class _PocketDay1EssentialSpellingPageState
-    extends State<PocketDay1EssentialSpellingPage>
+/// Backward compatibility alias for Day 1
+typedef PocketDay1EssentialSpellingPage = PocketEssentialSpellingPage;
+
+class _PocketEssentialSpellingPageState
+    extends State<PocketEssentialSpellingPage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _flutterTts = FlutterTts();
 
   // Mode: false = Study & Listen Mode, true = Gamified Spelling Exam Mode
   bool _isPracticeExamMode = false;
 
-  // 8 High-Utility Core Words (User Audio Directive: fast, does, first, five, found, gave...)
+  // Dynamic words list for the current day
+  late final List<EssentialWordModel> _words;
+
+  // 8 High-Utility Core Words for Day 1
   // Notice: meaningMl contains ONLY clean Malayalam so the exam NEVER leaks the answer!
-  final List<EssentialWordModel> _words = const [
+  static const List<EssentialWordModel> _day1DefaultWords = [
     EssentialWordModel(
       word: 'does',
       phonetic: '/dʌz/',
@@ -196,6 +207,37 @@ class _PocketDay1EssentialSpellingPageState
   void initState() {
     super.initState();
     _initTts();
+
+    // Dynamically populate words for widget.day with 0 duplicates!
+    if (widget.day == 1) {
+      _words = _day1DefaultWords;
+    } else {
+      final vocabItems = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
+      final List<EssentialWordModel> loadedWords = [];
+      const palette = [
+        Color(0xFF10B981), // Emerald
+        Color(0xFFEF4444), // Crimson
+        Color(0xFF38BDF8), // Sky Blue
+        Color(0xFFA855F7), // Purple
+        Color(0xFFF59E0B), // Amber
+        Color(0xFFF97316), // Coral Orange
+        Color(0xFF06B6D4), // Cyan
+        Color(0xFF6366F1), // Indigo
+      ];
+      for (int i = 0; i < vocabItems.length && loadedWords.length < 8; i++) {
+        final item = vocabItems[i];
+        final cleanWord = item.word.trim().toLowerCase();
+        if (cleanWord.length < 3) continue; // Filter short words
+        loadedWords.add(EssentialWordModel(
+          word: cleanWord,
+          phonetic: item.phonetic,
+          color: palette[loadedWords.length % palette.length],
+          meaningMl: item.malayalamMeaning,
+          exampleSentence: item.exampleSentence,
+        ));
+      }
+      _words = loadedWords.isNotEmpty ? loadedWords : _day1DefaultWords;
+    }
 
     _shakeAnimController = AnimationController(
       vsync: this,
@@ -537,7 +579,7 @@ class _PocketDay1EssentialSpellingPageState
     _examTimer?.cancel();
     final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_1_step_3_done', true);
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
     await PocketFortressDefenseService.recordTrainingPoints(30, uid);
 
     widget.onStepFinished?.call(3);
@@ -558,7 +600,7 @@ class _PocketDay1EssentialSpellingPageState
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Spelling Mastery Complete!',
+                'Day ${widget.day} Spelling Mastery Complete!',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -573,7 +615,7 @@ class _PocketDay1EssentialSpellingPageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Superb work! You listened to and mastered all 8 essential core words with perfect spelling.',
+              'Superb work! You listened to and mastered all ${_words.length} essential core words with perfect spelling.',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -731,7 +773,9 @@ class _PocketDay1EssentialSpellingPageState
                   ],
                 ),
                 child: Text(
-                  _isPracticeExamMode ? 'SPELLING CHALLENGE 🎮' : 'ESSENTIAL WORDS 👂',
+                  _isPracticeExamMode
+                      ? 'DAY ${widget.day} • SPELLING EXAM 🎮'
+                      : 'DAY ${widget.day} • ESSENTIAL WORDS 👂',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -744,7 +788,7 @@ class _PocketDay1EssentialSpellingPageState
               Text(
                 _isPracticeExamMode
                     ? 'Word ${_examQuestionIndex + 1} of ${_words.length}'
-                    : 'Listen & Learn (8 Words)',
+                    : 'Listen & Learn (${_words.length} Words)',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
