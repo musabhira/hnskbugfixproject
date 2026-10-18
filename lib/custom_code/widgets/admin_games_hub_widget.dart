@@ -1200,7 +1200,7 @@ class _AdminGamesHubWidgetState extends State<AdminGamesHubWidget> {
     );
 
     // =========================================================================
-    // 3. 20 DAYS 40 MULTI-GENRE ARCADE GAMES
+    // 3. 90 DAYS 180 MULTI-GENRE FLAME ARCADE GAMES (FLAME 2D OPEN-WORLD)
     // =========================================================================
 
     for (final spec in Pocket20Days40GamesRegistry.allGames) {
@@ -1208,10 +1208,10 @@ class _AdminGamesHubWidgetState extends State<AdminGamesHubWidget> {
         AdminGameItem(
           id: 'arcade_day_${spec.day}_g${spec.gameIndex}',
           title: 'Day ${spec.day}: ${spec.title}',
-          subtitle: 'Genre: ${spec.genre.name.toUpperCase()} (Day ${spec.day} Game ${spec.gameIndex})',
+          subtitle: 'Flame 2D: ${spec.genre.name.toUpperCase()} (Day ${spec.day} Game ${spec.gameIndex})',
           emoji: spec.emoji,
           category: 'Arcade',
-          engineBadge: spec.genre.name.toUpperCase(),
+          engineBadge: 'Flame 2D',
           primaryColor: const Color(0xFF00E5FF),
           descriptionEn: '${spec.descriptionEn} • Target: ${spec.englishTarget}',
           descriptionMl: spec.descriptionMl,
