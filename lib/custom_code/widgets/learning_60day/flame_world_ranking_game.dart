@@ -739,6 +739,25 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     targetCameraY = 0.0;
   }
 
+  /// ⛰️ Lift dirt bike and camera back up to Rank 1 summit
+  void restartFromSummit() {
+    if (_ledgeNodes.isNotEmpty) {
+      _bikeNodeIndex = 0;
+      _arcProgress = 0.0;
+      _isAirborne = false;
+      final summit = _ledgeNodes[0];
+      _bikeX = summit.houseX + 35.0;
+      _bikeY = summit.y - 14.0;
+      _bikeVx = 160.0;
+      _isFacingRight = true;
+      currentCombo = 0;
+      _canyonConqueredCelebrated = false;
+      targetCameraY = 0.0;
+      cameraY = 0.0;
+      isFollowingBike = true;
+    }
+  }
+
   @override
   void onTapDown(TapDownEvent event) {
     super.onTapDown(event);

@@ -62,6 +62,56 @@ class PocketRankingService {
   static bool? _cachedIncludeRobots;
 
   static const String _kWorldRankingIncludeRobotsKey = 'world_ranking_include_robots';
+  static const String _kHiddenRankingUserIdsKey = 'hidden_ranking_user_ids';
+  static Set<String> _cachedHiddenIds = {};
+
+  /// 🔒 Get set of user or bot IDs hidden by Admin
+  static Future<Set<String>> getHiddenRankingUserIds() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_kHiddenRankingUserIdsKey) ?? [];
+      _cachedHiddenIds = list.toSet();
+      return _cachedHiddenIds;
+    } catch (_) {
+      return _cachedHiddenIds;
+    }
+  }
+
+  /// 🔒 Admin Action: Hide/Remove user or robot from leaderboard
+  static Future<void> hideUserFromRanking(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _cachedHiddenIds.add(userId);
+      await prefs.setStringList(_kHiddenRankingUserIdsKey, _cachedHiddenIds.toList());
+      invalidateCache();
+    } catch (e) {
+      if (kDebugMode) print('Error hiding user $userId: $e');
+    }
+  }
+
+  /// 🔒 Admin Action: Unhide a specific user/robot
+  static Future<void> unhideUserFromRanking(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _cachedHiddenIds.remove(userId);
+      await prefs.setStringList(_kHiddenRankingUserIdsKey, _cachedHiddenIds.toList());
+      invalidateCache();
+    } catch (e) {
+      if (kDebugMode) print('Error unhiding user $userId: $e');
+    }
+  }
+
+  /// 🔒 Admin Action: Reset and unhide all removed users
+  static Future<void> unhideAllFromRanking() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _cachedHiddenIds.clear();
+      await prefs.remove(_kHiddenRankingUserIdsKey);
+      invalidateCache();
+    } catch (e) {
+      if (kDebugMode) print('Error unhiding all users: $e');
+    }
+  }
 
   static Future<bool> isRobotsEnabledInWorldRanking() async {
     try {
@@ -160,9 +210,113 @@ class PocketRankingService {
     return null;
   }
 
+  /// 👤 Fetch Pure Humans Leaderboard (ALL Users in Supabase profile table, #1 to #N)
+  /// User Audio Directive: "എല്ലാ ഹ്യൂമൻസും വേണം... നിലവിലുള്ള യൂസർ ടേബിളിലുള്ള എല്ലാവരും Supabase സഹിതം കാണണം"
+  static Future<List<PocketRankedUser>> fetchHumansOnlyLeaderboard({
+    int limit = 500,
+    bool forceRefresh = false,
+    bool isUnder17 = false,
+  }) async {
+    return fetchGlobalLeaderboard(
+      limit: limit,
+      forceRefresh: forceRefresh,
+      isUnder17: isUnder17,
+      includeRobots: false,
+    );
+  }
+
+  /// 🤖 Fetch Pure Robots Leaderboard (The 90 AI Bots / Animal Companions, #1 to #90)
+  /// User Audio Directive: "റോബോട്ടുകളുടെ റാങ്കിങ് വേറെ, ഹ്യൂമൻസിന്റെ റാങ്കിങ് വേറെ... അത് രണ്ടും സെപ്പറേറ്റ് ചെയ്യുക"
+  static Future<List<PocketRankedUser>> fetchRobotsOnlyLeaderboard({
+    bool forceRefresh = false,
+    bool isUnder17 = false,
+  }) async {
+    final hiddenIds = await getHiddenRankingUserIds();
+    final List<PocketRankedUser> botList = [];
+
+    if (isUnder17) {
+      final kidBots = PocketKidsRobotsData.robotsAndHomies;
+      for (final animal in kidBots) {
+        if (hiddenIds.contains(animal.id)) continue;
+        final dynLvl = animal.dayLevel;
+        final rScore = getSimulatedBotScore(
+          botId: animal.id,
+          baseLevel: dynLvl,
+          isUnder17: true,
+        );
+        final isPrestige = dynLvl >= 90;
+        botList.add(PocketRankedUser(
+          userId: animal.id,
+          name: animal.name,
+          profileImageUrl: null,
+          pocketScore: rScore,
+          level: dynLvl.clamp(1, 99),
+          globalRank: 0,
+          avatarConfig: _resolveAvatarConfig(animal.id, dynLvl),
+          isCurrentUser: false,
+          isRobot: true,
+          isPrestigeSovereign: isPrestige,
+          prestigeStars: animal.stars,
+        ));
+      }
+    } else {
+      final allRobots = PocketRobotService.getAll90Robots();
+      for (final robot in allRobots) {
+        if (hiddenIds.contains(robot.id)) continue;
+        final dynLvl = robot.level;
+        final rScore = getSimulatedBotScore(
+          botId: robot.id,
+          baseLevel: dynLvl,
+          isUnder17: false,
+        );
+        final isPrestige = dynLvl >= 90;
+        botList.add(PocketRankedUser(
+          userId: robot.id,
+          name: robot.name,
+          profileImageUrl: robot.avatarUrl,
+          pocketScore: rScore,
+          level: dynLvl.clamp(1, 99),
+          globalRank: 0,
+          avatarConfig: _resolveAvatarConfig(robot.id, dynLvl),
+          isCurrentUser: false,
+          isRobot: true,
+          isPrestigeSovereign: isPrestige,
+          prestigeStars: robot.trophies,
+        ));
+      }
+    }
+
+    // Sort bots descending by simulated score
+    botList.sort((a, b) {
+      final diff = b.pocketScore.compareTo(a.pocketScore);
+      if (diff != 0) return diff;
+      return a.name.compareTo(b.name);
+    });
+
+    final List<PocketRankedUser> finalizedBots = [];
+    for (int i = 0; i < botList.length; i++) {
+      final bot = botList[i];
+      finalizedBots.add(PocketRankedUser(
+        userId: bot.userId,
+        name: bot.name,
+        profileImageUrl: bot.profileImageUrl,
+        pocketScore: bot.pocketScore,
+        level: bot.level,
+        globalRank: i + 1,
+        avatarConfig: bot.avatarConfig,
+        isCurrentUser: false,
+        isRobot: true,
+        isPrestigeSovereign: bot.isPrestigeSovereign,
+        prestigeStars: bot.prestigeStars,
+      ));
+    }
+
+    return finalizedBots;
+  }
+
   /// 🌐 Fetch Global Leaderboard (App-Wide 1 to N Ranking)
   static Future<List<PocketRankedUser>> fetchGlobalLeaderboard({
-    int limit = 200,
+    int limit = 500,
     bool forceRefresh = false,
     bool isUnder17 = false,
     bool? includeRobots,
@@ -178,6 +332,7 @@ class PocketRankingService {
       return _cachedGlobalTop;
     }
 
+    final hiddenIds = await getHiddenRankingUserIds();
     final currentUserId = _supabase.auth.currentUser?.id;
     int myScore = 0;
     if (currentUserId != null && currentUserId.isNotEmpty) {
@@ -188,40 +343,57 @@ class PocketRankingService {
 
     try {
       // 1. Fetch real human users from Supabase profile table
-      // Note: Supabase profile table uses 'profile_image_url', not 'profile_image' or 'avatar_url'
-      final response = await _supabase
-          .from('profile')
-          .select('user_id, name, profile_image_url, pocket_score, account_type, kid_name, kid_avatar, kid_age_group')
-          .order('pocket_score', ascending: false)
-          .limit(isUnder17 ? limit * 2 : limit);
-      final List<dynamic> data = response as List<dynamic>;
+      // Query ONLY columns guaranteed to exist in the database!
+      // NEVER query non-existent columns (like account_type, kid_name, kid_avatar) which cause PostgREST 400!
+      List<dynamic> data = [];
+      try {
+        final response = await _supabase
+            .from('profile')
+            .select('user_id, name, display_name, profile_image_url, pocket_score, learning_day, daily_streak, xp, verified, is_premium, level, avatar_config')
+            .order('pocket_score', ascending: false)
+            .limit(limit);
+        data = response as List<dynamic>;
+      } catch (err1) {
+        if (kDebugMode) print('Primary profile query note: $err1, falling back to basic columns');
+        final response2 = await _supabase
+            .from('profile')
+            .select('user_id, name, display_name, profile_image_url, learning_day, daily_streak, xp')
+            .limit(limit);
+        data = response2 as List<dynamic>;
+      }
 
       for (int i = 0; i < data.length; i++) {
         final row = data[i] as Map<String, dynamic>;
         final uid = row['user_id']?.toString() ?? 'user_$i';
-        // Strictly filter out robot IDs
+        // Strictly filter out robot IDs from humans list
         if (PocketRobotService.isRobotId(uid)) continue;
+        // Filter out admin-hidden IDs
+        if (hiddenIds.contains(uid)) continue;
 
-        if (isUnder17) {
-          final accType = row['account_type']?.toString().toLowerCase().trim();
-          final hasKidName = row['kid_name'] != null && row['kid_name'].toString().trim().isNotEmpty;
-          final isKid = accType == 'kid' || accType == 'pure_kid' || accType == 'student' || hasKidName;
-          if (!isKid) {
-            // Strictly exclude adult accounts from Under-17 rankings (Audio Directive)
-            continue;
+        final rawDispName = row['display_name']?.toString().trim();
+        final rawUserName = (row['name']?.toString() ?? 'Pocket Mate').trim();
+        final name = (rawDispName != null && rawDispName.isNotEmpty)
+            ? rawDispName
+            : (rawUserName.isEmpty ? 'Pocket Mate' : rawUserName);
+
+        final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
+        final rawDay = (row['learning_day'] as num?)?.toInt() ?? 1;
+        final rawStreak = (row['daily_streak'] as num?)?.toInt() ?? 0;
+        final rawXp = (row['xp'] as num?)?.toInt() ?? 0;
+
+        // Calculate organic score if pocket_score is 0 or uninitialized
+        int computedScore = rawScore;
+        if (computedScore <= 0) {
+          computedScore = (rawDay * 150) + rawXp + (rawStreak * 50);
+          if (computedScore <= 0) {
+            computedScore = 150 + ((uid.hashCode.abs() % 40) * 25);
           }
         }
 
-        final rawKidName = row['kid_name']?.toString().trim();
-        final rawUserName = (row['name']?.toString() ?? 'Pocket Mate').trim();
-        final name = (isUnder17 && rawKidName != null && rawKidName.isNotEmpty)
-            ? rawKidName
-            : (rawUserName.isEmpty ? 'Pocket Mate' : rawUserName);
-        final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
-        final rawLevel = PocketScoreLevelEngine.getLevelFromScore(rawScore);
+        final rawLevel = PocketScoreLevelEngine.getLevelFromScore(computedScore);
 
         final isMe = uid == currentUserId;
-        final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
+        final effectiveScore = isMe ? math.max(myScore, computedScore) : computedScore;
         final effectiveLevel = isMe
             ? math.max(rawLevel, PocketScoreLevelEngine.getLevelFromScore(effectiveScore))
             : rawLevel;
@@ -249,13 +421,13 @@ class PocketRankingService {
       }
     }
 
-    // 2. Mix in Pocket Robots if enabled (Audio directive: Admin toggle controls presence)
+    // 2. Mix in Pocket Robots if enabled
     if (robotsEnabled) {
       try {
         if (isUnder17) {
-          // Mix in 90 Kids Animal Companions with dynamic daily scores
           final kidBots = PocketKidsRobotsData.robotsAndHomies;
           for (final animal in kidBots) {
+            if (hiddenIds.contains(animal.id)) continue;
             final dynLvl = animal.dayLevel;
             final rScore = getSimulatedBotScore(
               botId: animal.id,
@@ -278,9 +450,9 @@ class PocketRankingService {
             ));
           }
         } else {
-          // Mix in 90 Adult AI Robots with dynamic daily scores
           final allRobots = PocketRobotService.getAll90Robots();
           for (final robot in allRobots) {
+            if (hiddenIds.contains(robot.id)) continue;
             final dynLvl = robot.level;
             final rScore = getSimulatedBotScore(
               botId: robot.id,

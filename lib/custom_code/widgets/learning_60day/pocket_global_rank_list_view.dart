@@ -5,19 +5,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
-/// 🏅 Minimal High-Performance Global Rank Leaderboard
+/// 🏅 Global Rank Leaderboard with Dedicated Humans vs Robots Tabs
 /// User Audio Directives:
-/// - "ഒരു ടാബും കൂടി ആഡ് ചെയ്യുക... വേൾഡ് റാങ്ക് പോലെ ഒരു ടാബും കൂടി ആഡ് ചെയ്യുക,
-///   ആ ടാബിൽ മിനിമൽ ടൈൽ ആയിട്ട് ഇങ്ങനെ അടിയിലേക്ക് അടിയിലേക്ക് ഇടുക.
-///   ഫസ്റ്റ് റാങ്ക് ഉള്ള ആള് റാങ്ക് വൺ എന്ന് എഴുതിയിട്ട് ആ പേര്...
-///   ഒരു ലക്ഷം യൂസേഴ്സിന് ഒരു ലക്ഷം റാങ്ക് ഉണ്ടാവും...
-///   ലേസി ലോഡിങ് പ്രോപ്പർ ആയിട്ട് ഇംപ്ലിമെൻ്റ് ചെയ്തിരിക്കണം.
-///   സെർച്ച് ചെയ്യാൻ പറ്റണം, ഡയറക്ട് അതിലേക്ക് കയറിപ്പോകാൻ പറ്റണം.
-///   വേൾഡ് റാങ്ക് അല്ല, ഗ്ലോബൽ റാങ്ക്."
+/// - "എല്ലാ ഹ്യൂമൻസും വേണം... നിലവിലുള്ള യൂസർ ടേബിളിലുള്ള, യൂസർ പ്രൊഫൈലിലുള്ള എല്ലാവരും Supabase സഹിതം കാണണം."
+/// - "റോബോട്ടുകളേയും ഹ്യൂമൻസിനേയും സ്വിച്ച് ചെയ്യിപ്പിക്കാൻ അവിടെ ഒരു ടാബ് കൊടുക്കുക."
+/// - "റോബോട്ടുകൾ വേറെ, റോബോട്ടുകളുടെ റാങ്കിങ് വേറെ, ഹ്യൂമൻസിന്റെ റാങ്കിങ് വേറെ. അത് രണ്ടും സെപ്പറേറ്റ് ചെയ്യുക."
+/// - "അഡ്മിന് അത് ഒഴിവാക്കാനും (delete/hide from ranking) ഓപ്ഷൻ കൊടുക്കുക."
 class PocketGlobalRankListView extends StatefulWidget {
   final String? currentUserId;
   final bool? isUnder17Only;
@@ -34,16 +32,22 @@ class PocketGlobalRankListView extends StatefulWidget {
 }
 
 class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _humansScrollController = ScrollController();
+  final ScrollController _robotsScrollController = ScrollController();
 
-  List<PocketRankedUser> _allRankedUsers = [];
+  late TabController _tabController;
+  int _currentTabIndex = 0; // 0 = Humans, 1 = Robots
+
+  List<PocketRankedUser> _humansList = [];
+  List<PocketRankedUser> _robotsList = [];
+  Set<String> _hiddenUserIds = {};
+
   bool _isLoading = true;
-  bool _isLoadingMore = false;
   String _searchQuery = '';
-  int? _myGlobalRank;
-  int _currentLimit = 150;
+  int? _myHumanRank;
+  bool _isAdmin = false;
 
   String get _effectiveUserId =>
       widget.currentUserId ?? SupaFlow.client.auth.currentUser?.id ?? '';
@@ -54,45 +58,62 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   @override
   void initState() {
     super.initState();
-    _loadInitialRankings();
-    _scrollController.addListener(_onScroll);
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging && mounted) {
+        setState(() {
+          _currentTabIndex = _tabController.index;
+        });
+      }
+    });
+
+    _checkAdminStatus();
+    _loadAllRankings();
   }
 
   @override
   void dispose() {
+    _tabController.dispose();
     _searchController.dispose();
-    _scrollController.dispose();
+    _humansScrollController.dispose();
+    _robotsScrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_searchQuery.isNotEmpty) return;
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 500 &&
-        !_isLoading &&
-        !_isLoadingMore) {
-      _loadMoreRankings();
+  Future<void> _checkAdminStatus() async {
+    final admin = AdminAuthService.isCurrentMasterAdmin() ||
+        await AdminAuthService.canAccessAdmin();
+    if (mounted) {
+      setState(() => _isAdmin = admin);
     }
   }
 
-  Future<void> _loadInitialRankings({bool forceRefresh = false}) async {
+  Future<void> _loadAllRankings({bool forceRefresh = false}) async {
     if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       final isKid = widget.isUnder17Only ?? PocketKidsService.isKidAccount;
-      final robotsEnabled = await PocketRankingService.isRobotsEnabledInWorldRanking();
 
-      final list = await PocketRankingService.fetchGlobalLeaderboard(
-        limit: _currentLimit,
+      // 1. Fetch ALL Real Human Users from Supabase profile table
+      final humans = await PocketRankingService.fetchHumansOnlyLeaderboard(
+        limit: 500,
         forceRefresh: forceRefresh,
         isUnder17: isKid,
-        includeRobots: robotsEnabled,
       );
+
+      // 2. Fetch AI Learner Robots
+      final robots = await PocketRankingService.fetchRobotsOnlyLeaderboard(
+        forceRefresh: forceRefresh,
+        isUnder17: isKid,
+      );
+
+      // 3. Load hidden IDs
+      final hidden = await PocketRankingService.getHiddenRankingUserIds();
 
       int? myRank;
       final myId = _effectiveUserId;
-      for (final u in list) {
+      for (final u in humans) {
         if (u.userId == myId) {
           myRank = u.globalRank;
           break;
@@ -101,49 +122,29 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
 
       if (mounted) {
         setState(() {
-          _allRankedUsers = list;
-          _myGlobalRank = myRank;
+          _humansList = humans;
+          _robotsList = robots;
+          _hiddenUserIds = hidden;
+          _myHumanRank = myRank;
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
   }
 
-  Future<void> _loadMoreRankings() async {
-    if (_isLoadingMore) return;
-    setState(() => _isLoadingMore = true);
-
-    try {
-      _currentLimit += 100;
-      final isKid = widget.isUnder17Only ?? PocketKidsService.isKidAccount;
-      final robotsEnabled = await PocketRankingService.isRobotsEnabledInWorldRanking();
-
-      final list = await PocketRankingService.fetchGlobalLeaderboard(
-        limit: _currentLimit,
-        forceRefresh: false,
-        isUnder17: isKid,
-        includeRobots: robotsEnabled,
-      );
-
-      if (mounted) {
-        setState(() {
-          _allRankedUsers = list;
-          _isLoadingMore = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingMore = false);
-    }
+  List<PocketRankedUser> get _activeList {
+    return _currentTabIndex == 0 ? _humansList : _robotsList;
   }
 
   List<PocketRankedUser> get _filteredUsers {
-    if (_searchQuery.isEmpty) return _allRankedUsers;
+    final list = _activeList;
+    if (_searchQuery.isEmpty) return list;
     final q = _searchQuery.toLowerCase().trim();
-    return _allRankedUsers.where((u) {
+    return list.where((u) {
       final nameMatches = u.name.toLowerCase().contains(q);
       final rankStr = u.globalRank.toString();
       final rankMatches = rankStr == q || '#$rankStr' == q;
@@ -153,22 +154,148 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   }
 
   void _scrollToMyRank() {
-    if (_myGlobalRank == null || _filteredUsers.isEmpty) return;
-    final index = _filteredUsers.indexWhere((u) => u.globalRank == _myGlobalRank);
+    if (_myHumanRank == null || _humansList.isEmpty) return;
+    if (_currentTabIndex != 0) {
+      _tabController.animateTo(0);
+      setState(() => _currentTabIndex = 0);
+    }
+    final index = _humansList.indexWhere((u) => u.globalRank == _myHumanRank);
     if (index != -1) {
       HapticFeedback.mediumImpact();
       const double itemHeight = 68.0;
       final targetOffset = (index * itemHeight).clamp(
         0.0,
-        _scrollController.position.maxScrollExtent,
+        _humansScrollController.position.maxScrollExtent,
       );
-      _scrollController.animateTo(
+      _humansScrollController.animateTo(
         targetOffset,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
       );
     }
   }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // ADMIN DELETION / HIDING ACTIONS
+  // ───────────────────────────────────────────────────────────────────────────
+
+  void _promptAdminDelete(PocketRankedUser user) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
+            const SizedBox(width: 8),
+            Text(
+              'Remove from Ranking?',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'As Master Admin, do you want to remove "${user.name}" (${user.isRobot ? "🤖 Robot" : "👤 Human"} #Rank ${user.globalRank}) from the public leaderboard?',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'This entry will be hidden immediately and ranks will recalculate. You can unhide all from the admin ribbon anytime.',
+              style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white60)),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.delete_forever_rounded, size: 16, color: Colors.white),
+            label: Text(
+              'Remove / Hide',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              HapticFeedback.heavyImpact();
+              await PocketRankingService.hideUserFromRanking(user.userId);
+              await _loadAllRankings(forceRefresh: true);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: const Color(0xFF1E293B),
+                    content: Text(
+                      'Removed "${user.name}" from Leaderboard.',
+                      style: GoogleFonts.outfit(color: const Color(0xFF38BDF8)),
+                    ),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _promptAdminResetHidden() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Unhide All Entries?',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'This will restore all ${_hiddenUserIds.length} hidden users and robots back to the ranking tables.',
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              HapticFeedback.mediumImpact();
+              await PocketRankingService.unhideAllFromRanking();
+              await _loadAllRankings(forceRefresh: true);
+            },
+            child: Text('Restore All', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // UI BUILD
+  // ───────────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -181,13 +308,20 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         children: [
           Column(
             children: [
-              // 1. Search Bar Header
+              // 1. Two-Tab Segmented Switcher (Humans vs Robots)
+              _buildTabsHeader(),
+
+              // 2. Admin Hidden Alert Ribbon (if any hidden)
+              if (_isAdmin && _hiddenUserIds.isNotEmpty)
+                _buildAdminHiddenRibbon(),
+
+              // 3. Search Bar Header
               _buildSearchBar(),
 
-              // 2. Rankings Header Info Ribbon
+              // 4. Rankings Header Info Ribbon
               _buildRankingHeaderRibbon(),
 
-              // 3. Lazy Loaded Minimal Leaderboard List
+              // 5. Lazy Loaded Minimal Leaderboard List
               Expanded(
                 child: _isLoading
                     ? const Center(
@@ -197,39 +331,26 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: () => _loadInitialRankings(forceRefresh: true),
+                        onRefresh: () => _loadAllRankings(forceRefresh: true),
                         color: const Color(0xFFFFD700),
                         backgroundColor: const Color(0xFF0F172A),
                         child: filtered.isEmpty
                             ? _buildEmptyState()
                             : ListView.builder(
-                                controller: _scrollController,
+                                controller: _currentTabIndex == 0
+                                    ? _humansScrollController
+                                    : _robotsScrollController,
                                 physics: const AlwaysScrollableScrollPhysics(
                                   parent: BouncingScrollPhysics(),
                                 ),
-                                itemCount: filtered.length + (_isLoadingMore ? 1 : 0),
+                                itemCount: filtered.length,
                                 padding: const EdgeInsets.only(
                                   top: 6,
-                                  bottom: 84, // Space for sticky bottom card
+                                  bottom: 84, // Space for sticky bottom capsule
                                   left: 12,
                                   right: 12,
                                 ),
                                 itemBuilder: (context, index) {
-                                  if (index >= filtered.length) {
-                                    return const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 20),
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Color(0xFFFFD700),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
                                   final user = filtered[index];
                                   return _buildRankTile(user);
                                 },
@@ -239,8 +360,8 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
             ],
           ),
 
-          // 4. Sticky Bottom "My Global Rank" Floating Capsule
-          if (_myGlobalRank != null && !_isLoading)
+          // 6. Sticky Bottom "Your Global Rank" Floating Capsule (Humans Tab)
+          if (_currentTabIndex == 0 && _myHumanRank != null && !_isLoading)
             Positioned(
               left: 14,
               right: 14,
@@ -252,10 +373,195 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
     );
   }
 
-  /// 🔍 Sleek Search Bar for looking up users or #rank
-  Widget _buildSearchBar() {
+  /// 👥 Segmented Tab Switcher: [ 👤 Humans (269) ] | [ 🤖 Robots (90) ]
+  Widget _buildTabsHeader() {
+    final humanCount = _humansList.length;
+    final robotCount = _robotsList.length;
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+      margin: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          // 👤 Humans Tab
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _tabController.animateTo(0);
+                setState(() => _currentTabIndex = 0);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: _currentTabIndex == 0
+                      ? const LinearGradient(
+                          colors: [Color(0xFF047857), Color(0xFF065F46)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(10),
+                  border: _currentTabIndex == 0
+                      ? Border.all(color: const Color(0xFF10B981), width: 1.2)
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('👤', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Humans',
+                      style: GoogleFonts.outfit(
+                        color: _currentTabIndex == 0 ? Colors.white : Colors.white60,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: _currentTabIndex == 0
+                            ? const Color(0xFF10B981)
+                            : Colors.white12,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        humanCount > 0 ? '$humanCount' : '...',
+                        style: GoogleFonts.outfit(
+                          color: _currentTabIndex == 0 ? Colors.black : Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // 🤖 Robots Tab
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _tabController.animateTo(1);
+                setState(() => _currentTabIndex = 1);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: _currentTabIndex == 1
+                      ? const LinearGradient(
+                          colors: [Color(0xFF4338CA), Color(0xFF312E81)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(10),
+                  border: _currentTabIndex == 1
+                      ? Border.all(color: const Color(0xFF818CF8), width: 1.2)
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('🤖', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Robots',
+                      style: GoogleFonts.outfit(
+                        color: _currentTabIndex == 1 ? Colors.white : Colors.white60,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: _currentTabIndex == 1
+                            ? const Color(0xFF818CF8)
+                            : Colors.white12,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        robotCount > 0 ? '$robotCount' : '90',
+                        style: GoogleFonts.outfit(
+                          color: _currentTabIndex == 1 ? Colors.black : Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🔒 Admin Banner showing hidden user count with Restore All button
+  Widget _buildAdminHiddenRibbon() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 2, 14, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF450A0A),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.security_rounded, size: 14, color: Color(0xFFEF4444)),
+          const SizedBox(width: 6),
+          Text(
+            'Master Admin: ${_hiddenUserIds.length} hidden from rankings',
+            style: GoogleFonts.outfit(color: const Color(0xFFFCA5A5), fontSize: 11),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: _promptAdminResetHidden,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'Reset All',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🔍 Search Bar for looking up users or #rank
+  Widget _buildSearchBar() {
+    final isHumanTab = _currentTabIndex == 0;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 6, 14, 6),
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -263,7 +569,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _searchQuery.isNotEmpty
-              ? const Color(0xFFFFD700)
+              ? (isHumanTab ? const Color(0xFF10B981) : const Color(0xFF818CF8))
               : Colors.white12,
           width: 1.0,
         ),
@@ -277,7 +583,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, color: Color(0xFFFFD700), size: 20),
+          Icon(
+            Icons.search_rounded,
+            color: isHumanTab ? const Color(0xFF10B981) : const Color(0xFF818CF8),
+            size: 20,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -289,7 +599,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 fontWeight: FontWeight.w600,
               ),
               decoration: InputDecoration(
-                hintText: 'Search by player name or #rank (e.g. 1, 42)...',
+                hintText: isHumanTab
+                    ? 'Search real players by name or #rank...'
+                    : 'Search AI robots by name or #rank...',
                 hintStyle: GoogleFonts.outfit(
                   color: Colors.white38,
                   fontSize: 12,
@@ -312,8 +624,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                   color: Colors.white12,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close_rounded,
-                    color: Colors.white70, size: 14),
+                child: const Icon(Icons.close_rounded, color: Colors.white70, size: 14),
               ),
             ),
         ],
@@ -321,8 +632,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
     );
   }
 
-  /// 📊 Header Ribbon showing global rankings header and sorting principle
+  /// 📊 Header Ribbon showing global rankings header
   Widget _buildRankingHeaderRibbon() {
+    final isHumanTab = _currentTabIndex == 0;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -332,16 +644,12 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       ),
       child: Row(
         children: [
-          Text((widget.isUnder17Only ?? PocketKidsService.isKidAccount) ? '🎒' : '🏅', style: const TextStyle(fontSize: 13)),
+          Text(isHumanTab ? '👤' : '🤖', style: const TextStyle(fontSize: 13)),
           const SizedBox(width: 6),
           Text(
-            (widget.isUnder17Only ?? PocketKidsService.isKidAccount)
-                ? 'JUNIOR GLOBAL RANK (UNDER 17)'
-                : 'GLOBAL RANKINGS',
+            isHumanTab ? 'HUMAN GLOBAL RANKINGS' : 'AI ROBOT LEAGUE',
             style: GoogleFonts.outfit(
-              color: (widget.isUnder17Only ?? PocketKidsService.isKidAccount)
-                  ? const Color(0xFF38BDF8)
-                  : const Color(0xFFFFD700),
+              color: isHumanTab ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
               fontWeight: FontWeight.w900,
               fontSize: 11,
               letterSpacing: 0.5,
@@ -361,7 +669,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
     );
   }
 
-  /// 📇 Minimal, High-Speed Leaderboard Tile (Audio Directive: Minimal rank numbers, no box background, no subtitle clutter)
+  /// 📇 Minimal, High-Speed Leaderboard Tile
   Widget _buildRankTile(PocketRankedUser user) {
     final isRank1 = user.globalRank == 1;
     final isRank2 = user.globalRank == 2;
@@ -418,7 +726,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             child: Row(
               children: [
-                // 1. Minimal Rank Number (No heavy background box, responsive)
+                // 1. Minimal Rank Number
                 SizedBox(
                   width: 36,
                   child: Center(
@@ -458,7 +766,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 ),
                 const SizedBox(width: 10),
 
-                // 3. User Details (Minimal without overflowing subtitle)
+                // 3. User Details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,6 +798,24 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                                 'YOU',
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (user.isRobot) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4338CA),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'BOT',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFA5B4FC),
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.w900,
                                 ),
@@ -545,12 +871,25 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                     ],
                   ),
                 ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white24,
-                  size: 13,
-                ),
+
+                // 5. Admin Delete Action Button (Audio Directive: "പിന്നെ അഡ്മിന് അത് ഒഴിവാക്കാനും പറഞ്ഞിരുന്നു")
+                if (_isAdmin && !isMe) ...[
+                  const SizedBox(width: 6),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                    tooltip: 'Admin Remove',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    onPressed: () => _promptAdminDelete(user),
+                  ),
+                ] else ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white24,
+                    size: 13,
+                  ),
+                ],
               ],
             ),
           ),
@@ -559,18 +898,18 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
     );
   }
 
-  /// 🎯 Sticky Bottom Bar for Current User's Global Rank
+  /// 🎯 Sticky Bottom Bar for Current User's Human Rank
   Widget _buildMyGlobalRankBottomCapsule() {
-    final myUser = _allRankedUsers.firstWhere(
-      (u) => u.globalRank == _myGlobalRank,
+    final myUser = _humansList.firstWhere(
+      (u) => u.globalRank == _myHumanRank,
       orElse: () => PocketRankedUser(
         userId: _effectiveUserId,
         name: 'You',
         pocketScore: 0,
         level: 1,
-        globalRank: _myGlobalRank ?? 1,
-        avatarConfig: _allRankedUsers.isNotEmpty
-            ? _allRankedUsers.first.avatarConfig
+        globalRank: _myHumanRank ?? 1,
+        avatarConfig: _humansList.isNotEmpty
+            ? _humansList.first.avatarConfig
             : VectorAvatarConfig.defaultConfig,
         isCurrentUser: true,
       ),
@@ -618,7 +957,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
             ),
             const SizedBox(width: 8),
             Text(
-              'Global Rank #$_myGlobalRank',
+              'Human Rank #$_myHumanRank',
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -658,7 +997,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
           const Text('🔍', style: TextStyle(fontSize: 36)),
           const SizedBox(height: 10),
           Text(
-            'No matching players found',
+            'No matching ${_currentTabIndex == 0 ? "players" : "robots"} found',
             style: GoogleFonts.outfit(
               color: Colors.white70,
               fontSize: 15,

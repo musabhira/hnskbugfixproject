@@ -134,7 +134,7 @@ class _PocketWorldRankingTrailWidgetState
   int? _myUserIndex;
   String _searchQuery = '';
   bool _isUnder17League = false;
-  bool _isRobotsEnabled = true;
+  int _communityFilter = 0; // 0 = All (Humans + Robots), 1 = Humans Only, 2 = Robots Only
   final bool _isPlayMode = true;
   final CanyonAtmosphere _currentAtmosphere = CanyonAtmosphere.auto;
   final bool _isFollowingBall = true;
@@ -149,14 +149,7 @@ class _PocketWorldRankingTrailWidgetState
   void initState() {
     super.initState();
     _isUnder17League = widget.isUnder17Only ?? PocketKidsService.isKidAccount;
-    _initRobotsAndLoadData();
-  }
-
-  Future<void> _initRobotsAndLoadData() async {
-    _isRobotsEnabled = await PocketRankingService.isRobotsEnabledInWorldRanking();
-    if (mounted) {
-      _loadRankingData();
-    }
+    _loadRankingData();
   }
 
   @override
@@ -201,12 +194,28 @@ class _PocketWorldRankingTrailWidgetState
     try {
       List<PocketRankedUser> list;
       if (_isWorldMode) {
-        list = await PocketRankingService.fetchGlobalLeaderboard(
-          limit: 300,
-          forceRefresh: forceRefresh,
-          isUnder17: _isUnder17League,
-          includeRobots: _isRobotsEnabled,
-        );
+        if (_communityFilter == 1) {
+          // Pure Humans League from Supabase
+          list = await PocketRankingService.fetchHumansOnlyLeaderboard(
+            limit: 500,
+            forceRefresh: forceRefresh,
+            isUnder17: _isUnder17League,
+          );
+        } else if (_communityFilter == 2) {
+          // Pure AI Robots League
+          list = await PocketRankingService.fetchRobotsOnlyLeaderboard(
+            forceRefresh: forceRefresh,
+            isUnder17: _isUnder17League,
+          );
+        } else {
+          // All Learners (Humans + Robots)
+          list = await PocketRankingService.fetchGlobalLeaderboard(
+            limit: 500,
+            forceRefresh: forceRefresh,
+            isUnder17: _isUnder17League,
+            includeRobots: true,
+          );
+        }
       } else {
         list = await PocketRankingService.fetchMatesLeaderboard(
           _effectiveUserId,
@@ -214,10 +223,10 @@ class _PocketWorldRankingTrailWidgetState
         );
       }
 
-      // Safe fallback: never let canyon be empty
-      if (list.isEmpty) {
+      // Safe fallback: never let canyon be empty or have only 1 house
+      if (list.length <= 1) {
         list = await PocketRankingService.fetchGlobalLeaderboard(
-          limit: 100,
+          limit: 300,
           forceRefresh: true,
           includeRobots: true,
         );
@@ -242,10 +251,9 @@ class _PocketWorldRankingTrailWidgetState
         _initOrUpdateFlameGame();
       }
     } catch (e) {
-      // Audio directive: Never show blocking error view! Fall back to robots + local user.
       if (kDebugMode) debugPrint('Ranking error, graceful fallback: $e');
       final fallbackList = await PocketRankingService.fetchGlobalLeaderboard(
-        limit: 100,
+        limit: 300,
         forceRefresh: true,
         includeRobots: true,
       );
@@ -339,50 +347,9 @@ class _PocketWorldRankingTrailWidgetState
                           ),
           ),
 
-          // 2. 🔍 Sleek Minimal Expandable Search Icon (Audio directive: small search icon at top corner)
+          // 2. 🎮 Top HUD Bar (Summit Lift, Community Filter Switcher & Search)
           if (!_isLoading)
-            Positioned(
-              top: 10,
-              right: 12,
-              child: _buildFloatingSearch(),
-            ),
-
-          // 🎒 Junior League (Under 17) Pill Banner (User Audio Directive)
-          if (!_isLoading && _isUnder17League)
-            Positioned(
-              top: 10,
-              left: 14,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🎒', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Junior League • Under 17',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildTopHUDBar(),
 
           // 3. 🕹️ On-Screen Steering Arrow Controls (◀ / ▶) for Playable Game Feel (Audio directive)
           if (!_isLoading && _flameGame != null)
@@ -392,6 +359,126 @@ class _PocketWorldRankingTrailWidgetState
           if (!_isLoading && _myUserIndex != null && _rankedUsers.isNotEmpty)
             _buildMinimalFloorButton(),
         ],
+      ),
+    );
+  }
+
+  /// 🎮 Top HUD Bar with Summit Lift, Community Filter Switcher (All/Humans/Robots), and Search
+  Widget _buildTopHUDBar() {
+    return Positioned(
+      top: 10,
+      left: 12,
+      right: 12,
+      child: Row(
+        children: [
+          // ⛰️ Restart from Summit Button
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.heavyImpact();
+              _flameGame?.restartFromSummit();
+            },
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F1B12).withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('⛰️', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Summit',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+
+          // Community Switcher Pills [ All | Humans | Bots ]
+          if (_isWorldMode)
+            Expanded(
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.white24, width: 1.0),
+                ),
+                child: Row(
+                  children: [
+                    _buildPillTab(0, 'All'),
+                    _buildPillTab(1, '👤 Humans'),
+                    _buildPillTab(2, '🤖 Bots'),
+                  ],
+                ),
+              ),
+            )
+          else
+            const Spacer(),
+
+          const SizedBox(width: 6),
+
+          // Search Button
+          _buildFloatingSearch(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPillTab(int index, String label) {
+    final isSelected = _communityFilter == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_communityFilter == index) return;
+          HapticFeedback.selectionClick();
+          setState(() {
+            _communityFilter = index;
+          });
+          _loadRankingData(forceRefresh: false);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (index == 1
+                    ? const Color(0xFF059669)
+                    : (index == 2 ? const Color(0xFF4F46E5) : const Color(0xFFD97706)))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: isSelected ? Colors.white : Colors.white60,
+              fontSize: 10,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ),
     );
   }
