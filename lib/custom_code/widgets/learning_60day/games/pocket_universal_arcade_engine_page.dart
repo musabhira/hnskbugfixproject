@@ -1600,12 +1600,37 @@ class PocketFlameArcadeGame extends FlameGame with TapCallbacks {
 class PocketUniversalArcadeEnginePage extends StatefulWidget {
   final int day;
   final int gameIndex;
+  final DayGameSpec? spec;
+  final VoidCallback? onCompleted;
 
   const PocketUniversalArcadeEnginePage({
     super.key,
     required this.day,
     this.gameIndex = 1,
+    this.spec,
+    this.onCompleted,
   });
+
+  /// Static launch helper for seamless navigation from other widgets
+  static Future<void> launch(
+    BuildContext context, {
+    required int day,
+    int gameIndex = 1,
+    DayGameSpec? spec,
+    VoidCallback? onCompleted,
+  }) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketUniversalArcadeEnginePage(
+          day: day,
+          gameIndex: gameIndex,
+          spec: spec,
+          onCompleted: onCompleted,
+        ),
+      ),
+    );
+  }
 
   @override
   State<PocketUniversalArcadeEnginePage> createState() =>
@@ -1630,7 +1655,7 @@ class _PocketUniversalArcadeEnginePageState
     _initTts();
 
     final all = Pocket20Days40GamesRegistry.allGames;
-    _activeSpec = all.firstWhere(
+    _activeSpec = widget.spec ?? all.firstWhere(
       (s) => s.day == widget.day && s.gameIndex == widget.gameIndex,
       orElse: () => DayGameSpec(
         day: widget.day,
@@ -1675,6 +1700,7 @@ class _PocketUniversalArcadeEnginePageState
           });
           HapticFeedback.heavyImpact();
           _speak('Congratulations! You conquered Day ${widget.day} game!');
+          widget.onCompleted?.call();
         }
       },
     );
