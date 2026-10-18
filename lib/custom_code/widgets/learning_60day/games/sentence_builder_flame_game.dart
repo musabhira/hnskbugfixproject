@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import '../pocket_fortress_defense_service.dart';
 
 /// 🧩 Sentence Challenge Question Model
@@ -378,14 +378,16 @@ class _PocketDay1SentenceBuilderGamePageState
     // Case-sensitive or exact word comparison
     if (tile.word == expectedWord) {
       // ✅ CORRECT TILE!
-      HapticFeedback.lightImpact();
-      SystemSound.play(SystemSoundType.click);
+      PocketGameSfx.instance.playSnapCorrect();
 
       setState(() {
         _remainingTiles.removeWhere((t) => t.id == tile.id);
         _placedTiles.add(tile);
         _hintHighlightedTileId = null;
       });
+
+      // Pronounce the placed word for audio learning
+      _speakText(tile.word);
 
       // Spawn Flame celebration sparkles
       _flameGame.burstWordCelebration(
@@ -405,7 +407,7 @@ class _PocketDay1SentenceBuilderGamePageState
       // User Audio Directive:
       // "തെറ്റായിട്ട് ഇട്ടു കഴിഞ്ഞുകഴിഞ്ഞാൽ വേറെന്തെങ്കിലും സൗണ്ട് കാണിക്കും...
       //  ഫസ്റ്റ് മിൽക്ക് ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ അവിടെ വരില്ല, ജസ്റ്റ് വൈബ്രേറ്റ് / ആടും, ഗെയിം ഫീൽ!"
-      HapticFeedback.heavyImpact();
+      PocketGameSfx.instance.playErrorBuzz();
 
       setState(() {
         _shakingTileId = tile.id;
@@ -438,7 +440,7 @@ class _PocketDay1SentenceBuilderGamePageState
   /// Remove a tile from the top assembled area back to the bottom word bank
   void _onPlacedTileTapped(SentenceTileData tile) {
     if (_isRoundCompleted) return;
-    HapticFeedback.selectionClick();
+    PocketGameSfx.instance.playTilePop();
     setState(() {
       _placedTiles.removeWhere((t) => t.id == tile.id);
       _remainingTiles.add(tile);
@@ -450,7 +452,7 @@ class _PocketDay1SentenceBuilderGamePageState
       _isRoundCompleted = true;
     });
 
-    HapticFeedback.mediumImpact();
+    PocketGameSfx.instance.playVictory();
 
     // Speak the full completed sentence with native TTS
     final fullSentence = _rounds[_currentRoundIdx].sentence;
@@ -473,7 +475,7 @@ class _PocketDay1SentenceBuilderGamePageState
 
   void _giveHint() {
     if (_isRoundCompleted) return;
-    HapticFeedback.lightImpact();
+    PocketGameSfx.instance.playClick();
 
     final round = _rounds[_currentRoundIdx];
     final targetWords = round.sentence.split(' ');
@@ -497,7 +499,7 @@ class _PocketDay1SentenceBuilderGamePageState
   }
 
   void _proceedNextRound() {
-    HapticFeedback.mediumImpact();
+    PocketGameSfx.instance.playClick();
     if (_currentRoundIdx + 1 < _rounds.length) {
       _loadRound(_currentRoundIdx + 1);
     } else {
@@ -642,9 +644,9 @@ class _PocketDay1SentenceBuilderGamePageState
                 // [ ✕ close ]    Beginner  ●-●-●    [ 💡 hint ]
                 _buildTopHeader(),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
 
-                // TOP AREA: Sentence Assembly Board (Screenshot 3 & 4)
+                // TOP AREA: Sentence Assembly Board with Native Malayalam Prompt
                 Expanded(
                   flex: 5,
                   child: _buildTopAssemblyBoard(currentRound),
@@ -692,7 +694,7 @@ class _PocketDay1SentenceBuilderGamePageState
           // Close button ✕
           IconButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              PocketGameSfx.instance.playClick();
               Navigator.pop(context);
             },
             icon: const Icon(Icons.close_rounded, color: Colors.white, size: 36),
@@ -776,25 +778,86 @@ class _PocketDay1SentenceBuilderGamePageState
   Widget _buildTopAssemblyBoard(SentenceChallengeRound round) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Center(
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 14,
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: _placedTiles.map((tile) {
-            return GestureDetector(
-              onTap: () => _onPlacedTileTapped(tile),
-              child: _buildTileWidget(
-                tile: tile,
-                isPlaced: true,
-                isShaking: false,
-                isHint: false,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 🎯 Prominent Native Malayalam Challenge Banner
+          // User Audio Directive: "നേറ്റീവ് ലാംഗ്വേജിലാണ് ട്ടോ അർത്ഥം വരേണ്ടത്"
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF38083E), Color(0xFF580C62)],
               ),
-            );
-          }).toList(),
-        ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🎯 ', style: TextStyle(fontSize: 16)),
+                Flexible(
+                  child: Text(
+                    round.translationMl,
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Dropped Sentence Word Tiles
+          Wrap(
+            spacing: 12,
+            runSpacing: 14,
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: _placedTiles.isEmpty
+                ? [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white24, style: BorderStyle.solid),
+                      ),
+                      child: Text(
+                        'Tap the word tiles below in order',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white60,
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ]
+                : _placedTiles.map((tile) {
+                    return GestureDetector(
+                      onTap: () => _onPlacedTileTapped(tile),
+                      child: _buildTileWidget(
+                        tile: tile,
+                        isPlaced: true,
+                        isShaking: false,
+                        isHint: false,
+                      ),
+                    );
+                  }).toList(),
+          ),
+        ],
       ),
     );
   }
