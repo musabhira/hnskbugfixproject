@@ -6730,38 +6730,47 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       label: const Text('Run Human Engine',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final current =
-                            await PocketRankingService.isRobotsEnabledInWorldRanking();
-                        await PocketRankingService.setRobotsEnabledInWorldRanking(!current);
-                        if (!mounted) return;
-                        setState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(!current
-                                ? '🤖 World Ranking Robots ENABLED (Mixed in for testing)'
-                                : '👤 World Ranking Robots DISABLED (Humans only)'),
+                    FutureBuilder<bool>(
+                      future: PocketRankingService.isRobotsEnabledInWorldRanking(),
+                      builder: (ctx, snap) {
+                        final isBotsOn = snap.data ?? true;
+                        return ElevatedButton.icon(
+                          onPressed: () async {
+                            final current =
+                                await PocketRankingService.isRobotsEnabledInWorldRanking();
+                            await PocketRankingService.setRobotsEnabledInWorldRanking(!current);
+                            if (!mounted) return;
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(!current
+                                    ? '🤖 World Mountain Ranking: AI BOTS ENABLED (Mixed in dynamically)'
+                                    : '👤 World Mountain Ranking: HUMANS ONLY (AI Bots Excluded from Rank 1..N)'),
+                                backgroundColor:
+                                    !current ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                !current ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                            behavior: SnackBarBehavior.floating,
+                                isBotsOn ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 3,
+                          ),
+                          icon: Icon(
+                            isBotsOn ? Icons.smart_toy_rounded : Icons.person_off_rounded,
+                            size: 18,
+                          ),
+                          label: Text(
+                            'Global Rank Bots: ${isBotsOn ? "ON (Mixed)" : "OFF (Humans Only)"}',
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4338CA),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      icon: const Icon(Icons.leaderboard_rounded, size: 16),
-                      label: FutureBuilder<bool>(
-                        future: PocketRankingService.isRobotsEnabledInWorldRanking(),
-                        builder: (ctx, snap) => Text(
-                          'World Rank Bots: ${snap.data == true ? "ON" : "OFF"}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
                     ),
                   ],
                 ),

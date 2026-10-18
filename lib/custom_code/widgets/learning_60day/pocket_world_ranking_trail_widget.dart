@@ -590,7 +590,7 @@ class _PocketWorldRankingTrailWidgetState
                     const Icon(Icons.two_wheeler_rounded, color: Color(0xFF0F172A), size: 24),
                     const SizedBox(width: 7),
                     Text(
-                      'DRIVE DOWN ⏩',
+                      'DRIVE 🏍️',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFF0F172A),
                         fontSize: 13.5,

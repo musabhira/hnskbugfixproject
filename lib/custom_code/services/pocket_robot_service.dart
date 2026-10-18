@@ -2186,15 +2186,36 @@ class PocketRobotService {
     String? imageUrl,
   }) async {
     final robot = getRobotById(robotId) ?? getRobotByLevel(1);
+    final dynLvl = robot.level;
+    final rand = math.Random();
+    final vocabWords = Pocket90DayVocabCurriculum.getVocabForDay(dynLvl);
+    final word = vocabWords.isNotEmpty ? vocabWords[rand.nextInt(vocabWords.length)] : null;
 
-    // 🎯 Get guaranteed unique snap from curated 500+ library or Pollinations AI
-    final snapData = await RobotSnapDataset.getUniqueSnapForRobot(
-      userId: userId,
-      robot: robot,
-      userPreferredCaption: caption,
-    );
-    final finalImageUrl = imageUrl ?? snapData['imageUrl']!;
-    final finalCaption = caption ?? snapData['caption']!;
+    final List<String> spokenEnglishVibeTemplates = [
+      if (word != null)
+        '📚 Word of the Day (Day $dynLvl):\n\n'
+        '✨ ${word.word.toUpperCase()} [${word.phonetic}]\n'
+        '💡 Malayalam: ${word.malayalamMeaning}\n'
+        '📖 Meaning: ${word.definition}\n'
+        '🗣️ Spoken Practice: "${word.exampleSentence}"',
+      '🗣️ Spoken English Fluency Tip:\n\n'
+      'Never translate directly from Malayalam! Think in natural English action chunks like "Could you please help me with this?" or "I am heading out now." Speak it aloud boldly right now! 🎙️✨',
+      '⚡ Essential Spoken Phrasal Verb:\n\n'
+      '• Figure out = മനസ്സിലാക്കുക / പരിഹാരം കണ്ടെത്തുക\n'
+      '• Hang on = അല്പം കാത്തിരിക്കുക\n'
+      'Example: "Hang on a second, I will figure it out!" 🤝',
+      '🎯 Daily Confidence Challenge:\n\n'
+      'Record a 15-second audio note to me in English describing your morning! Fluency grows when you speak daily without fear. 🌟🔥',
+      '💡 Spoken English Vocabulary Upgrade:\n\n'
+      '• Replace "Very good" with "Outstanding!"\n'
+      '• Replace "Very tired" with "Exhausted!"\n'
+      '• Replace "Very happy" with "Thrilled!"\n'
+      'Elevate your daily English expression step by step! 🚀',
+    ];
+
+    final vibeText = caption ?? spokenEnglishVibeTemplates[rand.nextInt(spokenEnglishVibeTemplates.length)];
+    final finalImageUrl = imageUrl ?? 'vibe_text';
+    final finalCaption = vibeText;
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
     final snapMessage = {

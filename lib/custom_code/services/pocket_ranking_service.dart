@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 /// 🏆 Model representing a ranked user across Pocket Mates
 class PocketRankedUser {
@@ -63,6 +64,19 @@ class PocketRankingService {
   static const String _kWorldRankingIncludeRobotsKey = 'world_ranking_include_robots';
 
   static Future<bool> isRobotsEnabledInWorldRanking() async {
+    try {
+      final res = await _supabase
+          .from('app_tool_configs')
+          .select('android_active')
+          .eq('tool_name', _kWorldRankingIncludeRobotsKey)
+          .maybeSingle();
+      if (res != null && res['android_active'] != null) {
+        final val = res['android_active'] == true;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_kWorldRankingIncludeRobotsKey, val);
+        return val;
+      }
+    } catch (_) {}
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_kWorldRankingIncludeRobotsKey) ?? true;
   }
@@ -70,7 +84,52 @@ class PocketRankingService {
   static Future<void> setRobotsEnabledInWorldRanking(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kWorldRankingIncludeRobotsKey, enabled);
+    try {
+      await _supabase.from('app_tool_configs').upsert({
+        'tool_name': _kWorldRankingIncludeRobotsKey,
+        'android_active': enabled,
+        'ios_active': enabled,
+      }, onConflict: 'tool_name');
+    } catch (_) {}
     invalidateCache();
+  }
+
+  /// 🤖 Dynamic Bot Daily Play & Score Simulator (User Audio Directive)
+  /// - Real dynamic simulation: scores evolve every day so bots keep playing
+  /// - Rotates Rank 1: High-tier bots (Levels 85-90) take turns at #1, #2, #3 each day
+  /// - Humans can outscore and overtake bots on the global leaderboard
+  static int getSimulatedBotScore({
+    required String botId,
+    required int baseLevel,
+    required bool isUnder17,
+  }) {
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+    final dayEpoch = now.year * 365 + dayOfYear;
+    final idHash = botId.hashCode.abs();
+
+    // Base score from level: Level 1 ~450 pts, Level 90 ~40,500 pts
+    final baseScore = baseLevel * 450;
+
+    // Daily sinusoidal activity factor (different phase for every bot)
+    final phase = (idHash % 100) / 100.0 * 2 * math.pi;
+    final dailyFactor = math.sin((dayEpoch * 0.73) + phase); // -1.0 to +1.0
+    final dailyPlayPoints = ((dailyFactor + 1.2) * 380).round(); // ~76 to ~836 pts/day
+
+    // 🏆 Rotating Rank 1 & Top Tier Competition:
+    // Rotate top bot surge based on dayEpoch so the leader rotates dynamically!
+    // A high-level bot (level 80+) has a dynamic surge (+2,800 to +4,600 pts)
+    final surgeSeed = (dayEpoch * 7 + (dayEpoch ~/ 2)) % 10;
+    final isSurgingToday = (idHash % 10) == surgeSeed;
+    final surgeBonus = (baseLevel >= 75 && isSurgingToday)
+        ? (2900 + (idHash % 1600))
+        : 0;
+
+    // Small hourly micro-fluctuation to reflect active day/night learning hours
+    final hourlyActivity = ((now.hour * 11 + (idHash % 19)) % 65);
+
+    final totalScore = baseScore + dailyPlayPoints + surgeBonus + hourlyActivity + (idHash % 85);
+    return math.max(150, totalScore);
   }
 
   /// Clear ranking caches (e.g. after a citadel attack or score update)
@@ -190,27 +249,59 @@ class PocketRankingService {
       }
     }
 
-    // 2. Mix in Pocket Robots if enabled or if human list is empty (guarantees canyon never fails)
-    if (robotsEnabled || rankedList.isEmpty) {
+    // 2. Mix in Pocket Robots if enabled (Audio directive: Admin toggle controls presence)
+    if (robotsEnabled) {
       try {
-        final allRobots = PocketRobotService.getAll90Robots();
-        for (final robot in allRobots) {
-          final dynLvl = robot.level;
-          final rScore = dynLvl * 420 + (robot.id.hashCode.abs() % 130);
-          final isPrestige = dynLvl >= 90;
-          rankedList.add(PocketRankedUser(
-            userId: robot.id,
-            name: robot.name,
-            profileImageUrl: robot.avatarUrl,
-            pocketScore: rScore,
-            level: dynLvl.clamp(1, 99),
-            globalRank: 0,
-            avatarConfig: _resolveAvatarConfig(robot.id, dynLvl),
-            isCurrentUser: false,
-            isRobot: true,
-            isPrestigeSovereign: isPrestige,
-            prestigeStars: robot.trophies,
-          ));
+        if (isUnder17) {
+          // Mix in 90 Kids Animal Companions with dynamic daily scores
+          final kidBots = PocketKidsRobotsData.robotsAndHomies;
+          for (final animal in kidBots) {
+            final dynLvl = animal.dayLevel;
+            final rScore = getSimulatedBotScore(
+              botId: animal.id,
+              baseLevel: dynLvl,
+              isUnder17: true,
+            );
+            final isPrestige = dynLvl >= 90;
+            rankedList.add(PocketRankedUser(
+              userId: animal.id,
+              name: animal.name,
+              profileImageUrl: null,
+              pocketScore: rScore,
+              level: dynLvl.clamp(1, 99),
+              globalRank: 0,
+              avatarConfig: _resolveAvatarConfig(animal.id, dynLvl),
+              isCurrentUser: false,
+              isRobot: true,
+              isPrestigeSovereign: isPrestige,
+              prestigeStars: animal.stars,
+            ));
+          }
+        } else {
+          // Mix in 90 Adult AI Robots with dynamic daily scores
+          final allRobots = PocketRobotService.getAll90Robots();
+          for (final robot in allRobots) {
+            final dynLvl = robot.level;
+            final rScore = getSimulatedBotScore(
+              botId: robot.id,
+              baseLevel: dynLvl,
+              isUnder17: false,
+            );
+            final isPrestige = dynLvl >= 90;
+            rankedList.add(PocketRankedUser(
+              userId: robot.id,
+              name: robot.name,
+              profileImageUrl: robot.avatarUrl,
+              pocketScore: rScore,
+              level: dynLvl.clamp(1, 99),
+              globalRank: 0,
+              avatarConfig: _resolveAvatarConfig(robot.id, dynLvl),
+              isCurrentUser: false,
+              isRobot: true,
+              isPrestigeSovereign: isPrestige,
+              prestigeStars: robot.trophies,
+            ));
+          }
         }
       } catch (e) {
         if (kDebugMode) print('Error mixing in robots: $e');
@@ -456,12 +547,31 @@ class PocketRankingService {
     final robotsEnabled = await isRobotsEnabledInWorldRanking();
     int robotCountAbove = 0;
     if (robotsEnabled) {
-      final allRobots = PocketRobotService.getAll90Robots();
-      for (final robot in allRobots) {
-        final dynLvl = robot.level;
-        final rScore = dynLvl * 420 + (robot.id.hashCode.abs() % 130);
-        if (rScore > score) {
-          robotCountAbove++;
+      if (isUnder17) {
+        final kidBots = PocketKidsRobotsData.robotsAndHomies;
+        for (final animal in kidBots) {
+          final dynLvl = animal.dayLevel;
+          final rScore = getSimulatedBotScore(
+            botId: animal.id,
+            baseLevel: dynLvl,
+            isUnder17: true,
+          );
+          if (rScore > score) {
+            robotCountAbove++;
+          }
+        }
+      } else {
+        final allRobots = PocketRobotService.getAll90Robots();
+        for (final robot in allRobots) {
+          final dynLvl = robot.level;
+          final rScore = getSimulatedBotScore(
+            botId: robot.id,
+            baseLevel: dynLvl,
+            isUnder17: false,
+          );
+          if (rScore > score) {
+            robotCountAbove++;
+          }
         }
       }
     }

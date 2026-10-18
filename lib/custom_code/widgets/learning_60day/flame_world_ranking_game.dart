@@ -389,6 +389,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
   double steerInput = 0.0;
   double _dustTimer = 0.0;
   int currentCombo = 0;
+  bool _canyonConqueredCelebrated = false;
 
   final List<_FloatingScoreText> _floatingTexts = [];
   final List<_BounceSpark> _sparks = [];
@@ -481,14 +482,19 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     driveDownhill();
   }
 
-  /// 🏔️ Smoothly drive down the canyon towards the next terrace below (User Audio Directive: "വണ്ടി ഡ്രൈവ് ചെയ്യുന്ന സമയത്ത് ഓട്ടോമാറ്റിക് അടിയിലേക്ക് എത്തണം")
+  /// 🏔️ Drive forward along current terrace or ramp down towards next terrace
   void driveDownhill() {
     if (_ledgeNodes.isEmpty) return;
     isFollowingBike = true;
     velocityY = 0.0;
     _idleDriveTimer = 0.0;
     final currentNode = _ledgeNodes[_bikeNodeIndex];
-    if (currentNode.isLeft) {
+    final isLastNode = (_bikeNodeIndex >= _ledgeNodes.length - 1);
+    if (isLastNode) {
+      // On canyon floor, drive straight forward in facing direction (Audio directive: "ഡൗൺ ഒന്നുമില്ല ആക്ച്വലി, വണ്ടി ഇങ്ങനെ സ്ട്രെയിറ്റ് ആയിട്ട് മൂവ് ചെയ്ത് പോവുക")
+      _bikeVx = _isFacingRight ? 240.0 : -240.0;
+      steerInput = _isFacingRight ? 1.0 : -1.0;
+    } else if (currentNode.isLeft) {
       // Downhill on left terrace is driving RIGHT towards cliff ramp
       _isFacingRight = true;
       _bikeVx = (_bikeVx.abs() < 120.0) ? 220.0 : math.min(380.0, _bikeVx + 110.0);
@@ -513,6 +519,13 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
   /// 🚀 Launch Dirt Bike into Parabolic Canyon Leap down to next terrace
   void jump() {
     if (_isAirborne || _ledgeNodes.length < 2) return;
+    if (_bikeNodeIndex >= _ledgeNodes.length - 1) {
+      // Small hop on canyon floor without looping back to top
+      _suspensionBounce = 0.5;
+      HapticFeedback.mediumImpact();
+      _bikeVx = _isFacingRight ? 200.0 : -200.0;
+      return;
+    }
     _launchBikeJump();
   }
 
@@ -566,14 +579,20 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         // Even Level: House on Left, Ramp starts after house and slopes down to right
         houseX = 12.0;
         rampStartX = math.max(houseX + houseW + 8.0, screenW * 0.44);
-        rampEndX = screenW - 16.0;
+        final bool isNextLast = (i + 1 == totalCount - 1);
+        final double nextHouseX = isNextLast ? (screenW - houseW) / 2.0 : (screenW - houseW - 12.0);
+        // Step arrives right at the house entrance, NEVER continuing underneath or behind the house!
+        rampEndX = nextHouseX - 6.0;
         hasRamp = true;
         ledgeW = rampStartX + 14.0;
       } else {
         // Odd Level: House on Right, Ramp starts before house and slopes down to left
         houseX = screenW - houseW - 12.0;
         rampStartX = math.min(houseX - 8.0, screenW * 0.56);
-        rampEndX = 16.0;
+        final bool isNextLast = (i + 1 == totalCount - 1);
+        final double nextHouseRight = isNextLast ? (screenW + houseW) / 2.0 : (12.0 + houseW);
+        // Step arrives right at the house entrance, NEVER continuing underneath or behind the house!
+        rampEndX = nextHouseRight + 6.0;
         hasRamp = true;
         ledgeW = screenW - (rampStartX - 14.0);
       }
@@ -984,16 +1003,21 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
           }
         }
       } else {
-        // Last Node: Canyon Floor
-        if (_bikeX < 20.0) {
-          _bikeX = 20.0;
-          _bikeVx = 160.0;
+        // Last Node: Canyon Floor (User Audio Directive: stays at bottom, turns around automatically, no auto-reset!)
+        if (_bikeX < 24.0) {
+          _bikeX = 24.0;
+          _bikeVx = 180.0;
           _isFacingRight = true;
-        } else if (_bikeX > screenW - 20.0) {
-          _bikeX = screenW - 20.0;
-          _bikeVx = -160.0;
+          _triggerBikeWallCushion(_bikeX, _bikeY);
+        } else if (_bikeX > screenW - 24.0) {
+          _bikeX = screenW - 24.0;
+          _bikeVx = -180.0;
           _isFacingRight = false;
-          _triggerCanyonConqueredCelebration();
+          _triggerBikeWallCushion(_bikeX, _bikeY);
+          if (!_canyonConqueredCelebrated) {
+            _canyonConqueredCelebrated = true;
+            _triggerCanyonConqueredCelebration();
+          }
         }
       }
     } else {
@@ -1140,20 +1164,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         color: rng.nextBool() ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
       ));
     }
-
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (_ledgeNodes.isNotEmpty) {
-        _bikeNodeIndex = 0;
-        final summit = _ledgeNodes[0];
-        _bikeX = summit.houseX + 35.0;
-        _bikeY = summit.y - 14.0;
-        _bikeVx = 0.0;
-        _isFacingRight = true;
-        _isAirborne = false;
-        isFollowingBike = true;
-        targetCameraY = 0.0;
-      }
-    });
+    // Bike stays at canyon floor, allowing player to cruise along the bottom without warping back to top!
   }
 
   // ---------------------------------------------------------------------------

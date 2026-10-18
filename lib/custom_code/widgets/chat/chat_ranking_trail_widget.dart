@@ -829,25 +829,46 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
                                 ),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.45),
-                                  width: 0.8,
+                            if (!member.isRobot && !PocketRobotService.isRobotId(member.userId))
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF00E5FF).withValues(alpha: 0.45),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Global Rank #${member.globalRank}',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF00E5FF),
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF8B5CF6),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🤖 AI MATE',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFFA78BFA),
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                'Global Rank #${member.globalRank}',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF00E5FF),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 6),

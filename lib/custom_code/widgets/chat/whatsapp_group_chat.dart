@@ -6964,19 +6964,21 @@ Draft: "$draft"''';
         isMe ? const Color(0xFFF43F5E) : const Color(0xFFFFFC00);
 
     return InkWell(
-      onTap: isBurned || url == null
+      onTap: isBurned
           ? null
           : () {
               HapticFeedback.lightImpact();
+              final effectiveUrl = (url != null && url.isNotEmpty) ? url : 'vibe_text';
               SnapViewDialog.show(
                 context: context,
-                mediaUrl: url,
+                mediaUrl: effectiveUrl,
                 senderName: message.senderName ?? 'Mate',
+                caption: message.messageText,
                 isMe: isMe,
                 onBurned: () async {
                   await PocketSnapService.burnSnapMessage(
                     messageId: message.id,
-                    mediaUrl: url,
+                    mediaUrl: effectiveUrl,
                     currentMetadata: metadata,
                     currentUserId: _currentUserId,
                     chatId: widget.groupId.startsWith('p:')
