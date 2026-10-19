@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
@@ -24,12 +25,14 @@ import 'pocket_world_street_page.dart';
 ///    attempting the attack successfully passes the step and awards Pocket Score ("അറ്റാക്ക് ചെയ്യാൻ ശ്രമിച്ചല്ലോ...").
 class PocketHouseAttackPage extends StatefulWidget {
   final int day;
+  final int stepIndex;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketHouseAttackPage({
     super.key,
     required this.day,
+    this.stepIndex = 11,
     this.userId,
     this.onStepFinished,
   });
@@ -37,6 +40,7 @@ class PocketHouseAttackPage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
+    int stepIndex = 11,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -45,6 +49,7 @@ class PocketHouseAttackPage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketHouseAttackPage(
           day: day,
+          stepIndex: stepIndex,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -103,10 +108,14 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
 
   Future<void> _initAudioAndTts() async {
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.44);
-      await _tts.setPitch(1.05);
-    } catch (_) {}
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
+    } catch (_) {
+      try {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.46);
+        await _tts.setPitch(1.08);
+      } catch (_) {}
+    }
     try {
       PocketGameAudioService.instance.playAmbientAppTheme();
     } catch (_) {}
@@ -241,8 +250,12 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
 
     // If passed or beginner courage pass (Level <= 20)
     if (result == true || widget.day <= 20) {
-      final stepNum = widget.day == 1 ? 9 : 8;
-      widget.onStepFinished?.call(stepNum);
+      final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+      if (uid != null && uid.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
+      }
+      widget.onStepFinished?.call(widget.stepIndex);
       if (mounted) {
         Navigator.pop(context, true);
       }
@@ -352,12 +365,17 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
     }
   }
 
-  void _finishAndExit() {
+  Future<void> _finishAndExit() async {
     HapticFeedback.mediumImpact();
-    // Step index for attack is 9 on Day 1, or 8/9 on other days
-    final stepNum = widget.day == 1 ? 9 : 8;
-    widget.onStepFinished?.call(stepNum);
-    Navigator.pop(context);
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
+    }
+    widget.onStepFinished?.call(widget.stepIndex);
+    if (mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   @override
@@ -443,9 +461,7 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.day == 1
-                      ? 'Step 9: House Attack ⚔️'
-                      : 'Step 8: House Attack ⚔️',
+                  'Step ${widget.stepIndex}: House Attack ⚔️',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

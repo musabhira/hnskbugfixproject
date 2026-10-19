@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'games/meadow_runner_game_page.dart';
 import 'games/pocket_20days_40games_spec.dart';
 import 'games/pocket_universal_arcade_engine_page.dart';
@@ -279,10 +280,16 @@ class _PocketDay1Step3AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
+    } catch (_) {
+      try {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.48);
+        await _tts.setPitch(1.05);
+      } catch (_) {}
+    }
 
+    try {
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);
       });

@@ -7,6 +7,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 
@@ -352,29 +353,16 @@ class _PocketDay1Step4AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.44); // Natural conversational rate
-      await _tts.setPitch(1.05); // Friendly, clear teacher pitch
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
+    } catch (_) {
+      try {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.46);
+        await _tts.setPitch(1.08);
+      } catch (_) {}
+    }
 
-      // Try selecting a natural high-quality en-US voice
-      final voices = await _tts.getVoices;
-      if (voices is List) {
-        final naturalVoice = voices.firstWhere(
-          (v) =>
-              (v['name']?.toString().toLowerCase().contains('natural') == true ||
-               v['name']?.toString().toLowerCase().contains('sfg') == true ||
-               v['name']?.toString().toLowerCase().contains('female') == true) &&
-              v['locale']?.toString().startsWith('en') == true,
-          orElse: () => null,
-        );
-        if (naturalVoice != null && naturalVoice is Map) {
-          await _tts.setVoice({
-            "name": naturalVoice['name'].toString(),
-            "locale": naturalVoice['locale'].toString(),
-          });
-        }
-      }
-
+    try {
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);
       });

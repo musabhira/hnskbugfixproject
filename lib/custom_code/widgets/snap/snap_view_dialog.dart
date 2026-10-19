@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 
 /// Snapchat-style Ephemeral Snap Viewer Dialog
 /// Provides high security:
@@ -82,8 +83,10 @@ class _SnapViewDialogState extends State<SnapViewDialog> with SingleTickerProvid
 
     if (_isTextSnap) {
       _tts = FlutterTts();
-      _tts?.setLanguage('en-US');
-      _tts?.setSpeechRate(0.48);
+      PocketVoiceService.instance.configureOptimalFemaleVoice(_tts!).catchError((_) {
+        _tts?.setLanguage('en-IN');
+        _tts?.setSpeechRate(0.48);
+      });
     }
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'english_tasks_master_hub.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -20,12 +21,14 @@ import 'pocket_defense_question_bank.dart';
 /// - Dynamic question bank customized for each specific day (never repeats!).
 class PocketHouseDefenseChatPage extends StatefulWidget {
   final int day;
+  final int stepIndex;
   final String? userId;
   final Function(int)? onStepFinished;
 
   const PocketHouseDefenseChatPage({
     super.key,
     this.day = 1,
+    this.stepIndex = 9,
     this.userId,
     this.onStepFinished,
   });
@@ -33,6 +36,7 @@ class PocketHouseDefenseChatPage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
+    int stepIndex = 9,
     String? userId,
     Function(int)? onStepFinished,
   }) {
@@ -41,6 +45,7 @@ class PocketHouseDefenseChatPage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketHouseDefenseChatPage(
           day: day,
+          stepIndex: stepIndex,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -232,13 +237,15 @@ class _PocketHouseDefenseChatPageState
 
   Future<void> _initAudioAndTts() async {
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.44);
-      await _tts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
       _tts.setCompletionHandler(() {});
       _tts.setErrorHandler((_) {});
     } catch (e) {
-      debugPrint('TTS setup error: $e');
+      try {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.46);
+        await _tts.setPitch(1.08);
+      } catch (_) {}
     }
 
     try {
@@ -289,8 +296,8 @@ class _PocketHouseDefenseChatPageState
 
       await prefs.setBool('pocket_house_${widget.day}_defense_active', true);
       await prefs.setInt('pocket_house_${widget.day}_hp', 100);
-      if (uid != null) {
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_7_done', true);
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
       }
 
       await PocketFortressDefenseService.saveShieldQuestions(questions);
@@ -303,7 +310,12 @@ class _PocketHouseDefenseChatPageState
   Future<void> _completeAndExit() async {
     HapticFeedback.heavyImpact();
     await _tts.stop();
-    widget.onStepFinished?.call(7);
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
+    }
+    widget.onStepFinished?.call(widget.stepIndex);
     if (mounted) {
       Navigator.pop(context);
     }
@@ -408,7 +420,7 @@ class _PocketHouseDefenseChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Step 7: House ${widget.day} Defense Shield',
+                  'Step ${widget.stepIndex}: House ${widget.day} Defense Shield',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -947,7 +959,7 @@ class _PocketHouseDefenseChatPageState
             onPressed: _completeAndExit,
             icon: const Icon(Icons.check_circle_rounded, size: 24),
             label: Text(
-              'COMPLETE STEP 7 & CONTINUE ➔',
+              'COMPLETE STEP ${widget.stepIndex} & CONTINUE ➔',
               style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w900,
                 fontSize: 14,

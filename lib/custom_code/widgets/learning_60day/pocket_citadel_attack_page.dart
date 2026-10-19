@@ -3409,46 +3409,58 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   /// 🏅 Get cached Global Rank of the defender (Audio Directive)
   int? get _defenderGlobalRank {
+    final isRobot = widget.neighbor.isPocketRobo ||
+        PocketRobotService.isRobotId(widget.neighbor.id) ||
+        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+    if (isRobot) {
+      return widget.neighbor.day.clamp(1, 90);
+    }
     if (widget.neighbor.isPresident) return 1;
     return PocketRankingService.getCachedGlobalRank(widget.neighbor.id);
   }
 
   /// 🏅 Sleek Global Rank Badge Widget for Citadel Attack page
   Widget _buildGlobalRankBadge({double fontSize = 9.5}) {
-    final rank = _defenderGlobalRank;
-    final rankText = rank != null
-        ? 'Global Rank #$rank'
-        : (widget.neighbor.isPresident ? 'Global Rank #1 👑' : 'Global Rank');
-    final isTop3 = (rank != null && rank <= 3) || widget.neighbor.isPresident;
+    final isRobot = widget.neighbor.isPocketRobo ||
+        PocketRobotService.isRobotId(widget.neighbor.id) ||
+        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+    final rank = _defenderGlobalRank ?? (isRobot ? widget.neighbor.day.clamp(1, 90) : 1);
+
+    final rankText = isRobot
+        ? '🤖 Robot Rank #$rank'
+        : (widget.neighbor.isPresident
+            ? '👑 Global Rank #1'
+            : '🏆 Global Rank #$rank');
+
+    final isTop3 = (rank <= 3) || widget.neighbor.isPresident;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
         color: isTop3
             ? const Color(0xFFFFD700).withValues(alpha: 0.22)
-            : const Color(0xFF0284C7).withValues(alpha: 0.22),
+            : (isRobot
+                ? const Color(0xFF10B981).withValues(alpha: 0.20)
+                : const Color(0xFF0284C7).withValues(alpha: 0.22)),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: isTop3
               ? const Color(0xFFFFD700).withValues(alpha: 0.7)
-              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+              : (isRobot
+                  ? const Color(0xFF34D399).withValues(alpha: 0.6)
+                  : const Color(0xFF38BDF8).withValues(alpha: 0.6)),
           width: 0.8,
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(isTop3 ? '👑' : '🏅', style: TextStyle(fontSize: fontSize)),
-          const SizedBox(width: 3),
-          Text(
-            rankText,
-            style: GoogleFonts.outfit(
-              color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFFBAE6FD),
-              fontWeight: FontWeight.w800,
-              fontSize: fontSize,
-            ),
-          ),
-        ],
+      child: Text(
+        rankText,
+        style: GoogleFonts.outfit(
+          color: isTop3
+              ? const Color(0xFFFFD700)
+              : (isRobot ? const Color(0xFFA7F3D0) : const Color(0xFFBAE6FD)),
+          fontWeight: FontWeight.w800,
+          fontSize: fontSize,
+        ),
       ),
     );
   }
@@ -4936,10 +4948,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  _buildGlobalRankBadge(fontSize: 8.5),
                                 ],
                               ),
+                              const SizedBox(height: 3),
+                              _buildGlobalRankBadge(fontSize: 8.5),
                               const SizedBox(height: 1),
                               Text(
                                 prog > 0.5
@@ -5111,10 +5123,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
             const SizedBox(height: 16),
             _buildStatRow(
-              'Global Rank',
-              _defenderGlobalRank != null
-                  ? 'Global Rank #$_defenderGlobalRank'
-                  : (widget.neighbor.isPresident ? 'Global Rank #1 👑' : 'Global Challenger'),
+              (widget.neighbor.isPocketRobo ||
+                      PocketRobotService.isRobotId(widget.neighbor.id) ||
+                      !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id))
+                  ? 'Robot Rank'
+                  : 'Global Rank',
+              (widget.neighbor.isPocketRobo ||
+                      PocketRobotService.isRobotId(widget.neighbor.id) ||
+                      !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id))
+                  ? '🤖 Robot Rank #${_defenderGlobalRank ?? widget.neighbor.day.clamp(1, 90)}'
+                  : (_defenderGlobalRank != null
+                      ? '🏆 Global Rank #$_defenderGlobalRank'
+                      : (widget.neighbor.isPresident ? '👑 Global Rank #1' : '🏆 Global Challenger')),
             ),
             _buildStatRow('Citadel Level', 'Level ${widget.neighbor.day}'),
             _buildStatRow('Pocket Score', 'PS $_defenderScore'),

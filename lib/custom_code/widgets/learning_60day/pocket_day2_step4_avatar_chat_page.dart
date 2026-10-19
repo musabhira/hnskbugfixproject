@@ -9,6 +9,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 
 /// 💬 Chat Message Model for Day 2 Step 4 Spoken English
 class Day2Step4ChatMessage {
@@ -215,10 +216,16 @@ class _PocketDay2Step4AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
-      await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.48);
-      await _tts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
+    } catch (_) {
+      try {
+        await _tts.setLanguage('en-IN');
+        await _tts.setSpeechRate(0.48);
+        await _tts.setPitch(1.05);
+      } catch (_) {}
+    }
 
+    try {
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);
       });

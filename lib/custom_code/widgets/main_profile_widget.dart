@@ -2891,7 +2891,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
-        _buildGlobalRankRibbon(textColor, btnColor),
         headerContent,
         if (!_isPublicProfileView) ...[
           Learning60DayProfileCard(
@@ -2920,78 +2919,68 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  /// 🏅 Global Rank Ribbon displayed prominently in Main Profile (Audio Directive)
-  Widget _buildGlobalRankRibbon(Color textColor, Color btnColor) {
+  /// 🏅 Global Rank / Robot Rank Badge placed directly underneath Stage & Name (Audio Directive)
+  Widget _buildProfileGlobalRankBadge(LearningMilestoneStage activeStage) {
     final targetId = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
-    final rank = PocketRankingService.getCachedGlobalRank(targetId);
-    final isTop3 = rank != null && rank <= 3;
-    final score = (_profileData?['pocket_score'] as num?)?.toInt() ?? 0;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
+    final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
+    final isPresident = _profileData?['is_president'] == true || _profileData?['role'] == 'president';
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isTop3
-                ? const Color(0xFFFFD700).withValues(alpha: 0.7)
-                : const Color(0xFF0284C7).withValues(alpha: 0.4),
-            width: isTop3 ? 1.4 : 1.0,
+    final int rank;
+    final String label;
+    final Color badgeColor;
+    final Color borderColor;
+
+    if (isRobot) {
+      rank = activeStage.day.clamp(1, 90);
+      label = '🤖 Robot Rank #$rank';
+      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
+    } else {
+      final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
+      if (isPresident) {
+        rank = 1;
+        label = '👑 Global Rank #1';
+      } else if (cachedRank != null) {
+        rank = cachedRank;
+        label = '🏆 Global Rank #$rank';
+      } else {
+        rank = 0;
+        label = '🏆 Global Challenger';
+      }
+      final isTop3 = (rank > 0 && rank <= 3) || isPresident;
+      badgeColor = isTop3
+          ? const Color(0xFFFFD700).withValues(alpha: 0.20)
+          : const Color(0xFF0284C7).withValues(alpha: 0.18);
+      borderColor = isTop3
+          ? const Color(0xFFFFD700).withValues(alpha: 0.70)
+          : const Color(0xFF38BDF8).withValues(alpha: 0.55);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: borderColor, width: 0.9),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: isRobot
+                  ? const Color(0xFF6EE7B7)
+                  : ((label.contains('👑') || label.contains('#1') || label.contains('#2') || label.contains('#3'))
+                      ? const Color(0xFFFFD700)
+                      : const Color(0xFF7DD3FC)),
+              fontWeight: FontWeight.w800,
+              fontSize: 10.5,
+              letterSpacing: 0.3,
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: isTop3 ? const Color(0xFFFFD700) : const Color(0xFF0284C7),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                isTop3 ? '👑 TOP RANK' : '🏅 GLOBAL',
-                style: GoogleFonts.outfit(
-                  color: isTop3 ? Colors.black : Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 9.5,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              rank != null ? 'Global Rank #$rank' : 'Global Challenger',
-              style: GoogleFonts.outfit(
-                color: isTop3 ? const Color(0xFFFFD700) : Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12.5,
-              ),
-            ),
-            const Spacer(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🪙', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 4),
-                Text(
-                  '$score PS',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -4200,6 +4189,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               if (!hideStageBadge) _buildProfileStageBadge(activeStage),
             ],
           ),
+          const SizedBox(height: 5),
+          _buildProfileGlobalRankBadge(activeStage),
           if (slug != null && slug.toString().isNotEmpty) ...[
             const SizedBox(height: 2),
             Text(

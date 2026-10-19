@@ -2892,6 +2892,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketHouseDefenseChatPage.show(
           context,
           day: day,
+          stepIndex: 9,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
@@ -2914,6 +2915,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketHouseAttackPage.show(
           context,
           day: day,
+          stepIndex: 11,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);

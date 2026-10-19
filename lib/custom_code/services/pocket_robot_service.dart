@@ -1381,23 +1381,46 @@ class PocketRobotService {
         };
       }
     } else {
-      // --- 6. Photo Snap Vibe ---
-      final snapData = await RobotSnapDataset.getUniqueSnapForRobot(
-        userId: 'robot_vibe_system',
-        robot: robot,
-        userPreferredCaption: preferredCaption,
-      );
+      // --- 6. Spoken English Text Status Vibe (Audio Directive: Robots only send text vibes/status cards, never photo snaps) ---
+      final vocabWords = Pocket90DayVocabCurriculum.getVocabForDay(dynLvl);
+      final word = vocabWords.isNotEmpty ? vocabWords[rand.nextInt(vocabWords.length)] : null;
+      final spokenTips = [
+        if (word != null)
+          '📚 Word of the Day (Day $dynLvl):\n\n'
+              '✨ ${word.word.toUpperCase()} [${word.phonetic}]\n'
+              '💡 Malayalam: ${word.malayalamMeaning}\n'
+              '📖 Meaning: ${word.definition}\n'
+              '🗣️ Practice: "${word.exampleSentence}"',
+        '🗣️ Spoken English Fluency Tip:\n\n'
+            'Never translate directly from Malayalam! Think in natural English action chunks like "Could you please help me with this?" or "I am heading out now." Speak it aloud boldly right now! 🎙️✨',
+        '⚡ Essential Spoken Phrasal Verb:\n\n'
+            '• Figure out = മനസ്സിലാക്കുക / പരിഹാരം കണ്ടെത്തുക\n'
+            '• Hang on = അല്പം കാത്തിരിക്കുക\n'
+            'Example: "Hang on a second, I will figure it out!" 🤝',
+        '💡 Spoken English Vocabulary Upgrade:\n\n'
+            '• Replace "Very good" with "Outstanding!"\n'
+            '• Replace "Very tired" with "Exhausted!"\n'
+            '• Replace "Very happy" with "Thrilled!"\n'
+            'Elevate your daily English expression step by step! 🚀',
+      ];
+      final captionText = preferredCaption ?? spokenTips[rand.nextInt(spokenTips.length)];
 
       vibeItem = {
         'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
-        'media_type': 'image',
-        'media_url': snapData['imageUrl'],
-        'caption': snapData['caption'],
+        'media_type': 'thought',
+        'media_url': '',
+        'caption': captionText,
         'created_at': now.toIso8601String(),
         'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
+        'metadata': {
+          'source': 'robot_text_vibe',
+          'is_shared_vibe': true,
+          'item_type': 'spoken_vibe',
+          'level': dynLvl,
+        },
         'profile': {
           'id': robot.id,
           'name': robot.name,
@@ -2218,7 +2241,8 @@ class PocketRobotService {
     ];
 
     final vibeText = caption ?? spokenEnglishVibeTemplates[rand.nextInt(spokenEnglishVibeTemplates.length)];
-    final finalImageUrl = imageUrl ?? 'vibe_text';
+    // Enforce that robots always send text status vibes ('vibe_text'), never image/photo URLs (Audio Directive)
+    final finalImageUrl = 'vibe_text';
     final finalCaption = vibeText;
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
