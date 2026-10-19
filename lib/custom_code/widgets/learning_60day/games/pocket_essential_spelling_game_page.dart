@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../pocket_90day_vocab_curriculum.dart';
@@ -247,9 +248,10 @@ class _PocketEssentialSpellingPageState
 
   Future<void> _initTts() async {
     try {
-      await _flutterTts.setLanguage("en-US");
+      await _flutterTts.setLanguage("en-IN");
       await _flutterTts.setSpeechRate(_speechRate);
-      await _flutterTts.setPitch(1.0);
+      await _flutterTts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
     } catch (_) {}
   }
 
@@ -775,7 +777,7 @@ class _PocketEssentialSpellingPageState
                 child: Text(
                   _isPracticeExamMode
                       ? 'DAY ${widget.day} • SPELLING EXAM 🎮'
-                      : 'DAY ${widget.day} • ESSENTIAL WORDS 👂',
+                      : 'DAY ${widget.day} • ESSENTIAL WORDS & SPELLING 👂',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

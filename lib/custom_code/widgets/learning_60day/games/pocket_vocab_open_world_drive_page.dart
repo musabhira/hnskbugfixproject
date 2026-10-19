@@ -57,6 +57,7 @@ enum RideMode {
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
   final int day;
+  final int stepIndex;
   final String? initialRideMode;
   final String? userId;
   final VoidCallback? onCompleted;
@@ -64,6 +65,7 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
   const PocketVocabOpenWorldDrivePage({
     super.key,
     this.day = 1,
+    this.stepIndex = 4,
     this.initialRideMode,
     this.userId,
     this.onCompleted,
@@ -72,6 +74,7 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
+    int stepIndex = 4,
     String? initialRideMode,
     String? userId,
     VoidCallback? onCompleted,
@@ -81,6 +84,7 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketVocabOpenWorldDrivePage(
           day: day,
+          stepIndex: stepIndex,
           initialRideMode: initialRideMode,
           userId: userId,
           onCompleted: onCompleted,
@@ -383,6 +387,9 @@ class _PocketVocabOpenWorldDrivePageState
   Future<void> _initTts() async {
     _tts = FlutterTts();
     try {
+      await _tts.setLanguage('en-IN');
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.05);
       await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
     } catch (_) {}
   }
@@ -695,7 +702,8 @@ class _PocketVocabOpenWorldDrivePageState
 
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
+    final actualStep = (widget.day == 1 && widget.stepIndex == 2) ? 2 : widget.stepIndex;
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_${actualStep}_done', true);
 
     if (uid != null && uid.isNotEmpty) {
       await PocketFortressDefenseService.recordTrainingPoints(35, uid);

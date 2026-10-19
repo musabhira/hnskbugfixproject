@@ -8,6 +8,7 @@ import 'package:flame/components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../curriculum_data/pocket_90day_sentence_builder_data.dart';
 
@@ -236,9 +237,10 @@ class _PocketSentenceBuilderGamePageState
 
   Future<void> _initTts() async {
     try {
-      await _flutterTts.setLanguage("en-US");
-      await _flutterTts.setSpeechRate(0.45);
-      await _flutterTts.setPitch(1.0);
+      await _flutterTts.setLanguage("en-IN");
+      await _flutterTts.setSpeechRate(0.48);
+      await _flutterTts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
     } catch (_) {}
   }
 
@@ -694,86 +696,92 @@ class _PocketSentenceBuilderGamePageState
   Widget _buildTopAssemblyBoard(SentenceChallengeRound round) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 🎯 Prominent Native Malayalam Challenge Banner
-          // User Audio Directive: "നേറ്റീവ് ലാംഗ്വേജിലാണ് ട്ടോ അർത്ഥം വരേണ്ടത്"
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF38083E), Color(0xFF580C62)],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🎯 ', style: TextStyle(fontSize: 16)),
-                Flexible(
-                  child: Text(
-                    round.translationMl,
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 🎯 Prominent Native Malayalam Challenge Banner
+              // User Audio Directive: "നേറ്റീവ് ലാംഗ്വേജിലാണ് ട്ടോ അർത്ഥം വരേണ്ടത്"
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38083E), Color(0xFF580C62)],
                   ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-
-          // Dropped Sentence Word Tiles
-          Wrap(
-            spacing: 12,
-            runSpacing: 14,
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: _placedTiles.isEmpty
-                ? [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white24, style: BorderStyle.solid),
-                      ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🎯 ', style: TextStyle(fontSize: 16)),
+                    Flexible(
                       child: Text(
-                        'Tap the word tiles below in order',
+                        round.translationMl,
                         style: GoogleFonts.outfit(
-                          color: Colors.white60,
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
+                          color: const Color(0xFFFFD700),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ]
-                : _placedTiles.map((tile) {
-                    return GestureDetector(
-                      onTap: () => _onPlacedTileTapped(tile),
-                      child: _buildTileWidget(
-                        tile: tile,
-                        isPlaced: true,
-                        isShaking: false,
-                        isHint: false,
-                      ),
-                    );
-                  }).toList(),
+                  ],
+                ),
+              ),
+
+              // Dropped Sentence Word Tiles
+              Wrap(
+                spacing: 12,
+                runSpacing: 14,
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: _placedTiles.isEmpty
+                    ? [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white24, style: BorderStyle.solid),
+                          ),
+                          child: Text(
+                            'Tap the word tiles below in order',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white60,
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ]
+                    : _placedTiles.map((tile) {
+                        return GestureDetector(
+                          onTap: () => _onPlacedTileTapped(tile),
+                          child: _buildTileWidget(
+                            tile: tile,
+                            isPlaced: true,
+                            isShaking: false,
+                            isHint: false,
+                          ),
+                        );
+                      }).toList(),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -782,27 +790,30 @@ class _PocketSentenceBuilderGamePageState
   Widget _buildBottomWordBank(SentenceChallengeRound round) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Center(
-        child: Wrap(
-          spacing: 16,
-          runSpacing: 18,
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: _remainingTiles.map((tile) {
-            final isShaking = _shakingTileId == tile.id;
-            final isHint = _hintHighlightedTileId == tile.id;
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Wrap(
+            spacing: 14,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: _remainingTiles.map((tile) {
+              final isShaking = _shakingTileId == tile.id;
+              final isHint = _hintHighlightedTileId == tile.id;
 
-            return GestureDetector(
-              onTap: () => _onTileTapped(tile),
-              child: _buildTileWidget(
-                tile: tile,
-                isPlaced: false,
-                isShaking: isShaking,
-                isHint: isHint,
-              ),
-            );
-          }).toList(),
+              return GestureDetector(
+                onTap: () => _onTileTapped(tile),
+                child: _buildTileWidget(
+                  tile: tile,
+                  isPlaced: false,
+                  isShaking: isShaking,
+                  isHint: isHint,
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

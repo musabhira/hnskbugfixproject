@@ -11,8 +11,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
-import 'games/pocket_universal_arcade_engine_page.dart';
-import 'games/pocket_vocab_open_world_drive_page.dart';
+import 'games/town_quest_dialogue_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 
 /// 💬 Chat Message Model with Embedded In-Bubble Choices & Voice Metadata
@@ -211,6 +210,9 @@ class _PocketDay2Step1AvatarChatPageState
   Future<void> _initTts() async {
     _tts = FlutterTts();
     try {
+      await _tts.setLanguage('en-IN');
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.05);
       await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
 
       _tts.setStartHandler(() {
@@ -326,7 +328,8 @@ class _PocketDay2Step1AvatarChatPageState
   // =========================================================================
 
   /// Phase 1: Greeting & Diagnostic Check
-  void _startWelcomeDiagnosticFlow() {
+  Future<void> _startWelcomeDiagnosticFlow() async {
+    await _initTts();
     final promptEn =
         'Hi $_userName! Welcome to Day 2! 🌟 Today we learn Where I Am From & Locations: how to use am, is, and are with in and at. Shall we start?';
     final promptMl =
@@ -403,7 +406,7 @@ class _PocketDay2Step1AvatarChatPageState
           inBubbleOptions: [
             Day2InBubbleOption(
               labelEn: '🎮 PLAY DAY 2 GAME',
-              labelNative: 'വേഡ് ഡ്രൈവ് ഗെയിം കളിച്ച് പഠിക്കാം! 🕹️',
+              labelNative: 'ടൗൺ ക്വസ്റ്റ് കളിച്ച് പഠിക്കാം! 🏛️',
               icon: '🎮',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF9333EA),
@@ -411,7 +414,7 @@ class _PocketDay2Step1AvatarChatPageState
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
                 text: '🎮 PLAY DAY 2 GAME',
-                action: _startWordDriveGameMode,
+                action: _startDay2GameMode,
               ),
             ),
             Day2InBubbleOption(
@@ -437,18 +440,18 @@ class _PocketDay2Step1AvatarChatPageState
   }
 
   // =========================================================================
-  // 🎮 DAY 2 GAME MODE (User Audio Directive!)
+  // 🎮 DAY 2 GAME MODE (Town Quest: Where I Am From & Locations)
   // =========================================================================
 
-  void _startWordDriveGameMode() {
-    _currentExpectedVoicePhrase = 'Word Drive';
+  void _startDay2GameMode() {
+    _currentExpectedVoicePhrase = 'Town Quest';
 
     final replyEn =
-        '🚗 Ready for the Day 2 Word Drive Game, $_userName?\n\n'
-        'Drive your vehicle, master everyday words and locations, and clear high-speed checkpoints! 🌟';
+        '🏛️ Ready for the Day 2 Town Quest, $_userName?\n\n'
+        'Explore the town, meet friendly villagers, and practice using "am", "is", "are", "in", and "at" in real interactive conversations! 🌟';
     final replyMl =
-        '$_userName, ഡേ 2 വേഡ് ഡ്രൈവ് ഗെയിമിലേക്ക് സ്വാഗതം!\n\n'
-        'വാഹനം ഡ്രൈവ് ചെയ്ത് ശരിയായ വാക്കുകൾ തെരഞ്ഞെടുത്ത് ചെക്ക്‌പോസ്റ്റുകൾ ക്ലിയർ ചെയ്യാം! 🚗💨';
+        '$_userName, ഡേ 2 ടൗൺ ക്വസ്റ്റ് ഗെയിമിലേക്ക് സ്വാഗതം!\n\n'
+        'നഗരം ചുറ്റിക്കണ്ട് ആളുകളുമായി സംസാരിച്ച് am, is, are, in, at എന്നിവ നേരിട്ട് ഉപയോഗിച്ചു പഠിക്കാം! 🏛️✨';
 
     setState(() {
       _messages.add(
@@ -458,29 +461,19 @@ class _PocketDay2Step1AvatarChatPageState
           textEn: replyEn,
           textNative: replyMl,
           audioText:
-              'Ready for the Day 2 Word Drive Game, $_userName? Tap below to launch!',
-          cardContent: _buildWordDriveLaunchCard(),
-          speakThisPrompt: 'Tap below to launch Full-Screen Game 🚗',
+              'Ready for the Day 2 Town Quest, $_userName? Tap below to explore the town and practice!',
+          cardContent: _buildTownQuestLaunchCard(),
+          speakThisPrompt: 'Tap below to launch Day 2 Quest 🏛️',
           inBubbleOptions: [
             Day2InBubbleOption(
-              labelEn: '🚀 START WORD DRIVE ARCADE 🚗',
-              labelNative: 'ആർക്കേഡ് ഡ്രൈവ് ഗെയിം ആരംഭിക്കുക ➔',
-              icon: '🏎️',
+              labelEn: '🏛️ LAUNCH DAY 2 TOWN QUEST ➔',
+              labelNative: 'ടൗൺ ക്വസ്റ്റ് ആരംഭിക്കുക ➔',
+              icon: '🏛️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFFFFD700),
               textColor: Colors.white,
-              onTap: _launchWordDriveArcade,
-            ),
-            Day2InBubbleOption(
-              labelEn: '🌄 OPEN-WORLD ROAD TRIP 🏎️',
-              labelNative: 'ഓപ്പൺ-വേൾഡ് ഡ്രൈവ് ക്വസ്റ്റ് ➔',
-              icon: '🏞️',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF065F46),
-              borderColor: const Color(0xFF34D399),
-              textColor: Colors.white,
-              onTap: _launchOpenWorldDrive,
+              onTap: _launchTownQuestGame,
             ),
             Day2InBubbleOption(
               labelEn: '🗣️ SWITCH TO SPEAKING CHAT',
@@ -500,51 +493,39 @@ class _PocketDay2Step1AvatarChatPageState
       );
     });
 
-    _speak('Ready for the Day 2 Word Drive Game, $_userName? Tap below to launch!');
+    _speak('Ready for the Day 2 Town Quest, $_userName? Tap below to explore the town and practice!');
     _scrollToBottom();
   }
 
-  Future<void> _launchWordDriveArcade() async {
+  Future<void> _launchTownQuestGame() async {
     HapticFeedback.heavyImpact();
     await _tts.stop();
     if (!mounted) return;
     setState(() => _isSpeaking = false);
 
-    await PocketUniversalArcadeEnginePage.launch(
+    await Navigator.push(
       context,
-      day: 2,
-      gameIndex: 1,
-      onCompleted: () {
-        if (!mounted) return;
-        _completeStep1Day2();
-      },
+      MaterialPageRoute(
+        builder: (_) => TownQuestDialogueGamePage(
+          day: 2,
+          nativeLanguage: 'Malayalam',
+          onGameFinished: () {
+            if (!mounted) return;
+            _completeStep1Day2();
+          },
+        ),
+      ),
     );
   }
 
-  Future<void> _launchOpenWorldDrive() async {
-    HapticFeedback.heavyImpact();
-    await _tts.stop();
-    if (!mounted) return;
-    setState(() => _isSpeaking = false);
-
-    await PocketVocabOpenWorldDrivePage.show(
-      context,
-      userId: widget.userId,
-      onCompleted: () {
-        if (!mounted) return;
-        _completeStep1Day2();
-      },
-    );
-  }
-
-  Widget _buildWordDriveLaunchCard() {
+  Widget _buildTownQuestLaunchCard() {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+          colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -552,7 +533,7 @@ class _PocketDay2Step1AvatarChatPageState
         border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF047857).withValues(alpha: 0.35),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.35),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -570,7 +551,7 @@ class _PocketDay2Step1AvatarChatPageState
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
                 ),
-                child: const Text('🚗', style: TextStyle(fontSize: 26)),
+                child: const Text('🏛️', style: TextStyle(fontSize: 26)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -578,26 +559,35 @@ class _PocketDay2Step1AvatarChatPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DAY 2: WORD DRIVE',
+                      'DAY 2: TOWN QUEST RPG',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
-                        fontSize: 15,
+                        fontSize: 13,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                        letterSpacing: 0.8,
                       ),
                     ),
                     Text(
-                      'Drive & Master Locations & Words',
-                      style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                      'Where I Am From & Locations',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Explore the open-world village, interact with friendly townspeople, and solve real conversations using am, is, are, in, and at! 🌟',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12.5,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 12),
           Container(

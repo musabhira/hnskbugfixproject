@@ -2813,6 +2813,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketVocabOpenWorldDrivePage.show(
           context,
           day: day,
+          stepIndex: 4,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onCompleted: () {
             _onStepCompleted(4);
