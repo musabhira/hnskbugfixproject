@@ -173,6 +173,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   // 🤖 English Hub Autonomous Robot Simulation Timers & Rate Limiters
   Timer? _hubRobotIdleConversationTimer;
   Timer? _hubRobotReplyCooldownTimer;
+  Timer? _hubCloudCleanupTimer;
+  bool _isEnglishHubRobotsEnabled = true;
   bool _isRobotReplyingToHuman = false;
   int _hubMinLevel = 1;
   int _hubMaxLevel = 90;
@@ -668,13 +670,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         .read(chatMessagesProvider(widget.groupId).notifier)
         .cleanupOldMessages());
 
-    // 🤖 Initialize English Hub Autonomous Robot Participation
+    // 🤖 Initialize English Hub Autonomous Robot Participation & 15m cloud purge
     if (_isEnglishHubGroup) {
       _initEnglishHubRobotParticipation();
+      _hubCloudCleanupTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+        if (mounted) {
+          ref
+              .read(chatMessagesProvider(widget.groupId).notifier)
+              .cleanupOldMessages();
+        }
+      });
     }
   }
 
-  void _initEnglishHubRobotParticipation() {
+  Future<void> _initEnglishHubRobotParticipation() async {
+    // 0. Load robot toggle preference
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+        safeSetState(() {
+          _isEnglishHubRobotsEnabled =
+              prefs.getBool('pocket_english_hub_robots_enabled') ?? true;
+        });
+      }
+    } catch (_) {}
+
     // 1. Resolve level bracket from groupName e.g., 'English Hub (Lvl 6 - 11)'
     final bracketMatch =
         RegExp(r'lvl\s*(\d+)\s*-\s*(\d+)', caseSensitive: false)
@@ -684,21 +704,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       _hubMaxLevel = int.tryParse(bracketMatch.group(2) ?? '90') ?? 90;
     }
 
-    // 2. Schedule natural multi-robot combo dialogues at a comfortable, medium cadence
-    _scheduleEnglishHubIdleRobotCheck(initial: true);
+    // 2. Schedule natural multi-robot combo dialogues if enabled
+    if (_isEnglishHubRobotsEnabled) {
+      _scheduleEnglishHubIdleRobotCheck(initial: true);
+    }
   }
 
   void _scheduleEnglishHubIdleRobotCheck({bool initial = false}) {
     _hubRobotIdleConversationTimer?.cancel();
+    if (!_isEnglishHubRobotsEnabled) return;
     // Fast initial check: 2-3s so users immediately see lively conversation upon entering
     final delaySeconds = initial
         ? (2 + math.Random().nextInt(2))
         : (14 + math.Random().nextInt(10));
     _hubRobotIdleConversationTimer =
         Timer(Duration(seconds: delaySeconds), () async {
-      if (!mounted || !_isEnglishHubGroup) return;
+      if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) return;
       await _postAutonomousRobotComboDialogueIfIdle();
-      if (mounted && _isEnglishHubGroup) {
+      if (mounted && _isEnglishHubGroup && _isEnglishHubRobotsEnabled) {
         _scheduleEnglishHubIdleRobotCheck(initial: false);
       }
     });
@@ -707,7 +730,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   /// 🤖 Posts a natural 2 or 3 robot conversational combo dialogue with real typing indicators
   Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
     try {
-      if (!mounted || !_isEnglishHubGroup) return;
+      if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) return;
       final messages =
           ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
       final now = DateTime.now();
@@ -729,13 +752,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
       // Deliver each turn sequentially with a visible typing indicator
       for (int i = 0; i < turns.length; i++) {
-        if (!mounted || !_isEnglishHubGroup) break;
+        if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) break;
         final turn = turns[i];
 
         // 1. Show live typing indicator for this specific robot
         PocketRobotService.setTyping(turn.robot.id, true);
         await Future.delayed(Duration(milliseconds: turn.typingDurationMs));
-        if (!mounted || !_isEnglishHubGroup) {
+        if (!mounted || !_isEnglishHubGroup || !_isEnglishHubRobotsEnabled) {
           PocketRobotService.setTyping(turn.robot.id, false);
           break;
         }
@@ -829,7 +852,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     required String humanText,
     required String senderName,
   }) {
-    if (!_isEnglishHubGroup || _isRobotReplyingToHuman) return;
+    if (!_isEnglishHubGroup || !_isEnglishHubRobotsEnabled || _isRobotReplyingToHuman) return;
 
     _isRobotReplyingToHuman = true;
     _hubRobotReplyCooldownTimer?.cancel();
@@ -837,7 +860,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     // Natural human reading & thinking delay: 1.8 seconds before robot starts typing
     Timer(const Duration(milliseconds: 1800), () async {
       try {
-        if (!mounted) return;
+        if (!mounted || !_isEnglishHubRobotsEnabled) {
+          _isRobotReplyingToHuman = false;
+          return;
+        }
 
         final reply = await PocketRobotService.generateEnglishHubRobotReply(
           minLevel: _hubMinLevel,
@@ -964,6 +990,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotReplyCooldownTimer?.cancel();
+    _hubCloudCleanupTimer?.cancel();
+    PocketRobotService.clearAllTyping();
     _pactActiveTimer?.cancel();
     _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
@@ -5284,11 +5312,102 @@ Draft: "$draft"''';
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.psychology_alt_rounded,
-                    color: Color(0xFFFFD600)),
-                tooltip: 'AI English Tutor',
-                onPressed: () {
+              Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.selectionClick();
+                    final newState = !_isEnglishHubRobotsEnabled;
+                    safeSetState(() {
+                      _isEnglishHubRobotsEnabled = newState;
+                    });
+                    try {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool(
+                          'pocket_english_hub_robots_enabled', newState);
+                    } catch (_) {}
+
+                    if (!newState) {
+                      _hubRobotIdleConversationTimer?.cancel();
+                      _hubRobotReplyCooldownTimer?.cancel();
+                      PocketRobotService.clearAllTyping();
+                    } else {
+                      _scheduleEnglishHubIdleRobotCheck(initial: true);
+                    }
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              Text(
+                                newState ? '🤖' : '⏸️',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  newState
+                                      ? 'Robots: ON (Active in group)'
+                                      : 'Robots: OFF (Silenced in group)',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: newState
+                              ? const Color(0xFF059669)
+                              : const Color(0xFF475569),
+                          duration: const Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _isEnglishHubRobotsEnabled
+                          ? const Color(0xFF059669).withValues(alpha: 0.25)
+                          : const Color(0xFF475569).withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _isEnglishHubRobotsEnabled
+                            ? const Color(0xFF34D399)
+                            : const Color(0xFF94A3B8),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _isEnglishHubRobotsEnabled ? '🤖 ON' : '🤖 OFF',
+                          style: GoogleFonts.outfit(
+                            color: _isEnglishHubRobotsEnabled
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFF94A3B8),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: appBarColor,
+              onSelected: (value) {
+                if (value == 'refresh') _handleRefresh();
+                if (value == 'info') _showGroupInfo();
+                if (value == 'ai_tutor') {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -5301,15 +5420,7 @@ Draft: "$draft"''';
                       return const AIEnglishTutorSheet();
                     },
                   );
-                },
-              ),
-            ],
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              color: appBarColor,
-              onSelected: (value) {
-                if (value == 'refresh') _handleRefresh();
-                if (value == 'info') _showGroupInfo();
+                }
                 if (value == 'leave') _showLeaveGroupDialog();
                 if (value == 'report') {
                   ReportHelper.showReportDialog(
@@ -5341,6 +5452,19 @@ Draft: "$draft"''';
                       value: 'info',
                       child: Text('Group Info',
                           style: TextStyle(color: Colors.white)),
+                    ),
+                  if (_isEnglishHubGroup)
+                    const PopupMenuItem(
+                      value: 'ai_tutor',
+                      child: Row(
+                        children: [
+                          Icon(Icons.psychology_alt_rounded,
+                              color: Color(0xFFFFD600), size: 18),
+                          SizedBox(width: 8),
+                          Text('AI English Tutor',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
                     ),
                   const PopupMenuItem(
                     value: 'refresh',

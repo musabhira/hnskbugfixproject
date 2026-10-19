@@ -69,17 +69,20 @@ class Step2InBubbleOption {
 /// 🐱 Step 2: Voice-First Conversational Avatar Chat for Everyday Vocabulary (20 Words)
 class PocketDay1Step2AvatarChatPage extends StatefulWidget {
   final String? userId;
+  final int stepIndex;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step2AvatarChatPage({
     super.key,
     this.userId,
+    this.stepIndex = 4,
     this.onStepFinished,
   });
 
   static Future<void> show(
     BuildContext context, {
     String? userId,
+    int stepIndex = 4,
     Function(int stepIndex)? onStepFinished,
   }) {
     return Navigator.push(
@@ -87,6 +90,7 @@ class PocketDay1Step2AvatarChatPage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketDay1Step2AvatarChatPage(
           userId: userId,
+          stepIndex: stepIndex,
           onStepFinished: onStepFinished,
         ),
       ),
@@ -592,12 +596,13 @@ class _PocketDay1Step2AvatarChatPageState
   }
 
   void _onUserAlreadyKnowsVocabulary() {
+    final nextStep = widget.stepIndex + 1;
     final replyEn =
-        'Awesome, $_userName! 🎉 You already know basic vocabulary! Step 2 is complete! Let\'s drive to Level 3! 🚗';
+        'Awesome, $_userName! 🎉 You already know basic vocabulary! Step ${widget.stepIndex} is complete! Let\'s drive to Level $nextStep! 🚗';
     final replyMl =
-        'വളരെ നല്ലത്, $_userName! നിങ്ങൾക്ക് വാക്കുകൾ അറിയാവുന്നതിനാൽ Step 2 പൂർത്തിയായി. നമുക്ക് ലെവൽ 3-ലേക്ക് പോകാം!';
+        'വളരെ നല്ലത്, $_userName! നിങ്ങൾക്ക് വാക്കുകൾ അറിയാവുന്നതിനാൽ Step ${widget.stepIndex} പൂർത്തിയായി. നമുക്ക് ലെവൽ $nextStep-ലേക്ക് പോകാം!';
 
-    _currentExpectedVoicePhrase = 'Proceed to Level 3';
+    _currentExpectedVoicePhrase = 'Proceed to Level $nextStep';
 
     setState(() {
       _messages.add(
@@ -607,12 +612,12 @@ class _PocketDay1Step2AvatarChatPageState
           textEn: replyEn,
           textNative: replyMl,
           audioText:
-              'Awesome, $_userName! Step 2 is complete! Let\'s drive to Level 3!',
-          speakThisPrompt: 'Tap below to exit & drive to Level 3 🚗',
+              'Awesome, $_userName! Step ${widget.stepIndex} is complete! Let\'s drive to Level $nextStep!',
+          speakThisPrompt: 'Tap below to exit & drive to Level $nextStep 🚗',
           inBubbleOptions: [
             Step2InBubbleOption(
-              labelEn: '🚗 PROCEED TO LEVEL 3 (NEXT) ➔',
-              labelNative: 'ലെവൽ 3-ലേക്ക് ഡ്രൈവ് ചെയ്യാം',
+              labelEn: '🚗 PROCEED TO LEVEL $nextStep (NEXT) ➔',
+              labelNative: 'ലെവൽ $nextStep-ലേക്ക് ഡ്രൈവ് ചെയ്യാം',
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -625,7 +630,7 @@ class _PocketDay1Step2AvatarChatPageState
       );
     });
 
-    _speak('Awesome, $_userName! Step 2 is complete! Let\'s drive to Level 3!');
+    _speak('Awesome, $_userName! Step ${widget.stepIndex} is complete! Let\'s drive to Level $nextStep!');
     _scrollToBottom();
   }
 
@@ -1209,10 +1214,11 @@ class _PocketDay1Step2AvatarChatPageState
   }
 
   void _showFinalCompletionDialogue() {
+    final nextStep = widget.stepIndex + 1;
     final replyEn =
-        'Congratulations, $_userName! 🏆 You mastered all 20 essential everyday words! Step 2 is completed! Let\'s drive to Level 3! 🚗';
+        'Congratulations, $_userName! 🏆 You mastered all 20 essential everyday words! Step ${widget.stepIndex} is completed! Let\'s drive to Level $nextStep! 🚗';
     final replyMl =
-        'അഭിനന്ദനങ്ങൾ, $_userName! 🏆 നിങ്ങൾ നിത്യജീവിതത്തിലെ 20 വാക്കുകൾ സംസാരിച്ചു പഠിച്ചു! Step 2 പൂർത്തിയായി. മൂന്നാമത്തെ ലെവലിലേക്ക് വണ്ടി ഓടിച്ചു പോകാം!';
+        'അഭിനന്ദനങ്ങൾ, $_userName! 🏆 നിങ്ങൾ നിത്യജീവിതത്തിലെ 20 വാക്കുകൾ സംസാരിച്ചു പഠിച്ചു! Step ${widget.stepIndex} പൂർത്തിയായി. ലെവൽ $nextStep-ലേക്ക് വണ്ടി ഓടിച്ചു പോകാം!';
 
     setState(() {
       _messages.add(
@@ -1222,12 +1228,12 @@ class _PocketDay1Step2AvatarChatPageState
           textEn: replyEn,
           textNative: replyMl,
           audioText:
-              'Congratulations, $_userName! You completed Step 2! Let\'s drive to Level 3!',
-          speakThisPrompt: 'Tap below to exit to mountain map & drive to Level 3 🚗',
+              'Congratulations, $_userName! You completed Step ${widget.stepIndex}! Let\'s drive to Level $nextStep!',
+          speakThisPrompt: 'Tap below to exit to mountain map & drive to Level $nextStep 🚗',
           inBubbleOptions: [
             Step2InBubbleOption(
-              labelEn: '🚗 DRIVE TO LEVEL 3 (NEXT) ➔',
-              labelNative: 'പുറത്തേക്ക് പോയി വണ്ടി ലെവൽ 3-ലേക്ക് ഡ്രൈവ് ചെയ്യും',
+              labelEn: '🚗 DRIVE TO LEVEL $nextStep (NEXT) ➔',
+              labelNative: 'പുറത്തേക്ക് പോയി വണ്ടി ലെവൽ $nextStep-ലേക്ക് ഡ്രൈവ് ചെയ്യും',
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -1504,15 +1510,17 @@ class _PocketDay1Step2AvatarChatPageState
 
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
-    final key = 'pocket_day_${uid ?? "guest"}_1_step_2_done';
+    final key = 'pocket_day_${uid ?? "guest"}_1_step_${widget.stepIndex}_done';
     await prefs.setBool(key, true);
+    // Backward compatibility flag
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_1_step_2_done', true);
 
     if (uid != null && uid.isNotEmpty) {
       await PocketFortressDefenseService.recordTrainingPoints(30, uid);
     }
 
     if (mounted) {
-      widget.onStepFinished?.call(2);
+      widget.onStepFinished?.call(widget.stepIndex);
       Navigator.pop(context);
     }
   }
@@ -1642,7 +1650,7 @@ class _PocketDay1Step2AvatarChatPageState
                 Row(
                   children: [
                     Text(
-                      'DAY 1 • STEP 2',
+                      'DAY 1 • STEP ${widget.stepIndex}',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 11.5,

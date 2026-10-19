@@ -32,7 +32,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step1_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step2_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step3_avatar_chat_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step4_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step5_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step1_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
@@ -2800,6 +2799,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketDay1Step2AvatarChatPage.show(
           context,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          stepIndex: 4,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);
           },
@@ -2855,6 +2855,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketDay1Step5AvatarChatPage.show(
           context,
           day: day,
+          stepIndex: 7,
           userId: widget.userId ?? _supabase.auth.currentUser?.id,
           onStepFinished: (finishedStep) {
             _onStepCompleted(finishedStep);

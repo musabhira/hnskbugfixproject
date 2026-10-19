@@ -620,6 +620,7 @@ class _PocketDay1InteractiveFlowPageState
     if (widget.day == 1 && _activeStep == 4) {
       return PocketDay1Step2AvatarChatPage(
         userId: widget.userId,
+        stepIndex: 4,
         onStepFinished: (finishedStep) {
           _markStepCompleted(4);
         },
@@ -652,6 +653,7 @@ class _PocketDay1InteractiveFlowPageState
     if (widget.day == 1 && _activeStep == 7) {
       return PocketDay1Step5AvatarChatPage(
         day: widget.day,
+        stepIndex: 7,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(7);
@@ -746,6 +748,7 @@ class _PocketDay1InteractiveFlowPageState
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 5) {
       return PocketDay1Step5AvatarChatPage(
         day: widget.day,
+        stepIndex: 5,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
           _markStepCompleted(5);

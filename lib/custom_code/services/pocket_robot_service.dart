@@ -301,6 +301,10 @@ class PocketRobotService {
     typingStatusNotifier.value = current;
   }
 
+  static void clearAllTyping() {
+    typingStatusNotifier.value = {};
+  }
+
   static bool isUserOrRobotTyping(String targetId) {
     return typingStatusNotifier.value[targetId] == true;
   }

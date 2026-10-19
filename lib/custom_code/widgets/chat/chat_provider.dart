@@ -494,9 +494,9 @@ class ChatMessages extends _$ChatMessages {
               'and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)')
           : query.eq('group_id', actualId);
 
-      // 🧹 English Hub 15-20 min cloud limit: only fetch messages newer than 20 mins to prevent backlog flood
+      // 🧹 English Hub 15 min cloud limit: only fetch messages newer than 15 mins to prevent backlog flood
       if (_isEnglishHubGroup) {
-        final hubCutoff = DateTime.now().subtract(const Duration(minutes: 20)).toUtc().toIso8601String();
+        final hubCutoff = DateTime.now().subtract(const Duration(minutes: 15)).toUtc().toIso8601String();
         baseQuery = baseQuery.gte('created_at', hubCutoff);
         unawaited(cleanupOldMessages());
       }
