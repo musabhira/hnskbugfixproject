@@ -639,7 +639,7 @@ class _PocketDay2Step4AvatarChatPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CyberCat • Step 4',
+                    'Day 2 • Step 4: Spoken English 🎙️',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 15,
@@ -647,7 +647,7 @@ class _PocketDay2Step4AvatarChatPageState
                     ),
                   ),
                   Text(
-                    'Day 2: Spoken English Studio 🎙️',
+                    'Where I Am From & Daily Routine',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF38BDF8),
                       fontSize: 11,

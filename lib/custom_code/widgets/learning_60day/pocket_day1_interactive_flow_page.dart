@@ -317,7 +317,7 @@ class _PocketDay1InteractiveFlowPageState
 
     final Map<int, bool> completed = {};
     for (int s = 1; s <= 11; s++) {
-      final key = 'pocket_day_${uid ?? "guest"}_1_step_${s}_done';
+      final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_done';
       completed[s] = prefs.getBool(key) ?? false;
     }
 
@@ -388,7 +388,7 @@ class _PocketDay1InteractiveFlowPageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
-    final key = 'pocket_day_${uid ?? "guest"}_1_step_${stepIndex}_done';
+    final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${stepIndex}_done';
     await prefs.setBool(key, true);
 
     const xp = 30;
@@ -475,11 +475,11 @@ class _PocketDay1InteractiveFlowPageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_1_completed', true);
-    await prefs.setInt('learning_last_completed_day_${uid ?? "guest"}', 1);
+    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_completed', true);
+    await prefs.setInt('learning_last_completed_day_${uid ?? "guest"}', widget.day);
     final now = DateTime.now();
     await prefs.setString(
-        'learning_day_${uid ?? "guest"}_1_completed_date', '${now.year}-${now.month}-${now.day}');
+        'learning_day_${uid ?? "guest"}_${widget.day}_completed_date', '${now.year}-${now.month}-${now.day}');
 
     if (uid != null && uid.isNotEmpty) {
       await PocketFortressDefenseService.recordTrainingPoints(150, uid);

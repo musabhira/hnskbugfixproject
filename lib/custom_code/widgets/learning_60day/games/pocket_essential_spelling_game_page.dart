@@ -776,8 +776,8 @@ class _PocketEssentialSpellingPageState
                 ),
                 child: Text(
                   _isPracticeExamMode
-                      ? 'DAY ${widget.day} • SPELLING EXAM 🎮'
-                      : 'DAY ${widget.day} • ESSENTIAL WORDS & SPELLING 👂',
+                      ? 'DAY ${widget.day} • STEP 3: SPELLING EXAM 🎮'
+                      : 'DAY ${widget.day} • STEP 3: ESSENTIAL WORDS & SPELLING 👂',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

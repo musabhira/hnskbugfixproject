@@ -1285,7 +1285,7 @@ class _PocketDay2Step1AvatarChatPageState
                     ],
                   ),
                   Text(
-                    'Day 2 • Concept Room (Step 1/7)',
+                    'Day 2 • Step 1: Concept Room 🏛️',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF94A3B8),
                       fontSize: 11,

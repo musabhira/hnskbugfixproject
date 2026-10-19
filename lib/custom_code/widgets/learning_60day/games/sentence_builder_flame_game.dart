@@ -619,15 +619,11 @@ class _PocketSentenceBuilderGamePageState
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                widget.day <= 15
-                    ? 'Beginner • Day ${widget.day}'
-                    : (widget.day <= 50
-                        ? 'Intermediate • Day ${widget.day}'
-                        : 'Advanced • Day ${widget.day}'),
+                'DAY ${widget.day} • STEP 2: SENTENCE BUILDER 🧩',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF00E5FF),
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 15,
                   letterSpacing: 0.5,
                 ),
               ),
