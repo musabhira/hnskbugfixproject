@@ -298,38 +298,44 @@ class Pocket90DaySentenceBuilderData {
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 6
+    // DAY 6: Daily Habits & The Present Simple (Third-Person -s Rule)
     // -----------------------------------------------------------------------
     6: [
       _buildRound(
         id: 1,
-        sentence: 'Cook in the kitchen .',
-        translationMl: 'പാകം ചെയ്യുക - Cook in the kitchen.',
-        hint: 'Pay attention to: Prepositions with Rooms (In the kitchen, bedroom)',
+        sentence: 'I drink black coffee every morning .',
+        translationMl: 'ഞാൻ എല്ലാ ദിവസവും രാവിലെ ബ്ലാക്ക് കോഫി കുടിക്കുന്നു.',
+        hint: 'Habitual first person: "I drink..."',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Clean your room .',
-        translationMl: 'വൃത്തിയാക്കുക - Clean your room.',
-        hint: 'Pay attention to: Prepositions with Rooms (In the kitchen, bedroom)',
+        sentence: 'He goes to the office by metro .',
+        translationMl: 'അവൻ മെട്രോയിലാണ് ഓഫീസിൽ പോകുന്നത്.',
+        hint: 'Third-person singular takes -es: "He goes..."',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of My House & Rooms gives you great confidence in English .',
-        translationMl: 'വീടും മുറികളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Prepositions with Rooms (In the kitchen, bedroom)',
+        sentence: 'She speaks English very fluently .',
+        translationMl: 'അവൾ വളരെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു.',
+        hint: 'Third-person singular takes -s: "She speaks..."',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Open the door .',
-        translationMl: 'വീടും മുറികളും',
-        hint: 'Core sentence pattern: Prepositions with Rooms (In the kitchen, bedroom)',
+        sentence: 'My brother exercises in the gym .',
+        translationMl: 'എന്റെ സഹോദരൻ ജിമ്മിൽ വ്യായാമം ചെയ്യുന്നു.',
+        hint: 'Singular subject agreement: "My brother exercises..."',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Shut the window .',
-        translationMl: 'അടയ്ക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'shut\'',
+        sentence: 'We cook delicious food together .',
+        translationMl: 'ഞങ്ങൾ ഒരുമിച്ച് രുചികരമായ ഭക്ഷണം പാകം ചെയ്യുന്നു.',
+        hint: 'Plural subject takes base verb: "We cook..."',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'They clean their study room daily .',
+        translationMl: 'അവർ അവരുടെ പഠനമുറി ദിവസേന വൃത്തിയാക്കുന്നു.',
+        hint: 'Habitual action: "They clean their..."',
       ),
     ],
     // -----------------------------------------------------------------------

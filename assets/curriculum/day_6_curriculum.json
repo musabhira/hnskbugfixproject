@@ -9,27 +9,27 @@
       "hi": "हाउस 1: आधार और दैनिक जीवन",
       "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
     },
-    "version": "day-6-v1",
+    "version": "day-6-v2-unified",
     "topic": {
-      "en": "Determiners and Quantifiers",
-      "ml": "ഡിറ്റർമിനറുകളും ക്വാണ്ടിഫയറുകളും",
-      "hi": "My House & Rooms",
-      "ta": "My House & Rooms"
+      "en": "Daily Habits & The Simple Present (Third-Person -s Rule)",
+      "ml": "ഡേ 6: ദൈനംദിന ശീലങ്ങൾ പറയാൻ Simple Present Tense (He/She + -s/-es)",
+      "hi": "Daily Habits & The Simple Present",
+      "ta": "Daily Habits & The Simple Present"
     },
-    "unlockRule": "Unlocks after passing Day 5 Exam. Day 7 unlocks after scoring 70%+ in Day 6 Exam.",
+    "unlockRule": "Unlocks after completing Day 5. Day 7 unlocks after completing Day 6.",
     "passPercentage": 70,
-    "totalXpReward": 262,
-    "totalCoinsReward": 56
+    "totalXpReward": 400,
+    "totalCoinsReward": 80
   },
   "grammarRule": {
-    "formula": "Determiners and Quantifiers",
+    "formula": "Habits: I/You/We/They + VERB | He/She/It + VERB-s/es",
     "explanation": {
-      "ml": "വീടും മുറികളും എന്ന വിഷയത്തിൽ Prepositions with Rooms (In the kitchen, bedroom) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Prepositions with Rooms (In the kitchen, bedroom) correctly in spoken English."
+      "en": "Use the Simple Present for recurring daily habits. When the subject is He, She, or It, always add -s or -es to the verb (He works, She speaks, My brother exercises)!",
+      "ml": "ദിവസേന ആവർത്തിക്കുന്ന ശീലങ്ങൾക്ക് Simple Present ഉപയോഗിക്കുന്നു. അവൻ (He), അവൾ (She), അത് (It) വരുമ്പോൾ ക്രിയയുടെ ഒടുവിൽ s അല്ലെങ്കിൽ es ചേർക്കാൻ മറക്കരുത് (He works, She speaks)."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Cook in the kitchen.",
-      "en": "Golden Rule: Practice 'Cook in the kitchen.' with zero hesitation."
+      "en": "Golden Rule: Never say 'He work in TCS'—always say 'He works in TCS'!",
+      "ml": "💡 ടിപ്പ്: മറ്റൊരാളുടെ ജോലിയോ ശീലമോ പറയുമ്പോൾ ക്രിയയിൽ 's' ചേർക്കണം: 'He works', 'She lives', 'He speaks'!"
     }
   },
   "vocabulary": {
@@ -43,8 +43,8 @@
           "hi": "पकाना",
           "ta": "சமை"
         },
-        "example": "Cook in the kitchen.",
-        "exampleMl": "പാകം ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We cook delicious food together.",
+        "exampleMl": "ഞങ്ങൾ ഒരുമിച്ച് രുചികരമായ ഭക്ഷണം പാകം ചെയ്യുന്നു."
       },
       {
         "v1": "clean",
@@ -55,8 +55,8 @@
           "hi": "साफ़ करना",
           "ta": "சுத்தம் செய்"
         },
-        "example": "Clean your room.",
-        "exampleMl": "വൃത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "They clean their study room daily.",
+        "exampleMl": "അവർ അവരുടെ പഠനമുറി ദിവസേന വൃത്തിയാക്കുന്നു."
       },
       {
         "v1": "open",
@@ -67,8 +67,8 @@
           "hi": "खोलना",
           "ta": "திற"
         },
-        "example": "Open the door.",
-        "exampleMl": "തുറക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Open the windows to let in fresh air.",
+        "exampleMl": "ശുദ്ധവായു കടക്കാനായി ജനലുകൾ തുറക്കുക."
       },
       {
         "v1": "shut",
@@ -79,8 +79,8 @@
           "hi": "बंद करना",
           "ta": "மூடு"
         },
-        "example": "Shut the window.",
-        "exampleMl": "അടയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Shut the main door before sunset.",
+        "exampleMl": "സൂര്യാസ്തമയത്തിന് മുൻപ് പ്രധാന വാതിൽ അടയ്ക്കുക."
       }
     ],
     "nouns": [
@@ -88,46 +88,55 @@
         "word": "kitchen",
         "meaning": {
           "ml": "അടുക്കള",
-          "hi": "അടുക്കള",
-          "ta": "അടുക്കള"
+          "hi": "रसोई",
+          "ta": "சமையலறை"
         },
-        "example": "We learned about kitchen in today's lesson."
+        "example": "The aroma of fresh tea fills the kitchen."
       },
       {
         "word": "bedroom",
         "meaning": {
           "ml": "കിടപ്പുമുറി",
-          "hi": "കിടപ്പുമുറി",
-          "ta": "കിടപ്പുമുറി"
+          "hi": "शयनकक्ष",
+          "ta": "படுக்கையறை"
         },
-        "example": "We learned about bedroom in today's lesson."
+        "example": "His bedroom is quiet and organized."
       },
       {
-        "word": "hall",
+        "word": "room",
         "meaning": {
-          "ml": "ഹാൾ",
-          "hi": "ഹാൾ",
-          "ta": "ഹാൾ"
+          "ml": "മുറി",
+          "hi": "कमरा",
+          "ta": "அறை"
         },
-        "example": "We learned about hall in today's lesson."
+        "example": "We study in our reading room."
       },
       {
         "word": "door",
         "meaning": {
           "ml": "വാതിൽ",
-          "hi": "വാതിൽ",
-          "ta": "വാതിൽ"
+          "hi": "दरवाज़ा",
+          "ta": "கதவு"
         },
-        "example": "We learned about door in today's lesson."
+        "example": "Please close the door gently."
       },
       {
         "word": "window",
         "meaning": {
           "ml": "ജനൽ",
-          "hi": "ജനൽ",
-          "ta": "ജനൽ"
+          "hi": "खिड़की",
+          "ta": "ஜன்னல்"
         },
-        "example": "We learned about window in today's lesson."
+        "example": "Morning light shines through the window."
+      },
+      {
+        "word": "food",
+        "meaning": {
+          "ml": "ഭക്ഷണം",
+          "hi": "भोजन",
+          "ta": "உணவு"
+        },
+        "example": "Eating healthy food keeps you active."
       }
     ]
   },
@@ -136,8 +145,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: My House & Rooms",
-        "ml": "പാഠം: വീടും മുറികളും"
+        "en": "Concept Room: Daily Habits & The Present Simple",
+        "ml": "പാഠം: ദൈനംദിന ശീലങ്ങൾ പറയാൻ Simple Present Tense"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,186 +154,202 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Interactive Tutor teaches the golden third-person -s rule for speaking about daily routines.",
+        "ml": "ദിവസേനയുള്ള ശീലങ്ങളും മറ്റുള്ളവരുടെ ദിനചര്യകളും ഇംഗ്ലീഷിൽ പറയാൻ പഠിക്കാം."
       }
     },
     {
       "stepNumber": 2,
-      "id": "step_2_vocab_vault",
+      "id": "step_2_sentence_builder",
       "title": {
-        "en": "Vocabulary: Verbs & Key Words",
-        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+        "en": "GAME 1: Sentence Builder (Flame Engine)",
+        "ml": "ഗെയിം 1: സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)"
       },
-      "icon": "📦",
-      "gameType": "vocab_vault",
+      "icon": "🧩",
+      "gameType": "flame_sentence_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 40,
       "passScore": 80,
       "description": {
-        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
-        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+        "en": "Assemble words into correct English habitual sentences using the interactive Flame physics engine.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
       }
     },
     {
       "stepNumber": 3,
-      "id": "step_3_game_hunt",
+      "id": "step_3_essential_spelling",
       "title": {
-        "en": "Game 1: Meadow Runner Hunt",
-        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+        "en": "GAME 2: Essential Words & Spelling Challenge",
+        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്"
       },
-      "icon": "🏃",
-      "gameType": "meadow_runner_hunt",
+      "icon": "👂",
+      "gameType": "essential_spelling",
       "canBeSkipped": false,
-      "xpReward": 40,
+      "xpReward": 35,
       "passScore": 70,
-      "targetObjects": [
-        "kitchen",
-        "bedroom",
-        "hall",
-        "door",
-        "window"
-      ],
       "description": {
-        "en": "Dodge obstacles and grab target words in the 2D world.",
-        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+        "en": "Listen to Day 6 audio and spell essential daily routine & home words into letter slots.",
+        "ml": "ശബ്ദം ശ്രദ്ധിച്ചു കേട്ട് വാക്കിന്റെ അക്ഷരങ്ങൾ പെട്ടികളിൽ ക്രമീകരിക്കുക."
       }
     },
     {
       "stepNumber": 4,
-      "id": "step_4_game_builder",
+      "id": "step_4_spoken_english",
       "title": {
-        "en": "Game 2: Sentence Constructor",
-        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+        "en": "Spoken English Studio (1-on-1 Voice Chat)",
+        "ml": "സ്പോക്കൺ ഇംഗ്ലീഷ് സ്റ്റുഡിയോ (1-on-1 വോയ്സ് ചാറ്റ്)"
       },
-      "icon": "🧩",
-      "gameType": "word_catcher_builder",
+      "icon": "🎙️",
+      "gameType": "spoken_english_voice_chat",
       "canBeSkipped": false,
-      "xpReward": 40,
-      "passScore": 80,
-      "challengePatterns": [
-        "Cook in the kitchen.",
-        "Clean your room.",
-        "Open the door."
-      ],
+      "xpReward": 45,
+      "passScore": 70,
       "description": {
-        "en": "Assemble falling words into correct sentences.",
-        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+        "en": "Have a realistic voice conversation with CyberCat discussing daily morning habits and third-person routines.",
+        "ml": "മൈക്കിലൂടെ നേരിട്ട് സംസാരിച്ച് വോയ്സ് മെസ്സേജുകളിലൂടെ ഇംഗ്ലീഷ് പരിശീലിക്കുക."
       }
     },
     {
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: My House & Rooms",
-        "ml": "റീഡിങ് റൂം: വീടും മുറികളും"
+        "en": "Reading Room: Illustrated Story & Voice Aloud",
+        "ml": "റീഡിങ് റൂം: സചിത്ര കഥയും ശബ്ദ വായനയും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
       "canBeSkipped": false,
-      "xpReward": 35,
+      "xpReward": 40,
       "passScore": 75,
-      "sentences": [
-        {
-          "text": "Cook in the kitchen.",
-          "meaningMl": "പാകം ചെയ്യുക - Cook in the kitchen.",
-          "audioPrompt": "Cook in the kitchen."
-        },
-        {
-          "text": "Clean your room.",
-          "meaningMl": "വൃത്തിയാക്കുക - Clean your room.",
-          "audioPrompt": "Clean your room."
-        },
-        {
-          "text": "Daily practice of My House & Rooms gives you great confidence in English.",
-          "meaningMl": "വീടും മുറികളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of My House & Rooms gives you great confidence in English."
-        }
-      ],
+      "storyChapter": {
+        "chapterNumber": 6,
+        "title": "Daily Rhythms of Life: Habits of Success",
+        "titleMl": "ജീവിതതാളം: വിജയകരമായ ശീലങ്ങൾ",
+        "paragraphs": [
+          {
+            "paragraphNumber": 1,
+            "textEn": "I wake up early and drink black coffee every morning. Starting the day with a focused routine gives me clarity, energy, and determination.",
+            "textMl": "ഞാൻ എല്ലാ ദിവസവും രാവിലെ നേരത്തെ ഉണർന്ന് ബ്ലാക്ക് കോഫി കുടിക്കുന്നു. ചിട്ടയായ ഒരു പ്രഭാത ദിനചര്യയോടെ ദിവസം തുടങ്ങുന്നത് എനിക്ക് വ്യക്തതയും ഊർജ്ജവും നൽകുന്നു.",
+            "audioPrompt": "I wake up early and drink black coffee every morning. Starting the day with a focused routine gives me clarity, energy, and determination."
+          },
+          {
+            "paragraphNumber": 2,
+            "textEn": "He goes to the office by metro, and she speaks English very fluently. My brother exercises in the gym every afternoon to stay healthy and strong.",
+            "textMl": "അവൻ മെട്രോയിലാണ് ഓഫീസിൽ പോകുന്നത്, അവൾ വളരെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു. എന്റെ സഹോദരൻ എല്ലാ ദിവസവും ഉച്ചകഴിഞ്ഞ് ജിമ്മിൽ വ്യായാമം ചെയ്യുന്നു.",
+            "audioPrompt": "He goes to the office by metro, and she speaks English very fluently. My brother exercises in the gym every afternoon to stay healthy and strong."
+          },
+          {
+            "paragraphNumber": 3,
+            "textEn": "In the evening, we cook delicious food together in the kitchen. They clean their study room daily, showing that small daily habits build lifelong excellence.",
+            "textMl": "വൈകുന്നേരങ്ങളിൽ ഞങ്ങൾ അടുക്കളയിൽ ഒരുമിച്ച് രുചികരമായ ഭക്ഷണം പാകം ചെയ്യുന്നു. ചെറിയ ചെറിയ നല്ല ശീലങ്ങളാണ് ജീവിതത്തിൽ വലിയ വിജയം നേടിത്തരുന്നത്.",
+            "audioPrompt": "In the evening, we cook delicious food together in the kitchen. They clean their study room daily, showing that small daily habits build lifelong excellence."
+          }
+        ]
+      },
       "description": {
-        "en": "Listen to native audio, then tap microphone to read aloud.",
-        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+        "en": "Read the illustrated story paragraph by paragraph and record your voice aloud.",
+        "ml": "കഥയിലെ ഓരോ ഖണ്ഡികയും ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
       }
     },
     {
       "stepNumber": 6,
-      "id": "step_6_spoken_lab",
+      "id": "step_6_spoken_simulator",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "20-Turn Spoken Simulator",
+        "ml": "20-ടേൺ സ്പോക്കൺ സിമുലേറ്റർ"
       },
-      "icon": "🎙️",
-      "gameType": "speech_analyzer",
+      "icon": "🗣️",
+      "gameType": "spoken_avatar_simulator",
       "canBeSkipped": false,
-      "xpReward": 35,
-      "passScore": 70,
-      "voiceTasks": {
-        "zero": {
-          "prompt": "Repeat clearly with Tutor Robot: 'Cook in the kitchen.'",
-          "targetSentence": "Cook in the kitchen."
-        },
-        "middle": {
-          "prompt": "Speak today's core sentence: 'Clean your room.'",
-          "targetSentence": "Clean your room."
-        },
-        "higher": {
-          "prompt": "Explain your thought on My House & Rooms in 1-2 fluent sentences.",
-          "targetSentence": "Open the door."
-        }
-      },
+      "xpReward": 50,
+      "passScore": 80,
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Deep 20-turn conversational dialogue simulation practicing daily routine scheduling and habit tracking.",
+        "ml": "20 റൗണ്ട് സംഭാഷണ പരിശീലനം തത്സമയ ഫീഡ്ബാക്കോടെ."
       }
     },
     {
       "stepNumber": 7,
-      "id": "step_7_house_defense",
+      "id": "step_7_vocab_drive",
       "title": {
-        "en": "House Defense Shield",
-        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+        "en": "Open-World Vocab Quest",
+        "ml": "ഓപ്പൺ-വേൾഡ് വൊക്കാബ് ക്വസ്റ്റ്"
+      },
+      "icon": "🚗",
+      "gameType": "vocab_open_world_drive",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 80,
+      "description": {
+        "en": "Drive the exploration buggy to collect vocabulary checkpoints across the 3D terrain.",
+        "ml": "3D ലാൻഡ്സ്കേപ്പിൽ വണ്ടി ഓടിച്ച് വൊക്കാബുലറി ചെക്ക്പോയിന്റുകൾ കണ്ടെത്തുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_8_community_chat",
+      "title": {
+        "en": "English Hub Community Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ് കമ്മ്യൂണിറ്റി ചാറ്റ്"
+      },
+      "icon": "💬",
+      "gameType": "english_hub_community",
+      "canBeSkipped": true,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Join learners in the community group to share today's achievements.",
+        "ml": "കമ്മ്യൂണിറ്റി ഗ്രൂപ്പിൽ മറ്റുള്ളവരുമായി ചർച്ചകളിൽ പങ്കുചേരുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_house_defense",
+      "title": {
+        "en": "House Defense Shield Command",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്"
       },
       "icon": "🛡️",
       "gameType": "house_defense_trap_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 35,
       "passScore": 100,
       "traps": [
         {
           "id": "trap_d6_1",
-          "question": "Which word represents: 'പാകം ചെയ്യുക'?",
+          "question": "Which sentence follows the correct third-person subject-verb agreement?",
           "options": [
-            "cook",
-            "remember",
-            "decide",
-            "prepare"
+            "He work at Google.",
+            "He works at Google.",
+            "He working at Google.",
+            "He are work at Google."
           ],
-          "answer": "cook",
-          "explanation": "cook എന്നാൽ പാകം ചെയ്യുക എന്നർത്ഥം."
+          "answer": "He works at Google.",
+          "explanation": "He, She വരുമ്പോൾ ക്രിയയിൽ s ചേർക്കണം: He works at Google."
         },
         {
           "id": "trap_d6_2",
-          "question": "What is the past form (V2) of 'clean'?",
+          "question": "Complete: 'She ___ English very fluently.'",
           "options": [
-            "has clean",
-            "cleans",
-            "cleaning",
-            "cleaned"
+            "speak",
+            "speaks",
+            "speaking",
+            "is speak"
           ],
-          "answer": "cleaned",
-          "explanation": "clean ന്റെ ഭൂതകാല രൂപം cleaned ആണ്."
+          "answer": "speaks",
+          "explanation": "Third person singular takes 'speaks'."
         },
         {
           "id": "trap_d6_3",
-          "question": "What is the correct English word for 'അടുക്കള'?",
+          "question": "What is the correct English word for 'വൃത്തിയാക്കുക'?",
           "options": [
-            "kitchen",
-            "progress",
-            "schedule",
-            "partner"
+            "cook",
+            "shut",
+            "clean",
+            "open"
           ],
-          "answer": "kitchen",
-          "explanation": "അടുക്കള എന്നാൽ ഇംഗ്ലീഷിൽ kitchen."
+          "answer": "clean",
+          "explanation": "വൃത്തിയാക്കുക എന്നാൽ clean."
         }
       ],
       "description": {
@@ -333,131 +358,37 @@
       }
     },
     {
-      "stepNumber": 8,
-      "id": "step_attack_raids",
+      "stepNumber": 10,
+      "id": "step_10_poketalk_pact",
       "title": {
-        "en": "⚔️ Citadel Attack Raids (Active)",
-        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+        "en": "Poketalk: 4-Day Spoken Pact",
+        "ml": "പോക്കറ്റ്-ടോക്ക്: 4-ഡേ സ്പോക്കൺ പാക്ട്"
+      },
+      "icon": "📞",
+      "gameType": "poketalk_spoken_pact",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "description": {
+        "en": "Connect with fellow learners to establish a 4-day spoken English pact.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി 4 ദിവസത്തെ സ്പോക്കൺ പാർട്ണർഷിപ്പ് ഉണ്ടാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 11,
+      "id": "step_11_citadel_raid",
+      "title": {
+        "en": "House Attack Quest: Citadel Raid",
+        "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റെയ്ഡ്"
       },
       "icon": "⚔️",
       "gameType": "citadel_attack_raid",
       "canBeSkipped": false,
-      "xpReward": 45,
-      "passScore": 100,
-      "attackConfig": {
-        "isUnlocked": true,
-        "targetHousesAvailable": 3,
-        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
-      },
-      "description": {
-        "en": "Raid rival learner houses by solving grammar challenges!",
-        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
-      }
-    },
-    {
-      "stepNumber": 9,
-      "id": "step_social_arena",
-      "title": {
-        "en": "Community & Social Arena",
-        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
-      },
-      "icon": "🤝",
-      "gameType": "social_arena",
-      "canBeSkipped": true,
-      "xpReward": 30,
-      "passScore": 100,
-      "socialConfig": {
-        "zeroTrack": {
-          "isLocked": true,
-          "unlocksOnDay": 10,
-          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
-          "alternativeAction": "robot_voice_practice"
-        },
-        "middleTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Post in English Hub: 'Today on Day 6, I practiced My House & Rooms! What are your thoughts?'",
-          "randomCallPrompt": "Connect on an anonymous call to discuss My House & Rooms for 2 minutes.",
-          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
-        },
-        "higherTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Lead a professional discussion topic on My House & Rooms in English Hub.",
-          "randomCallPrompt": "Connect a 3-minute voice conversation on My House & Rooms.",
-          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
-        }
-      },
-      "description": {
-        "en": "Connect with real learners or chat with your AI Robot.",
-        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
-      }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_daily_exam",
-      "title": {
-        "en": "Day 6 Gate Exam (5 Qs)",
-        "ml": "ഡേ 6 ഗേറ്റ് എക്സാം"
-      },
-      "icon": "🎓",
-      "gameType": "daily_exam",
-      "canBeSkipped": false,
       "xpReward": 50,
-      "passScore": 70,
-      "examQuestions": [
-        {
-          "q": "Choose the correct meaning for 'cook':",
-          "options": [
-            "പാകം ചെയ്യുക",
-            "ഭക്ഷണം",
-            "സന്തോഷം",
-            "യാത്ര"
-          ],
-          "answer": "പാകം ചെയ്യുക"
-        },
-        {
-          "q": "Complete the sentence: '_____ in the kitchen.'",
-          "options": [
-            "is cook",
-            "were cook",
-            "cook",
-            "cooking"
-          ],
-          "answer": "cook"
-        },
-        {
-          "q": "What is the past form (V2) of 'clean'?",
-          "options": [
-            "None",
-            "cleanedx",
-            "cleans",
-            "cleaned"
-          ],
-          "answer": "cleaned"
-        },
-        {
-          "q": "Which English word means 'അടുക്കള'?",
-          "options": [
-            "airport",
-            "station",
-            "journey",
-            "kitchen"
-          ],
-          "answer": "kitchen"
-        },
-        {
-          "q": "Which sentence is grammatically correct for today's lesson?",
-          "options": [
-            "He do not cook yesterday.",
-            "We was cook tomorrow.",
-            "I am cook every time wrongly.",
-            "Cook in the kitchen."
-          ],
-          "answer": "Cook in the kitchen."
-        }
-      ],
+      "passScore": 80,
       "description": {
-        "en": "Pass Day 6 with 70%+ to keep your streak and unlock Day 7!",
-        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+        "en": "Raid the rival House Citadel by answering speed grammar questions.",
+        "ml": "എതിർ ഹൗസിന്റെ കോട്ട ആക്രമിക്കാൻ ചോദ്യങ്ങൾക്ക് വേഗത്തിൽ ഉത്തരം നൽകുക."
       }
     }
   ]

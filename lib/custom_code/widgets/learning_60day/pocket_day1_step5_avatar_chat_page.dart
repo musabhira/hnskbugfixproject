@@ -320,7 +320,39 @@ class _PocketDay1Step5AvatarChatPageState
       ];
     }
 
-    // Days 6 to 90: Dynamically generate 3 chapters matching the day curriculum vocabulary
+    if (day == 6) {
+      return [
+        {
+          'part': 1,
+          'title': 'Daily Rhythms of Life: Habits of Success ⏰',
+          'bannerEmoji': '☕ 🌅 🏃',
+          'paragraphEn':
+              'I wake up early and drink black coffee every morning. Starting the day with a focused routine gives me clarity, energy, and determination.',
+          'readAloudTarget':
+              'I wake up early and drink black coffee every morning. A focused routine gives me clarity.',
+        },
+        {
+          'part': 2,
+          'title': 'Hard Work & Dedication 🚇',
+          'bannerEmoji': '🚇 💻 🗣️',
+          'paragraphEn':
+              'He goes to the office by metro, and she speaks English very fluently. My brother exercises in the gym every afternoon to stay healthy and strong.',
+          'readAloudTarget':
+              'He goes to the office by metro, and she speaks English very fluently.',
+        },
+        {
+          'part': 3,
+          'title': 'An Evening of Peaceful Harmony 🏡',
+          'bannerEmoji': '🍳 🧹 🌟',
+          'paragraphEn':
+              'In the evening, we cook delicious food together in the kitchen. They clean their study room daily, showing that small daily habits build lifelong excellence.',
+          'readAloudTarget':
+              'We cook delicious food together. Small daily habits build lifelong excellence.',
+        },
+      ];
+    }
+
+    // Days 7 to 90: Dynamically generate 3 chapters matching the day curriculum vocabulary
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final w0 = vocab.isNotEmpty ? vocab[0] : null;
     final w1 = vocab.length > 1 ? vocab[1] : null;

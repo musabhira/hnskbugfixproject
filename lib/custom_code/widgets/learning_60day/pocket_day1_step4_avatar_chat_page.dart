@@ -429,7 +429,66 @@ class _PocketDay1Step4AvatarChatPageState
       ];
     }
 
-    // Days 6–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
+    if (day == 6) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Hello! Welcome to Day 6! What do you like to drink every morning? ☕',
+          'questionMl': 'ഹലോ! ഡേ 6 ലേക്ക് സ്വാഗതം! എല്ലാ ദിവസവും രാവിലെ എന്താണ് കുടിക്കാൻ ഇഷ്ടപ്പെടുന്നത്?',
+          'targetReply': 'I drink black coffee every morning.',
+          'targetReplyMl': 'ഞാൻ എല്ലാ ദിവസവും രാവിലെ ബ്ലാക്ക് കോഫി കുടിക്കുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'How does your friend travel to his office? 🚇',
+          'questionMl': 'നിന്റെ സുഹൃത്ത് എങ്ങനെയാണ് ഓഫീസിലേക്ക് പോകുന്നത്?',
+          'targetReply': 'He goes to the office by metro.',
+          'targetReplyMl': 'അവൻ മെട്രോയിലാണ് ഓഫീസിൽ പോകുന്നത്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Tell me about your teacher or mentor! How do they speak English? 🗣️',
+          'questionMl': 'നിന്റെ ടീച്ചറെക്കുറിച്ച് പറയൂ! അവർ എങ്ങനെയാണ് ഇംഗ്ലീഷ് സംസാരിക്കുന്നത്?',
+          'targetReply': 'She speaks English very fluently.',
+          'targetReplyMl': 'അവൾ വളരെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Where does your brother or friend stay active and fit? 🏋️',
+          'questionMl': 'നിന്റെ സഹോദരൻ എവിടെയാണ് വ്യായാമം ചെയ്യുന്നത്?',
+          'targetReply': 'My brother exercises in the gym.',
+          'targetReplyMl': 'എന്റെ സഹോദരൻ ജിമ്മിൽ വ്യായാമം ചെയ്യുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What do you and your family enjoy doing together in the kitchen? 🍳',
+          'questionMl': 'നിങ്ങളും കുടുംബവും അടുക്കളയിൽ ഒരുമിച്ച് എന്താണ് ചെയ്യാൻ ഇഷ്ടപ്പെടുന്നത്?',
+          'targetReply': 'We cook delicious food together.',
+          'targetReplyMl': 'ഞങ്ങൾ ഒരുമിച്ച് രുചികരമായ ഭക്ഷണം പാകം ചെയ്യുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'How do your housemates keep their space neat and tidy? 🧹',
+          'questionMl': 'നിങ്ങളുടെ പഠനമുറി എങ്ങനെയാണ് വൃത്തിയായി സൂക്ഷിക്കുന്നത്?',
+          'targetReply': 'They clean their study room daily.',
+          'targetReplyMl': 'അവർ അവരുടെ പഠനമുറി ദിവസേന വൃത്തിയാക്കുന്നു.',
+        },
+      ];
+    }
+
+    // Days 7–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
     final master = PocketMasterCurriculum90.getDay(day);
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
 
