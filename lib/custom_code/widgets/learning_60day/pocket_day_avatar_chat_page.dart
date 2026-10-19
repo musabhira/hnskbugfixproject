@@ -106,46 +106,46 @@ class DayCurriculumSpec {
 class PocketDays3To16Registry {
   static final Map<int, DayCurriculumSpec> specs = {
     // -------------------------------------------------------------------------
-    // DAY 3: Basic Nouns & Action Verbs (S-V-O Blueprint)
+    // DAY 3: Introducing Family & Everyday Actions (S-V-O Blueprint)
     // -------------------------------------------------------------------------
     3: const DayCurriculumSpec(
       day: 3,
-      topicEmoji: '🐠',
-      titleEn: 'Day 3: S-V-O Sentence Blueprint & Action Verbs',
-      titleMl: 'ഡേ 3: ഇംഗ്ലീഷ് വാക്യഘടന (Subject + Verb + Object)',
-      greetingEn: 'Welcome to Day 3! 🌟 Today we master the immutable English S-V-O Blueprint (Subject + Verb + Object) and everyday action verbs!',
-      greetingMl: 'ഡേ 3 ലേക്ക് സ്വാഗതം! 🌟 ഇംഗ്ലീഷിലെ ഏറ്റവും പ്രധാനപ്പെട്ട S-V-O വാക്യഘടനയും ദൈനംദിന പ്രവർത്തികളും ഇന്ന് പഠിക്കാം!',
-      greetingAudio: 'Welcome to Day 3! Today we master the English Subject, Verb, and Object blueprint. Shall we begin?',
-      blueprintTitle: 'S-V-O ACTION FORMULA',
-      blueprintExplanationEn: 'In English, the verb immediately follows the subject: Subject ➔ Verb ➔ Object. Never say "I football play", always say "I play football"!',
-      blueprintExplanationMl: 'മലയാളത്തിൽ ക്രിയ ഒടുവിലാണ് വരുന്നത് ("ഞാൻ ചോറ് തിന്നു"). എന്നാൽ ഇംഗ്ലീഷിൽ ക്രിയ എപ്പോഴും സബ്ജക്റ്റിന് തൊട്ടുപിന്നാലെ വരണം: "I eat rice".',
+      topicEmoji: '👨‍👩‍👧‍👦',
+      titleEn: 'Day 3: Introducing Family & Everyday Actions (S-V-O)',
+      titleMl: 'ഡേ 3: കുടുംബാംഗങ്ങളെ പരിചയപ്പെടുത്തലും നിത്യജീവിതത്തിലെ പ്രവർത്തികളും (S-V-O)',
+      greetingEn: 'Welcome to Day 3! 🌟 Today we master introducing family members and expressing everyday actions with the English S-V-O (Subject + Verb + Object) Blueprint!',
+      greetingMl: 'ഡേ 3 ലേക്ക് സ്വാഗതം! 🌟 കുടുംബാംഗങ്ങളെ മറ്റുള്ളവർക്ക് പരിചയപ്പെടുത്താനും നിത്യജീവിതത്തിലെ പ്രവർത്തികൾ ഇംഗ്ലീഷിൽ പറയാനും S-V-O വാക്യഘടന ഇന്ന് പഠിക്കാം!',
+      greetingAudio: 'Welcome to Day 3! Today we learn how to introduce family and talk about daily actions using the Subject, Verb, and Object blueprint. Shall we begin?',
+      blueprintTitle: 'S-V-O FAMILY & ACTION BLUEPRINT',
+      blueprintExplanationEn: 'In English, the verb immediately follows the subject: Subject ➔ Verb ➔ Object. When introducing someone, say "This is my brother", and for their action: "He works in an office"!',
+      blueprintExplanationMl: 'മലയാളത്തിൽ ക്രിയ ഒടുവിലാണ് വരുന്നത് ("ഇവൻ ഓഫീസിൽ ജോലി ചെയ്യുന്നു"). എന്നാൽ ഇംഗ്ലീഷിൽ ക്രിയ സബ്ജക്റ്റിന് തൊട്ടുപിന്നാലെ വരണം: "He works in an office".',
       blueprintRules: [
-        {'subject': 'I / You / We / They', 'en': 'I read English books.', 'ml': 'ഞാൻ ഇംഗ്ലീഷ് പുസ്തകങ്ങൾ വായിക്കുന്നു.'},
-        {'subject': 'He / She / It', 'en': 'She reads English books.', 'ml': 'അവൾ ഇംഗ്ലീഷ് പുസ്തകങ്ങൾ വായിക്കുന്നു (verb + s).'},
-        {'subject': 'S-V-O Order', 'en': 'They build modern apps.', 'ml': 'അവർ ആപ്പുകൾ നിർമ്മിക്കുന്നു (They + build + apps).'},
+        {'subject': 'This is / Meet...', 'en': 'This is my elder brother.', 'ml': 'ഇത് എന്റെ മൂത്ത സഹോദരനാണ്.'},
+        {'subject': 'He / She + Verb(s)', 'en': 'He works in an IT company.', 'ml': 'അവൻ ഒരു ഐടി കമ്പനിയിൽ ജോലി ചെയ്യുന്നു (works).'},
+        {'subject': 'We + Action Verb', 'en': 'We love spending time together.', 'ml': 'ഞങ്ങൾ ഒരുമിച്ച് സമയം ചിലവഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു.'},
       ],
       drills: [
-        {'en': 'I eat breakfast every morning.', 'ml': 'ഞാൻ എല്ലാ ദിവസവും രാവിലെ പ്രഭാതഭക്ഷണം കഴിക്കുന്നു.', 'rule': 'S-V-O: I (Subject) + eat (Verb) + breakfast (Object)'},
-        {'en': 'She reads books in the library.', 'ml': 'അവൾ ലൈബ്രറിയിൽ ഇരുന്ന് പുസ്തകങ്ങൾ വായിക്കുന്നു.', 'rule': 'S-V-O: She + reads + books'},
-        {'en': 'They build modern mobile apps.', 'ml': 'അവർ ആധുനിക മൊബൈൽ ആപ്പുകൾ നിർമ്മിക്കുന്നു.', 'rule': 'S-V-O: They + build + apps'},
-        {'en': 'We drink fresh water every day.', 'ml': 'ഞങ്ങൾ എല്ലാ ദിവസവും ശുദ്ധജലം കുടിക്കുന്നു.', 'rule': 'S-V-O: We + drink + water'},
+        {'en': 'This is my elder brother.', 'ml': 'ഇത് എന്റെ മൂത്ത സഹോദരനാണ്.', 'rule': 'S-V-O: This (Subject) + is (Verb) + my elder brother (Object)'},
+        {'en': 'He works in an IT company.', 'ml': 'അവൻ ഒരു ഐടി കമ്പനിയിൽ ജോലി ചെയ്യുന്നു.', 'rule': 'S-V-O: He (Subject) + works (Verb) + in an IT company (Object)'},
+        {'en': 'She is a kind school teacher.', 'ml': 'അവൾ ദയയുള്ള ഒരു സ്കൂൾ അധ്യാപികയാണ്.', 'rule': 'S-V-O: She + is + a kind school teacher'},
+        {'en': 'We love spending time together.', 'ml': 'ഞങ്ങൾ ഒരുമിച്ച് സമയം ചിലവഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു.', 'rule': 'S-V-O: We + love + spending time together'},
       ],
       quizQuestions: [
         {
-          'qEn': 'Question 1: Which sentence follows the correct English S-V-O order?',
-          'qMl': 'ചോദ്യം 1: ശരിയായ വാക്യഘടന ഏതാണ്?',
-          'audio': 'Question 1: Which sentence follows the correct English S-V-O order?',
-          'correct': 'I play football every weekend.',
-          'wrong': 'I football play every weekend.',
-          'tip': 'Remember: Verb must come right after the subject (I play, not I football play)!',
+          'qEn': 'Question 1: Which sentence correctly introduces a family member?',
+          'qMl': 'ചോദ്യം 1: സഹോദരനെ ശരിയായി പരിചയപ്പെടുത്തുന്ന വാക്യം ഏതാണ്?',
+          'audio': 'Question 1: Which sentence correctly introduces a family member?',
+          'correct': 'This is my elder brother.',
+          'wrong': 'This my elder brother is.',
+          'tip': 'Remember: The verb "is" follows "This" immediately: "This is my elder brother"!',
         },
         {
-          'qEn': 'Question 2: Complete the sentence: "She ___ tea every afternoon."',
-          'qMl': 'ചോദ്യം 2: വിട്ടുപോയ വാക്ക് പൂരിപ്പിക്കുക: "She ___ tea every afternoon."',
-          'audio': 'Question 2: Does She take drinks, or drink?',
-          'correct': 'drinks',
-          'wrong': 'drink',
-          'tip': 'Third-person singular (He, She, It) adds -s to the verb: She drinks!',
+          'qEn': 'Question 2: Complete the sentence: "He ___ in an IT company."',
+          'qMl': 'ചോദ്യം 2: വിട്ടുപോയ വാക്ക് പൂരിപ്പിക്കുക: "He ___ in an IT company."',
+          'audio': 'Question 2: Does He work, or works?',
+          'correct': 'works',
+          'wrong': 'work',
+          'tip': 'Third-person singular (He, She) takes -s: He works!',
         },
       ],
     ),
@@ -3356,7 +3356,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Day ${widget.day} • Step 1',
+                  'Day ${widget.day} • Step 1: Concept Room 🏛️',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

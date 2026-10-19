@@ -145,79 +145,67 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Interactive Tutor explains This is / These are and Pronouns (My, His, Her).",
+        "ml": "കുടുംബാംഗങ്ങളെ പരിചയപ്പെടുത്തുന്ന വിധം ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
       }
     },
     {
       "stepNumber": 2,
-      "id": "step_2_vocab_vault",
+      "id": "step_2_sentence_builder",
       "title": {
-        "en": "Vocabulary: Verbs & Key Words",
-        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+        "en": "GAME 1: Sentence Builder (Flame Engine)",
+        "ml": "ഗെയിം 1: സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)"
       },
-      "icon": "📦",
-      "gameType": "vocab_vault",
+      "icon": "🧩",
+      "gameType": "flame_sentence_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 40,
       "passScore": 80,
       "description": {
-        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
-        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+        "en": "Assemble words into correct English sentences using the interactive Flame physics engine.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
       }
     },
     {
       "stepNumber": 3,
-      "id": "step_3_game_hunt",
+      "id": "step_3_essential_spelling",
       "title": {
-        "en": "Game 1: Meadow Runner Hunt",
-        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+        "en": "GAME 2: Essential Words & Spelling Challenge",
+        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്"
       },
-      "icon": "🏃",
-      "gameType": "meadow_runner_hunt",
+      "icon": "👂",
+      "gameType": "essential_spelling",
       "canBeSkipped": false,
-      "xpReward": 40,
+      "xpReward": 35,
       "passScore": 70,
-      "targetObjects": [
-        "father",
-        "mother",
-        "brother",
-        "sister",
-        "family"
-      ],
       "description": {
-        "en": "Dodge obstacles and grab target words in the 2D world.",
-        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+        "en": "Listen to native audio pronunciation for family and relationship words and pass the spelling challenge exam.",
+        "ml": "ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക, തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക."
       }
     },
     {
       "stepNumber": 4,
-      "id": "step_4_game_builder",
+      "id": "step_4_spoken_english",
       "title": {
-        "en": "Game 2: Sentence Constructor",
-        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+        "en": "Spoken English Chat: Introducing People",
+        "ml": "സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റ്: ആളുകളെ പരിചയപ്പെടുത്തൽ"
       },
-      "icon": "🧩",
-      "gameType": "word_catcher_builder",
+      "icon": "🎙️",
+      "gameType": "spoken_english_chat",
       "canBeSkipped": false,
       "xpReward": 40,
       "passScore": 80,
-      "challengePatterns": [
-        "I love my family.",
-        "Help your brother.",
-        "Care for parents."
-      ],
       "description": {
-        "en": "Assemble falling words into correct sentences.",
-        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+        "en": "Practice conversational English with WhatsApp-style voice notes introducing your family and friends.",
+        "ml": "വോയ്സ് നോട്ടുകൾ വഴി ട്യൂട്ടറുമായി സംസാരിച്ച് ആളുകളെ പരിചയപ്പെടുത്താൻ പരിശീലിക്കുക."
       }
     },
     {
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: My Family & Relationships",
-        "ml": "റീഡിങ് റൂം: കുടുംബവും ബന്ധങ്ങളും"
+        "en": "Reading Room: A Joyful Sunday with My Family",
+        "ml": "റീഡിങ് റൂം: കുടുംബത്തോടൊപ്പമുള്ള സന്തോഷ ദിനം"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,19 +214,29 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I love my family.",
-          "meaningMl": "സ്നേഹിക്കുക - I love my family.",
-          "audioPrompt": "I love my family."
+          "text": "Sunday is a wonderful day for my family.",
+          "meaningMl": "ഞായറാഴ്ച എന്റെ കുടുംബത്തിന് വളരെ സന്തോഷമുള്ള ദിവസമാണ്.",
+          "audioPrompt": "Sunday is a wonderful day for my family."
         },
         {
-          "text": "Help your brother.",
-          "meaningMl": "സഹായിക്കുക - Help your brother.",
-          "audioPrompt": "Help your brother."
+          "text": "My father reads the morning newspaper peacefully.",
+          "meaningMl": "എന്റെ അച്ഛൻ ശാന്തമായി രാവിലെ പത്രം വായിക്കുന്നു.",
+          "audioPrompt": "My father reads the morning newspaper peacefully."
         },
         {
-          "text": "Daily practice of My Family & Relationships gives you great confidence in English.",
-          "meaningMl": "കുടുംബവും ബന്ധങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of My Family & Relationships gives you great confidence in English."
+          "text": "My mother prepares delicious breakfast for everyone.",
+          "meaningMl": "എന്റെ അമ്മ എല്ലാവർക്കുമായി രുചികരമായ പ്രഭാതഭക്ഷണം തയ്യാറാക്കുന്നു.",
+          "audioPrompt": "My mother prepares delicious breakfast for everyone."
+        },
+        {
+          "text": "My brother and sister help in cleaning our home.",
+          "meaningMl": "എന്റെ സഹോദരനും സഹോദരിയും വീട് വൃത്തിയാക്കാൻ സഹായിക്കുന്നു.",
+          "audioPrompt": "My brother and sister help in cleaning our home."
+        },
+        {
+          "text": "We love and support each other every day.",
+          "meaningMl": "ഞങ്ങൾ എന്നും പരസ്പരം സ്നേഹിക്കുകയും പിന്തുണയ്ക്കുകയും ചെയ്യുന്നു.",
+          "audioPrompt": "We love and support each other every day."
         }
       ],
       "description": {
@@ -248,46 +246,66 @@
     },
     {
       "stepNumber": 6,
-      "id": "step_6_spoken_lab",
+      "id": "step_6_spoken_simulator",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "20-Turn Spoken Simulator",
+        "ml": "20-ടേൺ സ്പോക്കൺ സിമുലേറ്റർ"
       },
-      "icon": "🎙️",
-      "gameType": "speech_analyzer",
+      "icon": "🗣️",
+      "gameType": "spoken_avatar_simulator",
       "canBeSkipped": false,
-      "xpReward": 35,
-      "passScore": 70,
-      "voiceTasks": {
-        "zero": {
-          "prompt": "Repeat clearly with Tutor Robot: 'I love my family.'",
-          "targetSentence": "I love my family."
-        },
-        "middle": {
-          "prompt": "Speak today's core sentence: 'Help your brother.'",
-          "targetSentence": "Help your brother."
-        },
-        "higher": {
-          "prompt": "Explain your thought on My Family & Relationships in 1-2 fluent sentences.",
-          "targetSentence": "Care for parents."
-        }
-      },
+      "xpReward": 50,
+      "passScore": 80,
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Deep 20-turn conversational dialogue simulation introducing relatives and friends.",
+        "ml": "20 റൗണ്ട് സംഭാഷണ പരിശീലനം തത്സമയ ഫീഡ്ബാക്കോടെ."
       }
     },
     {
       "stepNumber": 7,
-      "id": "step_7_house_defense",
+      "id": "step_7_vocab_drive",
       "title": {
-        "en": "House Defense Shield",
-        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+        "en": "Open-World Vocab Quest",
+        "ml": "ഓപ്പൺ-വേൾഡ് വൊക്കാബ് ക്വസ്റ്റ്"
+      },
+      "icon": "🚗",
+      "gameType": "vocab_open_world_drive",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 80,
+      "description": {
+        "en": "Drive the exploration buggy to collect vocabulary checkpoints across the 3D terrain.",
+        "ml": "3D ലാൻഡ്സ്കേപ്പിൽ വണ്ടി ഓടിച്ച് വൊക്കാബുലറി ചെക്ക്പോയിന്റുകൾ കണ്ടെത്തുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_8_community_chat",
+      "title": {
+        "en": "English Hub Community Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ് കമ്മ്യൂണിറ്റി ചാറ്റ്"
+      },
+      "icon": "💬",
+      "gameType": "english_hub_community",
+      "canBeSkipped": true,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Join learners in the community group to share today's achievements.",
+        "ml": "കമ്മ്യൂണിറ്റി ഗ്രൂപ്പിൽ മറ്റുള്ളവരുമായി ചർച്ചകളിൽ പങ്കുചേരുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_house_defense",
+      "title": {
+        "en": "House Defense Shield Command",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്"
       },
       "icon": "🛡️",
       "gameType": "house_defense_trap_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 35,
       "passScore": 100,
       "traps": [
         {
@@ -333,133 +351,37 @@
       }
     },
     {
-      "stepNumber": 8,
-      "id": "step_attack_raids",
-      "type": "raid_battle",
-      "gameType": "citadel_attack_raid",
+      "stepNumber": 10,
+      "id": "step_10_poketalk_pact",
       "title": {
-        "en": "Citadel Attack Raids",
-        "ml": "സിറ്റാഡൽ ആക്രമണ റെയ്ഡുകൾ"
+        "en": "Poketalk: 4-Day Spoken Pact",
+        "ml": "പോക്കറ്റ്-ടോക്ക്: 4-ഡേ സ്പോക്കൺ പാക്ട്"
       },
-      "icon": "⚔️",
-      "canBeSkipped": true,
-      "xpReward": 0,
-      "passScore": 100,
-      "is_unlocked": false,
-      "unlock_condition": "Unlocks on Day 4",
-      "attackConfig": {
-        "isUnlocked": false,
-        "unlocksOnDay": 4
-      },
-      "description": {
-        "en": "Raids unlock on Day 4. Build your defense first.",
-        "ml": "റെയ്ഡുകൾ ഡേ 4-ൽ അൺലോക്ക് ചെയ്യും. ആദ്യം പ്രതിരോധം ഒരുക്കുക."
-      }
-    },
-    {
-      "stepNumber": 9,
-      "id": "step_social_arena",
-      "title": {
-        "en": "Community & Social Arena",
-        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
-      },
-      "icon": "🤝",
-      "gameType": "social_arena",
+      "icon": "📞",
+      "gameType": "poketalk_spoken_pact",
       "canBeSkipped": true,
       "xpReward": 30,
       "passScore": 100,
-      "socialConfig": {
-        "zeroTrack": {
-          "isLocked": true,
-          "unlocksOnDay": 10,
-          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
-          "alternativeAction": "robot_voice_practice"
-        },
-        "middleTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Post in English Hub: 'Today on Day 3, I practiced My Family & Relationships! What are your thoughts?'",
-          "randomCallPrompt": "Connect on an anonymous call to discuss My Family & Relationships for 2 minutes.",
-          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
-        },
-        "higherTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Lead a professional discussion topic on My Family & Relationships in English Hub.",
-          "randomCallPrompt": "Connect a 3-minute voice conversation on My Family & Relationships.",
-          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
-        }
-      },
       "description": {
-        "en": "Connect with real learners or chat with your AI Robot.",
-        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+        "en": "Connect with fellow learners to establish a 4-day spoken English pact.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി 4 ദിവസത്തെ സ്പോക്കൺ പാർട്ണർഷിപ്പ് ഉണ്ടാക്കുക."
       }
     },
     {
-      "stepNumber": 10,
-      "id": "step_daily_exam",
+      "stepNumber": 11,
+      "id": "step_11_citadel_raid",
       "title": {
-        "en": "Day 3 Gate Exam (5 Qs)",
-        "ml": "ഡേ 3 ഗേറ്റ് എക്സാം"
+        "en": "House Attack Quest: Citadel Raid",
+        "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റെയ്ഡ്"
       },
-      "icon": "🎓",
-      "gameType": "daily_exam",
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
       "canBeSkipped": false,
       "xpReward": 50,
-      "passScore": 70,
-      "examQuestions": [
-        {
-          "q": "Choose the correct meaning for 'love':",
-          "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
-            "സന്തോഷം",
-            "സ്നേഹിക്കുക"
-          ],
-          "answer": "സ്നേഹിക്കുക"
-        },
-        {
-          "q": "Complete the sentence: 'I _____ my family.'",
-          "options": [
-            "were love",
-            "is love",
-            "loveing",
-            "love"
-          ],
-          "answer": "love"
-        },
-        {
-          "q": "What is the past form (V2) of 'help'?",
-          "options": [
-            "None",
-            "helps",
-            "helped",
-            "helpedx"
-          ],
-          "answer": "helped"
-        },
-        {
-          "q": "Which English word means 'അച്ഛൻ'?",
-          "options": [
-            "father",
-            "schedule",
-            "progress",
-            "partner"
-          ],
-          "answer": "father"
-        },
-        {
-          "q": "Which sentence is grammatically correct for today's lesson?",
-          "options": [
-            "I love my family.",
-            "We was love tomorrow.",
-            "I am love every time wrongly.",
-            "He do not love yesterday."
-          ],
-          "answer": "I love my family."
-        }
-      ],
+      "passScore": 80,
       "description": {
-        "en": "Pass Day 3 with 70%+ to keep your streak and unlock Day 4!",
-        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+        "en": "Raid the rival House Citadel by answering speed grammar questions.",
+        "ml": "എതിർ ഹൗസിന്റെ കോട്ട ആക്രമിക്കാൻ ചോദ്യങ്ങൾക്ക് വേഗത്തിൽ ഉത്തരം നൽകുക."
       }
     }
   ]

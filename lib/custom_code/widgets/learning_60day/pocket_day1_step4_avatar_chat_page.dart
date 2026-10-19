@@ -252,7 +252,66 @@ class _PocketDay1Step4AvatarChatPageState
       ];
     }
 
-    // Days 3–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
+    if (day == 3) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Hello! Welcome to Day 3! Who is this standing with you? 👨‍👩‍👦',
+          'questionMl': 'ഹലോ! ഡേ 3 ലേക്ക് സ്വാഗതം! നിന്റെ കൂടെ നിൽക്കുന്ന ഈ ആൾ ആരാണ്?',
+          'targetReply': 'This is my elder brother.',
+          'targetReplyMl': 'ഇത് എന്റെ മൂത്ത സഹോദരനാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What kind of work does he do? 💻',
+          'questionMl': 'അവൻ എന്ത് ജോലിയാണ് ചെയ്യുന്നത്?',
+          'targetReply': 'He works in an IT company.',
+          'targetReplyMl': 'അവൻ ഒരു ഐടി കമ്പനിയിൽ ജോലി ചെയ്യുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Wonderful! Can you introduce your parents to me? 🤝',
+          'questionMl': 'വളരെ നല്ലത്! നിന്റെ മാതാപിതാക്കളെ എനിക്ക് പരിചയപ്പെടുത്താമോ?',
+          'targetReply': 'Meet my mother and father.',
+          'targetReplyMl': 'എന്റെ അമ്മയെയും അച്ഛനെയും പരിചയപ്പെടൂ.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What does your mother do? Tell me about her! 👩‍🏫',
+          'questionMl': 'നിന്റെ അമ്മ എന്ത് ചെയ്യുന്നു? അമ്മയെക്കുറിച്ച് പറയൂ!',
+          'targetReply': 'She is a kind school teacher.',
+          'targetReplyMl': 'അവൾ ദയയുള്ള ഒരു സ്കൂൾ അധ്യാപികയാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Is his office located far away from here? 🏢',
+          'questionMl': 'അവന്റെ ഓഫീസ് ഇവിടെ നിന്ന് വളരെ ദൂരെയാണോ?',
+          'targetReply': 'His office is near our home.',
+          'targetReplyMl': 'അവന്റെ ഓഫീസ് ഞങ്ങളുടെ വീടിനടുത്താണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'How do you spend your free time as a family? 🏡',
+          'questionMl': 'കുടുംബത്തോടൊപ്പം നിങ്ങൾ എങ്ങനെയാണ് സമയം ചെലവഴിക്കുന്നത്?',
+          'targetReply': 'We love spending time together.',
+          'targetReplyMl': 'ഞങ്ങൾ ഒരുമിച്ച് സമയം ചിലവഴിക്കാൻ ഇഷ്ടപ്പെടുന്നു.',
+        },
+      ];
+    }
+
+    // Days 4–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
     final master = PocketMasterCurriculum90.getDay(day);
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
 
@@ -828,7 +887,7 @@ class _PocketDay1Step4AvatarChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'STEP 4: SPOKEN ENGLISH CHAT',
+                  'DAY ${widget.day} • STEP 4: SPOKEN ENGLISH 🎙️',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 12,
