@@ -9,54 +9,42 @@
       "hi": "हाउस 1: आधार और दैनिक जीवन",
       "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
     },
-    "version": "day-5-v1",
+    "version": "day-5-v2-unified",
     "topic": {
-      "en": "Articles – A, An, The and Zero Article",
-      "ml": "ആർട്ടിക്കിളുകൾ – A, An, The",
-      "hi": "Demonstratives & Objects",
-      "ta": "Demonstratives & Objects"
+      "en": "Ownership & Possession (Have / Has) & Work Tools",
+      "ml": "ഡേ 5: ഉടമസ്ഥതയും കൈവശമുള്ളതും പറയാൻ Have / Has & ജോലി ഉപകരണങ്ങൾ",
+      "hi": "Ownership & Possession (Have / Has)",
+      "ta": "Ownership & Possession (Have / Has)"
     },
-    "unlockRule": "Unlocks after passing Day 4 Exam. Day 6 unlocks after scoring 70%+ in Day 5 Exam.",
+    "unlockRule": "Unlocks after completing Day 4. Day 6 unlocks after completing Day 5.",
     "passPercentage": 70,
-    "totalXpReward": 260,
-    "totalCoinsReward": 55
+    "totalXpReward": 400,
+    "totalCoinsReward": 80
   },
   "grammarRule": {
-    "formula": "Articles – A, An, The and Zero Article",
+    "formula": "Possession: I/You/We/They + HAVE | He/She/It + HAS",
     "explanation": {
-      "ml": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ എന്ന വിഷയത്തിൽ This, That, These, Those എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use This, That, These, Those correctly in spoken English."
+      "en": "Use HAVE for I, You, We, They. Use HAS for He, She, It, and singular names. Never say 'I am having a car' or 'She have a pen'!",
+      "ml": "I, You, We, They എന്നിവയ്‌ക്കൊപ്പം have. He, She, It എന്നിവയ്‌ക്കൊപ്പം has. കയ്യിലുള്ള വസ്തുവിന് 'I am having' എന്ന് പറയരുത്, 'I have' എന്ന് പറയുക."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Point to that car.",
-      "en": "Golden Rule: Practice 'Point to that car.' with zero hesitation."
+      "en": "Golden Rule: Never say 'I am having a doubt'—always say 'I have a question' or 'I have a doubt'!",
+      "ml": "💡 ടിപ്പ്: സംശയമുണ്ടെങ്കിൽ 'I am having a doubt' എന്ന് പറയരുത്, 'I have a question' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "point",
-        "v2": "pointed",
-        "v3": "pointed",
+        "v1": "have",
+        "v2": "had",
+        "v3": "had",
         "meaning": {
-          "ml": "ചൂണ്ടിക്കാണിക്കുക",
-          "hi": "इशारा करना",
-          "ta": "சுட்டிக்காட்டு"
+          "ml": "ഉണ്ടായിരിക്കുക",
+          "hi": "पास होना",
+          "ta": "கொண்டிரு"
         },
-        "example": "Point to that car.",
-        "exampleMl": "ചൂണ്ടിക്കാണിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "take",
-        "v2": "took",
-        "v3": "taken",
-        "meaning": {
-          "ml": "എടുക്കുക",
-          "hi": "लेना",
-          "ta": "எடு"
-        },
-        "example": "Take this book.",
-        "exampleMl": "എടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I have a new laptop.",
+        "exampleMl": "എനിക്ക് പുതിയൊരു ലാപ്ടോപ്പുണ്ട്."
       },
       {
         "v1": "give",
@@ -67,67 +55,88 @@
           "hi": "देना",
           "ta": "கொடு"
         },
-        "example": "Give me that pen.",
-        "exampleMl": "നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Give me that notebook.",
+        "exampleMl": "ആ നോട്ട്ബുക്ക് എനിക്ക് തരൂ."
+      },
+      {
+        "v1": "take",
+        "v2": "took",
+        "v3": "taken",
+        "meaning": {
+          "ml": "എടുക്കുക",
+          "hi": "लेना",
+          "ta": "எடு"
+        },
+        "example": "Take your time to understand.",
+        "exampleMl": "മനസ്സിലാക്കാൻ ആവശ്യത്തിന് സമയമെടുക്കൂ."
       },
       {
         "v1": "keep",
         "v2": "kept",
         "v3": "kept",
         "meaning": {
-          "ml": "വെയ്ക്കുക",
+          "ml": "സൂക്ഷിക്കുക / വെയ്ക്കുക",
           "hi": "रखना",
           "ta": "வை"
         },
-        "example": "Keep those shoes outside.",
-        "exampleMl": "വെയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Keep all your tools in order.",
+        "exampleMl": "എല്ലാ ഉപകരണങ്ങളും ക്രമത്തിൽ സൂക്ഷിക്കുക."
       }
     ],
     "nouns": [
       {
-        "word": "this",
+        "word": "question",
         "meaning": {
-          "ml": "ഇത്",
-          "hi": "ഇത്",
-          "ta": "ഇത്"
+          "ml": "ചോദ്യം",
+          "hi": "सवाल",
+          "ta": "கேள்வி"
         },
-        "example": "We learned about this in today's lesson."
+        "example": "I have an important question for you."
       },
       {
-        "word": "that",
+        "word": "laptop",
         "meaning": {
-          "ml": "അത്",
-          "hi": "അത്",
-          "ta": "അത്"
+          "ml": "ലാപ്‌ടോപ്പ്",
+          "hi": "लैपटॉप",
+          "ta": "மடிக்கணினி"
         },
-        "example": "We learned about that in today's lesson."
+        "example": "He has a powerful new laptop."
       },
       {
-        "word": "these",
+        "word": "meeting",
         "meaning": {
-          "ml": "ഇവ",
-          "hi": "ഇവ",
-          "ta": "ഇവ"
+          "ml": "മീറ്റിംഗ്",
+          "hi": "बैठक",
+          "ta": "கூட்டம்"
         },
-        "example": "We learned about these in today's lesson."
+        "example": "We have a team meeting at 10 AM."
       },
       {
-        "word": "those",
+        "word": "idea",
         "meaning": {
-          "ml": "അവ",
-          "hi": "അവ",
-          "ta": "അവ"
+          "ml": "ആശയം",
+          "hi": "विचार",
+          "ta": "யோசனை"
         },
-        "example": "We learned about those in today's lesson."
+        "example": "She has a creative idea for our project."
       },
       {
-        "word": "thing",
+        "word": "skill",
         "meaning": {
-          "ml": "വസ്തു",
-          "hi": "വസ്തു",
-          "ta": "വസ്തു"
+          "ml": "കഴിവ് / പ്രാവീണ്യം",
+          "hi": "कौशल",
+          "ta": "திறமை"
         },
-        "example": "We learned about thing in today's lesson."
+        "example": "She has great communication skills."
+      },
+      {
+        "word": "file",
+        "meaning": {
+          "ml": "രേഖ / ഫയൽ",
+          "hi": "फ़ाइल",
+          "ta": "கோப்பு"
+        },
+        "example": "They have all the project files."
       }
     ]
   },
@@ -136,8 +145,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Demonstratives & Objects",
-        "ml": "പാഠം: അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ"
+        "en": "Concept Room: Ownership & Possession (Have / Has)",
+        "ml": "പാഠം: ഉടമസ്ഥത പറയാൻ Have / Has"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,186 +154,202 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Interactive Tutor teaches have vs has, tools, qualities, and eliminating 'am having'.",
+        "ml": "കയ്യിലുള്ള വസ്തുക്കളെയും കഴിവുകളെയും പറ്റി Have/Has ഉപയോഗിച്ച് പറയാൻ പഠിക്കുന്നു."
       }
     },
     {
       "stepNumber": 2,
-      "id": "step_2_vocab_vault",
+      "id": "step_2_sentence_builder",
       "title": {
-        "en": "Vocabulary: Verbs & Key Words",
-        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+        "en": "GAME 1: Sentence Builder (Flame Engine)",
+        "ml": "ഗെയിം 1: സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)"
       },
-      "icon": "📦",
-      "gameType": "vocab_vault",
+      "icon": "🧩",
+      "gameType": "flame_sentence_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 40,
       "passScore": 80,
       "description": {
-        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
-        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+        "en": "Assemble words into correct English possession sentences using the interactive Flame physics engine.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
       }
     },
     {
       "stepNumber": 3,
-      "id": "step_3_game_hunt",
+      "id": "step_3_essential_spelling",
       "title": {
-        "en": "Game 1: Meadow Runner Hunt",
-        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+        "en": "GAME 2: Essential Words & Spelling Challenge",
+        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്"
       },
-      "icon": "🏃",
-      "gameType": "meadow_runner_hunt",
+      "icon": "👂",
+      "gameType": "essential_spelling",
       "canBeSkipped": false,
-      "xpReward": 40,
+      "xpReward": 35,
       "passScore": 70,
-      "targetObjects": [
-        "this",
-        "that",
-        "these",
-        "those",
-        "thing"
-      ],
       "description": {
-        "en": "Dodge obstacles and grab target words in the 2D world.",
-        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+        "en": "Listen to Day 5 audio and spell essential possession words into letter slots.",
+        "ml": "ശബ്ദം ശ്രദ്ധിച്ചു കേട്ട് വാക്കിന്റെ അക്ഷരങ്ങൾ പെട്ടികളിൽ ക്രമീകരിക്കുക."
       }
     },
     {
       "stepNumber": 4,
-      "id": "step_4_game_builder",
+      "id": "step_4_spoken_english",
       "title": {
-        "en": "Game 2: Sentence Constructor",
-        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+        "en": "Spoken English Studio (1-on-1 Voice Chat)",
+        "ml": "സ്പോക്കൺ ഇംഗ്ലീഷ് സ്റ്റുഡിയോ (1-on-1 വോയ്സ് ചാറ്റ്)"
       },
-      "icon": "🧩",
-      "gameType": "word_catcher_builder",
+      "icon": "🎙️",
+      "gameType": "spoken_english_voice_chat",
       "canBeSkipped": false,
-      "xpReward": 40,
-      "passScore": 80,
-      "challengePatterns": [
-        "Point to that car.",
-        "Take this book.",
-        "Give me that pen."
-      ],
+      "xpReward": 45,
+      "passScore": 70,
       "description": {
-        "en": "Assemble falling words into correct sentences.",
-        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+        "en": "Have a realistic voice conversation with CyberCat asking questions and describing tools/skills with Have & Has.",
+        "ml": "മൈക്കിലൂടെ നേരിട്ട് സംസാരിച്ച് വോയ്സ് മെസ്സേജുകളിലൂടെ ഇംഗ്ലീഷ് പരിശീലിക്കുക."
       }
     },
     {
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Demonstratives & Objects",
-        "ml": "റീഡിങ് റൂം: അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ"
+        "en": "Reading Room: Illustrated Story & Voice Aloud",
+        "ml": "റീഡിങ് റൂം: സചിത്ര കഥയും ശബ്ദ വായനയും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
       "canBeSkipped": false,
-      "xpReward": 35,
+      "xpReward": 40,
       "passScore": 75,
-      "sentences": [
-        {
-          "text": "Point to that car.",
-          "meaningMl": "ചൂണ്ടിക്കാണിക്കുക - Point to that car.",
-          "audioPrompt": "Point to that car."
-        },
-        {
-          "text": "Take this book.",
-          "meaningMl": "എടുക്കുക - Take this book.",
-          "audioPrompt": "Take this book."
-        },
-        {
-          "text": "Daily practice of Demonstratives & Objects gives you great confidence in English.",
-          "meaningMl": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Demonstratives & Objects gives you great confidence in English."
-        }
-      ],
+      "storyChapter": {
+        "chapterNumber": 5,
+        "title": "The Creative Workshop: Ideas and Tools",
+        "titleMl": "ക്രിയേറ്റീവ് വർക്ക്ഷോപ്പ്: ആശയങ്ങളും ഉപകരണങ്ങളും",
+        "paragraphs": [
+          {
+            "paragraphNumber": 1,
+            "textEn": "Ananya walks into the modern design studio. She says with confidence, 'I have a fresh creative idea for our new application.'",
+            "textMl": "അനന്യ മോഡേൺ ഡിസൈൻ സ്റ്റുഡിയോയിലേക്ക് നടന്നു കയറി. അവൾ ആത്മവിശ്വാസത്തോടെ പറഞ്ഞു: 'നമ്മുടെ പുതിയ ആപ്പിനായി എന്റെ പക്കൽ പുതിയൊരു ആശയമുണ്ട്.'",
+            "audioPrompt": "Ananya walks into the modern design studio. She says with confidence, I have a fresh creative idea for our new application."
+          },
+          {
+            "paragraphNumber": 2,
+            "textEn": "Her teammate Vikram smiles and points to his desk. 'He has a fast new laptop, and we have all the documentation ready.'",
+            "textMl": "അവളുടെ ടീമംഗമായ വിക്രം പുഞ്ചിരിച്ച് മേശയിലേക്ക് ചൂണ്ടി: 'അവന്റെ കയ്യിൽ വേഗതയേറിയ പുതിയ ലാപ്ടോപ്പുണ്ട്, നമ്മുടെ പക്കൽ എല്ലാ രേഖകളും തയ്യാറാണ്.'",
+            "audioPrompt": "Her teammate Vikram smiles and points to his desk. He has a fast new laptop, and we have all the documentation ready."
+          },
+          {
+            "paragraphNumber": 3,
+            "textEn": "The team lead enters and asks, 'Do you have a few minutes for a quick review?' Natural English gives everyone clarity and respect.",
+            "textMl": "ടീം ലീഡർ വന്ന് ചോദിച്ചു: 'ഒരു ചെറിയ റിവ്യൂവിനായി നിങ്ങൾക്ക് കുറച്ചു സമയം ഉണ്ടോ?' സ്വാഭാവികമായ ഇംഗ്ലീഷ് എല്ലാവർക്കും വ്യക്തതയും ബഹുമാനവും നൽകുന്നു.",
+            "audioPrompt": "The team lead enters and asks, Do you have a few minutes for a quick review? Natural English gives everyone clarity and respect."
+          }
+        ]
+      },
       "description": {
-        "en": "Listen to native audio, then tap microphone to read aloud.",
-        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+        "en": "Read the illustrated story paragraph by paragraph and record your voice aloud.",
+        "ml": "കഥയിലെ ഓരോ ഖണ്ഡികയും ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
       }
     },
     {
       "stepNumber": 6,
-      "id": "step_6_spoken_lab",
+      "id": "step_6_spoken_simulator",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "20-Turn Spoken Simulator",
+        "ml": "20-ടേൺ സ്പോക്കൺ സിമുലേറ്റർ"
       },
-      "icon": "🎙️",
-      "gameType": "speech_analyzer",
+      "icon": "🗣️",
+      "gameType": "spoken_avatar_simulator",
       "canBeSkipped": false,
-      "xpReward": 35,
-      "passScore": 70,
-      "voiceTasks": {
-        "zero": {
-          "prompt": "Repeat clearly with Tutor Robot: 'Point to that car.'",
-          "targetSentence": "Point to that car."
-        },
-        "middle": {
-          "prompt": "Speak today's core sentence: 'Take this book.'",
-          "targetSentence": "Take this book."
-        },
-        "higher": {
-          "prompt": "Explain your thought on Demonstratives & Objects in 1-2 fluent sentences.",
-          "targetSentence": "Give me that pen."
-        }
-      },
+      "xpReward": 50,
+      "passScore": 80,
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Deep 20-turn conversational dialogue simulation practicing workplace possessions, questions, and polite requests.",
+        "ml": "20 റൗണ്ട് സംഭാഷണ പരിശീലനം തത്സമയ ഫീഡ്ബാക്കോടെ."
       }
     },
     {
       "stepNumber": 7,
-      "id": "step_7_house_defense",
+      "id": "step_7_vocab_drive",
       "title": {
-        "en": "House Defense Shield",
-        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+        "en": "Open-World Vocab Quest",
+        "ml": "ഓപ്പൺ-വേൾഡ് വൊക്കാബ് ക്വസ്റ്റ്"
+      },
+      "icon": "🚗",
+      "gameType": "vocab_open_world_drive",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 80,
+      "description": {
+        "en": "Drive the exploration buggy to collect vocabulary checkpoints across the 3D terrain.",
+        "ml": "3D ലാൻഡ്സ്കേപ്പിൽ വണ്ടി ഓടിച്ച് വൊക്കാബുലറി ചെക്ക്പോയിന്റുകൾ കണ്ടെത്തുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_8_community_chat",
+      "title": {
+        "en": "English Hub Community Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ് കമ്മ്യൂണിറ്റി ചാറ്റ്"
+      },
+      "icon": "💬",
+      "gameType": "english_hub_community",
+      "canBeSkipped": true,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Join learners in the community group to share today's achievements.",
+        "ml": "കമ്മ്യൂണിറ്റി ഗ്രൂപ്പിൽ മറ്റുള്ളവരുമായി ചർച്ചകളിൽ പങ്കുചേരുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_house_defense",
+      "title": {
+        "en": "House Defense Shield Command",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്"
       },
       "icon": "🛡️",
       "gameType": "house_defense_trap_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 35,
       "passScore": 100,
       "traps": [
         {
           "id": "trap_d5_1",
-          "question": "Which word represents: 'ചൂണ്ടിക്കാണിക്കുക'?",
+          "question": "Which sentence correctly expresses ownership?",
           "options": [
-            "remember",
-            "discover",
-            "decide",
-            "point"
+            "I am having a car.",
+            "I has a car.",
+            "I have a car.",
+            "I having a car."
           ],
-          "answer": "point",
-          "explanation": "point എന്നാൽ ചൂണ്ടിക്കാണിക്കുക എന്നർത്ഥം."
+          "answer": "I have a car.",
+          "explanation": "കയ്യിലുള്ള വസ്തുവിന് 'I have a car' എന്ന് പറയണം, 'I am having' എന്ന് പറയരുത്."
         },
         {
           "id": "trap_d5_2",
-          "question": "What is the past form (V2) of 'take'?",
+          "question": "Complete: 'She ___ great communication skills.'",
           "options": [
-            "takeing",
-            "has take",
-            "takes",
-            "took"
+            "have",
+            "has",
+            "having",
+            "is have"
           ],
-          "answer": "took",
-          "explanation": "take ന്റെ ഭൂതകാല രൂപം took ആണ്."
+          "answer": "has",
+          "explanation": "She, He എന്നിവയ്‌ക്കൊപ്പം has വരുന്നു."
         },
         {
           "id": "trap_d5_3",
-          "question": "What is the correct English word for 'ഇത്'?",
+          "question": "What is the correct English word for 'ആശയം'?",
           "options": [
-            "this",
-            "routine",
-            "schedule",
-            "progress"
+            "skill",
+            "file",
+            "idea",
+            "meeting"
           ],
-          "answer": "this",
-          "explanation": "ഇത് എന്നാൽ ഇംഗ്ലീഷിൽ this."
+          "answer": "idea",
+          "explanation": "ആശയം എന്നാൽ ഇംഗ്ലീഷിൽ idea."
         }
       ],
       "description": {
@@ -333,131 +358,37 @@
       }
     },
     {
-      "stepNumber": 8,
-      "id": "step_attack_raids",
+      "stepNumber": 10,
+      "id": "step_10_poketalk_pact",
       "title": {
-        "en": "⚔️ Citadel Attack Raids (Active)",
-        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+        "en": "Poketalk: 4-Day Spoken Pact",
+        "ml": "പോക്കറ്റ്-ടോക്ക്: 4-ഡേ സ്പോക്കൺ പാക്ട്"
+      },
+      "icon": "📞",
+      "gameType": "poketalk_spoken_pact",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "description": {
+        "en": "Connect with fellow learners to establish a 4-day spoken English pact.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി 4 ദിവസത്തെ സ്പോക്കൺ പാർട്ണർഷിപ്പ് ഉണ്ടാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 11,
+      "id": "step_11_citadel_raid",
+      "title": {
+        "en": "House Attack Quest: Citadel Raid",
+        "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റെയ്ഡ്"
       },
       "icon": "⚔️",
       "gameType": "citadel_attack_raid",
       "canBeSkipped": false,
-      "xpReward": 45,
-      "passScore": 100,
-      "attackConfig": {
-        "isUnlocked": true,
-        "targetHousesAvailable": 3,
-        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
-      },
-      "description": {
-        "en": "Raid rival learner houses by solving grammar challenges!",
-        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
-      }
-    },
-    {
-      "stepNumber": 9,
-      "id": "step_social_arena",
-      "title": {
-        "en": "Community & Social Arena",
-        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
-      },
-      "icon": "🤝",
-      "gameType": "social_arena",
-      "canBeSkipped": true,
-      "xpReward": 30,
-      "passScore": 100,
-      "socialConfig": {
-        "zeroTrack": {
-          "isLocked": true,
-          "unlocksOnDay": 10,
-          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
-          "alternativeAction": "robot_voice_practice"
-        },
-        "middleTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Post in English Hub: 'Today on Day 5, I practiced Demonstratives & Objects! What are your thoughts?'",
-          "randomCallPrompt": "Connect on an anonymous call to discuss Demonstratives & Objects for 2 minutes.",
-          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
-        },
-        "higherTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Lead a professional discussion topic on Demonstratives & Objects in English Hub.",
-          "randomCallPrompt": "Connect a 3-minute voice conversation on Demonstratives & Objects.",
-          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
-        }
-      },
-      "description": {
-        "en": "Connect with real learners or chat with your AI Robot.",
-        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
-      }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_daily_exam",
-      "title": {
-        "en": "Day 5 Gate Exam (5 Qs)",
-        "ml": "ഡേ 5 ഗേറ്റ് എക്സാം"
-      },
-      "icon": "🎓",
-      "gameType": "daily_exam",
-      "canBeSkipped": false,
       "xpReward": 50,
-      "passScore": 70,
-      "examQuestions": [
-        {
-          "q": "Choose the correct meaning for 'point':",
-          "options": [
-            "ഭക്ഷണം",
-            "യാത്ര",
-            "സന്തോഷം",
-            "ചൂണ്ടിക്കാണിക്കുക"
-          ],
-          "answer": "ചൂണ്ടിക്കാണിക്കുക"
-        },
-        {
-          "q": "Complete the sentence: '_____ to that car.'",
-          "options": [
-            "point",
-            "pointing",
-            "is point",
-            "were point"
-          ],
-          "answer": "point"
-        },
-        {
-          "q": "What is the past form (V2) of 'take'?",
-          "options": [
-            "None",
-            "took",
-            "takes",
-            "takeedx"
-          ],
-          "answer": "took"
-        },
-        {
-          "q": "Which English word means 'ഇത്'?",
-          "options": [
-            "this",
-            "partner",
-            "station",
-            "airport"
-          ],
-          "answer": "this"
-        },
-        {
-          "q": "Which sentence is grammatically correct for today's lesson?",
-          "options": [
-            "He do not point yesterday.",
-            "We was point tomorrow.",
-            "I am point every time wrongly.",
-            "Point to that car."
-          ],
-          "answer": "Point to that car."
-        }
-      ],
+      "passScore": 80,
       "description": {
-        "en": "Pass Day 5 with 70%+ to keep your streak and unlock Day 6!",
-        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+        "en": "Raid the rival House Citadel by answering speed grammar questions.",
+        "ml": "എതിർ ഹൗസിന്റെ കോട്ട ആക്രമിക്കാൻ ചോദ്യങ്ങൾക്ക് വേഗത്തിൽ ഉത്തരം നൽകുക."
       }
     }
   ]

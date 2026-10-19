@@ -224,7 +224,103 @@ class _PocketDay1Step5AvatarChatPageState
       ];
     }
 
-    // Days 3 to 90: Dynamically generate 3 chapters matching the day curriculum vocabulary
+    if (day == 3) {
+      return [
+        {
+          'part': 1,
+          'title': 'The Loving Family Picnic 🧺',
+          'bannerEmoji': '👨‍👩‍👧‍👦 🧺 🌳',
+          'paragraphEn':
+              'This is my elder brother, and meet my mother and father. We packed a picnic basket with fresh fruits and cool drinks to spend the morning in the park.',
+          'readAloudTarget':
+              'This is my elder brother, and meet my mother and father. We packed a picnic basket.',
+        },
+        {
+          'part': 2,
+          'title': 'Sharing Stories Under the Trees 🍃',
+          'bannerEmoji': '🍃 💻 👩‍🏫',
+          'paragraphEn':
+              'My brother works in an IT company, and my mother is a kind school teacher. They talk about their daily routines while enjoying the gentle breeze under the trees.',
+          'readAloudTarget':
+              'My brother works in an IT company, and my mother is a kind school teacher.',
+        },
+        {
+          'part': 3,
+          'title': 'Together in Harmony 🏡',
+          'bannerEmoji': '🏡 🌟 ❤️',
+          'paragraphEn':
+              'His office is near our home, so we always return together before sunset. We love spending time together as a warm, united family.',
+          'readAloudTarget':
+              'His office is near our home. We love spending time together as a united family.',
+        },
+      ];
+    }
+
+    if (day == 4) {
+      return [
+        {
+          'part': 1,
+          'title': 'A Morning of Wonder: Near and Far ☀️',
+          'bannerEmoji': '⌚ ⏰ 🌅',
+          'paragraphEn':
+              'Rohan wakes up early every morning. He looks at his study desk and says, "This is my new wristwatch, and that is a big wall clock above the bookshelf."',
+          'readAloudTarget':
+              'This is my new wristwatch, and that is a big wall clock above the bookshelf.',
+        },
+        {
+          'part': 2,
+          'title': 'Looking Through the Window 🌳',
+          'bannerEmoji': '📚 🌳 🦜',
+          'paragraphEn':
+              'He opens his window to greet the sunrise. "These are my favorite story books on the table, and those are bright birds singing happily on the tree."',
+          'readAloudTarget':
+              'These are my favorite story books, and those are bright birds on the tree.',
+        },
+        {
+          'part': 3,
+          'title': 'Starting the Day with Joy ⏰',
+          'bannerEmoji': '⏰ ✨ 🚶',
+          'paragraphEn':
+              'What is the time right now? It is seven o\'clock, and Rohan washes his hands before eating breakfast with a cheerful and confident heart.',
+          'readAloudTarget':
+              'What is the time right now? Rohan washes his hands before eating breakfast.',
+        },
+      ];
+    }
+
+    if (day == 5) {
+      return [
+        {
+          'part': 1,
+          'title': 'The Creative Workshop: Fresh Ideas 💡',
+          'bannerEmoji': '💡 🙋‍♂️ 🎨',
+          'paragraphEn':
+              'Ananya walks into the collaborative design studio. She greets the team and says, "I have a question for you, and I have a fresh creative idea for our new application."',
+          'readAloudTarget':
+              'I have a question for you, and I have a fresh creative idea for our project.',
+        },
+        {
+          'part': 2,
+          'title': 'Modern Tools & Collaboration 💻',
+          'bannerEmoji': '💻 📁 ⚡',
+          'paragraphEn':
+              'Her teammate Vikram smiles and turns on his screen. He has a fast new laptop, and she has great communication skills that bring clarity to the whole team.',
+          'readAloudTarget':
+              'He has a fast new laptop, and she has great communication skills.',
+        },
+        {
+          'part': 3,
+          'title': 'Ready for the Big Meeting 📅',
+          'bannerEmoji': '📅 🤝 🏆',
+          'paragraphEn':
+              'Do you have a few minutes for a quick review? We have an important team meeting today, and they have all the project files ready for success.',
+          'readAloudTarget':
+              'Do you have a few minutes? We have an important team meeting today.',
+        },
+      ];
+    }
+
+    // Days 6 to 90: Dynamically generate 3 chapters matching the day curriculum vocabulary
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final w0 = vocab.isNotEmpty ? vocab[0] : null;
     final w1 = vocab.length > 1 ? vocab[1] : null;

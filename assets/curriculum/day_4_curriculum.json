@@ -9,27 +9,27 @@
       "hi": "हाउस 1: आधार और दैनिक जीवन",
       "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
     },
-    "version": "day-4-v1",
+    "version": "day-4-v2-unified",
     "topic": {
-      "en": "Pronouns – Types, Cases and Usage",
-      "ml": "പ്രോനൗണുകൾ – സർവ്വനാമങ്ങളും ഉപയോഗങ്ങളും",
-      "hi": "Daily Routines & Time",
-      "ta": "Daily Routines & Time"
+      "en": "Demonstratives (This, That, These, Those) & Daily Routines",
+      "ml": "ഡേ 4: വസ്തുക്കളെ ചൂണ്ടിക്കാണിക്കാൻ This, That, These, Those & ദൈനംദിന ദിനചര്യകൾ",
+      "hi": "Demonstratives & Daily Routines",
+      "ta": "Demonstratives & Daily Routines"
     },
-    "unlockRule": "Unlocks after passing Day 3 Exam. Day 5 unlocks after scoring 70%+ in Day 4 Exam.",
+    "unlockRule": "Unlocks after completing Day 3. Day 5 unlocks after completing Day 4.",
     "passPercentage": 70,
-    "totalXpReward": 258,
-    "totalCoinsReward": 54
+    "totalXpReward": 400,
+    "totalCoinsReward": 80
   },
   "grammarRule": {
-    "formula": "Pronouns – Types, Cases and Usage",
+    "formula": "Spatial Awareness: This (Near/1), That (Far/1), These (Near/Many), Those (Far/Many)",
     "explanation": {
-      "ml": "ദൈനംദിന ശീലങ്ങളും സമയവും എന്ന വിഷയത്തിൽ Simple Present V1 (Routines without 'am') എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Simple Present V1 (Routines without 'am') correctly in spoken English."
+      "en": "Use THIS for a single item near you, THAT for a single item far away. Use THESE for multiple items near you, and THOSE for multiple items far away.",
+      "ml": "അടുത്തുള്ള ഒന്നിനെ സൂചിപ്പിക്കാൻ This (ഇത്), അകലെയുള്ള ഒന്നിന് That (അത്). അടുത്തുള്ള പലതിന് These (ഇവ), അകലെയുള്ള പലതിന് Those (അവ)."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I wake up at 6 AM.",
-      "en": "Golden Rule: Practice 'I wake up at 6 AM.' with zero hesitation."
+      "en": "Golden Rule: Never say 'This are my books'—always say 'These are my books'!",
+      "ml": "💡 ടിപ്പ്: പല പുസ്തകങ്ങൾ കയ്യിലിരിക്കുമ്പോൾ 'This are' എന്ന് പറയരുത്, 'These are my books' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
@@ -44,7 +44,7 @@
           "ta": "விழி / எழுந்திரு"
         },
         "example": "I wake up at 6 AM.",
-        "exampleMl": "ഉണരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "exampleMl": "ഞാൻ രാവിലെ 6 മണിക്ക് ഉണരുന്നു."
       },
       {
         "v1": "wash",
@@ -55,8 +55,8 @@
           "hi": "धोना",
           "ta": "கழுவு"
         },
-        "example": "Wash your hands.",
-        "exampleMl": "കഴുകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Wash your hands before eating.",
+        "exampleMl": "ഭക്ഷണം കഴിക്കുന്നതിന് മുൻപ് കൈ കഴുകുക."
       },
       {
         "v1": "eat",
@@ -67,8 +67,8 @@
           "hi": "खाना",
           "ta": "சாப்பிடு"
         },
-        "example": "Eat breakfast.",
-        "exampleMl": "കഴിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We eat fresh fruits every morning.",
+        "exampleMl": "ഞങ്ങൾ എല്ലാ ദിവസവും രാവിലെ ഫ്രഷ് പഴങ്ങൾ കഴിക്കുന്നു."
       },
       {
         "v1": "sleep",
@@ -79,8 +79,8 @@
           "hi": "सोना",
           "ta": "தூங்கு"
         },
-        "example": "Sleep early.",
-        "exampleMl": "ഉറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I sleep early to stay healthy.",
+        "exampleMl": "ആരോഗ്യത്തോടെയിരിക്കാൻ ഞാൻ നേരത്തെ ഉറങ്ങുന്നു."
       }
     ],
     "nouns": [
@@ -109,7 +109,7 @@
           "hi": "समय",
           "ta": "நேரம்"
         },
-        "example": "Time waits for no one."
+        "example": "What is the time right now?"
       },
       {
         "word": "clock",
@@ -118,7 +118,7 @@
           "hi": "घड़ी",
           "ta": "கடிகாரம்"
         },
-        "example": "The clock ticks continuously."
+        "example": "That wall clock is very accurate."
       },
       {
         "word": "bed",
@@ -128,6 +128,15 @@
           "ta": "படுக்கை"
         },
         "example": "Make your bed each morning."
+      },
+      {
+        "word": "position",
+        "meaning": {
+          "ml": "സ്ഥാനം",
+          "hi": "स्थान",
+          "ta": "நிலை"
+        },
+        "example": "Keep this book in that exact position."
       }
     ]
   },
@@ -136,8 +145,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Daily Routines & Time",
-        "ml": "പാഠം: ദൈനംദിന ശീലങ്ങളും സമയവും"
+        "en": "Concept Room: Demonstratives (This, That, These, Those)",
+        "ml": "പാഠം: വസ്തുക്കളെ ചൂണ്ടിക്കാണിക്കാൻ This, That, These, Those"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,186 +154,202 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Interactive Tutor explains spatial demonstratives near and far with native Malayalam guidance.",
+        "ml": "അടുത്തുള്ളതും അകലെയുള്ളതുമായ വസ്തുക്കളെ കൃത്യമായി ചൂണ്ടിക്കാണിക്കാൻ പഠിക്കാം."
       }
     },
     {
       "stepNumber": 2,
-      "id": "step_2_vocab_vault",
+      "id": "step_2_sentence_builder",
       "title": {
-        "en": "Vocabulary: Verbs & Key Words",
-        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+        "en": "GAME 1: Sentence Builder (Flame Engine)",
+        "ml": "ഗെയിം 1: സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)"
       },
-      "icon": "📦",
-      "gameType": "vocab_vault",
+      "icon": "🧩",
+      "gameType": "flame_sentence_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 40,
       "passScore": 80,
       "description": {
-        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
-        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+        "en": "Assemble words into correct English demonstrative sentences using the interactive Flame physics engine.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
       }
     },
     {
       "stepNumber": 3,
-      "id": "step_3_game_hunt",
+      "id": "step_3_essential_spelling",
       "title": {
-        "en": "Game 1: Meadow Runner Hunt",
-        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+        "en": "GAME 2: Essential Words & Spelling Challenge",
+        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്"
       },
-      "icon": "🏃",
-      "gameType": "meadow_runner_hunt",
+      "icon": "👂",
+      "gameType": "essential_spelling",
       "canBeSkipped": false,
-      "xpReward": 40,
+      "xpReward": 35,
       "passScore": 70,
-      "targetObjects": [
-        "morning",
-        "night",
-        "time",
-        "clock",
-        "bed"
-      ],
       "description": {
-        "en": "Dodge obstacles and grab target words in the 2D world.",
-        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+        "en": "Listen to Day 4 audio and spell essential daily routine words into letter slots.",
+        "ml": "ശബ്ദം ശ്രദ്ധിച്ചു കേട്ട് വാക്കിന്റെ അക്ഷരങ്ങൾ പെട്ടികളിൽ ക്രമീകരിക്കുക."
       }
     },
     {
       "stepNumber": 4,
-      "id": "step_4_game_builder",
+      "id": "step_4_spoken_english",
       "title": {
-        "en": "Game 2: Sentence Constructor",
-        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+        "en": "Spoken English Studio (1-on-1 Voice Chat)",
+        "ml": "സ്പോക്കൺ ഇംഗ്ലീഷ് സ്റ്റുഡിയോ (1-on-1 വോയ്സ് ചാറ്റ്)"
       },
-      "icon": "🧩",
-      "gameType": "word_catcher_builder",
+      "icon": "🎙️",
+      "gameType": "spoken_english_voice_chat",
       "canBeSkipped": false,
-      "xpReward": 40,
-      "passScore": 80,
-      "challengePatterns": [
-        "I wake up at 6 AM.",
-        "Wash your hands.",
-        "Eat breakfast."
-      ],
+      "xpReward": 45,
+      "passScore": 70,
       "description": {
-        "en": "Assemble falling words into correct sentences.",
-        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+        "en": "Have a realistic voice conversation with CyberCat pointing to objects and discussing morning routines.",
+        "ml": "മൈക്കിലൂടെ നേരിട്ട് സംസാരിച്ച് വോയ്സ് മെസ്സേജുകളിലൂടെ ഇംഗ്ലീഷ് പരിശീലിക്കുക."
       }
     },
     {
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Daily Routines & Time",
-        "ml": "റീഡിങ് റൂം: ദൈനംദിന ശീലങ്ങളും സമയവും"
+        "en": "Reading Room: Illustrated Story & Voice Aloud",
+        "ml": "റീഡിങ് റൂം: സചിത്ര കഥയും ശബ്ദ വായനയും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
       "canBeSkipped": false,
-      "xpReward": 35,
+      "xpReward": 40,
       "passScore": 75,
-      "sentences": [
-        {
-          "text": "I wake up at 6 AM.",
-          "meaningMl": "ഉണരുക - I wake up at 6 AM.",
-          "audioPrompt": "I wake up at 6 AM."
-        },
-        {
-          "text": "Wash your hands.",
-          "meaningMl": "കഴുകുക - Wash your hands.",
-          "audioPrompt": "Wash your hands."
-        },
-        {
-          "text": "Daily practice of Daily Routines & Time gives you great confidence in English.",
-          "meaningMl": "ദൈനംദിന ശീലങ്ങളും സമയവും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Daily Routines & Time gives you great confidence in English."
-        }
-      ],
+      "storyChapter": {
+        "chapterNumber": 4,
+        "title": "A Morning of Wonder: Near and Far",
+        "titleMl": "ഒരു പ്രഭാതത്തിലെ അത്ഭുതങ്ങൾ: അടുത്തും അകലെയും",
+        "paragraphs": [
+          {
+            "paragraphNumber": 1,
+            "textEn": "Rohan wakes up early every morning. He looks at his study desk and says, 'This is my favorite notebook, and these are my color pens.'",
+            "textMl": "രോഹൻ എല്ലാ ദിവസവും രാവിലെ നേരത്തെ ഉണരുന്നു. അവൻ പഠനമേശയിലേക്ക് നോക്കി പറഞ്ഞു: 'ഇത് എന്റെ പ്രിയപ്പെട്ട നോട്ട്ബുക്കാണ്, ഇവ എന്റെ കളർ പേനകളാണ്.'",
+            "audioPrompt": "Rohan wakes up early every morning. He looks at his study desk and says, This is my favorite notebook, and these are my color pens."
+          },
+          {
+            "paragraphNumber": 2,
+            "textEn": "He glances outside his bedroom window. 'That is the tall mango tree across the lane, and those are singing birds greeting the sun.'",
+            "textMl": "അവൻ കിടപ്പുമുറിയുടെ ജനലിലൂടെ പുറത്തേക്ക് നോക്കി: 'അത് റോഡിനക്കരെയുള്ള വലിയ മാവാണ്, അവ സൂര്യനെ വരവേൽക്കുന്ന പാടുന്ന പക്ഷികളാണ്.'",
+            "audioPrompt": "He glances outside his bedroom window. That is the tall mango tree across the lane, and those are singing birds greeting the sun."
+          },
+          {
+            "paragraphNumber": 3,
+            "textEn": "Rohan washes his hands and eats a healthy breakfast with his family. Pointing with clarity makes his English sound natural and confident.",
+            "textMl": "രോഹൻ കൈകൾ കഴുകി കുടുംബത്തോടൊപ്പം നല്ല പ്രഭാതഭക്ഷണം കഴിക്കുന്നു. വസ്തുക്കളെ കൃത്യമായി സൂചിപ്പിച്ച് സംസാരിക്കുന്നത് അവന്റെ ഇംഗ്ലീഷിന് സ്വാഭാവികത നൽകുന്നു.",
+            "audioPrompt": "Rohan washes his hands and eats a healthy breakfast with his family. Pointing with clarity makes his English sound natural and confident."
+          }
+        ]
+      },
       "description": {
-        "en": "Listen to native audio, then tap microphone to read aloud.",
-        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+        "en": "Read the illustrated story paragraph by paragraph and record your voice aloud.",
+        "ml": "കഥയിലെ ഓരോ ഖണ്ഡികയും ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
       }
     },
     {
       "stepNumber": 6,
-      "id": "step_6_spoken_lab",
+      "id": "step_6_spoken_simulator",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "20-Turn Spoken Simulator",
+        "ml": "20-ടേൺ സ്പോക്കൺ സിമുലേറ്റർ"
       },
-      "icon": "🎙️",
-      "gameType": "speech_analyzer",
+      "icon": "🗣️",
+      "gameType": "spoken_avatar_simulator",
       "canBeSkipped": false,
-      "xpReward": 35,
-      "passScore": 70,
-      "voiceTasks": {
-        "zero": {
-          "prompt": "Repeat clearly with Tutor Robot: 'I wake up at 6 AM.'",
-          "targetSentence": "I wake up at 6 AM."
-        },
-        "middle": {
-          "prompt": "Speak today's core sentence: 'Wash your hands.'",
-          "targetSentence": "Wash your hands."
-        },
-        "higher": {
-          "prompt": "Explain your thought on Daily Routines & Time in 1-2 fluent sentences.",
-          "targetSentence": "Eat breakfast."
-        }
-      },
+      "xpReward": 50,
+      "passScore": 80,
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Deep 20-turn conversational dialogue simulation practicing demonstratives and routine time inquiries.",
+        "ml": "20 റൗണ്ട് സംഭാഷണ പരിശീലനം തത്സമയ ഫീഡ്ബാക്കോടെ."
       }
     },
     {
       "stepNumber": 7,
-      "id": "step_7_house_defense",
+      "id": "step_7_vocab_drive",
       "title": {
-        "en": "House Defense Shield",
-        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+        "en": "Open-World Vocab Quest",
+        "ml": "ഓപ്പൺ-വേൾഡ് വൊക്കാബ് ക്വസ്റ്റ്"
+      },
+      "icon": "🚗",
+      "gameType": "vocab_open_world_drive",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 80,
+      "description": {
+        "en": "Drive the exploration buggy to collect vocabulary checkpoints across the 3D terrain.",
+        "ml": "3D ലാൻഡ്സ്കേപ്പിൽ വണ്ടി ഓടിച്ച് വൊക്കാബുലറി ചെക്ക്പോയിന്റുകൾ കണ്ടെത്തുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_8_community_chat",
+      "title": {
+        "en": "English Hub Community Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ് കമ്മ്യൂണിറ്റി ചാറ്റ്"
+      },
+      "icon": "💬",
+      "gameType": "english_hub_community",
+      "canBeSkipped": true,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Join learners in the community group to share today's achievements.",
+        "ml": "കമ്മ്യൂണിറ്റി ഗ്രൂപ്പിൽ മറ്റുള്ളവരുമായി ചർച്ചകളിൽ പങ്കുചേരുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_house_defense",
+      "title": {
+        "en": "House Defense Shield Command",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്"
       },
       "icon": "🛡️",
       "gameType": "house_defense_trap_builder",
       "canBeSkipped": false,
-      "xpReward": 30,
+      "xpReward": 35,
       "passScore": 100,
       "traps": [
         {
           "id": "trap_d4_1",
-          "question": "Which word represents: 'ഉണരുക'?",
+          "question": "Which demonstrative is used for one object near you?",
           "options": [
-            "wake",
-            "create",
-            "discover",
-            "remember"
+            "Those",
+            "This",
+            "These",
+            "They"
           ],
-          "answer": "wake",
-          "explanation": "wake എന്നാൽ ഉണരുക എന്നർത്ഥം."
+          "answer": "This",
+          "explanation": "അടുത്തുള്ള ഒറ്റ വസ്തുവിന് This ഉപയോഗിക്കുന്നു."
         },
         {
           "id": "trap_d4_2",
-          "question": "What is the past form (V2) of 'wash'?",
+          "question": "Complete the sentence: '___ are glowing stars in the distant sky.'",
           "options": [
-            "has wash",
-            "washed",
-            "washing",
-            "washs"
+            "This",
+            "Those",
+            "That",
+            "It"
           ],
-          "answer": "washed",
-          "explanation": "wash ന്റെ ഭൂതകാല രൂപം washed ആണ്."
+          "answer": "Those",
+          "explanation": "ആകാശത്ത് ദൂരെയുള്ള പല നക്ഷത്രങ്ങൾക്ക് 'Those are' ഉപയോഗിക്കുന്നു."
         },
         {
           "id": "trap_d4_3",
-          "question": "What is the correct English word for 'രാവിലെ'?",
+          "question": "What is the correct English word for 'ഉണരുക'?",
           "options": [
-            "morning",
-            "knowledge",
-            "schedule",
-            "routine"
+            "sleep",
+            "wash",
+            "wake",
+            "eat"
           ],
-          "answer": "morning",
-          "explanation": "രാവിലെ എന്നാൽ ഇംഗ്ലീഷിൽ morning."
+          "answer": "wake",
+          "explanation": "ഉണരുക എന്നാൽ wake."
         }
       ],
       "description": {
@@ -333,131 +358,37 @@
       }
     },
     {
-      "stepNumber": 8,
-      "id": "step_attack_raids",
+      "stepNumber": 10,
+      "id": "step_10_poketalk_pact",
       "title": {
-        "en": "⚔️ Citadel Attack Raids (Active)",
-        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+        "en": "Poketalk: 4-Day Spoken Pact",
+        "ml": "പോക്കറ്റ്-ടോക്ക്: 4-ഡേ സ്പോക്കൺ പാക്ട്"
+      },
+      "icon": "📞",
+      "gameType": "poketalk_spoken_pact",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "description": {
+        "en": "Connect with fellow learners to establish a 4-day spoken English pact.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി 4 ദിവസത്തെ സ്പോക്കൺ പാർട്ണർഷിപ്പ് ഉണ്ടാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 11,
+      "id": "step_11_citadel_raid",
+      "title": {
+        "en": "House Attack Quest: Citadel Raid",
+        "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റെയ്ഡ്"
       },
       "icon": "⚔️",
       "gameType": "citadel_attack_raid",
       "canBeSkipped": false,
-      "xpReward": 45,
-      "passScore": 100,
-      "attackConfig": {
-        "isUnlocked": true,
-        "targetHousesAvailable": 3,
-        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
-      },
-      "description": {
-        "en": "Raid rival learner houses by solving grammar challenges!",
-        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
-      }
-    },
-    {
-      "stepNumber": 9,
-      "id": "step_social_arena",
-      "title": {
-        "en": "Community & Social Arena",
-        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
-      },
-      "icon": "🤝",
-      "gameType": "social_arena",
-      "canBeSkipped": true,
-      "xpReward": 30,
-      "passScore": 100,
-      "socialConfig": {
-        "zeroTrack": {
-          "isLocked": true,
-          "unlocksOnDay": 10,
-          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
-          "alternativeAction": "robot_voice_practice"
-        },
-        "middleTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Post in English Hub: 'Today on Day 4, I practiced Daily Routines & Time! What are your thoughts?'",
-          "randomCallPrompt": "Connect on an anonymous call to discuss Daily Routines & Time for 2 minutes.",
-          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
-        },
-        "higherTrack": {
-          "isLocked": false,
-          "englishHubPrompt": "Lead a professional discussion topic on Daily Routines & Time in English Hub.",
-          "randomCallPrompt": "Connect a 3-minute voice conversation on Daily Routines & Time.",
-          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
-        }
-      },
-      "description": {
-        "en": "Connect with real learners or chat with your AI Robot.",
-        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
-      }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_daily_exam",
-      "title": {
-        "en": "Day 4 Gate Exam (5 Qs)",
-        "ml": "ഡേ 4 ഗേറ്റ് എക്സാം"
-      },
-      "icon": "🎓",
-      "gameType": "daily_exam",
-      "canBeSkipped": false,
       "xpReward": 50,
-      "passScore": 70,
-      "examQuestions": [
-        {
-          "q": "Choose the correct meaning for 'wake':",
-          "options": [
-            "ഉണരുക",
-            "സന്തോഷം",
-            "യാത്ര",
-            "ഭക്ഷണം"
-          ],
-          "answer": "ഉണരുക"
-        },
-        {
-          "q": "Complete the sentence: 'I _____ up at 6 AM.'",
-          "options": [
-            "were wake",
-            "is wake",
-            "wakeing",
-            "wake"
-          ],
-          "answer": "wake"
-        },
-        {
-          "q": "What is the past form (V2) of 'wash'?",
-          "options": [
-            "washed",
-            "None",
-            "washs",
-            "washedx"
-          ],
-          "answer": "washed"
-        },
-        {
-          "q": "Which English word means 'രാവിലെ'?",
-          "options": [
-            "morning",
-            "progress",
-            "station",
-            "partner"
-          ],
-          "answer": "morning"
-        },
-        {
-          "q": "Which sentence is grammatically correct for today's lesson?",
-          "options": [
-            "We was wake tomorrow.",
-            "I wake up at 6 AM.",
-            "He do not wake yesterday.",
-            "I am wake every time wrongly."
-          ],
-          "answer": "I wake up at 6 AM."
-        }
-      ],
+      "passScore": 80,
       "description": {
-        "en": "Pass Day 4 with 70%+ to keep your streak and unlock Day 5!",
-        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+        "en": "Raid the rival House Citadel by answering speed grammar questions.",
+        "ml": "എതിർ ഹൗസിന്റെ കോട്ട ആക്രമിക്കാൻ ചോദ്യങ്ങൾക്ക് വേഗത്തിൽ ഉത്തരം നൽകുക."
       }
     }
   ]

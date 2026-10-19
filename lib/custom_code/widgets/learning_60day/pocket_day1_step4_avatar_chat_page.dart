@@ -311,7 +311,125 @@ class _PocketDay1Step4AvatarChatPageState
       ];
     }
 
-    // Days 4–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
+    if (day == 4) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Hello! Welcome to Day 4! What do you have on your wrist? ⌚',
+          'questionMl': 'ഹലോ! ഡേ 4 ലേക്ക് സ്വാഗതം! നിന്റെ കയ്യിൽ എന്താണുള്ളത്?',
+          'targetReply': 'This is my new wristwatch.',
+          'targetReplyMl': 'ഇത് എന്റെ പുതിയ കൈഘടികാരമാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Look at the wall over there! What is hanging high up? ⏰',
+          'questionMl': 'അവിടെ ആ ചുമരിലേക്ക് നോക്കൂ! എന്താണ് തൂക്കിയിട്ടിരിക്കുന്നത്?',
+          'targetReply': 'That is a big wall clock.',
+          'targetReplyMl': 'അത് വലിയൊരു ചുമർ ക്ലോക്കാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What are those colorful items on your reading table? 📚',
+          'questionMl': 'നിന്റെ മേശപ്പുറത്തിരിക്കുന്ന ആ വർണ്ണാഭമായ വസ്തുക്കൾ എന്തൊക്കെയാണ്?',
+          'targetReply': 'These are my favorite story books.',
+          'targetReplyMl': 'ഇവ എന്റെ പ്രിയപ്പെട്ട കഥാപുസ്തകങ്ങളാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Look outside the window at the tall tree! What can you see? 🌳',
+          'questionMl': 'ജനലിലൂടെ പുറത്തുള്ള ആ വലിയ മരത്തിലേക്ക് നോക്കൂ! എന്താണ് കാണുന്നത്?',
+          'targetReply': 'Those are bright birds on the tree.',
+          'targetReplyMl': 'അവ മരത്തിലിരിക്കുന്ന തിളങ്ങുന്ന പക്ഷികളാണ്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Tell me about your morning habit! What time do you wake up? 🌅',
+          'questionMl': 'നിന്റെ പ്രഭാത ശീലത്തെക്കുറിച്ച് പറയൂ! എപ്പോഴാണ് ഉണരുന്നത്?',
+          'targetReply': 'I wake up early every morning.',
+          'targetReplyMl': 'ഞാൻ എല്ലാ ദിവസവും രാവിലെ നേരത്തെ ഉണരുന്നു.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Can you ask me what time it is right now? ⏱️',
+          'questionMl': 'ഇപ്പോൾ സമയം എത്രയാണെന്ന് എന്നോട് ചോദിക്കാമോ?',
+          'targetReply': 'What is the time right now?',
+          'targetReplyMl': 'ഇപ്പോൾ സമയം എത്രയാണ്?',
+        },
+      ];
+    }
+
+    if (day == 5) {
+      return const [
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Welcome to Day 5! Do you want to ask me something? 🙋‍♂️',
+          'questionMl': 'ഡേ 5 ലേക്ക് സ്വാഗതം! എന്നോട് എന്തെങ്കിലും ചോദിക്കാനുണ്ടോ?',
+          'targetReply': 'I have a question for you.',
+          'targetReplyMl': 'എനിക്ക് നിങ്ങളോട് ഒരു ചോദ്യമുണ്ട്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Tell me about your best friend or teacher! What special skill do they have? ✨',
+          'questionMl': 'നിന്റെ സുഹൃത്തിനെക്കുറിച്ചോ അധ്യാപകനെക്കുറിച്ചോ പറയൂ! എന്ത് പ്രത്യേക കഴിവാണ് അവർക്കുള്ളത്?',
+          'targetReply': 'She has great communication skills.',
+          'targetReplyMl': 'അവൾക്ക് മികച്ച ആശയവിനിമയ ശേഷിയുണ്ട്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What gadget does your brother or teammate use for coding? 💻',
+          'questionMl': 'നിന്റെ സഹോദരൻ കോഡിംഗിനായി ഏത് ഗാഡ്‌ജെറ്റാണ് ഉപയോഗിക്കുന്നത്?',
+          'targetReply': 'He has a fast new laptop.',
+          'targetReplyMl': 'അവന്റെ പക്കൽ വേഗതയേറിയ പുതിയൊരു ലാപ്ടോപ്പ് ഉണ്ട്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'What is scheduled on your calendar for today? 📅',
+          'questionMl': 'ഇന്ന് നിങ്ങളുടെ കലണ്ടറിൽ എന്താണ് നിശ്ചയിച്ചിരിക്കുന്നത്?',
+          'targetReply': 'We have an important team meeting.',
+          'targetReplyMl': 'ഞങ്ങൾക്ക് ഇന്ന് ഒരു പ്രധാന ടീം മീറ്റിങ് ഉണ്ട്.',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Can you politely ask someone if they are free to talk? ⏳',
+          'questionMl': 'ഒരാളോട് സംസാരിക്കാൻ സമയമുണ്ടോ എന്ന് മാന്യമായി എങ്ങനെ ചോദിക്കും?',
+          'targetReply': 'Do you have a few minutes?',
+          'targetReplyMl': 'നിങ്ങൾക്ക് കുറച്ചു സമയം ഉണ്ടോ?',
+        },
+        {
+          'avatar': 'CyberCat',
+          'icon': '🐱',
+          'color': Color(0xFF0284C7),
+          'questionEn': 'Does your team have all the documents needed for work? 📂',
+          'questionMl': 'ജോലിക്ക് ആവശ്യമായ എല്ലാ രേഖകളും നിങ്ങളുടെ ടീമിന്റെ പക്കലുണ്ടോ?',
+          'targetReply': 'They have all the project files.',
+          'targetReplyMl': 'അവരുടെ പക്കൽ എല്ലാ പ്രൊജക്റ്റ് ഫയലുകളും ഉണ്ട്.',
+        },
+      ];
+    }
+
+    // Days 6–90: Progressively synthesized from PocketMasterCurriculum90 & Pocket90DayVocabCurriculum
     final master = PocketMasterCurriculum90.getDay(day);
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
 

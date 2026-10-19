@@ -216,73 +216,85 @@ class Pocket90DaySentenceBuilderData {
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 4
+    // DAY 4: Demonstratives (This, That, These, Those) & Daily Routines
     // -----------------------------------------------------------------------
     4: [
       _buildRound(
         id: 1,
-        sentence: 'I wake up at 6 AM .',
-        translationMl: 'ഉണരുക - I wake up at 6 AM.',
-        hint: 'Pay attention to: Simple Present V1 (Routines without \'am\')',
+        sentence: 'This is my new wristwatch .',
+        translationMl: 'ഇത് എന്റെ പുതിയ കൈഘടികാരമാണ്.',
+        hint: 'Singular object near you: "This is my..."',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Wash your hands .',
-        translationMl: 'കഴുകുക - Wash your hands.',
-        hint: 'Pay attention to: Simple Present V1 (Routines without \'am\')',
+        sentence: 'That is a big wall clock .',
+        translationMl: 'അത് വലിയൊരു ചുമർ ക്ലോക്കാണ്.',
+        hint: 'Singular object far away: "That is a..."',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Daily Routines & Time gives you great confidence in English .',
-        translationMl: 'ദൈനംദിന ശീലങ്ങളും സമയവും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Simple Present V1 (Routines without \'am\')',
+        sentence: 'These are my favorite story books .',
+        translationMl: 'ഇവ എന്റെ പ്രിയപ്പെട്ട കഥാപുസ്തകങ്ങളാണ്.',
+        hint: 'Plural objects near you: "These are my..."',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Eat breakfast .',
-        translationMl: 'ദൈനംദിന ശീലങ്ങളും സമയവും',
-        hint: 'Core sentence pattern: Simple Present V1 (Routines without \'am\')',
+        sentence: 'Those are bright birds on the tree .',
+        translationMl: 'അവ മരത്തിലിരിക്കുന്ന തിളങ്ങുന്ന പക്ഷികളാണ്.',
+        hint: 'Plural objects far away: "Those are..."',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Sleep early .',
-        translationMl: 'ഉറങ്ങുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'sleep\'',
+        sentence: 'I wake up early every morning .',
+        translationMl: 'ഞാൻ എല്ലാ ദിവസവും രാവിലെ നേരത്തെ ഉണരുന്നു.',
+        hint: 'Habitual routine: "I wake up..."',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'What is the time right now ?',
+        translationMl: 'ഇപ്പോൾ സമയം എത്രയാണ്?',
+        hint: 'Asking the time: "What is the time..."',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 5
+    // DAY 5: Ownership & Possession (Have / Has)
     // -----------------------------------------------------------------------
     5: [
       _buildRound(
         id: 1,
-        sentence: 'Point to that car .',
-        translationMl: 'ചൂണ്ടിക്കാണിക്കുക - Point to that car.',
-        hint: 'Pay attention to: This, That, These, Those',
+        sentence: 'I have a question for you .',
+        translationMl: 'എനിക്ക് നിങ്ങളോട് ഒരു ചോദ്യമുണ്ട്.',
+        hint: 'Expressing a query without "am having": "I have a..."',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Take this book .',
-        translationMl: 'എടുക്കുക - Take this book.',
-        hint: 'Pay attention to: This, That, These, Those',
+        sentence: 'She has great communication skills .',
+        translationMl: 'അവൾക്ക് മികച്ച ആശയവിനിമയ ശേഷിയുണ്ട്.',
+        hint: 'Singular third person possession: "She has..."',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Demonstratives & Objects gives you great confidence in English .',
-        translationMl: 'അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: This, That, These, Those',
+        sentence: 'He has a fast new laptop .',
+        translationMl: 'അവന്റെ പക്കൽ വേഗതയേറിയ പുതിയൊരു ലാപ്ടോപ്പ് ഉണ്ട്.',
+        hint: 'Possessing equipment: "He has a..."',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Give me that pen .',
-        translationMl: 'അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ',
-        hint: 'Core sentence pattern: This, That, These, Those',
+        sentence: 'We have an important team meeting .',
+        translationMl: 'ഞങ്ങൾക്ക് ഇന്ന് ഒരു പ്രധാന ടീം മീറ്റിങ് ഉണ്ട്.',
+        hint: 'Scheduled event: "We have an important..."',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Keep those shoes outside .',
-        translationMl: 'വെയ്ക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'keep\'',
+        sentence: 'Do you have a few minutes ?',
+        translationMl: 'നിങ്ങൾക്ക് കുറച്ചു സമയം ഉണ്ടോ?',
+        hint: 'Polite question: "Do you have..."',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'They have all the project files .',
+        translationMl: 'അവരുടെ പക്കൽ എല്ലാ പ്രൊജക്റ്റ് ഫയലുകളും ഉണ്ട്.',
+        hint: 'Possession: "They have all..."',
       ),
     ],
     // -----------------------------------------------------------------------
