@@ -77,7 +77,7 @@ class PocketDay1Step5AvatarChatPage extends StatefulWidget {
   const PocketDay1Step5AvatarChatPage({
     super.key,
     this.day = 1,
-    this.stepIndex = 7,
+    this.stepIndex = 5,
     this.userId,
     this.onStepFinished,
   });
@@ -85,7 +85,7 @@ class PocketDay1Step5AvatarChatPage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
-    int stepIndex = 7,
+    int stepIndex = 5,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -298,8 +298,10 @@ class _PocketDay1Step5AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
-      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
+      await _tts.setLanguage('en-IN');
       await _tts.setSpeechRate(0.43); // Clear, expressive storytelling pace
+      await _tts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
 
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);
@@ -792,14 +794,22 @@ class _PocketDay1Step5AvatarChatPageState
     _scrollToBottom();
   }
 
-  void _completeStep5() {
+  Future<void> _completeStep5() async {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final uid = widget.userId ?? 'guest';
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
+    } catch (_) {}
 
     if (widget.onStepFinished != null) {
       widget.onStepFinished!(widget.stepIndex);
     }
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _startListeningToCentralMic() async {

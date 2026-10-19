@@ -36,8 +36,10 @@ import 'pocket_day1_step5_avatar_chat_page.dart';
 import 'pocket_day2_step1_avatar_chat_page.dart';
 import 'pocket_day_avatar_chat_page.dart';
 import 'pocket_house_defense_chat_page.dart';
-import 'games/pocket_vocab_open_world_drive_page.dart';
 import 'pocket_house_attack_page.dart';
+import 'games/pocket_vocab_open_world_drive_page.dart';
+import 'pocket_day2_step4_avatar_chat_page.dart';
+import 'spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'games/sentence_builder_flame_game.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 
@@ -711,20 +713,20 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🚗 Days 2 to 90 Step 2: Open-World Vocab Quest with 5 ride modes & thematic landmarks!
+    // 🧩 Days 2 to 90 Step 2: Sentence Builder Game
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 2) {
-      return PocketVocabOpenWorldDrivePage(
+      return PocketSentenceBuilderGamePage(
         day: widget.day,
         userId: widget.userId,
-        onCompleted: () {
+        onStepFinished: (finishedStep) {
           _markStepCompleted(2);
         },
       );
     }
 
-    // 🔍 Days 2 to 90 Step 3: Letter & Word Hunt!
+    // 👂 Days 2 to 90 Step 3: Essential Words & Spelling Challenge
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 3) {
-      return PocketDay1Step3AvatarChatPage(
+      return PocketEssentialSpellingPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
@@ -733,8 +735,16 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🎙️ Days 2 to 90 Step 4: Spoken English!
+    // 🎙️ Days 2 to 90 Step 4: Spoken English Conversational Chat!
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 4) {
+      if (widget.day == 2) {
+        return PocketDay2Step4AvatarChatPage(
+          userId: widget.userId,
+          onStepFinished: (finishedStep) {
+            _markStepCompleted(4);
+          },
+        );
+      }
       return PocketDay1Step4AvatarChatPage(
         day: widget.day,
         userId: widget.userId,
@@ -756,27 +766,76 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 💬 Days 2 to 90 Step 6: English Hub Community Chat!
+    // 🗣️ Days 2 to 90 Step 6: 20-Turn Spoken Simulator!
     if (widget.day >= 2 && widget.day <= 90 && _activeStep == 6) {
+      return PocketSpokenAvatarSimulatorPage(
+        day: widget.day,
+        onCompleted: () {
+          _markStepCompleted(6);
+        },
+      );
+    }
+
+    // 🚗 Days 2 to 90 Step 7: Open-World Vocab Quest!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 7) {
+      return PocketVocabOpenWorldDrivePage(
+        day: widget.day,
+        stepIndex: 7,
+        userId: widget.userId,
+        onCompleted: () {
+          _markStepCompleted(7);
+        },
+      );
+    }
+
+    // 💬 Days 2 to 90 Step 8: English Hub Community Chat!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 8) {
       return Scaffold(
         backgroundColor: const Color(0xFF0A1118),
         body: SafeArea(
           child: EnglishLearningGroupChatWidget(
             onCancel: () {
-              _markStepCompleted(6);
+              _markStepCompleted(8);
             },
           ),
         ),
       );
     }
 
-    // 🛡️ Days 2 to 90 Step 7: Dedicated House Defense Shield Command!
-    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 7) {
+    // 🛡️ Days 2 to 90 Step 9: Dedicated House Defense Shield Command!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 9) {
       return PocketHouseDefenseChatPage(
         day: widget.day,
+        stepIndex: 9,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
-          _markStepCompleted(7);
+          _markStepCompleted(9);
+        },
+      );
+    }
+
+    // 📞 Days 2 to 90 Step 10: Poketalk: 4-Day Spoken Pact!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 10) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await PocketTalkCardSwiperDialog.show(context);
+        _markStepCompleted(10);
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A1118),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+        ),
+      );
+    }
+
+    // ⚔️ Days 2 to 90 Step 11: House Attack Quest: Raid Rival Citadel!
+    if (widget.day >= 2 && widget.day <= 90 && _activeStep == 11) {
+      return PocketHouseAttackPage(
+        day: widget.day,
+        stepIndex: 11,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(11);
         },
       );
     }

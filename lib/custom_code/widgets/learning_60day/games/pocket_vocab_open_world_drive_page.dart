@@ -65,7 +65,7 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
   const PocketVocabOpenWorldDrivePage({
     super.key,
     this.day = 1,
-    this.stepIndex = 4,
+    this.stepIndex = 7,
     this.initialRideMode,
     this.userId,
     this.onCompleted,
@@ -74,7 +74,7 @@ class PocketVocabOpenWorldDrivePage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
-    int stepIndex = 4,
+    int stepIndex = 7,
     String? initialRideMode,
     String? userId,
     VoidCallback? onCompleted,
@@ -849,7 +849,7 @@ class _PocketVocabOpenWorldDrivePageState
                   Text(modeEmojis[_currentRideMode] ?? '🏎️', style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 6),
                   Text(
-                    'Day ${widget.day} Vocab • $currentWord (${_currentCheckpointIndex + 1}/${_checkpoints.length})',
+                    'DAY ${widget.day} • STEP ${widget.stepIndex}: VOCAB QUEST • $currentWord (${_currentCheckpointIndex + 1}/${_checkpoints.length})',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 12.5,

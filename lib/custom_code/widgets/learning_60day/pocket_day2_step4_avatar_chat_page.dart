@@ -216,14 +216,11 @@ class _PocketDay2Step4AvatarChatPageState
   Future<void> _initAudioEngines() async {
     _tts = FlutterTts();
     try {
+      await _tts.setLanguage('en-IN');
+      await _tts.setSpeechRate(0.48);
+      await _tts.setPitch(1.05);
       await PocketVoiceService.instance.configureOptimalFemaleVoice(_tts);
-    } catch (_) {
-      try {
-        await _tts.setLanguage('en-IN');
-        await _tts.setSpeechRate(0.48);
-        await _tts.setPitch(1.05);
-      } catch (_) {}
-    }
+    } catch (_) {}
 
     try {
       _tts.setStartHandler(() {
