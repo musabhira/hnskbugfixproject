@@ -40,6 +40,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_d
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_vocab_open_world_drive_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_attack_page.dart';
@@ -98,6 +99,8 @@ class _PocketDayOpenWorldAdventurePageState
   late AnimationController _ambientAnimController;
   late AnimationController _driveAnimController;
   Animation<double>? _driveAnimation;
+  AnimationController? _cameraPanAnimController;
+  Animation<Matrix4>? _cameraPanAnimation;
 
   final Map<String, bool> _subStepFlags = {};
   bool _isLoading = true;
@@ -202,6 +205,7 @@ class _PocketDayOpenWorldAdventurePageState
     _ambientAnimController.dispose();
     _driveAnimController.dispose();
     _transformController.dispose();
+    _cameraPanAnimController?.dispose();
     super.dispose();
   }
 
@@ -382,10 +386,74 @@ class _PocketDayOpenWorldAdventurePageState
       ..setEntry(1, 3, targetY);
 
     if (animate) {
-      _transformController.value = targetMatrix;
+      _animateTransformTo(targetMatrix);
     } else {
       _transformController.value = targetMatrix;
     }
+  }
+
+  void _animateTransformTo(Matrix4 targetMatrix) {
+    _cameraPanAnimController?.dispose();
+    _cameraPanAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    _cameraPanAnimation = Matrix4Tween(
+      begin: _transformController.value,
+      end: targetMatrix,
+    ).animate(CurvedAnimation(
+      parent: _cameraPanAnimController!,
+      curve: Curves.easeOutCubic,
+    ))..addListener(() {
+      if (mounted) {
+        _transformController.value = _cameraPanAnimation!.value;
+      }
+    });
+    _cameraPanAnimController!.forward();
+  }
+
+  void _scrubToFraction(double fraction, {bool animate = false}) {
+    if (!mounted) return;
+    final targetWorldX = (fraction * _worldWidth).clamp(0.0, _worldWidth);
+    final targetWorldY = getGroundY(targetWorldX);
+    final currentScale = _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
+    final size = MediaQuery.of(context).size;
+    final targetTx = -(targetWorldX * currentScale) + (size.width / 2.0);
+    final targetTy = -(targetWorldY * currentScale) + (size.height / 2.0);
+
+    final targetMatrix = Matrix4.identity()
+      ..setEntry(0, 0, currentScale)
+      ..setEntry(1, 1, currentScale)
+      ..setEntry(0, 3, targetTx)
+      ..setEntry(1, 3, targetTy);
+
+    if (animate) {
+      _animateTransformTo(targetMatrix);
+    } else {
+      _transformController.value = targetMatrix;
+    }
+  }
+
+  double _getCurrentWorldFraction(Size screenSize) {
+    final currentScale = _transformController.value.getMaxScaleOnAxis().clamp(0.52, 1.6);
+    final tx = _transformController.value.getTranslation().x;
+    final centerWorldX = ((screenSize.width / 2.0) - tx) / currentScale;
+    return (centerWorldX / _worldWidth).clamp(0.0, 1.0);
+  }
+
+  int _findStepClosestToFraction(double fraction) {
+    final worldX = fraction * _worldWidth;
+    int closestStep = 1;
+    double minDistance = double.infinity;
+    for (int s = 1; s <= _totalSteps; s++) {
+      final pos = getStepPosition(s, totalSteps: _totalSteps);
+      final dist = (pos.dx - worldX).abs();
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestStep = s;
+      }
+    }
+    return closestStep;
   }
 
   Future<void> _onStepCompleted(int stepIndex) async {
@@ -528,7 +596,10 @@ class _PocketDayOpenWorldAdventurePageState
           // 2. Top HUD with Focus & Zoom Toggle
           _buildHUD(completedCount),
 
-          // 3. Stage Complete Bottom Floating Bar
+          // 3. Bottom Fast Scroller / Slider Bar (Quick Scrubbing through 11 Steps)
+          _buildBottomFastScroller(completedCount),
+
+          // 4. Stage Complete Bottom Floating Bar
           if (completedCount >= _totalSteps)
             Positioned(
               left: 16,
@@ -752,6 +823,213 @@ class _PocketDayOpenWorldAdventurePageState
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏎️ Bottom Horizontal Fast Scroller / Slider Bar
+  ///
+  /// User Audio Directive:
+  /// Smooth horizontal scrubber allowing users to drag from end to end and quickly
+  /// navigate between House 1, the 11 steps, and House 2 without cumbersome manual pinch-panning!
+  Widget _buildBottomFastScroller(int completedCount) {
+    final bottomOffset = (completedCount >= _totalSteps) ? 104.0 : 18.0;
+
+    return Positioned(
+      left: 14,
+      right: 14,
+      bottom: bottomOffset,
+      child: SafeArea(
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final trackWidth = constraints.maxWidth;
+            const scrubberHeight = 44.0;
+            const thumbWidth = 54.0;
+
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragUpdate: (details) {
+                final localX = details.localPosition.dx.clamp(0.0, trackWidth);
+                final newFraction = (localX / trackWidth).clamp(0.0, 1.0);
+                _scrubToFraction(newFraction, animate: false);
+              },
+              onTapDown: (details) {
+                final localX = details.localPosition.dx.clamp(0.0, trackWidth);
+                final newFraction = (localX / trackWidth).clamp(0.0, 1.0);
+                _scrubToFraction(newFraction, animate: true);
+              },
+              child: Container(
+                height: scrubberHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.55),
+                    width: 1.4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      blurRadius: 16,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    // Subtle Background Track Line
+                    Container(
+                      height: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+
+                    // Left Icon: Start House 1
+                    Positioned(
+                      left: 2,
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          _scrubToFraction(0.0, animate: true);
+                        },
+                        child: const Text('🏡', style: TextStyle(fontSize: 14)),
+                      ),
+                    ),
+
+                    // 11 Step Milestone Dots along track
+                    for (int s = 1; s <= _totalSteps; s++)
+                      _buildScrollerStepDot(s, trackWidth),
+
+                    // Right Icon: Summit House 2
+                    Positioned(
+                      right: 2,
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          _scrubToFraction(1.0, animate: true);
+                        },
+                        child: Text(
+                          _isGateExamPassed ? '🏰' : '🔒',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+
+                    // Draggable Glowing Thumb with Live Step Badge
+                    AnimatedBuilder(
+                      animation: _transformController,
+                      builder: (context, _) {
+                        final size = MediaQuery.of(context).size;
+                        final fraction = _getCurrentWorldFraction(size);
+                        final maxThumbTravel = (trackWidth - thumbWidth - 20).clamp(0.0, trackWidth);
+                        final thumbLeft = (fraction * maxThumbTravel) + 10;
+                        final approxStep = _findStepClosestToFraction(fraction);
+
+                        return Positioned(
+                          left: thumbLeft.clamp(6.0, trackWidth - thumbWidth - 6.0),
+                          child: IgnorePointer(
+                            child: Container(
+                              width: thumbWidth,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('🏎️', style: TextStyle(fontSize: 11)),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'S$approxStep',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScrollerStepDot(int step, double trackWidth) {
+    final pos = getStepPosition(step, totalSteps: _totalSteps);
+    final fraction = (pos.dx / _worldWidth).clamp(0.0, 1.0);
+    final dotX = (fraction * (trackWidth - 36)) + 18;
+
+    final isDone = _subStepFlags['step_$step'] ?? false;
+    final isPrevDone = step == 1 || (_subStepFlags['step_${step - 1}'] ?? false);
+    final isUnlocked = _isMasterAdmin || isPrevDone;
+    final isCurrent = isUnlocked && !isDone;
+
+    final dotColor = isDone
+        ? const Color(0xFF10B981)
+        : (isCurrent ? const Color(0xFFFFFC00) : Colors.white24);
+
+    final dotSize = isCurrent ? 8.0 : 6.0;
+
+    return Positioned(
+      left: dotX - (dotSize / 2),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          final targetX = pos.dx - 48.0;
+          _focusOnPoint(targetX, getGroundY(targetX), scale: _zoomScale, animate: true);
+        },
+        child: Container(
+          width: dotSize,
+          height: dotSize,
+          decoration: BoxDecoration(
+            color: dotColor,
+            shape: BoxShape.circle,
+            boxShadow: isCurrent || isDone
+                ? [
+                    BoxShadow(
+                      color: dotColor.withValues(alpha: 0.7),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
           ),
         ),
       ),
@@ -2348,6 +2626,9 @@ class _PocketDayOpenWorldAdventurePageState
 
   _StepInfo _getStepDetails(int s) {
     final runtimeSteps = _runtimeSteps;
+    if (s == 6) {
+      return const _StepInfo('20-Turn Spoken Simulator', '🎙️', Color(0xFFEC4899));
+    }
     if (runtimeSteps != null && s >= 1 && s <= runtimeSteps.length) {
       final step = runtimeSteps[s - 1];
       final title = PocketDayCurriculumService.getLocalizedText(step['title']);
@@ -2555,16 +2836,16 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
 
-      // Step 6 on ALL DAYS (1 to 90): Launches Spoken English Conversational Chat (Previous Step 4)
+      // Step 6 on ALL DAYS (1 to 90): Launches Spoken English Conversational Simulator (20 Rich Dialogues!)
       if (s == 6) {
-        await PocketDay1Step4AvatarChatPage.show(
+        final res = await PocketSpokenAvatarSimulatorPage.launch(
           context,
           day: day,
-          userId: widget.userId ?? _supabase.auth.currentUser?.id,
-          onStepFinished: (finishedStep) {
-            _onStepCompleted(finishedStep);
-          },
+          onCompleted: () => _onStepCompleted(6),
         );
+        if (res == true) {
+          await _onStepCompleted(6);
+        }
         await _loadState(preserveCarPosition: true);
         return;
       }
