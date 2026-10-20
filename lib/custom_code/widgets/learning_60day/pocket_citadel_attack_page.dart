@@ -585,7 +585,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     // When attacking a robot (fallback when no human is available),
     // questions count must strictly match robot level (day) (e.g. Lvl 15 = 15 questions, Lvl 10 = 10 questions).
     final questions = (widget.neighbor.isPocketRobo && widget.neighbor.day > 0)
-        ? rawQuestions.take(widget.neighbor.day).toList()
+        ? (rawQuestions.length >= widget.neighbor.day
+            ? rawQuestions.take(widget.neighbor.day).toList()
+            : List.generate(
+                widget.neighbor.day,
+                (i) => rawQuestions[i % rawQuestions.length],
+              ))
         : rawQuestions;
 
     // Randomize option order dynamically across A, B, C, D
