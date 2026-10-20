@@ -137,6 +137,36 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     final Set<String> seenNames = {};
     final Set<String> seenFirstNames = {};
 
+    // ⚡ User Audio Directive: Anyone who has already been sent a PocketTalk invite
+    // (from Day 1, Day 2, or manually) MUST NEVER be shown again in the swiper cards!
+    final Set<String> alreadySentUserIds = {};
+    if (myId.isNotEmpty) {
+      try {
+        final sentMates = await _supabase
+            .from('pocket_mate')
+            .select('receiver_id')
+            .eq('sender_id', myId);
+        for (final sm in (sentMates as List<dynamic>)) {
+          final rid = sm['receiver_id']?.toString() ?? '';
+          if (rid.isNotEmpty) alreadySentUserIds.add(rid);
+        }
+      } catch (_) {}
+
+      try {
+        final sentKey = 'poket_talk_sent_candidates_$myId';
+        final localSent = prefs.getStringList(sentKey) ?? [];
+        for (final item in localSent) {
+          try {
+            final decoded = jsonDecode(item) as Map<String, dynamic>;
+            final uid = decoded['user_id']?.toString() ??
+                decoded['receiver_id']?.toString() ??
+                '';
+            if (uid.isNotEmpty) alreadySentUserIds.add(uid);
+          } catch (_) {}
+        }
+      } catch (_) {}
+    }
+
     try {
       // 1. Fetch real community profiles
       final profiles = await _supabase
@@ -152,6 +182,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
         if (PocketRobotService.isRobotId(uid)) continue;
         if (seenUserIds.contains(uid)) continue;
         if (swipedIds.contains(uid)) continue;
+        if (alreadySentUserIds.contains(uid)) continue;
 
         final rawName = (p['name']?.toString() ?? '').trim();
         if (rawName.isEmpty) continue;
@@ -180,10 +211,10 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
           continue;
         }
 
-        // Check if existing pact
+        // Check if existing pact (pending OR accepted: do not show again!)
         if (myId.isNotEmpty) {
           final pact = await PocketTrophyService.getPact(myId, uid);
-          if (pact != null && pact.isAccepted) continue;
+          if (pact != null) continue;
         }
 
         seenUserIds.add(uid);

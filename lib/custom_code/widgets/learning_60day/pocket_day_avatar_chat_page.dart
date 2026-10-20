@@ -13,9 +13,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_fortress_defense_service.dart';
-import 'games/pocket_20days_40games_spec.dart';
-import 'games/pocket_universal_arcade_engine_page.dart';
-import 'games/pocket_vocab_open_world_drive_page.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 
@@ -2588,20 +2585,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
 
   /// Phase 1: Greeting & Game vs Chat Mode Selection
   void _startWelcomeFlow() {
-    // Look up arcade game spec from registry
-    final gameSpecs = Pocket20Days40GamesRegistry.allGames
-        .where((g) => g.day == widget.day)
-        .toList();
-    final gameTitle = gameSpecs.isNotEmpty
-        ? '${gameSpecs.first.emoji} ${gameSpecs.first.title}'
-        : '🎮 Mini Game';
-
     final promptEn =
         'Hi $_userName! Welcome to Day ${widget.day}! 🌟 Today we master ${_spec.titleEn}.\n\n'
-        'Would you like to play the interactive game first, or jump into speaking chat?';
+        'Ready to jump into speaking chat and interactive drills?';
     final promptMl =
         'ഹായ് $_userName! ഡേ ${widget.day} ലേക്ക് സ്വാഗതം! 🌟 ഇന്ന് ${_spec.titleMl} നമുക്ക് പഠിക്കാം.\n\n'
-        'ഗെയിം കളിച്ചു പഠിക്കണോ, അതോ സംസാരിച്ചു തുടങ്ങണോ?';
+        'സംസാരിച്ചു തുടങ്ങാൻ തയ്യാറാണോ?';
 
     _currentExpectedVoicePhrase = 'Speaking Chat';
 
@@ -2617,7 +2606,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           speakThisPrompt: 'Choose your learning mode:',
           inBubbleOptions: [
             DayInBubbleOption(
-              labelEn: '🗣️ SPEAKING CHAT & DRILLS',
+              labelEn: '🗣️ START SPEAKING LESSON',
               labelNative: 'സംസാരിച്ചു പഠിക്കാം! 🎙️',
               icon: '🎙️',
               isHighlightedAnswer: true,
@@ -2625,51 +2614,8 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               borderColor: const Color(0xFF34D399),
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
-                text: '🗣️ SPEAKING CHAT & DRILLS',
+                text: '🗣️ START SPEAKING LESSON',
                 action: _showBlueprintCard,
-              ),
-            ),
-            DayInBubbleOption(
-              labelEn: '🎮 PLAY $gameTitle',
-              labelNative: 'ഗെയിം കളിച്ച് പഠിക്കാം ➔',
-              icon: '🎮',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF1E293B),
-              borderColor: const Color(0xFF60A5FA),
-              textColor: const Color(0xFF93C5FD),
-              onTap: () => _handleTextSubmission(
-                text: '🎮 PLAY $gameTitle',
-                action: () {
-                  PocketUniversalArcadeEnginePage.launch(
-                    context,
-                    day: widget.day,
-                    gameIndex: 1,
-                    onCompleted: () {
-                      _showBlueprintCard();
-                    },
-                  );
-                },
-              ),
-            ),
-            DayInBubbleOption(
-              labelEn: '🚗 OPEN-WORLD VOCAB QUEST',
-              labelNative: 'ഓപ്പൺ വേൾഡ് റൈഡ് & പദാവലി ➔',
-              icon: '🚗',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF1E293B),
-              borderColor: const Color(0xFFF59E0B),
-              textColor: const Color(0xFFFBBF24),
-              onTap: () => _handleTextSubmission(
-                text: '🚗 OPEN-WORLD VOCAB QUEST',
-                action: () {
-                  PocketVocabOpenWorldDrivePage.show(
-                    context,
-                    day: widget.day,
-                    onCompleted: () {
-                      _showBlueprintCard();
-                    },
-                  );
-                },
               ),
             ),
             DayInBubbleOption(
