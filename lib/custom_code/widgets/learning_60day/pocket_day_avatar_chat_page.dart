@@ -15,6 +15,7 @@ import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
+import 'pocket_formula_blueprint_builder_card.dart';
 
 /// 💬 Chat Message Model for Days 3 to 16 Unified Avatar Conversational Engine
 class DayChatMessage {
@@ -2900,9 +2901,69 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     _drillIndex++;
     if (_drillIndex < _spec.drills.length) {
       _startNextDrill();
+    } else if (!_isFormulaBuilderDone) {
+      _startFormulaBlueprintBuilder();
     } else {
       _startMiniQuiz();
     }
+  }
+
+  bool _isFormulaBuilderDone = false;
+
+  /// Phase 3.5: Interactive Formula Blueprint Builder
+  /// User Audio Directive: Pinned Formula header + tap word slots in formula order!
+  void _startFormulaBlueprintBuilder() {
+    final rules = _spec.blueprintRules.map((r) {
+      return FormulaRuleItem(
+        formulaHeader: _spec.blueprintTitle,
+        subjectRule: '${r['subject']} ➔ ${r['en']}',
+        targetSentence: r['en']!,
+        nativeMeaning: r['ml']!,
+        formulaTip: _spec.blueprintTitle,
+      );
+    }).toList();
+
+    final promptEn =
+        'Great speaking! 👏 Now let\'s master the ${_spec.blueprintTitle}!\n'
+        'Tap the words in the exact formula order to lock in your mastery! 🧩';
+    final promptMl =
+        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ${_spec.blueprintTitle} ഫോർമുല ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠനം ഉറപ്പിക്കാം! 🧩';
+
+    _currentExpectedVoicePhrase = _spec.blueprintRules.isNotEmpty
+        ? _spec.blueprintRules.first['en']!
+        : 'Formula Mastered';
+
+    setState(() {
+      _messages.add(
+        DayChatMessage(
+          id: 'formula_builder_${widget.day}',
+          isAvatar: true,
+          textEn: promptEn,
+          textNative: promptMl,
+          audioText: 'Now let\'s assemble the ${_spec.blueprintTitle}! Tap the words in the formula order.',
+          cardContent: PocketFormulaBlueprintBuilderCard(
+            title: _spec.blueprintTitle,
+            rules: rules,
+            onPronounceSentence: (sentence) {
+              _speak(sentence);
+            },
+            onCompleted: () {
+              _onFormulaBuilderCompleted();
+            },
+          ),
+          speakThisPrompt: 'Tap the words above in formula order 👆',
+          inBubbleOptions: null,
+        ),
+      );
+    });
+
+    _speak('Now let us assemble the ${_spec.blueprintTitle}! Tap the words in the formula order.');
+    _scrollToBottom();
+  }
+
+  void _onFormulaBuilderCompleted() {
+    _isFormulaBuilderDone = true;
+    _startMiniQuiz();
   }
 
   /// Phase 4: Quick In-Bubble Mini Quiz
@@ -3058,6 +3119,11 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     HapticFeedback.mediumImpact();
     PocketGameAudioService.instance.playCoinSound();
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: text,
+      spokenText: text,
+    );
+
     setState(() {
       _showMicGuideArrow = false;
       _messages.add(
@@ -3066,6 +3132,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           isAvatar: false,
           textEn: text,
           isVoiceMessage: false,
+          evaluationResult: evalResult,
         ),
       );
     });
@@ -3474,42 +3541,52 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Flexible(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF047857), Color(0xFF065F46)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(18),
-                    topRight: Radius.circular(4),
-                    bottomLeft: Radius.circular(18),
-                    bottomRight: Radius.circular(18),
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF059669).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF047857), Color(0xFF065F46)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(18),
+                        topRight: Radius.circular(4),
+                        bottomLeft: Radius.circular(18),
+                        bottomRight: Radius.circular(18),
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF059669).withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Text(
-                  msg.textEn,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.2,
+                    child: Text(
+                      msg.textEn,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
                   ),
-                ),
+                  if (msg.evaluationResult != null) ...[
+                    const SizedBox(height: 4),
+                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                  ],
+                ],
               ),
             ),
             const SizedBox(width: 8),

@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_day1_detail_page.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -68,9 +69,9 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   int _activeTrailSubTab = 0; // 0 = Roadmap, 1 = Canyon Game, 2 = Global Rank
   late final PageController _trailSubPageController;
 
-  static const int _totalDays = 100;
+  static const int _totalDays = 90;
   static const double _nodeSpacingY = 540.0;
-  static const double _topPadding = 360.0; // Day 100 Summit Golden Castle
+  static const double _topPadding = 360.0; // Day 91 Summit King Lion Castle
   static const double _bottomPadding = 260.0; // Day 1 Basecamp
 
   double get _totalCanvasHeight =>
@@ -413,7 +414,18 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       return;
     }
 
-    // Direct launch of the Day Open World Adventure! Zero bottom sheet, zero delay!
+    // For Day 1, launch dedicated 6-step game flow & House Defense arming page!
+    if (day == 1) {
+      HapticFeedback.heavyImpact();
+      PocketKidsDay1DetailPage.open(context, onCompleted: () {
+        if (mounted) setState(() {});
+      }).then((_) {
+        if (mounted) setState(() {});
+      });
+      return;
+    }
+
+    // Direct launch of the Day Open World Adventure for subsequent days!
     HapticFeedback.heavyImpact();
     PocketKidsDayOpenWorldPage.open(context, day).then((_) {
       if (mounted) setState(() {});
@@ -1600,11 +1612,11 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                   ),
                 ),
 
-                // 🏰 Jump to Summit (Day 100)
+                // 🏰 Jump to Summit (Day 90 / Day 91 Lion Palace)
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    _focusOnNode(100, scale: 1.0, animate: true);
+                    _focusOnNode(90, scale: 1.0, animate: true);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -1891,7 +1903,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               const Text('🔥 👑 🔥', style: TextStyle(fontSize: 22)),
               const SizedBox(width: 8),
               Text(
-                'KING LION PALACE (DAY 100 BOSS)',
+                'KING LION PALACE (DAY 91 BOSS)',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontSize: 15,

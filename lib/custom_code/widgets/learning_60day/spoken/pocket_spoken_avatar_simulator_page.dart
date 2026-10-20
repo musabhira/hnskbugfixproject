@@ -203,6 +203,12 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
   }) async {
     HapticFeedback.lightImpact();
 
+    final eval = evaluation ??
+        PocketPronunciationEvaluator.evaluate(
+          targetSentence: optionText,
+          spokenText: optionText,
+        );
+
     setState(() {
       _earnedXp += 10;
       _chatHistory.add(
@@ -210,7 +216,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
           isAvatar: false,
           text: optionText,
           isVoiceMessage: isVoice,
-          evaluation: evaluation,
+          evaluation: eval,
         ),
       );
     });
@@ -766,48 +772,57 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0369A1), Color(0xFF075985)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(4),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16),
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        msg.text,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0369A1), Color(0xFF075985)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(4),
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            msg.text,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+                      ],
+                    ),
+                  ),
+                  if (msg.evaluation != null) ...[
+                    PocketPronunciationInlineBadge(result: msg.evaluation!),
                   ],
-                ),
+                ],
               ),
             ),
             const SizedBox(width: 8),

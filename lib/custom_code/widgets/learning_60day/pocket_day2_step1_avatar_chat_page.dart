@@ -10,9 +10,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'games/town_quest_dialogue_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_pronunciation_evaluator.dart';
+import 'pocket_formula_blueprint_builder_card.dart';
 
 /// 💬 Chat Message Model with Embedded In-Bubble Choices & Voice Metadata
 class Day2ChatMessage {
@@ -26,6 +27,7 @@ class Day2ChatMessage {
   final String? speakThisPrompt;
   final bool isVoiceMessage;
   final DateTime timestamp;
+  final PronunciationEvaluationResult? evaluationResult;
 
   Day2ChatMessage({
     required this.id,
@@ -37,6 +39,7 @@ class Day2ChatMessage {
     this.inBubbleOptions,
     this.speakThisPrompt,
     this.isVoiceMessage = false,
+    this.evaluationResult,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 }
@@ -885,9 +888,79 @@ class _PocketDay2Step1AvatarChatPageState
     _drillIndex++;
     if (_drillIndex < _drills.length) {
       _startNextDrill();
+    } else if (!_isFormulaBuilderDone) {
+      _startFormulaBlueprintBuilder();
     } else {
       _startDay2MiniQuiz();
     }
+  }
+
+  bool _isFormulaBuilderDone = false;
+
+  void _startFormulaBlueprintBuilder() {
+    final rules = [
+      const FormulaRuleItem(
+        formulaHeader: 'DAY 2 SPOKEN BLUEPRINT',
+        subjectRule: 'I + am ➔ "I am from Kerala."',
+        targetSentence: 'I am from Kerala.',
+        nativeMeaning: 'ഞാൻ കേരളത്തിൽ നിന്നാണ്.',
+        formulaTip: 'I + am (Where I am from)',
+      ),
+      const FormulaRuleItem(
+        formulaHeader: 'DAY 2 SPOKEN BLUEPRINT',
+        subjectRule: 'He / She + is ➔ "He is at home."',
+        targetSentence: 'He is at home.',
+        nativeMeaning: 'അവൻ വീട്ടിലാണ്.',
+        formulaTip: 'He / She + is (Present state)',
+      ),
+      const FormulaRuleItem(
+        formulaHeader: 'DAY 2 SPOKEN BLUEPRINT',
+        subjectRule: 'We / They + are ➔ "They are in Kochi."',
+        targetSentence: 'They are in Kochi.',
+        nativeMeaning: 'അവർ കൊച്ചിയിലാണ്.',
+        formulaTip: 'We / They + are (Location)',
+      ),
+    ];
+
+    final promptEn =
+        'Great speech work! 👏 Now let\'s master the Day 2 Spoken Blueprint!\n'
+        'Tap the words in the exact formula order to lock in your mastery! 🧩';
+    final promptMl =
+        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഡേ 2 ബ്ലൂപ്രിന്റ് ഫോർമുല ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠനം ഉറപ്പിക്കാം! 🧩';
+
+    _currentExpectedVoicePhrase = 'I am from Kerala';
+
+    setState(() {
+      _messages.add(
+        Day2ChatMessage(
+          id: 'day2_formula_builder',
+          isAvatar: true,
+          textEn: promptEn,
+          textNative: promptMl,
+          audioText: 'Now let\'s assemble the Day 2 Spoken Blueprint! Tap the words in the formula order.',
+          cardContent: PocketFormulaBlueprintBuilderCard(
+            title: 'DAY 2 SPOKEN BLUEPRINT',
+            rules: rules,
+            onPronounceSentence: (sentence) {
+              _speak(sentence);
+            },
+            onCompleted: () {
+              _onFormulaBuilderCompleted();
+            },
+          ),
+          speakThisPrompt: 'Tap the words above in formula order 👆',
+          inBubbleOptions: null,
+        ),
+      );
+    });
+
+    _speak('Now let us assemble the Day 2 Spoken Blueprint! Tap the words in the formula order.');
+    _scrollToBottom();
+  }
+
+  void _onFormulaBuilderCompleted() {
+    _isFormulaBuilderDone = true;
+    _startDay2MiniQuiz();
   }
 
   /// Phase 4: Quick In-Bubble Mini Quiz
@@ -1076,6 +1149,11 @@ class _PocketDay2Step1AvatarChatPageState
     HapticFeedback.mediumImpact();
     PocketGameAudioService.instance.playCoinSound();
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: text,
+      spokenText: text,
+    );
+
     setState(() {
       _showMicGuideArrow = false;
       _messages.add(
@@ -1084,6 +1162,7 @@ class _PocketDay2Step1AvatarChatPageState
           isAvatar: false,
           textEn: text,
           isVoiceMessage: false,
+          evaluationResult: evalResult,
         ),
       );
     });
@@ -1102,6 +1181,11 @@ class _PocketDay2Step1AvatarChatPageState
   }) {
     HapticFeedback.selectionClick();
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: _currentExpectedVoicePhrase,
+      spokenText: voiceText,
+    );
+
     setState(() {
       _showMicGuideArrow = false;
       _hasShownMicGuide = true;
@@ -1112,6 +1196,7 @@ class _PocketDay2Step1AvatarChatPageState
           textEn: voiceText,
           textNative: '',
           isVoiceMessage: true,
+          evaluationResult: evalResult,
         ),
       );
     });
@@ -1356,42 +1441,52 @@ class _PocketDay2Step1AvatarChatPageState
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Flexible(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF047857), Color(0xFF065F46)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(4),
-                      bottomLeft: Radius.circular(18),
-                      bottomRight: Radius.circular(18),
-                    ),
-                    border: Border.all(
-                      color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF059669).withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF047857), Color(0xFF065F46)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(4),
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(18),
+                        ),
+                        border: Border.all(
+                          color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF059669).withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    msg.textEn,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.2,
+                      child: Text(
+                        msg.textEn,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (msg.evaluationResult != null) ...[
+                      const SizedBox(height: 4),
+                      PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
@@ -1422,113 +1517,123 @@ class _PocketDay2Step1AvatarChatPageState
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF065F46), Color(0xFF047857)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(6),
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF059669).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Play / Speak Button
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _speak(msg.textEn);
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.2),
-                          border: Border.all(color: Colors.white, width: 1.2),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF065F46), Color(0xFF047857)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(6),
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF059669).withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    // Audio Waveform Visual Bars
-                    Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        for (final h in [
-                          6.0,
-                          14.0,
-                          20.0,
-                          10.0,
-                          16.0,
-                          22.0,
-                          12.0,
-                          8.0,
-                          18.0,
-                          14.0,
-                          7.0
-                        ]) ...[
-                          Container(
-                            width: 3,
-                            height: h,
-                            margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        // Play / Speak Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _speak(msg.textEn);
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(2),
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.2),
+                              border: Border.all(color: Colors.white, width: 1.2),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: 10),
+                        // Audio Waveform Visual Bars
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final h in [
+                              6.0,
+                              14.0,
+                              20.0,
+                              10.0,
+                              16.0,
+                              22.0,
+                              12.0,
+                              8.0,
+                              18.0,
+                              14.0,
+                              7.0
+                            ]) ...[
+                              Container(
+                                width: 3,
+                                height: h,
+                                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(width: 10),
+                        // Duration & Voice Note Badge
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '0:02',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Voice Note 🎙️',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFA7F3D0),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(width: 10),
-                    // Duration & Voice Note Badge
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '0:02',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Voice Note 🎙️',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFFA7F3D0),
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                  ),
+                  if (msg.evaluationResult != null) ...[
+                    const SizedBox(height: 4),
+                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
                   ],
-                ),
+                ],
               ),
             ),
             const SizedBox(width: 8),

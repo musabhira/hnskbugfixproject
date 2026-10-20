@@ -619,73 +619,85 @@ class Pocket90DaySentenceBuilderData {
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 15
+    // DAY 15: Giving Advice, Recommendations & Guidance (Should / Shouldn't)
     // -----------------------------------------------------------------------
     15: [
       _buildRound(
         id: 1,
-        sentence: 'Taste this curry .',
-        translationMl: 'രുചിക്കുക - Taste this curry.',
-        hint: 'Pay attention to: Expressing Taste & Likes (Spicy, Sweet, Bitter)',
+        sentence: 'You should review the report before the client meeting .',
+        translationMl: 'ക്ലയന്റ് മീറ്റിംഗിന് മുൻപ് നിങ്ങൾ റിപ്പോർട്ട് പരിശോധിക്കണം.',
+        hint: 'Constructive Advice: Subject + should + V1 (review)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Drink warm water .',
-        translationMl: 'കുടിക്കുക - Drink warm water.',
-        hint: 'Pay attention to: Expressing Taste & Likes (Spicy, Sweet, Bitter)',
+        sentence: 'We shouldn\'t deploy the code without thorough testing .',
+        translationMl: 'വിശദമായ പരിശോധനയില്ലാതെ നമ്മൾ കോഡ് ഡിപ്ലോയ് ചെയ്യരുത്.',
+        hint: 'Negative Recommendation: shouldn\'t + V1 (deploy)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Food, Drinks & Taste gives you great confidence in English .',
-        translationMl: 'ഭക്ഷണവും പാനീയങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Expressing Taste & Likes (Spicy, Sweet, Bitter)',
+        sentence: 'You should consult a specialist if the pain continues .',
+        translationMl: 'വേദന തുടരുകയാണെങ്കിൽ നിങ്ങൾ ഒരു സ്പെഷ്യലിസ്റ്റിനെ കാണണം.',
+        hint: 'Medical Guidance: should + V1 (consult)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'It smells great .',
-        translationMl: 'ഭക്ഷണവും പാനീയങ്ങളും',
-        hint: 'Core sentence pattern: Expressing Taste & Likes (Spicy, Sweet, Bitter)',
+        sentence: 'To speak fluently, you should practice aloud every single day .',
+        translationMl: 'ഒഴുക്കോടെ സംസാരിക്കാൻ, ദിവസവും ഉറക്കെ സംസാരിച്ചു പരിശീലിക്കണം.',
+        hint: 'Fluency Tip: should + V1 (practice)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Serve dinner hot .',
-        translationMl: 'വിളമ്പുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'serve\'',
+        sentence: 'We should prioritize customer security above all else .',
+        translationMl: 'എല്ലാറ്റിനുമുപരി ഉപഭോക്തൃ സുരക്ഷയ്ക്ക് നമ്മൾ മുൻഗണന നൽകണം.',
+        hint: 'Professional Priority: should + V1 (prioritize)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'You shouldn\'t ignore honest feedback from your team .',
+        translationMl: 'ടീമിൽ നിന്നുള്ള ആത്മാർത്ഥമായ അഭിപ്രായങ്ങൾ നിങ്ങൾ അവഗണിക്കരുത്.',
+        hint: 'Constructive Leadership: shouldn\'t + V1 (ignore)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 16
+    // DAY 16: Workplace Obligations, Strict Rules & Official Deadlines (Must / Have to)
     // -----------------------------------------------------------------------
     16: [
       _buildRound(
         id: 1,
-        sentence: 'Put it on the table .',
-        translationMl: 'വെയ്ക്കുക - Put it on the table.',
-        hint: 'Pay attention to: Under, Behind, In front of, Next to',
+        sentence: 'All employees must wear their security ID badges inside the office .',
+        translationMl: 'ഓഫീസിനുള്ളിൽ എല്ലാ ജീവനക്കാരും തിരിച്ചറിയൽ കാർഡ് ധരിച്ചിരിക്കണം.',
+        hint: 'Strict Corporate Rule: Subject + must + V1 (wear)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Hide under the bed .',
-        translationMl: 'ഒളിക്കുക - Hide under the bed.',
-        hint: 'Pay attention to: Under, Behind, In front of, Next to',
+        sentence: 'I have to submit the project proposal before five PM today .',
+        translationMl: 'ഇന്ന് വൈകുന്നേരം അഞ്ചുമണിക്ക് മുൻപ് എനിക്ക് പ്രൊപ്പോസൽ സമർപ്പിക്കേണ്ടതുണ്ട്.',
+        hint: 'External Deadline: I + have to + V1 (submit)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Spatial Prepositions: In, On, Under, Behind gives you great confidence in English .',
-        translationMl: 'വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Under, Behind, In front of, Next to',
+        sentence: 'You must not share confidential client passwords with anyone .',
+        translationMl: 'നിങ്ങൾ രഹസ്യ പാസ്‌വേഡുകൾ ആരോടും പങ്കുവെക്കാൻ പാടില്ല.',
+        hint: 'Strict Prohibition: must not + V1 (share)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Stand in front of me .',
-        translationMl: 'വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ',
-        hint: 'Core sentence pattern: Under, Behind, In front of, Next to',
+        sentence: 'She has to attend the executive board meeting in Kochi tomorrow .',
+        translationMl: 'നാളെ കൊച്ചിയിൽ നടക്കുന്ന എക്സിക്യൂട്ടീവ് ബോർഡ് മീറ്റിംഗിൽ അവൾക്ക് പങ്കെടുക്കേണ്ടതുണ്ട്.',
+        hint: 'Third-person Duty: She + has to + V1 (attend)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Sit next to him .',
-        translationMl: 'ഇരിക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'sit\'',
+        sentence: 'We don\'t have to work this weekend because the release is finished .',
+        translationMl: 'റിലീസ് പൂർത്തിയായതിനാൽ ഈ വാരാന്ത്യത്തിൽ നമുക്ക് ജോലി ചെയ്യേണ്ടതില്ല.',
+        hint: 'Lack of Obligation: don\'t have to + V1 (work)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'Every driver must stop when the traffic signal turns red .',
+        translationMl: 'ട്രാഫിക് സിഗ്നൽ ചുവപ്പാകുമ്പോൾ ഓരോ ഡ്രൈവറും വാഹനം നിർത്തിയേ തീരൂ.',
+        hint: 'Legal Obligation: Subject + must + V1 (stop)',
       ),
     ],
     // -----------------------------------------------------------------------

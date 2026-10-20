@@ -9,8 +9,8 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'pocket_pronunciation_evaluator.dart';
 
 /// 💬 Chat Message Model for Day 2 Step 4 Spoken English
 class Day2Step4ChatMessage {
@@ -26,6 +26,7 @@ class Day2Step4ChatMessage {
   final String? targetSentenceHintMl;
   final List<Day2Step4InBubbleOption>? inBubbleOptions;
   final bool isVoiceMessage;
+  final PronunciationEvaluationResult? evaluationResult;
 
   Day2Step4ChatMessage({
     required this.id,
@@ -40,6 +41,7 @@ class Day2Step4ChatMessage {
     this.targetSentenceHintMl,
     this.inBubbleOptions,
     this.isVoiceMessage = false,
+    this.evaluationResult,
   });
 }
 
@@ -448,6 +450,14 @@ class _PocketDay2Step4AvatarChatPageState
     final normalized = PocketSpeechNormalizer.normalize(raw);
     final finalVoiceText = normalized.isNotEmpty ? normalized : raw;
 
+    final drill = spokenDrills[_currentDialogueIndex.clamp(0, spokenDrills.length - 1)];
+    final target = drill['targetReply'] as String;
+
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: target.isNotEmpty ? target : finalVoiceText,
+      spokenText: finalVoiceText,
+    );
+
     // Add pure WhatsApp style Voice Note Bubble (NO raw transcript container)
     setState(() {
       _messages.add(
@@ -456,6 +466,7 @@ class _PocketDay2Step4AvatarChatPageState
           isAvatar: false,
           textEn: finalVoiceText,
           isVoiceMessage: true,
+          evaluationResult: evalResult,
         ),
       );
     });
@@ -788,104 +799,113 @@ class _PocketDay2Step4AvatarChatPageState
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF065F46), Color(0xFF047857)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(6),
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _speak(msg.textEn);
-                      },
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF10B981),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.black,
-                          size: 24,
-                        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF065F46), Color(0xFF047857)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(6),
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      border: Border.all(
+                        color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                        width: 1.2,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            18,
-                            (barIdx) {
-                              final heights = [6, 14, 20, 16, 8, 18, 24, 14, 18, 10, 16, 22, 14, 8, 18, 12, 16, 8];
-                              final h = heights[barIdx % heights.length].toDouble();
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 1.2),
-                                width: 2.8,
-                                height: h,
-                                decoration: BoxDecoration(
-                                  color: barIdx < 10 ? const Color(0xFF34D399) : Colors.white38,
-                                  borderRadius: BorderRadius.circular(2),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _speak(msg.textEn);
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF10B981),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  blurRadius: 4,
                                 ),
-                              );
-                            },
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.black,
+                              size: 24,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              '0:03',
-                              style: GoogleFonts.inter(
-                                color: Colors.white70,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w600,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(
+                                18,
+                                (barIdx) {
+                                  final heights = [6, 14, 20, 16, 8, 18, 24, 14, 18, 10, 16, 22, 14, 8, 18, 12, 16, 8];
+                                  final h = heights[barIdx % heights.length].toDouble();
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 1.2),
+                                    width: 2.8,
+                                    height: h,
+                                    decoration: BoxDecoration(
+                                      color: barIdx < 10 ? const Color(0xFF34D399) : Colors.white38,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              '• Voice Note',
-                              style: TextStyle(
-                                color: Color(0xFF34D399),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '0:03',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  '• Voice Note',
+                                  style: TextStyle(
+                                    color: Color(0xFF34D399),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ],
                     ),
+                  ),
+                  if (msg.evaluationResult != null) ...[
+                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
                   ],
-                ),
+                ],
               ),
             ),
             const SizedBox(width: 8),

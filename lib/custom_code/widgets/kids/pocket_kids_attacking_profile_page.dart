@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_house_challenge_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
 
 /// ⚔️ Dedicated Attacking Profile Page for Kids Mode
 class PocketKidsAttackingProfilePage extends StatefulWidget {
@@ -215,8 +216,8 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          widget.mate.dayLevel == 100 || widget.mate.id == PocketKidsService.lionId
-                              ? '👑 KING LION BOSS BATTLE'
+                          widget.mate.dayLevel >= 90 || widget.mate.id == PocketKidsService.lionId
+                              ? '👑 KING LION BOSS BATTLE (DAY 91)'
                               : 'ATTACKING PROFILE',
                           style: const TextStyle(
                             fontSize: 15,
@@ -396,9 +397,9 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(color: const Color(0xFFEF4444), width: 1.2),
                                       ),
-                                      child: const Text(
-                                        '🛡️ 3 DEFENSES 👁️',
-                                        style: TextStyle(
+                                      child: Text(
+                                        '🛡️ ${widget.mate.dayLevel} DEFENSES 👁️',
+                                        style: const TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.w900,
                                           color: Color(0xFFF87171),
@@ -697,6 +698,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
   }
 
   Future<void> _showDefenseQuestionsSheet(int day) async {
+    final traps = await PocketKidsDefenseService.getDefenderTrapsForDay(day, defenderId: widget.mate.id);
     final challenges = await PocketKidsService.getEffectiveDefenseForDay(day);
     if (!mounted) return;
 
@@ -706,7 +708,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.8,
+          height: MediaQuery.of(context).size.height * 0.82,
           decoration: const BoxDecoration(
             color: Color(0xFF0F172A),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -734,7 +736,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                       const Text('🛡️', style: TextStyle(fontSize: 22)),
                       const SizedBox(width: 8),
                       Text(
-                        'CITADEL DEFENSE LAYERS',
+                        'CITADEL DEFENSE LAYERS ($day)',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
@@ -750,16 +752,16 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                 ],
               ),
               Text(
-                'Defenders must answer all 3 Spoken English challenge layers to breach this citadel!',
+                'Defenders must solve all $day defense challenge layers (Sentence Builder, Spelling, Voice Echo) to breach this citadel!',
                 style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
               ),
               const SizedBox(height: 14),
               Expanded(
                 child: ListView.separated(
-                  itemCount: challenges.length,
+                  itemCount: traps.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, idx) {
-                    final c = challenges[idx];
+                    final t = traps[idx];
                     return Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -779,7 +781,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'LAYER ${idx + 1}',
+                                  'DAY ${idx + 1} TRAP',
                                   style: GoogleFonts.outfit(
                                     color: const Color(0xFFF87171),
                                     fontSize: 10,
@@ -788,60 +790,42 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(c.helperMascot, style: const TextStyle(fontSize: 16)),
+                              Text(t.helperMascot, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 6),
+                              Text(
+                                t.title,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const Spacer(),
                               IconButton(
                                 icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFBBF24), size: 18),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-                                onPressed: () => _speak("${c.prompt}. ${c.spokenText}"),
+                                onPressed: () => _speak(t.spokenText),
                               ),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            c.prompt,
+                            t.prompt,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Target phrase: "${c.spokenText}"',
+                            'Target: "${t.targetPhrase}"',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF38BDF8),
+                              color: const Color(0xFFFDE047),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: c.options.map((opt) {
-                              final isCorrect = opt == c.options[c.correctIndex];
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isCorrect
-                                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                                      : const Color(0xFF0F172A),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isCorrect ? const Color(0xFF10B981) : const Color(0xFF334155),
-                                  ),
-                                ),
-                                child: Text(
-                                  opt,
-                                  style: GoogleFonts.inter(
-                                    color: isCorrect ? const Color(0xFF34D399) : Colors.white60,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
                           ),
                         ],
                       ),
@@ -849,6 +833,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                   },
                 ),
               ),
+
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,

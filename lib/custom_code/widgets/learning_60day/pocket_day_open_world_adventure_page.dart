@@ -624,8 +624,8 @@ class _PocketDayOpenWorldAdventurePageState
                             ),
                             Text(
                               _isGateExamPassed
-                                  ? 'Gate 1 Passed • House ${widget.day + 1} Unlocked 🎉'
-                                  : 'Pass the 8-Question Spoken Gate Exam to unlock House 2!',
+                                  ? 'Gate ${widget.day} Passed • House ${widget.day + 1} Unlocked 🎉'
+                                  : 'Pass the Spoken Gate ${widget.day} Exam to unlock House ${widget.day + 1}!',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFFEF08A),
                                 fontSize: 11,
@@ -653,7 +653,7 @@ class _PocketDayOpenWorldAdventurePageState
                           }
                         },
                         child: Text(
-                          _isGateExamPassed ? 'ENTER HOUSE 2 ➔' : 'TAKE EXAM 🎙️',
+                          _isGateExamPassed ? 'ENTER HOUSE ${widget.day + 1} ➔' : 'TAKE GATE ${widget.day} EXAM 🎙️',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
                         ),
                       ),
@@ -1726,7 +1726,7 @@ class _PocketDayOpenWorldAdventurePageState
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        isGatePassed ? 'PASSED 🛡️' : 'TAP TO SPEAK',
+                        isGatePassed ? 'GATE ${widget.day} PASSED 🛡️' : 'GATE ${widget.day}: TAP TO SPEAK',
                         style: GoogleFonts.outfit(
                           color: isGatePassed ? const Color(0xFF34D399) : Colors.white,
                           fontWeight: FontWeight.bold,
@@ -1764,6 +1764,7 @@ class _PocketDayOpenWorldAdventurePageState
     bool isListening = false;
     String liveTranscript = '';
     bool? isCurrentCorrect;
+    PronunciationEvaluationResult? liveEvalResult;
     final stt.SpeechToText sttEngine = stt.SpeechToText();
     final FlutterTts ttsEngine = FlutterTts();
     bool sttReady = false;
@@ -1820,7 +1821,7 @@ class _PocketDayOpenWorldAdventurePageState
                       Text(isPassed ? '🏆' : '🔒', style: const TextStyle(fontSize: 48)),
                       const SizedBox(height: 12),
                       Text(
-                        isPassed ? 'GATE 1 CONQUERED!' : 'GATE 1 LOCKED',
+                        isPassed ? 'GATE ${widget.day} CONQUERED!' : 'GATE ${widget.day} LOCKED',
                         style: GoogleFonts.outfit(
                           color: isPassed ? const Color(0xFFFFD700) : Colors.white,
                           fontWeight: FontWeight.w900,
@@ -1865,7 +1866,7 @@ class _PocketDayOpenWorldAdventurePageState
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'House 2 (Day 2) is officially unlocked on the Summit!',
+                          'House ${widget.day + 1} (Day ${widget.day + 1}) is officially unlocked on the Summit!',
                           style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
@@ -1895,6 +1896,7 @@ class _PocketDayOpenWorldAdventurePageState
                                 correctCount = 0;
                                 liveTranscript = '';
                                 isCurrentCorrect = null;
+                                liveEvalResult = null;
                               });
                             }
                           },
@@ -1923,20 +1925,43 @@ class _PocketDayOpenWorldAdventurePageState
             final correctIndex = q['correctIndex'] as int? ?? 0;
 
             void evaluateSpeech(String speechInput) {
+              if (speechInput.trim().isEmpty) return;
+              final eval = PocketPronunciationEvaluator.evaluate(
+                targetSentence: targetText,
+                spokenText: speechInput,
+              );
+              setModalState(() {
+                liveEvalResult = eval;
+              });
+
               final spoken = speechInput.toLowerCase().trim();
               final target = targetText.toLowerCase().trim();
-              if (spoken.isNotEmpty &&
-                  (spoken.contains(target) ||
-                   target.contains(spoken) ||
-                   PocketPronunciationEvaluator.isMatch(
-                       spokenText: spoken, targetSentence: target, thresholdPercentage: 45))) {
-                setModalState(() {
-                  isCurrentCorrect = true;
-                  correctCount++;
-                });
-                try {
-                  PocketGameAudioService.instance.playCorrectSound();
-                } catch (_) {}
+              if (eval.accuracyPercentage >= 40 ||
+                  spoken.contains(target) ||
+                  target.contains(spoken) ||
+                  PocketPronunciationEvaluator.isMatch(
+                      spokenText: spoken, targetSentence: target, thresholdPercentage: 40)) {
+                if (isCurrentCorrect != true) {
+                  setModalState(() {
+                    isCurrentCorrect = true;
+                    correctCount++;
+                  });
+                  try {
+                    PocketGameAudioService.instance.playCorrectSound();
+                  } catch (_) {}
+                  Future.delayed(const Duration(milliseconds: 950), () {
+                    if (!dlgCtx.mounted) return;
+                    sttEngine.stop();
+                    ttsEngine.stop();
+                    setModalState(() {
+                      currentIdx++;
+                      liveTranscript = '';
+                      isCurrentCorrect = null;
+                      isListening = false;
+                      liveEvalResult = null;
+                    });
+                  });
+                }
               }
             }
 
@@ -2167,6 +2192,10 @@ class _PocketDayOpenWorldAdventurePageState
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if (liveEvalResult != null) ...[
+                            const SizedBox(height: 6),
+                            PocketPronunciationInlineBadge(result: liveEvalResult!),
+                          ],
                         ],
                       ),
                     ),
@@ -2208,14 +2237,19 @@ class _PocketDayOpenWorldAdventurePageState
                                 : () {
                                     HapticFeedback.selectionClick();
                                     if (isCorrectOpt) {
+                                      final optEval = PocketPronunciationEvaluator.evaluate(
+                                        targetSentence: targetText,
+                                        spokenText: opt,
+                                      );
                                       setModalState(() {
+                                        liveEvalResult = optEval;
                                         isCurrentCorrect = true;
                                         correctCount++;
                                       });
                                       try {
                                         PocketGameAudioService.instance.playCorrectSound();
                                       } catch (_) {}
-                                      Future.delayed(const Duration(milliseconds: 550), () {
+                                      Future.delayed(const Duration(milliseconds: 750), () {
                                         if (!dlgCtx.mounted) return;
                                         sttEngine.stop();
                                         ttsEngine.stop();
@@ -2224,6 +2258,7 @@ class _PocketDayOpenWorldAdventurePageState
                                           liveTranscript = '';
                                           isCurrentCorrect = null;
                                           isListening = false;
+                                          liveEvalResult = null;
                                         });
                                       });
                                     } else {

@@ -7,10 +7,10 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
+import 'pocket_pronunciation_evaluator.dart';
 
 /// 💬 Chat Message Model for Step 4 Spoken English
 class Step4ChatMessage {
@@ -27,6 +27,7 @@ class Step4ChatMessage {
   final List<Step4InBubbleOption>? inBubbleOptions;
   final bool isVoiceMessage;
   final String? voiceTranscript;
+  final PronunciationEvaluationResult? evaluationResult;
 
   Step4ChatMessage({
     required this.id,
@@ -42,6 +43,7 @@ class Step4ChatMessage {
     this.inBubbleOptions,
     this.isVoiceMessage = false,
     this.voiceTranscript,
+    this.evaluationResult,
   });
 }
 
@@ -766,6 +768,15 @@ class _PocketDay1Step4AvatarChatPageState
   void _handleUserVoiceSubmission(String voiceText) {
     HapticFeedback.mediumImpact();
 
+    final activeDrills = getSpokenDrillsForDay(widget.day);
+    final drill = activeDrills[_currentDialogueIndex.clamp(0, activeDrills.length - 1)];
+    final target = drill['targetReply'] as String;
+
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: target.isNotEmpty ? target : voiceText,
+      spokenText: voiceText,
+    );
+
     // 🟢 Posts as realistic WhatsApp/Instagram-style Voice Note Message on the right!
     setState(() {
       _messages.add(
@@ -775,14 +786,11 @@ class _PocketDay1Step4AvatarChatPageState
           textEn: voiceText,
           isVoiceMessage: true,
           voiceTranscript: voiceText,
+          evaluationResult: evalResult,
         ),
       );
     });
     _scrollToBottom();
-
-    final activeDrills = getSpokenDrillsForDay(widget.day);
-    final drill = activeDrills[_currentDialogueIndex.clamp(0, activeDrills.length - 1)];
-    final target = drill['targetReply'] as String;
     final targetMl = drill['targetReplyMl'] as String;
     final avatar = drill['avatar'] as String;
     final icon = drill['icon'] as String;
@@ -1403,42 +1411,51 @@ class _PocketDay1Step4AvatarChatPageState
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Flexible(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0369A1), Color(0xFF075985)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(4),
-                      bottomLeft: Radius.circular(18),
-                      bottomRight: Radius.circular(18),
-                    ),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0369A1), Color(0xFF075985)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(18),
+                          topRight: Radius.circular(4),
+                          bottomLeft: Radius.circular(18),
+                          bottomRight: Radius.circular(18),
+                        ),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    msg.textEn,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.2,
+                      child: Text(
+                        msg.textEn,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (msg.evaluationResult != null) ...[
+                      PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(width: 8),
@@ -1468,66 +1485,77 @@ class _PocketDay1Step4AvatarChatPageState
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.74),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF047857), Color(0xFF10B981)],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(18),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      _speak(msg.textEn);
-                    },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        color: Colors.white24,
-                        shape: BoxShape.circle,
+                  Container(
+                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.74),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF047857), Color(0xFF10B981)],
                       ),
-                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(18),
+                        topRight: Radius.circular(18),
+                        bottomLeft: Radius.circular(18),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _speak(msg.textEn);
+                          },
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              color: Colors.white24,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Animated audio waveform simulation
+                        Row(
+                          children: [8, 16, 22, 14, 26, 18, 24, 12, 20, 10, 16, 22, 10].map((h) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                              width: 3,
+                              height: h.toDouble(),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '0:03',
+                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 14),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // Animated audio waveform simulation
-                  Row(
-                    children: [8, 16, 22, 14, 26, 18, 24, 12, 20, 10, 16, 22, 10].map((h) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                        width: 3,
-                        height: h.toDouble(),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '0:03',
-                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 14),
+                  if (msg.evaluationResult != null) ...[
+                    PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+                  ],
                 ],
               ),
             ),

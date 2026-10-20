@@ -2433,14 +2433,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     15: DaySpokenSimulatorPlan(
       day: 15,
-      topicTitle: "Public Transport: Bus & Metro Commute",
-      topicTitleMl: "ബസ്, മെട്രോ പൊതുഗതാഗത യാത്ര",
-      scenarioContext: "Buying transit tokens, interchange stations, rush hour seating, and bus stops.",
+      topicTitle: "Mentoring & Constructive Advice (Should / Shouldn't)",
+      topicTitleMl: "ഉപദേശങ്ങളും നിർദ്ദേശങ്ങളും നൽകൽ (Should / Shouldn't)",
+      scenarioContext: "Offering professional advice to a colleague, career tips, healthy habits, and constructive solutions.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 15! Today our focus is Public Transport: Bus & Metro Commute. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 15-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 15! Today our focus is Mentoring & Constructive Advice with Should and Shouldn't. Are you ready to begin?",
+          avatarPromptMl: "ഡേ 15-ലേക്ക് സ്വാഗതം! ഉപദേശങ്ങളും നിർദ്ദേശങ്ങളും നൽകാൻ Should / Shouldn't പരിശീലിക്കാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
@@ -2601,14 +2601,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     16: DaySpokenSimulatorPlan(
       day: 16,
-      topicTitle: "Pharmacy & Mild Health Symptoms",
-      topicTitleMl: "മെഡിക്കൽ ഷോപ്പും ആരോഗ്യകാര്യങ്ങളും",
-      scenarioContext: "Explaining a mild headache, cough lozenges, dosage instructions, and doctor advice.",
+      topicTitle: "Workplace Rules & Strict Deadlines (Must / Have to)",
+      topicTitleMl: "ഓഫീസ് നിയമങ്ങളും സമയപരിധികളും (Must / Have to)",
+      scenarioContext: "Navigating corporate policies, security ID requirements, project deadlines, and mandatory duties.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 16! Today our focus is Pharmacy & Mild Health Symptoms. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 16-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 16! Today our focus is Workplace Rules & Strict Deadlines with Must and Have to. Are you ready to begin?",
+          avatarPromptMl: "ഡേ 16-ലേക്ക് സ്വാഗതം! നിയമങ്ങളും ഔദ്യോഗിക ഉത്തരവാദിത്തങ്ങളും വ്യക്തമാക്കാൻ Must / Have to പരിശീലിക്കാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",

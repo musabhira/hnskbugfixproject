@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -789,7 +788,7 @@ class _PocketKidsHomesShowcasePageState
                   color: const Color(0xFF10B981).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('Round ${_blitzRoundIdx + 1}/${rounds.length}',
+                child: Text('Score: $_blitzScore ⭐ | Round ${_blitzRoundIdx + 1}/${rounds.length}',
                     style: GoogleFonts.outfit(color: const Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ],
@@ -814,6 +813,17 @@ class _PocketKidsHomesShowcasePageState
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
+                if (_blitzIsCorrect != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    _blitzIsCorrect! ? '🎉 Target hit!' : '❌ Missed! Try again!',
+                    style: GoogleFonts.outfit(
+                      color: _blitzIsCorrect! ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -855,6 +865,7 @@ class _PocketKidsHomesShowcasePageState
                     if (isCorrect) {
                       _speak(currentRound.cheerPhrase);
                       _awardStars(3, 'Defense Cannon Fired!');
+                      setState(() => _blitzScore += 10);
                       Future.delayed(const Duration(milliseconds: 900), () {
                         if (mounted) {
                           setState(() {

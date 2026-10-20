@@ -7,14 +7,16 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
+
 /// ⚔️ Friendly Kids House Challenge & Defense Raid Page
 ///
 /// Features:
 /// 1. 100% Child-Friendly Cartoon UI (No violent weapons, no scary themes).
 /// 2. Displays the Defender Kid's actual Avatar House matching adult stages.
 /// 3. Automated Spoken English Defense Traps (No manual questions required from kids).
-/// 4. Helping-Mentality Dialogue & Voiceover (TTS).
-/// 5. Breaking 3 shield layers rewards stars, friendship, and victory cheers.
+/// 4. Level-Scaled Defense Layers: Level 20 defender has 20 defense challenges (Sentence Builder, Spelling, Voice Echo, Phonics).
+/// 5. Breaking all shield layers rewards stars, friendship, and victory cheers.
 class PocketKidsHouseChallengePage extends StatefulWidget {
   final KidMate defender;
 
@@ -34,18 +36,24 @@ class _PocketKidsHouseChallengePageState
   late AnimationController _shieldPulseController;
   late AnimationController _shakeController;
 
-  late List<KidDefenseChallenge> _challenges;
+  List<KidHouseDefenseTrap> _traps = [];
   int _currentTrapIndex = 0;
-  int _shieldsLeft = 3;
+  late int _shieldsLeft;
+  late int _totalShields;
   bool _isAnswerChecking = false;
   int? _selectedAnswerIndex;
   bool _isChallengeComplete = false;
+  bool _isLoading = true;
+
+  // Interactive local puzzle state for active trap
+  List<String> _placedTokens = [];
+  List<String> _availableTokens = [];
 
   @override
   void initState() {
     super.initState();
-    _challenges =
-        PocketKidsService.getDefenseChallengesForDay(widget.defender.dayLevel);
+    _totalShields = widget.defender.dayLevel.clamp(1, 90);
+    _shieldsLeft = _totalShields;
 
     _shieldPulseController = AnimationController(
       vsync: this,
@@ -58,9 +66,35 @@ class _PocketKidsHouseChallengePageState
     );
 
     _initTts();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _loadTraps();
+  }
+
+  Future<void> _loadTraps() async {
+    final loaded = await PocketKidsDefenseService.getDefenderTrapsForDay(
+      widget.defender.dayLevel,
+      defenderId: widget.defender.id,
+    );
+    if (mounted) {
+      setState(() {
+        _traps = loaded;
+        _isLoading = false;
+      });
+      _initActiveTrapPuzzle();
       _speakCurrentPrompt();
-    });
+    }
+  }
+
+  void _initActiveTrapPuzzle() {
+    if (_currentTrapIndex >= _traps.length) return;
+    final trap = _traps[_currentTrapIndex];
+    _placedTokens = [];
+    if (trap.type == KidDefenseTrapType.sentenceBuilder) {
+      _availableTokens = List<String>.from(trap.fragments)..shuffle();
+    } else if (trap.type == KidDefenseTrapType.wordSpelling) {
+      _availableTokens = List<String>.from(trap.fragments)..shuffle();
+    } else {
+      _availableTokens = [];
+    }
   }
 
   Future<void> _initTts() async {
@@ -72,10 +106,10 @@ class _PocketKidsHouseChallengePageState
   }
 
   Future<void> _speakCurrentPrompt() async {
-    if (_currentTrapIndex < _challenges.length) {
-      final challenge = _challenges[_currentTrapIndex];
+    if (_traps.isNotEmpty && _currentTrapIndex < _traps.length) {
+      final trap = _traps[_currentTrapIndex];
       try {
-        await _tts.speak(challenge.spokenText);
+        await _tts.speak(trap.spokenText.isNotEmpty ? trap.spokenText : trap.prompt);
       } catch (_) {}
     }
   }
@@ -89,39 +123,19 @@ class _PocketKidsHouseChallengePageState
   }
 
   void _onAnswerSelected(int index) {
-    if (_isAnswerChecking || _isChallengeComplete) return;
+    if (_isAnswerChecking || _isChallengeComplete || _traps.isEmpty) return;
     _isAnswerChecking = true;
     _selectedAnswerIndex = index;
 
-    final challenge = _challenges[_currentTrapIndex];
-    final isCorrect = index == challenge.correctIndex;
+    final trap = _traps[_currentTrapIndex];
+    final isCorrect = index == trap.correctOptionIndex;
 
     if (isCorrect) {
-      HapticFeedback.heavyImpact();
-      _shakeController.forward(from: 0.0);
-      setState(() {
-        _shieldsLeft = (_shieldsLeft - 1).clamp(0, 3);
-      });
-
-      _tts.speak('${challenge.cheerMessage} Shield broken!');
-
-      Timer(const Duration(milliseconds: 1600), () {
-        if (!mounted) return;
-        if (_shieldsLeft <= 0 || _currentTrapIndex + 1 >= _challenges.length) {
-          _finishRaidVictory();
-        } else {
-          setState(() {
-            _currentTrapIndex++;
-            _isAnswerChecking = false;
-            _selectedAnswerIndex = null;
-          });
-          _speakCurrentPrompt();
-        }
-      });
+      _handleTrapBreached();
     } else {
       HapticFeedback.lightImpact();
-      _tts.speak("Almost! Let's choose the kind and helpful answer!");
-      Timer(const Duration(milliseconds: 1200), () {
+      _tts.speak("Almost! Try the helpful answer!");
+      Timer(const Duration(milliseconds: 1000), () {
         if (!mounted) return;
         setState(() {
           _isAnswerChecking = false;
@@ -129,6 +143,70 @@ class _PocketKidsHouseChallengePageState
         });
       });
     }
+  }
+
+  void _onTokenTapped(String token) {
+    if (_isAnswerChecking || _isChallengeComplete || _traps.isEmpty) return;
+    final trap = _traps[_currentTrapIndex];
+
+    setState(() {
+      _placedTokens.add(token);
+      _availableTokens.remove(token);
+    });
+    HapticFeedback.selectionClick();
+
+    if (trap.type == KidDefenseTrapType.sentenceBuilder) {
+      if (_placedTokens.join(' ') == trap.targetPhrase) {
+        _handleTrapBreached();
+      } else if (_placedTokens.length >= trap.fragments.length) {
+        _tts.speak("Let's snap them in the right order!");
+        Timer(const Duration(milliseconds: 800), () {
+          if (!mounted) return;
+          setState(() {
+            _placedTokens.clear();
+            _availableTokens = List<String>.from(trap.fragments)..shuffle();
+          });
+        });
+      }
+    } else if (trap.type == KidDefenseTrapType.wordSpelling) {
+      if (_placedTokens.join() == trap.targetPhrase) {
+        _handleTrapBreached();
+      } else if (_placedTokens.length >= trap.fragments.length) {
+        _tts.speak("Almost! Try spelling again!");
+        Timer(const Duration(milliseconds: 800), () {
+          if (!mounted) return;
+          setState(() {
+            _placedTokens.clear();
+            _availableTokens = List<String>.from(trap.fragments)..shuffle();
+          });
+        });
+      }
+    }
+  }
+
+  void _handleTrapBreached() {
+    HapticFeedback.heavyImpact();
+    _shakeController.forward(from: 0.0);
+    setState(() {
+      _shieldsLeft = (_shieldsLeft - 1).clamp(0, _totalShields);
+    });
+
+    _tts.speak('Shield layer broken! Great job!');
+
+    Timer(const Duration(milliseconds: 1400), () {
+      if (!mounted) return;
+      if (_shieldsLeft <= 0 || _currentTrapIndex + 1 >= _traps.length) {
+        _finishRaidVictory();
+      } else {
+        setState(() {
+          _currentTrapIndex++;
+          _isAnswerChecking = false;
+          _selectedAnswerIndex = null;
+        });
+        _initActiveTrapPuzzle();
+        _speakCurrentPrompt();
+      }
+    });
   }
 
   Future<void> _finishRaidVictory() async {
@@ -249,7 +327,29 @@ class _PocketKidsHouseChallengePageState
   Widget build(BuildContext context) {
     final defender = widget.defender;
     final house = PocketKidsService.getHouseForDay(defender.dayLevel);
-    final challenge = _challenges[_currentTrapIndex];
+
+    if (_isLoading || _traps.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0284C7),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🛡️', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 12),
+              Text(
+                'Scanning ${defender.name}\'s Citadel Defense...',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const CircularProgressIndicator(color: Colors.white),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final trap = _traps[_currentTrapIndex];
 
     return Scaffold(
       backgroundColor: const Color(0xFF0369A1),
@@ -276,21 +376,18 @@ class _PocketKidsHouseChallengePageState
               children: [
                 // 🌟 TOP HUD BAR
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
                       // Back Button
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white, size: 22),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
                         onPressed: () => Navigator.pop(context),
                       ),
 
                       // Defender Info Capsule
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
@@ -304,8 +401,7 @@ class _PocketKidsHouseChallengePageState
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(defender.avatar,
-                                style: const TextStyle(fontSize: 22)),
+                            Text(defender.avatar, style: const TextStyle(fontSize: 22)),
                             const SizedBox(width: 8),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,27 +430,23 @@ class _PocketKidsHouseChallengePageState
 
                       const Spacer(),
 
-                      // Defense Shield Hearts / Layers
+                      // Defense Shield Progress Indicator
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A).withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: const Color(0xFF38BDF8), width: 1.5),
+                          border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Text('🛡️', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Row(
-                              children: List.generate(
-                                3,
-                                (i) => Text(
-                                  i < _shieldsLeft ? '💙' : '🖤',
-                                  style: const TextStyle(fontSize: 14),
-                                ),
+                            const Text('🛡️ ', style: TextStyle(fontSize: 14)),
+                            Text(
+                              'Trap ${_currentTrapIndex + 1}/$_totalShields',
+                              style: GoogleFonts.jetBrainsMono(
+                                color: const Color(0xFFFDE047),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
                               ),
                             ),
                           ],
@@ -373,7 +465,6 @@ class _PocketKidsHouseChallengePageState
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Defender's House rendered via HouseMasterComponent
                         PocketAvatarHouseWidget(
                           day: defender.dayLevel,
                           width: 250,
@@ -386,24 +477,19 @@ class _PocketKidsHouseChallengePageState
                           AnimatedBuilder(
                             animation: _shieldPulseController,
                             builder: (context, child) {
-                              final pulse =
-                                  math.sin(_shieldPulseController.value *
-                                          math.pi) *
-                                      6;
+                              final pulse = math.sin(_shieldPulseController.value * math.pi) * 6;
                               return Container(
                                 width: 270 + pulse,
                                 height: 210 + pulse,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF38BDF8)
-                                        .withValues(alpha: 0.7),
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.7),
                                     width: 3.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF38BDF8)
-                                          .withValues(alpha: 0.35),
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
                                       blurRadius: 20,
                                       spreadRadius: 2,
                                     ),
@@ -417,7 +503,7 @@ class _PocketKidsHouseChallengePageState
                   ),
                 ),
 
-                // 📜 AUTOMATED SPOKEN ENGLISH CHALLENGE CARD
+                // 📜 INTERACTIVE DEFENSE TRAP ARENA
                 Expanded(
                   flex: 6,
                   child: Container(
@@ -426,8 +512,7 @@ class _PocketKidsHouseChallengePageState
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(32)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.15),
@@ -442,84 +527,44 @@ class _PocketKidsHouseChallengePageState
                         // Mascot Prompt & Speaker Button
                         Row(
                           children: [
-                            Text(challenge.helperMascot,
-                                style: const TextStyle(fontSize: 28)),
+                            Text(trap.helperMascot, style: const TextStyle(fontSize: 28)),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                challenge.prompt,
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFF0F172A),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    trap.title.toUpperCase(),
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF0284C7),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  Text(
+                                    trap.prompt,
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF0F172A),
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.volume_up_rounded,
-                                  color: Color(0xFF0284C7), size: 28),
+                              icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF0284C7), size: 28),
                               onPressed: _speakCurrentPrompt,
                             ),
                           ],
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
 
-                        // Answer Choice Buttons
+                        // Render based on Trap Type
                         Expanded(
-                          child: GridView.builder(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 2.3,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                            ),
-                            itemCount: challenge.options.length,
-                            itemBuilder: (context, idx) {
-                              final opt = challenge.options[idx];
-                              final isSelected = _selectedAnswerIndex == idx;
-                              final isCorrect = idx == challenge.correctIndex;
-
-                              Color bgColor = const Color(0xFFF1F5F9);
-                              Color textColor = const Color(0xFF0F172A);
-
-                              if (_isAnswerChecking && isSelected) {
-                                bgColor = isCorrect
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFEF4444);
-                                textColor = Colors.white;
-                              }
-
-                              return ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: bgColor,
-                                  foregroundColor: textColor,
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    side: BorderSide(
-                                      color: isSelected
-                                          ? Colors.white
-                                          : Colors.black12,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                ),
-                                onPressed: () => _onAnswerSelected(idx),
-                                child: Text(
-                                  opt,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                          child: _buildTrapGameContent(trap),
                         ),
                       ],
                     ),
@@ -531,5 +576,217 @@ class _PocketKidsHouseChallengePageState
         ],
       ),
     );
+  }
+
+  Widget _buildTrapGameContent(KidHouseDefenseTrap trap) {
+    if (trap.type == KidDefenseTrapType.sentenceBuilder) {
+      return Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF8B5CF6), width: 1.5),
+            ),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              alignment: WrapAlignment.center,
+              children: _placedTokens.isEmpty
+                  ? [
+                      Text(
+                        'Tap the words in order...',
+                        style: GoogleFonts.inter(color: Colors.black45, fontSize: 12),
+                      )
+                    ]
+                  : _placedTokens.map((w) {
+                      return Chip(
+                        backgroundColor: const Color(0xFF8B5CF6),
+                        label: Text(
+                          w,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+            ),
+          ),
+          const Spacer(),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: _availableTokens.map((w) {
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6D28D9),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () => _onTokenTapped(w),
+                child: Text(
+                  w,
+                  style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              );
+            }).toList(),
+          ),
+          const Spacer(),
+        ],
+      );
+    } else if (trap.type == KidDefenseTrapType.wordSpelling) {
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🚂', style: TextStyle(fontSize: 32)),
+              const SizedBox(width: 8),
+              ...List.generate(trap.targetPhrase.length, (i) {
+                final hasLetter = i < _placedTokens.length;
+                return Container(
+                  width: 44,
+                  height: 48,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: hasLetter ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: hasLetter ? const Color(0xFF1D4ED8) : Colors.black12,
+                      width: 1.5,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    hasLetter ? _placedTokens[i] : '?',
+                    style: GoogleFonts.outfit(
+                      color: hasLetter ? Colors.white : Colors.black45,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+          const Spacer(),
+          Wrap(
+            spacing: 12,
+            children: _availableTokens.map((l) {
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () => _onTokenTapped(l),
+                child: Text(
+                  l,
+                  style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900),
+                ),
+              );
+            }).toList(),
+          ),
+          const Spacer(),
+        ],
+      );
+    } else if (trap.type == KidDefenseTrapType.spokenEcho) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFECFDF5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+            ),
+            child: Text(
+              '"${trap.targetPhrase}"',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF065F46),
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            icon: const Icon(Icons.mic, size: 22),
+            label: Text(
+              'SPEAK MOTTO TO BREACH',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
+            onPressed: () {
+              _tts.speak(trap.targetPhrase);
+              _handleTrapBreached();
+            },
+          ),
+        ],
+      );
+    } else {
+      // Options Grid (Phonics / Multiple choice)
+      final opts = trap.options.isNotEmpty ? trap.options : ['A', 'B', 'C', 'D'];
+      return GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 2.3,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: opts.length,
+        itemBuilder: (context, idx) {
+          final opt = opts[idx];
+          final isSelected = _selectedAnswerIndex == idx;
+          final isCorrect = idx == trap.correctOptionIndex;
+
+          Color bgColor = const Color(0xFFF1F5F9);
+          Color textColor = const Color(0xFF0F172A);
+
+          if (_isAnswerChecking && isSelected) {
+            bgColor = isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+            textColor = Colors.white;
+          }
+
+          return ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: bgColor,
+              foregroundColor: textColor,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isSelected ? Colors.white : Colors.black12,
+                  width: 1.5,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            ),
+            onPressed: () => _onAnswerSelected(idx),
+            child: Text(
+              opt,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 }
