@@ -786,11 +786,6 @@ class _PocketVocabOpenWorldDrivePageState
 
   /// 🌟 Super Clean, Responsive Top Navigation Bar with Dynamic Ride Mode Switcher
   Widget _buildMinimalTopBar() {
-    final currentItem = _currentCheckpointIndex < _checkpoints.length
-        ? _checkpoints[_currentCheckpointIndex]
-        : _checkpoints.last;
-    final currentWord = currentItem['word'] ?? 'Book';
-
     final modeEmojis = {
       RideMode.car: '🏎️',
       RideMode.jeep: '🚙',
@@ -849,12 +844,28 @@ class _PocketVocabOpenWorldDrivePageState
                   Text(modeEmojis[_currentRideMode] ?? '🏎️', style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 6),
                   Text(
-                    'DAY ${widget.day} • STEP ${widget.stepIndex}: VOCAB QUEST • $currentWord (${_currentCheckpointIndex + 1}/${_checkpoints.length})',
+                    'Day ${widget.day} • Step ${widget.stepIndex}',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${_currentCheckpointIndex + 1}/${_checkpoints.length}',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -1593,6 +1604,70 @@ class _OpenWorldDrivePainter extends CustomPainter {
       _drawCloud(canvas, Offset(xPos, yPos), cRadius);
     }
 
+    if (rideMode == RideMode.airplane) {
+      // 🏔️ Dramatic Alpine Mountain Summits & Snow Peaks below flight path
+      // 1. Distant Snowy Sharp Peaks (Slate / Violet mountain wall with bright snow caps)
+      final peakPaint = Paint()..color = const Color(0xFF1E293B);
+      final snowPaint = Paint()..color = Colors.white;
+      final peakOffset = (sceneryScroll * 0.4) % 160;
+      for (double px = -peakOffset; px <= size.width + 160; px += 160) {
+        final pPath = Path()
+          ..moveTo(px - 90, size.height * 0.62)
+          ..lineTo(px, size.height * 0.30)
+          ..lineTo(px + 90, size.height * 0.62)
+          ..close();
+        canvas.drawPath(pPath, peakPaint);
+
+        // Snow Cap
+        final sPath = Path()
+          ..moveTo(px - 30, size.height * 0.40)
+          ..lineTo(px, size.height * 0.30)
+          ..lineTo(px + 30, size.height * 0.40)
+          ..lineTo(px + 12, size.height * 0.38)
+          ..lineTo(px, size.height * 0.41)
+          ..lineTo(px - 12, size.height * 0.38)
+          ..close();
+        canvas.drawPath(sPath, snowPaint);
+      }
+
+      // 2. Mid-altitude rolling alpine ridges (ascending & descending peaks)
+      final ridgePaint = Paint()..color = const Color(0xFF047857);
+      final ridgePath = Path()..moveTo(0, size.height * 0.62);
+      for (double x = 0; x <= size.width; x += 25) {
+        final ry = size.height * 0.45 + math.sin((x + sceneryScroll * 0.85) * 0.014) * 32;
+        ridgePath.lineTo(x, ry);
+      }
+      ridgePath.lineTo(size.width, size.height * 0.62);
+      ridgePath.lineTo(0, size.height * 0.62);
+      ridgePath.close();
+      canvas.drawPath(ridgePath, ridgePaint);
+
+      // 3. Low altitude deep pine slopes
+      final slopePaint = Paint()..color = const Color(0xFF064E3B);
+      final slopePath = Path()..moveTo(0, size.height * 0.62);
+      for (double x = 0; x <= size.width; x += 20) {
+        final sy = size.height * 0.53 + math.sin((x + sceneryScroll * 1.5) * 0.018) * 18;
+        slopePath.lineTo(x, sy);
+      }
+      slopePath.lineTo(size.width, size.height * 0.62);
+      slopePath.lineTo(0, size.height * 0.62);
+      slopePath.close();
+      canvas.drawPath(slopePath, slopePaint);
+
+      // 4. Fast-rushing cloud wisps underneath the plane
+      final wispPaint = Paint()..color = Colors.white.withValues(alpha: 0.75);
+      final wispOffset = (cloudScroll * 24) % (size.width + 160);
+      for (int w = 0; w < 3; w++) {
+        final wx = (size.width - wispOffset + (w * 170)) % (size.width + 160) - 80;
+        final wy = size.height * (0.54 + w * 0.035);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(wx, wy, 90 + w * 30, 10), const Radius.circular(5)),
+          wispPaint,
+        );
+      }
+      return;
+    }
+
     // Rolling Distant Hills / Mountains
     final hillColor = rideMode == RideMode.jeep
         ? const Color(0xFF78350F)
@@ -1652,16 +1727,33 @@ class _OpenWorldDrivePainter extends CustomPainter {
         break;
 
       case RideMode.airplane:
-        // High sky cloud corridor
+        // Aerial sky corridor with rolling cloud banks and rushing wind streams
         final skyCorridorPaint = Paint()
           ..shader = const LinearGradient(
             colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
           ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
         canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), skyCorridorPaint);
-        // Cloud cushion beneath plane
-        final cloudBedPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
-        for (double x = 0; x <= size.width; x += 60) {
-          canvas.drawCircle(Offset(x, roadBottomY - 8), 32, cloudBedPaint);
+
+        // Rolling cloud bed beneath aircraft that scrolls dynamically with distanceTraveled
+        final cloudBedPaint = Paint()..color = Colors.white.withValues(alpha: 0.92);
+        final cloudRollOffset = (distanceTraveled * 2.2) % 65;
+        for (double x = -cloudRollOffset; x <= size.width + 65; x += 65) {
+          canvas.drawCircle(Offset(x, roadBottomY - 6), 34, cloudBedPaint);
+          canvas.drawCircle(Offset(x + 32, roadBottomY - 14), 26, cloudBedPaint);
+        }
+
+        // Fast-rushing wind streamline vectors showing tangible speed
+        final windPaint = Paint()
+          ..color = Colors.white.withValues(alpha: 0.55)
+          ..strokeWidth = 2.0
+          ..strokeCap = StrokeCap.round;
+        final windOffset1 = (distanceTraveled * 3.8) % 110;
+        final windOffset2 = (distanceTraveled * 4.6) % 140;
+        for (double x = -windOffset1; x <= size.width + 110; x += 110) {
+          canvas.drawLine(Offset(x, roadTopY + roadHeight * 0.28), Offset(x + 48, roadTopY + roadHeight * 0.28), windPaint);
+        }
+        for (double x = -windOffset2; x <= size.width + 140; x += 140) {
+          canvas.drawLine(Offset(x, roadTopY + roadHeight * 0.68), Offset(x + 65, roadTopY + roadHeight * 0.68), windPaint);
         }
         break;
 
@@ -2357,58 +2449,194 @@ class _OpenWorldDrivePainter extends CustomPainter {
     _drawKnobbyWheel(canvas, Offset(jeepX + 22, jeepY + 12));
   }
 
-  // ✈️ Mode 3: Skyward Propeller Aeroplane (User Audio Directive: "വിമാനം ആകാശത്തേക്ക് പോവാ!")
+  // ✈️ Mode 3: High-Contrast Golden Canary & Crimson Racing Aeroplane
+  // (User Audio Directive: "വിമാനം ആകാശത്തിന്റെ അതേ കളർ ആവരുത്! നന്മയായി കാണണം, മലകൾ കേറി ഇറങ്ങുന്ന പോലെയോ സ്പീഡ് നന്നായി ഫീൽ ചെയ്യണം!")
   void _drawAirplane(Canvas canvas, Size size) {
     final planeX = size.width * 0.24;
-    // Flies slightly higher and bobs with flight rhythm
-    final flightBob = math.sin(cloudScroll * 0.15) * 6;
+    // Dynamic flight rhythm with slight pitch tilt
+    final flightBob = math.sin(cloudScroll * 0.18) * 7;
+    final pitchAngle = math.cos(cloudScroll * 0.18) * 0.05; // Gentle climb/dive pitch
     final planeY = (size.height * (carLaneY - 0.10)) + flightBob;
 
-    // Contrail cloud puffs streaming behind
-    final contrailPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
-    for (int p = 1; p <= 4; p++) {
-      final cx = planeX - 38 - (p * 18);
-      final cy = planeY + (p % 2 == 0 ? 2 : -2);
-      canvas.drawCircle(Offset(cx, cy), 6.0 + p * 2.2, contrailPaint);
+    canvas.save();
+    canvas.translate(planeX, planeY);
+    canvas.rotate(pitchAngle);
+
+    // 1. Dynamic Wind Streaks & Contrails (Rushing backwards)
+    final contrailPaint = Paint()..color = Colors.white.withValues(alpha: 0.7);
+    final contrailCorePaint = Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.8);
+    for (int p = 1; p <= 5; p++) {
+      final cx = -40.0 - (p * 18.0);
+      final cyTop = -14.0 + (p * 1.5) + math.sin((distanceTraveled * 0.1) + p) * 2;
+      final cyBottom = 5.0 - (p * 1.0) + math.cos((distanceTraveled * 0.1) + p) * 2;
+      final puffRadius = 3.5 + p * 2.2;
+      canvas.drawCircle(Offset(cx, cyTop), puffRadius, contrailPaint);
+      canvas.drawCircle(Offset(cx, cyBottom), puffRadius * 0.8, contrailPaint);
+      if (p <= 2) {
+        canvas.drawCircle(Offset(cx + 8, cyTop), puffRadius * 0.4, contrailCorePaint);
+      }
     }
 
-    // Aeroplane Fuselage (Streamlined Blue & White)
-    final fuselagePaint = Paint()..color = const Color(0xFF0284C7);
-    final fPath = Path();
-    fPath.moveTo(planeX - 38, planeY);
-    fPath.lineTo(planeX - 34, planeY - 14); // Tail fin
-    fPath.lineTo(planeX - 26, planeY - 14);
-    fPath.lineTo(planeX + 24, planeY - 4);
-    fPath.lineTo(planeX + 36, planeY); // Nose
-    fPath.lineTo(planeX + 24, planeY + 6);
-    fPath.lineTo(planeX - 38, planeY + 4);
-    fPath.close();
+    // High-speed air streaks
+    final streakPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.45)
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(-30, -22), const Offset(-75, -22), streakPaint);
+    canvas.drawLine(const Offset(-20, 16), const Offset(-80, 16), streakPaint);
+
+    // 2. Far/Under Wing (Deep Crimson with outline)
+    final farWingPaint = Paint()..color = const Color(0xFFB91C1C);
+    final farWingPath = Path()
+      ..moveTo(2, -4)
+      ..lineTo(-8, -18)
+      ..lineTo(0, -18)
+      ..lineTo(14, -4)
+      ..close();
+    canvas.drawPath(farWingPath, farWingPaint);
+
+    // 3. Aeroplane Fuselage (Canary Gold / Amber #F59E0B with Crimson racing stripe and Dark Outline)
+    final fuselageOutline = Paint()
+      ..color = const Color(0xFF78350F)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeJoin = StrokeJoin.round;
+
+    final fuselagePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFBBF24), Color(0xFFF59E0B), Color(0xFFD97706)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(const Rect.fromLTWH(-40, -16, 82, 28));
+
+    final fPath = Path()
+      ..moveTo(-40, 0)
+      ..lineTo(-36, -16) // Tail fin top
+      ..lineTo(-26, -16)
+      ..lineTo(-18, -4)
+      ..lineTo(26, -4)
+      ..lineTo(38, 0) // Nose
+      ..lineTo(26, 7)
+      ..lineTo(-30, 6)
+      ..lineTo(-40, 2)
+      ..close();
+
     canvas.drawPath(fPath, fuselagePaint);
 
-    // Wings
-    final wingPaint = Paint()..color = Colors.white;
-    final wingPath = Path();
-    wingPath.moveTo(planeX - 6, planeY - 2);
-    wingPath.lineTo(planeX + 8, planeY - 20); // Wingtip
-    wingPath.lineTo(planeX + 16, planeY - 20);
-    wingPath.lineTo(planeX + 12, planeY + 2);
-    wingPath.close();
-    canvas.drawPath(wingPath, wingPaint);
+    // Crimson Sport Racing Stripe along Fuselage
+    final stripePaint = Paint()..color = const Color(0xFFEF4444);
+    final stripePath = Path()
+      ..moveTo(-32, 0)
+      ..lineTo(32, 0)
+      ..lineTo(24, 3)
+      ..lineTo(-30, 3)
+      ..close();
+    canvas.drawPath(stripePath, stripePaint);
 
-    // Cockpit Bubble
-    final cockpitPaint = Paint()..color = const Color(0xFFBAE6FD);
-    canvas.drawOval(Rect.fromCenter(center: Offset(planeX + 14, planeY - 4), width: 18, height: 9), cockpitPaint);
+    // White Trim Stripe
+    final whiteStripePaint = Paint()..color = Colors.white;
+    final whiteStripePath = Path()
+      ..moveTo(-28, -2)
+      ..lineTo(28, -2)
+      ..lineTo(26, -0.5)
+      ..lineTo(-29, -0.5)
+      ..close();
+    canvas.drawPath(whiteStripePath, whiteStripePaint);
 
-    // Spinning Front Propeller (Motion Blur)
-    final propPaint = Paint()
-      ..color = const Color(0xFFFFD700)
-      ..strokeWidth = 2.5;
-    final propAngle = (distanceTraveled * 0.5) % (math.pi * 2);
+    // Tail Fin Accent (Crimson)
+    final finAccentPaint = Paint()..color = const Color(0xFFEF4444);
+    final finPath = Path()
+      ..moveTo(-35, -15)
+      ..lineTo(-27, -15)
+      ..lineTo(-21, -6)
+      ..lineTo(-31, -6)
+      ..close();
+    canvas.drawPath(finPath, finAccentPaint);
+
+    // Dark outline stroke for fuselage
+    canvas.drawPath(fPath, fuselageOutline);
+
+    // 4. Near / Main Wing (Swept forward-angle, Crimson & Amber with Strobe Light)
+    final mainWingPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(const Rect.fromLTWH(-6, -2, 28, 24));
+
+    final wingPath = Path()
+      ..moveTo(-4, -1)
+      ..lineTo(10, 22) // Wingtip
+      ..lineTo(18, 22)
+      ..lineTo(16, 2)
+      ..close();
+
+    canvas.drawPath(wingPath, mainWingPaint);
+
+    // Wing edge outline
+    final wingOutline = Paint()
+      ..color = const Color(0xFF78350F)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawPath(wingPath, wingOutline);
+
+    // Wingtip Yellow Cap & Green Navigation Strobe
+    final wingTipPaint = Paint()..color = const Color(0xFFFDE047);
+    canvas.drawRect(const Rect.fromLTWH(10, 19, 8, 3), wingTipPaint);
+    final strobePaint = Paint()
+      ..color = const Color(0xFF10B981)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawCircle(const Offset(14, 22), 3.5, strobePaint);
+
+    // 5. Cockpit Bubble (Dark Obsidian with glossy high-altitude sky reflection)
+    final cockpitBg = Paint()..color = const Color(0xFF0F172A);
+    final cockpitRect = Rect.fromCenter(center: const Offset(14, -5), width: 20, height: 10);
+    canvas.drawOval(cockpitRect, cockpitBg);
+
+    // Glass reflection curve
+    final glassGlare = Paint()..color = const Color(0xFFBAE6FD).withValues(alpha: 0.85);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(13, -6.5), width: 14, height: 4), glassGlare);
+
+    // Pilot silhouette helmet (cute pocket-mate aviator)
+    final pilotPaint = Paint()..color = const Color(0xFFF59E0B);
+    canvas.drawCircle(const Offset(13, -5), 3, pilotPaint);
+
+    // 6. Engine Cowling & Spinning Propeller (Motion Blur Disc + Flashing Blades)
+    final noseConePaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(38, 0), width: 6, height: 10), noseConePaint);
+
+    // Propeller Spinner Hub (Chrome)
+    final hubPaint = Paint()..color = const Color(0xFFE2E8F0);
+    canvas.drawCircle(const Offset(40, 0), 3.5, hubPaint);
+
+    // Spinning Blur Disc
+    final propBlurPaint = Paint()
+      ..color = const Color(0xFFFEF08A).withValues(alpha: 0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(42, 0), width: 4, height: 34), propBlurPaint);
+
+    // Propeller Blades (spinning fast with distanceTraveled)
+    final propAngle = (distanceTraveled * 0.75) % (math.pi * 2);
+    final bladePaint = Paint()
+      ..color = const Color(0xFFFFFBEB)
+      ..strokeWidth = 2.8
+      ..strokeCap = StrokeCap.round;
+    final tipPaint = Paint()
+      ..color = const Color(0xFFEF4444)
+      ..strokeWidth = 3.2;
+
+    final bladeDy = math.sin(propAngle) * 16;
+    final bladeDx = math.cos(propAngle) * 2;
     canvas.drawLine(
-      Offset(planeX + 37, planeY - math.sin(propAngle) * 16),
-      Offset(planeX + 37, planeY + math.sin(propAngle) * 16),
-      propPaint,
+      Offset(41 - bladeDx, -bladeDy),
+      Offset(41 + bladeDx, bladeDy),
+      bladePaint,
     );
+    // Red blade tips
+    canvas.drawCircle(Offset(41 + bladeDx, bladeDy), 2, tipPaint);
+    canvas.drawCircle(Offset(41 - bladeDx, -bladeDy), 2, tipPaint);
+
+    canvas.restore();
   }
 
   // 🚶 Mode 4: Nature Trail Explorer Walking/Jogging (User Audio Directive: "നടന്നു പോവാ / കാട്ടിൽ കൂടെ നടന്നു പോവാ!")

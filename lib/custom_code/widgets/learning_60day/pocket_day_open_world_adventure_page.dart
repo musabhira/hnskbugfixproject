@@ -2342,8 +2342,8 @@ class _PocketDayOpenWorldAdventurePageState
     final isPrevDone =
         stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false);
     // Strict sequential unlocking:
-    // A step is ONLY unlocked if the immediate previous step is done.
-    final isUnlocked = _isMasterAdmin || isPrevDone;
+    // A step is ONLY visually unlocked if the immediate previous step is done.
+    final isUnlocked = isPrevDone;
     final isCurrent = isUnlocked && !isDone;
     const nodeSize = 54.0;
     const containerWidth = 200.0;
@@ -2448,6 +2448,12 @@ class _PocketDayOpenWorldAdventurePageState
             onTap: () {
               HapticFeedback.mediumImpact();
               if (!isUnlocked) {
+                if (_isMasterAdmin) {
+                  // Master Admin testing bypass: allow opening any locked step directly for testing!
+                  _driveToStep(stepIndex, openActivityOnArrival: false);
+                  _launchStepActivity(stepIndex);
+                  return;
+                }
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Row(

@@ -566,7 +566,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
     final bool isTargetVip = widget.neighbor.isVip;
-    final questions = widget.neighbor.isPresident
+    final rawQuestions = widget.neighbor.isPresident
         ? await PocketFortressDefenseService.loadPresidentialGauntletQuestions()
         : isTargetVip
             ? [
@@ -580,6 +580,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 widget.neighbor.day,
                 isNeighbor: true,
               );
+
+    // AI Robot Question Rule (User Directive):
+    // When attacking a robot (fallback when no human is available),
+    // questions count must strictly match robot level (day) (e.g. Lvl 15 = 15 questions, Lvl 10 = 10 questions).
+    final questions = (widget.neighbor.isPocketRobo && widget.neighbor.day > 0)
+        ? rawQuestions.take(widget.neighbor.day).toList()
+        : rawQuestions;
 
     // Randomize option order dynamically across A, B, C, D
     final randomizedQuestions = questions.map((q) {

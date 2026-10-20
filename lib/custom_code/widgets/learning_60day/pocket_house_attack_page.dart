@@ -162,8 +162,10 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
         isNeighbor: true,
       );
 
-      // Take 3 to 5 questions based on day
-      final count = math.min(5, math.max(3, questions.length));
+      // If attacking a robot (fallback), question count equals robot level (day)
+      final count = neighbor.isPocketRobo
+          ? math.min(neighbor.day, questions.length)
+          : math.min(5, math.max(3, questions.length));
       final selectedQuestions = questions.take(count).toList();
 
       if (mounted) {
@@ -210,7 +212,7 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
           _target = fallbackRobo;
           _isTargetProtected = false;
           _protectionMinutesLeft = 0;
-          _battleQuestions = questions.take(3).toList();
+          _battleQuestions = questions.take(math.min(targetLvl, questions.length)).toList();
           _isLoadingTarget = false;
         });
       }

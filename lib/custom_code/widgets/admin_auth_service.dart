@@ -20,6 +20,7 @@ class AdminAuthService {
     return clean == masterAdminEmail ||
         clean == alternateAdminEmail ||
         clean.contains('musabthonippadam') ||
+        clean.contains('mussabthonippadam') ||
         clean.contains('musabhira');
   }
 
