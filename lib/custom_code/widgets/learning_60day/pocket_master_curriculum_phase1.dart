@@ -311,75 +311,83 @@ final Map<int, MasterCurriculumDay> masterPhase1Days = {
   ),
   9: const MasterCurriculumDay(
     day: 9,
-    title: 'Day 9: WH Questions (Who, What, Where, When, Why, How)',
+    title: '🏡 Day 9: House Hunting, Renting, Landlords & Roommate Inquiries',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Information Gathering & Depth',
-    grammarConcept: 'WH Word + Auxiliary (do/does) + Subject + Verb?',
+    focusArea: 'Inquiring About Amenities, Lease Terms, Rent & Flat Maintenance',
+    grammarConcept:
+        'Inquiring about conditions & availability (Is there...? / Does the rent include...?) & lease terms',
     speakingDrill:
-        'Ask 6 distinct questions using Who, What, Where, When, Why, and How.',
+        'Ask a landlord 5 specific questions about monthly rent, security deposit, power backup, and notice period.',
     peerChatMission:
-        'Ask your partner why they chose their profession and where they see themselves.',
-    xpReward: 50,
-    theoryConcept: 'The 6 Master Inquiry Keys',
+        'Roleplay a prospective tenant inspecting a flat and negotiating terms with the apartment owner.',
+    xpReward: 75,
+    milestoneReward: '🎯 Flat Hunter & Settler Badge',
+    theoryConcept: 'Rental Inquiries & Agreement Clarity',
     theoryExplanationEn:
-        'WH questions unlock real conversations. Remember the pattern: WH Word + Helper + Subject + Verb (e.g., Where + do + you + live?).',
+        'When inquiring about accommodation, use polite conditional forms: "Does the rent include maintenance charges?", "Is there a dedicated parking slot?", and "How much is the refundable security deposit?"',
     theoryExplanationMl:
-        'കൂടുതൽ വിവരങ്ങൾ ചോദിച്ചറിയാൻ WH വാക്കുകൾ ഉപയോഗിക്കുന്നു: What (എന്ത്), Why (എന്തുകൊണ്ട്), Where (എവിടെ), When (എപ്പോൾ), Who (ആര്), How (എങ്ങനെ).',
+        'വാടക വീടോ ഫ്ലാറ്റോ അന്വേഷിക്കുമ്പോൾ ചോദിക്കേണ്ട രീതികൾ: "Does the rent include maintenance?" (വാടകയിൽ മെയിന്റനൻസ് ഉൾപ്പെടുമോ?), "Is there power backup?" (കറണ്ട് പോയാൽ ഇൻവെർട്ടർ സൗകര്യമുണ്ടോ?), "How much is the security deposit?" (അഡ്വാൻസ് എത്ര നൽകണം?) എന്ന് വ്യക്തമായി ചോദിക്കുക.',
     whyItMatters:
-        'Questions steer conversations; the person asking the questions controls the direction of the dialogue.',
+        'Moving to a new city, renting flats, and living with roommates require clear communication to avoid financial surprises or lease misunderstandings.',
     commonMistakes: [
-      '❌ "Where you are going?"',
-      '❌ "Why you didn\'t come?"',
-      '❌ "What your name is?"',
+      '❌ "How much advance you want?"',
+      '❌ "Current going time power is there?"',
+      '❌ "Rent including water charge?"',
     ],
     mistakeCorrections: [
-      '✅ "Where are you going?"',
-      '✅ "Why didn\'t you come?"',
-      '✅ "What is your name?"',
+      '✅ "How much is the refundable security deposit?"',
+      '✅ "Is there 24/7 power backup and drinking water available?"',
+      '✅ "Does the monthly rent include water and maintenance charges?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: Where do you live?',
-      '🟡 Intermediate: Why did you choose this technology for your project?',
-      '🟣 Advanced: How do you manage your time effectively between coding and English practice?',
+      '🟢 Basic: How much is the monthly rent?',
+      '🟡 Intermediate: Does the rent include maintenance charges and parking facilities?',
+      '🟣 Advanced: Could you please clarify the notice period and confirm if the security deposit is fully refundable upon vacating?',
     ],
-    dailyChallenge: 'Deliver a 90-second interview asking 5 deep WH questions.',
-    listeningGoal: 'Listen to 10 minutes of podcast interviews.',
+    dailyChallenge:
+        'Deliver a 90-second mock phone call negotiating rent and move-in date with an apartment owner.',
+    listeningGoal:
+        'Listen to 10 minutes of real estate walkthroughs and tenant-landlord discussion clips.',
   ),
   10: const MasterCurriculumDay(
     day: 10,
-    title: 'Day 10: Describing Places (There is / There are)',
+    title: '💻 Day 10: Technology, Device Glitches, Wi-Fi & Tech Support',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Existential Descriptions & Spatial Layouts',
-    grammarConcept: 'There is (singular) vs There are (plural)',
+    focusArea: 'Troubleshooting Device Issues, Hardware Glitches & Customer Support',
+    grammarConcept:
+        'Describing ongoing technical glitches (keeps freezing, drains rapidly) & conditional troubleshooting',
     speakingDrill:
-        'Describe the room or workspace you are sitting in right now using There is/are.',
+        'Report a smartphone overheating issue or a Wi-Fi router connectivity drop to tech support.',
     peerChatMission:
-        'Describe your hometown or city center to your partner in 4 sentences.',
-    xpReward: 50,
-    theoryConcept: 'Introducing Existence Naturally',
+        'Roleplay a customer service helpline troubleshooting an internet outage or an app crashing glitch.',
+    xpReward: 75,
+    milestoneReward: '🏆 Phase 1 First 10-Day Milestone Trophy',
+    theoryConcept: 'Technical Fault Description & Precise Symptoms',
     theoryExplanationEn:
-        'Use "There is" for one item and "There are" for two or more. Do not say "Have a laptop on the table"!',
+        'Describe tech problems using specific action verbs: "The screen freezes whenever I launch this app", "The battery drains within two hours", and "The router internet indicator is blinking red."',
     theoryExplanationMl:
-        'ഒരു സ്ഥലത്ത് എന്തെങ്കിലും ഉണ്ട് എന്ന് പറയാൻ "There is" (ഒരെണ്ണത്തിന്), "There are" (പലതിന്) ഉപയോഗിക്കുക. മലയാളത്തിലെ "മേശപ്പുറത്ത് പുസ്തകം ഉണ്ട്" എന്നതിന് "Table have book" എന്ന് പറയരുത്.',
+        'ഫോണിലോ ലാപ്‌ടോപ്പിലോ വരുന്ന തകരാറുകൾ കസ്റ്റമർ കെയറിലോ സർവീസ് സെന്ററിലോ വ്യക്തമായി പറയാൻ: "The screen freezes" (സ്ക്രീൻ അനങ്ങാതെ നിൽക്കുന്നു), "The battery drains rapidly" (ചാർജ് പെട്ടെന്ന് തീരുന്നു), "The router keeps disconnecting" (വൈഫൈ ഇടയ്ക്കിടെ കട്ടാകുന്നു) എന്ന് ഉപയോഗിക്കുക.',
     whyItMatters:
-        'Essential for giving architectural walkthroughs, describing offices, and explaining data models.',
+        'In today\'s digital-first workplace and everyday life, articulating IT and hardware issues clearly gets your problems resolved fast without frustration.',
     commonMistakes: [
-      '❌ "In my room have a table."',
-      '❌ "There is many people here."',
-      '❌ "There are a big problem in our code."',
+      '❌ "My phone is hanging full time."',
+      '❌ "Net is going and coming."',
+      '❌ "Laptop battery dead fast."',
     ],
     mistakeCorrections: [
-      '✅ "There is a table in my room."',
-      '✅ "There are many people here."',
-      '✅ "There is a big problem in our code."',
+      '✅ "My phone screen freezes frequently during normal use."',
+      '✅ "My Wi-Fi connection keeps dropping every few minutes."',
+      '✅ "The laptop battery drains rapidly even on low brightness."',
     ],
     sentenceEvolution: [
-      '🟢 Basic: There is a laptop on my desk.',
-      '🟡 Intermediate: There are many quiet cafes near our development office.',
-      '🟣 Advanced: There is a tremendous opportunity in our industry for developers who speak fluent English.',
+      '🟢 Basic: My internet is not working properly.',
+      '🟡 Intermediate: The Wi-Fi router keeps disconnecting whenever multiple devices are connected.',
+      '🟣 Advanced: Since the latest software update, my device has been overheating and crashing unexpectedly whenever I run heavy applications.',
     ],
-    dailyChallenge: 'Give a 2-minute verbal tour of your current room.',
-    listeningGoal: 'Listen to 10 minutes of apartment or office walkthroughs.',
+    dailyChallenge:
+        'Record a 2-minute formal technical complaint explaining a malfunctioning device to a service technician.',
+    listeningGoal:
+        'Listen to 10 minutes of IT helpdesk calls and device unboxing troubleshooting tutorials.',
   ),
   11: const MasterCurriculumDay(
     day: 11,

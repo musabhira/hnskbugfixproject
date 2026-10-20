@@ -54,8 +54,10 @@ enum RideMode {
   walking,     // 🚶 Nature Explorer Forest Trail (Day 4)
   train,       // 🚆 High-Speed Express Bullet Train (Day 5)
   rocket,      // 🚀 Cosmic Star Rocket (Day 6)
-  submarine,   // 🌊 Deep Ocean Explorer Submarine (Day 7 - User Audio Directive: "അടിയിലേക്ക് വരുന്നപോലെ!")
-  helicopter,  // 🚁 City Skyline Skycopter (Day 8 - User Audio Directive: "മേലേക്ക് പോണപോലെ!")
+  submarine,   // 🌊 Deep Ocean Explorer Submarine (Day 7)
+  helicopter,  // 🚁 City Skyline Skycopter (Day 8)
+  motorcycle,  // 🏍️ Coastal Highway Cruiser Motorcycle (Day 9)
+  ufo,         // 🛸 Quantum Anti-Gravity UFO Saucer (Day 10)
 }
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
@@ -349,10 +351,14 @@ class _PocketVocabOpenWorldDrivePageState
       _currentRideMode = RideMode.submarine;
     } else if (widget.initialRideMode == 'helicopter') {
       _currentRideMode = RideMode.helicopter;
+    } else if (widget.initialRideMode == 'motorcycle') {
+      _currentRideMode = RideMode.motorcycle;
+    } else if (widget.initialRideMode == 'ufo') {
+      _currentRideMode = RideMode.ufo;
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final cycle = (widget.day - 1) % 8;
+      final cycle = (widget.day - 1) % 10;
       if (cycle == 0) {
         _currentRideMode = RideMode.car;
       } else if (cycle == 1) {
@@ -367,8 +373,12 @@ class _PocketVocabOpenWorldDrivePageState
         _currentRideMode = RideMode.rocket;
       } else if (cycle == 6) {
         _currentRideMode = RideMode.submarine;
-      } else {
+      } else if (cycle == 7) {
         _currentRideMode = RideMode.helicopter;
+      } else if (cycle == 8) {
+        _currentRideMode = RideMode.motorcycle;
+      } else {
+        _currentRideMode = RideMode.ufo;
       }
     }
 
@@ -810,6 +820,8 @@ class _PocketVocabOpenWorldDrivePageState
       RideMode.rocket: '🚀',
       RideMode.submarine: '🌊',
       RideMode.helicopter: '🚁',
+      RideMode.motorcycle: '🏍️',
+      RideMode.ufo: '🛸',
     };
 
     return Column(
@@ -968,6 +980,10 @@ class _PocketVocabOpenWorldDrivePageState
         return '🌊 Day ${widget.day} • Deep Ocean Explorer Submarine';
       case RideMode.helicopter:
         return '🚁 Day ${widget.day} • City Skyline Skycopter';
+      case RideMode.motorcycle:
+        return '🏍️ Day ${widget.day} • Coastal Highway Cruiser Motorcycle';
+      case RideMode.ufo:
+        return '🛸 Day ${widget.day} • Quantum Anti-Gravity UFO Saucer';
     }
   }
 
@@ -1535,6 +1551,28 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawDynamicSky(Canvas canvas, Size size) {
     switch (rideMode) {
+      case RideMode.motorcycle:
+        // Vibrant coastal golden hour horizon (Day 9 Motorcycle)
+        final skyPaint9 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0369A1), Color(0xFF0284C7), Color(0xFFF59E0B), Color(0xFFFDE047)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint9);
+        break;
+
+      case RideMode.ufo:
+        // Otherworldly celestial aurora exoplanet sky (Day 10 Quantum UFO)
+        final skyPaint10 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0F051D), Color(0xFF2E1065), Color(0xFF581C87), Color(0xFF047857), Color(0xFF10B981)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint10);
+        break;
+
       case RideMode.submarine:
         // Deep turquoise & oceanic blue depths with sunlight refraction (Day 7 Submarine)
         final oceanPaint = Paint()
@@ -1757,6 +1795,95 @@ class _OpenWorldDrivePainter extends CustomPainter {
     moundPath.close();
     canvas.drawPath(moundPath, moundPaint);
 
+    // 🏍️ Coastal Highway Cliffside: Ocean Surf, Lighthouse & Gliding Seagulls (Day 9)
+    if (rideMode == RideMode.motorcycle) {
+      // 1. Distant rocky ocean cliffs
+      final cliffPaint = Paint()..color = const Color(0xFF0F766E);
+      final cliffPath = Path();
+      cliffPath.moveTo(0, size.height * 0.62);
+      cliffPath.lineTo(size.width * 0.35, size.height * 0.52);
+      cliffPath.lineTo(size.width * 0.70, size.height * 0.57);
+      cliffPath.lineTo(size.width, size.height * 0.49);
+      cliffPath.lineTo(size.width, size.height * 0.62);
+      cliffPath.close();
+      canvas.drawPath(cliffPath, cliffPaint);
+
+      // 2. Distant coastal lighthouse
+      final lhX = size.width * 0.82;
+      final lhY = size.height * 0.49;
+      final lhPaint = Paint()..color = Colors.white;
+      final lhRoof = Paint()..color = const Color(0xFFEF4444);
+      canvas.drawRect(Rect.fromLTWH(lhX - 5, lhY - 26, 10, 26), lhPaint);
+      canvas.drawRect(Rect.fromLTWH(lhX - 6, lhY - 14, 12, 4), lhRoof);
+      final roofPath = Path();
+      roofPath.moveTo(lhX - 6, lhY - 26);
+      roofPath.lineTo(lhX, lhY - 34);
+      roofPath.lineTo(lhX + 6, lhY - 26);
+      roofPath.close();
+      canvas.drawPath(roofPath, lhRoof);
+      // Rotating beacon beam
+      final lAngle = (distanceTraveled * 0.08) % (math.pi * 2);
+      const beamLength = 40.0;
+      final beamPaint = Paint()..color = Colors.yellow.withValues(alpha: 0.55)..strokeWidth = 2.0;
+      canvas.drawLine(Offset(lhX, lhY - 28), Offset(lhX + math.cos(lAngle) * beamLength, lhY - 28 + math.sin(lAngle) * 8), beamPaint);
+
+      // 3. Gliding seagulls
+      for (int g = 0; g < 3; g++) {
+        final gx = (size.width - ((sceneryScroll * 1.1) + g * 120) % (size.width + 80));
+        final gy = size.height * (0.28 + g * 0.06) + math.sin(distanceTraveled * 0.1 + g) * 4;
+        final gullPaint = Paint()..color = Colors.white..strokeWidth = 1.6..style = PaintingStyle.stroke;
+        final gull = Path();
+        gull.moveTo(gx - 8, gy + 3);
+        gull.quadraticBezierTo(gx - 4, gy - 3, gx, gy);
+        gull.quadraticBezierTo(gx + 4, gy - 3, gx + 8, gy + 3);
+        canvas.drawPath(gull, gullPaint);
+      }
+
+      // 4. Highway safety guardrails scrolling along roadside
+      final guardPost = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 2.5;
+      final railBar = Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 3.0;
+      final railY = size.height * 0.62 - 8;
+      canvas.drawLine(Offset(0, railY), Offset(size.width, railY), railBar);
+      const postSpacing = 36.0;
+      final postOffset = (sceneryScroll * 1.5) % postSpacing;
+      for (double px = -postOffset; px <= size.width + postSpacing; px += postSpacing) {
+        canvas.drawLine(Offset(px, size.height * 0.62), Offset(px, railY - 2), guardPost);
+        canvas.drawCircle(Offset(px, railY), 1.8, Paint()..color = const Color(0xFFF59E0B));
+      }
+      return;
+    }
+
+    // 🛸 Quantum Alien Landscape: Neon Crystal Spires, Floating Asteroids & Twin Moons (Day 10)
+    if (rideMode == RideMode.ufo) {
+      // 1. Twin alien celestial moons
+      canvas.drawCircle(Offset(size.width * 0.22, size.height * 0.20), 18, Paint()..color = const Color(0xFF67E8F9).withValues(alpha: 0.85));
+      canvas.drawCircle(Offset(size.width * 0.76, size.height * 0.16), 11, Paint()..color = const Color(0xFFF43F5E).withValues(alpha: 0.85));
+
+      // 2. Floating anti-gravity crystal spires
+      final crystalPaint1 = Paint()..color = const Color(0xFF8B5CF6);
+      final crystalPaint2 = Paint()..color = const Color(0xFF06B6D4);
+      final cOffset = (sceneryScroll * 0.6) % 110;
+      for (double cx = -cOffset; cx <= size.width + 110; cx += 110) {
+        final cHeight = 45.0 + (cx.abs().toInt() % 3) * 18.0;
+        final cY = size.height * 0.62 - cHeight;
+        final cPath = Path();
+        cPath.moveTo(cx, size.height * 0.62);
+        cPath.lineTo(cx + 8, cY);
+        cPath.lineTo(cx + 16, size.height * 0.62);
+        cPath.close();
+        canvas.drawPath(cPath, (cx.toInt() % 2 == 0) ? crystalPaint1 : crystalPaint2);
+        canvas.drawCircle(Offset(cx + 8, cY), 2.5, Paint()..color = Colors.white);
+      }
+
+      // 3. Floating levitating space rocks
+      for (int r = 0; r < 4; r++) {
+        final rx = (size.width - ((sceneryScroll * 0.9) + r * 105) % (size.width + 90));
+        final ry = size.height * (0.34 + (r % 3) * 0.07) + math.sin(distanceTraveled * 0.12 + r) * 6;
+        canvas.drawOval(Rect.fromCenter(center: Offset(rx, ry), width: 16, height: 9), Paint()..color = const Color(0xFF4C1D95));
+      }
+      return;
+    }
+
     // 🌊 Underwater Ocean Realm: Swaying Kelp, Rising Bubbles & Swimming Reef Fish (Day 7)
     if (rideMode == RideMode.submarine) {
       // 1. Rising bubbles from ocean depths
@@ -1870,7 +1997,7 @@ class _OpenWorldDrivePainter extends CustomPainter {
     }
 
     // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
-    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter) {
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter && rideMode != RideMode.motorcycle && rideMode != RideMode.ufo) {
       final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
       _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
       final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
@@ -1880,6 +2007,46 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
     switch (rideMode) {
+      case RideMode.motorcycle:
+        // 🏍️ Coastal Highway Asphalt with Guardrails and Dashed Yellow Centerlines (Day 9)
+        final roadPaint9 = Paint()..color = const Color(0xFF1E293B);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), roadPaint9);
+
+        // White roadside edge line
+        final edgePaint9 = Paint()..color = Colors.white.withValues(alpha: 0.9)..strokeWidth = 2.5;
+        canvas.drawLine(Offset(0, roadTopY + 4), Offset(size.width, roadTopY + 4), edgePaint9);
+        canvas.drawLine(Offset(0, roadBottomY - 4), Offset(size.width, roadBottomY - 4), edgePaint9);
+
+        // Dashed yellow centerline
+        final centerPaint9 = Paint()..color = const Color(0xFFFBBF24)..strokeWidth = 3.0;
+        final dashOffset9 = (distanceTraveled * 2.5) % 40;
+        for (double x = -dashOffset9; x < size.width; x += 40) {
+          canvas.drawLine(Offset(x, roadTopY + roadHeight * 0.5), Offset(x + 22, roadTopY + roadHeight * 0.5), centerPaint9);
+        }
+
+        // Road shoulder
+        final shoulderPaint9 = Paint()..color = const Color(0xFF0F172A);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), shoulderPaint9);
+        break;
+
+      case RideMode.ufo:
+        // 🛸 Quantum Bioluminescent Alien Terrain Surface (Day 10)
+        final alienGround = Paint()..color = const Color(0xFF0B0718);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), alienGround);
+
+        // Bioluminescent neon green & cyan energy lines
+        final glowGrid = Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.5)..strokeWidth = 1.8;
+        final gridOffset10 = (distanceTraveled * 2.8) % 36;
+        for (double x = -gridOffset10; x < size.width; x += 36) {
+          canvas.drawLine(Offset(x, roadTopY), Offset(x + 18, roadBottomY), glowGrid);
+        }
+
+        // Energy pulses
+        final pulsePaint = Paint()..color = const Color(0xFF06B6D4)..strokeWidth = 2.0;
+        canvas.drawLine(Offset(0, roadTopY + roadHeight * 0.35), Offset(size.width, roadTopY + roadHeight * 0.35), pulsePaint);
+        canvas.drawLine(Offset(0, roadTopY + roadHeight * 0.65), Offset(size.width, roadTopY + roadHeight * 0.65), pulsePaint);
+        break;
+
       case RideMode.submarine:
         // 🌊 Golden Underwater Seabed with Sandy Ripples, Starfish & Pebbles (Day 7 Submarine)
         final seabedPaint = Paint()..color = const Color(0xFFD97706);
@@ -2640,6 +2807,12 @@ class _OpenWorldDrivePainter extends CustomPainter {
       case RideMode.helicopter:
         _drawSkyHelicopter(canvas, size);
         break;
+      case RideMode.motorcycle:
+        _drawCruiserMotorcycle(canvas, size);
+        break;
+      case RideMode.ufo:
+        _drawQuantumUFO(canvas, size);
+        break;
       case RideMode.rocket:
         _drawSpaceRocket(canvas, size);
         break;
@@ -3318,6 +3491,214 @@ class _OpenWorldDrivePainter extends CustomPainter {
     beam.close();
     canvas.drawPath(beam, searchlight);
     canvas.drawCircle(lightCenter, 2.5, Paint()..color = Colors.white);
+  }
+
+
+  // 🏍️ Mode 9: Coastal Highway Cruiser Motorcycle (Day 9)
+  void _drawCruiserMotorcycle(Canvas canvas, Size size) {
+    final bikeX = size.width * 0.24;
+    final bikeY = size.height * carLaneY;
+
+    // Road shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.35);
+    canvas.drawOval(Rect.fromCenter(center: Offset(bikeX, bikeY + 16), width: 74, height: 12), shadowPaint);
+
+    // Rear and Front Wheels
+    final rearCenter = Offset(bikeX - 22, bikeY + 7);
+    final frontCenter = Offset(bikeX + 24, bikeY + 7);
+    _drawSpokeBikeWheel(canvas, rearCenter);
+    _drawSpokeBikeWheel(canvas, frontCenter);
+
+    // Motorcycle Frame & Engine Block (Dark Gunmetal & Chrome)
+    final framePaint = Paint()..color = const Color(0xFF1E293B)..strokeWidth = 3.5;
+    canvas.drawLine(rearCenter, frontCenter, framePaint);
+    final neckPos = Offset(bikeX + 16, bikeY - 8);
+    canvas.drawLine(frontCenter, neckPos, framePaint);
+    canvas.drawLine(rearCenter, Offset(bikeX - 4, bikeY - 3), framePaint);
+    canvas.drawLine(Offset(bikeX - 4, bikeY - 3), neckPos, framePaint);
+
+    // Chrome Engine Block
+    final enginePaint = Paint()..color = const Color(0xFF94A3B8);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(bikeX - 8, bikeY - 2, 16, 11), const Radius.circular(2)),
+      enginePaint,
+    );
+    final finPaint = Paint()..color = const Color(0xFF475569)..strokeWidth = 1.2;
+    for (int f = 0; f < 3; f++) {
+      canvas.drawLine(Offset(bikeX - 7, bikeY + f * 3.5), Offset(bikeX + 7, bikeY + f * 3.5), finPaint);
+    }
+
+    // Chrome Exhaust Pipe & Muffler
+    final exhaustPaint = Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 3.0..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(bikeX - 4, bikeY + 5), Offset(bikeX - 28, bikeY + 6), exhaustPaint);
+    final smokePaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
+    final smokeOsc = math.sin(distanceTraveled * 0.4) * 2;
+    canvas.drawCircle(Offset(bikeX - 32, bikeY + 6 + smokeOsc), 2.5, smokePaint);
+
+    // Candy Orange Fuel Tank
+    final tankPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF97316), Color(0xFFEA580C)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(bikeX - 4, bikeY - 14, 20, 10));
+
+    final tankPath = Path();
+    tankPath.moveTo(bikeX - 4, bikeY - 4);
+    tankPath.lineTo(bikeX - 2, bikeY - 12);
+    tankPath.quadraticBezierTo(bikeX + 8, bikeY - 14, bikeX + 16, bikeY - 8);
+    tankPath.lineTo(bikeX + 14, bikeY - 4);
+    tankPath.close();
+    canvas.drawPath(tankPath, tankPaint);
+
+    // Leather Saddle Seat
+    final seatPaint = Paint()..color = const Color(0xFF451A03);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(bikeX - 14, bikeY - 8, 12, 5), const Radius.circular(2)),
+      seatPaint,
+    );
+
+    // Handlebars
+    final barPaint = Paint()..color = const Color(0xFFE2E8F0)..strokeWidth = 2.2;
+    canvas.drawLine(neckPos, Offset(bikeX + 12, bikeY - 18), barPaint);
+    canvas.drawCircle(Offset(bikeX + 12, bikeY - 18), 2.0, Paint()..color = const Color(0xFF0F172A));
+
+    // Biker Avatar in Riding Posture
+    final jacketPaint = Paint()..color = const Color(0xFF1E3A8A);
+    final riderTorso = Path();
+    riderTorso.moveTo(bikeX - 10, bikeY - 8);
+    riderTorso.lineTo(bikeX + 4, bikeY - 18);
+    riderTorso.lineTo(bikeX + 8, bikeY - 16);
+    riderTorso.lineTo(bikeX, bikeY - 6);
+    riderTorso.close();
+    canvas.drawPath(riderTorso, jacketPaint);
+
+    canvas.drawLine(Offset(bikeX + 4, bikeY - 16), Offset(bikeX + 12, bikeY - 16), jacketPaint..strokeWidth = 3.5..strokeCap = StrokeCap.round);
+
+    // Helmet with Visor
+    final helmetCenter = Offset(bikeX + 8, bikeY - 24);
+    final helmetPaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawCircle(helmetCenter, 6.5, helmetPaint);
+    final visorPaint = Paint()..color = const Color(0xFF0F172A);
+    final visorPath = Path();
+    visorPath.moveTo(helmetCenter.dx + 2, helmetCenter.dy - 3);
+    visorPath.lineTo(helmetCenter.dx + 6.5, helmetCenter.dy - 1);
+    visorPath.lineTo(helmetCenter.dx + 5.5, helmetCenter.dy + 3);
+    visorPath.lineTo(helmetCenter.dx + 1, helmetCenter.dy + 2);
+    visorPath.close();
+    canvas.drawPath(visorPath, visorPaint);
+
+    // Front Headlamp Beam
+    final lampPos = Offset(bikeX + 22, bikeY - 6);
+    canvas.drawCircle(lampPos, 3.5, Paint()..color = const Color(0xFFFEF08A));
+    final beamPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.yellow.withValues(alpha: 0.65), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: lampPos, radius: 70));
+
+    final beam = Path();
+    beam.moveTo(lampPos.dx, lampPos.dy - 2);
+    beam.lineTo(lampPos.dx + 70, lampPos.dy - 10);
+    beam.lineTo(lampPos.dx + 70, lampPos.dy + 30);
+    beam.lineTo(lampPos.dx, lampPos.dy + 2);
+    beam.close();
+    canvas.drawPath(beam, beamPaint);
+  }
+
+  void _drawSpokeBikeWheel(Canvas canvas, Offset center) {
+    canvas.drawCircle(center, 9.5, Paint()..color = const Color(0xFF0F172A));
+    canvas.drawCircle(center, 6.0, Paint()..color = const Color(0xFF94A3B8)..style = PaintingStyle.stroke..strokeWidth = 1.2);
+    canvas.drawCircle(center, 2.5, Paint()..color = const Color(0xFFE2E8F0));
+
+    final angle = (distanceTraveled * 0.22) % (math.pi * 2);
+    final spokePaint = Paint()..color = Colors.white.withValues(alpha: 0.8)..strokeWidth = 1.0;
+    for (int s = 0; s < 4; s++) {
+      final a = angle + s * (math.pi / 4);
+      canvas.drawLine(
+        Offset(center.dx - math.cos(a) * 5.5, center.dy - math.sin(a) * 5.5),
+        Offset(center.dx + math.cos(a) * 5.5, center.dy + math.sin(a) * 5.5),
+        spokePaint,
+      );
+    }
+  }
+
+  // 🛸 Mode 10: Quantum Anti-Gravity UFO Saucer (Day 10)
+  void _drawQuantumUFO(Canvas canvas, Size size) {
+    final hoverOffset = math.sin(distanceTraveled * 0.15) * 5;
+    final ufoX = size.width * 0.24;
+    final ufoY = size.height * (carLaneY - 0.05) + hoverOffset;
+
+    // Glowing Tractor Beam
+    final beamOrigin = Offset(ufoX, ufoY + 6);
+    final tractorPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFF10B981).withValues(alpha: 0.6),
+          const Color(0xFF06B6D4).withValues(alpha: 0.3),
+          Colors.transparent,
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(ufoX - 28, beamOrigin.dy, 56, 50));
+
+    final tPath = Path();
+    tPath.moveTo(beamOrigin.dx - 12, beamOrigin.dy);
+    tPath.lineTo(beamOrigin.dx - 30, beamOrigin.dy + 48);
+    tPath.lineTo(beamOrigin.dx + 30, beamOrigin.dy + 48);
+    tPath.lineTo(beamOrigin.dx + 12, beamOrigin.dy);
+    tPath.close();
+    canvas.drawPath(tPath, tractorPaint);
+
+    final puddlePaint = Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.35);
+    canvas.drawOval(Rect.fromCenter(center: Offset(ufoX, beamOrigin.dy + 48), width: 60, height: 12), puddlePaint);
+
+    // Main Titanium Saucer Disk
+    final discPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8), Color(0xFF475569)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromCenter(center: Offset(ufoX, ufoY), width: 76, height: 22));
+
+    canvas.drawOval(Rect.fromCenter(center: Offset(ufoX, ufoY), width: 76, height: 20), discPaint);
+
+    // Lower Propulsion Ring
+    final lowerRing = Paint()..color = const Color(0xFF334155);
+    canvas.drawOval(Rect.fromCenter(center: Offset(ufoX, ufoY + 4), width: 44, height: 10), lowerRing);
+
+    // Upper Glass Cockpit Dome
+    final domePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF67E8F9), Color(0xFF06B6D4)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(ufoX - 16, ufoY - 18, 32, 20));
+
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(ufoX, ufoY - 4), width: 34, height: 26),
+      -math.pi,
+      math.pi,
+      true,
+      domePaint,
+    );
+
+    // Cute Navigator inside
+    final alienPaint = Paint()..color = const Color(0xFF10B981);
+    canvas.drawCircle(Offset(ufoX, ufoY - 8), 4.0, alienPaint);
+    canvas.drawCircle(Offset(ufoX - 1.5, ufoY - 9), 1.2, Paint()..color = Colors.black);
+    canvas.drawCircle(Offset(ufoX + 1.5, ufoY - 9), 1.2, Paint()..color = Colors.black);
+
+    // Rotating Neon Energy Nodes along Saucer Rim
+    const numNodes = 7;
+    final rotOffset = (distanceTraveled * 0.12) % (math.pi * 2);
+    for (int n = 0; n < numNodes; n++) {
+      final a = rotOffset + n * (math.pi * 2 / numNodes);
+      final nx = ufoX + math.cos(a) * 34;
+      final ny = ufoY + math.sin(a) * 7.5;
+      final nodeColor = n % 2 == 0 ? const Color(0xFFF43F5E) : const Color(0xFFFBBF24);
+      canvas.drawCircle(Offset(nx, ny), 2.8, Paint()..color = nodeColor);
+      canvas.drawCircle(Offset(nx, ny), 1.2, Paint()..color = Colors.white);
+    }
   }
 
   void _drawWheel(Canvas canvas, Offset center) {
