@@ -232,77 +232,82 @@ final Map<int, MasterCurriculumDay> masterPhase1Days = {
   ),
   7: const MasterCurriculumDay(
     day: 7,
-    title: '🎯 Day 7: Present Negative (Don\'t / Doesn\'t)',
+    title: '🏥 Day 7: Health, Symptoms & Visiting the Doctor / Pharmacy',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Expressing Negation & Boundaries',
+    focusArea: 'Describing Physical Symptoms, Health Inquiries & Dosages',
     grammarConcept:
-        'Don\'t (I/You/We/They) vs Doesn\'t (He/She/It + base verb)',
+        'Expressing symptoms with "have" + time duration (for/since) & medical instructions',
     speakingDrill:
-        'State 5 things you do not do during weekdays to maintain focus.',
-    peerChatMission: 'Share 2 habits you avoid with your Pocket Mate.',
+        'Describe 3 physical symptoms and explain to a doctor how long you have felt unwell.',
+    peerChatMission:
+        'Roleplay a doctor-patient consultation and a pharmacy medicine pickup with your Pocket Mate.',
     xpReward: 75,
-    milestoneReward: '🎯 Week 1 Foundation Shield',
-    theoryConcept: 'Negation Mechanics & The Base Verb Reset',
+    milestoneReward: '🎯 Week 1 Health & Wellness Shield',
+    theoryConcept: 'Describing Symptoms & Time Duration Accurately',
     theoryExplanationEn:
-        'When you use "doesn\'t", the main verb resets to its base form. Never say "doesn\'t works"!',
+        'Use "I have a..." for specific ailments (headache, fever, sore throat). Use "since" for a starting point (since yesterday morning) and "for" for a duration (for two days). At the pharmacy, ask: "Should I take this before or after meals?"',
     theoryExplanationMl:
-        'ഒരു കാര്യം ചെയ്യുന്നില്ല എന്ന് പറയാൻ don\'t / doesn\'t ഉപയോഗിക്കുന്നു. Doesn\'t ഉപയോഗിച്ചുകഴിഞ്ഞാൽ പ്രധാന ക്രിയയിൽ വീണ്ടും \'s\' ചേർക്കരുത് (He doesn\'t know, NOT He doesn\'t knows).',
+        'ശാരീരിക അസ്വസ്ഥതകൾ പറയുമ്പോൾ "I have a headache / fever / cough" എന്ന് പറയുക. എത്ര നാളായി എന്ന് വ്യക്തമാക്കാൻ "since yesterday" (ഇന്നലെ മുതൽ) അല്ലെങ്കിൽ "for two days" (രണ്ട് ദിവസമായി) എന്ന് ഉപയോഗിക്കുക. മരുന്ന് കടയിൽ "Should I take this before or after food?" (ഭക്ഷണത്തിന് മുൻപോ ശേഷമോ കഴിക്കേണ്ടത്?) എന്ന് ചോദിക്കാം.',
     whyItMatters:
-        'Double-marking negation is extremely distracting to native listeners.',
+        'In emergencies, clinic visits, or travels abroad, clearly explaining your symptoms and understanding medication instructions is a vital life skill.',
     commonMistakes: [
-      '❌ "He doesn\'t likes tea."',
-      '❌ "I not know the answer."',
-      '❌ "She don\'t agree with this."',
+      '❌ "Head pain is coming to me."',
+      '❌ "I am suffering with fever since two days."',
+      '❌ "Give me medicine for stomach pain."',
     ],
     mistakeCorrections: [
-      '✅ "He doesn\'t like tea."',
-      '✅ "I don\'t know the answer."',
-      '✅ "She doesn\'t agree with this."',
+      '✅ "I have a severe headache."',
+      '✅ "I have had a fever for two days."',
+      '✅ "Could you recommend something for stomach ache?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: I do not eat junk food.',
-      '🟡 Intermediate: He doesn\'t work on weekends because he values rest.',
-      '🟣 Advanced: I don\'t waste time on unproductive tasks because daily focus is essential for growth.',
+      '🟢 Basic: I have a sore throat and mild fever.',
+      '🟡 Intermediate: I have had body pain and tiredness since yesterday afternoon.',
+      '🟣 Advanced: Could you prescribe a mild pain reliever and explain whether I should take it before or after meals?',
     ],
-    dailyChallenge: 'List 5 bad habits you deliberately avoid in your career.',
-    listeningGoal: 'Listen to 10 minutes of lifestyle habit debates.',
+    dailyChallenge:
+        'Explain a past illness experience and your recovery process in 6 clear sentences.',
+    listeningGoal:
+        'Listen to 10 minutes of clinic consultations and health advice dialogues.',
   ),
   8: const MasterCurriculumDay(
     day: 8,
-    title: 'Day 8: Asking Simple Questions (Do / Does)',
+    title: '🏦 Day 8: Banking, ATM, Digital UPI & Formal Inquiries',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Yes/No Inquiries & Conversational Openers',
-    grammarConcept: 'Auxiliary Inversion: Do/Does + Subject + Base Verb?',
+    focusArea: 'Formal Banking Inquiries, Failed Transactions & KYC',
+    grammarConcept:
+        'Polite formal requests (Could you please... / I would like to...) & passive transaction status',
     speakingDrill:
-        'Formulate 5 rapid-fire Yes/No questions to ask a new colleague.',
+        'Report an ATM cash deduction or a failed UPI transaction to a customer care executive.',
     peerChatMission:
-        'Conduct a 2-minute Q&A session asking your partner 5 "Do you...?" questions.',
+        'Conduct a bank inquiry session asking for account statements and debit card renewals.',
     xpReward: 50,
-    theoryConcept: 'Question Inversion Blueprint',
+    theoryConcept: 'Formal Inquiries & Transaction Troubleshooting',
     theoryExplanationEn:
-        'English questions do not just change voice pitch; they require auxiliary verbs (Do / Does) placed before the subject.',
+        'In banks and official transactions, use polite modal phrases: "Could you please help me with...", "I would like to update my mobile number", and "The amount was debited from my account but not credited."',
     theoryExplanationMl:
-        'ചോദ്യങ്ങൾ ചോദിക്കുമ്പോൾ വെറുതെ ശബ്ദം ഉയർത്തിയാൽ പോരാ ("You like tea?"), "Do you like tea?" അല്ലെങ്കിൽ "Does he work here?" എന്ന് Do/Does മുന്നിൽ ചേർത്ത് തന്നെ ചോദിക്കണം.',
+        'ബാങ്കിലും ഔദ്യോഗിക ഇടപാടുകളിലും മാന്യമായി സംസാരിക്കാൻ "Could you please..." അല്ലെങ്കിൽ "I would like to..." ഉപയോഗിക്കുക. പണം അക്കൗണ്ടിൽ നിന്ന് കട്ടായി പക്ഷെ കിട്ടിയില്ല എന്ന് പറയാൻ "The amount was debited from my account, but the payment failed" എന്ന് വ്യക്തമായി പറയാം.',
     whyItMatters:
-        'Proper auxiliary inversion makes your spoken inquiries sound polite and natural.',
+        'Resolving financial, banking, and digital payment issues requires clear, precise, and polite formal English.',
     commonMistakes: [
-      '❌ "You know him?" (Flat statement used as question)',
-      '❌ "Does she lives here?"',
-      '❌ "Do he have a car?"',
+      '❌ "My money went cut in ATM!"',
+      '❌ "You give me bank statement now."',
+      '❌ "Send money to my friend account."',
     ],
     mistakeCorrections: [
-      '✅ "Do you know him?"',
-      '✅ "Does she live here?"',
-      '✅ "Does he have a car?"',
+      '✅ "The amount was debited, but cash was not dispensed by the ATM."',
+      '✅ "Could you please provide a bank statement for the last three months?"',
+      '✅ "I would like to transfer funds to this account number."',
     ],
     sentenceEvolution: [
-      '🟢 Basic: Do you play sports?',
-      '🟡 Intermediate: Does he work at your software company?',
-      '🟣 Advanced: Do you know how to configure this production server properly?',
+      '🟢 Basic: I want to withdraw cash from the ATM.',
+      '🟡 Intermediate: The amount was deducted from my account, but the recipient has not received it.',
+      '🟣 Advanced: Could you please check the transaction reference number and let me know when the refund will be credited?',
     ],
     dailyChallenge:
-        'Interview an imaginary client with 6 rapid Do/Does questions.',
-    listeningGoal: 'Listen to 10 minutes of interview Q&A sessions.',
+        'Draft and speak a formal 5-sentence complaint regarding a pending bank transfer.',
+    listeningGoal:
+        'Listen to 10 minutes of customer service and banking resolution audio clips.',
   ),
   9: const MasterCurriculumDay(
     day: 9,

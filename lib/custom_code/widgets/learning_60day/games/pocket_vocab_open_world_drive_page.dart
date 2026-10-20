@@ -48,12 +48,14 @@ class DriveParticle {
 /// 7. Open world aesthetics: hills, green grass, sky, trees, and roadside nature.
 /// 🚗 Supported Ride & Movement Modes (User Audio Directive!)
 enum RideMode {
-  car,       // 🏎️ Highway Sports Cruiser (Day 1)
-  jeep,      // 🚙 4x4 Off-Road Safari Jeep (Day 2)
-  airplane,  // ✈️ Sky Flight over Mountain Summits (Day 3)
-  walking,   // 🚶 Nature Explorer Forest Trail (Day 4)
-  train,     // 🚆 High-Speed Express Bullet Train (Day 5 - User Audio Directive!)
-  rocket,    // 🚀 Cosmic Star Rocket (Day 6)
+  car,         // 🏎️ Highway Sports Cruiser (Day 1)
+  jeep,        // 🚙 4x4 Off-Road Safari Jeep (Day 2)
+  airplane,    // ✈️ Sky Flight over Mountain Summits (Day 3)
+  walking,     // 🚶 Nature Explorer Forest Trail (Day 4)
+  train,       // 🚆 High-Speed Express Bullet Train (Day 5)
+  rocket,      // 🚀 Cosmic Star Rocket (Day 6)
+  submarine,   // 🌊 Deep Ocean Explorer Submarine (Day 7 - User Audio Directive: "അടിയിലേക്ക് വരുന്നപോലെ!")
+  helicopter,  // 🚁 City Skyline Skycopter (Day 8 - User Audio Directive: "മേലേക്ക് പോണപോലെ!")
 }
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
@@ -343,10 +345,14 @@ class _PocketVocabOpenWorldDrivePageState
       _currentRideMode = RideMode.train;
     } else if (widget.initialRideMode == 'rocket') {
       _currentRideMode = RideMode.rocket;
+    } else if (widget.initialRideMode == 'submarine') {
+      _currentRideMode = RideMode.submarine;
+    } else if (widget.initialRideMode == 'helicopter') {
+      _currentRideMode = RideMode.helicopter;
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final cycle = (widget.day - 1) % 6;
+      final cycle = (widget.day - 1) % 8;
       if (cycle == 0) {
         _currentRideMode = RideMode.car;
       } else if (cycle == 1) {
@@ -357,8 +363,12 @@ class _PocketVocabOpenWorldDrivePageState
         _currentRideMode = RideMode.walking;
       } else if (cycle == 4) {
         _currentRideMode = RideMode.train;
-      } else {
+      } else if (cycle == 5) {
         _currentRideMode = RideMode.rocket;
+      } else if (cycle == 6) {
+        _currentRideMode = RideMode.submarine;
+      } else {
+        _currentRideMode = RideMode.helicopter;
       }
     }
 
@@ -798,6 +808,8 @@ class _PocketVocabOpenWorldDrivePageState
       RideMode.walking: '🚶',
       RideMode.train: '🚆',
       RideMode.rocket: '🚀',
+      RideMode.submarine: '🌊',
+      RideMode.helicopter: '🚁',
     };
 
     return Column(
@@ -952,6 +964,10 @@ class _PocketVocabOpenWorldDrivePageState
         return '🚶 Day ${widget.day} • Forest Trail Nature Explorer';
       case RideMode.train:
         return '🚆 Day ${widget.day} • High-Speed Express Bullet Train';
+      case RideMode.submarine:
+        return '🌊 Day ${widget.day} • Deep Ocean Explorer Submarine';
+      case RideMode.helicopter:
+        return '🚁 Day ${widget.day} • City Skyline Skycopter';
     }
   }
 
@@ -1519,6 +1535,28 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawDynamicSky(Canvas canvas, Size size) {
     switch (rideMode) {
+      case RideMode.submarine:
+        // Deep turquoise & oceanic blue depths with sunlight refraction (Day 7 Submarine)
+        final oceanPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF0369A1), Color(0xFF075985), Color(0xFF0C4A6E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), oceanPaint);
+        break;
+
+      case RideMode.helicopter:
+        // Twilight city skyline sunset (rich violet, crimson orange, golden horizon) (Day 8 Skycopter)
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF312E81), Color(0xFF6B21A8), Color(0xFFBE185D), Color(0xFFF97316), Color(0xFFFDE047)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
       case RideMode.train:
         // Atmospheric twilight dawn sky (deep indigo to vibrant orange sunrise)
         final skyPaint = Paint()
@@ -1719,6 +1757,97 @@ class _OpenWorldDrivePainter extends CustomPainter {
     moundPath.close();
     canvas.drawPath(moundPath, moundPaint);
 
+    // 🌊 Underwater Ocean Realm: Swaying Kelp, Rising Bubbles & Swimming Reef Fish (Day 7)
+    if (rideMode == RideMode.submarine) {
+      // 1. Rising bubbles from ocean depths
+      final bubblePaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.65)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      for (int b = 0; b < 18; b++) {
+        final bx = ((b * 53 + distanceTraveled * 0.8) % size.width);
+        final by = size.height * 0.60 - ((cloudScroll * 22 + b * 28) % (size.height * 0.50));
+        final bRadius = 2.5 + (b % 3) * 1.8;
+        canvas.drawCircle(Offset(bx, by), bRadius, bubblePaint);
+        canvas.drawCircle(Offset(bx - bRadius * 0.3, by - bRadius * 0.3), 1.0, Paint()..color = Colors.white);
+      }
+
+      // 2. Swimming colorful reef fish
+      for (int f = 0; f < 5; f++) {
+        final fx = (size.width - ((sceneryScroll * 1.4) + f * 95) % (size.width + 120)) - 20;
+        final fy = size.height * (0.24 + (f % 4) * 0.08);
+        final fishColor = f % 2 == 0 ? const Color(0xFFF97316) : const Color(0xFFFACC15);
+        final fPath = Path();
+        fPath.moveTo(fx, fy);
+        fPath.lineTo(fx + 12, fy - 5);
+        fPath.lineTo(fx + 18, fy);
+        fPath.lineTo(fx + 12, fy + 5);
+        fPath.close();
+        canvas.drawPath(fPath, Paint()..color = fishColor);
+        final tPath = Path();
+        tPath.moveTo(fx + 18, fy);
+        tPath.lineTo(fx + 24, fy - 6);
+        tPath.lineTo(fx + 24, fy + 6);
+        tPath.close();
+        canvas.drawPath(tPath, Paint()..color = fishColor);
+      }
+
+      // 3. Swaying deep sea kelp / seaweed along horizon
+      final kelpPaint = Paint()
+        ..color = const Color(0xFF047857)
+        ..strokeWidth = 4.0
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      const kelpSpacing = 60.0;
+      final kelpOffset = (sceneryScroll * 0.7) % kelpSpacing;
+      for (double kx = -kelpOffset; kx <= size.width + kelpSpacing; kx += kelpSpacing) {
+        final kSway = math.sin(distanceTraveled * 0.1 + kx) * 10;
+        final kPath = Path();
+        kPath.moveTo(kx, size.height * 0.62);
+        kPath.quadraticBezierTo(kx + kSway, size.height * 0.48, kx - kSway * 0.5, size.height * 0.38);
+        canvas.drawPath(kPath, kelpPaint);
+      }
+      return;
+    }
+
+    // 🚁 Skyline Cityscape: Modern Towers, Skyscrapers with Lit Windows & Beacons (Day 8)
+    if (rideMode == RideMode.helicopter) {
+      final skyPaint1 = Paint()..color = const Color(0xFF1E1B4B);
+      final skyPaint2 = Paint()..color = const Color(0xFF0F172A);
+      final winPaint = Paint()..color = const Color(0xFFFEF08A).withValues(alpha: 0.85);
+      final beaconPaint = Paint()..color = const Color(0xFFEF4444);
+
+      const bldgWidths = [44.0, 56.0, 38.0, 62.0, 48.0];
+      const bldgHeights = [110.0, 150.0, 85.0, 165.0, 125.0];
+      final bldgOffset = (sceneryScroll * 0.5) % 180;
+
+      int idx = 0;
+      for (double bx = -bldgOffset - 40; bx <= size.width + 120; ) {
+        final bw = bldgWidths[idx % bldgWidths.length];
+        final bh = bldgHeights[idx % bldgHeights.length];
+        final by = size.height * 0.62 - bh;
+
+        canvas.drawRect(Rect.fromLTWH(bx, by, bw, bh), (idx % 2 == 0) ? skyPaint1 : skyPaint2);
+
+        // Antenna
+        canvas.drawLine(Offset(bx + bw * 0.5, by), Offset(bx + bw * 0.5, by - 16), Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 2);
+        canvas.drawCircle(Offset(bx + bw * 0.5, by - 16), 2.5, beaconPaint);
+
+        // Lit windows
+        for (double wy = by + 12; wy < size.height * 0.60; wy += 14) {
+          for (double wx = bx + 6; wx < bx + bw - 6; wx += 10) {
+            if ((wx * 7 + wy * 13).toInt() % 3 != 0) {
+              canvas.drawRect(Rect.fromLTWH(wx, wy, 5, 6), winPaint);
+            }
+          }
+        }
+
+        bx += bw + 8;
+        idx++;
+      }
+      return;
+    }
+
     // 🚆 Overhead Catenary Railway Electric Poles & Transmission Wires (Day 5 Train Mode)
     if (rideMode == RideMode.train) {
       final polePaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 3.5;
@@ -1741,7 +1870,7 @@ class _OpenWorldDrivePainter extends CustomPainter {
     }
 
     // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
-    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train) {
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter) {
       final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
       _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
       final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
@@ -1751,6 +1880,60 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
     switch (rideMode) {
+      case RideMode.submarine:
+        // 🌊 Golden Underwater Seabed with Sandy Ripples, Starfish & Pebbles (Day 7 Submarine)
+        final seabedPaint = Paint()..color = const Color(0xFFD97706);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), seabedPaint);
+
+        // Sandy ripples
+        final ripplePaint = Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.0;
+        final ripOffset = (distanceTraveled * 1.6) % 32;
+        for (double x = -ripOffset; x < size.width; x += 32) {
+          canvas.drawLine(Offset(x, roadTopY + 12), Offset(x + 14, roadTopY + 14), ripplePaint);
+          canvas.drawLine(Offset(x + 16, roadTopY + 28), Offset(x + 30, roadTopY + 30), ripplePaint);
+        }
+
+        // Starfish and sea pebbles on the sand
+        final starPaint = Paint()..color = const Color(0xFFF97316);
+        final pebblePaint = Paint()..color = const Color(0xFF78716C);
+        final itemOffset = (distanceTraveled * 1.5) % 90;
+        for (double x = -itemOffset; x < size.width; x += 90) {
+          canvas.drawCircle(Offset(x + 20, roadBottomY - 14), 4.5, starPaint);
+          canvas.drawCircle(Offset(x + 60, roadBottomY - 10), 3.0, pebblePaint);
+        }
+
+        // Ocean floor border
+        final seaBottom = Paint()..color = const Color(0xFF0F172A);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), seaBottom);
+        break;
+
+      case RideMode.helicopter:
+        // 🚁 High-Altitude Aerial Flight Corridor with Cyan Navigation Rings (Day 8 Skycopter)
+        final flightCorridor = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+          ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), flightCorridor);
+
+        // Glowing cyan neon aerial navigation rings/beacons
+        final ringPaint = Paint()
+          ..color = const Color(0xFF06B6D4).withValues(alpha: 0.6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5;
+        final ringOffset = (distanceTraveled * 2.5) % 80;
+        for (double x = -ringOffset; x < size.width; x += 80) {
+          canvas.drawOval(Rect.fromCenter(center: Offset(x + 30, roadTopY + roadHeight * 0.5), width: 14, height: 42), ringPaint);
+        }
+
+        // Rushing wind streams
+        final windPaint = Paint()..color = Colors.white.withValues(alpha: 0.45)..strokeWidth = 1.8;
+        final windOffset = (distanceTraveled * 3.6) % 120;
+        for (double x = -windOffset; x < size.width; x += 120) {
+          canvas.drawLine(Offset(x, roadTopY + roadHeight * 0.25), Offset(x + 50, roadTopY + roadHeight * 0.25), windPaint);
+          canvas.drawLine(Offset(x + 40, roadTopY + roadHeight * 0.75), Offset(x + 95, roadTopY + roadHeight * 0.75), windPaint);
+        }
+        break;
+
       case RideMode.train:
         // 🚆 Authentic High-Speed Railway Track with Ballast Gravel, Wooden Sleepers & Twin Steel Rails
         // 1. Ballast Gravel Bed
@@ -2451,6 +2634,12 @@ class _OpenWorldDrivePainter extends CustomPainter {
       case RideMode.train:
         _drawExpressTrain(canvas, size);
         break;
+      case RideMode.submarine:
+        _drawOceanSubmarine(canvas, size);
+        break;
+      case RideMode.helicopter:
+        _drawSkyHelicopter(canvas, size);
+        break;
       case RideMode.rocket:
         _drawSpaceRocket(canvas, size);
         break;
@@ -2937,6 +3126,198 @@ class _OpenWorldDrivePainter extends CustomPainter {
     canvas.drawCircle(center, 6.0, Paint()..color = const Color(0xFF94A3B8));
     // Center Axle Hub
     canvas.drawCircle(center, 2.5, Paint()..color = const Color(0xFF0F172A));
+  }
+
+
+  // 🌊 Mode 7: Deep Ocean Explorer Submarine (User Audio Directive: "അടിയിലേക്ക് വരുന്നപോലെ!")
+  void _drawOceanSubmarine(Canvas canvas, Size size) {
+    final subX = size.width * 0.24;
+    final subY = size.height * carLaneY;
+
+    // Water shadow
+    final shadowPaint = Paint()..color = const Color(0xFF082F49).withValues(alpha: 0.5);
+    canvas.drawOval(Rect.fromCenter(center: Offset(subX, subY + 16), width: 84, height: 14), shadowPaint);
+
+    // Rear Spinning Propeller
+    final propX = subX - 38;
+    final propY = subY;
+    final pAngle = (distanceTraveled * 0.6) % (math.pi * 2);
+    final propPaint = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 3.0..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(propX, propY - math.sin(pAngle) * 12),
+      Offset(propX, propY + math.sin(pAngle) * 12),
+      propPaint,
+    );
+    canvas.drawCircle(Offset(propX, propY), 4, Paint()..color = const Color(0xFF475569));
+
+    // Propeller Bubble Wake
+    final bubblePaint = Paint()..color = Colors.white.withValues(alpha: 0.7);
+    for (int i = 0; i < 4; i++) {
+      final bDist = 6.0 + i * 7.0;
+      final bOsc = math.sin(distanceTraveled * 0.3 + i) * 3;
+      canvas.drawCircle(Offset(propX - bDist, propY + bOsc), 2.0 + (i % 2), bubblePaint);
+    }
+
+    // Submarine Hull (Yellow Oceanic Sub)
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFDE047), Color(0xFFEAB308), Color(0xFFCA8A04)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(subX - 34, subY - 14, 68, 28));
+
+    // Rounded submarine elliptical body
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(subX - 34, subY - 14, 68, 28), const Radius.circular(14)),
+      hullPaint,
+    );
+
+    // Conning Tower & Periscope
+    final towerPaint = Paint()..color = const Color(0xFFCA8A04);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(subX - 8, subY - 24, 16, 12), const Radius.circular(4)),
+      towerPaint,
+    );
+    // Periscope pipe
+    final scopePaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 2.5;
+    canvas.drawLine(Offset(subX - 2, subY - 24), Offset(subX - 2, subY - 32), scopePaint);
+    canvas.drawLine(Offset(subX - 2, subY - 32), Offset(subX + 4, subY - 32), scopePaint);
+    // Navigation light on periscope
+    canvas.drawCircle(Offset(subX + 4, subY - 32), 2.0, Paint()..color = const Color(0xFFEF4444));
+
+    // Front Bubble Observation Dome (Glass Window)
+    final domePaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.9);
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(subX + 26, subY), width: 18, height: 20),
+      -math.pi / 2,
+      math.pi,
+      true,
+      domePaint,
+    );
+    // Driver silhouette
+    canvas.drawCircle(Offset(subX + 22, subY - 1), 3.5, Paint()..color = const Color(0xFF1E293B));
+
+    // Side Circular Portholes
+    final portPaint = Paint()..color = const Color(0xFF0284C7);
+    final portRim = Paint()..color = const Color(0xFF475569)..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    for (int p = 0; p < 2; p++) {
+      final px = subX - 16 + p * 16.0;
+      canvas.drawCircle(Offset(px, subY), 5.0, portPaint);
+      canvas.drawCircle(Offset(px, subY), 5.0, portRim);
+    }
+
+    // High-Intensity Underwater Searchlight Beam
+    final lightOrigin = Offset(subX + 34, subY + 4);
+    final searchLight = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0xFF67E8F9).withValues(alpha: 0.6), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: lightOrigin, radius: 75));
+
+    final beamPath = Path();
+    beamPath.moveTo(lightOrigin.dx, lightOrigin.dy - 3);
+    beamPath.lineTo(lightOrigin.dx + 80, lightOrigin.dy - 20);
+    beamPath.lineTo(lightOrigin.dx + 80, lightOrigin.dy + 35);
+    beamPath.lineTo(lightOrigin.dx, lightOrigin.dy + 3);
+    beamPath.close();
+    canvas.drawPath(beamPath, searchLight);
+    canvas.drawCircle(lightOrigin, 3.5, Paint()..color = Colors.white);
+  }
+
+  // 🚁 Mode 8: City Skyline Skycopter (User Audio Directive: "മേലേക്ക് പോണപോലെ!")
+  void _drawSkyHelicopter(Canvas canvas, Size size) {
+    final heliX = size.width * 0.24;
+    final heliY = size.height * (carLaneY - 0.04);
+
+    // Ground shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.25);
+    canvas.drawOval(Rect.fromCenter(center: Offset(heliX, heliY + 28), width: 72, height: 10), shadowPaint);
+
+    // Main Rotor Blades (Spinning Blur Disc + Blades)
+    final rotorCenter = Offset(heliX + 4, heliY - 20);
+    canvas.drawLine(Offset(heliX + 4, heliY - 12), rotorCenter, Paint()..color = const Color(0xFF64748B)..strokeWidth = 3);
+
+    final blurPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.45)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawOval(Rect.fromCenter(center: rotorCenter, width: 84, height: 6), blurPaint);
+
+    final rAngle = (distanceTraveled * 0.8) % (math.pi * 2);
+    final rBladePaint = Paint()..color = const Color(0xFF0F172A)..strokeWidth = 2.5;
+    canvas.drawLine(
+      Offset(rotorCenter.dx - math.cos(rAngle) * 40, rotorCenter.dy - math.sin(rAngle) * 2),
+      Offset(rotorCenter.dx + math.cos(rAngle) * 40, rotorCenter.dy + math.sin(rAngle) * 2),
+      rBladePaint,
+    );
+    canvas.drawCircle(rotorCenter, 3.5, Paint()..color = const Color(0xFFEF4444));
+
+    // Tail Boom & Tail Rotor
+    final tailPaint = Paint()..color = const Color(0xFFDC2626)..strokeWidth = 5..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(heliX - 18, heliY - 2), Offset(heliX - 44, heliY - 4), tailPaint);
+
+    final finPath = Path();
+    finPath.moveTo(heliX - 44, heliY - 4);
+    finPath.lineTo(heliX - 48, heliY - 16);
+    finPath.lineTo(heliX - 40, heliY - 16);
+    finPath.lineTo(heliX - 38, heliY - 4);
+    finPath.close();
+    canvas.drawPath(finPath, Paint()..color = const Color(0xFFDC2626));
+
+    final tAngle = (distanceTraveled * 1.2) % (math.pi * 2);
+    canvas.drawLine(
+      Offset(heliX - 44, heliY - 16 - math.sin(tAngle) * 8),
+      Offset(heliX - 44, heliY - 16 + math.sin(tAngle) * 8),
+      Paint()..color = Colors.white..strokeWidth = 2,
+    );
+
+    // Fuselage
+    final bodyPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(heliX - 22, heliY - 12, 48, 22));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(heliX - 22, heliY - 12, 46, 22), const Radius.circular(11)),
+      bodyPaint,
+    );
+
+    // Windshield
+    final glassPaint = Paint()..color = const Color(0xFF0284C7);
+    final cockPath = Path();
+    cockPath.moveTo(heliX + 4, heliY - 10);
+    cockPath.lineTo(heliX + 18, heliY - 10);
+    cockPath.quadraticBezierTo(heliX + 26, heliY - 4, heliX + 24, heliY + 6);
+    cockPath.lineTo(heliX + 4, heliY + 6);
+    cockPath.close();
+    canvas.drawPath(cockPath, glassPaint);
+
+    canvas.drawCircle(Offset(heliX + 12, heliY - 2), 3.5, Paint()..color = const Color(0xFFF59E0B));
+
+    // Landing Skids
+    final skidPaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 2.2;
+    canvas.drawLine(Offset(heliX - 8, heliY + 10), Offset(heliX - 8, heliY + 18), skidPaint);
+    canvas.drawLine(Offset(heliX + 12, heliY + 10), Offset(heliX + 12, heliY + 18), skidPaint);
+    final skidBar = Path();
+    skidBar.moveTo(heliX - 20, heliY + 18);
+    skidBar.lineTo(heliX + 22, heliY + 18);
+    skidBar.quadraticBezierTo(heliX + 28, heliY + 18, heliX + 29, heliY + 14);
+    canvas.drawPath(skidBar, skidPaint..style = PaintingStyle.stroke);
+
+    // Searchlight Beam
+    final lightCenter = Offset(heliX + 22, heliY + 10);
+    final searchlight = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.yellow.withValues(alpha: 0.6), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: lightCenter, radius: 65));
+
+    final beam = Path();
+    beam.moveTo(lightCenter.dx, lightCenter.dy);
+    beam.lineTo(lightCenter.dx + 55, lightCenter.dy + 35);
+    beam.lineTo(lightCenter.dx + 15, lightCenter.dy + 45);
+    beam.close();
+    canvas.drawPath(beam, searchlight);
+    canvas.drawCircle(lightCenter, 2.5, Paint()..color = Colors.white);
   }
 
   void _drawWheel(Canvas canvas, Offset center) {
