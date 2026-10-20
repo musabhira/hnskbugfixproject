@@ -58,6 +58,8 @@ enum RideMode {
   helicopter,  // 🚁 City Skyline Skycopter (Day 8)
   motorcycle,  // 🏍️ Coastal Highway Cruiser Motorcycle (Day 9)
   ufo,         // 🛸 Quantum Anti-Gravity UFO Saucer (Day 10)
+  speedboat,   // 🚤 High-Speed Oceanic Speedboat (Day 11)
+  balloon,     // 🎈 Sunrise Sky Hot Air Balloon (Day 12)
 }
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
@@ -355,10 +357,14 @@ class _PocketVocabOpenWorldDrivePageState
       _currentRideMode = RideMode.motorcycle;
     } else if (widget.initialRideMode == 'ufo') {
       _currentRideMode = RideMode.ufo;
+    } else if (widget.initialRideMode == 'speedboat') {
+      _currentRideMode = RideMode.speedboat;
+    } else if (widget.initialRideMode == 'balloon') {
+      _currentRideMode = RideMode.balloon;
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final cycle = (widget.day - 1) % 10;
+      final cycle = (widget.day - 1) % 12;
       if (cycle == 0) {
         _currentRideMode = RideMode.car;
       } else if (cycle == 1) {
@@ -377,8 +383,12 @@ class _PocketVocabOpenWorldDrivePageState
         _currentRideMode = RideMode.helicopter;
       } else if (cycle == 8) {
         _currentRideMode = RideMode.motorcycle;
-      } else {
+      } else if (cycle == 9) {
         _currentRideMode = RideMode.ufo;
+      } else if (cycle == 10) {
+        _currentRideMode = RideMode.speedboat;
+      } else {
+        _currentRideMode = RideMode.balloon;
       }
     }
 
@@ -822,6 +832,8 @@ class _PocketVocabOpenWorldDrivePageState
       RideMode.helicopter: '🚁',
       RideMode.motorcycle: '🏍️',
       RideMode.ufo: '🛸',
+      RideMode.speedboat: '🚤',
+      RideMode.balloon: '🎈',
     };
 
     return Column(
@@ -984,6 +996,10 @@ class _PocketVocabOpenWorldDrivePageState
         return '🏍️ Day ${widget.day} • Coastal Highway Cruiser Motorcycle';
       case RideMode.ufo:
         return '🛸 Day ${widget.day} • Quantum Anti-Gravity UFO Saucer';
+      case RideMode.speedboat:
+        return '🚤 Day ${widget.day} • Oceanic Wave Speedboat';
+      case RideMode.balloon:
+        return '🎈 Day ${widget.day} • Sunrise Sky Hot Air Balloon';
     }
   }
 
@@ -1551,6 +1567,28 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawDynamicSky(Canvas canvas, Size size) {
     switch (rideMode) {
+      case RideMode.speedboat:
+        // Radiant tropical ocean sky (Day 11 Speedboat)
+        final skyPaint11 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD), Color(0xFFF0F9FF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint11);
+        break;
+
+      case RideMode.balloon:
+        // Ethereal sunrise sky dawn over misty clouds (Day 12 Hot Air Balloon)
+        final skyPaint12 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF312E81), Color(0xFF7C3AED), Color(0xFFE11D48), Color(0xFFF59E0B), Color(0xFFFEF08A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint12);
+        break;
+
       case RideMode.motorcycle:
         // Vibrant coastal golden hour horizon (Day 9 Motorcycle)
         final skyPaint9 = Paint()
@@ -1795,6 +1833,82 @@ class _OpenWorldDrivePainter extends CustomPainter {
     moundPath.close();
     canvas.drawPath(moundPath, moundPaint);
 
+    // 🚤 Oceanic Surf & Tropical Paradise: Coconut Palms, Leaping Dolphins & Sailboats (Day 11)
+    if (rideMode == RideMode.speedboat) {
+      // 1. Distant tropical coral islands with palm trees
+      final islandPaint = Paint()..color = const Color(0xFF065F46);
+      final isOffset = (sceneryScroll * 0.5) % (size.width + 160);
+      final isX = size.width - isOffset;
+      final isY = size.height * 0.62;
+      final islandPath = Path();
+      islandPath.moveTo(isX - 50, isY);
+      islandPath.quadraticBezierTo(isX, isY - 20, isX + 50, isY);
+      islandPath.close();
+      canvas.drawPath(islandPath, islandPaint);
+      canvas.drawLine(Offset(isX, isY - 14), Offset(isX - 2, isY - 28), Paint()..color = const Color(0xFF78350F)..strokeWidth = 2.5);
+      canvas.drawCircle(Offset(isX - 2, isY - 28), 7, Paint()..color = const Color(0xFF059669));
+
+      // 2. Leaping playful dolphin
+      final dolOffset = (sceneryScroll * 1.3 + 120) % (size.width + 100);
+      final dolX = size.width - dolOffset;
+      final dolCycle = (distanceTraveled * 0.08) % math.pi;
+      final dolJump = math.sin(dolCycle) * 26;
+      final dolY = size.height * 0.62 - dolJump;
+      if (dolJump > 2) {
+        final dolPaint = Paint()..color = const Color(0xFF0284C7);
+        final dolPath = Path();
+        dolPath.moveTo(dolX - 12, dolY + 4);
+        dolPath.quadraticBezierTo(dolX, dolY - 8, dolX + 14, dolY + 2);
+        dolPath.quadraticBezierTo(dolX, dolY - 4, dolX - 12, dolY + 4);
+        dolPath.close();
+        canvas.drawPath(dolPath, dolPaint);
+        canvas.drawCircle(Offset(dolX, dolY - 4), 2.0, dolPaint);
+      }
+
+      // 3. Distant white sailboat on horizon
+      final boatX = size.width * 0.72;
+      final boatY = size.height * 0.61;
+      final sailPath = Path();
+      sailPath.moveTo(boatX, boatY);
+      sailPath.lineTo(boatX, boatY - 18);
+      sailPath.lineTo(boatX + 10, boatY - 4);
+      sailPath.close();
+      canvas.drawPath(sailPath, Paint()..color = Colors.white.withValues(alpha: 0.85));
+      return;
+    }
+
+    // 🎈 Heavenly Sunrise Cloud Sea: Misty Dawn Valleys & Floating Sky Balloons (Day 12)
+    if (rideMode == RideMode.balloon) {
+      // 1. Distant misty alpine mountain peaks piercing the clouds
+      final mtnPaint = Paint()..color = const Color(0xFF7C3AED).withValues(alpha: 0.6);
+      final mtnPath = Path();
+      mtnPath.moveTo(0, size.height * 0.62);
+      mtnPath.lineTo(size.width * 0.28, size.height * 0.44);
+      mtnPath.lineTo(size.width * 0.58, size.height * 0.54);
+      mtnPath.lineTo(size.width * 0.88, size.height * 0.40);
+      mtnPath.lineTo(size.width, size.height * 0.62);
+      mtnPath.close();
+      canvas.drawPath(mtnPath, mtnPaint);
+
+      // 2. Distant mini hot air balloon silhouettes in the sunrise mist
+      for (int b = 0; b < 2; b++) {
+        final bx = size.width * (0.35 + b * 0.45);
+        final by = size.height * (0.24 + b * 0.08) + math.sin(distanceTraveled * 0.05 + b) * 5;
+        final bColor = b == 0 ? const Color(0xFFE11D48) : const Color(0xFFF59E0B);
+        canvas.drawCircle(Offset(bx, by), 6.5, Paint()..color = bColor.withValues(alpha: 0.75));
+        canvas.drawRect(Rect.fromCenter(center: Offset(bx, by + 9), width: 3, height: 2.5), Paint()..color = const Color(0xFF78350F));
+      }
+
+      // 3. Rolling pastel cloud pillows along horizon
+      final cloudPaint = Paint()..color = const Color(0xFFFDE68A).withValues(alpha: 0.65);
+      const cSpacing = 80.0;
+      final cOffset = (sceneryScroll * 0.4) % cSpacing;
+      for (double cx = -cOffset; cx <= size.width + cSpacing; cx += cSpacing) {
+        canvas.drawCircle(Offset(cx, size.height * 0.62), 32, cloudPaint);
+      }
+      return;
+    }
+
     // 🏍️ Coastal Highway Cliffside: Ocean Surf, Lighthouse & Gliding Seagulls (Day 9)
     if (rideMode == RideMode.motorcycle) {
       // 1. Distant rocky ocean cliffs
@@ -1997,7 +2111,7 @@ class _OpenWorldDrivePainter extends CustomPainter {
     }
 
     // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
-    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter && rideMode != RideMode.motorcycle && rideMode != RideMode.ufo) {
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter && rideMode != RideMode.motorcycle && rideMode != RideMode.ufo && rideMode != RideMode.speedboat && rideMode != RideMode.balloon) {
       final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
       _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
       final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
@@ -2007,6 +2121,54 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
     switch (rideMode) {
+      case RideMode.speedboat:
+        // 🚤 Sparkling Tropical Ocean Surface with Rolling Waves & White Foaming Surf (Day 11)
+        final oceanPaint11 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0369A1), Color(0xFF0284C7)],
+          ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), oceanPaint11);
+
+        // Rolling turquoise wave ripples with white crests
+        final wavePaint = Paint()..color = const Color(0xFF38BDF8)..strokeWidth = 2.2;
+        final foamPaint = Paint()..color = Colors.white.withValues(alpha: 0.85)..strokeWidth = 1.8;
+        final waveOffset = (distanceTraveled * 3.2) % 45;
+        for (double x = -waveOffset; x < size.width; x += 45) {
+          canvas.drawLine(Offset(x, roadTopY + 12), Offset(x + 22, roadTopY + 12), wavePaint);
+          canvas.drawLine(Offset(x + 2, roadTopY + 11), Offset(x + 14, roadTopY + 11), foamPaint);
+
+          canvas.drawLine(Offset(x + 18, roadTopY + 32), Offset(x + 40, roadTopY + 32), wavePaint);
+          canvas.drawLine(Offset(x + 20, roadTopY + 31), Offset(x + 32, roadTopY + 31), foamPaint);
+        }
+
+        // Deep ocean boundary below road
+        final deepSea = Paint()..color = const Color(0xFF0C4A6E);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), deepSea);
+        break;
+
+      case RideMode.balloon:
+        // 🎈 Ethereal Dawn Cloud Sea Corridor with Golden Morning Sunbeams (Day 12)
+        final cloudSeaPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFFEF08A), Color(0xFFFDE68A), Color(0xFFFBCFE8)],
+          ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), cloudSeaPaint);
+
+        // Rolling cloud puffs beneath balloon
+        final puffPaint = Paint()..color = Colors.white.withValues(alpha: 0.88);
+        final puffOffset = (distanceTraveled * 1.8) % 55;
+        for (double x = -puffOffset; x <= size.width + 55; x += 55) {
+          canvas.drawCircle(Offset(x, roadTopY + roadHeight * 0.45), 24, puffPaint);
+        }
+
+        // Sunbeam shafts
+        final beamPaint12 = Paint()..color = Colors.white.withValues(alpha: 0.35)..strokeWidth = 3.0;
+        final beamOffset12 = (distanceTraveled * 2.2) % 90;
+        for (double x = -beamOffset12; x < size.width; x += 90) {
+          canvas.drawLine(Offset(x, roadTopY), Offset(x + 35, roadBottomY), beamPaint12);
+        }
+        break;
+
       case RideMode.motorcycle:
         // 🏍️ Coastal Highway Asphalt with Guardrails and Dashed Yellow Centerlines (Day 9)
         final roadPaint9 = Paint()..color = const Color(0xFF1E293B);
@@ -2812,6 +2974,12 @@ class _OpenWorldDrivePainter extends CustomPainter {
         break;
       case RideMode.ufo:
         _drawQuantumUFO(canvas, size);
+        break;
+      case RideMode.speedboat:
+        _drawOceanicSpeedboat(canvas, size);
+        break;
+      case RideMode.balloon:
+        _drawHotAirBalloon(canvas, size);
         break;
       case RideMode.rocket:
         _drawSpaceRocket(canvas, size);
@@ -3699,6 +3867,194 @@ class _OpenWorldDrivePainter extends CustomPainter {
       canvas.drawCircle(Offset(nx, ny), 2.8, Paint()..color = nodeColor);
       canvas.drawCircle(Offset(nx, ny), 1.2, Paint()..color = Colors.white);
     }
+  }
+
+
+  // 🚤 Mode 11: High-Speed Oceanic Wave Speedboat (Day 11)
+  void _drawOceanicSpeedboat(Canvas canvas, Size size) {
+    final waveBob = math.sin(distanceTraveled * 0.25) * 3;
+    final boatX = size.width * 0.24;
+    final boatY = size.height * carLaneY + waveBob;
+
+    // Water shadow / reflection
+    final shadowPaint = Paint()..color = const Color(0xFF0369A1).withValues(alpha: 0.5);
+    canvas.drawOval(Rect.fromCenter(center: Offset(boatX, boatY + 14), width: 84, height: 12), shadowPaint);
+
+    // Twin Expanding Foaming Water Spray Wake behind boat
+    final wakePaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    for (int w = 0; w < 5; w++) {
+      final wDist = 12.0 + w * 11.0;
+      final wSpread = 4.0 + w * 5.0;
+      final wOsc = math.sin(distanceTraveled * 0.4 + w) * 2;
+      canvas.drawCircle(Offset(boatX - 36 - wDist, boatY + 6 - wSpread + wOsc), 3.0 + w * 0.8, wakePaint);
+      canvas.drawCircle(Offset(boatX - 36 - wDist, boatY + 6 + wSpread + wOsc), 3.0 + w * 0.8, wakePaint);
+    }
+
+    // Outboard Motors at stern (Twin Chrome & Black engines)
+    final motorPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(boatX - 38, boatY - 4, 10, 14), const Radius.circular(2)),
+      motorPaint,
+    );
+    // Propeller spinning blur
+    final propBlur = Paint()..color = Colors.white.withValues(alpha: 0.75)..strokeWidth = 2.0;
+    final pAngle = (distanceTraveled * 0.7) % (math.pi * 2);
+    canvas.drawLine(
+      Offset(boatX - 38, boatY + 10 - math.sin(pAngle) * 7),
+      Offset(boatX - 38, boatY + 10 + math.sin(pAngle) * 7),
+      propBlur,
+    );
+
+    // Speedboat Sleek Aerodynamic V-Hull (Gloss White & Cyan/Blue Racing Stripes)
+    final hullPath = Path();
+    hullPath.moveTo(boatX - 34, boatY + 8);
+    hullPath.lineTo(boatX + 32, boatY + 8);
+    hullPath.quadraticBezierTo(boatX + 44, boatY + 6, boatX + 46, boatY - 2);
+    hullPath.lineTo(boatX + 30, boatY - 8);
+    hullPath.lineTo(boatX - 34, boatY - 8);
+    hullPath.close();
+
+    final hullPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Colors.white, Color(0xFFF1F5F9), Color(0xFFCBD5E1)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(boatX - 34, boatY - 8, 80, 16));
+
+    canvas.drawPath(hullPath, hullPaint);
+
+    // Cyan & Deep Blue Racing Stripe
+    final stripePaint = Paint()..color = const Color(0xFF0284C7);
+    final stripePath = Path();
+    stripePath.moveTo(boatX - 32, boatY + 1);
+    stripePath.lineTo(boatX + 38, boatY + 1);
+    stripePath.lineTo(boatX + 36, boatY + 5);
+    stripePath.lineTo(boatX - 32, boatY + 5);
+    stripePath.close();
+    canvas.drawPath(stripePath, stripePaint);
+
+    // Tinted Marine Windshield
+    final shieldPaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.85);
+    final shieldPath = Path();
+    shieldPath.moveTo(boatX - 6, boatY - 8);
+    shieldPath.lineTo(boatX + 16, boatY - 8);
+    shieldPath.lineTo(boatX + 12, boatY - 18);
+    shieldPath.lineTo(boatX - 8, boatY - 18);
+    shieldPath.close();
+    canvas.drawPath(shieldPath, shieldPaint);
+
+    final chromeFrame = Paint()..color = const Color(0xFFE2E8F0)..style = PaintingStyle.stroke..strokeWidth = 1.2;
+    canvas.drawPath(shieldPath, chromeFrame);
+
+    // Captain / Driver Avatar with Captain Hat & Sunglasses
+    final capCenter = Offset(boatX + 2, boatY - 22);
+    final hatPaint = Paint()..color = Colors.white;
+    canvas.drawArc(Rect.fromCenter(center: capCenter, width: 10, height: 8), -math.pi, math.pi, true, hatPaint);
+    canvas.drawCircle(Offset(capCenter.dx, capCenter.dy - 3), 1.2, Paint()..color = const Color(0xFFF59E0B));
+    canvas.drawRect(Rect.fromLTWH(capCenter.dx - 1, capCenter.dy + 1, 5, 2.5), Paint()..color = const Color(0xFF0F172A));
+
+    // Steering wheel
+    final wheelPaint = Paint()..color = const Color(0xFF334155)..strokeWidth = 2.0;
+    canvas.drawLine(Offset(boatX + 10, boatY - 10), Offset(boatX + 12, boatY - 15), wheelPaint);
+
+    // Marine Bow Navigation Light
+    canvas.drawCircle(Offset(boatX + 44, boatY - 2), 2.0, Paint()..color = const Color(0xFF10B981));
+  }
+
+  // 🎈 Mode 12: Sunrise Sky Hot Air Balloon (Day 12)
+  void _drawHotAirBalloon(Canvas canvas, Size size) {
+    final floatBob = math.sin(distanceTraveled * 0.12) * 6;
+    final bX = size.width * 0.24;
+    final bY = size.height * (carLaneY - 0.08) + floatBob;
+
+    // Cloud shadow below balloon
+    final shadowPaint = Paint()..color = const Color(0xFF475569).withValues(alpha: 0.2);
+    canvas.drawOval(Rect.fromCenter(center: Offset(bX, bY + 38), width: 50, height: 12), shadowPaint);
+
+    // 1. Teardrop Hot Air Balloon Envelope
+    final envelopeRect = Rect.fromCenter(center: Offset(bX, bY - 18), width: 56, height: 68);
+
+    final stripeColors = [
+      const Color(0xFFF59E0B), // Gold
+      const Color(0xFFE11D48), // Crimson
+      const Color(0xFF06B6D4), // Turquoise
+      const Color(0xFF8B5CF6), // Royal Violet
+      const Color(0xFFF59E0B), // Gold
+    ];
+
+    final balloonPath = Path();
+    balloonPath.moveTo(bX - 10, bY + 12);
+    balloonPath.lineTo(bX - 26, bY - 10);
+    balloonPath.quadraticBezierTo(bX - 28, bY - 48, bX, bY - 52);
+    balloonPath.quadraticBezierTo(bX + 28, bY - 48, bX + 26, bY - 10);
+    balloonPath.lineTo(bX + 10, bY + 12);
+    balloonPath.close();
+
+    canvas.save();
+    canvas.clipPath(balloonPath);
+
+    canvas.drawRect(envelopeRect, Paint()..color = const Color(0xFFF59E0B));
+
+    for (int s = 0; s < stripeColors.length; s++) {
+      final segPaint = Paint()..color = stripeColors[s];
+      final segX = bX - 28 + s * 11.2;
+      canvas.drawRect(Rect.fromLTWH(segX, bY - 55, 11.2, 72), segPaint);
+    }
+
+    final glossPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(-0.3, -0.4),
+        radius: 0.8,
+        colors: [Colors.white.withValues(alpha: 0.45), Colors.transparent],
+      ).createShader(envelopeRect);
+    canvas.drawRect(envelopeRect, glossPaint);
+
+    canvas.restore();
+
+    canvas.drawCircle(Offset(bX, bY - 51), 3.0, Paint()..color = const Color(0xFFB45309));
+
+    // 2. Burner Ring & Flickering Flame
+    final burnerY = bY + 14;
+    canvas.drawRect(Rect.fromCenter(center: Offset(bX, burnerY), width: 12, height: 3), Paint()..color = const Color(0xFF475569));
+
+    final flameOsc = math.sin(distanceTraveled * 0.8).abs() * 5;
+    final flamePath = Path();
+    flamePath.moveTo(bX - 3.5, burnerY);
+    flamePath.lineTo(bX, burnerY - 7 - flameOsc);
+    flamePath.lineTo(bX + 3.5, burnerY);
+    flamePath.close();
+    canvas.drawPath(flamePath, Paint()..color = const Color(0xFFFBBF24));
+    canvas.drawCircle(Offset(bX, burnerY - 3), 2.5, Paint()..color = Colors.white);
+
+    // 3. Rigging Support Cables
+    final basketY = bY + 24;
+    final cablePaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 1.0;
+    canvas.drawLine(Offset(bX - 10, burnerY), Offset(bX - 9, basketY), cablePaint);
+    canvas.drawLine(Offset(bX + 10, burnerY), Offset(bX + 9, basketY), cablePaint);
+    canvas.drawLine(Offset(bX - 5, burnerY), Offset(bX - 4, basketY), cablePaint);
+    canvas.drawLine(Offset(bX + 5, burnerY), Offset(bX + 4, basketY), cablePaint);
+
+    // 4. Hand-Woven Wicker Passenger Basket
+    final basketRect = Rect.fromLTWH(bX - 10, basketY, 20, 14);
+    final basketPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFD97706), Color(0xFF92400E)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(basketRect);
+
+    canvas.drawRRect(RRect.fromRectAndRadius(basketRect, const Radius.circular(2)), basketPaint);
+
+    final weavePaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.0;
+    canvas.drawLine(Offset(bX - 10, basketY + 4), Offset(bX + 10, basketY + 4), weavePaint);
+    canvas.drawLine(Offset(bX - 10, basketY + 8), Offset(bX + 10, basketY + 8), weavePaint);
+    canvas.drawLine(Offset(bX - 3, basketY), Offset(bX - 3, basketY + 14), weavePaint);
+    canvas.drawLine(Offset(bX + 3, basketY), Offset(bX + 3, basketY + 14), weavePaint);
+
+    // Traveler passenger looking out with binoculars
+    final travelerHead = Offset(bX, basketY - 3);
+    canvas.drawCircle(travelerHead, 3.5, Paint()..color = const Color(0xFFF59E0B));
+    canvas.drawRect(Rect.fromLTWH(travelerHead.dx + 1, travelerHead.dy - 1, 5, 2.5), Paint()..color = const Color(0xFF0F172A));
   }
 
   void _drawWheel(Canvas canvas, Offset center) {

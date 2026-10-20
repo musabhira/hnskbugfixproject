@@ -391,79 +391,83 @@ final Map<int, MasterCurriculumDay> masterPhase1Days = {
   ),
   11: const MasterCurriculumDay(
     day: 11,
-    title: 'Day 11: Prepositions of Place & Time (In, On, At, Under, Near)',
+    title: '💼 Day 11: Job Interviews, Self-Pitch & Resume Walkthrough',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Precision in Space & Time',
+    focusArea: 'Professional Introductions, Career Experience & Interview Q&A',
     grammarConcept:
-        'At (specific point/time), On (surface/day), In (enclosed space/month/year)',
+        'Present Perfect for achievements (I have worked / I have built) vs Past Simple for past roles (I graduated / I led)',
     speakingDrill:
-        'State today\'s date, time, and where your 3 most valuable items are placed.',
+        'Deliver a confident 60-second elevator pitch answering "Tell me about yourself" highlighting your core strengths.',
     peerChatMission:
-        'Schedule a virtual study session with your partner using at/on/in.',
-    xpReward: 50,
-    theoryConcept: 'The Spatial & Temporal Pyramid (In -> On -> At)',
+        'Roleplay a formal job interview answering behavioral questions regarding tight deadlines and conflict resolution.',
+    xpReward: 80,
+    milestoneReward: '🎯 Career Catalyst & Interview Ace Badge',
+    theoryConcept: 'The 3-Part Interview Framework (Present, Past, Future)',
     theoryExplanationEn:
-        '"In" is the widest (countries, cities, months). "On" is more specific (streets, days, surfaces). "At" is the most exact (addresses, precise hours, exact spots).',
+        'Structure your professional introduction seamlessly: 1. Present (What you currently do), 2. Past (Key accomplishments and background), 3. Future (Why this specific opportunity excites you).',
     theoryExplanationMl:
-        'സ്ഥലവും സമയവും കൃത്യമായി സൂചിപ്പിക്കാൻ prepositions ആവശ്യമാണ്. കൃത്യമായ സമയത്തിന് At (at 5 PM), ദിവസങ്ങൾക്ക് On (on Monday), മാസങ്ങൾക്കും വർഷങ്ങൾക്കും In (in October, in 2026).',
+        'ഇന്റർവ്യൂവിൽ "Tell me about yourself" എന്ന് ചോദിക്കുമ്പോൾ 3 ഘട്ടങ്ങളായി പറയുക: 1. Present (ഇപ്പോൾ എന്ത് ചെയ്യുന്നു), 2. Past (പഠനവും മുൻകാല പ്രവൃത്തിപരിചയവും), 3. Future (ഈ കമ്പനിയിൽ ജോലി ചെയ്യാൻ എന്തുകൊണ്ട് ആഗ്രഹിക്കുന്നു). വിജയകരമായി പൂർത്തിയാക്കിയ പ്രോജക്റ്റുകൾക്ക് "I have built/developed" (Present Perfect) ഉപയോഗിക്കുക.',
     whyItMatters:
-        'Preposition mistakes are frequent; mastering the In-On-At triangle creates instant authority.',
+        'A sharp, articulate professional self-pitch sets the tone for your entire job interview and instantly creates credibility.',
     commonMistakes: [
-      '❌ "I will meet you in Monday."',
-      '❌ "He is sitting on the car."',
-      '❌ "The meeting starts on 3 PM."',
+      '❌ "Myself Rahul, I am passed out in 2023."',
+      '❌ "I am having three years experience in sales."',
+      '❌ "I don\'t have any questions for you."',
     ],
     mistakeCorrections: [
-      '✅ "I will meet you on Monday."',
-      '✅ "He is sitting in the car."',
-      '✅ "The meeting starts at 3 PM."',
+      '✅ "My name is Rahul, and I graduated with a degree in computer science in 2023."',
+      '✅ "I have three years of hands-on experience in business development."',
+      '✅ "Could you share what the primary goals for this role would be in the first ninety days?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: The book is on the table.',
-      '🟡 Intermediate: We will meet at 4 PM in the main conference room.',
-      '🟣 Advanced: I keep all my sensitive documents in the top drawer located directly under my monitor.',
+      '🟢 Basic: I want to apply for this job.',
+      '🟡 Intermediate: In my previous role, I led a cross-functional team and improved client delivery times by twenty percent.',
+      '🟣 Advanced: Over the past three years, I have successfully architected scalable mobile applications, and I am keen to contribute my expertise to your engineering division.',
     ],
     dailyChallenge:
-        'Describe your daily schedule using at, on, and in correctly.',
-    listeningGoal: 'Listen to 10 minutes of meeting scheduling dialogues.',
+        'Record a 90-second mock interview response answering: "Why should we hire you for this position?"',
+    listeningGoal:
+        'Listen to 10 minutes of high-impact job interview simulations and executive speech walkthroughs.',
   ),
   12: const MasterCurriculumDay(
     day: 12,
-    title: 'Day 12: Vivid Adjectives & Describing People',
+    title: '✈️ Day 12: Airport Check-In, Baggage, Immigration & Hotel Stay',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Sensory Language & Personality',
-    grammarConcept: 'Adjective Placement (before nouns or after linking verbs)',
+    focusArea: 'Aviation Desks, Boarding Announcements, Customs & Hotel Hospitality',
+    grammarConcept:
+        'Polite formal inquiries using modal verbs (Could I please request...? / Would it be possible to...?)',
     speakingDrill:
-        'Describe your best mentor or close friend using 4 rich adjectives.',
+        'Check in at an international flight desk requesting a window seat and inquiring about connecting luggage transfer.',
     peerChatMission:
-        'Describe someone you admire and let your mate guess their profession.',
-    xpReward: 50,
-    theoryConcept: 'Painting Pictures with Words',
+        'Roleplay an immigration officer and an arriving passenger answering questions about travel purpose and length of stay.',
+    xpReward: 80,
+    milestoneReward: '🌏 Global Voyager & Hospitality Ambassador Badge',
+    theoryConcept: 'High-Stakes Travel Protocol & Courteous Inquiries',
     theoryExplanationEn:
-        'Adjectives give color and detail to nouns. In English, they go BEFORE the noun ("a brilliant coder", not "a coder brilliant").',
+        'At airport and hotel counters, use polite conditional phrasing: "Could you please tag this bag directly to London?", "Is breakfast complimentary?", and "Would a late checkout be possible tomorrow?"',
     theoryExplanationMl:
-        'വ്യക്തികളെയും വസ്തുക്കളെയും മനോഹരമായി വർണ്ണിക്കാൻ Adjectives ഉപയോഗിക്കുന്നു. ഇംഗ്ലീഷിൽ വിശേഷണങ്ങൾ നാമത്തിന് (Noun) മുൻപിലാണ് വരുന്നത് ("an intelligent developer").',
+        'വിമാനത്താവളങ്ങളിലും ഹോട്ടലുകളിലും സംസാരിക്കുമ്പോൾ മാന്യമായ മോഡൽ വാക്കുകൾ ഉപയോഗിക്കുക: "Could I get a window seat?" (ജനലരികിലെ സീറ്റ് തരുമോ?), "What is the baggage weight allowance?" (ലഗേജ് ഭാരപരിധി എത്രയാണ്?), "Could I request a late checkout?" (നാളെ അല്പം വൈകി റൂം ഒഴിയാൻ അനുവാദം തരുമോ?) എന്ന് ചോദിക്കുക.',
     whyItMatters:
-        'Replaces vague descriptions ("good", "nice") with precise, impactful imagery.',
+        'Airport transit, international immigration, and hotel interactions are critical real-world situations where clear English ensures a smooth, stress-free travel experience.',
     commonMistakes: [
-      '❌ "He is a developer very smart."',
-      '❌ "I bought a phone expensive."',
-      '❌ "She has hairs black."',
+      '❌ "Give me window seat."',
+      '❌ "My bag weight is extra how much?"',
+      '❌ "Room leaving time is when?"',
     ],
     mistakeCorrections: [
-      '✅ "He is a very smart developer."',
-      '✅ "I bought an expensive phone."',
-      '✅ "She has black hair."',
+      '✅ "Could I please have a window seat if one is available?"',
+      '✅ "What is the excess baggage fee per kilogram?"',
+      '✅ "What is the standard checkout time tomorrow morning?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: He is a good leader.',
-      '🟡 Intermediate: She is an approachable, hardworking mentor.',
-      '🟣 Advanced: Our team lead delivered a remarkably clear and persuasive presentation to international clients.',
+      '🟢 Basic: Where is my boarding gate?',
+      '🟡 Intermediate: Could you please confirm whether our luggage will be checked through to our final destination in Dubai?',
+      '🟣 Advanced: Good afternoon, I have a confirmed reservation under Rahul Menon; could you please check if an upper-floor room with early check-in is available?',
     ],
     dailyChallenge:
-        'Describe your dream work environment in vivid detail for 90 seconds.',
+        'Deliver a 2-minute mock walkthrough checking in at an airline counter, passing immigration, and checking into a hotel.',
     listeningGoal:
-        'Listen to 10 minutes of character and personality profiles.',
+        'Listen to 10 minutes of airport public announcements and hotel hospitality concierge interactions.',
   ),
   13: const MasterCurriculumDay(
     day: 13,
