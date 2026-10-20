@@ -11,6 +11,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'english_tasks_master_hub.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_citadel_attack_page.dart';
 
 import 'pocket_defense_question_bank.dart';
 
@@ -221,13 +222,30 @@ class _PocketHouseDefenseChatPageState
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();
     final isActive = prefs.getBool('pocket_house_${widget.day}_defense_active') ?? false;
-    if (isActive) {
-      setState(() {
-        _isShieldArmed = true;
-        _shieldHp = 100;
-        _activeQuestions = _curatedBank.take(targetShieldCount).toList();
-      });
-    } else {
+
+    // Load active shield questions
+    try {
+      final saved = await PocketFortressDefenseService.ensureAutoArmedDefense(widget.day);
+      if (mounted && saved.isNotEmpty) {
+        setState(() {
+          _activeQuestions = saved;
+          if (isActive) {
+            _isShieldArmed = true;
+            _shieldHp = 100;
+          }
+        });
+      }
+    } catch (_) {}
+
+    if (isActive && _activeQuestions.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isShieldArmed = true;
+          _shieldHp = 100;
+          _activeQuestions = _curatedBank.take(targetShieldCount).toList();
+        });
+      }
+    } else if (!isActive) {
       // Speak brief initial prompt
       _speak(
         "Protect House ${widget.day}! Add defense questions so rival learners cannot loot your points.",
@@ -363,6 +381,12 @@ class _PocketHouseDefenseChatPageState
                       _buildInitialAddButton()
                     else
                       _buildArmedActions(),
+
+                    // 4. Equipped Defense Questions List with Trial Attack Button (Newest Day on top)
+                    if (_activeQuestions.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      _buildEquippedDefenseListSection(),
+                    ],
                   ],
                 ),
               ),
@@ -420,7 +444,7 @@ class _PocketHouseDefenseChatPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Step ${widget.stepIndex}: House ${widget.day} Defense Shield',
+                  'Step ${widget.stepIndex}: House Defense',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -969,6 +993,204 @@ class _PocketHouseDefenseChatPageState
           ),
         ),
       ],
+    );
+  }
+
+  void _openTrialAttack() {
+    HapticFeedback.mediumImpact();
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+    PocketCitadelAttackPage.openForUser(
+      context,
+      userId: uid,
+      isDefenseMode: true,
+      attackerDay: widget.day,
+    );
+  }
+
+  /// 🛡️ Equipped Defense Questions Section:
+  /// - Stacked with newest day on top (Day 2 Defense Question above Day 1 Defense Question)
+  /// - Prominent Trial Attack button to test defense without penalty
+  Widget _buildEquippedDefenseListSection() {
+    // Reverse the list entries so newest day is on top
+    final reversedEntries = _activeQuestions.asMap().entries.toList().reversed.toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111C2B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '🛡️ HOUSE DEFENSE QUESTIONS',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13.5,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${_activeQuestions.length} ARMED',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF34D399),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // 🎯 TRIAL ATTACK BUTTON (Audio Directive: "ട്രയൽ അറ്റാക്ക് വേണമെങ്കിൽ അതും അവിടെ കൊടുക്കുക... പോയിന്റ് നഷ്ടപ്പെടില്ല")
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 14),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF59E0B),
+                foregroundColor: const Color(0xFF0F172A),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
+              ),
+              onPressed: _openTrialAttack,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.gps_fixed_rounded, size: 20, color: Color(0xFF0F172A)),
+                      const SizedBox(width: 8),
+                      Text(
+                        '🎯 ട്രയൽ അറ്റാക്ക് (TRIAL ATTACK)',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13.5,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'സ്വന്തം വീട് അറ്റാക്ക് ചെയ്ത് ഡിഫൻസ് ശരിയാണോ എന്ന് പരിശോധിക്കാം (പോയിന്റുകൾ നഷ്ടപ്പെടില്ല)',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E293B),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Stacked Defense Questions list (newest Day on top)
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: reversedEntries.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, idx) {
+              final entry = reversedEntries[idx];
+              final dayIndex = entry.key + 1;
+              final q = entry.value;
+
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Day $dayIndex Defense Question',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          '🛡️ Armed',
+                          style: TextStyle(
+                            color: Color(0xFF34D399),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      q.question,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'Correct Answer: ${q.options[q.correctIndex]}',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF34D399),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

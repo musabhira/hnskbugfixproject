@@ -179,82 +179,6 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   // ADMIN DELETION / HIDING ACTIONS
   // ───────────────────────────────────────────────────────────────────────────
 
-  void _promptAdminDelete(PocketRankedUser user) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
-        ),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
-            const SizedBox(width: 8),
-            Text(
-              'Remove from Ranking?',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'As Master Admin, do you want to remove "${user.name}" (${user.isRobot ? "🤖 Robot" : "👤 Human"} #Rank ${user.globalRank}) from the public leaderboard?',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'This entry will be hidden immediately and ranks will recalculate. You can unhide all from the admin ribbon anytime.',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white60)),
-          ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.delete_forever_rounded, size: 16, color: Colors.white),
-            label: Text(
-              'Remove / Hide',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              HapticFeedback.heavyImpact();
-              await PocketRankingService.hideUserFromRanking(user.userId);
-              await _loadAllRankings(forceRefresh: true);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: const Color(0xFF1E293B),
-                    content: Text(
-                      'Removed "${user.name}" from Leaderboard.',
-                      style: GoogleFonts.outfit(color: const Color(0xFF38BDF8)),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   void _promptAdminResetHidden() {
     showDialog(
@@ -872,24 +796,13 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                   ),
                 ),
 
-                // 5. Admin Delete Action Button (Audio Directive: "പിന്നെ അഡ്മിന് അത് ഒഴിവാക്കാനും പറഞ്ഞിരുന്നു")
-                if (_isAdmin && !isMe) ...[
-                  const SizedBox(width: 6),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
-                    tooltip: 'Admin Remove',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                    onPressed: () => _promptAdminDelete(user),
-                  ),
-                ] else ...[
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white24,
-                    size: 13,
-                  ),
-                ],
+                // Chevron navigation indicator (Delete button removed per user audio directive)
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white24,
+                  size: 13,
+                ),
               ],
             ),
           ),

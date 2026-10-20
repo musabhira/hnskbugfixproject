@@ -547,9 +547,9 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     double currentY = startOffsetY;
     final totalCount = users.length;
 
-    // Storybook house size: BIG and prominent as requested by user ("വീട് വലുതാക്കി കാണിക്കണം കേട്ടോ")
-    const double houseW = 180.0;
-    const double houseH = 135.0;
+    // Storybook house size: Proportional and prominent with ample space for wooden descent ramp
+    const double houseW = 120.0;
+    const double houseH = 95.0;
 
     for (int i = 0; i < users.length; i++) {
       final user = users[i];
@@ -576,25 +576,19 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
         ledgeW = screenW;
         hasRamp = false;
       } else if (isLeft) {
-        // Even Level: House on Left, Ramp starts after house and slopes down to right
-        houseX = 12.0;
-        rampStartX = math.max(houseX + houseW + 8.0, screenW * 0.44);
-        final bool isNextLast = (i + 1 == totalCount - 1);
-        final double nextHouseX = isNextLast ? (screenW - houseW) / 2.0 : (screenW - houseW - 12.0);
-        // Step arrives right at the house entrance, NEVER continuing underneath or behind the house!
-        rampEndX = nextHouseX - 6.0;
+        // Even Level: House on Left, Ramp starts after house and slopes down to right side
+        houseX = 14.0;
+        rampStartX = houseX + houseW + 12.0;
+        rampEndX = screenW - 55.0;
         hasRamp = true;
-        ledgeW = rampStartX + 14.0;
+        ledgeW = rampStartX + 12.0;
       } else {
-        // Odd Level: House on Right, Ramp starts before house and slopes down to left
-        houseX = screenW - houseW - 12.0;
-        rampStartX = math.min(houseX - 8.0, screenW * 0.56);
-        final bool isNextLast = (i + 1 == totalCount - 1);
-        final double nextHouseRight = isNextLast ? (screenW + houseW) / 2.0 : (12.0 + houseW);
-        // Step arrives right at the house entrance, NEVER continuing underneath or behind the house!
-        rampEndX = nextHouseRight + 6.0;
+        // Odd Level: House on Right, Ramp starts before house and slopes down to left side
+        houseX = screenW - houseW - 14.0;
+        rampStartX = houseX - 12.0;
+        rampEndX = 55.0;
         hasRamp = true;
-        ledgeW = screenW - (rampStartX - 14.0);
+        ledgeW = screenW - (rampStartX - 12.0);
       }
 
       // Large, detailed architectural house component
@@ -687,15 +681,17 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       }
     }
 
-    // Reset dirt bike at Rank 1 summit terrace road
+    // Maintain dirt bike position across re-renders (never violently reset to Rank 1 mid-game!)
     if (_ledgeNodes.isNotEmpty) {
-      _bikeNodeIndex = 0;
-      _arcProgress = 0.0;
-      _isAirborne = false;
-      final summit = _ledgeNodes[0];
-      _bikeX = summit.houseX + 35.0;
-      _bikeY = summit.y - 14.0;
-      _isFacingRight = true;
+      if (_bikeNodeIndex >= _ledgeNodes.length) {
+        _bikeNodeIndex = _ledgeNodes.length - 1;
+      }
+      final node = _ledgeNodes[_bikeNodeIndex];
+      if (_bikeX == 0.0 && _bikeY == 0.0) {
+        _bikeX = node.houseX + 35.0;
+        _bikeY = node.y - 14.0;
+        _isFacingRight = node.isLeft;
+      }
     }
   }
 
@@ -987,15 +983,15 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
             _triggerBikeWallCushion(_bikeX, _bikeY);
           }
           // Reached end of wooden plank ramp on the right -> Smoothly arrive at next terrace!
-          if (_bikeX >= currentNode.rampEndX) {
+          if (_bikeX >= currentNode.rampEndX && _bikeVx > 0) {
             _bikeNodeIndex++;
             final nextNode = _ledgeNodes[_bikeNodeIndex];
-            _bikeX = currentNode.rampEndX;
+            _bikeX = currentNode.rampEndX - 4.0;
             _bikeY = nextNode.y - 14.0;
             _isFacingRight = false; // Turn left for next terrace
-            _bikeVx = -220.0;
+            _bikeVx = -180.0;
             _bikeTilt = 0.0;
-            _suspensionBounce = 0.65;
+            _suspensionBounce = 0.7;
             currentCombo++;
             _triggerBikeLandingImpact(_bikeX, _bikeY);
           }
@@ -1008,15 +1004,15 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
             _triggerBikeWallCushion(_bikeX, _bikeY);
           }
           // Reached end of wooden plank ramp on the left -> Smoothly arrive at next terrace!
-          if (_bikeX <= currentNode.rampEndX) {
+          if (_bikeX <= currentNode.rampEndX && _bikeVx < 0) {
             _bikeNodeIndex++;
             final nextNode = _ledgeNodes[_bikeNodeIndex];
-            _bikeX = currentNode.rampEndX;
+            _bikeX = currentNode.rampEndX + 4.0;
             _bikeY = nextNode.y - 14.0;
             _isFacingRight = true; // Turn right for next terrace
-            _bikeVx = 220.0;
+            _bikeVx = 180.0;
             _bikeTilt = 0.0;
-            _suspensionBounce = 0.65;
+            _suspensionBounce = 0.7;
             currentCombo++;
             _triggerBikeLandingImpact(_bikeX, _bikeY);
           }
@@ -1045,7 +1041,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
       _arcProgress += dt / leapDuration;
 
       final fromNode = _ledgeNodes[_bikeNodeIndex];
-      final nextIndex = (_bikeNodeIndex + 1) % _ledgeNodes.length;
+      final nextIndex = math.min(_bikeNodeIndex + 1, _ledgeNodes.length - 1);
       final toNode = _ledgeNodes[nextIndex];
 
       final startX = fromNode.isLeft ? fromNode.rampStartX : fromNode.rampStartX;
@@ -1120,7 +1116,7 @@ class FlameWorldRankingGame extends FlameGame with TapCallbacks {
     velocityY = 0.0;
     _arcProgress = 0.0;
     _idleDriveTimer = 0.0;
-    final nextIndex = (_bikeNodeIndex + 1) % _ledgeNodes.length;
+    final nextIndex = math.min(_bikeNodeIndex + 1, _ledgeNodes.length - 1);
     final toNode = _ledgeNodes[nextIndex];
     _isFacingRight = (toNode.x > _bikeX);
     HapticFeedback.mediumImpact();

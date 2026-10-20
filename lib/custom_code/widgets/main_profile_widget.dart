@@ -2287,92 +2287,148 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 12),
                 itemBuilder: (context, index) {
                   final q = _shieldQuestions[index];
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${index + 1}.',
-                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 13, fontWeight: FontWeight.bold),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131D2D),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              isMe ? q.question : 'Guarded Defense Question #${index + 1} 🔒',
-                              style: TextStyle(
-                                color: isMe ? Colors.white : Colors.white70,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                fontStyle: isMe ? FontStyle.normal : FontStyle.italic,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Day ${index + 1} Defense Question',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
                             ),
-                            if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                'Answer: ${q.options[q.correctIndex]}',
-                                style: const TextStyle(color: Color(0xFF34D399), fontSize: 11.5, fontWeight: FontWeight.w600),
+                            if (isMe)
+                              IconButton(
+                                icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 18),
+                                tooltip: 'Edit Question',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () async {
+                                  final day = _getEffectiveDay();
+                                  await PocketDefenseTrapModal.show(
+                                    context,
+                                    day,
+                                    editingQuestion: q,
+                                  );
+                                  _loadFortressDefenseData();
+                                },
+                              )
+                            else
+                              const Text(
+                                '🛡️ Armed',
+                                style: TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.bold),
                               ),
-                            ] else if (!isMe) ...[
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  const Icon(Icons.lock_rounded, color: Color(0xFFFFFC00), size: 12),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Encrypted Defense • Revealed only during Citadel Raid',
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFFFFFC00).withValues(alpha: 0.8),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
                           ],
                         ),
-                      ),
-                      if (isMe)
-                        IconButton(
-                          icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 20),
-                          tooltip: 'Edit Question',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () async {
-                            final day = _getEffectiveDay();
-                            await PocketDefenseTrapModal.show(
-                              context,
-                              day,
-                              editingQuestion: q,
-                            );
-                            _loadFortressDefenseData();
-                          },
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.white24, width: 0.8),
+                        const SizedBox(height: 6),
+                        Text(
+                          isMe ? q.question : 'Guarded Defense Question #${index + 1} 🔒',
+                          style: TextStyle(
+                            color: isMe ? Colors.white : Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: isMe ? FontStyle.normal : FontStyle.italic,
                           ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
+                        ),
+                        if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Answer: ${q.options[q.correctIndex]}',
+                            style: const TextStyle(color: Color(0xFF34D399), fontSize: 11.5, fontWeight: FontWeight.w600),
+                          ),
+                        ] else if (!isMe) ...[
+                          const SizedBox(height: 4),
+                          Row(
                             children: [
-                              Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 13),
-                              SizedBox(width: 3),
+                              const Icon(Icons.lock_rounded, color: Color(0xFFFFFC00), size: 12),
+                              const SizedBox(width: 4),
                               Text(
-                                'Armed',
-                                style: TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.bold),
+                                'Encrypted Defense • Revealed only during Citadel Raid',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                    ],
+                        ],
+                      ],
+                    ),
                   );
                 },
+              ),
+            if (hasQuestions)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF59E0B),
+                      foregroundColor: const Color(0xFF0F172A),
+                      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 3,
+                    ),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      PocketCitadelAttackPage.openForUser(
+                        context,
+                        userId: userId,
+                        isDefenseMode: true,
+                        attackerDay: _getEffectiveDay(),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.gps_fixed_rounded, size: 18, color: Color(0xFF0F172A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              '🎯 ട്രയൽ അറ്റാക്ക് (TRIAL ATTACK)',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'സ്വന്തം വീട് അറ്റാക്ക് ചെയ്ത് ഡിഫൻസ് പരിശോധിക്കാം (പോയിന്റുകൾ നഷ്ടപ്പെടില്ല)',
+                          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               )
             else
               Padding(

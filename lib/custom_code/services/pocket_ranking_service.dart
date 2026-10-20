@@ -350,14 +350,15 @@ class PocketRankingService {
         final response = await _supabase
             .from('profile')
             .select('user_id, name, display_name, profile_image_url, pocket_score, learning_day, daily_streak, xp, verified, is_premium, level, avatar_config')
-            .order('pocket_score', ascending: false)
+            .order('pocket_score', ascending: false, nullsFirst: false)
             .limit(limit);
         data = response as List<dynamic>;
       } catch (err1) {
         if (kDebugMode) print('Primary profile query note: $err1, falling back to basic columns');
         final response2 = await _supabase
             .from('profile')
-            .select('user_id, name, display_name, profile_image_url, learning_day, daily_streak, xp')
+            .select('user_id, name, display_name, profile_image_url, learning_day, daily_streak, xp, pocket_score')
+            .order('pocket_score', ascending: false, nullsFirst: false)
             .limit(limit);
         data = response2 as List<dynamic>;
       }
@@ -376,27 +377,14 @@ class PocketRankingService {
             ? rawDispName
             : (rawUserName.isEmpty ? 'Pocket Mate' : rawUserName);
 
+        // 🪙 Accurate Pocket Score (User Audio Directive: strictly reflect actual pocket_score, no fake 0-rank 1 bugs)
         final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
         final rawDay = (row['learning_day'] as num?)?.toInt() ?? 1;
-        final rawStreak = (row['daily_streak'] as num?)?.toInt() ?? 0;
-        final rawXp = (row['xp'] as num?)?.toInt() ?? 0;
-
-        // Calculate organic score if pocket_score is 0 or uninitialized
-        int computedScore = rawScore;
-        if (computedScore <= 0) {
-          computedScore = (rawDay * 150) + rawXp + (rawStreak * 50);
-          if (computedScore <= 0) {
-            computedScore = 150 + ((uid.hashCode.abs() % 40) * 25);
-          }
-        }
-
-        final rawLevel = PocketScoreLevelEngine.getLevelFromScore(computedScore);
 
         final isMe = uid == currentUserId;
-        final effectiveScore = isMe ? math.max(myScore, computedScore) : computedScore;
-        final effectiveLevel = isMe
-            ? math.max(rawLevel, PocketScoreLevelEngine.getLevelFromScore(effectiveScore))
-            : rawLevel;
+        final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
+        final rawLevel = PocketScoreLevelEngine.getLevelFromScore(effectiveScore);
+        final effectiveLevel = math.max(rawLevel, rawDay).clamp(1, 99);
 
         final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
         final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
@@ -406,7 +394,7 @@ class PocketRankingService {
           name: name.isEmpty ? 'Pocket Mate' : name,
           profileImageUrl: row['profile_image_url']?.toString(),
           pocketScore: effectiveScore,
-          level: effectiveLevel.clamp(1, 99),
+          level: effectiveLevel,
           globalRank: rankedList.length + 1,
           avatarConfig: _resolveAvatarConfig(uid, effectiveLevel),
           isCurrentUser: isMe,

@@ -110,7 +110,7 @@ class PocketDay2Step1AvatarChatPage extends StatefulWidget {
 class _PocketDay2Step1AvatarChatPageState
     extends State<PocketDay2Step1AvatarChatPage> with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
-  late final FlutterTts _tts;
+  final FlutterTts _tts = FlutterTts();
   late final stt.SpeechToText _speech;
   late final AnimationController _pulseController;
   late final AnimationController _micWaveController;
@@ -208,7 +208,6 @@ class _PocketDay2Step1AvatarChatPageState
   }
 
   Future<void> _initTts() async {
-    _tts = FlutterTts();
     try {
       await _tts.setLanguage('en-IN');
       await _tts.setSpeechRate(0.48);
