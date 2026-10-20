@@ -31,9 +31,10 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day_1_curriculum_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_spoken_exam_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pronunciation_evaluator.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -1663,8 +1664,8 @@ class _PocketDayOpenWorldAdventurePageState
                   const SizedBox(width: 5),
                   Text(
                     isGatePassed
-                        ? '✨ GATE 1: UNLOCKED (60%+ PASSED)'
-                        : '🔒 GATE 1: SPOKEN EXAM',
+                        ? '✨ GATE ${widget.day}: UNLOCKED (60%+ PASSED)'
+                        : '🔒 GATE ${widget.day}: SPOKEN EXAM',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -1753,8 +1754,7 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   void _showSpokenGateExamModal() {
-    final rawExam = Day1CurriculumJsonData.rawMap['houseGateExam'] as Map<String, dynamic>?;
-    final allQuestions = (rawExam?['questions'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    final allQuestions = Pocket90DaySpokenExamCurriculum.getExamForDay(widget.day);
     final questions = allQuestions.take(4).toList();
 
     if (questions.isEmpty) return;
@@ -1911,8 +1911,12 @@ class _PocketDayOpenWorldAdventurePageState
             }
 
             final q = questions[currentIdx];
-            final qText = Day1CurriculumJsonData.getLocalizedString(q['question'], lang: 'en');
-            final qTextMl = Day1CurriculumJsonData.getLocalizedString(q['question'], lang: 'ml');
+            final qText = (q['question'] is Map)
+                ? (q['question']['en']?.toString() ?? '')
+                : (q['question']?.toString() ?? '');
+            final qTextMl = (q['question'] is Map)
+                ? (q['question']['ml']?.toString() ?? '')
+                : '';
             final targetText = (q['targetText'] ?? '').toString();
             final voicePrompt = (q['voicePrompt'] ?? 'Say: $targetText').toString();
             final options = (q['options'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
@@ -1921,7 +1925,11 @@ class _PocketDayOpenWorldAdventurePageState
             void evaluateSpeech(String speechInput) {
               final spoken = speechInput.toLowerCase().trim();
               final target = targetText.toLowerCase().trim();
-              if (spoken.isNotEmpty && (spoken.contains(target) || target.contains(spoken))) {
+              if (spoken.isNotEmpty &&
+                  (spoken.contains(target) ||
+                   target.contains(spoken) ||
+                   PocketPronunciationEvaluator.isMatch(
+                       spokenText: spoken, targetSentence: target, thresholdPercentage: 45))) {
                 setModalState(() {
                   isCurrentCorrect = true;
                   correctCount++;
@@ -1958,7 +1966,7 @@ class _PocketDayOpenWorldAdventurePageState
                             border: Border.all(color: Colors.white12),
                           ),
                           child: Text(
-                            '🎙️ SPOKEN EXAM: ${currentIdx + 1} / ${questions.length}',
+                            '🎙️ GATE ${widget.day} SPOKEN EXAM: ${currentIdx + 1} / ${questions.length}',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFD700),
                               fontWeight: FontWeight.bold,
