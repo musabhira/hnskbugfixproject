@@ -577,12 +577,24 @@ class _PocketEssentialSpellingPageState
     }
   }
 
+  bool _isStep3Completed = false;
+
   Future<void> _showExamCompletionDialog() async {
     _examTimer?.cancel();
+    _isStep3Completed = true;
     final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
-    await PocketFortressDefenseService.recordTrainingPoints(30, uid);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_3_done', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_3_done', true);
+    } catch (_) {}
+
+    try {
+      await PocketFortressDefenseService.recordTrainingPoints(30, uid);
+    } catch (_) {}
 
     widget.onStepFinished?.call(3);
 
@@ -668,8 +680,9 @@ class _PocketEssentialSpellingPageState
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
             ),
             onPressed: () {
+              widget.onStepFinished?.call(3);
               Navigator.pop(ctx);
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             child: Text(
               'CONTINUE TO STEP 4 ➔',
@@ -687,8 +700,15 @@ class _PocketEssentialSpellingPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isStep3Completed) {
+          widget.onStepFinished?.call(3);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
           // 🌲 1. Living Nature Cartoon Open-World Scenery Background (Pocket Kids Universe)
@@ -723,8 +743,9 @@ class _PocketEssentialSpellingPageState
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// Top App Bar with Navigation, Title, and Timer/Stats
   Widget _buildTopAppBar() {

@@ -240,26 +240,16 @@ class _PocketDayOpenWorldAdventurePageState
 
     final Map<String, bool> flags = {};
     for (int step = 1; step <= _totalSteps; step++) {
-      final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done';
-      flags['step_$step'] = prefs.getBool(key) ?? false;
-    }
-
-    // 🛡️ Sequential integrity sanitization:
-    // Ensure genuine step progression (Step 1 -> Step 2 -> Step 3...).
-    // If an earlier step is incomplete, clean up any orphaned future step ticks!
-    bool hadIncomplete = false;
-    for (int step = 1; step <= _totalSteps; step++) {
-      if (!hadIncomplete) {
-        if (!(flags['step_$step'] ?? false)) {
-          hadIncomplete = true;
-        }
-      } else {
-        if (flags['step_$step'] == true) {
-          flags['step_$step'] = false;
-          final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done';
-          await prefs.remove(key);
-        }
-      }
+      final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${step}_done' : null;
+      final guestKey = 'pocket_day_guest_${widget.day}_step_${step}_done';
+      final isDone = (userKey != null && prefs.getBool(userKey) == true) ||
+          (prefs.getBool(guestKey) == true) ||
+          (prefs.getBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done') == true) ||
+          (step == 1 &&
+              ((userKey != null &&
+                      prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true) ||
+                  prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true));
+      flags['step_$step'] = isDone;
     }
 
     if (mounted) {
@@ -442,8 +432,8 @@ class _PocketDayOpenWorldAdventurePageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     int pointsAwarded = (stepIndex == _totalSteps) ? 120 : 30;
 
+    final prefs = await SharedPreferences.getInstance();
     if (uid != null && uid.isNotEmpty) {
-      final prefs = await SharedPreferences.getInstance();
       final key = 'pocket_day_${uid}_${widget.day}_step_${stepIndex}_done';
       final alreadyDone = prefs.getBool(key) == true;
       await prefs.setBool(key, true);
@@ -459,6 +449,12 @@ class _PocketDayOpenWorldAdventurePageState
         await prefs.setString('learning_day_${uid}_${widget.day}_completed_date',
             '${now.year}-${now.month}-${now.day}');
       }
+    }
+
+    // Always persist to fallback guest key as well
+    await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
+    if (stepIndex == _totalSteps) {
+      await prefs.setBool('pocket_day_guest_${widget.day}_completed', true);
     }
 
     HapticFeedback.heavyImpact();
@@ -2487,21 +2483,23 @@ class _PocketDayOpenWorldAdventurePageState
               children: [
                 // Floating Step Title Pill (Safely bounded width)
                 Container(
-                  width: 190,
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  width: 194,
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(9),
                     border: Border.all(
-                      color: isCurrent
-                          ? const Color(0xFFFFFC00)
-                          : (isDone ? const Color(0xFF10B981) : Colors.white24),
-                      width: 1.2,
+                      color: isDone
+                          ? const Color(0xFF10B981)
+                          : (isCurrent ? const Color(0xFFFFFC00) : Colors.white24),
+                      width: isDone ? 1.6 : 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: isDone
+                            ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                            : Colors.black.withValues(alpha: 0.4),
                         blurRadius: 5,
                       ),
                     ],
@@ -2516,14 +2514,29 @@ class _PocketDayOpenWorldAdventurePageState
                           maxLines: 2,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
-                            color: isCurrent
-                                ? const Color(0xFFFFFC00)
-                                : (isDone ? const Color(0xFF6EE7B7) : Colors.white70),
+                            color: isDone
+                                ? const Color(0xFF6EE7B7)
+                                : (isCurrent ? const Color(0xFFFFFC00) : Colors.white70),
                             fontSize: 9.5,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
+                      if (isDone) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 11,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -2572,20 +2585,22 @@ class _PocketDayOpenWorldAdventurePageState
                             color: isDone
                                 ? const Color(0xFF6EE7B7)
                                 : (isCurrent ? Colors.white : Colors.white24),
-                            width: 2.2,
+                            width: isDone ? 2.8 : 2.2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: isCurrent
-                                  ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
-                                  : Colors.black.withValues(alpha: 0.4),
-                              blurRadius: isCurrent ? 12 : 6,
+                              color: isDone
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                                  : (isCurrent
+                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                                      : Colors.black.withValues(alpha: 0.4)),
+                              blurRadius: (isDone || isCurrent) ? 14 : 6,
                             ),
                           ],
                         ),
                         child: Center(
                           child: isDone
-                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 26)
+                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 28)
                               : (isUnlocked
                                   ? Text(
                                       stepInfo.icon,
@@ -2596,6 +2611,53 @@ class _PocketDayOpenWorldAdventurePageState
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                // ⭐ 3-STAR LEVEL DISPLAY (User Audio Directive: "Tick-um athinte adiyil avinte 3 star-um koode build cheythaal better aavum alle?")
+                const SizedBox(height: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isDone
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.7)
+                          : Colors.white12,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDone
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.25)
+                            : Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (starIdx) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                        child: Icon(
+                          isDone ? Icons.star_rounded : Icons.star_outline_rounded,
+                          size: 13,
+                          color: isDone
+                              ? const Color(0xFFFFD700)
+                              : (isCurrent ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
+                          shadows: isDone
+                              ? const [
+                                  BoxShadow(
+                                    color: Color(0xFFFFD700),
+                                    blurRadius: 5,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      );
+                    }),
                   ),
                 ),
               ],
@@ -2635,6 +2697,22 @@ class _PocketDayOpenWorldAdventurePageState
     }
   }
 
+  Future<void> _syncStepCompletionIfDone(int s) async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    final prefs = await SharedPreferences.getInstance();
+    final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;
+    final guestKey = 'pocket_day_guest_${widget.day}_step_${s}_done';
+    final legacyCompletedKey = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_completed';
+
+    final isDone = (userKey != null && prefs.getBool(userKey) == true) ||
+        (prefs.getBool(guestKey) == true) ||
+        (prefs.getBool(legacyCompletedKey) == true);
+
+    if (isDone) {
+      await _onStepCompleted(s);
+    }
+  }
+
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
@@ -2661,6 +2739,7 @@ class _PocketDayOpenWorldAdventurePageState
           onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
         );
       }
+      await _syncStepCompletionIfDone(1);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2673,6 +2752,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
+      await _syncStepCompletionIfDone(2);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2685,6 +2765,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
+      await _syncStepCompletionIfDone(3);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2711,6 +2792,7 @@ class _PocketDayOpenWorldAdventurePageState
           onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
         );
       }
+      await _syncStepCompletionIfDone(4);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2724,6 +2806,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
+      await _syncStepCompletionIfDone(5);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2738,6 +2821,7 @@ class _PocketDayOpenWorldAdventurePageState
       if (res == true) {
         await _onStepCompleted(6);
       }
+      await _syncStepCompletionIfDone(6);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2751,6 +2835,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onCompleted: () => _onStepCompleted(7),
       );
+      await _syncStepCompletionIfDone(7);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2771,6 +2856,7 @@ class _PocketDayOpenWorldAdventurePageState
         ),
       );
       await _onStepCompleted(8);
+      await _syncStepCompletionIfDone(8);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2784,6 +2870,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
+      await _syncStepCompletionIfDone(9);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2792,6 +2879,7 @@ class _PocketDayOpenWorldAdventurePageState
     if (s == 10) {
       await PocketTalkCardSwiperDialog.show(context);
       await _onStepCompleted(10);
+      await _syncStepCompletionIfDone(10);
       await _loadState(preserveCarPosition: true);
       return;
     }
@@ -2805,6 +2893,7 @@ class _PocketDayOpenWorldAdventurePageState
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
+      await _syncStepCompletionIfDone(11);
       await _loadState(preserveCarPosition: true);
       return;
     }

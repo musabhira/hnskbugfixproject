@@ -3032,15 +3032,29 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
   }
 
   /// Phase 5: Step 1 Completion & Road Unlock
+  bool _isStep1Completed = false;
+
   Future<void> _completeStep1() async {
+    _isStep1Completed = true;
     PocketGameAudioService.instance.playVictorySfx();
     HapticFeedback.heavyImpact();
 
     final uid = widget.userId ?? SupaFlow.client.auth.currentUser?.id;
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_1_done', true);
       await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_1_completed', true);
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_1_done', true);
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_1_completed', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_1_done', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_1_completed', true);
       await PocketFortressDefenseService.recordTrainingPoints(25, uid);
+    } catch (_) {}
+
+    try {
+      widget.onStepFinished?.call(1);
     } catch (_) {}
 
     final replyEn =
@@ -3076,7 +3090,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
               onTap: () {
                 HapticFeedback.mediumImpact();
                 widget.onStepFinished?.call(1);
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               },
             ),
           ],
@@ -3285,23 +3299,31 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1D),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                itemCount: _messages.length,
-                itemBuilder: (ctx, idx) => _buildMessageItem(_messages[idx]),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isStep1Completed) {
+          widget.onStepFinished?.call(1);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1D),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                  itemCount: _messages.length,
+                  itemBuilder: (ctx, idx) => _buildMessageItem(_messages[idx]),
+                ),
               ),
-            ),
-            _buildBottomBar(),
-          ],
+              _buildBottomBar(),
+            ],
+          ),
         ),
       ),
     );
@@ -3324,7 +3346,10 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           IconButton(
             onPressed: () {
               _tts.stop();
-              Navigator.pop(context);
+              if (_isStep1Completed) {
+                widget.onStepFinished?.call(1);
+              }
+              Navigator.pop(context, _isStep1Completed);
             },
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
                 color: Colors.white, size: 20),

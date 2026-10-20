@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
@@ -583,21 +584,30 @@ class _PocketDay2Step4AvatarChatPageState
     _scrollToBottom();
   }
 
+  bool _isStep4Completed = false;
+
+  Future<void> _recordStep4Completion() async {
+    _isStep4Completed = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentUid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${currentUid}_2_step_4_done', true);
+      }
+      await prefs.setBool('pocket_day_guest_2_step_4_done', true);
+    } catch (_) {}
+    try {
+      widget.onStepFinished?.call(4);
+    } catch (_) {}
+  }
+
   Future<void> _completeStep4() async {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final uid = widget.userId ?? 'guest';
-      await prefs.setBool('pocket_day_${uid}_2_step_4_done', true);
-    } catch (_) {}
-
-    if (widget.onStepFinished != null) {
-      widget.onStepFinished!(4);
-    }
+    await _recordStep4Completion();
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     }
   }
 
@@ -607,15 +617,27 @@ class _PocketDay2Step4AvatarChatPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF090D16),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isStep4Completed || _currentDialogueIndex >= 6) {
+          _recordStep4Completion();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF090D16),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F172A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+            onPressed: () async {
+              if (_isStep4Completed || _currentDialogueIndex >= 6) {
+                await _recordStep4Completion();
+              }
+              if (mounted) Navigator.pop(context, _isStep4Completed);
+            },
+          ),
         titleSpacing: 0,
         title: Row(
           children: [
@@ -695,8 +717,9 @@ class _PocketDay2Step4AvatarChatPageState
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildChatMessage(Day2Step4ChatMessage msg) {
     if (!msg.isAvatar) {

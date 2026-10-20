@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
@@ -879,9 +880,29 @@ class _PocketDay1Step5AvatarChatPageState
     });
   }
 
+  bool _isStep5Completed = false;
+
+  Future<void> _recordStep5Completion() async {
+    _isStep5Completed = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentUid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_step_${widget.stepIndex}_done', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
+    } catch (_) {}
+    try {
+      widget.onStepFinished?.call(widget.stepIndex);
+    } catch (_) {}
+  }
+
   void _showReadingFinishedCelebration() {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
+
+    // 🟢 Immediately persist Step 5 completion
+    _recordStep5Completion();
 
     final replyEn =
         '🏆 CONGRATULATIONS, $_userName!\n\n'
@@ -926,17 +947,9 @@ class _PocketDay1Step5AvatarChatPageState
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final uid = widget.userId ?? 'guest';
-      await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${widget.stepIndex}_done', true);
-    } catch (_) {}
-
-    if (widget.onStepFinished != null) {
-      widget.onStepFinished!(widget.stepIndex);
-    }
+    await _recordStep5Completion();
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     }
   }
 
@@ -1009,25 +1022,33 @@ class _PocketDay1Step5AvatarChatPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF070B11),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  return _buildMessageItem(_messages[index]);
-                },
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isStep5Completed || _currentStoryPartIndex >= getStoryPassagesForDay(widget.day, _isBeginnerMode).length) {
+          _recordStep5Completion();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF070B11),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    return _buildMessageItem(_messages[index]);
+                  },
+                ),
               ),
-            ),
-            _buildMinimalFloatingMicBar(),
-          ],
+              _buildMinimalFloatingMicBar(),
+            ],
+          ),
         ),
       ),
     );
@@ -1044,7 +1065,12 @@ class _PocketDay1Step5AvatarChatPageState
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              if (_isStep5Completed || _currentStoryPartIndex >= getStoryPassagesForDay(widget.day, _isBeginnerMode).length) {
+                await _recordStep5Completion();
+              }
+              if (mounted) Navigator.pop(context, _isStep5Completed);
+            },
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
           ),

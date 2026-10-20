@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_speech_normalizer.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
@@ -874,9 +875,29 @@ class _PocketDay1Step4AvatarChatPageState
     });
   }
 
+  bool _isStep4Completed = false;
+
+  Future<void> _recordStep4Completion() async {
+    _isStep4Completed = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentUid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_step_4_done', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_4_done', true);
+    } catch (_) {}
+    try {
+      widget.onStepFinished?.call(4);
+    } catch (_) {}
+  }
+
   void _showSpokenCompletionDialogue() {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
+
+    // 🟢 Immediately persist Step 4 completion
+    _recordStep4Completion();
 
     final replyEn =
         '🎉 BRILLIANT CONVERSATION, $_userName!\n\n'
@@ -917,14 +938,14 @@ class _PocketDay1Step4AvatarChatPageState
     _scrollToBottom();
   }
 
-  void _completeStep4AndProceedToStep5() {
+  Future<void> _completeStep4AndProceedToStep5() async {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    if (widget.onStepFinished != null) {
-      widget.onStepFinished!(4);
+    await _recordStep4Completion();
+    if (mounted) {
+      Navigator.pop(context, true);
     }
-    Navigator.pop(context);
   }
 
   Future<void> _startListeningToCentralMic() async {
@@ -1009,25 +1030,33 @@ class _PocketDay1Step4AvatarChatPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF070B11),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  return _buildMessageItem(_messages[index]);
-                },
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (_isStep4Completed || _currentDialogueIndex >= getSpokenDrillsForDay(widget.day).length) {
+          _recordStep4Completion();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF070B11),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 96),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    return _buildMessageItem(_messages[index]);
+                  },
+                ),
               ),
-            ),
-            _buildMinimalFloatingMicBar(),
-          ],
+              _buildMinimalFloatingMicBar(),
+            ],
+          ),
         ),
       ),
     );
@@ -1044,7 +1073,12 @@ class _PocketDay1Step4AvatarChatPageState
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              if (_isStep4Completed || _currentDialogueIndex >= getSpokenDrillsForDay(widget.day).length) {
+                await _recordStep4Completion();
+              }
+              if (mounted) Navigator.pop(context, _isStep4Completed);
+            },
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
           ),
