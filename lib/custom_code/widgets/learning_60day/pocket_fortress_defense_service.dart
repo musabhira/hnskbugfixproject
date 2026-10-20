@@ -562,11 +562,12 @@ class PocketFortressDefenseService {
 
   /// 📐 Total question slots rule: EXACTLY 1 Day/Challenge = 1 Defense Question Slot!
   /// - Day 1: 1 defense question slot
+  /// - Day 2: 2 defense question slots
   /// - Day 10: 10 defense question slots
   /// - Day 50: 50 defense question slots
   /// - Day 90: 90 defense question slots
   static int getMaxQuestionsForStage(int stage) {
-    return math.max(10, stage.clamp(1, 90));
+    return stage.clamp(1, 90);
   }
 
   /// 💖 Attacker Lifelines / Second Chances for Raiding High-Level Citadels (User Audio Request):
@@ -2196,7 +2197,18 @@ class PocketFortressDefenseService {
   static Future<List<HouseShieldQuestion>> loadShieldQuestions(int stage, {bool isNeighbor = false}) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_trapsKey);
-    final maxAllowed = getMaxQuestionsForStage(stage);
+
+    // For user's own house: only completed days unlock defense slots
+    // (e.g. playing Day 3 = 2 completed days -> 2 defense slots)
+    int effectiveStage = stage;
+    if (!isNeighbor) {
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      final lastCompleted = (uid != null ? prefs.getInt('learning_last_completed_day_$uid') : null) ??
+          prefs.getInt('learning_last_completed_day') ??
+          (stage - 1);
+      effectiveStage = lastCompleted >= stage ? stage : math.max(1, stage - 1);
+    }
+    final maxAllowed = getMaxQuestionsForStage(effectiveStage);
 
     if (raw != null) {
       try {
@@ -2388,7 +2400,18 @@ class PocketFortressDefenseService {
       } catch (_) {}
     }
 
-    final maxAllowed = getMaxQuestionsForStage(day);
+    // Determine how many days have actually been completed
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    final lastCompleted = (uid != null ? prefs.getInt('learning_last_completed_day_$uid') : null) ??
+        prefs.getInt('learning_last_completed_day') ??
+        (day - 1);
+
+    // As per user directive:
+    // If user is playing Day 3, exactly 2 days have been completed -> 2 defense questions!
+    // Day 3 defense is only added once Day 3 is fully completed.
+    final effectiveDay = lastCompleted >= day ? day : math.max(1, day - 1);
+    final maxAllowed = getMaxQuestionsForStage(effectiveDay);
+
     if (existing.length < maxAllowed) {
       final planned = getComputerPlannedDefenseForDay(day);
       for (final q in planned) {
@@ -2406,6 +2429,10 @@ class PocketFortressDefenseService {
         }
       }
 
+      await saveShieldQuestions(existing);
+    } else if (existing.length > maxAllowed) {
+      // Auto-trim previously over-allocated cached questions down to the strict completed level!
+      existing = existing.take(maxAllowed).toList();
       await saveShieldQuestions(existing);
     }
     return existing.take(maxAllowed).toList();

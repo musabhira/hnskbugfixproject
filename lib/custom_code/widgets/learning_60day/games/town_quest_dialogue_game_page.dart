@@ -1354,15 +1354,19 @@ class _DialogueSheetState extends State<_DialogueSheet> {
                       children: <Widget>[
                         Text(npc.name,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w900, fontSize: 18)),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                color: Color(0xFF0F172A))),
                         Text(npc.role,
                             style: const TextStyle(
-                                color: Color(0xFF78909C), fontSize: 12.5)),
+                                color: Color(0xFF475569),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF0F172A)),
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
                 ],
@@ -1387,13 +1391,15 @@ class _DialogueSheetState extends State<_DialogueSheet> {
                               style: const TextStyle(
                                   fontSize: 19,
                                   fontWeight: FontWeight.w800,
-                                  height: 1.25)),
+                                  height: 1.25,
+                                  color: Color(0xFF0F172A))),
                           if (sc.npcNative != null) ...<Widget>[
                             const SizedBox(height: 6),
                             Text(sc.npcNative!,
                                 style: const TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF607D8B),
+                                    color: Color(0xFF475569),
+                                    fontWeight: FontWeight.w600,
                                     fontStyle: FontStyle.italic)),
                           ],
                         ],
@@ -1413,7 +1419,7 @@ class _DialogueSheetState extends State<_DialogueSheet> {
                     ? 'Build your reply: tap the words in order'
                     : 'Choose the best spoken reply',
                 style: const TextStyle(
-                    fontWeight: FontWeight.w700, color: Color(0xFF455A64)),
+                    fontWeight: FontWeight.w700, color: Color(0xFF334155)),
               ),
               const SizedBox(height: 10),
               if (widget.assembler) _buildAssembler() else _buildOptions(),
@@ -1433,7 +1439,9 @@ class _DialogueSheetState extends State<_DialogueSheet> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text('\u{1F4A1} $_hintText',
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF78350F))),
                 ),
               ],
               if (!_solved)
@@ -1631,7 +1639,10 @@ class _DialogueSheetState extends State<_DialogueSheet> {
               ],
       ),
       child: Text(w,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: filled ? widget.npc.accent : const Color(0xFF0F172A))),
     );
   }
 
@@ -1653,8 +1664,10 @@ class _DialogueSheetState extends State<_DialogueSheet> {
           const SizedBox(height: 6),
           Text(widget.scenario.correct,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B5E20))),
           if (widget.scenario.correctNative != null) ...<Widget>[
             const SizedBox(height: 4),
             Text(widget.scenario.correctNative!,

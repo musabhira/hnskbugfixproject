@@ -215,9 +215,10 @@ class _PocketHouseDefenseChatPageState
     _checkExistingDefense();
   }
 
-  /// 🛡️ User Audio Directive: Each day completed adds 1 defense!
-  /// Day 1 has 1 defense, Day 10 has 10 defenses, Day 90 has 90 defenses!
-  int get targetShieldCount => widget.day.clamp(1, 90);
+  /// 🛡️ User Audio Directive: Each completed day adds 1 defense!
+  /// When playing Day 3, 2 completed days = 2 defense questions!
+  /// Day 3 defense can only be added once Day 3 is fully completed.
+  int get targetShieldCount => math.max(1, widget.day - 1).clamp(1, 90);
 
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();
@@ -228,7 +229,7 @@ class _PocketHouseDefenseChatPageState
       final saved = await PocketFortressDefenseService.ensureAutoArmedDefense(widget.day);
       if (mounted && saved.isNotEmpty) {
         setState(() {
-          _activeQuestions = saved;
+          _activeQuestions = saved.take(targetShieldCount).toList();
           if (isActive) {
             _isShieldArmed = true;
             _shieldHp = 100;
