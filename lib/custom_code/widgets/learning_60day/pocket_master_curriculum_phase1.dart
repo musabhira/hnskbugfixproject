@@ -156,78 +156,79 @@ final Map<int, MasterCurriculumDay> masterPhase1Days = {
   ),
   5: const MasterCurriculumDay(
     day: 5,
-    title: 'Day 5: Ownership & Possession (Have / Has)',
+    title: 'Day 5: Shopping, Bakery & Polite Ordering',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Possessions & Family',
+    focusArea: 'Shopping, Dining & Purchases',
     grammarConcept:
-        'Have (I, You, We, They) vs Has (He, She, It, Singular nouns)',
+        'Polite Requests & Ordering: "Can I get / have...", "How much is this?", "I would like to order..."',
     speakingDrill:
-        'Describe 4 items you own and 2 qualities your best friend has.',
+        'Order 3 food items at a restaurant and ask for the bill politely in English.',
     peerChatMission:
-        'Ask your peer what gadgets or tools they have for their work.',
+        'Ask your peer about their favorite food and how they order it at a cafe.',
     xpReward: 50,
-    theoryConcept: 'Expressing Possession Without "Having"',
+    theoryConcept: 'Polite Spoken Requests at Shops & Restaurants',
     theoryExplanationEn:
-        'Use "have" and "has" for simple ownership. Do not use continuous "am having" for physical possession.',
+        'Instead of commanding "Give me water", say "Could I get a glass of water, please?" or "I would like to order...".',
     theoryExplanationMl:
-        'ഉടമസ്ഥത അല്ലെങ്കിൽ കൈവശമുള്ളത് പറയാൻ have/has ഉപയോഗിക്കുക. I, You, We, They എന്നിവയ്‌ക്കൊപ്പം have-ഉം He, She, It എന്നിവയ്‌ക്കൊപ്പം has-ഉം വരുന്നു. കയ്യിലുള്ള കാര്യത്തിന് "I am having" എന്ന് പറയരുത്.',
+        'കടകളിലും റെസ്റ്റോറന്റുകളിലും മാന്യമായി ഓർഡർ ചെയ്യാൻ "Can I get...", "Could you please bring...", "I would like to order..." എന്നീ വാക്യങ്ങൾ ഉപയോഗിക്കുക.',
     whyItMatters:
-        'Saying "I am having a car" sounds like you are eating a car! "I have a car" is the correct natural form.',
+        'Polite requesting is the hallmark of fluent, well-mannered spoken English across the globe.',
     commonMistakes: [
-      '❌ "I am having two laptops."',
-      '❌ "She have a great idea."',
-      '❌ "He has having a meeting."',
+      '❌ "Give me one tea."',
+      '❌ "How much cost this?"',
+      '❌ "I want bill fast."',
     ],
     mistakeCorrections: [
-      '✅ "I have two laptops."',
-      '✅ "She has a great idea."',
-      '✅ "He has a meeting scheduled."',
+      '✅ "Can I have a cup of tea, please?"',
+      '✅ "How much is this item, please?"',
+      '✅ "Could you please bring the bill?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: I have a laptop.',
-      '🟡 Intermediate: She has a lot of experience in mobile development.',
-      '🟣 Advanced: We have all the necessary resources and documentation to complete the project.',
+      '🟢 Basic: Can I get a cup of tea?',
+      '🟡 Intermediate: I would like to order one chicken biryani and a fresh lime soda.',
+      '🟣 Advanced: Could you please check if this shirt is available in medium size before I try it on?',
     ],
-    dailyChallenge: 'Speak for 60 seconds about 3 important things you own.',
+    dailyChallenge: 'Practice ordering 3 items and paying with UPI in 60 seconds.',
     listeningGoal:
-        'Listen to 10 minutes of people describing their possessions.',
+        'Listen to 10 minutes of cafe, supermarket, and billing conversations.',
   ),
   6: const MasterCurriculumDay(
     day: 6,
-    title: 'Day 6: Daily Habits & The Simple Present',
+    title: 'Day 6: Travel, Station & Asking Directions',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Routines & Habitual Actions',
-    grammarConcept: 'Simple Present Tense + Third-Person -s/-es rule',
+    focusArea: 'Travel, Auto/Taxi & Navigation',
+    grammarConcept:
+        'Travel Inquiries & Directions: "Which platform...", "How far is it?", "How do I reach...", "Take the second left"',
     speakingDrill:
-        'Describe your daily morning routine from 6 AM to 10 AM in chronological order.',
-    peerChatMission: 'Ask your partner about their weekend routine.',
+        'Ask for a train ticket and give clear walking directions to a nearby landmark.',
+    peerChatMission: 'Ask your partner how they travel to work or college and their route.',
     xpReward: 50,
-    theoryConcept: 'Habitual Actions & Timeless Facts',
+    theoryConcept: 'Clear Navigational & Commuter English',
     theoryExplanationEn:
-        'We use the Simple Present for things that happen repeatedly or are always true. Remember to add -s or -es when the subject is He, She, or It.',
+        'Use prepositions of place and direction (straight, near, opposite, across) with simple modal questions (Could you tell me the way to...).',
     theoryExplanationMl:
-        'ദിവസേനയുള്ള ശീലങ്ങൾ പറയാൻ Simple Present ഉപയോഗിക്കുന്നു. അവൻ (He), അവൾ (She), അത് (It) വരുമ്പോൾ ക്രിയയുടെ ഒടുവിൽ s അല്ലെങ്കിൽ es ചേർക്കാൻ മറക്കരുത് (He works, She speaks).',
+        'റെയിൽവേ സ്റ്റേഷൻ, ബസ് സ്റ്റാൻഡ്, ഓട്ടോ വിളിക്കൽ, വഴി ചോദിക്കൽ എന്നിവയിൽ "Which platform...", "How far is...", "Could you tell me the way to..." എന്നീ ചോദ്യങ്ങൾ ഉപയോഗിക്കുക.',
     whyItMatters:
-        'The missing third-person "s" is the #1 identifier of non-fluent speech in global interviews.',
+        'Asking directions and booking transit without hesitation gives you complete confidence to travel anywhere.',
     commonMistakes: [
-      '❌ "He go to office every day."',
-      '❌ "She work at Google."',
-      '❌ "I am waking up at 6 AM every day."',
+      '❌ "Where train going?"',
+      '❌ "Auto, come to town."',
+      '❌ "How much distance there?"',
     ],
     mistakeCorrections: [
-      '✅ "He goes to the office every day."',
-      '✅ "She works at Google."',
-      '✅ "I wake up at 6 AM every day."',
+      '✅ "Which platform does the Ernakulam train arrive on?"',
+      '✅ "Auto, are you available to go to the town hall?"',
+      '✅ "How far is the hospital from here?"',
     ],
     sentenceEvolution: [
-      '🟢 Basic: I wake up early.',
-      '🟡 Intermediate: I wake up at 6 AM and drink a warm cup of coffee.',
-      '🟣 Advanced: I usually wake up early to plan my daily development tasks before team standup.',
+      '🟢 Basic: Which platform is the train on?',
+      '🟡 Intermediate: Could you please tell me the departure time of the evening express?',
+      '🟣 Advanced: Please take the bypass road to avoid market traffic and drop me near the State Bank building.',
     ],
     dailyChallenge:
-        'Explain your entire workday routine in 2 minutes without stopping.',
+        'Explain complete directions from the railway station to your house in 90 seconds.',
     listeningGoal:
-        'Listen to 10 minutes of native speakers detailing their daily routines.',
+        'Listen to 10 minutes of railway station announcements and transit dialogues.',
   ),
   7: const MasterCurriculumDay(
     day: 7,

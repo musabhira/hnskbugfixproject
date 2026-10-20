@@ -48,11 +48,12 @@ class DriveParticle {
 /// 7. Open world aesthetics: hills, green grass, sky, trees, and roadside nature.
 /// 🚗 Supported Ride & Movement Modes (User Audio Directive!)
 enum RideMode {
-  car,       // 🏎️ Highway Sports Cruiser
-  jeep,      // 🚙 4x4 Off-Road Safari Jeep (with oncoming opposite traffic!)
-  airplane,  // ✈️ Sky Flight (Soaring high into clouds & sky)
-  walking,   // 🚶 Nature Explorer (Walking/jogging through forest trail)
-  rocket,    // 🚀 Galaxy Ascender (Rocket blasting through cosmic space)
+  car,       // 🏎️ Highway Sports Cruiser (Day 1)
+  jeep,      // 🚙 4x4 Off-Road Safari Jeep (Day 2)
+  airplane,  // ✈️ Sky Flight over Mountain Summits (Day 3)
+  walking,   // 🚶 Nature Explorer Forest Trail (Day 4)
+  train,     // 🚆 High-Speed Express Bullet Train (Day 5 - User Audio Directive!)
+  rocket,    // 🚀 Cosmic Star Rocket (Day 6)
 }
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
@@ -338,12 +339,14 @@ class _PocketVocabOpenWorldDrivePageState
       _currentRideMode = RideMode.airplane;
     } else if (widget.initialRideMode == 'walking') {
       _currentRideMode = RideMode.walking;
+    } else if (widget.initialRideMode == 'train') {
+      _currentRideMode = RideMode.train;
     } else if (widget.initialRideMode == 'rocket') {
       _currentRideMode = RideMode.rocket;
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final cycle = (widget.day - 1) % 5;
+      final cycle = (widget.day - 1) % 6;
       if (cycle == 0) {
         _currentRideMode = RideMode.car;
       } else if (cycle == 1) {
@@ -351,9 +354,11 @@ class _PocketVocabOpenWorldDrivePageState
       } else if (cycle == 2) {
         _currentRideMode = RideMode.airplane;
       } else if (cycle == 3) {
-        _currentRideMode = RideMode.rocket;
-      } else {
         _currentRideMode = RideMode.walking;
+      } else if (cycle == 4) {
+        _currentRideMode = RideMode.train;
+      } else {
+        _currentRideMode = RideMode.rocket;
       }
     }
 
@@ -791,6 +796,7 @@ class _PocketVocabOpenWorldDrivePageState
       RideMode.jeep: '🚙',
       RideMode.airplane: '✈️',
       RideMode.walking: '🚶',
+      RideMode.train: '🚆',
       RideMode.rocket: '🚀',
     };
 
@@ -944,6 +950,8 @@ class _PocketVocabOpenWorldDrivePageState
         return '🚀 Day ${widget.day} • Cosmic Star Rocket';
       case RideMode.walking:
         return '🚶 Day ${widget.day} • Forest Trail Nature Explorer';
+      case RideMode.train:
+        return '🚆 Day ${widget.day} • High-Speed Express Bullet Train';
     }
   }
 
@@ -1511,6 +1519,17 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawDynamicSky(Canvas canvas, Size size) {
     switch (rideMode) {
+      case RideMode.train:
+        // Atmospheric twilight dawn sky (deep indigo to vibrant orange sunrise)
+        final skyPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF1E1B4B), Color(0xFF4338CA), Color(0xFFF97316), Color(0xFFFED7AA)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint);
+        break;
+
       case RideMode.rocket:
         // Deep cosmic space gradient
         final skyPaint = Paint()
@@ -1700,8 +1719,29 @@ class _OpenWorldDrivePainter extends CustomPainter {
     moundPath.close();
     canvas.drawPath(moundPath, moundPaint);
 
+    // 🚆 Overhead Catenary Railway Electric Poles & Transmission Wires (Day 5 Train Mode)
+    if (rideMode == RideMode.train) {
+      final polePaint = Paint()..color = const Color(0xFF64748B)..strokeWidth = 3.5;
+      final armPaint = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 2.5;
+      final wirePaint = Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 1.2;
+
+      final wireY = size.height * 0.62 - 44;
+      // Continuous overhead contact wires
+      canvas.drawLine(Offset(0, wireY), Offset(size.width, wireY), wirePaint);
+      canvas.drawLine(Offset(0, wireY - 8), Offset(size.width, wireY - 8), wirePaint);
+
+      // Vertical steel masts scrolling past
+      const mastSpacing = 160.0;
+      final mastOffset = (sceneryScroll * 1.2) % mastSpacing;
+      for (double px = -mastOffset; px <= size.width + mastSpacing; px += mastSpacing) {
+        canvas.drawLine(Offset(px, size.height * 0.62), Offset(px, wireY - 14), polePaint);
+        canvas.drawLine(Offset(px, wireY - 10), Offset(px + 32, wireY), armPaint);
+        canvas.drawCircle(Offset(px + 28, wireY), 3.0, Paint()..color = const Color(0xFFF59E0B));
+      }
+    }
+
     // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
-    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket) {
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train) {
       final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
       _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
       final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
@@ -1711,6 +1751,65 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
     switch (rideMode) {
+      case RideMode.train:
+        // 🚆 Authentic High-Speed Railway Track with Ballast Gravel, Wooden Sleepers & Twin Steel Rails
+        // 1. Ballast Gravel Bed
+        final ballastPaint = Paint()..color = const Color(0xFF334155);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), ballastPaint);
+
+        // Gravel texture specks
+        final speckPaint = Paint()..color = const Color(0xFF475569);
+        final speckOffset = (distanceTraveled * 1.8) % 18;
+        for (double sx = -speckOffset; sx < size.width; sx += 18) {
+          canvas.drawCircle(Offset(sx + 4, roadTopY + 8), 1.5, speckPaint);
+          canvas.drawCircle(Offset(sx + 12, roadBottomY - 8), 1.5, speckPaint);
+        }
+
+        // Embankment curb / borders
+        final trackEdgePaint = Paint()..color = const Color(0xFF1E293B);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY - 4, size.width, 5), trackEdgePaint);
+        final ballastBedBottom = Paint()..color = const Color(0xFF0F172A);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), ballastBedBottom);
+
+        // 2. Transverse Railroad Ties / Wooden Sleepers
+        final tiePaint = Paint()..color = const Color(0xFF451A03);
+        final clipPaint = Paint()..color = const Color(0xFF94A3B8);
+        const tieSpacing = 24.0;
+        final tieOffset = (distanceTraveled * 2.2) % tieSpacing;
+
+        final topRailY = roadTopY + roadHeight * 0.32;
+        final botRailY = roadTopY + roadHeight * 0.76;
+
+        for (double tx = -tieOffset; tx < size.width; tx += tieSpacing) {
+          // Sleeper tie
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(tx + 2, roadTopY + 10, 10, roadHeight - 20),
+              const Radius.circular(2),
+            ),
+            tiePaint,
+          );
+          // Steel tie plates / fastening clips at rail intersections
+          canvas.drawRect(Rect.fromLTWH(tx + 2, topRailY - 3, 10, 6), clipPaint);
+          canvas.drawRect(Rect.fromLTWH(tx + 2, botRailY - 3, 10, 6), clipPaint);
+        }
+
+        // 3. Twin Continuous Steel Rails (Shining metallic with highlight gleam)
+        final railShadow = Paint()..color = const Color(0xFF0F172A)..strokeWidth = 6.0;
+        final railSteel = Paint()..color = const Color(0xFF94A3B8)..strokeWidth = 4.0;
+        final railHighlight = Paint()..color = Colors.white.withValues(alpha: 0.9)..strokeWidth = 1.5;
+
+        // Top Rail
+        canvas.drawLine(Offset(0, topRailY + 1), Offset(size.width, topRailY + 1), railShadow);
+        canvas.drawLine(Offset(0, topRailY), Offset(size.width, topRailY), railSteel);
+        canvas.drawLine(Offset(0, topRailY - 1), Offset(size.width, topRailY - 1), railHighlight);
+
+        // Bottom Rail
+        canvas.drawLine(Offset(0, botRailY + 1), Offset(size.width, botRailY + 1), railShadow);
+        canvas.drawLine(Offset(0, botRailY), Offset(size.width, botRailY), railSteel);
+        canvas.drawLine(Offset(0, botRailY - 1), Offset(size.width, botRailY - 1), railHighlight);
+        break;
+
       case RideMode.rocket:
         // Cosmic runway grid
         final runwayPaint = Paint()..color = const Color(0xFF090D1A);
@@ -2349,6 +2448,9 @@ class _OpenWorldDrivePainter extends CustomPainter {
       case RideMode.walking:
         _drawWalkingExplorer(canvas, size);
         break;
+      case RideMode.train:
+        _drawExpressTrain(canvas, size);
+        break;
       case RideMode.rocket:
         _drawSpaceRocket(canvas, size);
         break;
@@ -2726,6 +2828,115 @@ class _OpenWorldDrivePainter extends CustomPainter {
     // Cockpit Circular Porthole
     final portPaint = Paint()..color = const Color(0xFF38BDF8);
     canvas.drawCircle(Offset(rocketX + 12, rocketY), 5.5, portPaint);
+  }
+
+
+  // 🚆 Mode 6: High-Speed Express Bullet Train (User Audio Directive: "ഇപ്പൊ ട്രെയിൻ ഒക്കെ ആക്ക് ഇനി!")
+  void _drawExpressTrain(Canvas canvas, Size size) {
+    final trainX = size.width * 0.24;
+    final trainY = size.height * carLaneY;
+
+    // Soft track shadow
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.4);
+    canvas.drawOval(Rect.fromCenter(center: Offset(trainX, trainY + 16), width: 92, height: 12), shadowPaint);
+
+    // Pantograph Arm reaching overhead electric wire
+    final pantoPaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    final wireY = size.height * 0.62 - 44;
+    canvas.drawLine(Offset(trainX - 10, trainY - 16), Offset(trainX - 2, wireY + 8), pantoPaint);
+    canvas.drawLine(Offset(trainX - 2, wireY + 8), Offset(trainX + 8, wireY), pantoPaint);
+    // Pantograph contact collector head
+    canvas.drawLine(Offset(trainX + 2, wireY), Offset(trainX + 16, wireY), Paint()..color = const Color(0xFFF59E0B)..strokeWidth = 3.0);
+    // Electric spark sparkler occasionally
+    if ((distanceTraveled * 0.2).floor() % 4 == 0) {
+      canvas.drawCircle(Offset(trainX + 10, wireY), 3.0, Paint()..color = const Color(0xFF67E8F9));
+    }
+
+    // Aerodynamic Bullet Locomotive Body (Pearl White to Silver Gradient)
+    final bodyPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(trainX - 44, trainY - 16, 88, 30));
+
+    final trainPath = Path();
+    trainPath.moveTo(trainX - 42, trainY + 14); // Rear bottom
+    trainPath.lineTo(trainX - 42, trainY - 14); // Rear top
+    trainPath.lineTo(trainX + 16, trainY - 14); // Front roof
+    trainPath.quadraticBezierTo(trainX + 38, trainY - 10, trainX + 46, trainY + 4); // Aerodynamic nose curve
+    trainPath.lineTo(trainX + 46, trainY + 14); // Front cowcatcher / bumper
+    trainPath.close();
+    canvas.drawPath(trainPath, bodyPaint);
+
+    // Royal Blue Racing Livery Stripe
+    final stripePaint = Paint()..color = const Color(0xFF1E40AF);
+    final sPath = Path();
+    sPath.moveTo(trainX - 42, trainY + 2);
+    sPath.lineTo(trainX + 34, trainY + 2);
+    sPath.quadraticBezierTo(trainX + 42, trainY + 6, trainX + 45, trainY + 10);
+    sPath.lineTo(trainX + 45, trainY + 14);
+    sPath.lineTo(trainX - 42, trainY + 14);
+    sPath.close();
+    canvas.drawPath(sPath, stripePaint);
+
+    // Gold Accent Trim
+    final goldTrim = Paint()..color = const Color(0xFFF59E0B)..strokeWidth = 2.0;
+    canvas.drawLine(Offset(trainX - 42, trainY + 1), Offset(trainX + 32, trainY + 1), goldTrim);
+
+    // Driver Cab Panoramic Windshield (Tinted Cyan Glass)
+    final glassPaint = Paint()..color = const Color(0xFF0284C7);
+    final cabPath = Path();
+    cabPath.moveTo(trainX + 14, trainY - 12);
+    cabPath.lineTo(trainX + 28, trainY - 12);
+    cabPath.quadraticBezierTo(trainX + 38, trainY - 6, trainX + 40, trainY);
+    cabPath.lineTo(trainX + 18, trainY);
+    cabPath.close();
+    canvas.drawPath(cabPath, glassPaint);
+
+    // Passenger Tinted Windows
+    final windowPaint = Paint()..color = const Color(0xFF0F172A);
+    for (int w = 0; w < 3; w++) {
+      final wx = trainX - 36 + (w * 16.0);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(wx, trainY - 10, 11, 8), const Radius.circular(2)),
+        windowPaint,
+      );
+    }
+
+    // High-Beam LED Headlamp & Lighting Cone
+    final headlampCenter = Offset(trainX + 45, trainY + 6);
+    final headlightPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.yellow.withValues(alpha: 0.65), Colors.yellow.withValues(alpha: 0.0)],
+      ).createShader(Rect.fromCircle(center: headlampCenter, radius: 55));
+
+    final lightBeam = Path();
+    lightBeam.moveTo(headlampCenter.dx, headlampCenter.dy - 3);
+    lightBeam.lineTo(headlampCenter.dx + 65, headlampCenter.dy - 12);
+    lightBeam.lineTo(headlampCenter.dx + 65, headlampCenter.dy + 18);
+    lightBeam.lineTo(headlampCenter.dx, headlampCenter.dy + 3);
+    lightBeam.close();
+    canvas.drawPath(lightBeam, headlightPaint);
+    canvas.drawCircle(headlampCenter, 3.0, Paint()..color = Colors.white);
+
+    // Steel Flanged Railway Bogie Wheels (2 Bogies: Front & Back)
+    _drawTrainWheel(canvas, Offset(trainX - 28, trainY + 15));
+    _drawTrainWheel(canvas, Offset(trainX - 12, trainY + 15));
+    _drawTrainWheel(canvas, Offset(trainX + 14, trainY + 15));
+    _drawTrainWheel(canvas, Offset(trainX + 28, trainY + 15));
+  }
+
+  void _drawTrainWheel(Canvas canvas, Offset center) {
+    // Wheel Flange
+    canvas.drawCircle(center, 7.5, Paint()..color = const Color(0xFF334155));
+    // Steel Tread
+    canvas.drawCircle(center, 6.0, Paint()..color = const Color(0xFF94A3B8));
+    // Center Axle Hub
+    canvas.drawCircle(center, 2.5, Paint()..color = const Color(0xFF0F172A));
   }
 
   void _drawWheel(Canvas canvas, Offset center) {
