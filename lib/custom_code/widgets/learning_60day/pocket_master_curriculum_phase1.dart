@@ -471,78 +471,83 @@ final Map<int, MasterCurriculumDay> masterPhase1Days = {
   ),
   13: const MasterCurriculumDay(
     day: 13,
-    title: 'Day 13: Dynamic Adverbs (Slowly, Quickly, Carefully)',
+    title: '📊 Day 13: Client Pitch, Business Meetings, Project Demos & Q&A',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Modifying Actions & Frequency',
+    focusArea: 'Professional Presentations, Slide Demos, Diplomatic Q&A & Action Items',
     grammarConcept:
-        'Adverbs of Manner (-ly) and Frequency (always, usually, sometimes, never)',
+        'Signposting language (To begin with... / Moving on to... / In summary...) & diplomatic disagreement',
     speakingDrill:
-        'Describe how you work, drive, read, and communicate using 4 adverbs.',
+        'Deliver a 2-minute product demo walk-through outlining feature benefits and answering a client timeline objection.',
     peerChatMission:
-        'Ask your partner how often they exercise and study English.',
-    xpReward: 50,
-    theoryConcept: 'How Actions Are Performed',
+        'Roleplay a project lead presenting quarterly milestones to a client stakeholder and agreeing on action items.',
+    xpReward: 85,
+    milestoneReward: '🎯 Enterprise Presenter & Client Catalyst Badge',
+    theoryConcept: 'Signposting & Diplomatic Client Dialogue',
     theoryExplanationEn:
-        'Adjectives describe things; adverbs describe HOW actions happen. Most manner adverbs end in -ly (quick -> quickly, careful -> carefully).',
+        'Guide listeners through your presentation using clear signposts: "Let us turn our attention to the metrics", "I see your point regarding cost; however, our ROI will compensate within six months."',
     theoryExplanationMl:
-        'ഒരു പ്രവർത്തി എങ്ങനെ ചെയ്യപ്പെടുന്നു എന്ന് വിശദീകരിക്കാനാണ് Adverbs ഉപയോഗിക്കുന്നത് (പതിയെ = slowly, വേഗത്തിൽ = quickly, ശ്രദ്ധയോടെ = carefully).',
-    whyItMatters: 'Adds rhythm and emotional tempo to your storytelling.',
+        'മീറ്റിംഗുകളിൽ പ്രസന്റേഷൻ നടത്തുമ്പോൾ സംഭാഷണം നയിക്കാൻ Signposting വാക്കുകൾ ഉപയോഗിക്കുക: "To begin with" (ആദ്യമായി), "Moving on to the next point" (അടുത്ത വിഷയത്തിലേക്ക് കടക്കുമ്പോൾ), "In conclusion" (സംഗ്രഹിക്കുമ്പോൾ). ക്ലയന്റിന്റെ ആശങ്കകൾക്ക് മറുപടി നൽകുമ്പോൾ "I understand your concern, however..." എന്ന് നയപരമായി പറയുക.',
+    whyItMatters:
+        'Whether presenting to international clients or pitching in team meetings, clear structured presentation English creates leadership authority.',
     commonMistakes: [
-      '❌ "He drives very slow."',
-      '❌ "She speaks English good."',
-      '❌ "I always am late."',
+      '❌ "Today we will see about this project."',
+      '❌ "You are wrong about the timeline."',
+      '❌ "Finish the meeting now."',
     ],
     mistakeCorrections: [
-      '✅ "He drives very slowly."',
-      '✅ "She speaks English well." (Good is adjective, well is adverb)',
-      '✅ "I am always late."',
+      '✅ "Today, I will walk you through our project deliverables and key outcomes."',
+      '✅ "I understand your perspective, but let me clarify how our timeline accounts for testing."',
+      '✅ "To summarize our discussion, let us finalize our action items before concluding."',
     ],
     sentenceEvolution: [
-      '🟢 Basic: He drives carefully.',
-      '🟡 Intermediate: I practice speaking English consistently every morning.',
-      '🟣 Advanced: The mobile application runs remarkably smoothly even under demanding production traffic.',
+      '🟢 Basic: We made this new feature for you.',
+      '🟡 Intermediate: As you can observe on the dashboard, this optimization reduces server latency by thirty percent.',
+      '🟣 Advanced: Moving forward, our core objective is to seamlessly integrate this API while ensuring zero downtime for your end users.',
     ],
     dailyChallenge:
-        'Speak for 60 seconds explaining how you handle difficult tasks.',
-    listeningGoal: 'Listen to 10 minutes of performance analysis talks.',
+        'Record a 90-second formal client presentation opening the agenda, demonstrating a key benefit, and concluding with next steps.',
+    listeningGoal:
+        'Listen to 10 minutes of keynote tech demos and executive quarterly business review presentations.',
   ),
   14: const MasterCurriculumDay(
     day: 14,
-    title: 'Day 14: Abilities & Permission (Can / Cannot)',
+    title: '🚨 Day 14: Emergencies, Police Report, Lost Items & First-Aid',
     phaseName: 'Phase 1: Foundation (Days 1–30)',
-    focusArea: 'Competence & Polite Requests',
-    grammarConcept: 'Modal "Can / Can\'t" + Bare Infinitive (no "to")',
+    focusArea: 'Urgent Incidents, Reporting Theft/Lost Belongings, Medical Distress & Evacuation',
+    grammarConcept:
+        'Past Continuous + Past Simple for incident narration (I was walking when...) & clear imperatives for guidance',
     speakingDrill:
-        'Talk for 90 seconds about 3 technical skills you can do and 2 you cannot do yet.',
+        'Call emergency dispatch to report a road collision with precise location landmarks and request an ambulance.',
     peerChatMission:
-        'Ask your partner what languages they can speak and what musical instruments they can play.',
-    xpReward: 50,
-    milestoneReward: '📜 Fortnight Capability Badge',
-    theoryConcept: 'Modals of Capacity & Simplicity',
+        'Roleplay filing an official police report (FIR) for a lost passport or stolen wallet with descriptive details.',
+    xpReward: 85,
+    milestoneReward: '🏆 Phase 1 Fortnight Master (Day 14) Milestone Trophy',
+    theoryConcept: 'Calm Crisis Narration & Rapid Emergency Phrasing',
     theoryExplanationEn:
-        '"Can" never changes form (never say "cans" or "canning"). Always follow "can" directly with the plain action verb without "to".',
+        'During emergencies, state what happened, exact location, and injuries immediately: "I am reporting an emergency at MG Road junction. A two-wheeler rider has been injured and requires immediate medical attention."',
     theoryExplanationMl:
-        'കഴിവ് (Ability) പറയാൻ "Can" ഉം കഴിയില്ലെന്ന് പറയാൻ "Cannot/Can\'t" ഉം ഉപയോഗിക്കുന്നു. Can-ന് ശേഷം "to" ചേർക്കരുത് (I can swim, NOT I can to swim).',
+        'അടിയന്തിര ഘട്ടങ്ങളിൽ പരിഭ്രാന്തിയില്ലാതെ ആദ്യം കൃത്യമായ സ്ഥലവും സംഭവിച്ച കാര്യവും പറയുക: "There has been an accident at the junction, please send an ambulance immediately" (ഉടൻ ആംബുലൻസ് അയക്കണം). എന്തെങ്കിലും മോഷണം പോയാൽ "I was traveling on the metro when my wallet was stolen" എന്ന് വ്യക്തമായി പറയുക.',
     whyItMatters:
-        'Critical for presenting resumes, skillsets, and requesting permission politely.',
+        'In critical situations abroad or at home, communicating calmly and accurately with police, medics, or emergency responders can save lives and resolve distress.',
     commonMistakes: [
-      '❌ "I can to speak English."',
-      '❌ "He can plays guitar."',
-      '❌ "She cannot able to come."',
+      '❌ "Help me, big accident happened here!"',
+      '❌ "My bag gone on the bus."',
+      '❌ "Send doctor fast."',
     ],
     mistakeCorrections: [
-      '✅ "I can speak English."',
-      '✅ "He can play the guitar."',
-      '✅ "She cannot come." (or "She is not able to come.")',
+      '✅ "Please dispatch an ambulance to Central Avenue; two individuals are injured in a vehicle collision."',
+      '✅ "I would like to report my backpack stolen; it was taken from overhead luggage rack on bus 402."',
+      '✅ "Is there a doctor or paramedic available immediately? A person has collapsed and needs first-aid."',
     ],
     sentenceEvolution: [
-      '🟢 Basic: I can write code.',
-      '🟡 Intermediate: I can develop responsive Flutter applications for Android and iOS.',
-      '🟣 Advanced: I can independently architect, build, and deploy production-ready applications to global app stores.',
+      '🟢 Basic: Someone took my wallet.',
+      '🟡 Intermediate: While I was waiting at the boarding gate, my black leather wallet containing my ID cards was stolen.',
+      '🟣 Advanced: I need to lodge an official police report for my lost passport so that I can apply for an emergency travel certificate at the embassy.',
     ],
     dailyChallenge:
-        'List 5 skills you possess and 2 goals you want to conquer.',
-    listeningGoal: 'Listen to 10 minutes of job candidate skill pitches.',
+        'Deliver a 2-minute mock emergency phone call calmly reporting a building fire alarm and guiding teammates to fire exits.',
+    listeningGoal:
+        'Listen to 10 minutes of 911 / emergency dispatcher audio calls and first-aid response tutorials.',
   ),
   15: const MasterCurriculumDay(
     day: 15,

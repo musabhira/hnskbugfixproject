@@ -60,6 +60,8 @@ enum RideMode {
   ufo,         // 🛸 Quantum Anti-Gravity UFO Saucer (Day 10)
   speedboat,   // 🚤 High-Speed Oceanic Speedboat (Day 11)
   balloon,     // 🎈 Sunrise Sky Hot Air Balloon (Day 12)
+  hoverbike,   // ⚡ Cyberpunk Neon Levitating Speeder (Day 13)
+  snowmobile,  // ❄️ Arctic Blizzard Snowmobile (Day 14)
 }
 
 class PocketVocabOpenWorldDrivePage extends StatefulWidget {
@@ -361,10 +363,14 @@ class _PocketVocabOpenWorldDrivePageState
       _currentRideMode = RideMode.speedboat;
     } else if (widget.initialRideMode == 'balloon') {
       _currentRideMode = RideMode.balloon;
+    } else if (widget.initialRideMode == 'hoverbike') {
+      _currentRideMode = RideMode.hoverbike;
+    } else if (widget.initialRideMode == 'snowmobile') {
+      _currentRideMode = RideMode.snowmobile;
     } else if (widget.initialRideMode == 'car') {
       _currentRideMode = RideMode.car;
     } else {
-      final cycle = (widget.day - 1) % 12;
+      final cycle = (widget.day - 1) % 14;
       if (cycle == 0) {
         _currentRideMode = RideMode.car;
       } else if (cycle == 1) {
@@ -387,8 +393,12 @@ class _PocketVocabOpenWorldDrivePageState
         _currentRideMode = RideMode.ufo;
       } else if (cycle == 10) {
         _currentRideMode = RideMode.speedboat;
-      } else {
+      } else if (cycle == 11) {
         _currentRideMode = RideMode.balloon;
+      } else if (cycle == 12) {
+        _currentRideMode = RideMode.hoverbike;
+      } else {
+        _currentRideMode = RideMode.snowmobile;
       }
     }
 
@@ -834,6 +844,8 @@ class _PocketVocabOpenWorldDrivePageState
       RideMode.ufo: '🛸',
       RideMode.speedboat: '🚤',
       RideMode.balloon: '🎈',
+      RideMode.hoverbike: '⚡',
+      RideMode.snowmobile: '❄️',
     };
 
     return Column(
@@ -1000,6 +1012,10 @@ class _PocketVocabOpenWorldDrivePageState
         return '🚤 Day ${widget.day} • Oceanic Wave Speedboat';
       case RideMode.balloon:
         return '🎈 Day ${widget.day} • Sunrise Sky Hot Air Balloon';
+      case RideMode.hoverbike:
+        return '⚡ Day ${widget.day} • Cyberpunk Neon Hoverbike';
+      case RideMode.snowmobile:
+        return '❄️ Day ${widget.day} • Arctic Blizzard Snowmobile';
     }
   }
 
@@ -1567,6 +1583,28 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawDynamicSky(Canvas canvas, Size size) {
     switch (rideMode) {
+      case RideMode.hoverbike:
+        // Cyberpunk synthwave midnight horizon (Day 13 Hoverbike)
+        final skyPaint13 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF090514), Color(0xFF1E112A), Color(0xFF4A044E), Color(0xFF701A75), Color(0xFF0F172A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint13);
+        break;
+
+      case RideMode.snowmobile:
+        // Arctic polar winter twilight with Aurora Borealis (Day 14 Snowmobile)
+        final skyPaint14 = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF030712), Color(0xFF064E3B), Color(0xFF059669), Color(0xFF0D9488), Color(0xFF1E293B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.64));
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.64), skyPaint14);
+        break;
+
       case RideMode.speedboat:
         // Radiant tropical ocean sky (Day 11 Speedboat)
         final skyPaint11 = Paint()
@@ -1832,6 +1870,90 @@ class _OpenWorldDrivePainter extends CustomPainter {
     moundPath.lineTo(0, size.height * 0.62);
     moundPath.close();
     canvas.drawPath(moundPath, moundPaint);
+
+    // ⚡ Cyberpunk Synthwave Mega-City: Neon Towers, Laser Light Pillars & Air Cabs (Day 13)
+    if (rideMode == RideMode.hoverbike) {
+      // 1. Towering holographic skyscrapers with glowing window grids
+      final towerPaint1 = Paint()..color = const Color(0xFF1E1B4B);
+      final towerPaint2 = Paint()..color = const Color(0xFF311042);
+      final winCyan = Paint()..color = const Color(0xFF06B6D4).withValues(alpha: 0.7);
+      final winPink = Paint()..color = const Color(0xFFEC4899).withValues(alpha: 0.7);
+      const tSpacing = 85.0;
+      final tOffset = (sceneryScroll * 0.6) % tSpacing;
+      for (double tx = -tOffset; tx <= size.width + tSpacing; tx += tSpacing) {
+        final tH = 65.0 + (tx.abs().toInt() % 4) * 22.0;
+        final tY = size.height * 0.62 - tH;
+        final tPaint = (tx.toInt() % 2 == 0) ? towerPaint1 : towerPaint2;
+        canvas.drawRect(Rect.fromLTWH(tx, tY, 44, tH), tPaint);
+        // Neon windows
+        for (int r = 0; r < 4; r++) {
+          final wP = (r % 2 == 0) ? winCyan : winPink;
+          canvas.drawRect(Rect.fromLTWH(tx + 6, tY + 8 + r * 14, 8, 5), wP);
+          canvas.drawRect(Rect.fromLTWH(tx + 22, tY + 8 + r * 14, 8, 5), wP);
+        }
+      }
+
+      // 2. Vertical laser light pillars into the night sky
+      final laserPaint = Paint()..color = const Color(0xFFEC4899).withValues(alpha: 0.4)..strokeWidth = 2.0;
+      final lOffset = (sceneryScroll * 0.9) % 140;
+      for (double lx = -lOffset; lx <= size.width + 140; lx += 140) {
+        canvas.drawLine(Offset(lx, size.height * 0.62), Offset(lx, size.height * 0.12), laserPaint);
+      }
+
+      // 3. Distant flying automated air-cabs in the sky
+      for (int c = 0; c < 3; c++) {
+        final cx = (size.width - ((sceneryScroll * 1.4) + c * 130) % (size.width + 90));
+        final cy = size.height * (0.24 + c * 0.08) + math.sin(distanceTraveled * 0.1 + c) * 4;
+        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx, cy, 14, 5), const Radius.circular(2)), Paint()..color = const Color(0xFFFBBF24));
+        canvas.drawCircle(Offset(cx + 12, cy + 2.5), 1.5, Paint()..color = Colors.white);
+      }
+      return;
+    }
+
+    // ❄️ Arctic Blizzard Polar Tundra: Northern Lights, Snow Pines & Glacier Icebergs (Day 14)
+    if (rideMode == RideMode.snowmobile) {
+      // 1. Shimmering Aurora Borealis ribbons across polar sky
+      final auroraPaint1 = Paint()..color = const Color(0xFF34D399).withValues(alpha: 0.35)..strokeWidth = 14..style = PaintingStyle.stroke;
+      final auroraPaint2 = Paint()..color = const Color(0xFF818CF8).withValues(alpha: 0.30)..strokeWidth = 10..style = PaintingStyle.stroke;
+      final aPath = Path();
+      aPath.moveTo(0, size.height * 0.28);
+      aPath.quadraticBezierTo(size.width * 0.35, size.height * 0.18 + math.sin(distanceTraveled * 0.06) * 10, size.width * 0.70, size.height * 0.26);
+      aPath.quadraticBezierTo(size.width * 0.85, size.height * 0.30, size.width, size.height * 0.20);
+      canvas.drawPath(aPath, auroraPaint1);
+      canvas.drawPath(aPath, auroraPaint2);
+
+      // 2. Snow-covered pine trees along horizon
+      final pinePaint = Paint()..color = const Color(0xFF064E3B);
+      final snowCap = Paint()..color = Colors.white;
+      const pSpacing = 65.0;
+      final pOffset = (sceneryScroll * 0.7) % pSpacing;
+      for (double px = -pOffset; px <= size.width + pSpacing; px += pSpacing) {
+        final py = size.height * 0.62;
+        // Pine tree triangle
+        final pPath = Path();
+        pPath.moveTo(px, py);
+        pPath.lineTo(px + 12, py - 32);
+        pPath.lineTo(px + 24, py);
+        pPath.close();
+        canvas.drawPath(pPath, pinePaint);
+        // Snow on pine top
+        final sPath = Path();
+        sPath.moveTo(px + 4, py - 18);
+        sPath.lineTo(px + 12, py - 32);
+        sPath.lineTo(px + 20, py - 18);
+        sPath.close();
+        canvas.drawPath(sPath, snowCap);
+      }
+
+      // 3. Falling blizzard snowflakes
+      final flakePaint = Paint()..color = Colors.white.withValues(alpha: 0.8);
+      for (int f = 0; f < 8; f++) {
+        final fx = (size.width - ((sceneryScroll * 1.5) + f * 45) % (size.width + 30));
+        final fy = (size.height * 0.15 + (f * 38 + distanceTraveled * 2.5) % (size.height * 0.48));
+        canvas.drawCircle(Offset(fx, fy), 1.8, flakePaint);
+      }
+      return;
+    }
 
     // 🚤 Oceanic Surf & Tropical Paradise: Coconut Palms, Leaping Dolphins & Sailboats (Day 11)
     if (rideMode == RideMode.speedboat) {
@@ -2111,7 +2233,7 @@ class _OpenWorldDrivePainter extends CustomPainter {
     }
 
     // Roadside trees (acacia for safari, jungle palms for walking, oak for car)
-    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter && rideMode != RideMode.motorcycle && rideMode != RideMode.ufo && rideMode != RideMode.speedboat && rideMode != RideMode.balloon) {
+    if (rideMode != RideMode.airplane && rideMode != RideMode.rocket && rideMode != RideMode.train && rideMode != RideMode.submarine && rideMode != RideMode.helicopter && rideMode != RideMode.motorcycle && rideMode != RideMode.ufo && rideMode != RideMode.speedboat && rideMode != RideMode.balloon && rideMode != RideMode.hoverbike && rideMode != RideMode.snowmobile) {
       final treeOffset1 = ((sceneryScroll * 0.9) % (size.width + 120)) - 60;
       _drawTree(canvas, Offset(treeOffset1, size.height * 0.62 - 2), 24);
       final treeOffset2 = (((sceneryScroll * 0.9) + size.width * 0.55) % (size.width + 120)) - 60;
@@ -2121,6 +2243,53 @@ class _OpenWorldDrivePainter extends CustomPainter {
 
   void _drawTerrainSurface(Canvas canvas, Size size, double roadTopY, double roadBottomY, double roadHeight) {
     switch (rideMode) {
+      case RideMode.hoverbike:
+        // ⚡ Cyberpunk Obsidian Synthwave Speed Highway (Day 13)
+        final roadPaint13 = Paint()..color = const Color(0xFF090514);
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), roadPaint13);
+
+        // Glowing Cyan Laser Guardrails
+        final laserGuard = Paint()..color = const Color(0xFF06B6D4)..strokeWidth = 2.5;
+        canvas.drawLine(Offset(0, roadTopY + 3), Offset(size.width, roadTopY + 3), laserGuard);
+        canvas.drawLine(Offset(0, roadBottomY - 3), Offset(size.width, roadBottomY - 3), laserGuard);
+
+        // Pulsing Neon Magenta Speed Chevrons
+        final chevronPaint = Paint()..color = const Color(0xFFEC4899)..strokeWidth = 3.0;
+        final cOffset13 = (distanceTraveled * 3.5) % 40;
+        for (double x = -cOffset13; x < size.width; x += 40) {
+          final cPath = Path();
+          cPath.moveTo(x, roadTopY + roadHeight * 0.3);
+          cPath.lineTo(x + 10, roadTopY + roadHeight * 0.5);
+          cPath.lineTo(x, roadTopY + roadHeight * 0.7);
+          canvas.drawPath(cPath, chevronPaint..style = PaintingStyle.stroke);
+        }
+
+        // Road shoulder
+        final shoulderPaint13 = Paint()..color = const Color(0xFF020617);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), shoulderPaint13);
+        break;
+
+      case RideMode.snowmobile:
+        // ❄️ Packed Arctic Snow & Glacier Ice Surface (Day 14)
+        final snowSurface = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+          ).createShader(Rect.fromLTWH(0, roadTopY, size.width, roadHeight));
+        canvas.drawRect(Rect.fromLTWH(0, roadTopY, size.width, roadHeight), snowSurface);
+
+        // Blue ice ski track grooves
+        final iceTrack = Paint()..color = const Color(0xFF93C5FD)..strokeWidth = 2.0;
+        final trackOffset14 = (distanceTraveled * 2.8) % 35;
+        for (double x = -trackOffset14; x < size.width; x += 35) {
+          canvas.drawLine(Offset(x, roadTopY + 14), Offset(x + 20, roadTopY + 14), iceTrack);
+          canvas.drawLine(Offset(x, roadTopY + 38), Offset(x + 20, roadTopY + 38), iceTrack);
+        }
+
+        // Snow drifts on shoulder
+        final driftPaint = Paint()..color = const Color(0xFFF1F5F9);
+        canvas.drawRect(Rect.fromLTWH(0, roadBottomY, size.width, size.height * 0.14), driftPaint);
+        break;
+
       case RideMode.speedboat:
         // 🚤 Sparkling Tropical Ocean Surface with Rolling Waves & White Foaming Surf (Day 11)
         final oceanPaint11 = Paint()
@@ -2980,6 +3149,12 @@ class _OpenWorldDrivePainter extends CustomPainter {
         break;
       case RideMode.balloon:
         _drawHotAirBalloon(canvas, size);
+        break;
+      case RideMode.hoverbike:
+        _drawCyberpunkHoverbike(canvas, size);
+        break;
+      case RideMode.snowmobile:
+        _drawArcticSnowmobile(canvas, size);
         break;
       case RideMode.rocket:
         _drawSpaceRocket(canvas, size);
@@ -4055,6 +4230,199 @@ class _OpenWorldDrivePainter extends CustomPainter {
     final travelerHead = Offset(bX, basketY - 3);
     canvas.drawCircle(travelerHead, 3.5, Paint()..color = const Color(0xFFF59E0B));
     canvas.drawRect(Rect.fromLTWH(travelerHead.dx + 1, travelerHead.dy - 1, 5, 2.5), Paint()..color = const Color(0xFF0F172A));
+  }
+
+
+  // ⚡ Mode 13: Cyberpunk Neon Levitating Speeder Hoverbike (Day 13)
+  void _drawCyberpunkHoverbike(Canvas canvas, Size size) {
+    final hoverBob = math.sin(distanceTraveled * 0.3) * 4;
+    final bikeX = size.width * 0.24;
+    final bikeY = size.height * (carLaneY - 0.02) + hoverBob;
+
+    // Glowing Cyan Magnetic Ground Reflection Puddle
+    final repulsorGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0xFF06B6D4).withValues(alpha: 0.65), Colors.transparent],
+      ).createShader(Rect.fromCenter(center: Offset(bikeX, bikeY + 22), width: 90, height: 16));
+    canvas.drawOval(Rect.fromCenter(center: Offset(bikeX, bikeY + 22), width: 90, height: 16), repulsorGlow);
+
+    // Twin Underbelly Ion Magnetic Levitation Coils
+    final coilPaint = Paint()..color = const Color(0xFF38BDF8)..strokeWidth = 3.0;
+    canvas.drawLine(Offset(bikeX - 22, bikeY + 8), Offset(bikeX - 8, bikeY + 14), coilPaint);
+    canvas.drawLine(Offset(bikeX + 8, bikeY + 14), Offset(bikeX + 22, bikeY + 8), coilPaint);
+    canvas.drawCircle(Offset(bikeX - 15, bikeY + 11), 3.5, Paint()..color = const Color(0xFF06B6D4));
+    canvas.drawCircle(Offset(bikeX + 15, bikeY + 11), 3.5, Paint()..color = const Color(0xFF06B6D4));
+
+    // Trailing Neon Light Exhaust Streaks
+    final exhaustPaint = Paint()..color = const Color(0xFFF43F5E).withValues(alpha: 0.85);
+    for (int t = 0; t < 4; t++) {
+      final tX = bikeX - 32 - (t * 12.0);
+      final tY = bikeY + 2 + math.sin(distanceTraveled * 0.5 + t) * 2;
+      canvas.drawLine(Offset(bikeX - 32, bikeY + 2), Offset(tX, tY), exhaustPaint..strokeWidth = 3.0 - (t * 0.6));
+    }
+
+    // Aerodynamic Speeder Chassis (Matte Gunmetal Obsidian with Neon Magenta Highlights)
+    final chassisPath = Path();
+    chassisPath.moveTo(bikeX - 30, bikeY + 6);
+    chassisPath.lineTo(bikeX + 24, bikeY + 6);
+    chassisPath.lineTo(bikeX + 42, bikeY - 2);
+    chassisPath.lineTo(bikeX + 26, bikeY - 10);
+    chassisPath.lineTo(bikeX - 12, bikeY - 12);
+    chassisPath.lineTo(bikeX - 28, bikeY - 2);
+    chassisPath.close();
+
+    final chassisPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF1E293B), Color(0xFF0F172A), Color(0xFF020617)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(bikeX - 30, bikeY - 12, 72, 18));
+    canvas.drawPath(chassisPath, chassisPaint);
+
+    // Neon Magenta Accent Racing Ribbons
+    final ribbonPaint = Paint()..color = const Color(0xFFEC4899)..strokeWidth = 2.2;
+    canvas.drawLine(Offset(bikeX - 24, bikeY), Offset(bikeX + 32, bikeY - 2), ribbonPaint);
+
+    // Holographic HUD Dashboard Screen
+    final hudPaint = Paint()..color = const Color(0xFF06B6D4).withValues(alpha: 0.8);
+    final hudPath = Path();
+    hudPath.moveTo(bikeX + 10, bikeY - 8);
+    hudPath.lineTo(bikeX + 22, bikeY - 8);
+    hudPath.lineTo(bikeX + 18, bikeY - 18);
+    hudPath.lineTo(bikeX + 6, bikeY - 16);
+    hudPath.close();
+    canvas.drawPath(hudPath, hudPaint);
+
+    // Cyberpunk Biker Avatar
+    final jacketPaint = Paint()..color = const Color(0xFF4C1D95);
+    final torso = Path();
+    torso.moveTo(bikeX - 14, bikeY - 6);
+    torso.lineTo(bikeX + 6, bikeY - 18);
+    torso.lineTo(bikeX + 12, bikeY - 16);
+    torso.lineTo(bikeX - 4, bikeY - 4);
+    torso.close();
+    canvas.drawPath(torso, jacketPaint);
+
+    // High-tech Full-Face Helmet with Glowing Neon Cyan Visor
+    final helmetPos = Offset(bikeX + 10, bikeY - 24);
+    canvas.drawCircle(helmetPos, 6.5, Paint()..color = const Color(0xFF0F172A));
+    final visorStrip = Path();
+    visorStrip.moveTo(helmetPos.dx + 1, helmetPos.dy - 2);
+    visorStrip.lineTo(helmetPos.dx + 6.5, helmetPos.dy - 1);
+    visorStrip.lineTo(helmetPos.dx + 5.5, helmetPos.dy + 3);
+    visorStrip.lineTo(helmetPos.dx + 1, helmetPos.dy + 2);
+    visorStrip.close();
+    canvas.drawPath(visorStrip, Paint()..color = const Color(0xFF38BDF8));
+
+    // Front LED Laser Beam
+    final laserPos = Offset(bikeX + 42, bikeY - 2);
+    final beamPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [const Color(0xFF06B6D4).withValues(alpha: 0.7), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: laserPos, radius: 75));
+    final beamPath = Path();
+    beamPath.moveTo(laserPos.dx, laserPos.dy - 2);
+    beamPath.lineTo(laserPos.dx + 75, laserPos.dy - 12);
+    beamPath.lineTo(laserPos.dx + 75, laserPos.dy + 28);
+    beamPath.lineTo(laserPos.dx, laserPos.dy + 2);
+    beamPath.close();
+    canvas.drawPath(beamPath, beamPaint);
+  }
+
+  // ❄️ Mode 14: Arctic Blizzard Snowmobile / Polar Tundra Explorer (Day 14)
+  void _drawArcticSnowmobile(Canvas canvas, Size size) {
+    final vib = math.sin(distanceTraveled * 0.4) * 1.5;
+    final sX = size.width * 0.24;
+    final sY = size.height * carLaneY + vib;
+
+    // Snow shadow
+    final shadowPaint = Paint()..color = const Color(0xFF94A3B8).withValues(alpha: 0.4);
+    canvas.drawOval(Rect.fromCenter(center: Offset(sX, sY + 16), width: 86, height: 10), shadowPaint);
+
+    // Billowing Powder Snow Spray Churned by Rear Tracks
+    final snowSpray = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    for (int s = 0; s < 6; s++) {
+      final sDist = 10.0 + s * 9.0;
+      final sH = 3.0 + s * 4.0;
+      final sOsc = math.sin(distanceTraveled * 0.5 + s) * 3;
+      canvas.drawCircle(Offset(sX - 32 - sDist, sY + 10 - sH + sOsc), 2.5 + s * 0.7, snowSpray);
+    }
+
+    // Heavy-Duty Rotating Rear Rubber Track Assembly
+    final trackRect = Rect.fromLTWH(sX - 34, sY + 6, 42, 10);
+    final trackPaint = Paint()..color = const Color(0xFF1E293B);
+    canvas.drawRRect(RRect.fromRectAndRadius(trackRect, const Radius.circular(4)), trackPaint);
+    final rollerPaint = Paint()..color = const Color(0xFF64748B);
+    canvas.drawCircle(Offset(sX - 26, sY + 11), 3.5, rollerPaint);
+    canvas.drawCircle(Offset(sX - 13, sY + 11), 3.5, rollerPaint);
+    canvas.drawCircle(Offset(sX, sY + 11), 3.5, rollerPaint);
+
+    // Dual Front Steering Skis with Curved Spindle
+    final skiPaint = Paint()..color = const Color(0xFF0F172A)..strokeWidth = 3.0..strokeCap = StrokeCap.round;
+    final skiPath = Path();
+    skiPath.moveTo(sX + 8, sY + 15);
+    skiPath.lineTo(sX + 38, sY + 15);
+    skiPath.quadraticBezierTo(sX + 46, sY + 14, sX + 48, sY + 8);
+    canvas.drawPath(skiPath, skiPaint);
+    canvas.drawLine(Offset(sX + 24, sY + 15), Offset(sX + 18, sY + 4), Paint()..color = const Color(0xFFE2E8F0)..strokeWidth = 2.5);
+
+    // Main Snowmobile Cowling (Arctic Safety Orange #EA580C)
+    final bodyPath = Path();
+    bodyPath.moveTo(sX - 30, sY + 6);
+    bodyPath.lineTo(sX + 22, sY + 6);
+    bodyPath.lineTo(sX + 36, sY - 2);
+    bodyPath.lineTo(sX + 28, sY - 14);
+    bodyPath.lineTo(sX + 8, sY - 14);
+    bodyPath.lineTo(sX - 16, sY - 6);
+    bodyPath.lineTo(sX - 30, sY + 2);
+    bodyPath.close();
+
+    final bodyPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFF97316), Color(0xFFEA580C), Color(0xFFC2410C)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(sX - 30, sY - 14, 66, 20));
+    canvas.drawPath(bodyPath, bodyPaint);
+
+    // Black ergonomic seat
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(sX - 22, sY - 6, 22, 6), const Radius.circular(2)),
+      Paint()..color = const Color(0xFF0F172A),
+    );
+
+    // Protective Arctic Windshield
+    final shieldPaint = Paint()..color = const Color(0xFFBAE6FD).withValues(alpha: 0.8);
+    final wPath = Path();
+    wPath.moveTo(sX + 10, sY - 14);
+    wPath.lineTo(sX + 24, sY - 14);
+    wPath.lineTo(sX + 16, sY - 26);
+    wPath.lineTo(sX + 6, sY - 24);
+    wPath.close();
+    canvas.drawPath(wPath, shieldPaint);
+
+    // Polar Explorer Avatar with Fur-Trimmed Parka Hood & Snow Goggles
+    final headCenter = Offset(sX + 2, sY - 20);
+    canvas.drawCircle(headCenter, 8.0, Paint()..color = const Color(0xFFD97706));
+    canvas.drawCircle(headCenter, 6.0, Paint()..color = const Color(0xFFFDBA74));
+    final gogglePaint = Paint()..color = const Color(0xFFFBBF24);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(headCenter.dx - 1, headCenter.dy - 3, 7, 4), const Radius.circular(1.5)), gogglePaint);
+    canvas.drawRect(Rect.fromLTWH(headCenter.dx - 1, headCenter.dy - 3, 7, 4), Paint()..color = const Color(0xFF0F172A)..style = PaintingStyle.stroke..strokeWidth = 1.0);
+
+    // Arctic Headlamp High-Beam
+    final lampPos = Offset(sX + 34, sY - 4);
+    canvas.drawCircle(lampPos, 3.5, Paint()..color = const Color(0xFFFEF08A));
+    final beamPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.yellow.withValues(alpha: 0.65), Colors.transparent],
+      ).createShader(Rect.fromCircle(center: lampPos, radius: 75));
+    final beam = Path();
+    beam.moveTo(lampPos.dx, lampPos.dy - 2);
+    beam.lineTo(lampPos.dx + 75, lampPos.dy - 14);
+    beam.lineTo(lampPos.dx + 75, lampPos.dy + 26);
+    beam.lineTo(lampPos.dx, lampPos.dy + 2);
+    beam.close();
+    canvas.drawPath(beam, beamPaint);
   }
 
   void _drawWheel(Canvas canvas, Offset center) {
