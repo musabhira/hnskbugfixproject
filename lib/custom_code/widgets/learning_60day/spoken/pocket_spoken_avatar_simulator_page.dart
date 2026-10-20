@@ -54,6 +54,7 @@ class _ChatMessageItem {
   final String? translationMl;
   final String? tip;
   final bool isVoiceMessage;
+  final PronunciationEvaluationResult? evaluation;
 
   _ChatMessageItem({
     required this.isAvatar,
@@ -61,6 +62,7 @@ class _ChatMessageItem {
     this.translationMl,
     this.tip,
     this.isVoiceMessage = false,
+    this.evaluation,
   });
 }
 
@@ -74,8 +76,6 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
 
   bool _isRecording = false;
   String _spokenText = '';
-  String? _speechError;
-  int _failedExchangeAttempts = 0;
   int _recordingSeconds = 0;
   Timer? _recordTimer;
   stt.SpeechToText? _speech;
@@ -169,8 +169,6 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
 
     final exchange = _plan.exchanges[index];
     setState(() {
-      _failedExchangeAttempts = 0;
-      _speechError = null;
       _currentIndex = index;
       _chatHistory.add(
         _ChatMessageItem(
@@ -198,7 +196,11 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
     });
   }
 
-  Future<void> _onSelectResponse(String optionText, {bool isVoice = false}) async {
+  Future<void> _onSelectResponse(
+    String optionText, {
+    bool isVoice = false,
+    PronunciationEvaluationResult? evaluation,
+  }) async {
     HapticFeedback.lightImpact();
 
     setState(() {
@@ -208,6 +210,7 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
           isAvatar: false,
           text: optionText,
           isVoiceMessage: isVoice,
+          evaluation: evaluation,
         ),
       );
     });
@@ -424,43 +427,23 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
         return;
       }
 
-      final isMatch = PocketSpeechNormalizer.isMatch(
-        spokenText: _spokenText,
-        targetSentence: targetPhrase,
-        thresholdPercentage: 35,
-      );
-
       final evalResult = PocketPronunciationEvaluator.evaluate(
         targetSentence: targetPhrase,
         spokenText: _spokenText,
       );
 
-      if (!isMatch && evalResult.accuracyPercentage < 35 && _failedExchangeAttempts < 1) {
-        _failedExchangeAttempts++;
-        PocketGameAudioService.instance.playIncorrectSound();
-        HapticFeedback.lightImpact();
-
-        setState(() {
-          _chatHistory.add(
-            _ChatMessageItem(
-              isAvatar: true,
-              text: 'Good try! Let\'s say it like this:\n\n"$targetPhrase"\n\nTap the mic below and try again! 🎙️',
-              translationMl: 'നല്ല ശ്രമം! നമുക്ക് ഒന്നുകൂടി പറഞ്ഞു നോക്കാം: "$targetPhrase"',
-            ),
-          );
-        });
-        _scrollToBottom();
-        await _speakText('Good try! Let\'s say it like this: $targetPhrase. Try again!');
-        return;
+      // User Audio Directive: DO NOT force repeat ("repeat parayan parayanda... repeat parayan paranjaal avar madikkum!")
+      // Always advance! Provide real verified percentage and highlight mispronounced words right beneath the bubble!
+      if (evalResult.accuracyPercentage >= 70) {
+        PocketGameAudioService.instance.playCorrectSound();
+      } else {
+        PocketGameAudioService.instance.playCoinSound();
       }
 
-      // Passed or 2nd attempt coach pass
-      _failedExchangeAttempts = 0;
-      PocketGameAudioService.instance.playCorrectSound();
-
       await _onSelectResponse(
-        normalizedSpk.isNotEmpty ? normalizedSpk : _spokenText.trim(),
+        targetPhrase,
         isVoice: true,
+        evaluation: evalResult,
       );
     }
   }
@@ -848,89 +831,100 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF047857), Color(0xFF10B981)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(4),
-                bottomLeft: Radius.circular(18),
-                bottomRight: Radius.circular(18),
-              ),
-              border: Border.all(
-                color: const Color(0xFF34D399).withValues(alpha: 0.6),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Row(
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    _speakText(msg.text);
-                  },
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: Colors.white24,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Animated audio waveform simulation
-                Row(
-                  children: [8, 16, 22, 14, 26, 18, 24, 12, 20, 10, 16, 22, 10].map((h) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      width: 3,
-                      height: h.toDouble(),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '0:03',
-                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF047857), Color(0xFF10B981)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(4),
+                      bottomLeft: Radius.circular(18),
+                      bottomRight: Radius.circular(18),
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                        blurRadius: 10,
+                      ),
+                    ],
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 12),
-                      const SizedBox(width: 3),
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _speakText(msg.text);
+                        },
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: const BoxDecoration(
+                            color: Colors.white24,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Animated audio waveform simulation
+                      Row(
+                        children: [8, 16, 22, 14, 26, 18, 24, 12, 20, 10, 16, 22, 10].map((h) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                            width: 3,
+                            height: h.toDouble(),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        'Voice Note',
-                        style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                        '0:03',
+                        style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 12),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Voice Note',
+                              style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
+                if (msg.evaluation != null) ...[
+                  PocketPronunciationInlineBadge(result: msg.evaluation!),
+                ],
               ],
             ),
           ),

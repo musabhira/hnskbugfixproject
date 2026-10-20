@@ -1558,6 +1558,7 @@ class _PocketInteractiveTeacherGamePageState
                                   _bubbleSafariStep++;
                                   _balloonReady = false;
                                   _lastPoppedId = null;
+                                  _spokeCorrectly = false;
                                 });
                                 if (_bubbleSafariStep < _safariStages.length) {
                                   _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);
@@ -3161,6 +3162,7 @@ class _PocketInteractiveTeacherGamePageState
                       _bubbleSafariStep--;
                       _balloonReady = false;
                       _lastPoppedId = null;
+                      _spokeCorrectly = false;
                     });
                     _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);
                   },
@@ -3193,6 +3195,7 @@ class _PocketInteractiveTeacherGamePageState
                     _bubbleSafariStep++;
                     _balloonReady = false;
                     _lastPoppedId = null;
+                    _spokeCorrectly = false;
                   });
                   if (_bubbleSafariStep < _safariStages.length) {
                     _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);

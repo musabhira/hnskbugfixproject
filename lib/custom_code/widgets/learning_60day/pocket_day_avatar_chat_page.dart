@@ -28,6 +28,7 @@ class DayChatMessage {
   final String? speakThisPrompt;
   final bool isVoiceMessage;
   final DateTime timestamp;
+  final PronunciationEvaluationResult? evaluationResult;
 
   DayChatMessage({
     required this.id,
@@ -39,6 +40,7 @@ class DayChatMessage {
     this.inBubbleOptions,
     this.speakThisPrompt,
     this.isVoiceMessage = false,
+    this.evaluationResult,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 }
@@ -3089,7 +3091,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
       spokenText: voiceText,
     );
 
-    // Show learner message
+    // Show learner message with evaluation result attached directly to bubble
     setState(() {
       _showMicGuideArrow = false;
       _hasShownMicGuide = true;
@@ -3099,78 +3101,26 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           isAvatar: false,
           textEn: voiceText,
           isVoiceMessage: true,
+          evaluationResult: evalResult,
         ),
       );
+      _isAnalyzing = false;
     });
     _scrollToBottom();
 
-    // Forgiving evaluation check (avoid blocking user due to mobile mic/STT inaccuracies)
-    if (!evalResult.isAcceptable &&
-        evalResult.accuracyPercentage < 50 &&
-        voiceText.toLowerCase() != target.toLowerCase() &&
-        !voiceText.toLowerCase().contains('yes') &&
-        !voiceText.toLowerCase().contains('start') &&
-        !voiceText.toLowerCase().contains('test')) {
-      // Evaluation failed: Give constructive retry feedback with option to continue anyway
-      PocketGameAudioService.instance.playIncorrectSound();
-      HapticFeedback.vibrate();
-
-      setState(() {
-        _messages.add(
-          DayChatMessage(
-            id: 'eval_fail_${DateTime.now().millisecondsSinceEpoch}',
-            isAvatar: true,
-            textEn:
-                'Pronunciation Check (${evalResult.accuracyPercentage}%):\n'
-                'Target: "$target"\n\n'
-                '${evalResult.feedbackTip}',
-            textNative: 'ശ്രമിക്കൂ! വീണ്ടും പറയാം അല്ലെങ്കിൽ മുന്നോട്ട് പോകാം.',
-            cardContent: PocketPronunciationResultCard(
-              result: evalResult,
-              onRetry: () => _toggleLiveListening(),
-            ),
-            speakThisPrompt: 'Tap mic to try again, or continue:',
-            inBubbleOptions: [
-              DayInBubbleOption(
-                labelEn: '🎙️ RETRY: "$target"',
-                labelNative: 'വീണ്ടും പറയാം',
-                icon: '🔄',
-                isHighlightedAnswer: false,
-                backgroundColor: const Color(0xFFEF4444),
-                borderColor: const Color(0xFFFCA5A5),
-                textColor: Colors.white,
-                onTap: () => _handleVoiceSubmission(
-                  voiceText: target,
-                  action: action,
-                ),
-              ),
-              DayInBubbleOption(
-                labelEn: '✨ CONTINUE ANYWAY ➔',
-                labelNative: 'മുന്നോട്ട് പോകാം',
-                icon: '🚀',
-                isHighlightedAnswer: true,
-                backgroundColor: const Color(0xFF10B981),
-                borderColor: const Color(0xFF6EE7B7),
-                textColor: Colors.white,
-                onTap: () {
-                  setState(() => _isAnalyzing = false);
-                  action();
-                },
-              ),
-            ],
-          ),
-        );
-        _isAnalyzing = false;
-      });
-
-      _speak('Good try! Say: $target');
-      _scrollToBottom();
-      return;
+    // User Audio Directive: DO NOT block or force repeat ("repeat parayan parayanda... repeat parayan paranjaal avar madikkum!")
+    // Real verified accuracy percentage and focus words are displayed cleanly right beneath the bubble!
+    if (evalResult.accuracyPercentage >= 70) {
+      PocketGameAudioService.instance.playCorrectSound();
+    } else {
+      PocketGameAudioService.instance.playCoinSound();
     }
 
-    // Success!
-    setState(() => _isAnalyzing = false);
-    action();
+    // Natural conversation pause before CyberCat responds
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+      action();
+    });
   }
 
   void _toggleLiveListening() async {
@@ -3587,10 +3537,14 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
       padding: const EdgeInsets.only(bottom: 14, left: 36),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Flexible(
-            child: Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -3698,7 +3652,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                 ],
               ),
             ),
-          ),
+            if (msg.evaluationResult != null) ...[
+              PocketPronunciationInlineBadge(result: msg.evaluationResult!),
+            ],
+          ],
+        ),
+      ),
           const SizedBox(width: 8),
           Container(
             width: 32,
