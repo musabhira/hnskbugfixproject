@@ -22,112 +22,96 @@
     "totalCoinsReward": 120
   },
   "grammarRule": {
-    "formula": "Coordination and Subordination",
+    "formula": "If + Subject + Past Simple (V2), Subject + would + V1 (Base verb)",
     "explanation": {
-      "ml": "സങ്കൽപ്പങ്ങൾ (Second Conditional) എന്ന വിഷയത്തിൽ If + Past Simple, Would + V1 (If I had money, I would travel) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use If + Past Simple, Would + V1 (If I had money, I would travel) correctly in spoken English."
+      "ml": "യഥാർത്ഥമല്ലാത്ത, സാങ്കൽപ്പികമായ കാര്യങ്ങളെക്കുറിച്ചോ സ്വപ്നങ്ങളെക്കുറിച്ചോ സംസാരിക്കാൻ Second Conditional ഉപയോഗിക്കുന്നു. If-ക്ലോസിൽ Past Simple ഉം മെയിൻ ക്ലോസിൽ would + V1 ഉം വരും.",
+      "en": "Master Second Conditional: Hypothetical Situations & Dreams with clear formula: If + Subject + Past Simple (V2), Subject + would + V1 (Base verb)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: If I had time, I would travel.",
-      "en": "Golden Rule: Practice 'If I had time, I would travel.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Second Conditional ൽ 'I/he/she' കൂടെ 'were' ഉപയോഗിക്കുന്നത് കൂടുതൽ ഔദ്യോഗികവും വ്യാകരണപരവുമാണ്: 'If I were you, I would take that offer.'",
+      "en": "Golden Tip: Second Conditional ൽ 'I/he/she' കൂടെ 'were' ഉപയോഗിക്കുന്നത് കൂടുതൽ ഔദ്യോഗികവും വ്യാകരണപരവുമാണ്: 'If I were you, I would take that offer.'"
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "travel",
-        "v2": "traveled",
-        "v3": "traveled",
-        "meaning": {
-          "ml": "യാത്ര ചെയ്യുമായിരുന്നു",
-          "hi": "യാത്ര ചെയ്യുമായിരുന്നു",
-          "ta": "യാത്ര ചെയ്യുമായിരുന്നു"
-        },
-        "example": "If I had time, I would travel.",
-        "exampleMl": "യാത്ര ചെയ്യുമായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "buy",
-        "v2": "bought",
-        "v3": "bought",
-        "meaning": {
-          "ml": "വാങ്ങുക",
-          "hi": "खरीदना",
-          "ta": "வாங்கு"
-        },
-        "example": "If I won, I would buy a house.",
-        "exampleMl": "വാങ്ങുമായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "help",
-        "v2": "helped",
-        "v3": "helped",
-        "meaning": {
-          "ml": "സഹായിക്കുക",
-          "hi": "मदद करना",
-          "ta": "உதவு"
-        },
-        "example": "If I knew, I would help.",
-        "exampleMl": "സഹായിക്കുമായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "fly",
-        "v2": "flew",
-        "v3": "flown",
-        "meaning": {
-          "ml": "പറക്കുമായിരുന്നു",
-          "hi": "പറക്കുമായിരുന്നു",
-          "ta": "പറക്കുമായിരുന്നു"
-        },
-        "example": "If I had wings, I would fly.",
-        "exampleMl": "പറക്കുമായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "dream",
+        "word": "Imagination",
+        "partOfSpeech": "noun",
+        "definition": "The faculty or action of forming new ideas, or images or concepts of external objects not present to the senses.",
         "meaning": {
-          "ml": "സ്വപ്നം",
-          "hi": "സ്വപ്നം",
-          "ta": "സ്വപ്നം"
+          "ml": "ഭാവന / ഭാവനാശക്തി",
+          "hi": "कल्पना",
+          "ta": "கற்பனை",
+          "te": "ఊహాశక్తి",
+          "kn": "ಕಲ್ಪನೆ"
         },
-        "example": "We learned about dream in today's lesson."
+        "example": "Her vibrant science-fiction stories were born from boundless creative imagination."
       },
       {
-        "word": "imagination",
+        "word": "Ideal",
+        "partOfSpeech": "adjective",
+        "definition": "Satisfying one's conception of what is perfect; most suitable.",
         "meaning": {
-          "ml": "സങ്കൽപ്പം",
-          "hi": "സങ്കൽപ്പം",
-          "ta": "സങ്കൽപ്പം"
+          "ml": "ഏറ്റവും അനുയോജ്യമായ / മാതൃകാപരമായ",
+          "hi": "आदर्श / सर्वोत्तम",
+          "ta": "சிறந்த / இலட்சியமான",
+          "te": "ఆదర్శవంతమైన",
+          "kn": "ಆದರ್ಶ"
         },
-        "example": "We learned about imagination in today's lesson."
+        "example": "A calm coastal cottage is an ideal retreat for writing novels."
       },
       {
-        "word": "wish",
+        "word": "Venture",
+        "partOfSpeech": "noun",
+        "definition": "A risky or daring journey or undertaking, especially in business.",
         "meaning": {
-          "ml": "ആഗ്രഹം",
-          "hi": "ആഗ്രഹം",
-          "ta": "ആഗ്രഹം"
+          "ml": "സംരംഭം / സാഹസികമായ ബിസിനസ് പരിശ്രമം",
+          "hi": "साहसिक उद्यम",
+          "ta": "துணிகர முயற்சி / வணிக முயற்சி",
+          "te": "సాహసోపేత వ్యాపారం",
+          "kn": "ಸಾಹಸೋದ್ಯಮ"
         },
-        "example": "We learned about wish in today's lesson."
+        "example": "Launching a clean energy startup was the most daring venture of his career."
       },
       {
-        "word": "world",
+        "word": "Philanthropy",
+        "partOfSpeech": "noun",
+        "definition": "The desire to promote the welfare of others, expressed especially by the generous donation of money to good causes.",
         "meaning": {
-          "ml": "ലോകം",
-          "hi": "ലോകം",
-          "ta": "ലോകം"
+          "ml": "മനുഷ്യസ്നേഹം / ജീവകാരുണ്യ പ്രവർത്തനം",
+          "hi": "परोपकार / जनहित कार्य",
+          "ta": "மனிதநேய ஈகை / அறப்பணி",
+          "te": "దాతృత్వము",
+          "kn": "ಪರೋಪಕಾರ"
         },
-        "example": "We learned about world in today's lesson."
+        "example": "Her generous philanthropy funded modern children's cancer clinics across Asia."
       },
       {
-        "word": "freedom",
+        "word": "Hypothetical",
+        "partOfSpeech": "adjective",
+        "definition": "Based on or serving as a hypothesis; supposed but not necessarily real or true.",
         "meaning": {
-          "ml": "സ്വാതന്ത്ര്യം",
-          "hi": "സ്വാതന്ത്ര്യം",
-          "ta": "സ്വാതന്ത്ര്യം"
+          "ml": "സാങ്കൽപ്പികമായ / സങ്കല്പത്തിലുള്ള",
+          "hi": "काल्पनिक / परिकल्पित",
+          "ta": "கருதுகோளான / அனுமானமான",
+          "te": "ఊహాజనిత",
+          "kn": "ಊಹಾತ್ಮಕ"
         },
-        "example": "We learned about freedom in today's lesson."
+        "example": "The law professor posed a hypothetical courtroom scenario to test student arguments."
+      },
+      {
+        "word": "Aspiration",
+        "partOfSpeech": "noun",
+        "definition": "A hope or ambition of achieving something.",
+        "meaning": {
+          "ml": "ഉയർന്ന അഭിലാഷം / ആഗ്രഹം",
+          "hi": "आकांक्षा / अभिलाषा",
+          "ta": "உயர் லட்சியம்",
+          "te": "ఆకాంక్ష",
+          "kn": "ಆಕಾಂಕ್ಷೆ"
+        },
+        "example": "Becoming an aerospace astronaut was his greatest childhood aspiration."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Imaginary Situations: If I were... / Would",
-        "ml": "പാഠം: സങ്കൽപ്പങ്ങൾ (Second Conditional)"
+        "en": "Concept Room: Second Conditional: Hypothetical Situations & Dreams",
+        "ml": "പാഠം: സാങ്കൽപ്പിക കാര്യങ്ങളും സ്വപ്നങ്ങളും (If + Past, Would + V1)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "If + Subject + Past Simple (V2), Subject + would + V1 (Base verb)",
+        "ml": "യഥാർത്ഥമല്ലാത്ത, സാങ്കൽപ്പികമായ കാര്യങ്ങളെക്കുറിച്ചോ സ്വപ്നങ്ങളെക്കുറിച്ചോ സംസാരിക്കാൻ Second Conditional ഉപയോഗിക്കുന്നു. If-ക്ലോസിൽ Past Simple ഉം മെയിൻ ക്ലോസിൽ would + V1 ഉം വരും."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "If I had time, I would travel.",
-        "If I won, I would buy a house.",
-        "If I knew, I would help."
+        "If I won a ten million dollar lottery prize , I would establish free rural medical academies .",
+        "If she were the chief education minister , she would reform the examination grading framework .",
+        "If we had unlimited venture funding , we would build solar powered desalinization plants .",
+        "If I were in your shoes , I would accept that international job opportunity immediately .",
+        "Where would you travel if you had a month of uninterrupted free time ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Imaginary Situations: If I were... / Would",
-        "ml": "റീഡിങ് റൂം: സങ്കൽപ്പങ്ങൾ (Second Conditional)"
+        "en": "Reading Room: The Island of Sustainable Dreams",
+        "ml": "റീഡിങ് റൂം: സാങ്കൽപ്പിക കാര്യങ്ങളും സ്വപ്നങ്ങളും (If + Past, Would + V1)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "If I had time, I would travel.",
-          "meaningMl": "യാത്ര ചെയ്യുമായിരുന്നു - If I had time, I would travel.",
-          "audioPrompt": "If I had time, I would travel."
+          "text": "Environmental philosopher Maya frequently contemplated a fascinating hypothetical world during her university lectures.",
+          "meaningMl": "പരിസ്ഥിതി തത്ത്വചിന്തക മായ തന്റെ യൂണിവേഴ്സിറ്റി പ്രഭാഷണങ്ങളിൽ പലപ്പോഴും കൗതുകകരമായ ഒരു സാങ്കൽപ്പിക ലോകത്തെക്കുറിച്ച് ചിന്തിച്ചിരുന്നു.",
+          "meaningHi": "पर्यावरण दार्शनिक माया अपने व्याख्यानों में एक काल्पनिक दुनिया पर विचार करती थीं।",
+          "meaningTa": "சுற்றுச்சூழல் தத்துவஞானி மாயா தனது விரிவுரைகளில் ஒரு கற்பனை உலகத்தைப் பற்றி சிந்தித்தார்.",
+          "audioPrompt": "Environmental philosopher Maya frequently contemplated a fascinating hypothetical world during her university lectures."
         },
         {
-          "text": "If I won, I would buy a house.",
-          "meaningMl": "വാങ്ങുമായിരുന്നു - If I won, I would buy a house.",
-          "audioPrompt": "If I won, I would buy a house."
+          "text": "If humans designed modern cities around walking forests instead of asphalt highways, urban stress would plummet dramatically.",
+          "meaningMl": "മനുഷ്യർ റോഡുകൾക്ക് പകരം കാടുകൾക്ക് ചുറ്റും നഗരങ്ങൾ രൂപകൽപ്പന ചെയ്തിരുന്നെങ്കിൽ, നഗരങ്ങളിലെ മാനസിക സമ്മർദ്ദം ഗണ്യമായി കുറയുമായിരുന്നു.",
+          "meaningHi": "यदि शहर राजमार्गों के बजाय जंगलों के चारों ओर बने होते, तो तनाव बहुत कम होता।",
+          "meaningTa": "சாலைகளுக்கு பதிலாக காடுகளைச் சுற்றி நகரங்கள் வடிவமைக்கப்பட்டிருந்தால் மன அழுத்தம் குறைந்திருக்கும்.",
+          "audioPrompt": "If humans designed modern cities around walking forests instead of asphalt highways, urban stress would plummet dramatically."
         },
         {
-          "text": "Daily practice of Imaginary Situations: If I were... / Would gives you great confidence in English.",
-          "meaningMl": "സങ്കൽപ്പങ്ങൾ (Second Conditional) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Imaginary Situations: If I were... / Would gives you great confidence in English."
+          "text": "If every community cultivated rooftop botanical gardens, urban temperatures would drop by four degrees Celsius.",
+          "meaningMl": "എല്ലാ ജനവാസ കേന്ദ്രങ്ങളും ടെറസിൽ പൂന്തോട്ടങ്ങൾ വെച്ചുപിടിപ്പിച്ചിരുന്നെങ്കിൽ, നഗര താപനില നാല് ഡിഗ്രി സെൽഷ്യസ് കുറയുമായിരുന്നു.",
+          "meaningHi": "यदि हर कोई छतों पर बगीचे लगाता, तो तापमान चार डिग्री सेल्सियस तक गिर जाता।",
+          "meaningTa": "அனைவரும் மாடித் தோட்டம் அமைத்திருந்தால், நகர வெப்பநிலை நான்கு டிகிரி குறைந்திருக்கும்.",
+          "audioPrompt": "If every community cultivated rooftop botanical gardens, urban temperatures would drop by four degrees Celsius."
+        },
+        {
+          "text": "Her visionary students gathered philanthropic funding to purchase a deserted barren island off the Arabian coastline.",
+          "meaningMl": "അവരുടെ ദീർഘവീക്ഷണമുള്ള വിദ്യാർത്ഥികൾ അറേബ്യൻ തീരത്തെ വിജനമായ ഒരു ദ്വീപ് വാങ്ങാൻ ജീവകാരുണ്യ ഫണ്ട് ശേഖരിച്ചു.",
+          "meaningHi": "उनके छात्रों ने एक बंजर द्वीप खरीदने के लिए धन जुटाया।",
+          "meaningTa": "அவரது மாணவர்கள் அரபிக் கடலில் ஒரு வெற்றுத் தீவை வாங்க நிதி திரட்டினர்.",
+          "audioPrompt": "Her visionary students gathered philanthropic funding to purchase a deserted barren island off the Arabian coastline."
+        },
+        {
+          "text": "If they relied solely on offshore tidal generators, the eco-sanctuary would function with zero greenhouse carbon footprint.",
+          "meaningMl": "സമുദ്രത്തിലെ വേലിയേറ്റ ജനറേറ്ററുകളെ മാത്രം ആശ്രയിച്ചിരുന്നെങ്കിൽ, ആ പരിസ്ഥിതി സങ്കേതം കാർബൺ പുറന്തള്ളൽ ഇല്ലാതെ പ്രവർത്തിക്കുമായിരുന്നു.",
+          "meaningHi": "यदि वे ज्वारीय ऊर्जा पर निर्भर होते, तो द्वीप बिना कार्बन उत्सर्जन के चलता।",
+          "meaningTa": "அலை மின்சாரத்தை நம்பியிருந்தால், அந்த தீவு கார்பன் இல்லாமல் இயங்கியிருக்கும்.",
+          "audioPrompt": "If they relied solely on offshore tidal generators, the eco-sanctuary would function with zero greenhouse carbon footprint."
+        },
+        {
+          "text": "Today, that experimental sanctuary proves that if human imagination dares to build boldly, utopian dreams become living realities.",
+          "meaningMl": "ഇന്ന്, ആ പരീക്ഷണ ദ്വീപ് തെളിയിക്കുന്നത്, മനുഷ്യന്റെ ഭാവന ധൈര്യത്തോടെ പടുത്തുയർത്താൻ തയ്യാറായാൽ സ്വപ്നങ്ങൾ യാഥാർത്ഥ്യമാകും എന്നാണ്.",
+          "meaningHi": "आज वह प्रयोग साबित करता है कि यदि कल्पना साहस करती है, तो सपने सच होते हैं।",
+          "meaningTa": "மனித கற்பனை துணிந்தால், லட்சியக் கனவுகள் நிஜமாகும் என்பதை அந்த தீவு நிரூபிக்கிறது.",
+          "audioPrompt": "Today, that experimental sanctuary proves that if human imagination dares to build boldly, utopian dreams become living realities."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "By how many degrees Celsius would urban temperatures drop if rooftops had botanical gardens?",
+            "ml": "ടെറസുകളിൽ പൂന്തോട്ടങ്ങൾ ഉണ്ടായാൽ താപനില എത്ര ഡിഗ്രി കുറയുമായിരുന്നു?",
+            "hi": "छत पर बगीचे होने से तापमान कितने डिग्री गिरता?",
+            "ta": "மாடித் தோட்டம் அமைத்தால் வெப்பநிலை எத்தனை டிகிரி குறையும்?"
+          },
+          "options": [
+            "One degree",
+            "Four degrees Celsius",
+            "Ten degrees",
+            "Zero degrees"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Temperatures would drop by four degrees Celsius.",
+            "ml": "4 ഡിഗ്രി സെൽഷ്യസ് (Four degrees Celsius)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Where was the deserted island located that the students purchased?",
+            "ml": "വിദ്യാർത്ഥികൾ വാങ്ങിയ വിജനമായ ദ്വീപ് എവിടെയായിരുന്നു സ്ഥിതി ചെയ്തിരുന്നത്?",
+            "hi": "छात्रों ने जो द्वीप खरीदा वह कहां स्थित था?",
+            "ta": "மாணவர்கள் வாங்கிய தீவு எங்கு இருந்தது?"
+          },
+          "options": [
+            "In the Arctic circle",
+            "Off the Arabian coastline",
+            "Inside the Amazon river",
+            "Near Antarctica"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Off the Arabian coastline.",
+            "ml": "അറേബ്യൻ തീരത്ത് (Off the Arabian coastline)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What clean energy source would allow the eco-sanctuary to operate with zero carbon footprint?",
+            "ml": "കാർബൺ ഇല്ലാതെ പ്രവർത്തിക്കാൻ ആ സങ്കേതത്തെ സഹായിക്കുന്ന ഊർജ്ജ സ്രോതസ്സ് ഏതാണ്?",
+            "hi": "शून्य कार्बन के लिए कौन सा ऊर्जा स्रोत मदद करेगा?",
+            "ta": "பூஜ்ஜிய கார்பனுக்கு உதவும் ஆற்றல் எது?"
+          },
+          "options": [
+            "Coal boilers",
+            "Offshore tidal generators",
+            "Kerosene furnaces",
+            "Wood fires"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Offshore tidal generators.",
+            "ml": "സമുദ്ര വേലിയേറ്റ ജനറേറ്ററുകൾ (Offshore tidal generators)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d70_1",
-          "question": "Which word represents: 'യാത്ര ചെയ്യുമായിരുന്നു'?",
+          "id": 1,
+          "question": "Select the sentence with the preferred formal subjunctive form in Second Conditional:",
           "options": [
-            "borrow",
-            "forget",
-            "travel",
-            "finish"
+            "If I was you, I would take that offer.",
+            "If I were you, I would take that offer.",
+            "If I am you, I would take that offer.",
+            "If I be you, I would take that offer."
           ],
-          "answer": "travel",
-          "explanation": "travel എന്നാൽ യാത്ര ചെയ്യുമായിരുന്നു എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "സാങ്കൽപ്പികമായ കാര്യങ്ങൾ പറയുമ്പോൾ 'I/he/she' കൂടെ 'were' ഉപയോഗിക്കുന്നതാണ് ഏറ്റവും കൃത്യവും ഔദ്യോഗികവുമായ ഇംഗ്ലീഷ് ('If I were you...')."
         },
         {
-          "id": "trap_d70_2",
-          "question": "What is the past form (V2) of 'buy'?",
+          "id": 2,
+          "question": "What is the formula of the Second Conditional?",
           "options": [
-            "bought",
-            "buys",
-            "has buy",
-            "buying"
+            "If + Present Simple, Will + V1",
+            "If + Past Simple, Would + V1",
+            "If + Past Perfect, Would have + V3",
+            "If + Present Continuous, Might + V1"
           ],
-          "answer": "bought",
-          "explanation": "buy ന്റെ ഭൂതകാല രൂപം bought ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "Second Conditional ഫോർമുല: If + Past Simple (V2), Would + Base verb (V1)."
         },
         {
-          "id": "trap_d70_3",
-          "question": "What is the correct English word for 'സ്വപ്നം'?",
+          "id": 3,
+          "question": "Which of the following describes a real future possibility, NOT a hypothetical dream?",
           "options": [
-            "success",
-            "journey",
-            "airport",
-            "dream"
+            "If I had wings, I would fly across continents.",
+            "If it rains tomorrow, we will carry our umbrellas.",
+            "If aliens landed on Earth, everyone would panic.",
+            "If I were invisible, I would wander unnoticed."
           ],
-          "answer": "dream",
-          "explanation": "സ്വപ്നം എന്നാൽ ഇംഗ്ലീഷിൽ dream."
+          "correctIndex": 1,
+          "explanationMl": "'If it rains tomorrow, we will carry umbrellas' എന്നത് യാഥാർത്ഥ്യമായ First Conditional ആണ്. ബാക്കിയുള്ളവ അസംഭവ്യമായ Second Conditional ഭാവനകളാണ്."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 70 Gate Exam (5 Qs)",

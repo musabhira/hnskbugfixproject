@@ -287,7 +287,28 @@
     },
     {
       "stepNumber": 8,
-      "id": "step_8_community_chat",
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_community_chat",
       "title": {
         "en": "English Hub Community Chat",
         "ml": "ഇംഗ്ലീഷ് ഹബ് കമ്മ്യൂണിറ്റി ചാറ്റ്"
@@ -303,8 +324,8 @@
       }
     },
     {
-      "stepNumber": 9,
-      "id": "step_9_house_defense",
+      "stepNumber": 10,
+      "id": "step_10_house_defense",
       "title": {
         "en": "House Defense Shield Command",
         "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്"
@@ -358,8 +379,8 @@
       }
     },
     {
-      "stepNumber": 10,
-      "id": "step_10_poketalk_pact",
+      "stepNumber": 11,
+      "id": "step_11_poketalk_pact",
       "title": {
         "en": "Poketalk: 4-Day Spoken Pact",
         "ml": "പോക്കറ്റ്-ടോക്ക്: 4-ഡേ സ്പോക്കൺ പാക്ട്"
@@ -375,8 +396,8 @@
       }
     },
     {
-      "stepNumber": 11,
-      "id": "step_11_citadel_raid",
+      "stepNumber": 12,
+      "id": "step_12_citadel_raid",
       "title": {
         "en": "House Attack Quest: Citadel Raid",
         "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റെയ്ഡ്"

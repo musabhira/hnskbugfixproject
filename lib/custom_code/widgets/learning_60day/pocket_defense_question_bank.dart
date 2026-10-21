@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'daily_vocab_item.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🛡️ Pocket Defense Question Bank: Free AI & Default Engine
 /// Provides a massive bank of 500+ practical, learner-friendly English challenges
@@ -557,15 +558,24 @@ class PocketDefenseQuestionBank {
         wrongs.add('option_${wrongs.length + 1}');
       }
 
+      final nativeMeaning = primaryItem.getMeaning(PocketLanguageService.currentLanguage);
+      final meaningSuffix = (!PocketLanguageService.isEnglish && nativeMeaning.isNotEmpty && nativeMeaning != primaryItem.definition)
+          ? ' ($nativeMeaning)'
+          : '';
+
       return _shuffleAndFormat(
         question: 'Day $day Lesson: Complete the sentence from today\'s class:\n"$blankedSentence"',
         correct: targetWord,
         wrongs: wrongs,
-        explanation: 'From Day $day study: "${primaryItem.exampleSentence}" (${primaryItem.malayalamMeaning}).',
+        explanation: 'From Day $day study: "${primaryItem.exampleSentence}"$meaningSuffix.',
         category: gateId ?? 'vocab_gate',
       );
     } else {
       final correctDef = primaryItem.definition;
+      final nativeMeaning = primaryItem.getMeaning(PocketLanguageService.currentLanguage);
+      final meaningSuffix = (!PocketLanguageService.isEnglish && nativeMeaning.isNotEmpty && nativeMeaning != correctDef)
+          ? ' ($nativeMeaning)'
+          : '';
       final wrongs = distractors.map((d) => d.definition).toList();
       while (wrongs.length < 3) {
         wrongs.add('Alternative meaning ${wrongs.length + 1}');
@@ -573,9 +583,9 @@ class PocketDefenseQuestionBank {
 
       return _shuffleAndFormat(
         question: 'Day $day Lesson: What is the meaning of "${primaryItem.word}"?',
-        correct: '$correctDef (${primaryItem.malayalamMeaning})',
+        correct: '$correctDef$meaningSuffix',
         wrongs: wrongs,
-        explanation: 'From Day $day study: "${primaryItem.word}" means $correctDef (${primaryItem.malayalamMeaning}). Example: ${primaryItem.exampleSentence}',
+        explanation: 'From Day $day study: "${primaryItem.word}" means $correctDef$meaningSuffix. Example: ${primaryItem.exampleSentence}',
         category: gateId ?? 'vocab_gate',
       );
     }

@@ -22,112 +22,169 @@
     "totalCoinsReward": 83
   },
   "grammarRule": {
-    "formula": "Stative Verbs vs Dynamic Verbs",
+    "formula": "Did + Subject + Base Verb (V1) + Object?",
     "explanation": {
-      "ml": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ എന്ന വിഷയത്തിൽ Did + Subject + V1 base verb (Did you go?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Did + Subject + V1 base verb (Did you go?) correctly in spoken English."
+      "ml": "കഴിഞ്ഞകാലത്തെ പ്രവൃത്തികളെക്കുറിച്ച് ചോദ്യം ചോദിക്കാൻ 'Did' ഉപയോഗിക്കുന്നു. 'Did' ഉപയോഗിക്കുമ്പോൾ ക്രിയയുടെ ആദ്യ രൂപമായ V1 മാത്രമേ ഉപയോഗിക്കാവൂ (Did you see?, Did you go?).",
+      "en": "Master Asking in the Past: Did you...? with clear formula: Did + Subject + Base Verb (V1) + Object?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Did you see the match?",
-      "en": "Golden Rule: Practice 'Did you see the match?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ഏറ്റവും വലിയ തെറ്റ്: 'Did you went?' എന്ന് പറയരുത്! ❌ 'Did' വന്നാൽ ക്രിയ എപ്പോഴും V1 ആകും: ✅ 'Did you go?'",
+      "en": "Golden Tip: 💡 ഏറ്റവും വലിയ തെറ്റ്: 'Did you went?' എന്ന് പറയരുത്! ❌ 'Did' വന്നാൽ ക്രിയ എപ്പോഴും V1 ആകും: ✅ 'Did you go?'"
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "see",
-        "v2": "saw",
-        "v3": "seen",
+        "v1": "notice",
+        "v2": "noticeed",
+        "v3": "noticeed",
         "meaning": {
-          "ml": "കാണുക",
-          "hi": "देखना",
-          "ta": "பார்"
+          "ml": "ശ്രദ്ധയിൽപ്പെടുക / കാണുക",
+          "hi": "ध्यान देना",
+          "ta": "கவனி"
         },
-        "example": "Did you see the match?",
-        "exampleMl": "കാണുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Did you notice any unusual sound coming from the engine?",
+        "exampleMl": "Become aware of something through observation."
       },
       {
-        "v1": "hear",
-        "v2": "heard",
-        "v3": "heard",
+        "v1": "receive",
+        "v2": "receiveed",
+        "v3": "receiveed",
         "meaning": {
-          "ml": "കേൾക്കുക",
-          "hi": "കേൾക്കുക",
-          "ta": "കേൾക്കുക"
+          "ml": "ലഭിക്കുക / കൈപ്പറ്റുക",
+          "hi": "प्राप्त करना",
+          "ta": "பெறு"
         },
-        "example": "Did you hear the news?",
-        "exampleMl": "കേൾക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Did you receive the official email confirmation yesterday?",
+        "exampleMl": "Be given, presented with, or paid something."
       },
       {
-        "v1": "call",
-        "v2": "called",
-        "v3": "called",
+        "v1": "attend",
+        "v2": "attended",
+        "v3": "attended",
         "meaning": {
-          "ml": "വിളിക്കുക",
-          "hi": "बुलाना / कॉल करना",
-          "ta": "அழை"
+          "ml": "പങ്കെടുക്കുക",
+          "hi": "उपस्थित होना",
+          "ta": "கலந்து கொள்"
         },
-        "example": "Did she call you?",
-        "exampleMl": "വിളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Did your whole family attend the wedding reception?",
+        "exampleMl": "Be present at an event, meeting, or function."
       },
       {
-        "v1": "understand",
-        "v2": "understood",
-        "v3": "understood",
+        "v1": "confirm",
+        "v2": "confirmed",
+        "v3": "confirmed",
         "meaning": {
-          "ml": "മനസ്സിലാക്കുക",
-          "hi": "മനസ്സിലാക്കുക",
-          "ta": "മനസ്സിലാക്കുക"
+          "ml": "സ്ഥിരീകരിക്കുക",
+          "hi": "पुष्टि करना",
+          "ta": "உறுதிப்படுத்து"
         },
-        "example": "Did you understand?",
-        "exampleMl": "മനസ്സിലാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Did you confirm your flight booking with the airline agent?",
+        "exampleMl": "Establish the truth or correctness of something previously believed or suspected."
+      },
+      {
+        "v1": "lock",
+        "v2": "locked",
+        "v3": "locked",
+        "meaning": {
+          "ml": "പൂട്ടുക",
+          "hi": "ताला लगाना",
+          "ta": "பூட்டு"
+        },
+        "example": "Did you lock the front entrance door before leaving?",
+        "exampleMl": "Fasten or secure with a lock."
+      },
+      {
+        "v1": "inform",
+        "v2": "informed",
+        "v3": "informed",
+        "meaning": {
+          "ml": "വിവരം അറിയിക്കുക",
+          "hi": "सूचित करना",
+          "ta": "தெரிவி"
+        },
+        "example": "Did you inform your manager regarding tomorrow's planned leave?",
+        "exampleMl": "Give someone facts or information; tell."
       }
     ],
     "nouns": [
       {
-        "word": "question",
+        "word": "Notice",
+        "partOfSpeech": "verb",
+        "definition": "Become aware of something through observation.",
         "meaning": {
-          "ml": "ചോദ്യം",
-          "hi": "ചോദ്യം",
-          "ta": "ചോദ്യം"
+          "ml": "ശ്രദ്ധയിൽപ്പെടുക / കാണുക",
+          "hi": "ध्यान देना",
+          "ta": "கவனி",
+          "te": "గమనించు",
+          "kn": "ಗಮನಿಸು"
         },
-        "example": "We learned about question in today's lesson."
+        "example": "Did you notice any unusual sound coming from the engine?"
       },
       {
-        "word": "answer",
+        "word": "Receive",
+        "partOfSpeech": "verb",
+        "definition": "Be given, presented with, or paid something.",
         "meaning": {
-          "ml": "ഉത്തരം",
-          "hi": "ഉത്തരം",
-          "ta": "ഉത്തരം"
+          "ml": "ലഭിക്കുക / കൈപ്പറ്റുക",
+          "hi": "प्राप्त करना",
+          "ta": "பெறு",
+          "te": "స్వీకరించు",
+          "kn": "ಸ್ವೀಕರಿಸು"
         },
-        "example": "We learned about answer in today's lesson."
+        "example": "Did you receive the official email confirmation yesterday?"
       },
       {
-        "word": "news",
+        "word": "Attend",
+        "partOfSpeech": "verb",
+        "definition": "Be present at an event, meeting, or function.",
         "meaning": {
-          "ml": "വാർത്ത",
-          "hi": "വാർത്ത",
-          "ta": "വാർത്ത"
+          "ml": "പങ്കെടുക്കുക",
+          "hi": "उपस्थित होना",
+          "ta": "கலந்து கொள்",
+          "te": "హాజరగు",
+          "kn": "ಭಾಗವಹಿಸು"
         },
-        "example": "We learned about news in today's lesson."
+        "example": "Did your whole family attend the wedding reception?"
       },
       {
-        "word": "call",
+        "word": "Confirm",
+        "partOfSpeech": "verb",
+        "definition": "Establish the truth or correctness of something previously believed or suspected.",
         "meaning": {
-          "ml": "കോൾ",
-          "hi": "കോൾ",
-          "ta": "കോൾ"
+          "ml": "സ്ഥിരീകരിക്കുക",
+          "hi": "पुष्टि करना",
+          "ta": "உறுதிப்படுத்து",
+          "te": "ధృవీకరించు",
+          "kn": "ದೃಢೀಕರಿಸು"
         },
-        "example": "We learned about call in today's lesson."
+        "example": "Did you confirm your flight booking with the airline agent?"
       },
       {
-        "word": "match",
+        "word": "Lock",
+        "partOfSpeech": "verb",
+        "definition": "Fasten or secure with a lock.",
         "meaning": {
-          "ml": "കളി",
-          "hi": "കളി",
-          "ta": "കളി"
+          "ml": "പൂട്ടുക",
+          "hi": "ताला लगाना",
+          "ta": "பூட்டு",
+          "te": "తాళం వేయు",
+          "kn": "ಬೀಗ ಹಾಕು"
         },
-        "example": "We learned about match in today's lesson."
+        "example": "Did you lock the front entrance door before leaving?"
+      },
+      {
+        "word": "Inform",
+        "partOfSpeech": "verb",
+        "definition": "Give someone facts or information; tell.",
+        "meaning": {
+          "ml": "വിവരം അറിയിക്കുക",
+          "hi": "सूचित करना",
+          "ta": "தெரிவி",
+          "te": "తెలియజేయు",
+          "kn": "ತಿಳಿಸು"
+        },
+        "example": "Did you inform your manager regarding tomorrow's planned leave?"
       }
     ]
   },
@@ -137,7 +194,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Asking in the Past: Did you...?",
-        "ml": "പാഠം: കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ"
+        "ml": "പാഠം: കഴിഞ്ഞകാല ചോദ്യങ്ങൾ: Did you...?"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +202,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Did + Subject + Base Verb (V1) + Object?",
+        "ml": "കഴിഞ്ഞകാലത്തെ പ്രവൃത്തികളെക്കുറിച്ച് ചോദ്യം ചോദിക്കാൻ 'Did' ഉപയോഗിക്കുന്നു. 'Did' ഉപയോഗിക്കുമ്പോൾ ക്രിയയുടെ ആദ്യ രൂപമായ V1 മാത്രമേ ഉപയോഗിക്കാവൂ (Did you see?, Did you go?)."
       }
     },
     {
@@ -203,9 +260,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Did you see the match?",
-        "Did you hear the news?",
-        "Did she call you?"
+        "Did you receive the updated agenda for tomorrow conference meeting ?",
+        "Did they inform the regional director about the delivery delay ?",
+        "Did you lock all the ground floor windows before going to sleep ?",
+        "What time did your parents arrive at the international airport ?",
+        "Did you enjoy the classical musical concert last night ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +276,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Asking in the Past: Did you...?",
-        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ"
+        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞകാല ചോദ്യങ്ങൾ: Did you...?"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +285,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Did you see the match?",
-          "meaningMl": "കാണുക - Did you see the match?",
-          "audioPrompt": "Did you see the match?"
+          "text": "When Meera reached home in the pouring rain, she reached into her jacket pocket.",
+          "meaningMl": "കനത്ത മഴയത്ത് വീട്ടിലെത്തിയപ്പോൾ മീര തന്റെ ജാക്കറ്റ് പോക്കറ്റിലേക്ക് കൈയിട്ടു.",
+          "meaningHi": "जब मीरा मूसलाधार बारिश में घर पहुँची, तो उसने अपनी जैकेट की जेब में हाथ डाला।",
+          "meaningTa": "பெருமழையில் வீட்டிற்கு வந்த மீரா தன் சட்டைப் பையில் கையை விட்டாள்.",
+          "audioPrompt": "When Meera reached home in the pouring rain, she reached into her jacket pocket."
         },
         {
-          "text": "Did you hear the news?",
-          "meaningMl": "കേൾക്കുക - Did you hear the news?",
-          "audioPrompt": "Did you hear the news?"
+          "text": "With rising panic, she wondered: 'Did I drop the heavy brass front door key?'",
+          "meaningMl": "ഭയത്തോടെ അവൾ ചിന്തിച്ചു: 'ഞാൻ പിച്ചള താക്കോൽ എവിടെയെങ്കിലും താഴെ കളഞ്ഞോ?'",
+          "meaningHi": "घबराहट के साथ उसने सोचा: 'क्या मैंने भारी पीतल की मुख्य दरवाजे की चाबी गिरा दी?'",
+          "meaningTa": "பதற்றத்துடன் அவள் யோசித்தாள்: 'நான் சாவியை கீழே தவறவிட்டுவிட்டேனா?'",
+          "audioPrompt": "With rising panic, she wondered: 'Did I drop the heavy brass front door key?'"
         },
         {
-          "text": "Daily practice of Asking in the Past: Did you...? gives you great confidence in English.",
-          "meaningMl": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Asking in the Past: Did you...? gives you great confidence in English."
+          "text": "Her younger brother opened the porch door and asked: 'Did you check your side pouch?'",
+          "meaningMl": "അവളുടെ അനിയൻ വാതിൽ തുറന്ന് ചോദിച്ചു: 'നീ വശങ്ങളിലെ ചെറിയ ബാഗ് നോക്കിയോ?'",
+          "meaningHi": "उसके छोटे भाई ने बरामदे का दरवाजा खोला और पूछा: 'क्या तुमने अपनी साइड पाउच की जाँच की?'",
+          "meaningTa": "அவள் தம்பி வாசலைத் திறந்து: 'பக்கவாட்டு பையை பார்த்தாயா?' என்று கேட்டான்.",
+          "audioPrompt": "Her younger brother opened the porch door and asked: 'Did you check your side pouch?'"
+        },
+        {
+          "text": "Meera unzipped the small inner compartment and smiled with immense relief.",
+          "meaningMl": "മീര ഉള്ളിലെ ചെറിയ അറ തുറന്നു നോക്കുകയും ആശ്വാസത്തോടെ പുഞ്ചിരിക്കുകയും ചെയ്തു.",
+          "meaningHi": "मीरा ने छोटे अंदरूनी डिब्बे की ज़िप खोली और राहत से मुस्कुराई।",
+          "meaningTa": "மீரா சிறிய அறையைத் திறந்து நிம்மதியுடன் புன்னகைத்தாள்.",
+          "audioPrompt": "Meera unzipped the small inner compartment and smiled with immense relief."
+        },
+        {
+          "text": "The golden key lay safely beneath her library card and bus pass.",
+          "meaningMl": "ലൈബ്രറി കാർഡിനും ബസ് പാസിനും അടിയിൽ സുവർണ്ണ താക്കോൽ സുരക്ഷിതമായി കിടപ്പുണ്ടായിരുന്നു.",
+          "meaningHi": "सुनहरी चाबी उसके लाइब्रेरी कार्ड और बस पास के नीचे सुरक्षित रखी थी।",
+          "meaningTa": "லைப்ரரி கார்டின் அடியில் தங்கச் சாவி பத்திரமாக இருந்தது.",
+          "audioPrompt": "The golden key lay safely beneath her library card and bus pass."
+        },
+        {
+          "text": "Remembering where you place everyday essentials saves endless worry and precious time.",
+          "meaningMl": "നിത്യോപയോഗ സാധനങ്ങൾ എവിടെയാണ് വെക്കുന്നതെന്ന് ഓർമ്മിക്കുന്നത് വേവലാതികളും വിലപ്പെട്ട സമയവും ലാഭിക്കുന്നു.",
+          "meaningHi": "ज़रूरी चीज़ों को रखने की जगह याद रखने से चिंता और कीमती समय बचता है।",
+          "meaningTa": "பொருட்களை வைக்கும் இடத்தை நினைவில் வைத்திருப்பது நேரத்தை மிச்சப்படுத்துகிறது.",
+          "audioPrompt": "Remembering where you place everyday essentials saves endless worry and precious time."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did Meera worry she had dropped?",
+            "ml": "താൻ എന്ത് താഴെ കളഞ്ഞുവെന്നാണ് മീര ഭയപ്പെട്ടത്?",
+            "hi": "मीरा को क्या गिरा देने की चिंता थी?",
+            "ta": "மீரா எதைத் தவறவிட்டதாகப் பயந்தாள்?"
+          },
+          "options": [
+            "Her smartphone",
+            "The heavy brass front door key",
+            "Her umbrella",
+            "Her gold ring"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She worried she had dropped the heavy brass front door key.",
+            "ml": "പിച്ചള താക്കോൽ കളഞ്ഞുപോയോ എന്നാണ് അവൾ ഭയന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Who opened the porch door?",
+            "ml": "വരാന്തയിലെ വാതിൽ തുറന്നത് ആരാണ്?",
+            "hi": "बरामदे का दरवाज़ा किसने खोला?",
+            "ta": "வாசலைத் திறந்தது யார்?"
+          },
+          "options": [
+            "Her grandfather",
+            "Her younger brother",
+            "The postman",
+            "A neighbor"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Her younger brother opened the porch door.",
+            "ml": "അവളുടെ അനിയനാണ് (younger brother) വാതിൽ തുറന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Where was the golden key safely lying?",
+            "ml": "സുവർണ്ണ താക്കോൽ എവിടെയാണ് സുരക്ഷിതമായി ഇരുന്നത്?",
+            "hi": "सुनहरी चाबी कहाँ सुरक्षित पड़ी थी?",
+            "ta": "தங்கச் சாவி எங்கே பத்திரமாக இருந்தது?"
+          },
+          "options": [
+            "In the garden mud",
+            "Beneath her library card in the small inner compartment",
+            "Under the doormat",
+            "In her shoes"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It lay safely beneath her library card in the small inner compartment.",
+            "ml": "ലൈബ്രറി കാർഡിനടിയിൽ ഉള്ളിലെ അറയിലായിരുന്നു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +439,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d33_1",
-          "question": "Which word represents: 'കാണുക'?",
+          "question": "Identify the grammatically correct past question:",
           "options": [
-            "listen",
-            "create",
-            "discover",
-            "see"
+            "Did you saw the news today?",
+            "Did you see the news today?",
+            "Did you seen the news today?",
+            "Did you seeing the news today?"
           ],
-          "answer": "see",
-          "explanation": "see എന്നാൽ കാണുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "After the auxiliary 'did', always use the base form of the verb (V1 'see'), never V2 ('saw') or V3 ('seen').",
+          "ruleHint": "The Golden Did Rule: Did + Subject + Base Verb (V1)."
         },
         {
-          "id": "trap_d33_2",
-          "question": "What is the past form (V2) of 'hear'?",
+          "question": "Select the correct question to ask if someone enjoyed the food:",
           "options": [
-            "hearing",
-            "heard",
-            "has hear",
-            "hears"
+            "Did you enjoyed the lunch?",
+            "Did you enjoy the lunch?",
+            "Were you enjoy the lunch?",
+            "Did you was enjoy the lunch?"
           ],
-          "answer": "heard",
-          "explanation": "hear ന്റെ ഭൂതകാല രൂപം heard ആണ്."
+          "correctIndex": 1,
+          "explanation": "Always use base verb 'enjoy': 'Did you enjoy the lunch?'",
+          "ruleHint": "Rule: Did + you + V1 (enjoy)."
         },
         {
-          "id": "trap_d33_3",
-          "question": "What is the correct English word for 'ചോദ്യം'?",
+          "question": "How do you ask what time someone left the office?",
           "options": [
-            "knowledge",
-            "routine",
-            "courage",
-            "question"
+            "What time did you leave the office?",
+            "What time did you left the office?",
+            "What time you left the office?",
+            "What time were you left the office?"
           ],
-          "answer": "question",
-          "explanation": "ചോദ്യം എന്നാൽ ഇംഗ്ലീഷിൽ question."
+          "correctIndex": 0,
+          "explanation": "'What time did you leave (V1) the office?' maintains strict auxiliary inversion and base verb.",
+          "ruleHint": "WH-Question Rule: What time + did + subject + V1?"
         }
       ],
       "description": {
@@ -334,6 +482,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +524,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +561,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 33 Gate Exam (5 Qs)",

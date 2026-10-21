@@ -22,112 +22,109 @@
     "totalCoinsReward": 77
   },
   "grammarRule": {
-    "formula": "Past Perfect Tense",
+    "formula": "I have a + [headache / sore throat] / My [body part] hurts.",
     "explanation": {
-      "ml": "ആരോഗ്യവും അസുഖങ്ങളും എന്ന വിഷയത്തിൽ I have a headache / stomach ache / fever എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I have a headache / stomach ache / fever correctly in spoken English."
+      "ml": "ശാരീരിക അസ്വസ്ഥതകൾ പറയുമ്പോൾ 'I have a headache' (എനിക്ക് തലവേദനയുണ്ട്) അല്ലെങ്കിൽ 'My ankle hurts' (എന്റെ കണങ്കാൽ വേദനിക്കുന്നു) എന്ന് ലളിതമായി പറയാം.",
+      "en": "Master Health, Body & Minor Ailments with clear formula: I have a + [headache / sore throat] / My [body part] hurts."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: My knee hurts.",
-      "en": "Golden Rule: Practice 'My knee hurts.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'I have a headache / stomach ache / toothache / cold / cough / fever' എന്ന് പറയാം. എന്നാൽ 'hurt' ഉപയോഗിക്കുമ്പോൾ 'My knee hurts' (വേദനിക്കുന്നു) എന്ന് പറയുക.",
+      "en": "Golden Tip: 💡 'I have a headache / stomach ache / toothache / cold / cough / fever' എന്ന് പറയാം. എന്നാൽ 'hurt' ഉപയോഗിക്കുമ്പോൾ 'My knee hurts' (വേദനിക്കുന്നു) എന്ന് പറയുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "hurt",
-        "v2": "hurt",
-        "v3": "hurt",
+        "v1": "sprain",
+        "v2": "sprained",
+        "v3": "sprained",
         "meaning": {
-          "ml": "വേദനിക്കുക",
-          "hi": "चोट लगना / दर्द होना",
-          "ta": "வலி"
+          "ml": "ഉളുക്ക് വരിക / ഉളുക്കുക",
+          "hi": "मोच आना",
+          "ta": "சுளுக்கு"
         },
-        "example": "My knee hurts.",
-        "exampleMl": "വേദനിക്കൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "ache",
-        "v2": "ached",
-        "v3": "ached",
-        "meaning": {
-          "ml": "വേദനിക്കുക",
-          "hi": "വേദനിക്കുക",
-          "ta": "വേദനിക്കുക"
-        },
-        "example": "My head aches.",
-        "exampleMl": "വേദനിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "cough",
-        "v2": "coughed",
-        "v3": "coughed",
-        "meaning": {
-          "ml": "ചുമയ്ക്കുക",
-          "hi": "खाँसना",
-          "ta": "இருமு"
-        },
-        "example": "He is coughing.",
-        "exampleMl": "ചുമയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "rest",
-        "v2": "rested",
-        "v3": "rested",
-        "meaning": {
-          "ml": "വിശ്രമിക്കുക",
-          "hi": "വിശ്രമിക്കുക",
-          "ta": "വിശ്രമിക്കുക"
-        },
-        "example": "Take complete rest.",
-        "exampleMl": "വിശ്രമിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "He accidentally sprained his left ankle during the football match.",
+        "exampleMl": "Wrench or twist the ligaments of an ankle, wrist, or other joint violently so as to cause pain."
       }
     ],
     "nouns": [
       {
-        "word": "headache",
+        "word": "Headache",
+        "partOfSpeech": "noun",
+        "definition": "A continuous pain in the head.",
         "meaning": {
           "ml": "തലവേദന",
-          "hi": "തലവേദന",
-          "ta": "തലവേദന"
+          "hi": "सिरदर्द",
+          "ta": "தலைவலி",
+          "te": "తలనొప్పి",
+          "kn": "ತಲೆನೋವು"
         },
-        "example": "We learned about headache in today's lesson."
+        "example": "I have had a mild headache since this morning."
       },
       {
-        "word": "fever",
+        "word": "Fever",
+        "partOfSpeech": "noun",
+        "definition": "An abnormally high body temperature, usually accompanied by shivering and headache.",
         "meaning": {
           "ml": "പനി",
-          "hi": "പനി",
-          "ta": "പനി"
+          "hi": "बुखार",
+          "ta": "காய்ச்சல்",
+          "te": "జ్వరం",
+          "kn": "ಜ್ವರ"
         },
-        "example": "We learned about fever in today's lesson."
+        "example": "The child is running a slight fever and resting in bed."
       },
       {
-        "word": "cold",
+        "word": "Sprain",
+        "partOfSpeech": "verb",
+        "definition": "Wrench or twist the ligaments of an ankle, wrist, or other joint violently so as to cause pain.",
         "meaning": {
-          "ml": "ജലദോഷം",
-          "hi": "ജലദോഷം",
-          "ta": "ജലദോഷം"
+          "ml": "ഉളുക്ക് വരിക / ഉളുക്കുക",
+          "hi": "मोच आना",
+          "ta": "சுளுக்கு",
+          "te": "బెణుకు",
+          "kn": "ಉಳುಕು"
         },
-        "example": "We learned about cold in today's lesson."
+        "example": "He accidentally sprained his left ankle during the football match."
       },
       {
-        "word": "pain",
+        "word": "Fatigue",
+        "partOfSpeech": "noun",
+        "definition": "Extreme tiredness resulting from mental or physical exertion or illness.",
         "meaning": {
-          "ml": "വേദന",
-          "hi": "വേദന",
-          "ta": "വേദന"
+          "ml": "കഠിനമായ ക്ഷീണം / തളർച്ച",
+          "hi": "थकान",
+          "ta": "சோர்வு",
+          "te": "అలసట",
+          "kn": "ಆಯಾಸ"
         },
-        "example": "We learned about pain in today's lesson."
+        "example": "Lack of restful sleep leads to chronic mental fatigue."
       },
       {
-        "word": "doctor",
+        "word": "Dizziness",
+        "partOfSpeech": "noun",
+        "definition": "A sensation of spinning around and losing one's balance.",
         "meaning": {
-          "ml": "ഡോക്ടർ",
-          "hi": "ഡോക്ടർ",
-          "ta": "ഡോക്ടർ"
+          "ml": "തലകറക്കം",
+          "hi": "चक्कर आना",
+          "ta": "மயக்கம்",
+          "te": "తలతిరగడం",
+          "kn": "ತಲೆಸುತ್ತು"
         },
-        "example": "We learned about doctor in today's lesson."
+        "example": "Drink some electrolyte water to prevent sudden dizziness."
+      },
+      {
+        "word": "Bandage",
+        "partOfSpeech": "noun",
+        "definition": "A strip of woven material used to bind up or protect a wound or injury.",
+        "meaning": {
+          "ml": "മുറിവ് കെട്ടുന്ന തുണി / ബാൻഡേജ്",
+          "hi": "पट्टी",
+          "ta": "கட்டுத் துணி",
+          "te": "బ్యాండేజ్ / కట్టు",
+          "kn": "ಪಟ್ಟಿ"
+        },
+        "example": "The nurse wrapped a clean sterile bandage around the scraped knee."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Health, Body & Minor Ailments",
-        "ml": "പാഠം: ആരോഗ്യവും അസുഖങ്ങളും"
+        "ml": "പാഠം: ആരോഗ്യവും ചെറിയ അസുഖങ്ങളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I have a + [headache / sore throat] / My [body part] hurts.",
+        "ml": "ശാരീരിക അസ്വസ്ഥതകൾ പറയുമ്പോൾ 'I have a headache' (എനിക്ക് തലവേദനയുണ്ട്) അല്ലെങ്കിൽ 'My ankle hurts' (എന്റെ കണങ്കാൽ വേദനിക്കുന്നു) എന്ന് ലളിതമായി പറയാം."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "My knee hurts.",
-        "My head aches.",
-        "He is coughing."
+        "I have a sore throat and a slight dry cough .",
+        "My lower back hurts after sitting at the desk all day .",
+        "You should drink warm herbal tea to soothe your chest congestion .",
+        "She feels dizzy because she skipped her breakfast this morning .",
+        "Are you taking sufficient rest to recover from the viral fever ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Health, Body & Minor Ailments",
-        "ml": "റീഡിങ് റൂം: ആരോഗ്യവും അസുഖങ്ങളും"
+        "ml": "റീഡിങ് റൂം: ആരോഗ്യവും ചെറിയ അസുഖങ്ങളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "My knee hurts.",
-          "meaningMl": "വേദനിക്കൽ - My knee hurts.",
-          "audioPrompt": "My knee hurts."
+          "text": "After a rainy bicycle ride, Tarun felt a heavy chill throughout his body.",
+          "meaningMl": "മഴയത്തുള്ള സൈക്കിൾ യാത്രയ്ക്ക് ശേഷം തരുണിന് ശരീരം മുഴുവൻ കഠിനമായ തണുപ്പ് തോന്നി.",
+          "meaningHi": "बारिश में साइकिल चलाने के बाद तरुण को पूरे शरीर में तेज़ ठंड लगी।",
+          "meaningTa": "மழையில் சைக்கிள் ஓட்டிய பிறகு தருணுக்கு உடல் முழுவதும் நடுக்கம் ஏற்பட்டது.",
+          "audioPrompt": "After a rainy bicycle ride, Tarun felt a heavy chill throughout his body."
         },
         {
-          "text": "My head aches.",
-          "meaningMl": "വേദനിക്കുക - My head aches.",
-          "audioPrompt": "My head aches."
+          "text": "By evening, his forehead was hot and his throat felt sore and scratchy.",
+          "meaningMl": "വൈകുന്നേരത്തോടെ അവന്റെ നെറ്റി പൊള്ളുകയും തൊണ്ടവേദന അനുഭവപ്പെടുകയും ചെയ്തു.",
+          "meaningHi": "शाम तक उसका माथा गर्म था और गले में खराश महसूस हो रही थी।",
+          "meaningTa": "மாலைக்குள் அவன் நெற்றி சுட்டது மற்றும் தொண்டையில் வலி ஏற்பட்டது.",
+          "audioPrompt": "By evening, his forehead was hot and his throat felt sore and scratchy."
         },
         {
-          "text": "Daily practice of Health, Body & Minor Ailments gives you great confidence in English.",
-          "meaningMl": "ആരോഗ്യവും അസുഖങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Health, Body & Minor Ailments gives you great confidence in English."
+          "text": "His grandmother prepared a warm bowl of nutritious pepper soup with fresh ginger.",
+          "meaningMl": "അവന്റെ മുത്തശ്ശി നല്ല ഇഞ്ചിയും കുരുമുളകും ചേർത്ത ചൂടുള്ള സൂപ്പ് തയ്യാറാക്കി നൽകി.",
+          "meaningHi": "उसकी दादी ने ताजे अदरक के साथ पौष्टिक काली मिर्च का गर्म सूप तैयार किया।",
+          "meaningTa": "அவன் பாட்டி இஞ்சியுடன் சூடான மிளகு சூப் தயாரித்துக் கொடுத்தார்.",
+          "audioPrompt": "His grandmother prepared a warm bowl of nutritious pepper soup with fresh ginger."
+        },
+        {
+          "text": "She tucked him into bed under a thick wool blanket to let him sweat out the fever.",
+          "meaningMl": "പനി കുറയാനായി കട്ടിയുള്ള കമ്പിളി പുതപ്പുകൊണ്ട് അവനെ മൂടി പുതപ്പിച്ചു കിടത്തി.",
+          "meaningHi": "उन्होंने उसे एक मोटे ऊनी कंबल के नीचे सुला दिया ताकि पसीने से बुखार उतर सके।",
+          "meaningTa": "காய்ச்சல் குறைய ஒரு கம்பளியால் அவனை போர்த்தி தூங்க வைத்தார்.",
+          "audioPrompt": "She tucked him into bed under a thick wool blanket to let him sweat out the fever."
+        },
+        {
+          "text": "After a deep twelve-hour sleep, Tarun woke up feeling refreshed and energetic.",
+          "meaningMl": "പന്ത്രണ്ട് മണിക്കൂർ നീണ്ട സുഖനിദ്രയ്ക്ക് ശേഷം ഉന്മേഷത്തോടെ തരുൺ ഉണർന്നെഴുന്നേറ്റു.",
+          "meaningHi": "बारह घंटे की गहरी नींद के बाद तरुण तरोताजा और ऊर्जावान महसूस करते हुए उठा।",
+          "meaningTa": "பன்னிரண்டு மணி நேர தூக்கத்திற்குப் பிறகு தருண் புத்துணர்ச்சியுடன் எழுந்தான்.",
+          "audioPrompt": "After a deep twelve-hour sleep, Tarun woke up feeling refreshed and energetic."
+        },
+        {
+          "text": "Listening to your body and resting in time prevents serious sickness.",
+          "meaningMl": "ശരീരത്തിന്റെ അവസ്ഥ മനസ്സിലാക്കി യഥാസമയം വിശ്രമിക്കുന്നത് വലിയ അസുഖങ്ങളിൽ നിന്ന് സംരക്ഷിക്കുന്നു.",
+          "meaningHi": "शरीर की बात सुनना और समय पर आराम करना गंभीर बीमारियों से बचाता है।",
+          "meaningTa": "உடலின் தேவையை அறிந்து சரியான நேரத்தில் ஓய்வெடுப்பது நோய்களைத் தடுக்கிறது.",
+          "audioPrompt": "Listening to your body and resting in time prevents serious sickness."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Why did Tarun catch a chill?",
+            "ml": "തരുണിന് തണുപ്പ് പിടിക്കാൻ കാരണം എന്തായിരുന്നു?",
+            "hi": "तरुण को ठंड क्यों लगी?",
+            "ta": "தருணுக்கு ஏன் நடுக்கம் ஏற்பட்டது?"
+          },
+          "options": [
+            "He swam in a cold river",
+            "He rode his bicycle in the rain",
+            "He ate ice cream",
+            "He stayed in an AC room"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Tarun caught a chill after a rainy bicycle ride.",
+            "ml": "മഴയത്ത് സൈക്കിൾ ഓടിച്ചതിനാലാണ് (rainy bicycle ride) തണുപ്പ് അടിച്ചത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did grandmother prepare for him?",
+            "ml": "മുത്തശ്ശി അവനായി എന്താണ് ഉണ്ടാക്കിക്കൊടുത്തത്?",
+            "hi": "दादी ने उसके लिए क्या बनाया?",
+            "ta": "பாட்டி அவனுக்கு என்ன தயாரித்துக் கொடுத்தார்?"
+          },
+          "options": [
+            "Cold mango juice",
+            "Warm pepper soup with ginger",
+            "Fried spicy chips",
+            "Sweet milk dessert"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She prepared warm pepper soup with fresh ginger.",
+            "ml": "ഇഞ്ചിയും കുരുമുളകും ചേർത്ത ചൂടുള്ള സൂപ്പാണ് ഉണ്ടാക്കിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How long did Tarun sleep?",
+            "ml": "തരുൺ എത്ര സമയം ഉറങ്ങി?",
+            "hi": "तरुण कितनी देर सोया?",
+            "ta": "தருண் எவ்வளவு நேரம் தூங்கினான்?"
+          },
+          "options": [
+            "Two hours",
+            "Twelve hours",
+            "Five hours",
+            "Twenty hours"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He had a deep twelve-hour sleep.",
+            "ml": "പന്ത്രണ്ട് മണിക്കൂറാണ് (twelve hours) അവൻ ഉറങ്ങിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d27_1",
-          "question": "Which word represents: 'വേദനിക്കുക'?",
+          "question": "Select the correct expression for having a headache:",
           "options": [
-            "hurt",
-            "decide",
-            "prepare",
-            "arrive"
+            "I am having head paining.",
+            "I have a headache.",
+            "My head is paining me.",
+            "I feel head pain."
           ],
-          "answer": "hurt",
-          "explanation": "hurt എന്നാൽ വേദനിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'I have a headache' is the natural, idiomatic English expression.",
+          "ruleHint": "Idiomatic Health: 'I have a headache / stomach ache / cold'."
         },
         {
-          "id": "trap_d27_2",
-          "question": "What is the past form (V2) of 'ache'?",
+          "question": "Choose the correct past tense sentence for an injured leg:",
           "options": [
-            "has ache",
-            "aches",
-            "acheing",
-            "ached"
+            "I hurted my leg yesterday.",
+            "I hurt my leg yesterday.",
+            "I was hurted my leg yesterday.",
+            "I did hurted my leg yesterday."
           ],
-          "answer": "ached",
-          "explanation": "ache ന്റെ ഭൂതകാല രൂപം ached ആണ്."
+          "correctIndex": 1,
+          "explanation": "The verb 'hurt' has identical past forms: hurt (V1) - hurt (V2) - hurt (V3). 'Hurted' does not exist.",
+          "ruleHint": "Irregular Verb: hurt -> hurt -> hurt."
         },
         {
-          "id": "trap_d27_3",
-          "question": "What is the correct English word for 'തലവേദന'?",
+          "question": "How do you ask about someone's stomach discomfort politely?",
           "options": [
-            "headache",
-            "station",
-            "progress",
-            "partner"
+            "Does your stomach hurt?",
+            "Is your stomach paining?",
+            "Are you stomach pain?",
+            "Does you have stomach paining?"
           ],
-          "answer": "headache",
-          "explanation": "തലവേദന എന്നാൽ ഇംഗ്ലീഷിൽ headache."
+          "correctIndex": 0,
+          "explanation": "'Does your stomach hurt?' correctly uses the auxiliary 'does' with base verb 'hurt'.",
+          "ruleHint": "Auxiliary Rule: Does + singular subject (stomach) + hurt?"
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 27 Gate Exam (5 Qs)",

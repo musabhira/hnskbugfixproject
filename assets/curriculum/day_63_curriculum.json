@@ -22,112 +22,133 @@
     "totalCoinsReward": 113
   },
   "grammarRule": {
-    "formula": "Expressing Wishes, Regrets and Hypothetical Situations",
+    "formula": "Subject + have/has + just/already + V3 / Haven't + V3... yet",
     "explanation": {
-      "ml": "Just, Already, Yet പ്രയോഗങ്ങൾ എന്ന വിഷയത്തിൽ Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) correctly in spoken English."
+      "ml": "'Just' തൊട്ടുമുമ്പ് കഴിഞ്ഞ കാര്യങ്ങൾക്കും, 'Already' പ്രതീക്ഷിച്ചതിലും നേരത്തെ കഴിഞ്ഞ കാര്യങ്ങൾക്കും, 'Yet' ചോദ്യങ്ങളിലും നെഗറ്റീവ് വാക്യങ്ങളിലും (ഇതുവരെ ഇല്ല) ഉപയോഗിക്കുന്നു.",
+      "en": "Master Time Adverbs with Present Perfect: Just, Already, Yet with clear formula: Subject + have/has + just/already + V3 / Haven't + V3... yet"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Train has just arrived.",
-      "en": "Golden Rule: Practice 'Train has just arrived.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 'Yet' എപ്പോഴും വാക്യത്തിന്റെ അവസാനത്തിലാണ് വരുന്നത് ('I haven't called him yet'). 'Just' ഉം 'already' യും have/has നും V3 ക്കും ഇടയിലാണ് വരുന്നത്.",
+      "en": "Golden Tip: 'Yet' എപ്പോഴും വാക്യത്തിന്റെ അവസാനത്തിലാണ് വരുന്നത് ('I haven't called him yet'). 'Just' ഉം 'already' യും have/has നും V3 ക്കും ഇടയിലാണ് വരുന്നത്."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "arrive",
-        "v2": "arrived",
-        "v3": "arrived",
+        "v1": "dispatch",
+        "v2": "dispatched",
+        "v3": "dispatched",
         "meaning": {
-          "ml": "എത്തിച്ചേരുക",
-          "hi": "पहुँचना",
-          "ta": "வந்தடை"
-        },
-        "example": "Train has just arrived.",
-        "exampleMl": "എത്തിച്ചേർന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "send",
-        "v2": "sent",
-        "v3": "sent",
-        "meaning": {
-          "ml": "അയക്കുക",
-          "hi": "भेजना",
+          "ml": "അയക്കുക / അയച്ചുവിടുക",
+          "hi": "रवाना करना",
           "ta": "அனுப்பு"
         },
-        "example": "I have already sent it.",
-        "exampleMl": "അയച്ചു കഴിഞ്ഞു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The courier center has already dispatched the courier to your home address.",
+        "exampleMl": "Send off to a destination or for a purpose."
       },
       {
-        "v1": "receive",
-        "v2": "received",
-        "v3": "received",
+        "v1": "delivered",
+        "v2": "delivereded",
+        "v3": "delivereded",
         "meaning": {
-          "ml": "ലഭിച്ചിട്ടില്ല",
-          "hi": "ലഭിച്ചിട്ടില്ല",
-          "ta": "ലഭിച്ചിട്ടില്ല"
+          "ml": "എത്തിച്ചുകൊടുത്തു / കൈമാറി",
+          "hi": "वितरित किया गया",
+          "ta": "டெலிவரி செய்யப்பட்டது"
         },
-        "example": "I haven't received it yet.",
-        "exampleMl": "ലഭിച്ചിട്ടില്ല എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The postal agent has successfully delivered the registered package.",
+        "exampleMl": "Brought and handed over to the proper recipient."
       },
       {
-        "v1": "decide",
-        "v2": "decided",
-        "v3": "decided",
+        "v1": "lately",
+        "v2": "latelyed",
+        "v3": "latelyed",
         "meaning": {
-          "ml": "തീരുമാനിച്ചിട്ടില്ല",
-          "hi": "തീരുമാനിച്ചിട്ടില്ല",
-          "ta": "തീരുമാനിച്ചിട്ടില്ല"
+          "ml": "ഈയിടെയായി / അടുത്ത കാലത്ത്",
+          "hi": "हाल के दिनों में",
+          "ta": "சமீப காலமாக"
         },
-        "example": "We haven't decided yet.",
-        "exampleMl": "തീരുമാനിച്ചിട്ടില്ല എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The enterprise has lately expanded its artificial intelligence research wing.",
+        "exampleMl": "Not long ago; in recent times; recently."
       }
     ],
     "nouns": [
       {
-        "word": "time",
+        "word": "Shipment",
+        "partOfSpeech": "noun",
+        "definition": "A quantity of goods with which a ship, truck, or container is loaded.",
         "meaning": {
-          "ml": "സമയം",
-          "hi": "समय",
-          "ta": "நேரம்"
+          "ml": "ചരക്ക് / അയച്ച സാധനങ്ങൾ",
+          "hi": "भेजा गया माल",
+          "ta": "சரக்குத் தொகுதி",
+          "te": "రవాణా సరుకు",
+          "kn": "ರವಾನಿಸಿದ ಸಾಮಾನು"
         },
-        "example": "Time waits for no one."
+        "example": "The warehouse supervisor confirmed that the overseas shipment has arrived safely."
       },
       {
-        "word": "mail",
+        "word": "Warehouse",
+        "partOfSpeech": "noun",
+        "definition": "A large building where raw materials or manufactured goods may be stored before their export or distribution.",
         "meaning": {
-          "ml": "മെയിൽ",
-          "hi": "മെയിൽ",
-          "ta": "മെയിൽ"
+          "ml": "സംഭരണശാല / വെയർഹൗസ്",
+          "hi": "गोदाम",
+          "ta": "கிடங்கு",
+          "te": "గిడ్డంగి",
+          "kn": "ಗೋದಾಮು"
         },
-        "example": "We learned about mail in today's lesson."
+        "example": "Robotic vehicles transport packaged cartons across the automated warehouse floor."
       },
       {
-        "word": "status",
+        "word": "Notification",
+        "partOfSpeech": "noun",
+        "definition": "The action of notifying someone or a formal announcement.",
         "meaning": {
-          "ml": "നിലവിലെ അവസ്ഥ",
-          "hi": "നിലവിലെ അവസ്ഥ",
-          "ta": "നിലവിലെ അവസ്ഥ"
+          "ml": "അറിയിപ്പ് / നോട്ടിഫിക്കേഷൻ",
+          "hi": "अधिसूचना / संदेश",
+          "ta": "அறிவிப்பு",
+          "te": "ప్రకటన",
+          "kn": "ಅಧಿಸೂಚನೆ"
         },
-        "example": "We learned about status in today's lesson."
+        "example": "I have just received a mobile notification regarding my flight schedule change."
       },
       {
-        "word": "update",
+        "word": "Dispatch",
+        "partOfSpeech": "verb",
+        "definition": "Send off to a destination or for a purpose.",
         "meaning": {
-          "ml": "വിവരം",
-          "hi": "വിവരം",
-          "ta": "വിവരം"
+          "ml": "അയക്കുക / അയച്ചുവിടുക",
+          "hi": "रवाना करना",
+          "ta": "அனுப்பு",
+          "te": "పంపించు",
+          "kn": "ಕಳುಹಿಸು"
         },
-        "example": "We learned about update in today's lesson."
+        "example": "The courier center has already dispatched the courier to your home address."
       },
       {
-        "word": "reply",
+        "word": "Delivered",
+        "partOfSpeech": "verb",
+        "definition": "Brought and handed over to the proper recipient.",
         "meaning": {
-          "ml": "മറുപടി",
-          "hi": "മറുപടി",
-          "ta": "മറുപടി"
+          "ml": "എത്തിച്ചുകൊടുത്തു / കൈമാറി",
+          "hi": "वितरित किया गया",
+          "ta": "டெலிவரி செய்யப்பட்டது",
+          "te": "పంపిణీ చేయబడింది",
+          "kn": "ತಲುಪಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about reply in today's lesson."
+        "example": "The postal agent has successfully delivered the registered package."
+      },
+      {
+        "word": "Lately",
+        "partOfSpeech": "adverb",
+        "definition": "Not long ago; in recent times; recently.",
+        "meaning": {
+          "ml": "ഈയിടെയായി / അടുത്ത കാലത്ത്",
+          "hi": "हाल के दिनों में",
+          "ta": "சமீப காலமாக",
+          "te": "ఇటీవలి కాలంలో",
+          "kn": "ಇತ್ತೀಚಿನ ದಿನಗಳಲ್ಲಿ"
+        },
+        "example": "The enterprise has lately expanded its artificial intelligence research wing."
       }
     ]
   },
@@ -136,8 +157,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Just, Already & Yet",
-        "ml": "പാഠം: Just, Already, Yet പ്രയോഗങ്ങൾ"
+        "en": "Concept Room: Time Adverbs with Present Perfect: Just, Already, Yet",
+        "ml": "പാഠം: സമയ സൂചകങ്ങൾ (Just, Already, Yet)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + have/has + just/already + V3 / Haven't + V3... yet",
+        "ml": "'Just' തൊട്ടുമുമ്പ് കഴിഞ്ഞ കാര്യങ്ങൾക്കും, 'Already' പ്രതീക്ഷിച്ചതിലും നേരത്തെ കഴിഞ്ഞ കാര്യങ്ങൾക്കും, 'Yet' ചോദ്യങ്ങളിലും നെഗറ്റീവ് വാക്യങ്ങളിലും (ഇതുവരെ ഇല്ല) ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Train has just arrived.",
-        "I have already sent it.",
-        "I haven't received it yet."
+        "The logistics company has just dispatched our urgent parcel from the hub .",
+        "We have already submitted the revised architectural designs to the municipality .",
+        "Has the delivery courier arrived with our medical shipment yet ?",
+        "I have not received the monthly bank transaction statement yet .",
+        "She has just stepped into the conference hall for the opening keynote ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +239,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Just, Already & Yet",
-        "ml": "റീഡിങ് റൂം: Just, Already, Yet പ്രയോഗങ്ങൾ"
+        "en": "Reading Room: The Smart Supply Chain",
+        "ml": "റീഡിങ് റൂം: സമയ സൂചകങ്ങൾ (Just, Already, Yet)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Train has just arrived.",
-          "meaningMl": "എത്തിച്ചേർന്നു - Train has just arrived.",
-          "audioPrompt": "Train has just arrived."
+          "text": "Global Logistics Corporation has just activated its state-of-the-art robotic distribution center near the international seaport.",
+          "meaningMl": "ഗ്ലോബൽ ലോജിസ്റ്റിക്സ് കോർപ്പറേഷൻ അന്താരാഷ്ട്ര തുറമുഖത്തിനടുത്ത് തങ്ങളുടെ അത്യാധുനിക റോബോട്ടിക് വിതരണ കേന്ദ്രം ഇപ്പോൾ തന്നെ സജീവമാക്കിയിട്ടുണ്ട്.",
+          "meaningHi": "ग्लोबल लॉजिस्टिक्स ने बंदरगाह के पास अपना अत्याधुनिक वितरण केंद्र हाल ही में सक्रिय किया है।",
+          "meaningTa": "குளோபல் லாஜிஸ்டிக்ஸ் துறைமுகத்திற்கு அருகில் தனது தானியங்கி விநியோக மையத்தை செயல்படுத்தியுள்ளது.",
+          "audioPrompt": "Global Logistics Corporation has just activated its state-of-the-art robotic distribution center near the international seaport."
         },
         {
-          "text": "I have already sent it.",
-          "meaningMl": "അയച്ചു കഴിഞ്ഞു - I have already sent it.",
-          "audioPrompt": "I have already sent it."
+          "text": "Autonomous sorting machines have already processed over fifty thousand packages in their first operational week.",
+          "meaningMl": "ഓട്ടോണമസ് സോർട്ടിംഗ് മെഷീനുകൾ അവരുടെ ആദ്യ പ്രവർത്തന ആഴ്ചയിൽ തന്നെ അൻപതിനായിരത്തിലധികം പാക്കേജുകൾ പ്രോസസ്സ് ചെയ്തുകഴിഞ്ഞു.",
+          "meaningHi": "स्वचालित मशीनों ने पहले हफ्ते में पचास हजार से अधिक पैकेजों को प्रोसेस कर लिया है।",
+          "meaningTa": "தானியங்கி இயந்திரங்கள் முதல் வாரத்தில் ஐம்பதாயிரத்துக்கும் மேற்பட்ட பார்சல்களை கையாண்டுள்ளன.",
+          "audioPrompt": "Autonomous sorting machines have already processed over fifty thousand packages in their first operational week."
         },
         {
-          "text": "Daily practice of Just, Already & Yet gives you great confidence in English.",
-          "meaningMl": "Just, Already, Yet പ്രയോഗങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Just, Already & Yet gives you great confidence in English."
+          "text": "Customers have received instant digital notifications with precise live tracking links on their smartphones.",
+          "meaningMl": "ഉപഭോക്താക്കൾക്ക് അവരുടെ സ്മാർട്ട്‌ഫോണുകളിൽ കൃത്യമായ ലൈവ് ട്രാക്കിംഗ് ലിങ്കുകളുള്ള തത്സമയ ഡിജിറ്റൽ അറിയിപ്പുകൾ ലഭിച്ചിട്ടുണ്ട്.",
+          "meaningHi": "ग्राहकों को उनके फोन पर लाइव ट्रैकिंग लिंक के साथ डिजिटल सूचनाएं प्राप्त हुई हैं।",
+          "meaningTa": "வாடிக்கையாளர்கள் தங்கள் போனில் நேரடி கண்காணிப்பு இணைப்புகளுடன் அறிவிப்புகளைப் பெற்றுள்ளனர்.",
+          "audioPrompt": "Customers have received instant digital notifications with precise live tracking links on their smartphones."
+        },
+        {
+          "text": "However, electric delivery vans for regional distribution routes have not arrived from the manufacturer yet.",
+          "meaningMl": "എന്നിരുന്നാലും, പ്രാദേശിക വിതരണ റൂട്ടുകൾക്കുള്ള ഇലക്ട്രിക് ഡെലിവറി വാനുകൾ നിർമ്മാതാവിൽ നിന്ന് ഇതുവരെ എത്തിയിട്ടില്ല.",
+          "meaningHi": "हालांकि, डिलीवरी के लिए इलेक्ट्रिक वैन अभी तक निर्माता से नहीं आई हैं।",
+          "meaningTa": "இருப்பினும், மின்சார விநியோக வாகனங்கள் உற்பத்தியாளரிடமிருந்து இன்னும் வந்து சேரவில்லை.",
+          "audioPrompt": "However, electric delivery vans for regional distribution routes have not arrived from the manufacturer yet."
+        },
+        {
+          "text": "The plant manager has just finalized an agreement with a temporary eco-friendly transport fleet.",
+          "meaningMl": "പ്ലാന്റ് മാനേജർ ഒരു താൽക്കാലിക പരിസ്ഥിതി സൗഹൃദ ഗതാഗത സർവീസുമായി ഇപ്പോൾ തന്നെ കരാർ ഉറപ്പിച്ചിട്ടുണ്ട്.",
+          "meaningHi": "प्लांट मैनेजर ने पर्यावरण के अनुकूल वाहन बेड़े के साथ एक समझौते को अंतिम रूप दिया है।",
+          "meaningTa": "மேலாளர் சுற்றுச்சூழல் நட்பு போக்குவரத்து வாகனங்களுடன் ஒப்பந்தத்தை இறுதி செய்துள்ளார்.",
+          "audioPrompt": "The plant manager has just finalized an agreement with a temporary eco-friendly transport fleet."
+        },
+        {
+          "text": "Zero deliveries have faced unexpected delays because proactive contingency planning was put in place.",
+          "meaningMl": "മുൻകൂർ ആസൂത്രണം നടപ്പിലാക്കിയതിനാൽ ഒരു ഡെലിവറിയും അപ്രതീക്ഷിതമായി വൈകിയിട്ടില്ല.",
+          "meaningHi": "सक्रिय योजना के कारण किसी भी डिलीवरी में अप्रत्याशित देरी नहीं हुई है।",
+          "meaningTa": "முன்னெச்சரிக்கை திட்டமிடல் இருந்ததால் எந்த விநியோகமும் தாமதமாகவில்லை.",
+          "audioPrompt": "Zero deliveries have faced unexpected delays because proactive contingency planning was put in place."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many packages have the autonomous machines processed already?",
+            "ml": "ഓട്ടോണമസ് മെഷീനുകൾ ഇതിനകം എത്ര പാക്കേജുകൾ പ്രോസസ്സ് ചെയ്തു?",
+            "hi": "मशीनों ने पहले ही कितने पैकेजों को प्रोसेस किया है?",
+            "ta": "இயந்திரங்கள் ஏற்கனவே எத்தனை பார்சல்களை கையாண்டுள்ளன?"
+          },
+          "options": [
+            "Five hundred",
+            "Over fifty thousand packages",
+            "Ten thousand",
+            "One hundred"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Over fifty thousand packages in the first week.",
+            "ml": "അൻപതിനായിരത്തിലധികം പാക്കേജുകൾ (over fifty thousand packages)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Which vehicles have not arrived from the manufacturer yet?",
+            "ml": "നിർമ്മാതാവിൽ നിന്ന് ഇതുവരെ എത്തിച്ചേരാത്ത വാഹനങ്ങൾ ഏതാണ്?",
+            "hi": "निर्माता से कौन से वाहन अभी तक नहीं आए हैं?",
+            "ta": "உற்பத்தியாளரிடமிருந்து இன்னும் வராத வாகனங்கள் எவை?"
+          },
+          "options": [
+            "Heavy diesel trucks",
+            "Electric delivery vans",
+            "Helicopters",
+            "Bicycles"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Electric delivery vans have not arrived yet.",
+            "ml": "ഇലക്ട്രിക് ഡെലിവറി വാനുകൾ (Electric delivery vans)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Where is the distribution center located?",
+            "ml": "വിതരണ കേന്ദ്രം എവിടെയാണ് സ്ഥിതി ചെയ്യുന്നത്?",
+            "hi": "वितरण केंद्र कहां स्थित है?",
+            "ta": "விநியோக மையம் எங்கு அமைந்துள்ளது?"
+          },
+          "options": [
+            "Near a mountain peak",
+            "Near the international seaport",
+            "Inside a dense forest",
+            "At a train station"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Near the international seaport.",
+            "ml": "അന്താരാഷ്ട്ര തുറമുഖത്തിനടുത്ത് (international seaport)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d63_1",
-          "question": "Which word represents: 'എത്തിച്ചേരുക'?",
+          "id": 1,
+          "question": "Where should 'yet' be placed in a negative sentence?",
           "options": [
-            "arrive",
-            "listen",
-            "create",
-            "discover"
+            "At the very end: 'I haven't received the parcel yet.'",
+            "At the very beginning: 'Yet I haven't received the parcel.'",
+            "Between have and V3: 'I haven't yet received the parcel.'",
+            "Right after the subject: 'I yet haven't received the parcel.'"
           ],
-          "answer": "arrive",
-          "explanation": "arrive എന്നാൽ എത്തിച്ചേരുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "സാധാരണ സംസാരിക്കുമ്പോൾ 'yet' വാക്യത്തിന്റെ അവസാനത്തിലാണ് വരുന്നത് ('I haven't received the parcel yet')."
         },
         {
-          "id": "trap_d63_2",
-          "question": "What is the past form (V2) of 'send'?",
+          "id": 2,
+          "question": "Choose the correct sentence indicating an action finished seconds ago:",
           "options": [
-            "sent",
-            "sending",
-            "has send",
-            "sends"
+            "He has already left the building.",
+            "He has just left the building.",
+            "He hasn't left the building yet.",
+            "He leaves the building."
           ],
-          "answer": "sent",
-          "explanation": "send ന്റെ ഭൂതകാല രൂപം sent ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "ഏതാനും നിമിഷങ്ങൾക്ക് മുമ്പ് മാത്രം നടന്ന കാര്യങ്ങൾക്ക് 'just' ഉപയോഗിക്കുന്നു ('He has just left')."
         },
         {
-          "id": "trap_d63_3",
-          "question": "What is the correct English word for 'സമയം'?",
+          "id": 3,
+          "question": "Identify the correct sentence using 'already':",
           "options": [
-            "knowledge",
-            "time",
-            "courage",
-            "routine"
+            "They already have ate dinner.",
+            "They have already eaten dinner.",
+            "They have eaten dinner already yet.",
+            "They has already eaten dinner."
           ],
-          "answer": "time",
-          "explanation": "സമയം എന്നാൽ ഇംഗ്ലീഷിൽ time."
+          "correctIndex": 1,
+          "explanationMl": "'have' നും V3 രൂപമായ 'eaten' നും ഇടയിലാണ് 'already' വരുന്നത് ('They have already eaten dinner')."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 63 Gate Exam (5 Qs)",

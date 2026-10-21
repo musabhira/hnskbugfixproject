@@ -22,112 +22,169 @@
     "totalCoinsReward": 138
   },
   "grammarRule": {
-    "formula": "Pronunciation – Intonation, Rhythm and Connected Speech",
+    "formula": "Figure out / Look into / Call off / Follow up / Carry on / Back out",
     "explanation": {
-      "ml": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ എന്ന വിഷയത്തിൽ Figure out, Look into, Call off, Follow up, Carry on എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Figure out, Look into, Call off, Follow up, Carry on correctly in spoken English."
+      "ml": "ഓഫീസ് സംഭാഷണങ്ങളിലും ഇമെയിലുകളിലും ഏറ്റവും കൂടുതൽ ഉപയോഗിക്കുന്ന പ്രധാനപ്പെട്ട ഫ്രേസൽ വെർബുകൾ: പ്രശ്നം പരിഹരിക്കുക (Figure out), അന്വേഷിക്കുക (Look into), റദ്ദാക്കുക (Call off), തുടർനടപടികൾ എടുക്കുക (Follow up), തുടരുക (Carry on), പിന്മാറുക (Back out).",
+      "en": "Master High-Impact Workplace Phrasal Verbs in Action with clear formula: Figure out / Look into / Call off / Follow up / Carry on / Back out"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I figured out the solution.",
-      "en": "Golden Rule: Practice 'I figured out the solution.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഫ്രേസൽ വെർബുകൾ സാധാരണ ക്രിയകളേക്കാൾ സംഭാഷണങ്ങളിൽ കൂടുതൽ സ്വാഭാവികത നൽകുന്നു (ഉദാ: Investigate എന്നതിനേക്കാൾ 'Look into', Cancel എന്നതിനേക്കാൾ 'Call off').",
+      "en": "Golden Tip: ഫ്രേസൽ വെർബുകൾ സാധാരണ ക്രിയകളേക്കാൾ സംഭാഷണങ്ങളിൽ കൂടുതൽ സ്വാഭാവികത നൽകുന്നു (ഉദാ: Investigate എന്നതിനേക്കാൾ 'Look into', Cancel എന്നതിനേക്കാൾ 'Call off')."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "figure out",
-        "v2": "figured out",
-        "v3": "figured out",
+        "v1": "ascertain",
+        "v2": "ascertained",
+        "v3": "ascertained",
         "meaning": {
-          "ml": "കണ്ടെത്തുക",
-          "hi": "समाधान निकालना",
-          "ta": "கண்டுபிடி"
+          "ml": "ഉറപ്പുവരുത്തുക / നിജസ്ഥിതി കണ്ടെത്തുക",
+          "hi": "सुनिश्चित करना / पता लगाना",
+          "ta": "உறுதிப்படுத்து / கண்டறி"
         },
-        "example": "I figured out the solution.",
-        "exampleMl": "കണ്ടെത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We need to ascertain the exact root cause of the system failure.",
+        "exampleMl": "Find something out for certain; make sure of."
       },
       {
-        "v1": "look into",
-        "v2": "looked into",
-        "v3": "looked into",
+        "v1": "defer",
+        "v2": "defered",
+        "v3": "defered",
         "meaning": {
-          "ml": "അന്വേഷിക്കുക",
-          "hi": "जाँच करना",
-          "ta": "ஆராய்"
+          "ml": "നീട്ടിവെക്കുക / മാറ്റിവെക്കുക",
+          "hi": "स्थगित करना",
+          "ta": "ஒத்திவை"
         },
-        "example": "We will look into the matter.",
-        "exampleMl": "അന്വേഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The board voted to defer the software launch until security audits completed.",
+        "exampleMl": "Put off an action or event to a later time; postpone."
       },
       {
-        "v1": "call off",
-        "v2": "called off",
-        "v3": "called off",
+        "v1": "revisit",
+        "v2": "revisited",
+        "v3": "revisited",
         "meaning": {
-          "ml": "റദ്ദാക്കുക",
-          "hi": "रद्द करना",
-          "ta": "ரத்து செய்"
+          "ml": "വീണ്ടും പരിശോധിക്കുക / പുനർവിചിന്തനം നടത്തുക",
+          "hi": "पुनर्विचार करना",
+          "ta": "மீண்டும் பரிசீலி"
         },
-        "example": "They called off the strike.",
-        "exampleMl": "റദ്ദാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Let us revisit our quarterly budget allocations during next month's planning session.",
+        "exampleMl": "Consider or discuss something again."
       },
       {
-        "v1": "follow up",
-        "v2": "followed up",
-        "v3": "followed up",
+        "v1": "persevere",
+        "v2": "persevereed",
+        "v3": "persevereed",
         "meaning": {
-          "ml": "തുടർനടപടി സ്വീകരിക്കുക",
-          "hi": "अनुवर्ती कार्रवाई करना",
-          "ta": "பின்தொடர்"
+          "ml": "സ്ഥിരോത്സാഹത്തോടെ തുടരുക",
+          "hi": "डटे रहना / लगे रहना",
+          "ta": "தொடர்ந்து முயற்சி செய்"
         },
-        "example": "Follow up with the customer.",
-        "exampleMl": "തുടർനടപടി സ്വീകരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Despite initial prototype setbacks, the researchers persevered until they succeeded.",
+        "exampleMl": "Continue in a course of action even in the face of difficulty or with little or no prospect of success."
+      },
+      {
+        "v1": "delegate",
+        "v2": "delegateed",
+        "v3": "delegateed",
+        "meaning": {
+          "ml": "ചുമതല ഏൽപ്പിക്കുക / വിട്ടുകൊടുക്കുക",
+          "hi": "सौंपना / अधिकार देना",
+          "ta": "பொறுப்பை ஒப்படை"
+        },
+        "example": "An effective leader knows when to delegate routine administrative duties.",
+        "exampleMl": "Entrust a task or responsibility to another person, typically one who is less senior than oneself."
+      },
+      {
+        "v1": "troubleshoot",
+        "v2": "troubleshooted",
+        "v3": "troubleshooted",
+        "meaning": {
+          "ml": "തകരാറുകൾ കണ്ടെത്തി പരിഹരിക്കുക",
+          "hi": "समस्या निवारण करना",
+          "ta": "கோளாறு நீக்கு"
+        },
+        "example": "Our systems engineer worked round the clock to troubleshoot the network latency.",
+        "exampleMl": "Analyze and resolve serious problems for a company or other organization, or trace and correct faults in a mechanical or electronic system."
       }
     ],
     "nouns": [
       {
-        "word": "phrasal verb",
+        "word": "Ascertain",
+        "partOfSpeech": "verb",
+        "definition": "Find something out for certain; make sure of.",
         "meaning": {
-          "ml": "ഫ്രേസൽ വെർബ്",
-          "hi": "वाक्यांश क्रिया",
-          "ta": "சொற்றொடர் வினை"
+          "ml": "ഉറപ്പുവരുത്തുക / നിജസ്ഥിതി കണ്ടെത്തുക",
+          "hi": "सुनिश्चित करना / पता लगाना",
+          "ta": "உறுதிப்படுத்து / கண்டறி",
+          "te": "నిర్ధారించు",
+          "kn": "ಖಚಿತಪಡಿಸಿಕೊಳ್ಳು"
         },
-        "example": "Phrasal verbs make your English natural."
+        "example": "We need to ascertain the exact root cause of the system failure."
       },
       {
-        "word": "solution",
+        "word": "Defer",
+        "partOfSpeech": "verb",
+        "definition": "Put off an action or event to a later time; postpone.",
         "meaning": {
-          "ml": "പരിഹാരം",
-          "hi": "समाधान",
-          "ta": "தீர்வு"
+          "ml": "നീട്ടിവെക്കുക / മാറ്റിവെക്കുക",
+          "hi": "स्थगित करना",
+          "ta": "ஒத்திவை",
+          "te": "వాయిదా వేయు",
+          "kn": "ಮುಂದೂಡು"
         },
-        "example": "We found a simple solution to the problem."
+        "example": "The board voted to defer the software launch until security audits completed."
       },
       {
-        "word": "meeting",
+        "word": "Revisit",
+        "partOfSpeech": "verb",
+        "definition": "Consider or discuss something again.",
         "meaning": {
-          "ml": "മീറ്റിംഗ്",
-          "hi": "बैठक",
-          "ta": "கூட்டம்"
+          "ml": "വീണ്ടും പരിശോധിക്കുക / പുനർവിചിന്തനം നടത്തുക",
+          "hi": "पुनर्विचार करना",
+          "ta": "மீண்டும் பரிசீலி",
+          "te": "పునఃపరిశీలించు",
+          "kn": "ಮರುಪರಿಶೀಲಿಸು"
         },
-        "example": "The team meeting starts at ten o'clock."
+        "example": "Let us revisit our quarterly budget allocations during next month's planning session."
       },
       {
-        "word": "customer",
+        "word": "Persevere",
+        "partOfSpeech": "verb",
+        "definition": "Continue in a course of action even in the face of difficulty or with little or no prospect of success.",
         "meaning": {
-          "ml": "ഉപഭോക്താവ്",
-          "hi": "ग्राहक",
-          "ta": "வாடிக்கையாளர்"
+          "ml": "സ്ഥിരോത്സാഹത്തോടെ തുടരുക",
+          "hi": "डटे रहना / लगे रहना",
+          "ta": "தொடர்ந்து முயற்சி செய்",
+          "te": "పట్టువదలకుండా కొనసాగించు",
+          "kn": "ಛಲದಿಂದ ಮುಂದುವರಿಯು"
         },
-        "example": "Always listen to the customer with care."
+        "example": "Despite initial prototype setbacks, the researchers persevered until they succeeded."
       },
       {
-        "word": "matter",
+        "word": "Delegate",
+        "partOfSpeech": "verb",
+        "definition": "Entrust a task or responsibility to another person, typically one who is less senior than oneself.",
         "meaning": {
-          "ml": "കാര്യം / വിഷയം",
-          "hi": "मामला",
-          "ta": "விஷயம்"
+          "ml": "ചുമതല ഏൽപ്പിക്കുക / വിട്ടുകൊടുക്കുക",
+          "hi": "सौंपना / अधिकार देना",
+          "ta": "பொறுப்பை ஒப்படை",
+          "te": "బాధ్యత అప్పగించు",
+          "kn": "ಜವಾಬ್ದಾರಿ ವಹಿಸು"
         },
-        "example": "Let us discuss this serious matter."
+        "example": "An effective leader knows when to delegate routine administrative duties."
+      },
+      {
+        "word": "Troubleshoot",
+        "partOfSpeech": "verb",
+        "definition": "Analyze and resolve serious problems for a company or other organization, or trace and correct faults in a mechanical or electronic system.",
+        "meaning": {
+          "ml": "തകരാറുകൾ കണ്ടെത്തി പരിഹരിക്കുക",
+          "hi": "समस्या निवारण करना",
+          "ta": "கோளாறு நீக்கு",
+          "te": "సమస్యను పరిష్కరించు",
+          "kn": "ದೋಷನಿವಾರಣೆ ಮಾಡು"
+        },
+        "example": "Our systems engineer worked round the clock to troubleshoot the network latency."
       }
     ]
   },
@@ -136,8 +193,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Essential Workplace Phrasal Verbs",
-        "ml": "പാഠം: ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ"
+        "en": "Concept Room: High-Impact Workplace Phrasal Verbs in Action",
+        "ml": "പാഠം: ഓഫീസിലെ പ്രധാന ഫ്രേസൽ വെർബുകൾ (Phrasal Verbs)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +202,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Figure out / Look into / Call off / Follow up / Carry on / Back out",
+        "ml": "ഓഫീസ് സംഭാഷണങ്ങളിലും ഇമെയിലുകളിലും ഏറ്റവും കൂടുതൽ ഉപയോഗിക്കുന്ന പ്രധാനപ്പെട്ട ഫ്രേസൽ വെർബുകൾ: പ്രശ്നം പരിഹരിക്കുക (Figure out), അന്വേഷിക്കുക (Look into), റദ്ദാക്കുക (Call off), തുടർനടപടികൾ എടുക്കുക (Follow up), തുടരുക (Carry on), പിന്മാറുക (Back out)."
       }
     },
     {
@@ -203,9 +260,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I figured out the solution.",
-        "We will look into the matter.",
-        "They called off the strike."
+        "Our engineering squad managed to figure out the root cause of the memory leak .",
+        "The compliance officer promised to look into the data discrepancy and report back by noon .",
+        "They had to call off the international product symposium due to severe airport strikes .",
+        "I will follow up with the prospective client tomorrow morning regarding the contract proposal .",
+        "Despite the unexpected power outage , the surgical team carried on with the procedure smoothly ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +275,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Essential Workplace Phrasal Verbs",
-        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ"
+        "en": "Reading Room: The Critical Incident Command",
+        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ പ്രധാന ഫ്രേസൽ വെർബുകൾ (Phrasal Verbs)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +285,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I figured out the solution.",
-          "meaningMl": "കണ്ടെത്തുക - I figured out the solution.",
-          "audioPrompt": "I figured out the solution."
+          "text": "At two in the afternoon, the automated monitoring alarms at an international cloud datacenter in Mumbai triggered red priority alerts.",
+          "meaningMl": "ഉച്ചയ്ക്ക് രണ്ട് മണിക്ക് മുംബൈയിലെ അന്താരാഷ്ട്ര ക്ലൗഡ് ഡാറ്റാസെന്ററിൽ അപകട മുന്നറിയിപ്പ് അലാറങ്ങൾ മുഴങ്ങി.",
+          "meaningHi": "दोपहर दो बजे मुंबई के डाटा सेंटर में खतरे की चेतावनी बजी।",
+          "meaningTa": "மதியம் இரண்டு மணிக்கு மும்பை தரவு மையத்தில் அவசர எச்சரிக்கை மணி ஒலித்தது.",
+          "audioPrompt": "At two in the afternoon, the automated monitoring alarms at an international cloud datacenter in Mumbai triggered red priority alerts."
         },
         {
-          "text": "We will look into the matter.",
-          "meaningMl": "അന്വേഷിക്കുക - We will look into the matter.",
-          "audioPrompt": "We will look into the matter."
+          "text": "Operations commander Sameer assembled his incident response team to look into anomalous spikes in incoming server traffic.",
+          "meaningMl": "സെർവർ ട്രാഫിക്കിലെ അസാധാരണ വർദ്ധനവ് പരിശോധിക്കാൻ ഓപ്പറേഷൻസ് കമാൻഡർ സമീർ തന്റെ ടീമിനെ വിളിച്ചുകൂട്ടി.",
+          "meaningHi": "समीर ने असामान्य ट्रैफिक की जांच के लिए अपनी टीम को इकट्ठा किया।",
+          "meaningTa": "சமீர் அசாதாரண இணைய போக்குவரத்தை ஆய்வு செய்ய தனது குழுவை கூட்டினார்.",
+          "audioPrompt": "Operations commander Sameer assembled his incident response team to look into anomalous spikes in incoming server traffic."
         },
         {
-          "text": "Daily practice of Essential Workplace Phrasal Verbs gives you great confidence in English.",
-          "meaningMl": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Essential Workplace Phrasal Verbs gives you great confidence in English."
+          "text": "Working frantically across multiple network interfaces, the cybersecurity analysts worked to figure out the source of the distributed attack.",
+          "meaningMl": "നിരവധി നെറ്റ്‌വർക്കുകൾ പരിശോധിച്ച്, സൈബർ സുരക്ഷാ വിദഗ്ദ്ധർ ഈ ആക്രമണത്തിന്റെ ഉറവിടം കണ്ടെത്തി പരിഹരിക്കാൻ ശ്രമിച്ചു.",
+          "meaningHi": "विशेषज्ञों ने हमले के स्रोत का पता लगाने के लिए कड़ी मेहनत की।",
+          "meaningTa": "தாக்குதலின் மூலத்தைக் கண்டறிய நிபுணர்கள் தீவிரமாக உழைத்தனர்.",
+          "audioPrompt": "Working frantically across multiple network interfaces, the cybersecurity analysts worked to figure out the source of the distributed attack."
+        },
+        {
+          "text": "Executive leadership considered calling off the impending nationwide digital payment rollout until stability was fully guaranteed.",
+          "meaningMl": "സ്ഥിരത ഉറപ്പാക്കുന്നതുവരെ ദേശീയ ഡിജിറ്റൽ പേയ്‌മെന്റ് ലോഞ്ച് റദ്ദാക്കുന്നതിനെക്കുറിച്ച് മാനേജ്‌മെന്റ് ആലോചിച്ചു.",
+          "meaningHi": "प्रबंधन ने स्थिति सामान्य होने तक नई सेवा के शुभारंभ को रद्द करने पर विचार किया।",
+          "meaningTa": "முழு பாதுகாப்பு கிடைக்கும் வரை புதிய சேவையை ரத்து செய்யலாமா என நிர்வாகம் யோசித்தது.",
+          "audioPrompt": "Executive leadership considered calling off the impending nationwide digital payment rollout until stability was fully guaranteed."
+        },
+        {
+          "text": "However, Sameer's engineers successfully deployed intelligent firewalls, enabling all essential financial transactions to carry on uninterrupted.",
+          "meaningMl": "എന്നാൽ സമീറിന്റെ എഞ്ചിനീയർമാർ ഇന്റലിജന്റ് ഫയർവാളുകൾ വിജയകരമായി വിന്യസിച്ചതിനാൽ സാമ്പത്തിക ഇടപാടുകൾ തടസ്സമില്ലാതെ തുടർന്നു.",
+          "meaningHi": "समीर की टीम ने तुरंत फायरवॉल लगाई जिससे सभी लेन-देन सुचारू रूप से चलते रहे।",
+          "meaningTa": "சமீரின் குழுவினர் உடனடியாக பாதுகாப்பு அமைப்பை ஏற்படுத்தியதால் பணப் பரிவர்த்தனைகள் தடையின்றி தொடர்ந்தன.",
+          "audioPrompt": "However, Sameer's engineers successfully deployed intelligent firewalls, enabling all essential financial transactions to carry on uninterrupted."
+        },
+        {
+          "text": "Sameer promised to follow up with a thorough forensic report by Friday, demonstrating exemplary crisis leadership.",
+          "meaningMl": "വെള്ളിയാഴ്ചയ്ക്കകം വിശദമായ റിപ്പോർട്ട് സമർപ്പിക്കാമെന്ന് സമീർ ഉറപ്പ് നൽകി, മാതൃകാപരമായ നേതൃപാടവം അദ്ദേഹം തെളിയിച്ചു.",
+          "meaningHi": "समीर ने शुक्रवार तक पूरी रिपोर्ट देने का वादा किया, जो उनके बेहतरीन नेतृत्व को दर्शाता है।",
+          "meaningTa": "வெள்ளிக்கிழமைக்குள் விரிவான அறிக்கை அளிப்பதாக சமீர் உறுதி கூறினார்.",
+          "audioPrompt": "Sameer promised to follow up with a thorough forensic report by Friday, demonstrating exemplary crisis leadership."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did Commander Sameer assemble his team to do regarding server traffic?",
+            "ml": "സെർവർ ട്രാഫിക്കിനെക്കുറിച്ച് എന്ത് ചെയ്യാനാണ് സമീർ ടീമിനെ കൂട്ടിയത്?",
+            "hi": "समीर ने अपनी टीम को क्या करने के लिए बुलाया?",
+            "ta": "சமீர் தனது குழுவை எதற்காக அழைத்தார்?"
+          },
+          "options": [
+            "To ignore the alerts",
+            "To look into anomalous spikes in server traffic",
+            "To play computer games",
+            "To close down the building"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To look into anomalous spikes (investigate).",
+            "ml": "അസാധാരണ വർദ്ധനവ് പരിശോധിക്കാൻ (look into)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did leadership consider doing regarding the digital payment rollout?",
+            "ml": "ഡിജിറ്റൽ പേയ്‌മെന്റ് ലോഞ്ചിനെക്കുറിച്ച് മാനേജ്‌മെന്റ് എന്ത് തീരുമാനിക്കാനാണ് ആലോചിച്ചത്?",
+            "hi": "प्रबंधन ने क्या करने पर विचार किया?",
+            "ta": "நிர்வாகம் என்ன யோசித்தது?"
+          },
+          "options": [
+            "Giving away free money",
+            "Calling off the rollout until stability was guaranteed",
+            "Increasing transaction fees",
+            "Moving to another city"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Calling off the rollout (canceling it).",
+            "ml": "റദ്ദാക്കുന്നതിനെക്കുറിച്ച് (calling off)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What allowed essential financial transactions to carry on uninterrupted?",
+            "ml": "ഇടപാടുകൾ തടസ്സമില്ലാതെ തുടരാൻ സഹായിച്ചത് എന്താണ്?",
+            "hi": "लेन-देन सुचारू रूप से चलने में किसने मदद की?",
+            "ta": "பரிவர்த்தனைகள் தடையின்றி தொடர எது உதவியது?"
+          },
+          "options": [
+            "Unplugging all servers",
+            "Engineers successfully deployed intelligent firewalls",
+            "Calling the local police",
+            "Turning off the electricity"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Engineers deployed intelligent firewalls.",
+            "ml": "ഇന്റലിജന്റ് ഫയർവാളുകൾ വിന്യസിച്ചതിലൂടെ."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +439,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d88_1",
-          "question": "Which word represents: 'കണ്ടെത്തുക'?",
+          "id": 1,
+          "question": "What is the difference between 'call off' and 'put off'?",
           "options": [
-            "figure out",
-            "arrive",
-            "finish",
-            "prepare"
+            "There is no difference.",
+            "'Call off' means to cancel completely; 'put off' means to postpone to a later date.",
+            "'Call off' means to shout; 'put off' means to wear clothes.",
+            "'Call off' is only used in baseball."
           ],
-          "answer": "figure out",
-          "explanation": "figure out എന്നാൽ കണ്ടെത്തുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Call off' എന്നാൽ പൂർണ്ണമായി റദ്ദാക്കുക (cancel) എന്നാണ്. 'Put off' എന്നാൽ മറ്റൊരു ദിവസത്തേക്ക് നീട്ടിവെക്കുക (postpone) എന്നാണ്."
         },
         {
-          "id": "trap_d88_2",
-          "question": "What is the past form (V2) of 'look into'?",
+          "id": 2,
+          "question": "Select the sentence where 'figure out' is used accurately:",
           "options": [
-            "looked into",
-            "has look into",
-            "look intoing",
-            "look intos"
+            "She figured out the solution to the riddle.",
+            "He figured out of the building through the door.",
+            "I figured out my shoes with water.",
+            "Figure out is a shape."
           ],
-          "answer": "looked into",
-          "explanation": "look into ന്റെ ഭൂതകാല രൂപം looked into ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "'Figure out' എന്നാൽ മനസ്സിലാക്കുക അല്ലെങ്കിൽ ഉത്തരം കണ്ടെത്തുക (understand / solve) എന്നാണ് അർത്ഥം."
         },
         {
-          "id": "trap_d88_3",
-          "question": "What is the correct English word for 'ഫ്രേസൽ വെർബ്'?",
+          "id": 3,
+          "question": "What does 'follow up' mean in a professional workplace context?",
           "options": [
-            "airport",
-            "phrasal verb",
-            "partner",
-            "station"
+            "Follow someone on the street physically.",
+            "Pursue an initial communication or action with further inquiry or updates.",
+            "Unsubscribe from an email list.",
+            "Walk up the stairs behind a manager."
           ],
-          "answer": "phrasal verb",
-          "explanation": "ഫ്രേസൽ വെർബ് എന്നാൽ ഇംഗ്ലീഷിൽ phrasal verb."
+          "correctIndex": 1,
+          "explanationMl": "ഓഫീസിൽ 'follow up' എന്നാൽ ഒരു കാര്യത്തിന്റെ പുരോഗതി അന്വേഷിക്കുകയോ തുടർനടപടികൾ സ്വീകരിക്കുകയോ ചെയ്യുക എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +482,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +524,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +561,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 88 Gate Exam (5 Qs)",

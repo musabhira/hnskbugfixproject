@@ -22,112 +22,121 @@
     "totalCoinsReward": 101
   },
   "grammarRule": {
-    "formula": "Phrasal Verbs – Separable and Inseparable",
+    "formula": "I'd love to, but unfortunately... / Thank you, I'd be delighted!",
     "explanation": {
-      "ml": "ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും എന്ന വിഷയത്തിൽ I'd love to! vs I wish I could, but... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I'd love to! vs I wish I could, but... correctly in spoken English."
+      "ml": "ഒരു ക്ഷണമോ ഓഫറോ സൗമ്യമായി നിരസിക്കുമ്പോൾ വിഷമം തോന്നാത്ത വിധത്തിൽ 'I'd love to, but unfortunately I have a prior commitment' (വരാൻ ആഗ്രഹമുണ്ടായിരുന്നു, പക്ഷേ മറ്റൊരു പരിപാടിയുണ്ട്) എന്ന് നയപരമായി സംസാരിക്കുന്നു.",
+      "en": "Master Accepting & Declining Politely with clear formula: I'd love to, but unfortunately... / Thank you, I'd be delighted!"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I happily accept.",
-      "en": "Golden Rule: Practice 'I happily accept.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 നേരിട്ട് 'No, I cannot come' എന്ന് പറഞ്ഞ് ഒഴിവാക്കരുത്. പകരം: ✅ 'Thank you so much for the invite! I would love to, but unfortunately I have an exam tomorrow' എന്ന് പറയുക.",
+      "en": "Golden Tip: 💡 നേരിട്ട് 'No, I cannot come' എന്ന് പറഞ്ഞ് ഒഴിവാക്കരുത്. പകരം: ✅ 'Thank you so much for the invite! I would love to, but unfortunately I have an exam tomorrow' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "accept",
-        "v2": "accepted",
-        "v3": "accepted",
+        "v1": "unfortunately",
+        "v2": "unfortunatelyed",
+        "v3": "unfortunatelyed",
         "meaning": {
-          "ml": "സ്വീകരിക്കുക",
-          "hi": "സ്വീകരിക്കുക",
-          "ta": "സ്വീകരിക്കുക"
+          "ml": "നിർഭാഗ്യവശാൽ / ഖേദകരമെന്നു പറയട്ടെ",
+          "hi": "दुर्भाग्य से",
+          "ta": "துரதிர்ஷ்டவசமாக"
         },
-        "example": "I happily accept.",
-        "exampleMl": "സ്വീകരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I would love to join your dinner, but unfortunately I am travelling tonight.",
+        "exampleMl": "It is unluckily, regrettably, or unfortunately that."
       },
       {
-        "v1": "decline",
-        "v2": "declined",
-        "v3": "declined",
+        "v1": "regret",
+        "v2": "regreted",
+        "v3": "regreted",
         "meaning": {
-          "ml": "നിരസിക്കുക",
-          "hi": "നിരസിക്കുക",
-          "ta": "നിരസിക്കുക"
+          "ml": "വിഷമം തോന്നുക / ഖേദിക്കുക",
+          "hi": "खेद प्रकट करना",
+          "ta": "வருந்து"
         },
-        "example": "I must decline politely.",
-        "exampleMl": "നിരസിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "apologize",
-        "v2": "apologized",
-        "v3": "apologized",
-        "meaning": {
-          "ml": "ക്ഷമ ചോദിക്കുക",
-          "hi": "ക്ഷമ ചോദിക്കുക",
-          "ta": "ക്ഷമ ചോദിക്കുക"
-        },
-        "example": "I apologize for the delay.",
-        "exampleMl": "ക്ഷമ ചോദിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "appreciate",
-        "v2": "appreciated",
-        "v3": "appreciated",
-        "meaning": {
-          "ml": "വിലമതിക്കുക",
-          "hi": "വിലമതിക്കുക",
-          "ta": "വിലമതിക്കുക"
-        },
-        "example": "I appreciate your invite.",
-        "exampleMl": "വിലമതിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I regret that I will not be able to attend your celebration in person.",
+        "exampleMl": "Feel sad, repentant, or disappointed over something that one has done or failed to do."
       }
     ],
     "nouns": [
       {
-        "word": "excuse",
+        "word": "Unfortunately",
+        "partOfSpeech": "adverb",
+        "definition": "It is unluckily, regrettably, or unfortunately that.",
         "meaning": {
-          "ml": "കാരണം",
-          "hi": "കാരണം",
-          "ta": "കാരണം"
+          "ml": "നിർഭാഗ്യവശാൽ / ഖേദകരമെന്നു പറയട്ടെ",
+          "hi": "दुर्भाग्य से",
+          "ta": "துரதிர்ஷ்டவசமாக",
+          "te": "దురదృష్టవశాత్తూ",
+          "kn": "ದುರದೃಷ್ಟವಶಾತ್"
         },
-        "example": "We learned about excuse in today's lesson."
+        "example": "I would love to join your dinner, but unfortunately I am travelling tonight."
       },
       {
-        "word": "regret",
+        "word": "Pledge",
+        "partOfSpeech": "noun",
+        "definition": "An engagement or obligation that restricts one's freedom of action.",
         "meaning": {
-          "ml": "വിഷമം",
-          "hi": "വിഷമം",
-          "ta": "വിഷമം"
+          "ml": "നേരത്തെ തീരുമാനിച്ച പരിപാടി / മുൻകൂർ കടമ",
+          "hi": "पूर्व व्यस्तता / प्रतिबद्धता",
+          "ta": "முன் ஒப்புக்கொண்ட கடமை",
+          "te": "ప్రతిజ్ఞ",
+          "kn": "ಪೂರ್ವ ಬದ್ಧತೆ"
         },
-        "example": "We learned about regret in today's lesson."
+        "example": "I have a prior family commitment that prevents me from attending."
       },
       {
-        "word": "thanks",
+        "word": "Grateful",
+        "partOfSpeech": "adjective",
+        "definition": "Feeling or showing an appreciation of kindness; thankful.",
         "meaning": {
-          "ml": "നന്ദി",
-          "hi": "നന്ദി",
-          "ta": "നന്ദി"
+          "ml": "നന്ദിയുള്ള / കൃതജ്ഞതയുള്ള",
+          "hi": "आभारी / कृतज्ञ",
+          "ta": "நன்றியுள்ள",
+          "te": "కృతజ్ఞత గల",
+          "kn": "ಕೃತಜ್ಞತೆಯುಳ್ಳ"
         },
-        "example": "We learned about thanks in today's lesson."
+        "example": "We are deeply grateful for your kind invitation to the exhibition."
       },
       {
-        "word": "chance",
+        "word": "Regret",
+        "partOfSpeech": "verb",
+        "definition": "Feel sad, repentant, or disappointed over something that one has done or failed to do.",
         "meaning": {
-          "ml": "അവസരം",
-          "hi": "അവസരം",
-          "ta": "അവസരം"
+          "ml": "വിഷമം തോന്നുക / ഖേദിക്കുക",
+          "hi": "खेद प्रकट करना",
+          "ta": "வருந்து",
+          "te": "విచారించు",
+          "kn": "ಖೇದ ವ್ಯಕ್ತಪಡಿಸು"
         },
-        "example": "We learned about chance in today's lesson."
+        "example": "I regret that I will not be able to attend your celebration in person."
       },
       {
-        "word": "next time",
+        "word": "Cordial",
+        "partOfSpeech": "adjective",
+        "definition": "Warm and friendly; polite and respectful.",
         "meaning": {
-          "ml": "അടുത്ത തവണ",
-          "hi": "അടുത്ത തവണ",
-          "ta": "അടുത്ത തവണ"
+          "ml": "സ്നേഹപൂർവ്വമായ / സൗഹൃദപരമായ",
+          "hi": "हार्दिक / सौहार्दपूर्ण",
+          "ta": "நட்பான / அன்பான",
+          "te": "హృదయపూర్వక",
+          "kn": "ಆತ್ಮೀಯ"
         },
-        "example": "We learned about next time in today's lesson."
+        "example": "They extended a cordial welcome to every guest attending the banquet."
+      },
+      {
+        "word": "Alternative",
+        "partOfSpeech": "noun",
+        "definition": "One of two or more available possibilities.",
+        "meaning": {
+          "ml": "മറ്റൊരു വഴി / പകരമുള്ള സമയം",
+          "hi": "विकल्प",
+          "ta": "மாற்று வழி",
+          "te": "ప్రత్యామ్నాయం",
+          "kn": "ಪರ್ಯಾಯ"
+        },
+        "example": "Could we meet on an alternative date sometime next week?"
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Accepting & Declining Politely",
-        "ml": "പാഠം: ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും"
+        "ml": "പാഠം: ക്ഷണങ്ങൾ സ്വീകരിക്കലും സൗമ്യമായി നിരസിക്കലും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I'd love to, but unfortunately... / Thank you, I'd be delighted!",
+        "ml": "ഒരു ക്ഷണമോ ഓഫറോ സൗമ്യമായി നിരസിക്കുമ്പോൾ വിഷമം തോന്നാത്ത വിധത്തിൽ 'I'd love to, but unfortunately I have a prior commitment' (വരാൻ ആഗ്രഹമുണ്ടായിരുന്നു, പക്ഷേ മറ്റൊരു പരിപാടിയുണ്ട്) എന്ന് നയപരമായി സംസാരിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I happily accept.",
-        "I must decline politely.",
-        "I apologize for the delay."
+        "Thank you so much for the dinner invite, but unfortunately I have a prior commitment .",
+        "I would be absolutely delighted to attend your sister's wedding reception in Chennai .",
+        "I truly appreciate you thinking of me, though I won't be able to make it this time .",
+        "Could we take a rain check and grab coffee sometime early next week instead ?",
+        "We look forward to celebrating this joyful milestone together with your family ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Accepting & Declining Politely",
-        "ml": "റീഡിങ് റൂം: ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും"
+        "ml": "റീഡിങ് റൂം: ക്ഷണങ്ങൾ സ്വീകരിക്കലും സൗമ്യമായി നിരസിക്കലും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I happily accept.",
-          "meaningMl": "സ്വീകരിക്കുക - I happily accept.",
-          "audioPrompt": "I happily accept."
+          "text": "Ambassador Sharma received dozens of banquet invitations each week from international dignitaries.",
+          "meaningMl": "ഓരോ ആഴ്ചയും വിദേശ പ്രമുഖരിൽ നിന്ന് നിരവധി അത്താഴ ക്ഷണങ്ങളാണ് അംബാസഡർ ശർമ്മയ്ക്ക് ലഭിച്ചിരുന്നത്.",
+          "meaningHi": "राजदूत शर्मा को प्रत्येक सप्ताह गणमान्य व्यक्तियों से दर्जनों भोज निमंत्रण मिलते थे।",
+          "meaningTa": "தூதர் சர்மாவுக்கு ஒவ்வொரு வாரமும் பல விருந்து அழைப்புகள் வந்தன.",
+          "audioPrompt": "Ambassador Sharma received dozens of banquet invitations each week from international dignitaries."
         },
         {
-          "text": "I must decline politely.",
-          "meaningMl": "നിരസിക്കുക - I must decline politely.",
-          "audioPrompt": "I must decline politely."
+          "text": "His seasoned private secretary Maya mastered the fine art of diplomatic correspondence.",
+          "meaningMl": "അദ്ദേഹത്തിന്റെ അനുഭവസമ്പന്നയായ സെക്രട്ടറി മായ നയതന്ത്ര എഴുത്തുകുത്തുകളിൽ അതീവ പ്രാവീണ്യം നേടിയിരുന്നു.",
+          "meaningHi": "उनकी अनुभवी सचिव माया ने राजनयिक पत्राचार की कला में महारत हासिल की थी।",
+          "meaningTa": "அவரது செயலாளர் மாயா ராஜதந்திர கடிதப் பரிமாற்றத்தில் தேர்ச்சி பெற்றிருந்தார்.",
+          "audioPrompt": "His seasoned private secretary Maya mastered the fine art of diplomatic correspondence."
         },
         {
-          "text": "Daily practice of Accepting & Declining Politely gives you great confidence in English.",
-          "meaningMl": "ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Accepting & Declining Politely gives you great confidence in English."
+          "text": "When accepting invitations, she expressed profound gratitude and confirmed the delegation's attendance promptly.",
+          "meaningMl": "ക്ഷണങ്ങൾ സ്വീകരിക്കുമ്പോൾ, അവർ അഗാധമായ നന്ദി അറിയിക്കുകയും സംഘത്തിന്റെ പങ്കാളിത്തം ഉറപ്പാക്കുകയും ചെയ്തു.",
+          "meaningHi": "निमंत्रण स्वीकार करते समय, वह आभार व्यक्त करती थीं और उपस्थिति की पुष्टि करती थीं।",
+          "meaningTa": "அழைப்புகளை ஏற்கும் போது அவர் நன்றியைத் தெரிவித்து வருகையை உறுதிப்படுத்தினார்.",
+          "audioPrompt": "When accepting invitations, she expressed profound gratitude and confirmed the delegation's attendance promptly."
+        },
+        {
+          "text": "When declining due to scheduling conflicts, she wrote gracious letters expressing sincere regrets and future hopes.",
+          "meaningMl": "സമയക്കുറവ് കാരണം നിരസിക്കേണ്ടി വരുമ്പോൾ, അവർ സ്നേഹവും ഖേദവും അറിയിച്ചുകൊണ്ട് മനോഹരമായ കത്തുകൾ എഴുതി.",
+          "meaningHi": "समय की कमी के कारण मना करते समय, वह खेद व्यक्त करते हुए विनम्र पत्र लिखती थीं।",
+          "meaningTa": "மறுக்க நேரிடும் போது அவர் வருத்தம் தெரிவித்து பணிவான கடிதங்களை எழுதினார்.",
+          "audioPrompt": "When declining due to scheduling conflicts, she wrote gracious letters expressing sincere regrets and future hopes."
+        },
+        {
+          "text": "Recipients never felt slighted or offended because every word echoed genuine warmth and deep respect.",
+          "meaningMl": "ഓരോ വാക്കിലും സ്നേഹവും ബഹുമാനവും നിറഞ്ഞതിനാൽ ക്ഷണിച്ചവർക്ക് ഒരിക്കലും വിഷമമോ നീരസമോ തോന്നിയില്ല.",
+          "meaningHi": "निमंत्रणकर्ताओं ने कभी बुरा नहीं माना क्योंकि हर शब्द में गहरा सम्मान झलकता था।",
+          "meaningTa": "அழைப்பாளர்கள் ஒருபோதும் வருத்தப்படவில்லை, ஏனெனில் ஒவ்வொரு வார்த்தையிலும் மரியாதை இருந்தது.",
+          "audioPrompt": "Recipients never felt slighted or offended because every word echoed genuine warmth and deep respect."
+        },
+        {
+          "text": "Politeness in speech and writing is an invisible superpower that preserves precious friendships everywhere.",
+          "meaningMl": "സംസാരത്തിലും എഴുത്തിലുമുള്ള മാന്യത എന്നത് എവിടെയും വിലപ്പെട്ട സൗഹൃദങ്ങളെ കാത്തുസൂക്ഷിക്കുന്ന ഒരു അത്ഭുത ശക്തിയാണ്.",
+          "meaningHi": "वाणी और लेखन में विनम्रता एक अदृश्य महाशक्ति है जो हर जगह दोस्ती को बचाए रखती है।",
+          "meaningTa": "பேச்சிலும் எழுத்திலும் உள்ள நற்பண்பு எல்லா இடங்களிலும் நட்பைக் காக்கும் ஒரு பெரும் சக்தியாகும்.",
+          "audioPrompt": "Politeness in speech and writing is an invisible superpower that preserves precious friendships everywhere."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who mastered the fine art of diplomatic correspondence for the Ambassador?",
+            "ml": "അംബാസഡർക്കായി നയതന്ത്ര എഴുത്തുകളിൽ പ്രാവീണ്യം നേടിയത് ആരാണ്?",
+            "hi": "राजदूत के लिए पत्राचार की कला में किसने महारत हासिल की थी?",
+            "ta": "தூதருக்காக கடிதப் பரிமாற்றத்தில் தேர்ச்சி பெற்றவர் யார்?"
+          },
+          "options": [
+            "A military captain",
+            "His seasoned private secretary Maya",
+            "His driver",
+            "A newspaper reporter"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "His seasoned private secretary Maya.",
+            "ml": "അദ്ദേഹത്തിന്റെ സെക്രട്ടറി മായയാണ് (private secretary Maya)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did Maya write when declining an invitation due to scheduling conflicts?",
+            "ml": "സമയം കിട്ടാതെ ക്ഷണം നിരസിക്കേണ്ടി വരുമ്പോൾ മായ എന്താണ് എഴുതിയത്?",
+            "hi": "मना करते समय माया ने क्या लिखा?",
+            "ta": "அழைப்பை மறுக்கும் போது மாயா என்ன எழுதினார்?"
+          },
+          "options": [
+            "Angry complaints",
+            "Gracious letters expressing sincere regrets",
+            "Demands for money",
+            "Silent blank papers"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Gracious letters expressing sincere regrets.",
+            "ml": "സ്നേഹവും ഖേദവും അറിയിച്ചുകൊണ്ടുള്ള കത്തുകൾ (gracious letters)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Why did recipients never feel offended?",
+            "ml": "ക്ഷണിച്ച ആളുകൾക്ക് ഒരിക്കലും നീരസം തോന്നാതിരുന്നത് എന്തുകൊണ്ട്?",
+            "hi": "निमंत्रणकर्ताओं को बुरा क्यों नहीं लगा?",
+            "ta": "அழைப்பாளர்கள் ஏன் வருத்தப்படவில்லை?"
+          },
+          "options": [
+            "Because they received gold coins",
+            "Because every word echoed genuine warmth and deep respect",
+            "Because they forgot about the dinner",
+            "Because the letters were funny"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Because every word echoed genuine warmth and deep respect.",
+            "ml": "ഓരോ വാക്കിലും ആത്മാർത്ഥമായ സ്നേഹവും ബഹുമാനവും പ്രതിഫലിച്ചിരുന്നതിനാൽ."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d51_1",
-          "question": "Which word represents: 'സ്വീകരിക്കുക'?",
+          "question": "Select the most polite way to decline an invitation due to previous plans:",
           "options": [
-            "listen",
-            "forget",
-            "borrow",
-            "accept"
+            "I will not come to your party.",
+            "I'd love to, but unfortunately I have a prior commitment.",
+            "No, your party is on a bad day.",
+            "I don't want to come."
           ],
-          "answer": "accept",
-          "explanation": "accept എന്നാൽ സ്വീകരിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'I'd love to, but unfortunately I have a prior commitment' is gracious, polite, and universally accepted.",
+          "ruleHint": "Declining Formula: I'd love to, but unfortunately I have a prior commitment."
         },
         {
-          "id": "trap_d51_2",
-          "question": "What is the past form (V2) of 'decline'?",
+          "question": "What does the conversational idiom 'take a rain check' mean?",
           "options": [
-            "has decline",
-            "declines",
-            "declineing",
-            "declined"
+            "Check if it will rain tomorrow",
+            "Postpone an invitation or plan to a later convenient date",
+            "Carry an umbrella to a party",
+            "Cancel a friendship forever"
           ],
-          "answer": "declined",
-          "explanation": "decline ന്റെ ഭൂതകാല രൂപം declined ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Take a rain check' means to politely decline an offer now with the promise of doing it another time.",
+          "ruleHint": "Idiom: 'take a rain check' = reschedule for another time."
         },
         {
-          "id": "trap_d51_3",
-          "question": "What is the correct English word for 'കാരണം'?",
+          "question": "How do you enthusiastically accept an offer to join a team outing?",
           "options": [
-            "courage",
-            "success",
-            "excuse",
-            "journey"
+            "Count me in!",
+            "Calculate my number in.",
+            "I am entered inside.",
+            "Add me into counting."
           ],
-          "answer": "excuse",
-          "explanation": "കാരണം എന്നാൽ ഇംഗ്ലീഷിൽ excuse."
+          "correctIndex": 0,
+          "explanation": "'Count me in!' is the natural native idiom to enthusiastically include yourself.",
+          "ruleHint": "Spoken Idiom: 'Count me in!' = Include me!"
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 51 Gate Exam (5 Qs)",

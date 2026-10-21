@@ -1236,7 +1236,61 @@
         "ml": "മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ അടുക്കി വാക്യങ്ങൾ നിർമ്മിക്കുക!",
         "hi": "भूतकाल, वर्तमान और भविष्य काल के वाक्यों को 3 स्तरों में बनाएं!",
         "ta": "கடந்த, நிகழ்கால மற்றும் எதிர்கால வாக்கியங்களை 3 அடுக்குகளில் உருவாக்குங்கள்!"
-      }
+      },
+      "verbs": [
+        {
+          "baseVerb": "Sleep",
+          "meaning": {"en": "Sleep", "ml": "ഉറങ്ങുക"},
+          "past": "Slept",
+          "present": "Sleep",
+          "future": "Will sleep",
+          "anchorTense": "present",
+          "pastSentence": "Yesterday I slept.",
+          "presentSentence": "Every day I sleep.",
+          "futureSentence": "Tomorrow I will sleep.",
+          "rhythmChant": "Every day I sleep, yesterday I slept, tomorrow I will sleep, now I am sleeping!",
+          "grammarTrap": {"en": "Say: 'Did you sleep?', not 'Did you slept?'", "ml": "❌ 'Did you slept?' പറയരുത്! ✅ 'Did you sleep?' എന്ന് പറയുക."}
+        },
+        {
+          "baseVerb": "Eat",
+          "meaning": {"en": "Eat", "ml": "കഴിക്കുക"},
+          "past": "Ate",
+          "present": "Eat",
+          "future": "Will eat",
+          "anchorTense": "future",
+          "pastSentence": "Yesterday I ate.",
+          "presentSentence": "Every day I eat.",
+          "futureSentence": "Tomorrow I will eat.",
+          "rhythmChant": "Every day I eat, yesterday I ate, tomorrow I will eat, now I am eating!",
+          "grammarTrap": {"en": "Say: 'Did you eat?', not 'Did you ate?'", "ml": "❌ 'Did you ate?' പറയരുത്! ✅ 'Did you eat?' എന്ന് പറയുക."}
+        },
+        {
+          "baseVerb": "Go",
+          "meaning": {"en": "Go", "ml": "പോകുക"},
+          "past": "Went",
+          "present": "Go",
+          "future": "Will go",
+          "anchorTense": "past",
+          "pastSentence": "Yesterday I went.",
+          "presentSentence": "Every day I go.",
+          "futureSentence": "Tomorrow I will go.",
+          "rhythmChant": "Every day I go, yesterday I went, tomorrow I will go, now I am going!",
+          "grammarTrap": {"en": "Say: 'Did you go?', not 'Did you went?'", "ml": "❌ 'Did you went?' തെറ്റാണ്! ✅ 'Did you go?' ശരി."}
+        },
+        {
+          "baseVerb": "See",
+          "meaning": {"en": "See", "ml": "കാണുക"},
+          "past": "Saw",
+          "present": "See",
+          "future": "Will see",
+          "anchorTense": "present",
+          "pastSentence": "Yesterday I saw.",
+          "presentSentence": "Every day I see.",
+          "futureSentence": "Tomorrow I will see.",
+          "rhythmChant": "Every day I see, yesterday I saw, tomorrow I will see, now I am seeing!",
+          "grammarTrap": {"en": "Say: 'Did you see?', not 'Did you saw?'", "ml": "❌ 'Did you saw?' പറയരുത്! ✅ 'Did you see?' എന്ന് പറയുക."}
+        }
+      ]
     },
     {
       "stepNumber": 9,

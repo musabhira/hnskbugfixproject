@@ -22,112 +22,109 @@
     "totalCoinsReward": 139
   },
   "grammarRule": {
-    "formula": "Common Spoken English Mistakes and How to Avoid Them",
+    "formula": "Hook the audience -> Build emotional stakes -> Deliver core insight -> Call to action",
     "explanation": {
-      "ml": "പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും എന്ന വിഷയത്തിൽ Hook the audience, Speak with conviction, Inspire action എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Hook the audience, Speak with conviction, Inspire action correctly in spoken English."
+      "ml": "വേദികളിലും കോൺഫറൻസുകളിലും ആളുകളെ ആകർഷിക്കാനും പ്രചോദിപ്പിക്കാനുമുള്ള പ്രസംഗകല. വെറും വസ്തുതകൾ പറയുന്നതിന് പകരം കഥകളിലൂടെയും കൃത്യമായ ഘടനയിലൂടെയും സദസ്സിന്റെ ശ്രദ്ധ പിടിച്ചുപറ്റാനുള്ള വിദ്യകൾ.",
+      "en": "Master Public Speaking, Storytelling & Persuasion with clear formula: Hook the audience -> Build emotional stakes -> Deliver core insight -> Call to action"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Inspire people with your words.",
-      "en": "Golden Rule: Practice 'Inspire people with your words.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഒരു നല്ല പ്രസംഗം ആരംഭിക്കേണ്ടത് വെറുമൊരു ഗുഡ് മോർണിംഗിലല്ല. ഒരു ചോദ്യം, ഒരു കഥ, അല്ലെങ്കിൽ ഒരു അമ്പരപ്പിക്കുന്ന വസ്തുത (Hook) പറഞ്ഞുകൊണ്ടായിരിക്കണം.",
+      "en": "Golden Tip: ഒരു നല്ല പ്രസംഗം ആരംഭിക്കേണ്ടത് വെറുമൊരു ഗുഡ് മോർണിംഗിലല്ല. ഒരു ചോദ്യം, ഒരു കഥ, അല്ലെങ്കിൽ ഒരു അമ്പരപ്പിക്കുന്ന വസ്തുത (Hook) പറഞ്ഞുകൊണ്ടായിരിക്കണം."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "inspire",
-        "v2": "inspired",
-        "v3": "inspired",
+        "v1": "resonate",
+        "v2": "resonateed",
+        "v3": "resonateed",
         "meaning": {
-          "ml": "പ്രചോദിപ്പിക്കുക",
-          "hi": "പ്രചോദിപ്പിക്കുക",
-          "ta": "പ്രചോദിപ്പിക്കുക"
+          "ml": "ഹൃദയത്തിൽ പ്രതിധ്വനിക്കുക / അലയടിക്കുക",
+          "hi": "गूंजना / दिल को छूना",
+          "ta": "மனதில் எதிரொலி"
         },
-        "example": "Inspire people with your words.",
-        "exampleMl": "പ്രചോദിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "engage",
-        "v2": "engaged",
-        "v3": "engaged",
-        "meaning": {
-          "ml": "ആകർഷിക്കുക",
-          "hi": "ആകർഷിക്കുക",
-          "ta": "ആകർഷിക്കുക"
-        },
-        "example": "Engage the audience eyes.",
-        "exampleMl": "ആകർഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "express",
-        "v2": "expressed",
-        "v3": "expressed",
-        "meaning": {
-          "ml": "പ്രകടിപ്പിക്കുക",
-          "hi": "പ്രകടിപ്പിക്കുക",
-          "ta": "പ്രകടിപ്പിക്കുക"
-        },
-        "example": "Express heartfelt feelings.",
-        "exampleMl": "പ്രകടിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "conclude",
-        "v2": "concluded",
-        "v3": "concluded",
-        "meaning": {
-          "ml": "ഉപസംഹരിക്കുക",
-          "hi": "ഉപസംഹരിക്കുക",
-          "ta": "ഉപസംഹരിക്കുക"
-        },
-        "example": "Conclude on an empowering note.",
-        "exampleMl": "ഉപസംഹരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Her honest personal story resonated deeply with parents across the auditorium.",
+        "exampleMl": "Produce or be filled with a deep, full, reverberating sound, or evoke images, memories, and emotions."
       }
     ],
     "nouns": [
       {
-        "word": "speech",
+        "word": "Rhetoric",
+        "partOfSpeech": "noun",
+        "definition": "The art of effective or persuasive speaking or writing, especially the exploitation of figures of speech and other compositional techniques.",
         "meaning": {
-          "ml": "പ്രസംഗം",
-          "hi": "പ്രസംഗം",
-          "ta": "പ്രസംഗം"
+          "ml": "പ്രസംഗകല / ഭാഷണ ശാസ്ത്രം",
+          "hi": "वक्तृत्व कला / भाषाशास्त्र",
+          "ta": "சொற்பொழிவுக் கலை / அலங்காரப் பேச்சு",
+          "te": "వక్తృత్వ కళ",
+          "kn": "ಭಾಷಣ ಕಲೆ"
         },
-        "example": "We learned about speech in today's lesson."
+        "example": "Classical rhetoric teaches speakers how to balance logic, ethics, and emotion."
       },
       {
-        "word": "audience",
+        "word": "Persuasion",
+        "partOfSpeech": "noun",
+        "definition": "The action or process of persuading someone or of being persuaded to do or believe something.",
         "meaning": {
-          "ml": "സദസ്സ്",
-          "hi": "സദസ്സ്",
-          "ta": "സദസ്സ്"
+          "ml": "മനസ്സ് മാറ്റൽ / ബോധ്യപ്പെടുത്തൽ",
+          "hi": "मनाना / समझाना",
+          "ta": "இணங்கச் செய்தல் / மனமாற்றம்",
+          "te": "ఒప్పించడం",
+          "kn": "ಮನವೊಲಿಕೆ"
         },
-        "example": "We learned about audience in today's lesson."
+        "example": "Her persuasive pitch convinced skeptical investors to fund the renewable energy initiative."
       },
       {
-        "word": "voice",
+        "word": "Charisma",
+        "partOfSpeech": "noun",
+        "definition": "Compelling attractiveness or charm that can inspire devotion in others.",
         "meaning": {
-          "ml": "ശബ്ദം",
-          "hi": "ശബ്ദം",
-          "ta": "ശബ്ദം"
+          "ml": "ആകർഷകമായ വ്യക്തിപ്രഭാവം / വശ്യത",
+          "hi": "आकर्षण / व्यक्तित्व का जादू",
+          "ta": "கவர்ச்சி மிக்க ஆளுமை",
+          "te": "ఆకర్షణీయమైన వ్యక్తిత్వం",
+          "kn": "ವ್ಯಕ್ತಿತ್ವದ ಆಕರ್ಷಣೆ"
         },
-        "example": "We learned about voice in today's lesson."
+        "example": "The young educational reformer captivated millions through his authentic charisma."
       },
       {
-        "word": "power",
+        "word": "Conviction",
+        "partOfSpeech": "noun",
+        "definition": "A firmly held belief or opinion, or the quality of showing that one is firmly convinced.",
         "meaning": {
-          "ml": "ശക്തി",
-          "hi": "ശക്തി",
-          "ta": "ശക്തി"
+          "ml": "ദൃഢവിശ്വാസം / ഉറച്ച നിലപാട്",
+          "hi": "दृढ़ विश्वास",
+          "ta": "உறுதியான நம்பிக்கை",
+          "te": "దృఢ నిశ్చయం",
+          "kn": "ದೃಢ ನಂಬಿಕೆ"
         },
-        "example": "We learned about power in today's lesson."
+        "example": "Speak with heartfelt conviction, and your audience will trust your leadership."
       },
       {
-        "word": "conviction",
+        "word": "Oratory",
+        "partOfSpeech": "noun",
+        "definition": "The art or practice of formal speaking in public.",
         "meaning": {
-          "ml": "ഉറച്ച വിശ്വാസം",
-          "hi": "ഉറച്ച വിശ്വാസം",
-          "ta": "ഉറച്ച വിശ്വാസം"
+          "ml": "പ്രസംഗ വൈഭവം / വാക്ചാതുരി",
+          "hi": "भाषण कला",
+          "ta": "மேடைப் பேச்சுத் திறன்",
+          "te": "ఉపన్యాస కళ",
+          "kn": "ಉಪನ್ಯಾಸ ಕಲೆ"
         },
-        "example": "We learned about conviction in today's lesson."
+        "example": "His stirring political oratory mobilized hundreds of thousands of reform activists."
+      },
+      {
+        "word": "Resonate",
+        "partOfSpeech": "verb",
+        "definition": "Produce or be filled with a deep, full, reverberating sound, or evoke images, memories, and emotions.",
+        "meaning": {
+          "ml": "ഹൃദയത്തിൽ പ്രതിധ്വനിക്കുക / അലയടിക്കുക",
+          "hi": "गूंजना / दिल को छूना",
+          "ta": "மனதில் எதிரொலி",
+          "te": "ప్రతిధ్వనించు",
+          "kn": "ಪ್ರತಿಧ್വനಿಸು"
+        },
+        "example": "Her honest personal story resonated deeply with parents across the auditorium."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Public Speaking & Confident Storytelling",
-        "ml": "പാഠം: പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും"
+        "en": "Concept Room: Public Speaking, Storytelling & Persuasion",
+        "ml": "പാഠം: പ്രസംഗകലയും സ്വാധീനശക്തിയും (Public Speaking)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Hook the audience -> Build emotional stakes -> Deliver core insight -> Call to action",
+        "ml": "വേദികളിലും കോൺഫറൻസുകളിലും ആളുകളെ ആകർഷിക്കാനും പ്രചോദിപ്പിക്കാനുമുള്ള പ്രസംഗകല. വെറും വസ്തുതകൾ പറയുന്നതിന് പകരം കഥകളിലൂടെയും കൃത്യമായ ഘടനയിലൂടെയും സദസ്സിന്റെ ശ്രദ്ധ പിടിച്ചുപറ്റാനുള്ള വിദ്യകൾ."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Inspire people with your words.",
-        "Engage the audience eyes.",
-        "Express heartfelt feelings."
+        "Imagine a world where clean drinking water is accessible to every child across the globe .",
+        "Ten years ago , my family experienced that severe drought firsthand in our rural farming village .",
+        "True innovation is not measured in lines of code , but in human lives uplifted and protected .",
+        "Pause intentionally after delivering critical insights to allow your words to settle into listeners ' minds .",
+        "Join us today in transforming this bold architectural vision into an enduring living reality ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Public Speaking & Confident Storytelling",
-        "ml": "റീഡിങ് റൂം: പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും"
+        "en": "Reading Room: The Speech That Lit the Dark",
+        "ml": "റീഡിങ് റൂം: പ്രസംഗകലയും സ്വാധീനശക്തിയും (Public Speaking)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Inspire people with your words.",
-          "meaningMl": "പ്രചോദിപ്പിക്കുക - Inspire people with your words.",
-          "audioPrompt": "Inspire people with your words."
+          "text": "Inside the historic university amphitheater in Oxford, environmental advocate Malini took the podium before five thousand international scholars.",
+          "meaningMl": "ഓക്സ്ഫോർഡിലെ ചരിത്രപ്രസിദ്ധമായ ആംഫി തിയേറ്ററിൽ പരിസ്ഥിതി പ്രവർത്തക മാലിനി അയ്യായിരം പണ്ഡിതർക്ക് മുന്നിൽ വേദിയിലെത്തി.",
+          "meaningHi": "ऑक्सफोर्ड के ऐतिहासिक सभागार में मालिनी ने पांच हजार विद्वानों के सामने मंच संभाला।",
+          "meaningTa": "ஆக்ஸ்போர்டில் உள்ள வரலாற்று சிறப்புமிக்க அரங்கில் மாலினி ஐயாயிரம் அறிஞர்கள் முன் பேசத் தொடங்கினார்.",
+          "audioPrompt": "Inside the historic university amphitheater in Oxford, environmental advocate Malini took the podium before five thousand international scholars."
         },
         {
-          "text": "Engage the audience eyes.",
-          "meaningMl": "ആകർഷിക്കുക - Engage the audience eyes.",
-          "audioPrompt": "Engage the audience eyes."
+          "text": "Instead of overwhelming the assembly with dry statistical tables, she began with an arresting theatrical silence that hushed the room.",
+          "meaningMl": "വിരസമായ കണക്കുകൾ നിരത്തുന്നതിന് പകരം, സദസ്സിനെ നിശബ്ദമാക്കുന്ന ഒരു ചെറിയ മൗനത്തോടെ അവൾ തുടങ്ങി.",
+          "meaningHi": "नीरस आंकड़ों के बजाय, उन्होंने एक गहरे सन्नाटे के साथ शुरुआत की जिसने पूरे हॉल को शांत कर दिया।",
+          "meaningTa": "சலிப்பான புள்ளிவிவரங்களுக்குப் பதிலாக, ஒரு சிறு அமைதியுடன் தொடங்கி அனைவரையும் கவர்ந்தார்.",
+          "audioPrompt": "Instead of overwhelming the assembly with dry statistical tables, she began with an arresting theatrical silence that hushed the room."
         },
         {
-          "text": "Daily practice of Public Speaking & Confident Storytelling gives you great confidence in English.",
-          "meaningMl": "പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Public Speaking & Confident Storytelling gives you great confidence in English."
+          "text": "'Listen closely,' she whispered gently into the microphone; 'that silence is the sound of one thousand ancient glaciers vanishing forever.'",
+          "meaningMl": "'സൂക്ഷ്മമായി കേൾക്കൂ,' അവൾ ശാന്തമായി പറഞ്ഞു; 'ആ നിശബ്ദത ആയിരം പുരാതന ഹിമാനികൾ എന്നെന്നേക്കുമായി ഉരുകിത്തീരുന്നതിന്റെ ശബ്ദമാണ്.'",
+          "meaningHi": "'ध्यान से सुनो,' वह धीरे से बोलीं; 'यह खामोशी पिघलते ग्लेशियरों की आवाज है।'",
+          "meaningTa": "'கவனித்துக் கேளுங்கள்' என்றார்; 'அந்த அமைதி பழங்கால பனிப்பாறைகள் மறைந்து போகும் சத்தம்.'",
+          "audioPrompt": "'Listen closely,' she whispered gently into the microphone; 'that silence is the sound of one thousand ancient glaciers vanishing forever.'"
+        },
+        {
+          "text": "Through exquisite modulation, deliberate dramatic pauses, and evocative imagery, she wove scientific truth with profound human empathy.",
+          "meaningMl": "ശബ്ദത്തിന്റെ കൃത്യമായ ഏറ്റക്കുറച്ചിലുകളിലൂടെയും വികാരനിർഭരമായ വാക്കുകളിലൂടെയും അവൾ ശാസ്ത്ര സത്യങ്ങളെ മാനുഷിക വികാരങ്ങളുമായി ഇണക്കിച്ചേർത്തു.",
+          "meaningHi": "आवाज के उतार-चढ़ाव और प्रभावशाली शब्दों से उन्होंने वैज्ञानिक सत्य को मानवीय संवेदना से जोड़ा।",
+          "meaningTa": "குரல் ஏற்ற இறக்கங்கள் மற்றும் உணர்ச்சிமிக்க வார்த்தைகளால் அறிவியல் உண்மைகளை எடுத்துரைத்தார்.",
+          "audioPrompt": "Through exquisite modulation, deliberate dramatic pauses, and evocative imagery, she wove scientific truth with profound human empathy."
+        },
+        {
+          "text": "She did not appeal to fear or guilt; she summoned collective human nobility, daring humanity to become responsible stewards of Earth.",
+          "meaningMl": "അവൾ ഭയപ്പെടുത്തുകയോ കുറ്റപ്പെടുത്തുകയോ ചെയ്തില്ല; മറിച്ച് ഭൂമിയുടെ സംരക്ഷകരാകാൻ മനുഷ്യന്റെ ഉന്നതമായ മനസ്സിനെ അവൾ ഉണർത്തി.",
+          "meaningHi": "उन्होंने डराने के बजाय मानवता की भलाई का आह्वान किया।",
+          "meaningTa": "அவர் பயமுறுத்தாமல், பூமியைக் காக்கும் மனிதனின் நற்குணத்தை தட்டி எழுப்பினார்.",
+          "audioPrompt": "She did not appeal to fear or guilt; she summoned collective human nobility, daring humanity to become responsible stewards of Earth."
+        },
+        {
+          "text": "When she concluded with 'The future belongs to the courageous', the entire amphitheater erupted into five minutes of thunderous applause.",
+          "meaningMl": "'ധീരന്മാർക്കുള്ളതാണ് ഭാവി' എന്ന് അവൾ ഉപസംഹരിച്ചപ്പോൾ, ആംഫി തിയേറ്റർ മുഴുവൻ അഞ്ച് മിനിറ്റ് നീണ്ട കരഘോഷത്താൽ പ്രകമ്പനം കൊണ്ടു.",
+          "meaningHi": "'भविष्य साहसियों का है' कहते ही पूरा सभागार तालियों से गूंज उठा।",
+          "meaningTa": "'எதிர்காலம் தைரியசாலிகளுக்கு உரியது' என்று முடித்தபோது அரங்கம் முழுவதும் கைதட்டல்களால் அதிர்ந்தது.",
+          "audioPrompt": "When she concluded with 'The future belongs to the courageous', the entire amphitheater erupted into five minutes of thunderous applause."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where did Malini deliver her speech to five thousand international scholars?",
+            "ml": "അയ്യായിരം പണ്ഡിതർക്ക് മുന്നിൽ മാലിനി പ്രസംഗിച്ചത് എവിടെ വെച്ചാണ്?",
+            "hi": "मालिनी ने अपना भाषण कहाँ दिया?",
+            "ta": "மாலினி தனது உரையை எங்கு நிகழ்த்தினார்?"
+          },
+          "options": [
+            "Inside a subway tunnel",
+            "Inside the historic university amphitheater in Oxford",
+            "At a supermarket parking lot",
+            "In an empty library"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Inside the historic university amphitheater in Oxford.",
+            "ml": "ഓക്സ്ഫോർഡിലെ ആംഫി തിയേറ്ററിൽ (amphitheater in Oxford)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did Malini open her speech instead of using dry statistics?",
+            "ml": "കണക്കുകൾക്ക് പകരം മാലിനി പ്രസംഗം തുടങ്ങിയത് എങ്ങനെയാണ്?",
+            "hi": "मालिनी ने अपने भाषण की शुरुआत कैसे की?",
+            "ta": "மாலினி தனது உரையை எவ்வாறு தொடங்கினார்?"
+          },
+          "options": [
+            "With an arresting silence and a poetic whisper about glaciers",
+            "By telling jokes about food",
+            "By screaming loudly into the microphone",
+            "By dancing on the stage"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "With an arresting silence and poetic whisper.",
+            "ml": "സദസ്സിനെ നിശബ്ദമാക്കിയ ഗൗരവമുള്ള വാക്കുകളോടെ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What were her final concluding words that brought thunderous applause?",
+            "ml": "വലിയ കരഘോഷം ക്ഷണിച്ചുവരുത്തിയ അവളുടെ സമാപന വാക്കുകൾ എന്തായിരുന്നു?",
+            "hi": "उनके अंतिम शब्द क्या थे?",
+            "ta": "அவரது இறுதி வார்த்தைகள் என்ன?"
+          },
+          "options": [
+            "'The speech is over, goodbye.'",
+            "'The future belongs to the courageous.'",
+            "'I forgot my notes.'",
+            "'Turn off the lights.'"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "'The future belongs to the courageous.'",
+            "ml": "'ധീരന്മാർക്കുള്ളതാണ് ഭാവി' (The future belongs to the courageous)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d89_1",
-          "question": "Which word represents: 'പ്രചോദിപ്പിക്കുക'?",
+          "id": 1,
+          "question": "What is an effective opening 'hook' for an engaging public presentation?",
           "options": [
-            "inspire",
-            "arrive",
-            "finish",
-            "borrow"
+            "'Good morning, my name is John and today I have fifty slides with small text.'",
+            "A thought-provoking question, a powerful story, or a surprising statistic that creates immediate curiosity.",
+            "'I didn't prepare well, but I will try to speak.'",
+            "'Please don't ask any questions because I want to leave early.'"
           ],
-          "answer": "inspire",
-          "explanation": "inspire എന്നാൽ പ്രചോദിപ്പിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "ചിന്തിപ്പിക്കുന്ന ചോദ്യം, ഒരു കഥ, അല്ലെങ്കിൽ കൗതുകമുണർത്തുന്ന വസ്തുത എന്നിവയാണ് ഏറ്റവും മികച്ച ഓപ്പണിംഗ് ഹുക്ക് (Opening Hook)."
         },
         {
-          "id": "trap_d89_2",
-          "question": "What is the past form (V2) of 'engage'?",
+          "id": 2,
+          "question": "Why are intentional pauses crucial during public speaking?",
           "options": [
-            "engaged",
-            "engageing",
-            "engages",
-            "has engage"
+            "They give the speaker time to drink a soda.",
+            "They allow key insights to sink into the listeners' minds and build anticipation.",
+            "They indicate that the speaker forgot what to say.",
+            "Pauses are forbidden in public speaking."
           ],
-          "answer": "engaged",
-          "explanation": "engage ന്റെ ഭൂതകാല രൂപം engaged ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "സംസാരിക്കുമ്പോൾ മനപ്പൂർവ്വം നിശബ്ദത പാലിക്കുന്നത് (intentional pause) പ്രധാനപ്പെട്ട ആശയങ്ങൾ കേൾവിക്കാരുടെ മനസ്സിൽ ആഴത്തിൽ പതിയൻ സഹായിക്കുന്നു."
         },
         {
-          "id": "trap_d89_3",
-          "question": "What is the correct English word for 'പ്രസംഗം'?",
+          "id": 3,
+          "question": "What should an inspiring conclusion always contain?",
           "options": [
-            "airport",
-            "station",
-            "journey",
-            "speech"
+            "A clear, memorable summary and an empowering Call to Action.",
+            "An apology for speaking too long.",
+            "A list of complaints about the microphone.",
+            "A request for applause."
           ],
-          "answer": "speech",
-          "explanation": "പ്രസംഗം എന്നാൽ ഇംഗ്ലീഷിൽ speech."
+          "correctIndex": 0,
+          "explanationMl": "ഒരു മികച്ച ഉപസംഹാരത്തിൽ പ്രധാന ആശയത്തിന്റെ സംഗ്രഹവും ആളുകളെ പ്രവർത്തിക്കാൻ പ്രേരിപ്പിക്കുന്ന ആഹ്വാനവും (Call to Action) ഉണ്ടായിരിക്കണം."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 89 Gate Exam (5 Qs)",

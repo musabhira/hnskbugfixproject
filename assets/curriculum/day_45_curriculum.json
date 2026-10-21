@@ -22,112 +22,96 @@
     "totalCoinsReward": 95
   },
   "grammarRule": {
-    "formula": "Gerunds – Formation and Functions",
+    "formula": "I have a reservation under the name... / What time is breakfast served?",
     "explanation": {
-      "ml": "ഹോട്ടൽ ബുക്കിംഗും താമസവും എന്ന വിഷയത്തിൽ I have a reservation under the name... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I have a reservation under the name... correctly in spoken English."
+      "ml": "ഹോട്ടലുകളിൽ എത്തുമ്പോൾ 'I have a reservation under the name...' (ഈ പേരിൽ എനിക്ക് റൂം ബുക്കിംഗ് ഉണ്ട്), 'What time is checkout?' (ഏത് സമയത്താണ് ചെക്ക്ഔട്ട്?), 'Could we get extra towels?' (കൂടുതൽ ടവ്വലുകൾ തരുമോ?) എന്ന് ആവശ്യപ്പെടാൻ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Hotel Stay & Check-in with clear formula: I have a reservation under the name... / What time is breakfast served?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I booked a room online.",
-      "en": "Golden Rule: Practice 'I booked a room online.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 റിസപ്ഷനിൽ സംസാരിക്കുമ്പോൾ: Reservation (റൂം ബുക്കിംഗ്), Complimentary breakfast (സൗജന്യ പ്രഭാതഭക്ഷണം), Room service (മുറിയിൽ ഭക്ഷണം എത്തിക്കൽ), Key card (റൂം താക്കോൽ കാർഡ്).",
+      "en": "Golden Tip: 💡 റിസപ്ഷനിൽ സംസാരിക്കുമ്പോൾ: Reservation (റൂം ബുക്കിംഗ്), Complimentary breakfast (സൗജന്യ പ്രഭാതഭക്ഷണം), Room service (മുറിയിൽ ഭക്ഷണം എത്തിക്കൽ), Key card (റൂം താക്കോൽ കാർഡ്)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "book",
-        "v2": "booked",
-        "v3": "booked",
-        "meaning": {
-          "ml": "ബുക്ക് ചെയ്യുക",
-          "hi": "ബുക്ക് ചെയ്യുക",
-          "ta": "ബുക്ക് ചെയ്യുക"
-        },
-        "example": "I booked a room online.",
-        "exampleMl": "ബുക്ക് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "stay",
-        "v2": "stayed",
-        "v3": "stayed",
-        "meaning": {
-          "ml": "നിൽക്കുക / താമസിക്കുക",
-          "hi": "ठहरना",
-          "ta": "தங்கு"
-        },
-        "example": "We stay for two nights.",
-        "exampleMl": "താമസിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "request",
-        "v2": "requested",
-        "v3": "requested",
-        "meaning": {
-          "ml": "ആവശ്യപ്പെടുക",
-          "hi": "ആവശ്യപ്പെടുക",
-          "ta": "ആവശ്യപ്പെടുക"
-        },
-        "example": "Request extra towel.",
-        "exampleMl": "ആവശ്യപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "check out",
-        "v2": "checked out",
-        "v3": "checked out",
-        "meaning": {
-          "ml": "റൂം ഒഴിയുക",
-          "hi": "റൂം ഒഴിയുക",
-          "ta": "റൂം ഒഴിയുക"
-        },
-        "example": "Check out is at 11 AM.",
-        "exampleMl": "റൂം ഒഴിയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "room",
+        "word": "Reservation",
+        "partOfSpeech": "noun",
+        "definition": "An arrangement by which accommodations are secured in advance.",
         "meaning": {
-          "ml": "മുറി",
-          "hi": "മുറി",
-          "ta": "മുറി"
+          "ml": "മുൻകൂട്ടിയുള്ള റൂം ബുക്കിംഗ്",
+          "hi": "आरक्षण / बुकिंग",
+          "ta": "முன்பதிவு",
+          "te": "రిజర్వేషన్ / ముందస్తు బుకింగ్",
+          "kn": "ಮುಂಗಡ ಕಾಯ್ದಿರಿಸುವಿಕೆ"
         },
-        "example": "We learned about room in today's lesson."
+        "example": "I have a confirmed deluxe room reservation under the name Suresh Kumar."
       },
       {
-        "word": "key",
+        "word": "Amenity",
+        "partOfSpeech": "noun",
+        "definition": "A desirable or useful feature or facility of a building or place.",
         "meaning": {
-          "ml": "താക്കോൽ",
-          "hi": "താക്കോൽ",
-          "ta": "താക്കോൽ"
+          "ml": "സൗകര്യം (സ്വിമ്മിംഗ് പൂൾ, വൈഫൈ, ജിം)",
+          "hi": "सुविधा",
+          "ta": "வசதி",
+          "te": "సౌకర్యము",
+          "kn": "ಸೌಲಭ್ಯ"
         },
-        "example": "We learned about key in today's lesson."
+        "example": "Guests have complimentary access to all hotel amenities including the rooftop gym."
       },
       {
-        "word": "reception",
+        "word": "Housekeeping",
+        "partOfSpeech": "noun",
+        "definition": "The management and cleaning of household affairs or hotel rooms.",
         "meaning": {
-          "ml": "റിസപ്ഷൻ",
-          "hi": "റിസപ്ഷൻ",
-          "ta": "റിസപ്ഷൻ"
+          "ml": "മുറി വൃത്തിയാക്കുന്ന വിഭാഗം / ഹൗസ് കീപ്പിംഗ്",
+          "hi": "कमरे की सफाई व्यवस्था",
+          "ta": "அறை பராமரிப்பு",
+          "te": "హౌస్‌కీపింగ్",
+          "kn": "ಕೊಠಡಿ ನಿರ್ವಹಣೆ"
         },
-        "example": "We learned about reception in today's lesson."
+        "example": "Please inform housekeeping to provide two fresh cotton towels."
       },
       {
-        "word": "wifi",
+        "word": "Complimentary",
+        "partOfSpeech": "adjective",
+        "definition": "Given or supplied free of charge.",
         "meaning": {
-          "ml": "വൈഫൈ",
-          "hi": "വൈഫൈ",
-          "ta": "വൈഫൈ"
+          "ml": "സൗജന്യമായി നൽകുന്ന",
+          "hi": "मुफ़्त दिया जाने वाला",
+          "ta": "இலவசமாக வழங்கப்படும்",
+          "te": "ఉచితమైన",
+          "kn": "ಉಚಿತ"
         },
-        "example": "We learned about wifi in today's lesson."
+        "example": "A complimentary buffet breakfast is served daily between seven and ten AM."
       },
       {
-        "word": "breakfast",
+        "word": "Concierge",
+        "partOfSpeech": "noun",
+        "definition": "A hotel staff member who assists guests by booking tours, making reservations, and arranging services.",
         "meaning": {
-          "ml": "പ്രഭാതഭക്ഷണം",
-          "hi": "പ്രഭാതഭക്ഷണം",
-          "ta": "പ്രഭാതഭക്ഷണം"
+          "ml": "ഹോട്ടൽ അസിസ്റ്റന്റ് / അതിഥി സേവകൻ (കോൺസിയർജ്)",
+          "hi": "होटल सहायक",
+          "ta": "விருந்தினர் உதவியாளர்",
+          "te": "హోటల్ సహాయకుడు",
+          "kn": "ಹೋಟೆಲ್ ಸಹಾಯಕ"
         },
-        "example": "We learned about breakfast in today's lesson."
+        "example": "The hotel concierge booked premium front-row tickets to the evening classical concert."
+      },
+      {
+        "word": "Voucher",
+        "partOfSpeech": "noun",
+        "definition": "A printed acknowledgment that payment has been received.",
+        "meaning": {
+          "ml": "പണമടച്ച രസീത്",
+          "hi": "वाउचर / रसीद",
+          "ta": "பற்றுச்சீட்டு",
+          "te": "వోచర్",
+          "kn": "ವೋಚರ್"
+        },
+        "example": "Please print out our final hotel stay receipt for company reimbursement."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Hotel Stay & Check-in",
-        "ml": "പാഠം: ഹോട്ടൽ ബുക്കിംഗും താമസവും"
+        "ml": "പാഠം: ഹോട്ടലിലെ താമസവും ചെക്ക്-ഇന്നും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I have a reservation under the name... / What time is breakfast served?",
+        "ml": "ഹോട്ടലുകളിൽ എത്തുമ്പോൾ 'I have a reservation under the name...' (ഈ പേരിൽ എനിക്ക് റൂം ബുക്കിംഗ് ഉണ്ട്), 'What time is checkout?' (ഏത് സമയത്താണ് ചെക്ക്ഔട്ട്?), 'Could we get extra towels?' (കൂടുതൽ ടവ്വലുകൾ തരുമോ?) എന്ന് ആവശ്യപ്പെടാൻ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I booked a room online.",
-        "We stay for two nights.",
-        "Request extra towel."
+        "Good afternoon, I have a hotel room reservation under the name Rajesh Nair .",
+        "Could you please tell me what time the morning complimentary breakfast is served ?",
+        "Here is my government identity card and the credit card for incidental charges .",
+        "Could housekeeping please send up an extra dental kit and a fresh blanket ?",
+        "What is the standard checkout time tomorrow afternoon at this property ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Hotel Stay & Check-in",
-        "ml": "റീഡിങ് റൂം: ഹോട്ടൽ ബുക്കിംഗും താമസവും"
+        "ml": "റീഡിങ് റൂം: ഹോട്ടലിലെ താമസവും ചെക്ക്-ഇന്നും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I booked a room online.",
-          "meaningMl": "ബുക്ക് ചെയ്യുക - I booked a room online.",
-          "audioPrompt": "I booked a room online."
+          "text": "High in the cool cedar hills of Shimla stood a cozy, wood-paneled inn called Whispering Pines.",
+          "meaningMl": "ഷിംലയിലെ തണുത്ത ദേവദാരു കുന്നുകൾക്ക് മുകളിൽ വിസ്പറിംഗ് പൈൻസ് എന്ന മനോഹരമായ ഒരു സത്രം ഉണ്ടായിരുന്നു.",
+          "meaningHi": "शिमला की ठंडी देवदार की पहाड़ियों में विस्परिंग पाइन्स नामक एक आरामदायक सराय थी।",
+          "meaningTa": "சிம்லாவின் குளிர்ந்த மலைகளில் விஸ்பரிங் பைன்ஸ் என்ற அழகான விடுதி இருந்தது.",
+          "audioPrompt": "High in the cool cedar hills of Shimla stood a cozy, wood-paneled inn called Whispering Pines."
         },
         {
-          "text": "We stay for two nights.",
-          "meaningMl": "താമസിക്കുക - We stay for two nights.",
-          "audioPrompt": "We stay for two nights."
+          "text": "Tired after a nine-hour mountain drive, Neil and his wife Priya stepped into the warm reception lobby.",
+          "meaningMl": "ഒമ്പത് മണിക്കൂർ നീണ്ട മലയോര യാത്രയ്ക്ക് ശേഷം ക്ഷീണിതരായി നീലും ഭാര്യ പ്രിയയും ചൂടുള്ള റിസപ്ഷൻ ലോബിയിലേക്ക് കടന്നുവന്നു.",
+          "meaningHi": "नौ घंटे की पहाड़ी यात्रा के बाद थके हुए, नील और उसकी पत्नी प्रिया गर्म रिसेप्शन लॉबी में आए।",
+          "meaningTa": "ஒன்பது மணி நேர மலைப் பயணத்திற்குப் பிறகு நீலும் பிரியாவும் விடுதிக்கு வந்தனர்.",
+          "audioPrompt": "Tired after a nine-hour mountain drive, Neil and his wife Priya stepped into the warm reception lobby."
         },
         {
-          "text": "Daily practice of Hotel Stay & Check-in gives you great confidence in English.",
-          "meaningMl": "ഹോട്ടൽ ബുക്കിംഗും താമസവും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Hotel Stay & Check-in gives you great confidence in English."
+          "text": "The elderly innkeeper Mohan greeted them with hot cinnamon spiced tea and a roaring stone fireplace.",
+          "meaningMl": "വൃദ്ധനായ ഹോട്ടലുടമ മോഹൻ ചൂടുള്ള കറുവപ്പട്ട ചായയും തീ കായുന്ന നെരിപ്പോടും നൽകി അവരെ സ്നേഹത്തോടെ സ്വീകരിച്ചു.",
+          "meaningHi": "बुजुर्ग सरायपाल मोहन ने गर्म दालचीनी की चाय और जलती हुई चिमनी के साथ उनका स्वागत किया।",
+          "meaningTa": "விடுதி காப்பாளர் மோகன் சுடச்சுட இலவங்கப்பட்டை தேநீருடன் அவர்களை வரவேற்றார்.",
+          "audioPrompt": "The elderly innkeeper Mohan greeted them with hot cinnamon spiced tea and a roaring stone fireplace."
+        },
+        {
+          "text": "He handed them brass keys to the attic suite, which featured a wide wooden balcony overlooking snowy peaks.",
+          "meaningMl": "മഞ്ഞുമൂടിയ കൊടുമുടികൾ കാണാവുന്ന ബാൽക്കണിയോടു കൂടിയ മുകളിലത്തെ സ്യൂട്ടിന്റെ പിച്ചള താക്കോൽ അദ്ദേഹം അവർക്ക് നൽകി.",
+          "meaningHi": "उसने उन्हें अटारी सुइट की पीतल की चाबियाँ दीं, जिसमें बर्फ से ढकी चोटियों को देखने वाली बालकनी थी।",
+          "meaningTa": "பனி மலைகளைப் பார்க்கக்கூடிய மாடி அறையின் சாவியை அவர் அவர்களிடம் கொடுத்தார்.",
+          "audioPrompt": "He handed them brass keys to the attic suite, which featured a wide wooden balcony overlooking snowy peaks."
+        },
+        {
+          "text": "Housekeeping had placed fragrant eucalyptus branches and fluffy down quilts upon the handcrafted cedar bed.",
+          "meaningMl": "തടികൊണ്ടുണ്ടാക്കിയ കട്ടിലിൽ ഹൗസ് കീപ്പിംഗ് വിഭാഗം നല്ല യൂക്കാലിപ്റ്റസ് ഇലകളും ചൂടുള്ള കമ്പിളി പുതപ്പുകളും ഒരുക്കിവെച്ചിരുന്നു.",
+          "meaningHi": "कमरे की सफाई कर्मचारियों ने हस्तनिर्मित देवदार के बिस्तर पर सुगंधित नीलगिरी और रजाई रखी थी।",
+          "meaningTa": "படுக்கையில் நறுமண இலைகளும் மென்மையான கம்பளிகளும் வைக்கப்பட்டிருந்தன.",
+          "audioPrompt": "Housekeeping had placed fragrant eucalyptus branches and fluffy down quilts upon the handcrafted cedar bed."
+        },
+        {
+          "text": "Gentle hospitality turns an unfamiliar travel lodge into a peaceful sanctuary of sweet dreams.",
+          "meaningMl": "സ്നേഹം നിറഞ്ഞ ആതിഥ്യം അപരിചിതമായ ഒരു സത്രത്തെപ്പോലും സുന്ദരമായ സ്വപ്നങ്ങളുടെ ശാന്തമായ സങ്കേതമാക്കി മാറ്റുന്നു.",
+          "meaningHi": "सौम्य आतिथ्य एक अपरिचित यात्रा लॉज को मीठे सपनों के शांतिपूर्ण अभयारण्य में बदल देता है।",
+          "meaningTa": "அன்பான விருந்தோம்பல் ஒரு விடுதியை அமைதியான புகலிடமாக மாற்றுகிறது.",
+          "audioPrompt": "Gentle hospitality turns an unfamiliar travel lodge into a peaceful sanctuary of sweet dreams."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where was the Whispering Pines inn located?",
+            "ml": "വിസ്പറിംഗ് പൈൻസ് സത്രം എവിടെയാണ് സ്ഥിതി ചെയ്തിരുന്നത്?",
+            "hi": "व्हिस्परिंग पाइन्स सराय कहाँ स्थित थी?",
+            "ta": "விடுதி எங்கே அமைந்திருந்தது?"
+          },
+          "options": [
+            "Beside Chennai beach",
+            "High in the cool cedar hills of Shimla",
+            "In a busy Mumbai street",
+            "Inside a desert fort"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "High in the cool cedar hills of Shimla.",
+            "ml": "ഷിംലയിലെ തണുത്ത ദേവദാരു കുന്നുകൾക്ക് മുകളിലാണ് (Shimla cedar hills)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did innkeeper Mohan offer them upon arrival?",
+            "ml": "അവർ എത്തിയപ്പോൾ ഹോട്ടലുടമ മോഹൻ എന്താണ് നൽകിയത്?",
+            "hi": "आगमन पर मोहन ने उन्हें क्या दिया?",
+            "ta": "மோகன் அவர்களுக்கு என்ன கொடுத்தார்?"
+          },
+          "options": [
+            "Cold ice cream",
+            "Hot cinnamon spiced tea beside a roaring fireplace",
+            "A glass of lemon soda",
+            "Fried street snacks"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Hot cinnamon spiced tea beside a roaring fireplace.",
+            "ml": "ചൂടുള്ള കറുവപ്പട്ട ചായയും നെരിപ്പോടും (hot cinnamon spiced tea)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What view did their attic suite balcony feature?",
+            "ml": "അവരുടെ റൂമിലെ ബാൽക്കണിയിൽ നിന്ന് എന്താണ് കാണാൻ സാധിച്ചിരുന്നത്?",
+            "hi": "बालकनी से क्या नज़ारा दिखता था?",
+            "ta": "அறை பால்கனியில் இருந்து என்ன தெரிந்தது?"
+          },
+          "options": [
+            "A railway factory",
+            "Snowy peaks across the valley",
+            "A parking lot",
+            "A busy highway"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Snowy peaks across the valley.",
+            "ml": "മഞ്ഞുമൂടിയ കൊടുമുടികൾ (snowy peaks)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d45_1",
-          "question": "Which word represents: 'ബുക്ക് ചെയ്യുക'?",
+          "question": "Select the correct phrase to state an existing room reservation:",
           "options": [
-            "decide",
-            "book",
-            "discover",
-            "remember"
+            "I have a reservation under the name John.",
+            "I have booked a reservation into John.",
+            "My reservation is named with John.",
+            "I booked by John name."
           ],
-          "answer": "book",
-          "explanation": "book എന്നാൽ ബുക്ക് ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'I have a reservation under the name [Name]' is standard hotel check-in phrasing.",
+          "ruleHint": "Hotel Formula: reservation under the name [Name]."
         },
         {
-          "id": "trap_d45_2",
-          "question": "What is the past form (V2) of 'stay'?",
+          "question": "What does 'complimentary breakfast' mean in a hotel?",
           "options": [
-            "stays",
-            "staying",
-            "stayed",
-            "has stay"
+            "Breakfast that requires compliments to the chef",
+            "Breakfast included free of charge with the room",
+            "Breakfast served only after 12 PM",
+            "Breakfast cooked by yourself"
           ],
-          "answer": "stayed",
-          "explanation": "stay ന്റെ ഭൂതകാല രൂപം stayed ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Complimentary' means provided free of extra charge.",
+          "ruleHint": "Hospitality Vocabulary: Complimentary = free of charge."
         },
         {
-          "id": "trap_d45_3",
-          "question": "What is the correct English word for 'മുറി'?",
+          "question": "How do you ask about departure and checking out?",
           "options": [
-            "room",
-            "routine",
-            "schedule",
-            "progress"
+            "What is the checkout time?",
+            "When is checking out going to close?",
+            "How much time to checkout room?",
+            "Where is checkout time happening?"
           ],
-          "answer": "room",
-          "explanation": "മുറി എന്നാൽ ഇംഗ്ലീഷിൽ room."
+          "correctIndex": 0,
+          "explanation": "'What is the checkout time?' is simple, polite, and precise.",
+          "ruleHint": "Question Rule: 'What is the checkout time?'"
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 45 Gate Exam (5 Qs)",

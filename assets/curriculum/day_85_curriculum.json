@@ -22,112 +22,96 @@
     "totalCoinsReward": 135
   },
   "grammarRule": {
-    "formula": "Everyday Social English – Small Talk, Introductions, Farewells",
+    "formula": "Express excitement + Anchor with market data + Negotiate total package with diplomacy",
     "explanation": {
-      "ml": "ശമ്പള ചർച്ചയും ജോലി ഓഫറും എന്ന വിഷയത്തിൽ Discussing compensation package with confidence & diplomacy എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Discussing compensation package with confidence & diplomacy correctly in spoken English."
+      "ml": "ജോബ് ഓഫർ ലഭിച്ച ശേഷം ശമ്പളവും ആനുകൂല്യങ്ങളും മാന്യമായും ആത്മവിശ്വാസത്തോടും കൂടി ചർച്ച ചെയ്യാനുള്ള നയപരമായ ഇംഗ്ലീഷ് ശൈലികൾ.",
+      "en": "Master Salary & Compensation Package Negotiation with clear formula: Express excitement + Anchor with market data + Negotiate total package with diplomacy"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I would like to negotiate the offer.",
-      "en": "Golden Rule: Practice 'I would like to negotiate the offer.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: നേരിട്ട് 'Give me more money' എന്ന് പറയരുത്. 'Based on my experience and industry benchmarks for this role in our region, I was anticipating a base range between...' എന്ന് പറയുക.",
+      "en": "Golden Tip: നേരിട്ട് 'Give me more money' എന്ന് പറയരുത്. 'Based on my experience and industry benchmarks for this role in our region, I was anticipating a base range between...' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "negotiate",
-        "v2": "negotiated",
-        "v3": "negotiated",
-        "meaning": {
-          "ml": "വിലപേശുക / ചർച്ച ചെയ്യുക",
-          "hi": "बातचीत करना / मोलभाव",
-          "ta": "பேச்சுவார்த்தை நடத்து"
-        },
-        "example": "I would like to negotiate the offer.",
-        "exampleMl": "ചർച്ച ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "evaluate",
-        "v2": "evaluated",
-        "v3": "evaluated",
-        "meaning": {
-          "ml": "വിലയിരുത്തുക",
-          "hi": "വിലയിരുത്തുക",
-          "ta": "വിലയിരുത്തുക"
-        },
-        "example": "Evaluating the overall package.",
-        "exampleMl": "വിലയിരുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "accept",
-        "v2": "accepted",
-        "v3": "accepted",
-        "meaning": {
-          "ml": "സ്വീകരിക്കുക",
-          "hi": "സ്വീകരിക്കുക",
-          "ta": "സ്വീകരിക്കുക"
-        },
-        "example": "Thrilled to accept the role.",
-        "exampleMl": "സ്വീകരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "discuss",
-        "v2": "discussed",
-        "v3": "discussed",
-        "meaning": {
-          "ml": "സംസാരിക്കുക",
-          "hi": "സംസാരിക്കുക",
-          "ta": "സംസാരിക്കുക"
-        },
-        "example": "Can we discuss the start date?",
-        "exampleMl": "സംസാരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "salary",
+        "word": "Remuneration",
+        "partOfSpeech": "noun",
+        "definition": "Money paid for work or a service.",
         "meaning": {
-          "ml": "ശമ്പളം",
-          "hi": "वेतन",
-          "ta": "சம்பளம்"
+          "ml": "വേതനം / പ്രതിഫലം",
+          "hi": "पारिश्रमिक / वेतन",
+          "ta": "ஊதியம் / சன்மானம்",
+          "te": "వేతనము",
+          "kn": "ಸಂಭಾವನೆ"
         },
-        "example": "Discuss your salary expectations politely."
+        "example": "The executive compensation package includes competitive annual remuneration and equity grants."
       },
       {
-        "word": "package",
+        "word": "Negotiation",
+        "partOfSpeech": "noun",
+        "definition": "Discussion aimed at reaching an agreement.",
         "meaning": {
-          "ml": "പാക്കേജ്",
-          "hi": "പാക്കേജ്",
-          "ta": "പാക്കേജ്"
+          "ml": "കൂടിയാലോചന / വിലപേശൽ / ചർച്ച",
+          "hi": "बातचीत / समझौता वार्ता",
+          "ta": "பேச்சுவார்த்தை",
+          "te": "చర్చలు",
+          "kn": "ಸಮಾಲೋಚನೆ"
         },
-        "example": "We learned about package in today's lesson."
+        "example": "Successful commercial contract negotiation requires empathetic listening and tactical firmness."
       },
       {
-        "word": "offer",
+        "word": "Counteroffer",
+        "partOfSpeech": "noun",
+        "definition": "An offer made in response to another offer.",
         "meaning": {
-          "ml": "ഓഫർ",
-          "hi": "ഓഫർ",
-          "ta": "ഓഫർ"
+          "ml": "മറു ഓഫർ / കൗണ്ടർ ഓഫർ",
+          "hi": "प्रति-प्रस्ताव",
+          "ta": "மறு முன்மொழிவு",
+          "te": "ప్రతిపాదనకు బదులు ప్రతిపాదన",
+          "kn": "ಪ್ರತಿ ಪ್ರಸ್ತಾಪ"
         },
-        "example": "We learned about offer in today's lesson."
+        "example": "After evaluating market data, she submitted a polite counteroffer reflecting her specialized skills."
       },
       {
-        "word": "benefits",
+        "word": "Compensation",
+        "partOfSpeech": "noun",
+        "definition": "Something, typically money, awarded to someone in recognition of loss, suffering, injury, or as pay.",
         "meaning": {
-          "ml": "ആനുകൂല്യങ്ങൾ",
-          "hi": "ആനുകൂല്യങ്ങൾ",
-          "ta": "ആനുകൂല്യങ്ങൾ"
+          "ml": "നഷ്ടപരിഹാരം / ശമ്പള ആനുകൂല്യങ്ങൾ",
+          "hi": "मुआवजा / पारिश्रमिक पैकेज",
+          "ta": "இழப்பீடு / ஊதியத் தொகுப்பு",
+          "te": "పరిహారము",
+          "kn": "ಪರಿಹಾರ"
         },
-        "example": "We learned about benefits in today's lesson."
+        "example": "The comprehensive corporate compensation package includes health insurance and travel stipends."
       },
       {
-        "word": "agreement",
+        "word": "Gratuity",
+        "partOfSpeech": "noun",
+        "definition": "A tip given to a waiter or server, or a sum of money paid to an employee at the end of a period of employment.",
         "meaning": {
-          "ml": "കരാർ",
-          "hi": "കരാർ",
-          "ta": "കരാർ"
+          "ml": "ഗ്രാറ്റുവിറ്റി / വിരമിക്കൽ ആനുകൂല്യം",
+          "hi": "उपदान / ग्रेच्युटी",
+          "ta": "பணிக்கொடை",
+          "te": "గ్రాట్యుయిటీ",
+          "kn": "ಉಪದಾನ"
         },
-        "example": "We learned about agreement in today's lesson."
+        "example": "State labor statutes mandate statutory gratuity benefits for long-serving enterprise employees."
+      },
+      {
+        "word": "Perquisite",
+        "partOfSpeech": "noun",
+        "definition": "A thing regarded as a special right or privilege enjoyed as a result of one's position (informally 'perk').",
+        "meaning": {
+          "ml": "പ്രത്യേക ആനുകൂല്യം / അധിക ആനുകൂല്യം (Perk)",
+          "hi": "अतिरिक्त लाभ / अनुलाभ",
+          "ta": "கூடுதல் சலுகை",
+          "te": "అదనపు ప్రయోజనం",
+          "kn": "ವಿಶೇಷ ಸವಲತ್ತು"
+        },
+        "example": "A company vehicle and paid sabbatical leave are attractive corporate perquisites."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Salary Negotiation & Offer Discussion",
-        "ml": "പാഠം: ശമ്പള ചർച്ചയും ജോലി ഓഫറും"
+        "en": "Concept Room: Salary & Compensation Package Negotiation",
+        "ml": "പാഠം: ശമ്പള ചർച്ചകളും ആനുകൂല്യങ്ങളും (Salary Negotiation)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Express excitement + Anchor with market data + Negotiate total package with diplomacy",
+        "ml": "ജോബ് ഓഫർ ലഭിച്ച ശേഷം ശമ്പളവും ആനുകൂല്യങ്ങളും മാന്യമായും ആത്മവിശ്വാസത്തോടും കൂടി ചർച്ച ചെയ്യാനുള്ള നയപരമായ ഇംഗ്ലീഷ് ശൈലികൾ."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I would like to negotiate the offer.",
-        "Evaluating the overall package.",
-        "Thrilled to accept the role."
+        "Thank you for this offer ; I am truly thrilled about the prospect of joining your innovative engineering squad .",
+        "Based on my decade of distributed systems expertise and regional industry benchmarks , I was anticipating a higher base .",
+        "Would there be any flexibility regarding the annual performance bonus or stock equity vesting schedule ?",
+        "If we can reach an agreement at ninety thousand dollars , I would be delighted to accept immediately .",
+        "Could you kindly provide a written breakdown of the comprehensive health insurance and retirement benefits ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Salary Negotiation & Offer Discussion",
-        "ml": "റീഡിങ് റൂം: ശമ്പള ചർച്ചയും ജോലി ഓഫറും"
+        "en": "Reading Room: The Diplomatic Bargain",
+        "ml": "റീഡിങ് റൂം: ശമ്പള ചർച്ചകളും ആനുകൂല്യങ്ങളും (Salary Negotiation)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I would like to negotiate the offer.",
-          "meaningMl": "ചർച്ച ചെയ്യുക - I would like to negotiate the offer.",
-          "audioPrompt": "I would like to negotiate the offer."
+          "text": "Cybersecurity specialist Nikhil received an exciting formal offer to lead cloud threat intelligence at a prestigious global fintech bank.",
+          "meaningMl": "ഒരു പ്രമുഖ ആഗോള ഫിൻടെക് ബാങ്കിൽ ക്ലൗഡ് ത്രെറ്റ് ഇന്റലിജൻസ് നയിക്കാൻ സൈബർ സുരക്ഷാ വിദഗ്ദ്ധൻ നിഖിലിന് ഔദ്യോഗിക ഓഫർ ലഭിച്ചു.",
+          "meaningHi": "साइबर सुरक्षा विशेषज्ञ निखिल को एक बड़े बैंक में काम करने का प्रस्ताव मिला।",
+          "meaningTa": "சைபர் பாதுகாப்பு நிபுணர் நிகிலுக்கு ஒரு பெரிய வங்கியில் தலைமைப் பதவிக்கான சலுகை கிடைத்தது.",
+          "audioPrompt": "Cybersecurity specialist Nikhil received an exciting formal offer to lead cloud threat intelligence at a prestigious global fintech bank."
         },
         {
-          "text": "Evaluating the overall package.",
-          "meaningMl": "വിലയിരുത്തുക - Evaluating the overall package.",
-          "audioPrompt": "Evaluating the overall package."
+          "text": "While the initial compensation package was respectable, market analytics indicated that top-tier security talent commanded fifteen percent higher remuneration.",
+          "meaningMl": "തുടക്കത്തിൽ നൽകിയ പാക്കേജ് മികച്ചതായിരുന്നെങ്കിലും, വിപണി നിരക്ക് അനുസരിച്ച് 15% കൂടുതൽ ശമ്പളത്തിന് അർഹതയുണ്ടെന്ന് കണക്കുകൾ വ്യക്തമാക്കി.",
+          "meaningHi": "हालांकि शुरुआती वेतन अच्छा था, लेकिन बाजार के हिसाब से वह 15% अधिक का हकदार था।",
+          "meaningTa": "ஆரம்ப சம்பளம் நன்றாக இருந்தபோதிலும், சந்தை நிலவரப்படி 15% கூடுதல் சம்பளத்திற்கு அவர் தகுதியானவர்.",
+          "audioPrompt": "While the initial compensation package was respectable, market analytics indicated that top-tier security talent commanded fifteen percent higher remuneration."
         },
         {
-          "text": "Daily practice of Salary Negotiation & Offer Discussion gives you great confidence in English.",
-          "meaningMl": "ശമ്പള ചർച്ചയും ജോലി ഓഫറും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Salary Negotiation & Offer Discussion gives you great confidence in English."
+          "text": "Instead of adopting an aggressive or demanding posture, Nikhil drafted a diplomatic, evidence-based counterproposal.",
+          "meaningMl": "വാശിപിടിക്കുന്നതിന് പകരം, വസ്തുതകളും തെളിവുകളും നിരത്തി നിഖിൽ മാന്യമായ ഒരു മറുപടി തയ്യാറാക്കി.",
+          "meaningHi": "आक्रामक होने के बजाय, निखिल ने एक विनम्र और तथ्यों पर आधारित प्रस्ताव तैयार किया।",
+          "meaningTa": "முரட்டுத்தனமாக இல்லாமல், ஆதாரங்களுடன் ஒரு பணிவான மாற்று முன்மொழிவை நிகில் தயாரித்தார்.",
+          "audioPrompt": "Instead of adopting an aggressive or demanding posture, Nikhil drafted a diplomatic, evidence-based counterproposal."
+        },
+        {
+          "text": "He reiterated his sincere passion for the bank's mission, anchored his salary expectations with published industry benchmarks, and highlighted his critical patents.",
+          "meaningMl": "ബാങ്കിന്റെ വളർച്ചയോടുള്ള തന്റെ പ്രതിബദ്ധത വ്യക്തമാക്കുകയും, വിപണി വിവരങ്ങളും തന്റെ പേറ്റന്റുകളും എടുത്തുപറയുകയും ചെയ്തു.",
+          "meaningHi": "उन्होंने अपनी रुचि व्यक्त की और उद्योग के मानकों का हवाला देते हुए अपने पेटेंट की जानकारी दी।",
+          "meaningTa": "வங்கியின் மீதான தனது ஆர்வத்தை வெளிப்படுத்தி, சந்தை விதிகளையும் தனது காப்புரிமைகளையும் சுட்டிக்காட்டினார்.",
+          "audioPrompt": "He reiterated his sincere passion for the bank's mission, anchored his salary expectations with published industry benchmarks, and highlighted his critical patents."
+        },
+        {
+          "text": "Recognizing his exceptional value and professional composure, the hiring executive raised the base remuneration and added flexible remote allowances.",
+          "meaningMl": "അദ്ദേഹത്തിന്റെ കഴിവും മാന്യമായ സമീപനവും തിരിച്ചറിഞ്ഞ്, ബാങ്ക് അടിസ്ഥാന ശമ്പളം വർദ്ധിപ്പിക്കുകയും പ്രത്യേക അലവൻസുകൾ അനുവദിക്കുകയും ചെയ്തു.",
+          "meaningHi": "उनकी योग्यता को पहचानते हुए, बैंक ने वेतन बढ़ाया और अतिरिक्त भत्ते दिए।",
+          "meaningTa": "அவரது திறமையை அங்கீகரித்து, நிர்வாகம் அடிப்படை சம்பளத்தை உயர்த்தி கூடுதல் சலுகைகளை வழங்கியது.",
+          "audioPrompt": "Recognizing his exceptional value and professional composure, the hiring executive raised the base remuneration and added flexible remote allowances."
+        },
+        {
+          "text": "Diplomatic negotiation is never about confrontation; it is about establishing mutual respect and articulating genuine value with confidence.",
+          "meaningMl": "നയപരമായ വിലപേശൽ ഒരിക്കലും തർക്കമല്ല; മറിച്ച് പരസ്പര ബഹുമാനം സ്ഥാപിക്കലും സ്വന്തം മൂല്യം ആത്മവിശ്വാസത്തോടെ വ്യക്തമാക്കലുമാണ്.",
+          "meaningHi": "बातचीत टकराव के बारे में नहीं है, बल्कि आत्मविश्वास के साथ अपना मूल्य साबित करने के बारे में है।",
+          "meaningTa": "பேச்சுவார்த்தை என்பது மோதல் அல்ல; அது பரஸ்பர மரியாதையையும் தகுதியையும் வெளிப்படுத்துவதாகும்.",
+          "audioPrompt": "Diplomatic negotiation is never about confrontation; it is about establishing mutual respect and articulating genuine value with confidence."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What percentage higher remuneration did market analytics suggest for top-tier security talent?",
+            "ml": "വിപണി വിവരങ്ങൾ അനുസരിച്ച് എത്ര ശതമാനം ഉയർന്ന ശമ്പളത്തിനാണ് അർഹതയുണ്ടായിരുന്നത്?",
+            "hi": "बाजार के विश्लेषण ने कितने प्रतिशत अधिक वेतन का सुझाव दिया?",
+            "ta": "சந்தை நிலவரப்படி எத்தனை சதவீதம் கூடுதல் சம்பளத்திற்கு தகுதி இருந்தது?"
+          },
+          "options": [
+            "Fifty percent",
+            "Fifteen percent higher remuneration",
+            "Two percent",
+            "Eighty percent"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Fifteen percent higher remuneration.",
+            "ml": "15% കൂടുതൽ ശമ്പളം (Fifteen percent higher)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did Nikhil draft his counterproposal?",
+            "ml": "നിഖിൽ തന്റെ മറുപടി തയ്യാറാക്കിയത് എങ്ങനെയാണ്?",
+            "hi": "निखिल ने अपना प्रस्ताव कैसे तैयार किया?",
+            "ta": "நிகில் தனது முன்மொழிவை எவ்வாறு தயாரித்தார்?"
+          },
+          "options": [
+            "With aggressive insults and threats to leave",
+            "A diplomatic, evidence-based counterproposal",
+            "By refusing to reply for three months",
+            "Using an anonymous handwritten letter"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A diplomatic, evidence-based counterproposal.",
+            "ml": "മാന്യവും വസ്തുതകളിൽ അധിഷ്ഠിതവുമായ മറുപടി (diplomatic, evidence-based)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did the hiring executive do upon recognizing Nikhil's value?",
+            "ml": "നിഖിലിന്റെ മൂല്യം തിരിച്ചറിഞ്ഞ ബാങ്ക് എന്ത് നടപടിയാണ് സ്വീകരിച്ചത്?",
+            "hi": "अधिकारी ने क्या किया?",
+            "ta": "நிர்வாகம் என்ன செய்தது?"
+          },
+          "options": [
+            "Canceled the job offer immediately",
+            "Raised the base remuneration and added flexible remote allowances",
+            "Demoted him to an intern",
+            "Ignored his letter"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Raised the base remuneration and added flexible allowances.",
+            "ml": "ശമ്പളം വർദ്ധിപ്പിക്കുകയും അലവൻസുകൾ അനുവദിക്കുകയും ചെയ്തു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d85_1",
-          "question": "Which word represents: 'വിലപേശുക / ചർച്ച ചെയ്യുക'?",
+          "id": 1,
+          "question": "What is the recommended opening step when receiving a job offer before negotiating salary?",
           "options": [
-            "negotiate",
-            "discover",
-            "remember",
-            "decide"
+            "Immediately complain that the number is insulting.",
+            "Express genuine gratitude and enthusiasm for the role and the team.",
+            "Threaten to join a rival company.",
+            "Refuse to speak until money is doubled."
           ],
-          "answer": "negotiate",
-          "explanation": "negotiate എന്നാൽ വിലപേശുക / ചർച്ച ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "ഓഫർ ലഭിച്ചയുടൻ ആദ്യം തന്നെ സ്ഥാപനത്തോടുള്ള സന്തോഷവും നന്ദിയും അറിയിക്കുകയാണ് വേണ്ടത്. അതിനു ശേഷമേ ചർച്ചകളിലേക്ക് കടക്കാവൂ."
         },
         {
-          "id": "trap_d85_2",
-          "question": "What is the past form (V2) of 'evaluate'?",
+          "id": 2,
+          "question": "When justifying a request for higher compensation, what is the strongest argument?",
           "options": [
-            "evaluated",
-            "evaluateing",
-            "evaluates",
-            "has evaluate"
+            "'My personal rent went up this month.'",
+            "'Based on regional market benchmarks, my track record, and specialized expertise.'",
+            "'I want to buy a luxury car.'",
+            "'My friend earns more than this.'"
           ],
-          "answer": "evaluated",
-          "explanation": "evaluate ന്റെ ഭൂതകാല രൂപം evaluated ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "വ്യക്തിപരമായ കാരണങ്ങൾ പറയാതെ, വിപണി നിരക്കുകളും (market benchmarks) നിങ്ങളുടെ അനുഭവസമ്പത്തും ചൂണ്ടിക്കാണിക്കുന്നതാണ് ഏറ്റവും ശക്തമായ വാദം."
         },
         {
-          "id": "trap_d85_3",
-          "question": "What is the correct English word for 'ശമ്പളം'?",
+          "id": 3,
+          "question": "If a company cannot budge on base salary due to rigid band limits, what else can you negotiate?",
           "options": [
-            "salary",
-            "routine",
-            "schedule",
-            "progress"
+            "Nothing, you must accept defeat.",
+            "Performance bonuses, stock options, learning stipends, or flexible remote days.",
+            "Asking the CEO to resign.",
+            "Free meals for all your relatives."
           ],
-          "answer": "salary",
-          "explanation": "ശമ്പളം എന്നാൽ ഇംഗ്ലീഷിൽ salary."
+          "correctIndex": 1,
+          "explanationMl": "ബേസ് സാലറി കൂട്ടാൻ കഴിഞ്ഞില്ലെങ്കിൽ ബോണസ്, സ്റ്റോക്ക് ഓപ്ഷൻസ്, റിമോട്ട് വർക്ക്, ലേണിംഗ് അലവൻസ് എന്നിവ ആവശ്യപ്പെടാവുന്നതാണ്."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 85 Gate Exam (5 Qs)",

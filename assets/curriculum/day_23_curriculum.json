@@ -22,112 +22,109 @@
     "totalCoinsReward": 73
   },
   "grammarRule": {
-    "formula": "Present Perfect Tense",
+    "formula": "Who + Verb / Which + Noun + Aux + Subject + Verb?",
     "explanation": {
-      "ml": "Who & Which ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Who is that? / Which one do you like? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Who is that? / Which one do you like? correctly in spoken English."
+      "ml": "വ്യക്തികളെക്കുറിച്ച് ചോദിക്കാൻ 'Who' (ആര്) എന്നും, പരിമിതമായ ചോയ്സുകളിൽ നിന്ന് ഒന്നിനെ തിരഞ്ഞെടുക്കാൻ 'Which' (ഏത്) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Asking Questions: Who & Which with clear formula: Who + Verb / Which + Noun + Aux + Subject + Verb?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Who did you meet?",
-      "en": "Golden Rule: Practice 'Who did you meet?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വ്യക്തികളെ ചോദിക്കുമ്പോൾ 'Who is...' എന്നും, രണ്ട് അല്ലെങ്കിൽ കൂടുതൽ കാര്യങ്ങളിൽ നിന്ന് തിരഞ്ഞെടുക്കാൻ 'Which one do you prefer...' എന്നും ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: 💡 വ്യക്തികളെ ചോദിക്കുമ്പോൾ 'Who is...' എന്നും, രണ്ട് അല്ലെങ്കിൽ കൂടുതൽ കാര്യങ്ങളിൽ നിന്ന് തിരഞ്ഞെടുക്കാൻ 'Which one do you prefer...' എന്നും ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "meet",
-        "v2": "met",
-        "v3": "met",
-        "meaning": {
-          "ml": "കണ്ടുമുട്ടുക",
-          "hi": "मिलना",
-          "ta": "சந்தி"
-        },
-        "example": "Who did you meet?",
-        "exampleMl": "കണ്ടുമുട്ടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "pick",
-        "v2": "picked",
-        "v3": "picked",
+        "v1": "select",
+        "v2": "selected",
+        "v3": "selected",
         "meaning": {
           "ml": "തിരഞ്ഞെടുക്കുക",
-          "hi": "उठाना / चुनना",
+          "hi": "चुनना",
           "ta": "தேர்ந்தெடு"
         },
-        "example": "Which color do you pick?",
-        "exampleMl": "തിരഞ്ഞെടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "know",
-        "v2": "knew",
-        "v3": "known",
-        "meaning": {
-          "ml": "അറിയുക",
-          "hi": "जानना",
-          "ta": "அறி / தெரி"
-        },
-        "example": "Who knows the answer?",
-        "exampleMl": "അറിയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "bring",
-        "v2": "brought",
-        "v3": "brought",
-        "meaning": {
-          "ml": "കൊണ്ടുവരിക",
-          "hi": "लाना",
-          "ta": "கொண்டு வா"
-        },
-        "example": "Who brought this?",
-        "exampleMl": "കൊണ്ടുവരിക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Which color did you select for the room walls?",
+        "exampleMl": "Carefully choose as being the best or most suitable."
       }
     ],
     "nouns": [
       {
-        "word": "who",
+        "word": "Candidate",
+        "partOfSpeech": "noun",
+        "definition": "A person who applies for a job or is nominated for election.",
         "meaning": {
-          "ml": "ആര്",
-          "hi": "ആര്",
-          "ta": "ആര്"
+          "ml": "സ്ഥാനാർത്ഥി / അപേക്ഷകൻ",
+          "hi": "उम्मीदवार",
+          "ta": "வேட்பாளர்",
+          "te": "అభ్యర్థి",
+          "kn": "ಅಭ್ಯರ್ಥಿ"
         },
-        "example": "We learned about who in today's lesson."
+        "example": "Which candidate gave the best interview presentation?"
       },
       {
-        "word": "which",
+        "word": "Colleague",
+        "partOfSpeech": "noun",
+        "definition": "A person with whom one works in a profession or business.",
         "meaning": {
-          "ml": "ഏത്",
-          "hi": "ഏത്",
-          "ta": "ഏത്"
+          "ml": "സഹപ്രവർത്തകൻ",
+          "hi": "सहकर्मी",
+          "ta": "உடன் பணிபுரிபவர்",
+          "te": "సహోద్యోగి",
+          "kn": "ಸಹೋದ್ಯೋಗಿ"
         },
-        "example": "We learned about which in today's lesson."
+        "example": "Who is the colleague sitting near the reception desk?"
       },
       {
-        "word": "person",
+        "word": "Select",
+        "partOfSpeech": "verb",
+        "definition": "Carefully choose as being the best or most suitable.",
         "meaning": {
-          "ml": "വ്യക്തി",
-          "hi": "വ്യക്തി",
-          "ta": "വ്യക്തി"
+          "ml": "തിരഞ്ഞെടുക്കുക",
+          "hi": "चुनना",
+          "ta": "தேர்ந்தெடு",
+          "te": "ఎంచుకొను",
+          "kn": "ಆಯ್ಕೆಮಾಡು"
         },
-        "example": "We learned about person in today's lesson."
+        "example": "Which color did you select for the room walls?"
       },
       {
-        "word": "choice",
+        "word": "Organizer",
+        "partOfSpeech": "noun",
+        "definition": "A person who arranges an event or activity.",
         "meaning": {
-          "ml": "തിരഞ്ഞെടുപ്പ്",
-          "hi": "തിരഞ്ഞെടുപ്പ്",
-          "ta": "തിരഞ്ഞെടുപ്പ്"
+          "ml": "സംഘാടകൻ / ഒരുക്കുന്ന ആൾ",
+          "hi": "आयोजक",
+          "ta": "ஒருங்கிணைப்பாளர்",
+          "te": "నిర్వాహకుడు",
+          "kn": "ಸಂಘಟಕ"
         },
-        "example": "We learned about choice in today's lesson."
+        "example": "Who is the chief organizer of this cultural festival?"
       },
       {
-        "word": "item",
+        "word": "Option",
+        "partOfSpeech": "noun",
+        "definition": "A thing that is or may be chosen.",
         "meaning": {
-          "ml": "വസ്തു",
-          "hi": "വസ്തു",
-          "ta": "വസ്തു"
+          "ml": "സാധ്യത / വഴി / തെരഞ്ഞെടുപ്പ്",
+          "hi": "विकल्प",
+          "ta": "விருப்பம்",
+          "te": "ఎంపిక",
+          "kn": "ಆಯ್ಕೆ"
         },
-        "example": "We learned about item in today's lesson."
+        "example": "Which option provides the most affordable travel cost?"
+      },
+      {
+        "word": "Responsible",
+        "partOfSpeech": "adjective",
+        "definition": "Having an obligation to do something, or having control over or care for someone.",
+        "meaning": {
+          "ml": "ഉത്തരവാദിയായ",
+          "hi": "जिम्मेदार",
+          "ta": "பொறுப்புள்ள",
+          "te": "బాధ్యతాయుతమైన",
+          "kn": "ಜವಾಬ್ದಾರಿಯುತ"
+        },
+        "example": "Who is responsible for locking the main office doors at night?"
       }
     ]
   },
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Who + Verb / Which + Noun + Aux + Subject + Verb?",
+        "ml": "വ്യക്തികളെക്കുറിച്ച് ചോദിക്കാൻ 'Who' (ആര്) എന്നും, പരിമിതമായ ചോയ്സുകളിൽ നിന്ന് ഒന്നിനെ തിരഞ്ഞെടുക്കാൻ 'Which' (ഏത്) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Who did you meet?",
-        "Which color do you pick?",
-        "Who knows the answer?"
+        "Who is managing the customer support department today ?",
+        "Which laptop model offers the highest battery backup ?",
+        "Who told you about this fantastic job opening ?",
+        "Which bus goes directly to the central railway station ?",
+        "Who wants to volunteer for the tree planting drive ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Who did you meet?",
-          "meaningMl": "കണ്ടുമുട്ടുക - Who did you meet?",
-          "audioPrompt": "Who did you meet?"
+          "text": "Master artist Kabir stood before two empty wooden easels.",
+          "meaningMl": "ചിത്രകാരൻ കബീർ രണ്ട് ഒഴിഞ്ഞ തടി ഈസലുകൾക്ക് മുന്നിൽ നിന്നു.",
+          "meaningHi": "मास्टर कलाकार कबीर दो खाली लकड़ी के ईज़ल के सामने खड़े थे।",
+          "meaningTa": "ஓவியர் கபீர் இரண்டு வெற்று மர ஈசல்களின் முன் நின்றார்.",
+          "audioPrompt": "Master artist Kabir stood before two empty wooden easels."
         },
         {
-          "text": "Which color do you pick?",
-          "meaningMl": "തിരഞ്ഞെടുക്കുക - Which color do you pick?",
-          "audioPrompt": "Which color do you pick?"
+          "text": "His young apprentice asked which canvas he intended to paint today.",
+          "meaningMl": "ഇന്ന് ഏത് ക്യാൻവാസിലാണ് ചിത്രം വരയ്ക്കാൻ ഉദ്ദേശിക്കുന്നതെന്ന് അദ്ദേഹത്തിന്റെ ശിഷ്യൻ ചോദിച്ചു.",
+          "meaningHi": "उनके युवा शिष्य ने पूछा कि वह आज किस कैनवास पर पेंट करने का इरादा रखते हैं।",
+          "meaningTa": "இன்று எந்த கேன்வாஸில் வரைய விரும்புகிறீர்கள் என்று அவரது சீடர் கேட்டார்.",
+          "audioPrompt": "His young apprentice asked which canvas he intended to paint today."
         },
         {
-          "text": "Daily practice of Asking Questions: Who & Which gives you great confidence in English.",
-          "meaningMl": "Who & Which ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Asking Questions: Who & Which gives you great confidence in English."
+          "text": "Kabir smiled and asked who had prepared the vibrant natural pigments.",
+          "meaningMl": "ഈ മനോഹരമായ പ്രകൃതിദത്ത ചായക്കൂട്ടുകൾ ആരാണ് തയ്യാറാക്കിയതെന്ന് കബീർ പുഞ്ചിരിയോടെ ചോദിച്ചു.",
+          "meaningHi": "कबीर मुस्कुराए और पूछा कि ये जीवंत प्राकृतिक रंग किसने तैयार किए हैं।",
+          "meaningTa": "இயற்கை வண்ணங்களை யார் தயாரித்தது என்று கபீர் புன்னகையுடன் கேட்டார்.",
+          "audioPrompt": "Kabir smiled and asked who had prepared the vibrant natural pigments."
+        },
+        {
+          "text": "The boy proudly said his sister had crushed the forest berries herself.",
+          "meaningMl": "തന്റെ സഹോദരി തന്നെയാണ് കാട്ടുപഴങ്ങൾ അരച്ച് ചായം ഉണ്ടാക്കിയതെന്ന് ആൺകുട്ടി അഭിമാനത്തോടെ പറഞ്ഞു.",
+          "meaningHi": "लड़के ने गर्व से कहा कि उसकी बहन ने खुद जंगल के जामुनों को पीसा था।",
+          "meaningTa": "தன் சகோதரியே காட்டின் பழங்களை அரைத்து வண்ணம் செய்ததாக சிறுவன் பெருமையுடன் கூறினான்.",
+          "audioPrompt": "The boy proudly said his sister had crushed the forest berries herself."
+        },
+        {
+          "text": "Which color shall we begin with to capture the morning sunrise?",
+          "meaningMl": "പ്രഭാത സൂര്യോദയത്തിന്റെ ഭംഗി പകർത്താൻ നമ്മൾ ഏത് നിറത്തിൽ തുടങ്ങണം?",
+          "meaningHi": "सुबह के सूर्योदय को कैद करने के लिए हम किस रंग से शुरुआत करें?",
+          "meaningTa": "காலை சூரிய உதயத்தை வரைய நாம் எந்த நிறத்தில் தொடங்க வேண்டும்?",
+          "audioPrompt": "Which color shall we begin with to capture the morning sunrise?"
+        },
+        {
+          "text": "Together they chose warm golden yellow to paint the rising dawn.",
+          "meaningMl": "ഉദിച്ചുയരുന്ന പ്രഭാതത്തെ വരയ്ക്കാൻ അവർ ഒരുമിച്ച് ശോഭയുള്ള സുവർണ്ണ മഞ്ഞനിറം തിരഞ്ഞെടുത്തു.",
+          "meaningHi": "एक साथ उन्होंने उगते सवेरे को रंगने के लिए गर्म सुनहरा पीला रंग चुना।",
+          "meaningTa": "விடியலை வரைய அவர்கள் பிரகாசமான தங்க மஞ்சள் நிறத்தைத் தேர்ந்தெடுத்தனர்.",
+          "audioPrompt": "Together they chose warm golden yellow to paint the rising dawn."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who stood before two empty wooden easels?",
+            "ml": "രണ്ട് ഒഴിഞ്ഞ തടി ഈസലുകൾക്ക് മുന്നിൽ നിന്നത് ആരാണ്?",
+            "hi": "दो खाली ईज़ल के सामने कौन खड़ा था?",
+            "ta": "இரண்டு வெற்று மர ஈசல்களின் முன் நின்றவர் யார்?"
+          },
+          "options": [
+            "A carpenter",
+            "Master artist Kabir",
+            "A forest guard",
+            "A merchant"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The passage introduces Master artist Kabir.",
+            "ml": "ചിത്രകാരനായ കബീറാണ് നിന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Who prepared the vibrant natural pigments?",
+            "ml": "പ്രകൃതിദത്ത ചായക്കൂട്ടുകൾ തയ്യാറാക്കിയത് ആരാണ്?",
+            "hi": "प्राकृतिक रंग किसने तैयार किए?",
+            "ta": "இயற்கை வண்ணங்களைத் தயாரித்தது யார்?"
+          },
+          "options": [
+            "The apprentice's sister",
+            "The king's minister",
+            "A market seller",
+            "Kabir himself"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "The boy's sister crushed the forest berries herself.",
+            "ml": "ശിഷ്യന്റെ സഹോദരി തന്നെയാണ് ചായം തയ്യാറാക്കിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Which color did they choose to paint the sunrise?",
+            "ml": "സൂര്യോദയം വരയ്ക്കാൻ അവർ ഏത് നിറമാണ് തിരഞ്ഞെടുത്തത്?",
+            "hi": "सूर्योदय को रंगने के लिए उन्होंने कौन सा रंग चुना?",
+            "ta": "சூரிய உதயத்தை வரைய அவர்கள் எந்த நிறத்தைத் தேர்ந்தெடுத்தனர்?"
+          },
+          "options": [
+            "Deep ocean blue",
+            "Warm golden yellow",
+            "Dark violet",
+            "Forest green"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They chose warm golden yellow to paint the dawn.",
+            "ml": "സുവർണ്ണ മഞ്ഞനിറമാണ് (warm golden yellow) അവർ തിരഞ്ഞെടുത്തത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d23_1",
-          "question": "Which word represents: 'കണ്ടുമുട്ടുക'?",
+          "question": "Choose the correct question to ask about someone's identity on a telephone call:",
           "options": [
-            "meet",
-            "discover",
-            "listen",
-            "create"
+            "Who is speaking, please?",
+            "Which person is on the phone?",
+            "Who are you calling yourself?",
+            "Which one speaks now?"
           ],
-          "answer": "meet",
-          "explanation": "meet എന്നാൽ കണ്ടുമുട്ടുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Who is speaking, please?' or 'May I know who is speaking?' is standard polite phone etiquette.",
+          "ruleHint": "Telephone Etiquette: 'Who is speaking, please?'"
         },
         {
-          "id": "trap_d23_2",
-          "question": "What is the past form (V2) of 'pick'?",
+          "question": "Select the grammatically correct question when choosing between two shirts:",
           "options": [
-            "picked",
-            "picking",
-            "picks",
-            "has pick"
+            "Which shirt you like better?",
+            "Which shirt do you like better?",
+            "Who shirt is your favorite?",
+            "Which one shirt do you liking?"
           ],
-          "answer": "picked",
-          "explanation": "pick ന്റെ ഭൂതകാല രൂപം picked ആണ്."
+          "correctIndex": 1,
+          "explanation": "In choice questions with simple present verbs: 'Which + noun + do + subject + base verb?': 'Which shirt do you like better?'",
+          "ruleHint": "Rule: Which + noun + do/does + subject + V1"
         },
         {
-          "id": "trap_d23_3",
-          "question": "What is the correct English word for 'ആര്'?",
+          "question": "How do you ask who broke the office window?",
           "options": [
-            "routine",
-            "who",
-            "courage",
-            "knowledge"
+            "Who did break the window?",
+            "Who broke the window?",
+            "Which person did broken the window?",
+            "Who was break the window?"
           ],
-          "answer": "who",
-          "explanation": "ആര് എന്നാൽ ഇംഗ്ലീഷിൽ who."
+          "correctIndex": 1,
+          "explanation": "When 'Who' is the subject of a past question, no auxiliary 'did' is used: 'Who broke the window?'",
+          "ruleHint": "Subject question rule: Who + V2 (broke) without 'did'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 23 Gate Exam (5 Qs)",

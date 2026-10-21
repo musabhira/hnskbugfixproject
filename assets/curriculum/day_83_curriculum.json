@@ -22,112 +22,96 @@
     "totalCoinsReward": 133
   },
   "grammarRule": {
-    "formula": "Politeness Strategies, Softening and Hedging",
+    "formula": "Situation (Context) -> Task (Goal) -> Action (My steps) -> Result (Quantifiable outcome)",
     "explanation": {
-      "ml": "ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result) എന്ന വിഷയത്തിൽ Storytelling Framework: Situation -> Task -> Action -> Result എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Storytelling Framework: Situation -> Task -> Action -> Result correctly in spoken English."
+      "ml": "'Tell me about a time when you faced a conflict / failure / deadline' തുടങ്ങിയ ചോദ്യങ്ങൾക്ക് വ്യക്തതയോടെ ഉത്തരം നൽകാൻ അന്താരാഷ്ട്ര തലത്തിൽ ഉപയോഗിക്കുന്ന STAR രീതി (Situation, Task, Action, Result).",
+      "en": "Master Behavioral Questions & The STAR Method with clear formula: Situation (Context) -> Task (Goal) -> Action (My steps) -> Result (Quantifiable outcome)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I resolved the conflict effectively.",
-      "en": "Golden Rule: Practice 'I resolved the conflict effectively.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഉത്തരത്തിന്റെ 60% വും 'Action' (നിങ്ങൾ വ്യക്തിപരമായി എന്ത് ചെയ്തു) എന്നതിലും 'Result' (എന്ത് അളക്കാവുന്ന ഫലം ഉണ്ടായി) എന്നതിലുമാണ് കേന്ദ്രീകരിക്കേണ്ടത്.",
+      "en": "Golden Tip: ഉത്തരത്തിന്റെ 60% വും 'Action' (നിങ്ങൾ വ്യക്തിപരമായി എന്ത് ചെയ്തു) എന്നതിലും 'Result' (എന്ത് അളക്കാവുന്ന ഫലം ഉണ്ടായി) എന്നതിലുമാണ് കേന്ദ്രീകരിക്കേണ്ടത്."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "resolve",
-        "v2": "resolved",
-        "v3": "resolved",
-        "meaning": {
-          "ml": "പരിഹരിക്കുക",
-          "hi": "പരിഹരിക്കുക",
-          "ta": "പരിഹരിക്കുക"
-        },
-        "example": "I resolved the conflict effectively.",
-        "exampleMl": "പരിഹരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "achieve",
-        "v2": "achieved",
-        "v3": "achieved",
-        "meaning": {
-          "ml": "കൈവരിക്കുക",
-          "hi": "കൈവരിക്കുക",
-          "ta": "കൈവരിക്കുക"
-        },
-        "example": "We achieved 100% target.",
-        "exampleMl": "കൈവരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "execute",
-        "v2": "executed",
-        "v3": "executed",
-        "meaning": {
-          "ml": "നടപ്പിലാക്കുക",
-          "hi": "നടപ്പിലാക്കുക",
-          "ta": "നടപ്പിലാക്കുക"
-        },
-        "example": "I executed the action plan.",
-        "exampleMl": "നടപ്പിലാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "deliver",
-        "v2": "delivered",
-        "v3": "delivered",
-        "meaning": {
-          "ml": "പൂർത്തിയാക്കി നൽകുക",
-          "hi": "प्रस्तुत करना / पूरा करना",
-          "ta": "வழங்கு"
-        },
-        "example": "Delivered results under budget.",
-        "exampleMl": "സമർപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "situation",
+        "word": "Circumstance",
+        "partOfSpeech": "noun",
+        "definition": "A fact or condition connected with or relevant to an event or action.",
         "meaning": {
-          "ml": "സാഹചര്യം",
-          "hi": "സാഹചര്യം",
-          "ta": "സാഹചര്യം"
+          "ml": "സാഹചര്യം / അവസ്ഥ",
+          "hi": "परिस्थिति / हालात",
+          "ta": "சூழ்நிலை",
+          "te": "పరిస్థితి",
+          "kn": "ಪರಿಸ್ಥಿತಿ"
         },
-        "example": "We learned about situation in today's lesson."
+        "example": "Under unprecedented circumstances, our engineering squad demonstrated extraordinary adaptability."
       },
       {
-        "word": "task",
+        "word": "Objective",
+        "partOfSpeech": "noun",
+        "definition": "A thing aimed at or sought; a goal.",
         "meaning": {
-          "ml": "ചുമതല",
-          "hi": "ചുമതല",
-          "ta": "ചുമതല"
+          "ml": "ലക്ഷ്യം / ഉദ്ദേശ്യം",
+          "hi": "उद्देश्य / लक्ष्य",
+          "ta": "குறிக்கோள் / நோக்கம்",
+          "te": "లక్ష్యము",
+          "kn": "ಉದ್ದೇಶ"
         },
-        "example": "We learned about task in today's lesson."
+        "example": "Our primary objective during the sprint was reducing payment gateway checkout friction."
       },
       {
-        "word": "action",
+        "word": "Execution",
+        "partOfSpeech": "noun",
+        "definition": "The carrying out or putting into effect of a plan, order, or course of action.",
         "meaning": {
-          "ml": "നടപടി",
-          "hi": "നടപടി",
-          "ta": "നടപടി"
+          "ml": "നടപ്പിലാക്കൽ / നിർവ്വഹണം",
+          "hi": "क्रियान्वयन / निष्पादन",
+          "ta": "செயல்படுத்துதல்",
+          "te": "అమలు పరచడం",
+          "kn": "ಕಾರ್ಯಗತಗೊಳಿಸುವಿಕೆ"
         },
-        "example": "We learned about action in today's lesson."
+        "example": "Flawless technical execution ensured zero server downtime during migration."
       },
       {
-        "word": "result",
+        "word": "Quantifiable",
+        "partOfSpeech": "adjective",
+        "definition": "Able to be expressed or measured as a quantity.",
         "meaning": {
-          "ml": "ഫലം",
-          "hi": "ഫലം",
-          "ta": "ഫലം"
+          "ml": "അളക്കാവുന്ന / കൃത്യമായ കണക്കുകളുള്ള",
+          "hi": "मात्रात्मक / मापने योग्य",
+          "ta": "அளவிடக்கூடிய",
+          "te": "కొలవదగిన",
+          "kn": "ಅಳೆಯಬಹುದಾದ"
         },
-        "example": "We learned about result in today's lesson."
+        "example": "Always quantify your resume impact with concrete, quantifiable metrics."
       },
       {
-        "word": "achievement",
+        "word": "Culmination",
+        "partOfSpeech": "noun",
+        "definition": "The highest or climactic point of something, especially as attained after a long time.",
         "meaning": {
-          "ml": "നേട്ടം",
-          "hi": "നേട്ടം",
-          "ta": "നേട്ടം"
+          "ml": "പര്യവസാനം / പൂർണ്ണത",
+          "hi": "चरमोत्कर्ष / पराकाष्ठा",
+          "ta": "உச்சக்கட்டம் / நிறைவு",
+          "te": "శిఖరాగ్రం",
+          "kn": "ಪರಾಕಾಷ್ಠೆ"
         },
-        "example": "We learned about achievement in today's lesson."
+        "example": "Winning the innovation trophy was the culmination of three years of dedicated research."
+      },
+      {
+        "word": "Retrospective",
+        "partOfSpeech": "noun",
+        "definition": "An exhibition or review showing the development of the work, or an agile meeting reviewing a completed sprint.",
+        "meaning": {
+          "ml": "പിന്തിരിഞ്ഞുനോക്കൽ / മുൻകാല അവലോകനം",
+          "hi": "पूर्वव्यापी समीक्षा",
+          "ta": "மீள்பார்வை / கடந்தகால ஆய்வு",
+          "te": "గత సమీక్ష",
+          "kn": "ಸಿಂಹಾವಲೋಕನ"
+        },
+        "example": "During our post-launch retrospective, we analyzed our lessons learned openly."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Job Interview Part 3: The STAR Method",
-        "ml": "പാഠം: ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result)"
+        "en": "Concept Room: Behavioral Questions & The STAR Method",
+        "ml": "പാഠം: STAR രീതിയിലുള്ള ഉത്തരങ്ങൾ (Situation, Task, Action, Result)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Situation (Context) -> Task (Goal) -> Action (My steps) -> Result (Quantifiable outcome)",
+        "ml": "'Tell me about a time when you faced a conflict / failure / deadline' തുടങ്ങിയ ചോദ്യങ്ങൾക്ക് വ്യക്തതയോടെ ഉത്തരം നൽകാൻ അന്താരാഷ്ട്ര തലത്തിൽ ഉപയോഗിക്കുന്ന STAR രീതി (Situation, Task, Action, Result)."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I resolved the conflict effectively.",
-        "We achieved 100% target.",
-        "I executed the action plan."
+        "Situation : Our payment gateway suffered intermittent failures during a massive nationwide festive sale .",
+        "Task : My responsibility as lead architect was to stabilize transactions without terminating user checkout sessions .",
+        "Action : I configured automatic traffic routing to a secondary backup processor within twenty minutes .",
+        "Result : As a quantifiable outcome , transaction success recovered to ninety nine percent , preserving two million dollars .",
+        "The executive committee commended our rapid incident response and adopted our disaster recovery protocol enterprise-wide ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Job Interview Part 3: The STAR Method",
-        "ml": "റീഡിങ് റൂം: ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result)"
+        "en": "Reading Room: The Crisis on Flight Deck Eight",
+        "ml": "റീഡിങ് റൂം: STAR രീതിയിലുള്ള ഉത്തരങ്ങൾ (Situation, Task, Action, Result)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I resolved the conflict effectively.",
-          "meaningMl": "പരിഹരിക്കുക - I resolved the conflict effectively.",
-          "audioPrompt": "I resolved the conflict effectively."
+          "text": "During her interview for Airline Operations Director, former naval aviator Rekha was asked to describe how she managed extreme adversity.",
+          "meaningMl": "എയർലൈൻ ഓപ്പറേഷൻസ് ഡയറക്ടർ തസ്തികയിലേക്കുള്ള അഭിമുഖത്തിൽ, കടുത്ത പ്രതിസന്ധികളെ എങ്ങനെ കൈകാര്യം ചെയ്തു എന്ന് വിശദീകരിക്കാൻ മുൻ നേവി പൈലറ്റ് രേഖയോട് ആവശ്യപ്പെട്ടു.",
+          "meaningHi": "एयरलाइन ऑपरेशंस डायरेक्टर के इंटरव्यू में रेखा से एक गंभीर संकट से निपटने का अनुभव पूछा गया।",
+          "meaningTa": "விமானப் போக்குவரத்து இயக்குநர் நேர்காணலில் ரேகாவிடம் இக்கட்டான சூழ்நிலையை எவ்வாறு சமாளித்தார் என்று கேட்கப்பட்டது.",
+          "audioPrompt": "During her interview for Airline Operations Director, former naval aviator Rekha was asked to describe how she managed extreme adversity."
         },
         {
-          "text": "We achieved 100% target.",
-          "meaningMl": "കൈവരിക്കുക - We achieved 100% target.",
-          "audioPrompt": "We achieved 100% target."
+          "text": "She framed her response with pristine STAR method discipline: beginning with a violent nighttime monsoon typhoon over the Indian Ocean (Situation).",
+          "meaningMl": "ഇന്ത്യൻ മഹാസമുദ്രത്തിന് മുകളിലുള്ള രാത്രിയിലെ കൊടുങ്കാറ്റിനെക്കുറിച്ചുള്ള വിവരണം നൽകിക്കൊണ്ട് അവൾ STAR രീതിയിൽ മറുപടി ആരംഭിച്ചു (Situation).",
+          "meaningHi": "उन्होंने स्टार पद्धति से शुरुआत की: हिंद महासागर में आए भयंकर चक्रवात का वर्णन (स्थिति)।",
+          "meaningTa": "இந்தியப் பெருங்கடலில் வீசிய புயல் சூழ்நிலையை விளக்கி STAR முறையில் தொடங்கினார் (சூழ்நிலை).",
+          "audioPrompt": "She framed her response with pristine STAR method discipline: beginning with a violent nighttime monsoon typhoon over the Indian Ocean (Situation)."
         },
         {
-          "text": "Daily practice of Job Interview Part 3: The STAR Method gives you great confidence in English.",
-          "meaningMl": "ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Job Interview Part 3: The STAR Method gives you great confidence in English."
+          "text": "Her task was to safely divert a commercial airliner carrying two hundred and eighty passengers with failing auxiliary hydraulics (Task).",
+          "meaningMl": "ഹൈഡ്രോളിക്സ് തകരാറിലായ, 280 യാത്രക്കാരുള്ള വിമാനത്തെ സുരക്ഷിതമായി മറ്റൊരു എയർപോർട്ടിലേക്ക് തിരിച്ചുവിടുക എന്നതായിരുന്നു അവളുടെ ചുമതല (Task).",
+          "meaningHi": "उनका काम 280 यात्रियों वाले विमान को सुरक्षित रूप से उतारना था (कार्य)।",
+          "meaningTa": "280 பயணிகளுடன் சென்ற பழுதடைந்த விமானத்தை பத்திரமாக தரையிறக்குவது அவரது பணி (பணி).",
+          "audioPrompt": "Her task was to safely divert a commercial airliner carrying two hundred and eighty passengers with failing auxiliary hydraulics (Task)."
+        },
+        {
+          "text": "She calculated manual descent vectors, coordinated emergency runway foam suppression, and calmed the flight cabin crew (Action).",
+          "meaningMl": "അവൾ സ്വയം കണക്കുകൂട്ടലുകൾ നടത്തുകയും, റൺവേയിൽ സുരക്ഷാ സംവിധാനങ്ങൾ ഒരുക്കുകയും, ജീവനക്കാർക്ക് ആത്മവിശ്വാസം പകരുകയും ചെയ്തു (Action).",
+          "meaningHi": "उन्होंने खुद गणनाएं कीं, आपातकालीन व्यवस्था की और चालक दल का हौसला बढ़ाया (कार्रवाई)।",
+          "meaningTa": "அவர் அவசர வழிகளைத் திட்டமிட்டு, பாதுகாப்பு ஏற்பாடுகளை ஒருங்கிணைத்து குழுவை அமைதிப்படுத்தினார் (செயல்பாடு).",
+          "audioPrompt": "She calculated manual descent vectors, coordinated emergency runway foam suppression, and calmed the flight cabin crew (Action)."
+        },
+        {
+          "text": "As a quantifiable result, the airliner executed a flawless belly landing with zero passenger injuries and complete hull preservation (Result).",
+          "meaningMl": "കൃത്യമായ ഫലമായി, ആർക്കും പരിക്കേൽക്കാതെ വിമാനം സുരക്ഷിതമായി നിലത്തിറങ്ങി (Result).",
+          "meaningHi": "परिणामस्वरूप, सभी यात्री पूरी तरह सुरक्षित बच गए (परिणाम)।",
+          "meaningTa": "இதன் விளைவாக, எந்த பயணியும் காயமடையாமல் விமானம் பத்திரமாக தரையிறங்கியது (முடிவு).",
+          "audioPrompt": "As a quantifiable result, the airliner executed a flawless belly landing with zero passenger injuries and complete hull preservation (Result)."
+        },
+        {
+          "text": "Her masterful storytelling proved that structured communication under pressure reflects operational mastery and steely resolve.",
+          "meaningMl": "പ്രതിസന്ധികളിലെ ഘടനാപരമായ ആശയവിനിമയം വ്യക്തിയുടെ അചഞ്ചലമായ മനോധൈര്യത്തെയും പ്രാവീണ്യത്തെയും പ്രതിഫലിപ്പിക്കുന്നുവെന്ന് അവളുടെ വിവരണം തെളിയിച്ചു.",
+          "meaningHi": "दबाव में उनका यह संरचित संचार उनके साहस और नेतृत्व क्षमता को दर्शाता है।",
+          "meaningTa": "நெருக்கடி நேரத்திலும் அமைதியாக கட்டமைக்கப்பட்ட முறையில் பேசுவது ஒருவரது தலைமைப் பண்பை நிரூபிக்கிறது.",
+          "audioPrompt": "Her masterful storytelling proved that structured communication under pressure reflects operational mastery and steely resolve."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What framework did Rekha use to structure her crisis response?",
+            "ml": "തന്റെ അനുഭവം വിവരിക്കാൻ രേഖ ഉപയോഗിച്ച ഘടന ഏതാണ്?",
+            "hi": "रेखा ने किस पद्धति का उपयोग किया?",
+            "ta": "ரேகா என்ன முறையைப் பயன்படுத்தினார்?"
+          },
+          "options": [
+            "Random excuses",
+            "The STAR Method (Situation, Task, Action, Result)",
+            "A lengthy complaint",
+            "A poetry verse"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The STAR method framework.",
+            "ml": "STAR രീതി (Situation, Task, Action, Result)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How many passengers were aboard the commercial airliner?",
+            "ml": "വിമാനത്തിൽ എത്ര യാത്രക്കാരുണ്ടായിരുന്നു?",
+            "hi": "विमान में कितने यात्री सवार थे?",
+            "ta": "விமானத்தில் எத்தனை பயணிகள் இருந்தனர்?"
+          },
+          "options": [
+            "Ten passengers",
+            "Two hundred and eighty passengers",
+            "Fifty passengers",
+            "Five hundred"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Two hundred and eighty passengers.",
+            "ml": "280 യാത്രക്കാർ (two hundred and eighty passengers)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What was the final quantifiable result of her emergency landing?",
+            "ml": "അടിയന്തര ലാൻഡിംഗിന്റെ അന്തിമ ഫലം എന്തായിരുന്നു?",
+            "hi": "आपातकालीन लैंडिंग का अंतिम परिणाम क्या था?",
+            "ta": "அவசர தரையிறக்கத்தின் இறுதி முடிவு என்ன?"
+          },
+          "options": [
+            "The plane crashed completely",
+            "Flawless landing with zero passenger injuries",
+            "The pilots got lost",
+            "Severe engine fire"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Flawless landing with zero injuries.",
+            "ml": "ആർക്കും പരിക്കേൽക്കാത്ത സുരക്ഷിതമായ ലാൻഡിംഗ്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d83_1",
-          "question": "Which word represents: 'പരിഹരിക്കുക'?",
+          "id": 1,
+          "question": "What does the acronym 'STAR' stand for in behavioral interviews?",
           "options": [
-            "resolve",
-            "listen",
-            "create",
-            "discover"
+            "Speed, Talent, Ambition, Respect.",
+            "Situation, Task, Action, Result.",
+            "Strategy, Technology, Accuracy, Reality.",
+            "Speaking, Talking, Asking, Replying."
           ],
-          "answer": "resolve",
-          "explanation": "resolve എന്നാൽ പരിഹരിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "STAR എന്നാൽ Situation (സാഹചര്യം), Task (ചുമതല), Action (നിങ്ങൾ ചെയ്ത നടപടികൾ), Result (അന്തിമ ഫലം)."
         },
         {
-          "id": "trap_d83_2",
-          "question": "What is the past form (V2) of 'achieve'?",
+          "id": 2,
+          "question": "Which component of the STAR method should receive the largest proportion of your speaking time?",
           "options": [
-            "achieves",
-            "achieveing",
-            "has achieve",
-            "achieved"
+            "Situation (complaining about how bad things were).",
+            "Action (the specific, proactive steps you personally took).",
+            "Task (describing the job description for 10 minutes).",
+            "Introduction."
           ],
-          "answer": "achieved",
-          "explanation": "achieve ന്റെ ഭൂതകാല രൂപം achieved ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "STAR രീതിയിൽ ഏറ്റവും കൂടുതൽ സംസാരിക്കേണ്ടത് 'Action' (നിങ്ങൾ വ്യക്തിപരമായി എന്ത് നടപടികൾ സ്വീകരിച്ചു) എന്നതിലാണ്."
         },
         {
-          "id": "trap_d83_3",
-          "question": "What is the correct English word for 'സാഹചര്യം'?",
+          "id": 3,
+          "question": "Why are quantifiable results crucial when ending a STAR story?",
           "options": [
-            "routine",
-            "courage",
-            "knowledge",
-            "situation"
+            "They prove tangible business impact with concrete numbers rather than vague claims.",
+            "Numbers look pretty on interview notes.",
+            "Interviewers only care about mathematics.",
+            "Because calculators are required."
           ],
-          "answer": "situation",
-          "explanation": "സാഹചര്യം എന്നാൽ ഇംഗ്ലീഷിൽ situation."
+          "correctIndex": 0,
+          "explanationMl": "വെറുതെ സംസാരിക്കാതെ കൃത്യമായ കണക്കുകൾ (numbers/percentages) പറയുന്നത് ബിസിനസിൽ നിങ്ങൾ ഉണ്ടാക്കിയ യഥാർത്ഥ മാറ്റത്തെ തെളിയിക്കുന്നു."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 83 Gate Exam (5 Qs)",

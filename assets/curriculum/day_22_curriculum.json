@@ -22,112 +22,121 @@
     "totalCoinsReward": 72
   },
   "grammarRule": {
-    "formula": "Present Continuous Tense",
+    "formula": "When / Why + do / does / did / is / are + Subject + (Verb)?",
     "explanation": {
-      "ml": "When & Why ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ When do you...? / Why are you...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use When do you...? / Why are you...? correctly in spoken English."
+      "ml": "സമയത്തെക്കുറിച്ചോ സന്ദർഭത്തെക്കുറിച്ചോ അറിയാൻ 'When' (എപ്പോൾ) എന്നും, ഒരു കാര്യത്തിന്റെ കാരണത്തെക്കുറിച്ചോ ഉദ്ദേശ്യത്തെക്കുറിച്ചോ അറിയാൻ 'Why' (എന്തുകൊണ്ട്) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Asking Questions: When & Why with clear formula: When / Why + do / does / did / is / are + Subject + (Verb)?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: When will the bus arrive?",
-      "en": "Golden Rule: Practice 'When will the bus arrive?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Why' ഉപയോഗിച്ച് ചോദിക്കുന്ന ചോദ്യങ്ങൾക്ക് ഉത്തരം സാധാരണയായി 'Because...' (കാരണം...) അല്ലെങ്കിൽ 'To + Verb' (ഉദ്ദേശ്യം) ഉപയോഗിച്ച് തുടങ്ങുന്നു.",
+      "en": "Golden Tip: 💡 'Why' ഉപയോഗിച്ച് ചോദിക്കുന്ന ചോദ്യങ്ങൾക്ക് ഉത്തരം സാധാരണയായി 'Because...' (കാരണം...) അല്ലെങ്കിൽ 'To + Verb' (ഉദ്ദേശ്യം) ഉപയോഗിച്ച് തുടങ്ങുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "arrive",
-        "v2": "arrived",
-        "v3": "arrived",
+        "v1": "postpone",
+        "v2": "postponeed",
+        "v3": "postponeed",
         "meaning": {
-          "ml": "എത്തിച്ചേരുക",
-          "hi": "पहुँचना",
-          "ta": "வந்தடை"
+          "ml": "നീട്ടിവെക്കുക / മാറ്റിവെക്കുക",
+          "hi": "स्थगित करना",
+          "ta": "ஒத்திவைக்க"
         },
-        "example": "When will the bus arrive?",
-        "exampleMl": "എത്തിച്ചേരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Why did the committee postpone the conference?",
+        "exampleMl": "To cause or arrange for something to take place at a time later than that first scheduled."
       },
       {
-        "v1": "delay",
-        "v2": "delayed",
-        "v3": "delayed",
+        "v1": "promptly",
+        "v2": "promptlyed",
+        "v3": "promptlyed",
         "meaning": {
-          "ml": "വൈകിക്കുക",
-          "hi": "देरी करना",
-          "ta": "தாமதப்படுத்து"
+          "ml": "കൃത്യസമയത്ത് / കാലതാമസമില്ലാതെ",
+          "hi": "तुरंत",
+          "ta": "உடனடியாக"
         },
-        "example": "Why was it delayed?",
-        "exampleMl": "വൈകിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "leave",
-        "v2": "left",
-        "v3": "left",
-        "meaning": {
-          "ml": "ഇറങ്ങുക",
-          "hi": "निकलना / छोड़ना",
-          "ta": "புறப்படு"
-        },
-        "example": "When do you leave?",
-        "exampleMl": "ഇറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "stop",
-        "v2": "stopped",
-        "v3": "stopped",
-        "meaning": {
-          "ml": "നിർത്തുക",
-          "hi": "रोकना",
-          "ta": "நிறுத்து"
-        },
-        "example": "Why did you stop?",
-        "exampleMl": "നിർത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "When the alarm rings, she wakes up promptly.",
+        "exampleMl": "With little or no delay; immediately."
       }
     ],
     "nouns": [
       {
-        "word": "when",
+        "word": "Deadline",
+        "partOfSpeech": "noun",
+        "definition": "The latest time or date by which something should be completed.",
         "meaning": {
-          "ml": "എപ്പോൾ",
-          "hi": "എപ്പോൾ",
-          "ta": "എപ്പോൾ"
+          "ml": "അവസാന തീയതി / സമയപരിധി",
+          "hi": "अंतिम तिथि",
+          "ta": "கடைசி தேதி",
+          "te": "గడువు",
+          "kn": "ಗಡುವು"
         },
-        "example": "We learned about when in today's lesson."
+        "example": "When is the project submission deadline?"
       },
       {
-        "word": "why",
+        "word": "Occasion",
+        "partOfSpeech": "noun",
+        "definition": "A particular event or the time at which it happens.",
         "meaning": {
-          "ml": "എന്തുകൊണ്ട്",
-          "hi": "എന്തുകൊണ്ട്",
-          "ta": "എന്തുകൊണ്ട്"
+          "ml": "സന്ദർഭം / വിശേഷദിവസം",
+          "hi": "अवसर",
+          "ta": "சந்தர்ப்பம்",
+          "te": "సందర్భము",
+          "kn": "ಸಂದರ್ಭ"
         },
-        "example": "We learned about why in today's lesson."
+        "example": "Why did you purchase such formal clothes for this casual occasion?"
       },
       {
-        "word": "reason",
+        "word": "Postpone",
+        "partOfSpeech": "verb",
+        "definition": "To cause or arrange for something to take place at a time later than that first scheduled.",
         "meaning": {
-          "ml": "കാരണം",
-          "hi": "കാരണം",
-          "ta": "കാരണം"
+          "ml": "നീട്ടിവെക്കുക / മാറ്റിവെക്കുക",
+          "hi": "स्थगित करना",
+          "ta": "ஒத்திவைக்க",
+          "te": "వాయిదా వేయు",
+          "kn": "ಮುಂದೂಡು"
         },
-        "example": "We learned about reason in today's lesson."
+        "example": "Why did the committee postpone the conference?"
       },
       {
-        "word": "date",
+        "word": "Promptly",
+        "partOfSpeech": "adverb",
+        "definition": "With little or no delay; immediately.",
         "meaning": {
-          "ml": "തീയതി",
-          "hi": "തീയതി",
-          "ta": "തീയതി"
+          "ml": "കൃത്യസമയത്ത് / കാലതാമസമില്ലാതെ",
+          "hi": "तुरंत",
+          "ta": "உடனடியாக",
+          "te": "వెంటనే",
+          "kn": "ತಕ್ಷಣ"
         },
-        "example": "We learned about date in today's lesson."
+        "example": "When the alarm rings, she wakes up promptly."
       },
       {
-        "word": "schedule",
+        "word": "Reasonable",
+        "partOfSpeech": "adjective",
+        "definition": "Fair, practical, and sensible.",
         "meaning": {
-          "ml": "സമയം",
-          "hi": "സമയം",
-          "ta": "സമയം"
+          "ml": "ന്യായമായ / യുക്തിസഹമായ",
+          "hi": "उचित",
+          "ta": "நியாயமான",
+          "te": "సహేతుకమైన",
+          "kn": "ಸಮಂಜಸವಾದ"
         },
-        "example": "We learned about schedule in today's lesson."
+        "example": "Why is this explanation considered reasonable by everyone?"
+      },
+      {
+        "word": "Annual",
+        "partOfSpeech": "adjective",
+        "definition": "Occurring once every year.",
+        "meaning": {
+          "ml": "വാർഷികമായ",
+          "hi": "वार्षिक",
+          "ta": "வருடாந்திர",
+          "te": "వార్షిక",
+          "kn": "ವಾರ್ಷಿಕ"
+        },
+        "example": "When will the annual sports festival begin?"
       }
     ]
   },
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "When / Why + do / does / did / is / are + Subject + (Verb)?",
+        "ml": "സമയത്തെക്കുറിച്ചോ സന്ദർഭത്തെക്കുറിച്ചോ അറിയാൻ 'When' (എപ്പോൾ) എന്നും, ഒരു കാര്യത്തിന്റെ കാരണത്തെക്കുറിച്ചോ ഉദ്ദേശ്യത്തെക്കുറിച്ചോ അറിയാൻ 'Why' (എന്തുകൊണ്ട്) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "When will the bus arrive?",
-        "Why was it delayed?",
-        "When do you leave?"
+        "When does the college semester examination commence ?",
+        "Why are you carrying two heavy umbrellas today ?",
+        "When did your family shift to this neighborhood ?",
+        "Why is the office air conditioner not functioning properly ?",
+        "When will the manager review our design proposal ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "When will the bus arrive?",
-          "meaningMl": "എത്തിച്ചേരുക - When will the bus arrive?",
-          "audioPrompt": "When will the bus arrive?"
+          "text": "Every morning at six, the grand bell in the clock tower chimes.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ ആറുമണിക്ക് ക്ലോക്ക് ടവറിലെ വലിയ മണി മുഴങ്ങുന്നു.",
+          "meaningHi": "हर सुबह छह बजे घंटाघर की भव्य घंटी बजती है।",
+          "meaningTa": "ஒவ்வொரு காலையிலும் ஆறு மணிக்கு மணிக்கூண்டின் பெரிய மணி ஒலிக்கிறது.",
+          "audioPrompt": "Every morning at six, the grand bell in the clock tower chimes."
         },
         {
-          "text": "Why was it delayed?",
-          "meaningMl": "വൈകിക്കുക - Why was it delayed?",
-          "audioPrompt": "Why was it delayed?"
+          "text": "The townspeople always know when it is time to open their market stalls.",
+          "meaningMl": "ചന്തയിലെ കടകൾ എപ്പോൾ തുറക്കണമെന്ന് നാട്ടുകാർക്ക് കൃത്യമായി അറിയാം.",
+          "meaningHi": "नगरवासियों को हमेशा पता होता है कि अपनी दुकानें कब खोलनी हैं।",
+          "meaningTa": "தங்கள் கடைகளை எப்போது திறக்க வேண்டும் என்று மக்களுக்குத் தெரியும்.",
+          "audioPrompt": "The townspeople always know when it is time to open their market stalls."
         },
         {
-          "text": "Daily practice of Asking Questions: When & Why gives you great confidence in English.",
-          "meaningMl": "When & Why ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Asking Questions: When & Why gives you great confidence in English."
+          "text": "Young Priya wondered why the bell stopped ringing last Wednesday.",
+          "meaningMl": "കഴിഞ്ഞ ബുധനാഴ്ച മണി മുഴങ്ങുന്നത് എന്തുകൊണ്ടാണ് നിലച്ചതെന്ന് കൊച്ചു പ്രിയ അത്ഭുതപ്പെട്ടു.",
+          "meaningHi": "युवा प्रिया सोचने लगी कि पिछले बुधवार को घंटी क्यों बंद हो गई।",
+          "meaningTa": "கடந்த புதன்கிழமை மணி ஏன் அடிக்கவில்லை என்று பிரியா யோசித்தாள்.",
+          "audioPrompt": "Young Priya wondered why the bell stopped ringing last Wednesday."
+        },
+        {
+          "text": "She climbed the stone stairs to ask the clockmaker why the gears jammed.",
+          "meaningMl": "പൽച്ചക്രങ്ങൾ എന്തുകൊണ്ടാണ് കുടുങ്ങിയതെന്ന് ക്ലോക്ക് നിർമ്മാതാവിനോട് ചോദിക്കാൻ അവൾ കൽപ്പടവുകൾ കയറി.",
+          "meaningHi": "वह यह पूछने के लिए पत्थर की सीढ़ियाँ चढ़ी कि गियर क्यों फंस गए थे।",
+          "meaningTa": "பற்கள் ஏன் மாட்டிக்கொண்டன என்று கடிகார தயாரிப்பாளரிடம் கேட்க அவள் படிக்கட்டுகளில் ஏறினாள்.",
+          "audioPrompt": "She climbed the stone stairs to ask the clockmaker why the gears jammed."
+        },
+        {
+          "text": "The elderly craftsman explained when dust accumulates, the heavy pendulum slows down.",
+          "meaningMl": "പൊടിപടലങ്ങൾ അടിഞ്ഞുകൂടുമ്പോൾ വലിയ പെൻഡുലം വേഗത കുറയുമെന്ന് വൃദ്ധനായ ശിൽപി വിശദീകരിച്ചു.",
+          "meaningHi": "बुजुर्ग कारीगर ने समझाया कि जब धूल जम जाती है, तो भारी पेंडुलम धीमा हो जाता है।",
+          "meaningTa": "தூசி படியும்போது ஊசல் வேகம் குறையும் என்று பெரியவர் விளக்கினார்.",
+          "audioPrompt": "The elderly craftsman explained when dust accumulates, the heavy pendulum slows down."
+        },
+        {
+          "text": "Together they oiled the copper springs until the cheerful chime echoed again.",
+          "meaningMl": "സന്തോഷം നിറഞ്ഞ മണിനാദം വീണ്ടും മുഴങ്ങുന്നതുവരെ അവർ ഒരുമിച്ച് ചെമ്പ് സ്പ്രിംഗുകളിൽ എണ്ണയിട്ടു.",
+          "meaningHi": "उन्होंने तांबे के स्प्रिंग्स में तब तक तेल डाला जब तक कि घंटी फिर से नहीं बजने लगी।",
+          "meaningTa": "மகிழ்ச்சியான மணி மீண்டும் ஒலிக்கும் வரை அவர்கள் ஒன்றாக எண்ணெயிட்டனர்.",
+          "audioPrompt": "Together they oiled the copper springs until the cheerful chime echoed again."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "When does the grand clock tower bell chime every morning?",
+            "ml": "എല്ലാ ദിവസവും രാവിലെ ഏത് സമയത്താണ് ക്ലോക്ക് ടവറിലെ മണി മുഴങ്ങുന്നത്?",
+            "hi": "हर सुबह घंटी कब बजती है?",
+            "ta": "ஒவ்வொரு காலையிலும் மணி எப்போது ஒலிக்கிறது?"
+          },
+          "options": [
+            "At 5 AM",
+            "At 6 AM",
+            "At 7 AM",
+            "At 8 AM"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The passage states the bell chimes every morning at six.",
+            "ml": "എല്ലാ ദിവസവും രാവിലെ 6 മണിക്കാണ് മണി മുഴങ്ങുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Why did Priya climb the stone stairs?",
+            "ml": "പ്രിയ കൽപ്പടവുകൾ കയറിയത് എന്തിനാണ്?",
+            "hi": "प्रिया पत्थर की सीढ़ियाँ क्यों चढ़ी?",
+            "ta": "பிரியா படிக்கட்டுகளில் ஏன் ஏறினாள்?"
+          },
+          "options": [
+            "To ring the bell herself",
+            "To ask the clockmaker why the gears jammed",
+            "To hide from rain",
+            "To watch the sunset"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She climbed to ask why the gears jammed.",
+            "ml": "പൽച്ചക്രങ്ങൾ കുടുങ്ങിയതിന്റെ കാരണം അറിയാനാണ് അവൾ കയറിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Why does the heavy pendulum slow down?",
+            "ml": "വലിയ പെൻഡുലം പതുക്കെയാകുന്നത് എന്തുകൊണ്ടാണ്?",
+            "hi": "भारी पेंडुलम धीमा क्यों हो जाता है?",
+            "ta": "ஊசல் ஏன் மெதுவாகிறது?"
+          },
+          "options": [
+            "When it gets too hot",
+            "When dust accumulates",
+            "When winds blow hard",
+            "When children touch it"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The craftsman explained that dust accumulation slows it down.",
+            "ml": "പൊടി അടിഞ്ഞുകൂടുമ്പോഴാണ് (dust accumulates) അതിന്റെ വേഗത കുറയുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d22_1",
-          "question": "Which word represents: 'എത്തിച്ചേരുക'?",
+          "question": "Select the correct structure to ask why someone was absent yesterday:",
           "options": [
-            "arrive",
-            "forget",
-            "listen",
-            "create"
+            "Why you were absent yesterday?",
+            "Why was you absent yesterday?",
+            "Why were you absent yesterday?",
+            "When you absent yesterday?"
           ],
-          "answer": "arrive",
-          "explanation": "arrive എന്നാൽ എത്തിച്ചേരുക എന്നർത്ഥം."
+          "correctIndex": 2,
+          "explanation": "Subject 'you' takes the past auxiliary 'were', inverted for a question: 'Why were you absent yesterday?'",
+          "ruleHint": "Rule: Why + were + you + adjective/complement?"
         },
         {
-          "id": "trap_d22_2",
-          "question": "What is the past form (V2) of 'delay'?",
+          "question": "How do you correctly ask when the store opens?",
           "options": [
-            "delays",
-            "delaying",
-            "has delay",
-            "delayed"
+            "When the store opens?",
+            "When does the store open?",
+            "When is the store opens?",
+            "Why does the store opened?"
           ],
-          "answer": "delayed",
-          "explanation": "delay ന്റെ ഭൂതകാല രൂപം delayed ആണ്."
+          "correctIndex": 1,
+          "explanation": "In simple present questions with a singular noun (the store), use 'does' + base verb (open): 'When does the store open?'",
+          "ruleHint": "Rule: When + does + singular noun + base verb (V1)"
         },
         {
-          "id": "trap_d22_3",
-          "question": "What is the correct English word for 'എപ്പോൾ'?",
+          "question": "Choose the natural response to: 'Why are you learning English?'",
           "options": [
-            "courage",
-            "success",
-            "knowledge",
-            "when"
+            "Because I want to advance my global career opportunities.",
+            "When I start learning next month.",
+            "Why not my friends are also learning.",
+            "Because for speaking with my dog."
           ],
-          "answer": "when",
-          "explanation": "എപ്പോൾ എന്നാൽ ഇംഗ്ലീഷിൽ when."
+          "correctIndex": 0,
+          "explanation": "'Because I want to advance my global career opportunities' directly addresses the reason with proper grammar.",
+          "ruleHint": "Reason answer pattern: Because + Subject + Verb + Purpose"
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 22 Gate Exam (5 Qs)",

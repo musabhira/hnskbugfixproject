@@ -22,112 +22,121 @@
     "totalCoinsReward": 111
   },
   "grammarRule": {
-    "formula": "Third Conditional",
+    "formula": "Subject + have/has + V3 (Past Participle) + Object",
     "explanation": {
-      "ml": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3 എന്ന വിഷയത്തിൽ Have/Has + V3 (Action completed with present connection) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Have/Has + V3 (Action completed with present connection) correctly in spoken English."
+      "ml": "ഭൂതകാലത്തിൽ ചെയ്തതും എന്നാൽ ഇപ്പോഴും അതിന്റെ ഫലമോ ബന്ധമോ നിലനിൽക്കുന്നതുമായ കാര്യങ്ങൾ പറയാൻ Have/Has + V3 ഉപയോഗിക്കുന്നു. I/You/We/They കൂടെ 'have', He/She/It കൂടെ 'has' വരും.",
+      "en": "Master Present Perfect Tense: Have/Has + V3 with clear formula: Subject + have/has + V3 (Past Participle) + Object"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I have finished my work.",
-      "en": "Golden Rule: Practice 'I have finished my work.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Past Simple (I finished) കഴിഞ്ഞുപോയ സമയം പറയുമ്പോൾ ഉപയോഗിക്കുന്നു. Present Perfect (I have finished) ഇപ്പോൾ പൂർത്തിയായി എന്ന് വ്യക്തമാക്കാൻ ഉപയോഗിക്കുന്നു.",
+      "en": "Golden Tip: Past Simple (I finished) കഴിഞ്ഞുപോയ സമയം പറയുമ്പോൾ ഉപയോഗിക്കുന്നു. Present Perfect (I have finished) ഇപ്പോൾ പൂർത്തിയായി എന്ന് വ്യക്തമാക്കാൻ ഉപയോഗിക്കുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "finish",
-        "v2": "finished",
-        "v3": "finished",
+        "v1": "finalized",
+        "v2": "finalizeded",
+        "v3": "finalizeded",
         "meaning": {
-          "ml": "തീർക്കുക",
-          "hi": "खत्म करना",
-          "ta": "முடி"
+          "ml": "അന്തിമമാക്കി / പൂർത്തിയാക്കി",
+          "hi": "अंतिम रूप दिया",
+          "ta": "இறுதி செய்யப்பட்டது"
         },
-        "example": "I have finished my work.",
-        "exampleMl": "പൂർത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The executive team has finalized the project budget for this quarter.",
+        "exampleMl": "Completed or settled the final details of something."
       },
       {
-        "v1": "eat",
-        "v2": "ate",
-        "v3": "eaten",
+        "v1": "updated",
+        "v2": "updateded",
+        "v3": "updateded",
         "meaning": {
-          "ml": "കഴിക്കുക",
-          "hi": "खाना",
-          "ta": "சாப்பிடு"
+          "ml": "പുതുക്കി / വിവരങ്ങൾ ചേർത്തു",
+          "hi": "अद्यतन किया गया",
+          "ta": "புதுப்பிக்கப்பட்டது"
         },
-        "example": "She has eaten lunch.",
-        "exampleMl": "കഴിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "clean",
-        "v2": "cleaned",
-        "v3": "cleaned",
-        "meaning": {
-          "ml": "വൃത്തിയാക്കുക",
-          "hi": "साफ़ करना",
-          "ta": "சுத்தம் செய்"
-        },
-        "example": "We have cleaned the room.",
-        "exampleMl": "വൃത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "write",
-        "v2": "wrote",
-        "v3": "written",
-        "meaning": {
-          "ml": "എഴുതിക്കഴിഞ്ഞു",
-          "hi": "എഴുതിക്കഴിഞ്ഞു",
-          "ta": "എഴുതിക്കഴിഞ്ഞു"
-        },
-        "example": "He has written the email.",
-        "exampleMl": "എഴുതിക്കഴിഞ്ഞു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The engineering team has updated the security protocols on our server.",
+        "exampleMl": "Made something more modern or suitable for use by adding recent information."
       }
     ],
     "nouns": [
       {
-        "word": "action",
+        "word": "Achievement",
+        "partOfSpeech": "noun",
+        "definition": "A thing done successfully with effort, skill, or courage.",
         "meaning": {
-          "ml": "പ്രവൃത്തി",
-          "hi": "പ്രവൃത്തി",
-          "ta": "പ്രവൃത്തി"
+          "ml": "നേട്ടം / വലിയ വിജയം",
+          "hi": "उपलब्धि",
+          "ta": "சாதனை",
+          "te": "సాధన",
+          "kn": "ಸಾಧನೆ"
         },
-        "example": "We learned about action in today's lesson."
+        "example": "Winning the regional chess championship is a remarkable achievement for her."
       },
       {
-        "word": "result",
+        "word": "Pinnacle",
+        "partOfSpeech": "noun",
+        "definition": "The most successful or highest point; the culmination.",
         "meaning": {
-          "ml": "ഫലം",
-          "hi": "ഫലം",
-          "ta": "ഫലം"
+          "ml": "കൊടുമുടി / ഉന്നത പദവി",
+          "hi": "शिखर / पराकाष्ठा",
+          "ta": "உச்சம்",
+          "te": "శిఖరం",
+          "kn": "ಉನ್ನತ ಸ್ಥಾನ"
         },
-        "example": "We learned about result in today's lesson."
+        "example": "Winning the international architecture trophy was the pinnacle of his career."
       },
       {
-        "word": "completion",
+        "word": "Finalized",
+        "partOfSpeech": "verb",
+        "definition": "Completed or settled the final details of something.",
         "meaning": {
-          "ml": "പൂർത്തീകരണം",
-          "hi": "പൂർത്തീകരണം",
-          "ta": "പൂർത്തീകരണം"
+          "ml": "അന്തിമമാക്കി / പൂർത്തിയാക്കി",
+          "hi": "अंतिम रूप दिया",
+          "ta": "இறுதி செய்யப்பட்டது",
+          "te": "ఖరారు చేయబడింది",
+          "kn": "ಅಂತಿಮಗೊಳಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about completion in today's lesson."
+        "example": "The executive team has finalized the project budget for this quarter."
       },
       {
-        "word": "task",
+        "word": "Accomplished",
+        "partOfSpeech": "adjective",
+        "definition": "Highly trained or skilled in a particular activity.",
         "meaning": {
-          "ml": "ജോലി",
-          "hi": "ജോലി",
-          "ta": "ജോലി"
+          "ml": "നൈപുണ്യമുള്ള / വിജയം നേടിയ",
+          "hi": "सफल / निपुण",
+          "ta": "நிறைவேற்றப்பட்ட / திறமையான",
+          "te": "సాధించిన / నిపుణతగల",
+          "kn": "ಸಾಧಿಸಿದ / ಪರಿಣಿತ"
         },
-        "example": "We learned about task in today's lesson."
+        "example": "She is an accomplished pianist who has performed across Europe."
       },
       {
-        "word": "status",
+        "word": "Updated",
+        "partOfSpeech": "verb",
+        "definition": "Made something more modern or suitable for use by adding recent information.",
         "meaning": {
-          "ml": "അവസ്ഥ",
-          "hi": "അവസ്ഥ",
-          "ta": "അവസ്ഥ"
+          "ml": "പുതുക്കി / വിവരങ്ങൾ ചേർത്തു",
+          "hi": "अद्यतन किया गया",
+          "ta": "புதுப்பிக்கப்பட்டது",
+          "te": "తాజాకరించబడింది",
+          "kn": "ನವೀಕರಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about status in today's lesson."
+        "example": "The engineering team has updated the security protocols on our server."
+      },
+      {
+        "word": "Portfolio",
+        "partOfSpeech": "noun",
+        "definition": "A collection of drawings, documents, or work representing a person's achievements.",
+        "meaning": {
+          "ml": "വർക്ക് സമാഹാരം / പോർട്ട്ഫോളിയോ",
+          "hi": "पोर्टफोलियो / कार्य संकलन",
+          "ta": "படைப்புகளின் தொகுப்பு",
+          "te": "పోర్ట్‌ఫోలియో",
+          "kn": "ಕಾರ್ಯ ಬಂಡವಾಳ"
+        },
+        "example": "The graphic designer has uploaded her new creative portfolio online."
       }
     ]
   },
@@ -136,8 +145,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Present Perfect: Have/Has + V3",
-        "ml": "പാഠം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3"
+        "en": "Concept Room: Present Perfect Tense: Have/Has + V3",
+        "ml": "പാഠം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ (Have/Has + V3)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + have/has + V3 (Past Participle) + Object",
+        "ml": "ഭൂതകാലത്തിൽ ചെയ്തതും എന്നാൽ ഇപ്പോഴും അതിന്റെ ഫലമോ ബന്ധമോ നിലനിൽക്കുന്നതുമായ കാര്യങ്ങൾ പറയാൻ Have/Has + V3 ഉപയോഗിക്കുന്നു. I/You/We/They കൂടെ 'have', He/She/It കൂടെ 'has' വരും."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I have finished my work.",
-        "She has eaten lunch.",
-        "We have cleaned the room."
+        "I have submitted the comprehensive quarterly financial report to our manager .",
+        "She has finalized the contract agreement with the international client .",
+        "Our engineering squad has resolved the critical network issue successfully .",
+        "Have you updated your contact details in the company database ?",
+        "We have reached an important milestone in our mobile application development ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +227,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Present Perfect: Have/Has + V3",
-        "ml": "റീഡിങ് റൂം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3"
+        "en": "Reading Room: The Completed Masterpiece",
+        "ml": "റീഡിങ് റൂം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ (Have/Has + V3)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I have finished my work.",
-          "meaningMl": "പൂർത്തിയാക്കി - I have finished my work.",
-          "audioPrompt": "I have finished my work."
+          "text": "Architect Vikram has dedicated five intense years to designing the revolutionary solar-powered research facility.",
+          "meaningMl": "വിപ്ലവകരമായ സൗരോർജ്ജ റിസർച്ച് സൗകര്യം രൂപകൽപ്പന ചെയ്യുന്നതിനായി വാസ്തുശില്പി വിക്രം അഞ്ച് കഠിനമായ വർഷങ്ങൾ സമർപ്പിച്ചിട്ടുണ്ട്.",
+          "meaningHi": "वास्तुकार विक्रम ने क्रांतिकारी सौर ऊर्जा अनुसंधान केंद्र के डिजाइन के लिए पांच साल समर्पित किए हैं।",
+          "meaningTa": "சூரிய சக்தி ஆராய்ச்சி மையத்தை வடிவமைக்க கட்டிடக் கலைஞர் விக்ரம் ஐந்து ஆண்டுகள் அர்ப்பணித்துள்ளார்.",
+          "audioPrompt": "Architect Vikram has dedicated five intense years to designing the revolutionary solar-powered research facility."
         },
         {
-          "text": "She has eaten lunch.",
-          "meaningMl": "കഴിച്ചു - She has eaten lunch.",
-          "audioPrompt": "She has eaten lunch."
+          "text": "His architectural team has overcome countless logistical hurdles and environmental restrictions throughout the construction phase.",
+          "meaningMl": "നിർമ്മാണ ഘട്ടത്തിലുടനീളം അദ്ദേഹത്തിന്റെ വാസ്തുവിദ്യാ സംഘം എണ്ണമറ്റ ലോജിസ്റ്റിക് തടസ്സങ്ങളും പാരിസ്ഥിതിക നിയന്ത്രണങ്ങളും മറികടന്നിട്ടുണ്ട്.",
+          "meaningHi": "उनकी टीम ने निर्माण के दौरान कई लॉजिस्टिक बाधाओं और पर्यावरणीय प्रतिबंधों को पार किया है।",
+          "meaningTa": "கட்டுமானத்தின் போது அவரது குழு பல தடைகளையும் கட்டுப்பாடுகளையும் கடந்து வந்துள்ளது.",
+          "audioPrompt": "His architectural team has overcome countless logistical hurdles and environmental restrictions throughout the construction phase."
         },
         {
-          "text": "Daily practice of Present Perfect: Have/Has + V3 gives you great confidence in English.",
-          "meaningMl": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3 ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Present Perfect: Have/Has + V3 gives you great confidence in English."
+          "text": "Government safety inspectors have examined the sustainable dome and issued their formal certificate of approval.",
+          "meaningMl": "സർക്കാർ സുരക്ഷാ ഇൻസ്പെക്ടർമാർ പരിസ്ഥിതി സൗഹൃദ താഴികക്കുടം പരിശോധിച്ച് ഔദ്യോഗിക അംഗീകാര സർട്ടിഫിക്കറ്റ് നൽകിയിട്ടുണ്ട്.",
+          "meaningHi": "सरकारी सुरक्षा निरीक्षकों ने गुंबद की जांच की है और आधिकारिक प्रमाण पत्र जारी किया है।",
+          "meaningTa": "பாதுகாப்பு ஆய்வாளர்கள் சுற்றுச்சூழல் மாடத்தை ஆய்வு செய்து ஒப்புதல் சான்றிதழ் வழங்கியுள்ளனர்.",
+          "audioPrompt": "Government safety inspectors have examined the sustainable dome and issued their formal certificate of approval."
+        },
+        {
+          "text": "Leading scientists from twelve countries have already booked research laboratories inside the complex.",
+          "meaningMl": "പന്ത്രണ്ട് രാജ്യങ്ങളിൽ നിന്നുള്ള പ്രമുഖ ശാസ്ത്രജ്ഞർ ഇതിനകം തന്നെ ഈ സമുച്ചയത്തിനുള്ളിൽ ഗവേഷണ ലബോറട്ടറികൾ ബുക്ക് ചെയ്തിട്ടുണ്ട്.",
+          "meaningHi": "बारह देशों के प्रमुख वैज्ञानिकों ने पहले ही परिसर के भीतर प्रयोगशालाएं बुक कर ली हैं।",
+          "meaningTa": "பன்னிரண்டு நாடுகளின் விஞ்ஞானிகள் ஏற்கனவே வளாகத்தில் ஆய்வகங்களை முன்பதிவு செய்துள்ளனர்.",
+          "audioPrompt": "Leading scientists from twelve countries have already booked research laboratories inside the complex."
+        },
+        {
+          "text": "Vikram has realized his childhood dream of building architecture that harmonizes humanity with nature.",
+          "meaningMl": "മനുഷ്യനെയും പ്രകൃതിയെയും ഇണക്കിച്ചേർക്കുന്ന വാസ്തുവിദ്യ നിർമ്മിക്കുകയെന്ന തന്റെ ബാല്യകാല സ്വപ്നം വിക്രം സാക്ഷാത്കരിച്ചിരിക്കുന്നു.",
+          "meaningHi": "विक्रम ने मानवता और प्रकृति के तालमेल वाले निर्माण का अपना बचपन का सपना साकार कर लिया है।",
+          "meaningTa": "மனிதனையும் இயற்கையையும் இணைக்கும் கட்டிடங்களை உருவாக்கும் தன் கனவை விக்ரம் நனவாக்கியுள்ளார்.",
+          "audioPrompt": "Vikram has realized his childhood dream of building architecture that harmonizes humanity with nature."
+        },
+        {
+          "text": "The global green architecture committee has awarded the institute its highest honors for sustainable innovation.",
+          "meaningMl": "ആഗോള ഹരിത വാസ്തുവിദ്യാ സമിതി സുസ്ഥിര നൂതനാശയങ്ങൾക്കുള്ള അവരുടെ പരമോന്നത ബഹുമതി ഈ സ്ഥാപനത്തിന് നൽകിയിട്ടുണ്ട്.",
+          "meaningHi": "वैश्विक हरित वास्तुकला समिति ने संस्थान को सतत नवाचार के लिए अपना सर्वोच्च सम्मान दिया है।",
+          "meaningTa": "உலகளாவிய பசுமை கட்டிடக் குழுமம் இந்த நிறுவனத்திற்கு உயரிய விருதை வழங்கியுள்ளது.",
+          "audioPrompt": "The global green architecture committee has awarded the institute its highest honors for sustainable innovation."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many years has Architect Vikram dedicated to the solar facility?",
+            "ml": "സൗരോർജ്ജ സൗകര്യത്തിനായി വാസ്തുശില്പി വിക്രം എത്ര വർഷങ്ങൾ സമർപ്പിച്ചു?",
+            "hi": "विक्रम ने सौर सुविधा के लिए कितने वर्ष समर्पित किए हैं?",
+            "ta": "விக்ரம் எத்தனை ஆண்டுகளை அர்ப்பணித்துள்ளார்?"
+          },
+          "options": [
+            "Two years",
+            "Five intense years",
+            "Ten months",
+            "Twenty years"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He has dedicated five intense years to the project.",
+            "ml": "അദ്ദേഹം അഞ്ച് കഠിനമായ വർഷങ്ങൾ (five intense years) സമർപ്പിച്ചു."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What document have government inspectors issued after examining the facility?",
+            "ml": "പരിശോധനയ്ക്ക് ശേഷം സർക്കാർ ഇൻസ്പെക്ടർമാർ നൽകിയ രേഖ എന്താണ്?",
+            "hi": "निरीक्षकों ने क्या दस्तावेज जारी किया?",
+            "ta": "ஆய்வாளர்கள் என்ன சான்றிதழ் வழங்கினர்?"
+          },
+          "options": [
+            "A demolition notice",
+            "Formal certificate of approval",
+            "A temporary visitor badge",
+            "A tax penalty"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They issued a formal certificate of approval.",
+            "ml": "ഔദ്യോഗിക അംഗീകാര സർട്ടിഫിക്കറ്റ് (formal certificate of approval) നൽകി."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How many countries have scientists who booked labs inside the complex?",
+            "ml": "എത്ര രാജ്യങ്ങളിൽ നിന്നുള്ള ശാസ്ത്രജ്ഞരാണ് കോംപ്ലക്സിൽ ലാബുകൾ ബുക്ക് ചെയ്തത്?",
+            "hi": "कितने देशों के वैज्ञानिकों ने लैब बुक की हैं?",
+            "ta": "எத்தனை நாட்டு விஞ்ஞானிகள் ஆய்வகங்களை முன்பதிவு செய்தனர்?"
+          },
+          "options": [
+            "Three countries",
+            "Twelve countries",
+            "Fifty countries",
+            "Two countries"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Scientists from twelve countries have booked labs.",
+            "ml": "12 രാജ്യങ്ങളിൽ നിന്നുള്ള ശാസ്ത്രജ്ഞർ (twelve countries)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d61_1",
-          "question": "Which word represents: 'തീർക്കുക'?",
+          "id": 1,
+          "question": "Select the grammatically correct sentence for an action just completed:",
           "options": [
-            "borrow",
-            "finish",
-            "listen",
-            "forget"
+            "She have finalized the contract agreement.",
+            "She has finalized the contract agreement.",
+            "She finalized has the contract agreement.",
+            "She is finalize the contract agreement."
           ],
-          "answer": "finish",
-          "explanation": "finish എന്നാൽ തീർക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'She' എന്ന 3rd person singular സബ്ജക്റ്റിനൊപ്പം 'has + V3' ആണ് ഉപയോഗിക്കേണ്ടത് (She has finalized)."
         },
         {
-          "id": "trap_d61_2",
-          "question": "What is the past form (V2) of 'eat'?",
+          "id": 2,
+          "question": "Find the error: 'I has submitted my report this morning.'",
           "options": [
-            "eats",
-            "eating",
-            "ate",
-            "has eat"
+            "'has' should be 'have' because the subject is 'I'.",
+            "'submitted' should be 'submit'.",
+            "'my' should be 'mine'.",
+            "There is no error in this sentence."
           ],
-          "answer": "ate",
-          "explanation": "eat ന്റെ ഭൂതകാല രൂപം ate ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "'I' ന്റെ കൂടെ 'have' വരണം ('I have submitted')."
         },
         {
-          "id": "trap_d61_3",
-          "question": "What is the correct English word for 'പ്രവൃത്തി'?",
+          "id": 3,
+          "question": "Choose the correct past participle (V3) form for the verb 'write':",
           "options": [
-            "courage",
-            "action",
-            "journey",
-            "success"
+            "Wrote",
+            "Written",
+            "Writing",
+            "Writed"
           ],
-          "answer": "action",
-          "explanation": "പ്രവൃത്തി എന്നാൽ ഇംഗ്ലീഷിൽ action."
+          "correctIndex": 1,
+          "explanationMl": "'write' എന്ന ക്രിയയുടെ V1 write, V2 wrote, V3 written ആണ്."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 61 Gate Exam (5 Qs)",

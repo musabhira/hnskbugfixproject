@@ -22,112 +22,109 @@
     "totalCoinsReward": 93
   },
   "grammarRule": {
-    "formula": "Modal Verbs of Probability and Deduction",
+    "formula": "Which platform does the train arrive on? / Does this bus go to...?",
     "explanation": {
-      "ml": "ബസ്, ട്രെയിൻ യാത്രകൾ എന്ന വിഷയത്തിൽ Asking Timing, Stops & Platforms എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Asking Timing, Stops & Platforms correctly in spoken English."
+      "ml": "പൊതുഗതാഗത സംവിധാനങ്ങൾ ഉപയോഗിക്കുമ്പോൾ 'Does this bus go to the city center?' (ഈ ബസ് ടൗണിലേക്ക് പോകുമോ?), 'Which platform does the train arrive on?' (ട്രെയിൻ ഏത് പ്ലാറ്റ്‌ഫോമിലാണ് വരുന്നത്?) തുടങ്ങിയ അത്യന്താപേക്ഷിതമായ ചോദ്യങ്ങൾ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Public Transport: Bus & Train Travel with clear formula: Which platform does the train arrive on? / Does this bus go to...?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Board train at platform 2.",
-      "en": "Golden Rule: Practice 'Board train at platform 2.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 റെയിൽവേ പ്ലാറ്റ്‌ഫോമുകളെക്കുറിച്ച് ചോദിക്കുമ്പോൾ: 'On platform 3' (പ്ലാറ്റ്‌ഫോം മൂന്നിൽ). ബസിൽ കയറുമ്പോൾ: 'Get on the bus', ഇറങ്ങുമ്പോൾ: 'Get off the bus'.",
+      "en": "Golden Tip: 💡 റെയിൽവേ പ്ലാറ്റ്‌ഫോമുകളെക്കുറിച്ച് ചോദിക്കുമ്പോൾ: 'On platform 3' (പ്ലാറ്റ്‌ഫോം മൂന്നിൽ). ബസിൽ കയറുമ്പോൾ: 'Get on the bus', ഇറങ്ങുമ്പോൾ: 'Get off the bus'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "board",
-        "v2": "boarded",
-        "v3": "boarded",
+        "v1": "transfer",
+        "v2": "transfered",
+        "v3": "transfered",
         "meaning": {
-          "ml": "കയറുക",
-          "hi": "കയറുക",
-          "ta": "കയറുക"
+          "ml": "ബസോ ട്രെയിനോ മാറി കയറുക",
+          "hi": "बदलना (गाड़ी)",
+          "ta": "மாறிச் செல்"
         },
-        "example": "Board train at platform 2.",
-        "exampleMl": "കയറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "alight",
-        "v2": "alighted",
-        "v3": "alighted",
-        "meaning": {
-          "ml": "ഇറങ്ങുക",
-          "hi": "ഇറങ്ങുക",
-          "ta": "ഇറങ്ങുക"
-        },
-        "example": "Alight at next station.",
-        "exampleMl": "ഇറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "miss",
-        "v2": "missed",
-        "v3": "missed",
-        "meaning": {
-          "ml": "നഷ്ടപ്പെടുക",
-          "hi": "നഷ്ടപ്പെടുക",
-          "ta": "നഷ്ടപ്പെടുക"
-        },
-        "example": "Don't miss the bus.",
-        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "announce",
-        "v2": "announced",
-        "v3": "announced",
-        "meaning": {
-          "ml": "അറിയിക്കുക",
-          "hi": "അറിയിക്കുക",
-          "ta": "അറിയിക്കുക"
-        },
-        "example": "They announced delay.",
-        "exampleMl": "അറിയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "You need to transfer to the green metro line at Central Junction.",
+        "exampleMl": "Change from one vehicle or route to another during a journey."
       }
     ],
     "nouns": [
       {
-        "word": "bus",
+        "word": "Commuter",
+        "partOfSpeech": "noun",
+        "definition": "A person who travels some distance to work on a regular basis.",
         "meaning": {
-          "ml": "ബസ്",
-          "hi": "ബസ്",
-          "ta": "ബസ്"
+          "ml": "സ്ഥിരം യാത്രക്കാരൻ",
+          "hi": "नियमित यात्री",
+          "ta": "தினசரி பயணி",
+          "te": "ప్రయాణికుడు",
+          "kn": "ಪ್ರಯಾಣಿಕ"
         },
-        "example": "We learned about bus in today's lesson."
+        "example": "Thousands of office commuters board the suburban express train every morning."
       },
       {
-        "word": "train",
+        "word": "Platform",
+        "partOfSpeech": "noun",
+        "definition": "A raised level surface on which people stand when boarding a train.",
         "meaning": {
-          "ml": "ട്രെയിൻ",
-          "hi": "ട്രെയിൻ",
-          "ta": "ട്രെയിൻ"
+          "ml": "റെയിൽവേ പ്ലാറ്റ്‌ഫോം",
+          "hi": "प्लेटफॉर्म",
+          "ta": "நடைமேடை",
+          "te": "ప్లాట్‌ఫారమ్",
+          "kn": "ಪ್ಲಾಟ್‌ಫಾರ್ಮ್"
         },
-        "example": "We learned about train in today's lesson."
+        "example": "The Shatabdi Express is arriving shortly on platform number two."
       },
       {
-        "word": "platform",
+        "word": "Conductor",
+        "partOfSpeech": "noun",
+        "definition": "A person in charge of a train, bus, or other public vehicle who collects fares.",
         "meaning": {
-          "ml": "പ്ലാറ്റ്ഫോം",
-          "hi": "പ്ലാറ്റ്ഫോം",
-          "ta": "പ്ലാറ്റ്ഫോം"
+          "ml": "ബസ് കണ്ടക്ടർ / ടിക്കറ്റ് പരിശോധകൻ",
+          "hi": "कंडक्टर / टिकट परीक्षक",
+          "ta": "நடத்துனர்",
+          "te": "కండక్టర్",
+          "kn": "ನಿರ್ವಾಹಕ"
         },
-        "example": "We learned about platform in today's lesson."
+        "example": "The bus conductor issued an automated printed paper ticket."
       },
       {
-        "word": "seat",
+        "word": "Fare",
+        "partOfSpeech": "noun",
+        "definition": "The money a passenger on public transportation has to pay.",
         "meaning": {
-          "ml": "സീറ്റ്",
-          "hi": "സീറ്റ്",
-          "ta": "സീറ്റ്"
+          "ml": "യാത്രാക്കൂലി / ടിക്കറ്റ് നിരക്ക്",
+          "hi": "किराया",
+          "ta": "பயணக் கட்டணம்",
+          "te": "ప్రయాణ ఛార్జీ",
+          "kn": "ಪ್ರಯಾಣ ದರ"
         },
-        "example": "We learned about seat in today's lesson."
+        "example": "What is the standard one-way bus fare to the international airport?"
       },
       {
-        "word": "station",
+        "word": "Baggage",
+        "partOfSpeech": "noun",
+        "definition": "Suitcases or other bags in which to pack personal belongings for traveling.",
         "meaning": {
-          "ml": "സ്റ്റേഷൻ",
-          "hi": "സ്റ്റേഷൻ",
-          "ta": "സ്റ്റേഷൻ"
+          "ml": "യാത്രാ സാധനങ്ങൾ / ലഗേജ്",
+          "hi": "सामान",
+          "ta": "பயண மூட்டைகள்",
+          "te": "సామాను",
+          "kn": "ಸಾಮಾನು ಸರಂಜಾಮು"
         },
-        "example": "We learned about station in today's lesson."
+        "example": "You can securely place heavy luggage inside the overhead rack."
+      },
+      {
+        "word": "Transfer",
+        "partOfSpeech": "verb",
+        "definition": "Change from one vehicle or route to another during a journey.",
+        "meaning": {
+          "ml": "ബസോ ട്രെയിനോ മാറി കയറുക",
+          "hi": "बदलना (गाड़ी)",
+          "ta": "மாறிச் செல்",
+          "te": "బదిలీ చేయు",
+          "kn": "ಬದಲಾಯಿಸು"
+        },
+        "example": "You need to transfer to the green metro line at Central Junction."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Public Transport: Bus & Train Travel",
-        "ml": "പാഠം: ബസ്, ട്രെയിൻ യാത്രകൾ"
+        "ml": "പാഠം: ബസ്, ട്രെയിൻ യാത്രകളിലെ സംസാരം"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Which platform does the train arrive on? / Does this bus go to...?",
+        "ml": "പൊതുഗതാഗത സംവിധാനങ്ങൾ ഉപയോഗിക്കുമ്പോൾ 'Does this bus go to the city center?' (ഈ ബസ് ടൗണിലേക്ക് പോകുമോ?), 'Which platform does the train arrive on?' (ട്രെയിൻ ഏത് പ്ലാറ്റ്‌ഫോമിലാണ് വരുന്നത്?) തുടങ്ങിയ അത്യന്താപേക്ഷിതമായ ചോദ്യങ്ങൾ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Board train at platform 2.",
-        "Alight at next station.",
-        "Don't miss the bus."
+        "Excuse me, does this red express bus go towards the technical university campus ?",
+        "Which railway platform does the evening intercity express depart from ?",
+        "Could you please tell me when the next metro train arrives here ?",
+        "Two adult tickets to the central town hall, please; how much is the fare ?",
+        "Remember to hold the handrails securely when the bus accelerates or turns ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Public Transport: Bus & Train Travel",
-        "ml": "റീഡിങ് റൂം: ബസ്, ട്രെയിൻ യാത്രകൾ"
+        "ml": "റീഡിങ് റൂം: ബസ്, ട്രെയിൻ യാത്രകളിലെ സംസാരം"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Board train at platform 2.",
-          "meaningMl": "കയറുക - Board train at platform 2.",
-          "audioPrompt": "Board train at platform 2."
+          "text": "High up in the misty mountain foothills of Darjeeling, a tiny blue steam locomotive puffed cheerfully.",
+          "meaningMl": "ഡാർജിലിംഗിലെ മൂടൽമഞ്ഞ് നിറഞ്ഞ മലനിരകൾക്ക് മുകളിൽ ഒരു ചെറിയ നീല തീവണ്ടി ഉത്സാഹത്തോടെ പുകച്ചുരുളുകൾ വിട്ടു.",
+          "meaningHi": "दार्जिलिंग की धुंधली पहाड़ी तलहटी में, एक छोटा नीला भाप का इंजन खुशी से सीटी बजा रहा था।",
+          "meaningTa": "டார்ஜிலிங்கின் பனிமூட்டமான மலையடிவாரத்தில் ஒரு சிறிய நீல நீராவி ரயில் உற்சாகமாக இயங்கியது.",
+          "audioPrompt": "High up in the misty mountain foothills of Darjeeling, a tiny blue steam locomotive puffed cheerfully."
         },
         {
-          "text": "Alight at next station.",
-          "meaningMl": "ഇറങ്ങുക - Alight at next station.",
-          "audioPrompt": "Alight at next station."
+          "text": "Schoolchildren and tea garden workers boarded the wooden coaches as the brass bell rang twice.",
+          "meaningMl": "മണി രണ്ട് തവണ മുഴങ്ങിയപ്പോൾ സ്കൂൾ കുട്ടികളും തോട്ടം തൊഴിലാളികളും മരക്കമ്പാർട്ട്‌മെന്റുകളിൽ കയറി.",
+          "meaningHi": "पीतल की घंटी दो बार बजते ही स्कूली बच्चे और चाय बागान के मजदूर लकड़ी के डिब्बों में चढ़ गए।",
+          "meaningTa": "மணி இரண்டு முறை ஒலித்ததும் பள்ளி மாணவர்களும் தொழிலாளர்களும் மரப் பெட்டிகளில் ஏறினர்.",
+          "audioPrompt": "Schoolchildren and tea garden workers boarded the wooden coaches as the brass bell rang twice."
         },
         {
-          "text": "Daily practice of Public Transport: Bus & Train Travel gives you great confidence in English.",
-          "meaningMl": "ബസ്, ട്രെയിൻ യാത്രകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Public Transport: Bus & Train Travel gives you great confidence in English."
+          "text": "The narrow railway track curved gracefully along breathtaking cliffs and emerald valleys.",
+          "meaningMl": "ഇടുങ്ങിയ റെയിൽ പാത മനോഹരമായ മലയിടുക്കുകളിലൂടെയും പച്ചപ്പ് നിറഞ്ഞ താഴ്‌വരകളിലൂടെയും വളഞ്ഞുപുളഞ്ഞു പോയി.",
+          "meaningHi": "संकीर्ण रेलवे ट्रैक लुभावनी चट्टानों और पन्ना घाटियों के साथ सुंदर ढंग से मुड़ा हुआ था।",
+          "meaningTa": "குறுகிய ரயில் பாதை அழகிய பள்ளத்தாக்குகளின் வழியே வளைந்து சென்றது.",
+          "audioPrompt": "The narrow railway track curved gracefully along breathtaking cliffs and emerald valleys."
+        },
+        {
+          "text": "Old conductor Tenzing checked every passenger ticket with a warm smile and exchanged pleasantries.",
+          "meaningMl": "വൃദ്ധനായ കണ്ടക്ടർ തെൻസിംഗ് സ്നേഹത്തോടെ ടിക്കറ്റുകൾ പരിശോധിക്കുകയും സൗഹൃദം പങ്കുവെക്കുകയും ചെയ്തു.",
+          "meaningHi": "बूढ़े कंडक्टर तेनजिंग ने मुस्कुराहट के साथ हर यात्री के टिकट की जाँच की और कुशलक्षेम पूछा।",
+          "meaningTa": "பழைய நடத்துனர் டென்சிங் புன்னகையுடன் டிக்கெட்டுகளைச் சரிபார்த்து நலம் விசாரித்தார்.",
+          "audioPrompt": "Old conductor Tenzing checked every passenger ticket with a warm smile and exchanged pleasantries."
+        },
+        {
+          "text": "Whenever wild deer crossed the iron rails, the considerate driver slowed to an absolute halt.",
+          "meaningMl": "മാൻകൂട്ടങ്ങൾ ട്രാക്കിലൂടെ കടന്നുപോകുമ്പോഴെല്ലാം ശ്രദ്ധാലുവായ ഡ്രൈവർ ട്രെയിൻ പൂർണ്ണമായും നിർത്തിക്കൊടുത്തു.",
+          "meaningHi": "जब भी जंगली हिरण पटरियों को पार करते, विचारशील चालक ट्रेन को पूरी तरह से रोक देता था।",
+          "meaningTa": "மான்கள் தண்டவாளத்தைக் கடக்கும் போதெல்லாம் ஓட்டுநர் ரயிலை முழுமையாக நிறுத்தினார்.",
+          "audioPrompt": "Whenever wild deer crossed the iron rails, the considerate driver slowed to an absolute halt."
+        },
+        {
+          "text": "Traveling on this historic railway is not merely transportation; it is a timeless voyage through nature.",
+          "meaningMl": "ഈ ചരിത്രപ്രസിദ്ധമായ ട്രെയിനിലെ യാത്ര വെറുമൊരു യാത്രയല്ല; അത് പ്രകൃതിയിലൂടെയുള്ള അവിസ്മരണീയമായ അനുഭവമാണ്.",
+          "meaningHi": "इस ऐतिहासिक रेलवे पर यात्रा करना केवल परिवहन नहीं है; यह प्रकृति के बीच एक कालजयी यात्रा है।",
+          "meaningTa": "இந்த வரலாற்று ரயிலில் பயணம் செய்வது வெறும் பயணம் மட்டுமல்ல; அது இயற்கையின் வழியாக ஒரு பயணம்.",
+          "audioPrompt": "Traveling on this historic railway is not merely transportation; it is a timeless voyage through nature."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where does the tiny blue steam locomotive run?",
+            "ml": "ആ ചെറിയ നീല തീവണ്ടി ഓടുന്നത് എവിടെയാണ്?",
+            "hi": "छोटी नीली भाप ट्रेन कहाँ चलती है?",
+            "ta": "அந்த சிறிய நீல நீராவி ரயில் எங்கு ஓடுகிறது?"
+          },
+          "options": [
+            "In the deserts of Rajasthan",
+            "In the misty mountain foothills of Darjeeling",
+            "Beside the Mumbai seaport",
+            "Across Goa beaches"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "In the misty mountain foothills of Darjeeling.",
+            "ml": "ഡാർജിലിംഗിലെ മലനിരകളിലാണ് (Darjeeling foothills)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did conductor Tenzing do as he checked passenger tickets?",
+            "ml": "ടിക്കറ്റുകൾ പരിശോധിക്കുമ്പോൾ കണ്ടക്ടർ തെൻസിംഗ് എന്താണ് ചെയ്തത്?",
+            "hi": "कंडक्टर तेनजिंग ने क्या किया?",
+            "ta": "நடத்துனர் டென்சிங் என்ன செய்தார்?"
+          },
+          "options": [
+            "Shouted angrily",
+            "Checked with a warm smile and exchanged pleasantries",
+            "Sold costly jewelry",
+            "Slept in a corner"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He checked with a warm smile and exchanged pleasantries.",
+            "ml": "പുഞ്ചിരിയോടെ സംസാരിക്കുകയും സൗഹൃദം പങ്കുവെക്കുകയും ചെയ്തു."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Why did the driver slow to an absolute halt occasionally?",
+            "ml": "ഡ്രൈവർ ഇടയ്ക്ക് ട്രെയിൻ പൂർണ്ണമായും നിർത്തിയത് എന്തിനാണ്?",
+            "hi": "चालक ने ट्रेन को पूरी तरह क्यों रोका?",
+            "ta": "ஓட்டுநர் ரயிலை ஏன் முழுமையாக நிறுத்தினார்?"
+          },
+          "options": [
+            "To buy roadside tea",
+            "Whenever wild deer crossed the iron rails",
+            "Because engine broke down",
+            "To take photographs"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Whenever wild deer crossed the iron rails.",
+            "ml": "മാൻകൂട്ടങ്ങൾ ട്രാക്ക് മുറിച്ചുകടന്നപ്പോഴാണ് (wild deer crossed) ട്രെയിൻ നിർത്തിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d43_1",
-          "question": "Which word represents: 'കയറുക'?",
+          "question": "Select the correct preposition for a railway platform:",
           "options": [
-            "discover",
-            "create",
-            "listen",
-            "board"
+            "The train is on platform 3.",
+            "The train is in platform 3.",
+            "The train is at inside platform 3.",
+            "The train is onto platform 3."
           ],
-          "answer": "board",
-          "explanation": "board എന്നാൽ കയറുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "Trains and passengers arrive 'on' a platform: 'The train is on platform 3.'",
+          "ruleHint": "Platform Preposition: 'on platform [number]'."
         },
         {
-          "id": "trap_d43_2",
-          "question": "What is the past form (V2) of 'alight'?",
+          "question": "Which phrasal verb means to enter a bus or train?",
           "options": [
-            "alighting",
-            "has alight",
-            "alights",
-            "alighted"
+            "Get in the bus",
+            "Get on the bus",
+            "Get inside the bus",
+            "Get up the bus"
           ],
-          "answer": "alighted",
-          "explanation": "alight ന്റെ ഭൂതകാല രൂപം alighted ആണ്."
+          "correctIndex": 1,
+          "explanation": "For large public transport (bus, train, plane, ship) where you can walk inside, use 'get on': 'Get on the bus.'",
+          "ruleHint": "Public Transport Rule: 'get on / get off' the bus/train/plane."
         },
         {
-          "id": "trap_d43_3",
-          "question": "What is the correct English word for 'ബസ്'?",
+          "question": "How do you ask if a train is running on time?",
           "options": [
-            "routine",
-            "courage",
-            "knowledge",
-            "bus"
+            "Is the train running on time?",
+            "Is train timing running?",
+            "Does the train running timely?",
+            "Is the train have time today?"
           ],
-          "answer": "bus",
-          "explanation": "ബസ് എന്നാൽ ഇംഗ്ലീഷിൽ bus."
+          "correctIndex": 0,
+          "explanation": "'Is the train running on time?' is the standard spoken phrase for schedule punctuality.",
+          "ruleHint": "Punctuality Rule: 'running on time' vs 'delayed'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 43 Gate Exam (5 Qs)",

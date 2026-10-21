@@ -22,112 +22,109 @@
     "totalCoinsReward": 132
   },
   "grammarRule": {
-    "formula": "Expressing Opinions, Agreement and Disagreement",
+    "formula": "A genuine weakness + Concrete remedial step + Positive habit developed",
     "explanation": {
-      "ml": "ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും എന്ന വിഷയത്തിൽ Framing weaknesses constructively into learning habits എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Framing weaknesses constructively into learning habits correctly in spoken English."
+      "ml": "ഇന്റർവ്യൂവിൽ 'What is your greatest weakness?' എന്ന ചോദ്യത്തിന് ഉത്തരം നൽകുമ്പോൾ വ്യാജമായ പെർഫെക്ഷനിസം ('I work too hard') പറയാതെ, യഥാർത്ഥ പോരായ്മയും അതിനെ മറികടക്കാൻ സ്വീകരിച്ച ശക്തമായ നടപടിയും പറയുക.",
+      "en": "Master Strengths & Constructive Weaknesses in Interviews with clear formula: A genuine weakness + Concrete remedial step + Positive habit developed"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: My greatest strength is adaptability.",
-      "en": "Golden Rule: Practice 'My greatest strength is adaptability.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: പോരായ്മ പറയുമ്പോൾ 3 ഘട്ടങ്ങൾ പാലിക്കുക: 1) യഥാർത്ഥ പോരായ്മ (Weakness), 2) അത് മാറ്റാൻ തുടങ്ങിയ ശീലം (Action taken), 3) ഇപ്പോൾ ഉണ്ടായ പുരോഗതി (Result).",
+      "en": "Golden Tip: പോരായ്മ പറയുമ്പോൾ 3 ഘട്ടങ്ങൾ പാലിക്കുക: 1) യഥാർത്ഥ പോരായ്മ (Weakness), 2) അത് മാറ്റാൻ തുടങ്ങിയ ശീലം (Action taken), 3) ഇപ്പോൾ ഉണ്ടായ പുരോഗതി (Result)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "strengthen",
-        "v2": "strengthened",
-        "v3": "strengthened",
+        "v1": "mitigate",
+        "v2": "mitigateed",
+        "v3": "mitigateed",
         "meaning": {
-          "ml": "ശക്തിപ്പെടുത്തുക",
-          "hi": "ശക്തിപ്പെടുത്തുക",
-          "ta": "ശക്തിപ്പെടുത്തുക"
+          "ml": "ലഘൂകരിക്കുക / കാഠിന്യം കുറയ്ക്കുക",
+          "hi": "कम करना / शांत करना",
+          "ta": "குறை / தணி"
         },
-        "example": "My greatest strength is adaptability.",
-        "exampleMl": "ശക്തിപ്പെടുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "overcome",
-        "v2": "overcame",
-        "v3": "overcome",
-        "meaning": {
-          "ml": "മറികടക്കുക",
-          "hi": "മറികടക്കുക",
-          "ta": "മറികടക്കുക"
-        },
-        "example": "I overcame stage fear through practice.",
-        "exampleMl": "മറികടക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "learn",
-        "v2": "learned",
-        "v3": "learned",
-        "meaning": {
-          "ml": "പഠിക്കുക",
-          "hi": "പഠിക്കുക",
-          "ta": "പഠിക്കുക"
-        },
-        "example": "I actively learn from mistakes.",
-        "exampleMl": "പഠിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "adapt",
-        "v2": "adapted",
-        "v3": "adapted",
-        "meaning": {
-          "ml": "പൊരുത്തപ്പെടുക",
-          "hi": "പൊരുത്തപ്പെടുക",
-          "ta": "പൊരുത്തപ്പെടുക"
-        },
-        "example": "I adapt quickly to change.",
-        "exampleMl": "പൊരുത്തപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Strict automated unit testing helps mitigate software regressions during production releases.",
+        "exampleMl": "Make less severe, serious, or painful."
       }
     ],
     "nouns": [
       {
-        "word": "strength",
+        "word": "Shortcoming",
+        "partOfSpeech": "noun",
+        "definition": "A fault or failure to meet a certain standard, typically in a person's character, a plan, or a system.",
         "meaning": {
-          "ml": "കരുത്ത്",
-          "hi": "കരുത്ത്",
-          "ta": "കരുത്ത്"
+          "ml": "പോരായ്മ / കുറവ്",
+          "hi": "कमी / खामी",
+          "ta": "குறைபாடு",
+          "te": "లోపం",
+          "kn": "ನ್ಯೂನತೆ"
         },
-        "example": "We learned about strength in today's lesson."
+        "example": "Recognizing an operational shortcoming early is the first step toward continuous professional growth."
       },
       {
-        "word": "weakness",
+        "word": "Proactive",
+        "partOfSpeech": "adjective",
+        "definition": "Creating or controlling a situation rather than just responding to it after it has happened.",
         "meaning": {
-          "ml": "ദൗർബല്യം",
-          "hi": "ദൗർബല്യം",
-          "ta": "ദൗർബല്യം"
+          "ml": "മുൻകൈയെടുക്കുന്ന / മുൻകൂട്ടി പ്രവർത്തിക്കുന്ന",
+          "hi": "सक्रिय / अग्रसक्रिय",
+          "ta": "முன்னெச்சரிக்கையான / சுறுசுறுப்பான",
+          "te": "చురుకైన",
+          "kn": "ಮುನ್ನೆಚ್ಚರಿಕೆಯ"
         },
-        "example": "We learned about weakness in today's lesson."
+        "example": "She took proactive measures to automate system backups before server failures occurred."
       },
       {
-        "word": "growth",
+        "word": "Mitigate",
+        "partOfSpeech": "verb",
+        "definition": "Make less severe, serious, or painful.",
         "meaning": {
-          "ml": "വളർച്ച",
-          "hi": "വളർച്ച",
-          "ta": "വളർച്ച"
+          "ml": "ലഘൂകരിക്കുക / കാഠിന്യം കുറയ്ക്കുക",
+          "hi": "कम करना / शांत करना",
+          "ta": "குறை / தணி",
+          "te": "తగ్గించు",
+          "kn": "ತಗ್ಗಿಸು"
         },
-        "example": "We learned about growth in today's lesson."
+        "example": "Strict automated unit testing helps mitigate software regressions during production releases."
       },
       {
-        "word": "discipline",
+        "word": "Diligence",
+        "partOfSpeech": "noun",
+        "definition": "Careful and persistent work or effort.",
         "meaning": {
-          "ml": "അച്ചടക്കം",
-          "hi": "അച്ചടക്കം",
-          "ta": "അച്ചടക്കം"
+          "ml": "ശ്രദ്ധാപൂർവ്വമായ കഠിനാധ്വാനം / ജാഗ്രത",
+          "hi": "लगन / कर्मठता",
+          "ta": "விடாமுயற்சி / சிரத்தை",
+          "te": "శ్రద్ధ",
+          "kn": "ಶ್ರದ್ಧೆ"
         },
-        "example": "We learned about discipline in today's lesson."
+        "example": "Her thorough diligence ensured that no financial discrepancies went unnoticed."
       },
       {
-        "word": "focus",
+        "word": "Self-awareness",
+        "partOfSpeech": "noun",
+        "definition": "Conscious knowledge of one's own character, feelings, motives, and desires.",
         "meaning": {
-          "ml": "ശ്രദ്ധ",
-          "hi": "ശ്രദ്ധ",
-          "ta": "ശ്രദ്ധ"
+          "ml": "സ്വയം തിരിച്ചറിവ് / ആത്മബോധം",
+          "hi": "आत्म-जागरूकता",
+          "ta": "சுய விழிப்புணர்வு",
+          "te": "స్వీయ స్పృహ",
+          "kn": "ಸ್ವಯಂ ಜಾಗೃತಿ"
         },
-        "example": "We learned about focus in today's lesson."
+        "example": "Mature emotional intelligence requires deep self-awareness and receptiveness to feedback."
+      },
+      {
+        "word": "Introspection",
+        "partOfSpeech": "noun",
+        "definition": "The examination or observation of one's own mental and emotional processes.",
+        "meaning": {
+          "ml": "ആത്മപരിശോധന",
+          "hi": "आत्मनिरीक्षण",
+          "ta": "சுயபரிசோதனை",
+          "te": "ఆత్మపరిశీలన",
+          "kn": "ಆತ್ಮಾವಲೋಕನ"
+        },
+        "example": "Daily evening introspection helps professionals refine their leadership and communication habits."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Job Interview Part 2: Strengths & Weaknesses",
-        "ml": "പാഠം: ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും"
+        "en": "Concept Room: Strengths & Constructive Weaknesses in Interviews",
+        "ml": "പാഠം: കഴിവുകളും പോരായ്മകളും മാന്യമായി അവതരിപ്പിക്കൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "A genuine weakness + Concrete remedial step + Positive habit developed",
+        "ml": "ഇന്റർവ്യൂവിൽ 'What is your greatest weakness?' എന്ന ചോദ്യത്തിന് ഉത്തരം നൽകുമ്പോൾ വ്യാജമായ പെർഫെക്ഷനിസം ('I work too hard') പറയാതെ, യഥാർത്ഥ പോരായ്മയും അതിനെ മറികടക്കാൻ സ്വീകരിച്ച ശക്തമായ നടപടിയും പറയുക."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "My greatest strength is adaptability.",
-        "I overcame stage fear through practice.",
-        "I actively learn from mistakes."
+        "My core strength is decomposing ambiguous business dilemmas into structured , actionable milestones .",
+        "In the past , I struggled with delegating tasks because I wanted everything executed perfectly .",
+        "To rectify this , I implemented weekly mentoring sessions and established clear ownership boundaries .",
+        "As a tangible result , my team ' s independent delivery speed increased by thirty percent .",
+        "I continually solicit peer feedback to identify blind spots in my collaborative leadership style ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Job Interview Part 2: Strengths & Weaknesses",
-        "ml": "റീഡിങ് റൂം: ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും"
+        "en": "Reading Room: The Power of Vulnerable Leadership",
+        "ml": "റീഡിങ് റൂം: കഴിവുകളും പോരായ്മകളും മാന്യമായി അവതരിപ്പിക്കൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "My greatest strength is adaptability.",
-          "meaningMl": "ശക്തിപ്പെടുത്തുക - My greatest strength is adaptability.",
-          "audioPrompt": "My greatest strength is adaptability."
+          "text": "During a competitive final interview round for Chief Operating Officer, candidate Maya was asked to reveal her most consequential leadership weakness.",
+          "meaningMl": "ചീഫ് ഓപ്പറേറ്റിംഗ് ഓഫീസർ തസ്തികയിലേക്കുള്ള അഭിമുഖത്തിൽ, തന്റെ പ്രധാന നേതൃത്വപരമായ പോരായ്മ വെളിപ്പെടുത്താൻ സ്ഥാനാർത്ഥി മായയോട് ആവശ്യപ്പെട്ടു.",
+          "meaningHi": "सीओओ के इंटरव्यू में माया से उनकी सबसे बड़ी कमजोरी के बारे में पूछा गया।",
+          "meaningTa": "தலைமை செயல்பாட்டு அதிகாரி நேர்காணலில் மாயாவிடம் அவரது பலவீனம் பற்றிக் கேட்கப்பட்டது.",
+          "audioPrompt": "During a competitive final interview round for Chief Operating Officer, candidate Maya was asked to reveal her most consequential leadership weakness."
         },
         {
-          "text": "I overcame stage fear through practice.",
-          "meaningMl": "മറികടക്കുക - I overcame stage fear through practice.",
-          "audioPrompt": "I overcame stage fear through practice."
+          "text": "Instead of offering clichéd evasions such as 'I am an obsessive perfectionist', Maya demonstrated authentic introspection.",
+          "meaningMl": "'ഞാൻ വല്ലാതെ പെർഫെക്ഷനിസ്റ്റാണ്' എന്ന സ്ഥിരം ക്ലീഷേ ഉത്തരങ്ങൾക്ക് പകരം, മായ ആത്മാർത്ഥമായ ആത്മപരിശോധന നടത്തി.",
+          "meaningHi": "पुराने घिसे-पिटे जवाब देने के बजाय माया ने सच्ची ईमानदारी दिखाई।",
+          "meaningTa": "பழைய வழக்கமான பதில்களைக் கூறாமல் மாயா உண்மையான சுயபரிசோதனையை வெளிப்படுத்தினார்.",
+          "audioPrompt": "Instead of offering clichéd evasions such as 'I am an obsessive perfectionist', Maya demonstrated authentic introspection."
         },
         {
-          "text": "Daily practice of Job Interview Part 2: Strengths & Weaknesses gives you great confidence in English.",
-          "meaningMl": "ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Job Interview Part 2: Strengths & Weaknesses gives you great confidence in English."
+          "text": "'Early in my management career, I struggled with public speaking anxiety during large auditorium conferences,' she admitted openly.",
+          "meaningMl": "'എന്റെ കരിയറിന്റെ തുടക്കത്തിൽ വലിയ വേദികളിൽ പ്രസംഗിക്കുമ്പോൾ കടുത്ത ഉത്കണ്ഠ എനിക്ക് ഉണ്ടായിരുന്നു,' അവൾ തുറന്നു പറഞ്ഞു.",
+          "meaningHi": "'शुरुआत में मुझे बड़े सम्मेलनों में बोलने में बहुत घबराहट होती थी।'",
+          "meaningTa": "'ஆரம்ப காலத்தில் பெரிய மேடைகளில் பேசுவதற்கு நான் மிகவும் பயந்தேன் என்று ஒப்புக்கொண்டார்.'",
+          "audioPrompt": "'Early in my management career, I struggled with public speaking anxiety during large auditorium conferences,' she admitted openly."
+        },
+        {
+          "text": "She detailed how she systematically enrolled in executive rhetoric workshops and practiced impromptu speeches five mornings each week.",
+          "meaningMl": "തുടർന്ന്, പ്രസംഗ പരിശീലന കളരികളിൽ ചേരുകയും ആഴ്ചയിൽ അഞ്ച് ദിവസവും പ്രസംഗം പരിശീലിക്കുകയും ചെയ്തത് അവൾ വിവരിച്ചു.",
+          "meaningHi": "उन्होंने बताया कि कैसे उन्होंने भाषण कार्यशालाओं में भाग लेकर हर हफ्ते अभ्यास किया।",
+          "meaningTa": "அவர் பேச்சுப் பயிலரங்குகளில் சேர்ந்து வாரத்திற்கு ஐந்து நாட்கள் பயிற்சி செய்ததை விளக்கினார்.",
+          "audioPrompt": "She detailed how she systematically enrolled in executive rhetoric workshops and practiced impromptu speeches five mornings each week."
+        },
+        {
+          "text": "'Today, while a natural flutter of nervousness remains, I channel that kinetic adrenaline to deliver compelling keynote addresses.'",
+          "meaningMl": "'ഇന്ന്, ചെറിയൊരു ആശങ്ക ബാക്കിയുണ്ടെങ്കിലും, മികച്ച പ്രസംഗങ്ങൾ നടത്താൻ ആ ഊർജ്ജത്തെ ഉപയോഗിക്കാൻ എനിക്ക് കഴിയുന്നുണ്ട്.'",
+          "meaningHi": "'आज मैं उस घबराहट को सकारात्मक ऊर्जा में बदलकर प्रेरणादायक भाषण देती हूँ।'",
+          "meaningTa": "'இன்று அந்த பதற்றத்தை நேர்மறை ஆற்றலாக மாற்றி சிறந்த உரைகளை என்னால் நிகழ்த்த முடிகிறது.'",
+          "audioPrompt": "'Today, while a natural flutter of nervousness remains, I channel that kinetic adrenaline to deliver compelling keynote addresses.'"
+        },
+        {
+          "text": "The interview committee recognized that leaders who proactively confront and master their vulnerabilities possess unmatched fortitude.",
+          "meaningMl": "തങ്ങളുടെ പോരായ്മകളെ തിരിച്ചറിഞ്ഞ് അതിജീവിക്കാൻ ശ്രമിക്കുന്ന നേതാക്കൾക്കാണ് ഏറ്റവും വലിയ കരുത്തുള്ളതെന്ന് ഇന്റർവ്യൂ ബോർഡ് തിരിച്ചറിഞ്ഞു.",
+          "meaningHi": "बोर्ड ने माना कि जो अपनी कमियों को स्वीकार कर सुधारते हैं, वे ही सच्चे नेता हैं।",
+          "meaningTa": "தங்கள் பலவீனங்களை உணர்ந்து வெற்றி கொள்ளும் தலைவர்களுக்கே இணையற்ற மன உறுதி உண்டு என்பதை குழு உணர்ந்தது.",
+          "audioPrompt": "The interview committee recognized that leaders who proactively confront and master their vulnerabilities possess unmatched fortitude."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What clichéd response did Maya avoid when asked about her weakness?",
+            "ml": "പോരായ്മയെക്കുറിച്ച് ചോദിച്ചപ്പോൾ മായ ഒഴിവാക്കിയ സ്ഥിരം ക്ലീഷേ ഉത്തരം എന്തായിരുന്നു?",
+            "hi": "माया ने किस पुराने जवाब को देने से परहेज किया?",
+            "ta": "மாயா எம்மாதிரியான பதிலை தவிர்த்தார்?"
+          },
+          "options": [
+            "'I sleep too much'",
+            "'I am an obsessive perfectionist'",
+            "'I hate money'",
+            "'I cannot read numbers'"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "'I am an obsessive perfectionist'.",
+            "ml": "'ഞാൻ വല്ലാതെ പെർഫെക്ഷനിസ്റ്റാണ്' (I am an obsessive perfectionist)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What was Maya's genuine early career vulnerability?",
+            "ml": "മായയുടെ തുടക്കകാലത്തെ യഥാർത്ഥ പോരായ്മ എന്തായിരുന്നു?",
+            "hi": "माया की शुरुआती कमजोरी क्या थी?",
+            "ta": "மாயாவின் ஆரம்பகால பலவீனம் என்ன?"
+          },
+          "options": [
+            "Lateness every day",
+            "Public speaking anxiety during large auditorium conferences",
+            "Lack of computer skills",
+            "Inability to write emails"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Public speaking anxiety during large conferences.",
+            "ml": "വലിയ വേദികളിൽ പ്രസംഗിക്കാനുള്ള ഉത്കണ്ഠ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How many mornings each week did she practice impromptu speeches?",
+            "ml": "ആഴ്ചയിൽ എത്ര ദിവസമാണ് അവൾ പ്രസംഗം പരിശീലിച്ചത്?",
+            "hi": "वह हर हफ्ते कितने दिन अभ्यास करती थीं?",
+            "ta": "வாரத்திற்கு எத்தனை நாட்கள் பயிற்சி செய்தார்?"
+          },
+          "options": [
+            "One morning",
+            "Five mornings each week",
+            "Once a month",
+            "Never"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Five mornings each week.",
+            "ml": "ആഴ്ചയിൽ 5 ദിവസവും (Five mornings each week)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d82_1",
-          "question": "Which word represents: 'ശക്തിപ്പെടുത്തുക'?",
+          "id": 1,
+          "question": "Why is saying 'I don't have any weaknesses' harmful in a job interview?",
           "options": [
-            "listen",
-            "forget",
-            "create",
-            "strengthen"
+            "It shows total perfection.",
+            "It signals a severe lack of self-awareness and unwillingness to grow.",
+            "Interviewers prefer people who have failed at everything.",
+            "It is illegal to say that in an office."
           ],
-          "answer": "strengthen",
-          "explanation": "strengthen എന്നാൽ ശക്തിപ്പെടുത്തുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'എനിക്ക് പോരായ്മകൾ ഒന്നുമില്ല' എന്ന് പറയുന്നത് വലിയ അഹങ്കാരമായും ആത്മബോധമില്ലായ്മയായും (lack of self-awareness) വിലയിരുത്തപ്പെടും."
         },
         {
-          "id": "trap_d82_2",
-          "question": "What is the past form (V2) of 'overcome'?",
+          "id": 2,
+          "question": "What is the recommended 3-step formula for answering the weakness question?",
           "options": [
-            "overcame",
-            "overcomeing",
-            "overcomes",
-            "has overcome"
+            "Blame your boss, Complain about salary, Leave the room.",
+            "Acknowledge genuine weakness, Explain concrete steps taken to improve, Share the positive resulting habit.",
+            "Cry loudly, Apologize, Ask for sympathy.",
+            "Say you are too generous, give away money, buy snacks."
           ],
-          "answer": "overcame",
-          "explanation": "overcome ന്റെ ഭൂതകാല രൂപം overcame ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "3 ഘട്ട ഫോർമുല: പോരായ്മ സമ്മതിക്കുക, അത് പരിഹരിക്കാൻ എടുത്ത നടപടികൾ പറയുക, ഇപ്പോൾ ഉണ്ടായ പുരോഗതി വ്യക്തമാക്കുക."
         },
         {
-          "id": "trap_d82_3",
-          "question": "What is the correct English word for 'കരുത്ത്'?",
+          "id": 3,
+          "question": "Which of the following is considered a 'fake' weakness that interviewers dislike?",
           "options": [
-            "strength",
-            "success",
-            "courage",
-            "knowledge"
+            "I used to struggle with delegating tasks.",
+            "I am such a perfectionist that I care too much about quality.",
+            "I am actively learning advanced spreadsheet data modeling.",
+            "I sometimes hesitate before public speaking."
           ],
-          "answer": "strength",
-          "explanation": "കരുത്ത് എന്നാൽ ഇംഗ്ലീഷിൽ strength."
+          "correctIndex": 1,
+          "explanationMl": "'I care too much / I am too much of a perfectionist' എന്നത് വ്യാജമായ ഉത്തരമാണ് (fake weakness), അഭിമുഖം നടത്തുന്നവർക്ക് ഇത് വേഗത്തിൽ തിരിച്ചറിയാനാകും."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 82 Gate Exam (5 Qs)",

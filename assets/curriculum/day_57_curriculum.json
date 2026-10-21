@@ -22,112 +22,96 @@
     "totalCoinsReward": 107
   },
   "grammarRule": {
-    "formula": "Direct and Indirect Speech – Questions and Commands",
+    "formula": "I have been experiencing [symptom] for [duration] / The pain is sharp / throbbing.",
     "explanation": {
-      "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ എന്ന വിഷയത്തിൽ I have been having this pain since yesterday എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I have been having this pain since yesterday correctly in spoken English."
+      "ml": "ഡോക്ടറുടെ അടുത്ത് അസുഖം വിശദീകരിക്കുമ്പോൾ: 'I have had this throbbing headache for three days' (മൂന്ന് ദിവസമായി തലവേദനയുണ്ട്), 'The pain is sharp when I bend' (കുനിയുമ്പോൾ നല്ല വേദനയുണ്ട്), 'I feel nauseous after meals' (ഭക്ഷണത്തിന് ശേഷം ഛർദ്ദിക്കാൻ വരുന്നു) എന്ന് കൃത്യമായി പറയുന്നു.",
+      "en": "Master Doctor Consultation: Explaining Symptoms with clear formula: I have been experiencing [symptom] for [duration] / The pain is sharp / throbbing."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Doctor examined my chest.",
-      "en": "Golden Rule: Practice 'Doctor examined my chest.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വേദനയുടെ തരം പറയാൻ: Sharp pain (കുത്തുന്ന വേദന), Dull ache (തുടർച്ചയായ ചെറിയ വേദന), Throbbing pain (തുടിക്കുന്ന വേദന), Burning sensation (എരിയുന്ന നീറ്റൽ).",
+      "en": "Golden Tip: 💡 വേദനയുടെ തരം പറയാൻ: Sharp pain (കുത്തുന്ന വേദന), Dull ache (തുടർച്ചയായ ചെറിയ വേദന), Throbbing pain (തുടിക്കുന്ന വേദന), Burning sensation (എരിയുന്ന നീറ്റൽ)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "examine",
-        "v2": "examined",
-        "v3": "examined",
-        "meaning": {
-          "ml": "പരിശോധിക്കുക",
-          "hi": "പരിശോധിക്കുക",
-          "ta": "പരിശോധിക്കുക"
-        },
-        "example": "Doctor examined my chest.",
-        "exampleMl": "പരിശോധിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "suffer",
-        "v2": "suffered",
-        "v3": "suffered",
-        "meaning": {
-          "ml": "കഷ്ടപ്പെടുക",
-          "hi": "കഷ്ടപ്പെടുക",
-          "ta": "കഷ്ടപ്പെടുക"
-        },
-        "example": "I am suffering from flu.",
-        "exampleMl": "കഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "recover",
-        "v2": "recovered",
-        "v3": "recovered",
-        "meaning": {
-          "ml": "സുഖപ്പെടുക",
-          "hi": "സുഖപ്പെടുക",
-          "ta": "സുഖപ്പെടുക"
-        },
-        "example": "You will recover soon.",
-        "exampleMl": "സുഖപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "inject",
-        "v2": "injected",
-        "v3": "injected",
-        "meaning": {
-          "ml": "കുത്തിവെയ്ക്കുക",
-          "hi": "കുത്തിവെയ്ക്കുക",
-          "ta": "കുത്തിവെയ്ക്കുക"
-        },
-        "example": "Nurse injected medicine.",
-        "exampleMl": "കുത്തിവെയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "symptom",
+        "word": "Diagnosis",
+        "partOfSpeech": "noun",
+        "definition": "The identification of the nature of an illness or other problem by examination of the symptoms.",
         "meaning": {
-          "ml": "ലക്ഷണം",
-          "hi": "ലക്ഷണം",
-          "ta": "ലക്ഷണം"
+          "ml": "രോഗനിർണ്ണയം / രോഗം കണ്ടെത്തൽ",
+          "hi": "रोग की पहचान / निदान",
+          "ta": "நோய் கண்டறிதல்",
+          "te": "రోగ నిర్ధారణ",
+          "kn": "ರೋಗ ನಿರ್ಣಯ"
         },
-        "example": "We learned about symptom in today's lesson."
+        "example": "The physician made an accurate diagnosis after reviewing the blood lab panels."
       },
       {
-        "word": "clinic",
+        "word": "Throbbing",
+        "partOfSpeech": "adjective",
+        "definition": "Beating with a strong, regular rhythm; pulsing painfully.",
         "meaning": {
-          "ml": "ക്ലിനിക്ക്",
-          "hi": "ക്ലിനിക്ക്",
-          "ta": "ക്ലിനിക്ക്"
+          "ml": "തുടിക്കുന്ന / ഇടവിട്ട് കുത്തുന്ന (വേദന)",
+          "hi": "धड़कता हुआ दर्द",
+          "ta": "துடிக்கும் வலி",
+          "te": "దడదడలాడే నొప్పి",
+          "kn": "ಬಡಿಯುವ ನೋವು"
         },
-        "example": "We learned about clinic in today's lesson."
+        "example": "She suffered from a severe throbbing migraine behind her right temple."
       },
       {
-        "word": "infection",
+        "word": "Persistent",
+        "partOfSpeech": "adjective",
+        "definition": "Continuing firmly or obstinately in a course of action; lasting for a long time.",
         "meaning": {
-          "ml": "അണുബാധ",
-          "hi": "അണുബാധ",
-          "ta": "അണുബാധ"
+          "ml": "വിട്ടുമാറാത്ത / തുടർച്ചയായ",
+          "hi": "लगातार बना रहने वाला",
+          "ta": "தொடர்ச்சியான",
+          "te": "నిరంతర",
+          "kn": "ನಿರಂತರವಾದ"
         },
-        "example": "We learned about infection in today's lesson."
+        "example": "Consult a specialist if you have a persistent dry cough for over two weeks."
       },
       {
-        "word": "rest",
+        "word": "Allergy",
+        "partOfSpeech": "noun",
+        "definition": "A damaging immune response by the body to a substance, especially pollen, fur, a particular food, or dust.",
         "meaning": {
-          "ml": "വിശ്രമം",
-          "hi": "വിശ്രമം",
-          "ta": "വിശ്രമം"
+          "ml": "അലർജി / പ്രതിപ്രവർത്തനം",
+          "hi": "एलर्जी",
+          "ta": "ஒவ்வாமை",
+          "te": "అలెర్జీ",
+          "kn": "ಅಲರ್ಜಿ"
         },
-        "example": "We learned about rest in today's lesson."
+        "example": "Do you have any known medical allergy to penicillin or sulfa drugs?"
       },
       {
-        "word": "health",
+        "word": "Examination",
+        "partOfSpeech": "noun",
+        "definition": "A detailed inspection or study of the body by a doctor.",
         "meaning": {
-          "ml": "ആരോഗ്യം",
-          "hi": "ആരോഗ്യം",
-          "ta": "ആരോഗ്യം"
+          "ml": "ശാരീരിക പരിശോധന",
+          "hi": "शारीरिक जांच",
+          "ta": "உடல் பரிசோதனை",
+          "te": "పరీక్ష",
+          "kn": "ತಪಾಸಣೆ"
         },
-        "example": "We learned about health in today's lesson."
+        "example": "The pediatrician performed a thorough physical examination of the infant."
+      },
+      {
+        "word": "Severity",
+        "partOfSpeech": "noun",
+        "definition": "The fact or condition of being severe; intense degree of suffering or pain.",
+        "meaning": {
+          "ml": "തീവ്രത / കാഠിന്യം",
+          "hi": "तीव्रता / गंभीरता",
+          "ta": "தீவிரம்",
+          "te": "తీవ్రత",
+          "kn": "ತೀವ್ರತೆ"
+        },
+        "example": "Rate the severity of your knee joint pain on a scale from one to ten."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Doctor Consultation: Explaining Symptoms",
-        "ml": "പാഠം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ"
+        "ml": "പാഠം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ വ്യക്തമായി പറയൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I have been experiencing [symptom] for [duration] / The pain is sharp / throbbing.",
+        "ml": "ഡോക്ടറുടെ അടുത്ത് അസുഖം വിശദീകരിക്കുമ്പോൾ: 'I have had this throbbing headache for three days' (മൂന്ന് ദിവസമായി തലവേദനയുണ്ട്), 'The pain is sharp when I bend' (കുനിയുമ്പോൾ നല്ല വേദനയുണ്ട്), 'I feel nauseous after meals' (ഭക്ഷണത്തിന് ശേഷം ഛർദ്ദിക്കാൻ വരുന്നു) എന്ന് കൃത്യമായി പറയുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Doctor examined my chest.",
-        "I am suffering from flu.",
-        "You will recover soon."
+        "I have been experiencing a sharp throbbing headache behind my eyes for three days .",
+        "The joint pain becomes significantly worse whenever I climb upstairs in the morning .",
+        "Are there any specific foods or medications that trigger allergic skin rashes ?",
+        "I feel slightly dizzy and nauseous especially after taking my morning medicine .",
+        "The doctor recommended complete bed rest and prescribed a five-day antibiotic course ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Doctor Consultation: Explaining Symptoms",
-        "ml": "റീഡിങ് റൂം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ"
+        "ml": "റീഡിങ് റൂം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ വ്യക്തമായി പറയൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Doctor examined my chest.",
-          "meaningMl": "പരിശോധിക്കുക - Doctor examined my chest.",
-          "audioPrompt": "Doctor examined my chest."
+          "text": "In the misty highland hills of Wayanad, Dr. Thomas ran a small tribal wellness clinic.",
+          "meaningMl": "വയനാട്ടിലെ മൂടൽമഞ്ഞ് നിറഞ്ഞ മലയോരത്ത് ഡോ. തോമസ് ഒരു ചെറിയ ആതുരാലയം നടത്തിവന്നു.",
+          "meaningHi": "वायनाड की धुंधली पहाड़ियों में, डॉ. थॉमस एक छोटा क्लिनिक चलाते थे।",
+          "meaningTa": "வயநாட்டின் மலைப்பகுதியில் டாக்டர் தாமஸ் ஒரு சிறிய மருத்துவமனையை நடத்தி வந்தார்.",
+          "audioPrompt": "In the misty highland hills of Wayanad, Dr. Thomas ran a small tribal wellness clinic."
         },
         {
-          "text": "I am suffering from flu.",
-          "meaningMl": "കഷ്ടപ്പെടുക - I am suffering from flu.",
-          "audioPrompt": "I am suffering from flu."
+          "text": "Unlike hurried city doctors, he listened attentively to every patient without interrupting their stories.",
+          "meaningMl": "തിടുക്കം കൂട്ടുന്ന ഡോക്ടർമാരെപ്പോലെയല്ലാതെ, രോഗികളുടെ അനുഭവങ്ങൾ തടസ്സപ്പെടുത്താതെ അദ്ദേഹം ശ്രദ്ധയോടെ കേട്ടു.",
+          "meaningHi": "जल्दबाजी वाले डॉक्टरों के विपरीत, वे हर मरीज को बिना टोके ध्यान से सुनते थे।",
+          "meaningTa": "அவசரப்படும் மருத்துவர்களைப் போல் அல்லாமல், நோயாளிகளின் பேச்சை அவர் பொறுமையாகக் கேட்டார்.",
+          "audioPrompt": "Unlike hurried city doctors, he listened attentively to every patient without interrupting their stories."
         },
         {
-          "text": "Daily practice of Doctor Consultation: Explaining Symptoms gives you great confidence in English.",
-          "meaningMl": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Doctor Consultation: Explaining Symptoms gives you great confidence in English."
+          "text": "When tea worker Ravi described a sharp radiating pain in his shoulder, Dr. Thomas examined his joints gently.",
+          "meaningMl": "തോട്ടം തൊഴിലാളി രവി തന്റെ തോളിലെ കഠിനമായ വേദനയെക്കുറിച്ച് പറഞ്ഞപ്പോൾ അദ്ദേഹം സന്ധികൾ ശ്രദ്ധയോടെ പരിശോധിച്ചു.",
+          "meaningHi": "जब रवि ने कंधे में दर्द का वर्णन किया, तो डॉ. थॉमस ने जोड़ों की धीरे से जाँच की।",
+          "meaningTa": "தொழிலாளி ரவி தன் தோள்பட்டை வலியைப் பற்றிக் கூறியபோது டாக்டர் மெதுவாகப் பரிசோதித்தார்.",
+          "audioPrompt": "When tea worker Ravi described a sharp radiating pain in his shoulder, Dr. Thomas examined his joints gently."
+        },
+        {
+          "text": "He explained the diagnosis in simple native Malayalam rather than intimidating medical jargon.",
+          "meaningMl": "സങ്കീർണ്ണമായ ഇംഗ്ലീഷ് വാക്കുകൾക്ക് പകരം ലളിതമായ മലയാളത്തിലാണ് അദ്ദേഹം അസുഖത്തെക്കുറിച്ച് പറഞ്ഞു കൊടുത്തത്.",
+          "meaningHi": "उन्होंने जटिल शब्दों के बजाय सरल भाषा में बीमारी के बारे में समझाया।",
+          "meaningTa": "கடினமான மருத்துவச் சொற்களுக்குப் பதிலாக எளிய மொழியில் நோயைப் பற்றி விளக்கினார்.",
+          "audioPrompt": "He explained the diagnosis in simple native Malayalam rather than intimidating medical jargon."
+        },
+        {
+          "text": "He prescribed inexpensive herbal balms, warm compresses, and gentle stretching exercises for the recovery.",
+          "meaningMl": "ചെലവ് കുറഞ്ഞ തൈലങ്ങളും ചൂട് പിടിക്കലും ലളിതമായ വ്യായാമങ്ങളുമാണ് അദ്ദേഹം നിർദ്ദേശിച്ചത്.",
+          "meaningHi": "उन्होंने ठीक होने के लिए बाम, गर्म सेक और हल्के व्यायाम की सलाह दी।",
+          "meaningTa": "குணமடைய தைலங்கள், வெந்நீர் ஒத்தடம் மற்றும் எளிய பயிற்சிகளைப் பரிந்துரைத்தார்.",
+          "audioPrompt": "He prescribed inexpensive herbal balms, warm compresses, and gentle stretching exercises for the recovery."
+        },
+        {
+          "text": "A doctor's attentive ear and compassionate empathy heal half the illness before any medicine is swallowed.",
+          "meaningMl": "ഡോക്ടറുടെ ക്ഷമയോടെയുള്ള കേൾവിയും സ്നേഹത്തോടെയുള്ള സാന്ത്വനവും മരുന്ന് കഴിക്കുന്നതിന് മുൻപ് തന്നെ പകുതി അസുഖവും മാറ്റുന്നു.",
+          "meaningHi": "एक डॉक्टर की सहानुभूति किसी भी दवा से पहले आधी बीमारी को ठीक कर देती है।",
+          "meaningTa": "மருத்துவரின் அன்பான கவனிப்பும் ஆறுதலும் மருந்து சாப்பிடுவதற்கு முன்பே பாதி நோயைக் குணப்படுத்துகிறது.",
+          "audioPrompt": "A doctor's attentive ear and compassionate empathy heal half the illness before any medicine is swallowed."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where did Dr. Thomas run his wellness clinic?",
+            "ml": "ഡോ. തോമസ് എവിടെയാണ് തന്റെ ആതുരാലയം നടത്തിയിരുന്നത്?",
+            "hi": "डॉ. थॉमस अपना क्लिनिक कहाँ चलाते थे?",
+            "ta": "டாக்டர் தாமஸ் தன் மருத்துவமனையை எங்கு நடத்தினார்?"
+          },
+          "options": [
+            "In a big London hospital",
+            "In the misty highland hills of Wayanad",
+            "At Chennai central railway station",
+            "On a sailing yacht"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "In the misty highland hills of Wayanad.",
+            "ml": "വയനാട്ടിലെ മലയോരത്താണ് (Wayanad highland hills)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did Dr. Thomas explain the diagnosis to patients?",
+            "ml": "രോഗികളോട് അദ്ദേഹം അസുഖം എങ്ങനെയാണ് വിശദീകരിച്ചത്?",
+            "hi": "उन्होंने मरीजों को बीमारी कैसे समझाई?",
+            "ta": "நோயாளிகளுக்கு அவர் நோயை எப்படி விளக்கினார்?"
+          },
+          "options": [
+            "In confusing Greek words",
+            "In simple native Malayalam rather than intimidating medical jargon",
+            "Through loud shouting",
+            "By showing complex computer code"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "In simple native Malayalam.",
+            "ml": "ലളിതമായ മലയാളത്തിലാണ് (simple native Malayalam) അദ്ദേഹം പറഞ്ഞു കൊടുത്തത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What heals half the illness before medicine, according to the story?",
+            "ml": "കഥ പ്രകാരം മരുന്ന് കഴിക്കുന്നതിന് മുൻപ് തന്നെ പകുതി അസുഖം മാറ്റുന്നത് എന്താണ്?",
+            "hi": "कहानी के अनुसार दवा से पहले आधी बीमारी क्या ठीक करती है?",
+            "ta": "மருந்துக்கு முன்பே பாதி நோயைக் குணப்படுத்துவது எது?"
+          },
+          "options": [
+            "Expensive gold pills",
+            "A doctor's attentive ear and compassionate empathy",
+            "Sleeping all day",
+            "Cold water baths"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A doctor's attentive ear and compassionate empathy.",
+            "ml": "ഡോക്ടറുടെ ശ്രദ്ധയോടെയുള്ള കേൾവിയും സ്നേഹവുമാണ് (attentive ear and compassionate empathy)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d57_1",
-          "question": "Which word represents: 'പരിശോധിക്കുക'?",
+          "question": "Select the correct sentence describing duration of a symptom:",
           "options": [
-            "prepare",
-            "arrive",
-            "decide",
-            "examine"
+            "I have headache from three days.",
+            "I have been having this headache for three days.",
+            "I am having headache since three days.",
+            "Headache is paining me for three days."
           ],
-          "answer": "examine",
-          "explanation": "examine എന്നാൽ പരിശോധിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Actions or states continuing from the past to now take present perfect with 'for' (duration): 'I have had / have been having this headache for three days.'",
+          "ruleHint": "Duration Rule: have had / have been having + for [period]."
         },
         {
-          "id": "trap_d57_2",
-          "question": "What is the past form (V2) of 'suffer'?",
+          "question": "How do you describe a pulsing, rhythmic pain in the head?",
           "options": [
-            "suffers",
-            "suffering",
-            "has suffer",
-            "suffered"
+            "A jumping pain",
+            "A throbbing headache",
+            "A shouting pain",
+            "A dancing headache"
           ],
-          "answer": "suffered",
-          "explanation": "suffer ന്റെ ഭൂതകാല രൂപം suffered ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Throbbing' specifically describes pain with a pulsing, rhythmic beat.",
+          "ruleHint": "Medical Adjective: Throbbing pain."
         },
         {
-          "id": "trap_d57_3",
-          "question": "What is the correct English word for 'ലക്ഷണം'?",
+          "question": "What preposition goes with allergic: 'I am allergic ______ dust'?",
           "options": [
-            "symptom",
-            "progress",
-            "partner",
-            "station"
+            "with",
+            "to",
+            "from",
+            "at"
           ],
-          "answer": "symptom",
-          "explanation": "ലക്ഷണം എന്നാൽ ഇംഗ്ലീഷിൽ symptom."
+          "correctIndex": 1,
+          "explanation": "'Allergic' always pairs with the preposition 'to': 'I am allergic to dust / penicillin.'",
+          "ruleHint": "Preposition Collocation: allergic to [substance]."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 57 Gate Exam (5 Qs)",

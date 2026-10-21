@@ -22,112 +22,109 @@
     "totalCoinsReward": 124
   },
   "grammarRule": {
-    "formula": "Ellipsis and Substitution",
+    "formula": "May I speak with [Name]? / Could you please connect me to [Department]?",
     "explanation": {
-      "ml": "ഓഫീസ് ഫോൺ കോളുകൾ എന്ന വിഷയത്തിൽ May I speak with...? / May I ask who is calling? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use May I speak with...? / May I ask who is calling? correctly in spoken English."
+      "ml": "ഓഫീസിലോ സ്ഥാപനങ്ങളിലോ ഫോൺ വിളിക്കുമ്പോഴും എടുക്കുമ്പോഴും പാലിക്കേണ്ട മര്യാദകളും കൃത്യമായ ഇംഗ്ലീഷ് വാചകങ്ങളും. ആളുകളെ ബന്ധിപ്പിക്കാൻ 'Hold on a moment, please' എന്നും, സ്വയം പരിചയപ്പെടുത്താൻ 'This is [Name] calling from [Company]' എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Professional Telephone Etiquette & Connecting Calls with clear formula: May I speak with [Name]? / Could you please connect me to [Department]?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Could you connect me to HR?",
-      "en": "Golden Rule: Practice 'Could you connect me to HR?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഫോൺ ചെയ്യുമ്പോൾ 'I am John' എന്ന് പറയുന്നതിനേക്കാൾ സ്വാഭാവികവും ഔദ്യോഗികവുമായത് 'This is John calling' എന്ന് പറയുന്നതാണ്.",
+      "en": "Golden Tip: ഫോൺ ചെയ്യുമ്പോൾ 'I am John' എന്ന് പറയുന്നതിനേക്കാൾ സ്വാഭാവികവും ഔദ്യോഗികവുമായത് 'This is John calling' എന്ന് പറയുന്നതാണ്."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "connect",
-        "v2": "connected",
-        "v3": "connected",
+        "v1": "reiterate",
+        "v2": "reiterateed",
+        "v3": "reiterateed",
         "meaning": {
-          "ml": "ബന്ധിപ്പിക്കുക",
-          "hi": "ബന്ധിപ്പിക്കുക",
-          "ta": "ബന്ധിപ്പിക്കുക"
+          "ml": "ആവർത്തിച്ചു വ്യക്തമാക്കുക / വീണ്ടും പറയുക",
+          "hi": "दोहराना / स्पष्ट करना",
+          "ta": "வலியுறுத்திக் கூறு"
         },
-        "example": "Could you connect me to HR?",
-        "exampleMl": "ബന്ധിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "hold",
-        "v2": "held",
-        "v3": "held",
-        "meaning": {
-          "ml": "പിടിക്കുക",
-          "hi": "पकड़ना",
-          "ta": "பிடி"
-        },
-        "example": "Please hold the line.",
-        "exampleMl": "ഹോൾഡ് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "transfer",
-        "v2": "transferred",
-        "v3": "transferred",
-        "meaning": {
-          "ml": "കൈമാറുക",
-          "hi": "കൈമാറുക",
-          "ta": "കൈമാറുക"
-        },
-        "example": "I will transfer your call.",
-        "exampleMl": "കൈമാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "call back",
-        "v2": "called back",
-        "v3": "called back",
-        "meaning": {
-          "ml": "തിരികെ വിളിക്കുക",
-          "hi": "തിരികെ വിളിക്കുക",
-          "ta": "തിരികെ വിളിക്കുക"
-        },
-        "example": "I will call you back shortly.",
-        "exampleMl": "തിരികെ വിളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Let me reiterate the key deliverables agreed upon during today's call.",
+        "exampleMl": "Say something again or a number of times, typically for emphasis or clarity."
       }
     ],
     "nouns": [
       {
-        "word": "call",
+        "word": "Extension",
+        "partOfSpeech": "noun",
+        "definition": "An additional telephone connected to the main line, typically one in a specific room or desk.",
         "meaning": {
-          "ml": "കോൾ",
-          "hi": "കോൾ",
-          "ta": "കോൾ"
+          "ml": "ഫോൺ എക്സ്റ്റൻഷൻ നമ്പർ / അനുബന്ധ നമ്പർ",
+          "hi": "एक्सटेंशन नंबर / आंतरिक फोन लाइन",
+          "ta": "உள் தொலைபேசி இணைப்பு",
+          "te": "ఎక్స్‌టెన్షన్ నంబర్",
+          "kn": "ಆಂತರಿಕ ದೂರವಾಣಿ ಸಂಖ್ಯೆ"
         },
-        "example": "We learned about call in today's lesson."
+        "example": "If you know your party's four-digit extension, dial it immediately."
       },
       {
-        "word": "line",
+        "word": "Teleconference",
+        "partOfSpeech": "noun",
+        "definition": "A conference with participants in different locations linked by telecommunication devices.",
         "meaning": {
-          "ml": "ലൈൻ",
-          "hi": "ലൈൻ",
-          "ta": "ലൈൻ"
+          "ml": "ടെലികോൺഫറൻസ് / ഫോൺ വഴിയുള്ള ചർച്ച",
+          "hi": "दूरसंचार सम्मेलन",
+          "ta": "தொலைத்தொடர்பு மாநாடு",
+          "te": "టెలికాన్ఫరెన్స్",
+          "kn": "ದೂರಸಂಪರ್ಕ ಸಮ್ಮೇಳನ"
         },
-        "example": "We learned about line in today's lesson."
+        "example": "The regional managers connected via an encrypted teleconference bridge."
       },
       {
-        "word": "reception",
+        "word": "Recipient",
+        "partOfSpeech": "noun",
+        "definition": "A person or thing that receives or is awarded something.",
         "meaning": {
-          "ml": "റിസപ്ഷൻ",
-          "hi": "റിസപ്ഷൻ",
-          "ta": "റിസപ്ഷൻ"
+          "ml": "സ്വീകർത്താവ് / സന്ദേശം ലഭിക്കുന്നയാൾ",
+          "hi": "प्राप्तकर्ता",
+          "ta": "பெறுநர்",
+          "te": "గ్రహీత",
+          "kn": "ಸ್ವೀಕರಿಸುವವರು"
         },
-        "example": "We learned about reception in today's lesson."
+        "example": "The courier verified the recipient's signature before releasing the parcel."
       },
       {
-        "word": "message",
+        "word": "Courteous",
+        "partOfSpeech": "adjective",
+        "definition": "Polite, respectful, or considerate in manner.",
         "meaning": {
-          "ml": "മെസ്സേജ്",
-          "hi": "മെസ്സേജ്",
-          "ta": "മെസ്സേജ്"
+          "ml": "വിനയമുള്ള / മര്യാദയുള്ള",
+          "hi": "विनम्र / शिष्ट",
+          "ta": "பணிவான / மரியாதையான",
+          "te": "మర్యాదపూర్వకమైన",
+          "kn": "ವಿನಯಶೀಲ"
         },
-        "example": "We learned about message in today's lesson."
+        "example": "The reception executive answered incoming calls with a courteous and calm tone."
       },
       {
-        "word": "contact",
+        "word": "Intercom",
+        "partOfSpeech": "noun",
+        "definition": "An electrical device allowing one-way or two-way communication, typically within an office or apartment block.",
         "meaning": {
-          "ml": "കോൺടാക്ട്",
-          "hi": "കോൺടാക്ട്",
-          "ta": "കോൺടാക്ട്"
+          "ml": "ഇന്റർകോം / ഓഫീസ് ഫോൺ",
+          "hi": "इंटरकॉम",
+          "ta": "உள் தொடர்பு சாதனம்",
+          "te": "ఇంటర్‌కామ్",
+          "kn": "ಇಂಟರ್‌ಕಾಮ್"
         },
-        "example": "We learned about contact in today's lesson."
+        "example": "She buzzed the security gate via the apartment intercom system."
+      },
+      {
+        "word": "Reiterate",
+        "partOfSpeech": "verb",
+        "definition": "Say something again or a number of times, typically for emphasis or clarity.",
+        "meaning": {
+          "ml": "ആവർത്തിച്ചു വ്യക്തമാക്കുക / വീണ്ടും പറയുക",
+          "hi": "दोहराना / स्पष्ट करना",
+          "ta": "வலியுறுத்திக் கூறு",
+          "te": "పునరుద్ఘాటించు",
+          "kn": "ಪುನರುಚ್ಚರಿಸು"
+        },
+        "example": "Let me reiterate the key deliverables agreed upon during today's call."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Professional Telephone Etiquette",
-        "ml": "പാഠം: ഓഫീസ് ഫോൺ കോളുകൾ"
+        "en": "Concept Room: Professional Telephone Etiquette & Connecting Calls",
+        "ml": "പാഠം: ഔദ്യോഗിക ഫോൺ സംഭാഷണങ്ങൾ (May I speak with...)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "May I speak with [Name]? / Could you please connect me to [Department]?",
+        "ml": "ഓഫീസിലോ സ്ഥാപനങ്ങളിലോ ഫോൺ വിളിക്കുമ്പോഴും എടുക്കുമ്പോഴും പാലിക്കേണ്ട മര്യാദകളും കൃത്യമായ ഇംഗ്ലീഷ് വാചകങ്ങളും. ആളുകളെ ബന്ധിപ്പിക്കാൻ 'Hold on a moment, please' എന്നും, സ്വയം പരിചയപ്പെടുത്താൻ 'This is [Name] calling from [Company]' എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Could you connect me to HR?",
-        "Please hold the line.",
-        "I will transfer your call."
+        "Good morning , this is Rahul calling from the logistics operations division .",
+        "May I please speak with Ms . Anita in the accounts department ?",
+        "Could you kindly hold the line while I transfer your call to her extension ?",
+        "I am afraid her line is currently engaged with another overseas client .",
+        "Would you like me to connect you to her personal voicemail box ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Professional Telephone Etiquette",
-        "ml": "റീഡിങ് റൂം: ഓഫീസ് ഫോൺ കോളുകൾ"
+        "en": "Reading Room: The Voice of the Organization",
+        "ml": "റീഡിങ് റൂം: ഔദ്യോഗിക ഫോൺ സംഭാഷണങ്ങൾ (May I speak with...)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Could you connect me to HR?",
-          "meaningMl": "ബന്ധിപ്പിക്കുക - Could you connect me to HR?",
-          "audioPrompt": "Could you connect me to HR?"
+          "text": "Executive telephone operator Sunita has served as the frontline voice of the international consulate for twenty-two years.",
+          "meaningMl": "എക്സിക്യൂട്ടീവ് ടെലിഫോൺ ഓപ്പറേറ്റർ സുനിത ഇരുപത്തിരണ്ട് വർഷമായി അന്താരാഷ്ട്ര കോൺസുലേറ്റിന്റെ മുൻനിര ശബ്ദമായി പ്രവർത്തിക്കുന്നു.",
+          "meaningHi": "सुनीता बाईस वर्षों से अंतरराष्ट्रीय वाणिज्य दूतावास की मुख्य ऑपरेटर हैं।",
+          "meaningTa": "சுனிதா இருபத்திரண்டு ஆண்டுகளாக தூதரகத்தின் தலைமை தொலைபேசி இயக்குநராகப் பணியாற்றி வருகிறார்.",
+          "audioPrompt": "Executive telephone operator Sunita has served as the frontline voice of the international consulate for twenty-two years."
         },
         {
-          "text": "Please hold the line.",
-          "meaningMl": "ഹോൾഡ് ചെയ്യുക - Please hold the line.",
-          "audioPrompt": "Please hold the line."
+          "text": "Every morning, she handles hundreds of incoming inquiries with immaculate linguistic clarity and serene composure.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ, കുറ്റമറ്റ ഭാഷാ വ്യക്തതയോടെയും ശാന്തതയോടെയും അവൾ നൂറുകണക്കിന് ഫോൺ കോളുകൾ കൈകാര്യം ചെയ്യുന്നു.",
+          "meaningHi": "हर सुबह, वह स्पष्टता और शांति के साथ सैकड़ों फोन कॉल संभालती हैं।",
+          "meaningTa": "ஒவ்வொரு காலையிலும் அமைதியாகவும் தெளிவாகவும் நூற்றுக்கணக்கான அழைப்புகளை அவர் கையாள்கிறார்.",
+          "audioPrompt": "Every morning, she handles hundreds of incoming inquiries with immaculate linguistic clarity and serene composure."
         },
         {
-          "text": "Daily practice of Professional Telephone Etiquette gives you great confidence in English.",
-          "meaningMl": "ഓഫീസ് ഫോൺ കോളുകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Professional Telephone Etiquette gives you great confidence in English."
+          "text": "Whether an overseas ambassador calls or an anxious student seeks urgent passport renewal, her tone remains unfailingly courteous.",
+          "meaningMl": "ഒരു വിദേശ അംബാസഡർ വിളിച്ചാലും അല്ലെങ്കിൽ പാസ്‌പോർട്ട് പുതുക്കാൻ ആഗ്രഹിക്കുന്ന ഒരു വിദ്യാർത്ഥി വിളിച്ചാലും, അവളുടെ സമീപനം തുല്യ മര്യാദയുള്ളതാണ്.",
+          "meaningHi": "चाहे राजदूत का फोन हो या छात्र का, उनका लहजा हमेशा विनम्र रहता है।",
+          "meaningTa": "தூதர் அழைத்தாலும் மாணவர் அழைத்தாலும் அவரது குரல் எப்போதும் பணிவாகவே இருக்கும்.",
+          "audioPrompt": "Whether an overseas ambassador calls or an anxious student seeks urgent passport renewal, her tone remains unfailingly courteous."
+        },
+        {
+          "text": "She memorized the extensions of ninety internal departments to transfer high-priority calls without putting callers on long hold.",
+          "meaningMl": "വിളിക്കുന്നവരെ കൂടുതൽ സമയം കാത്തുനിർത്താതെ ഉയർന്ന പ്രാധാന്യമുള്ള കോളുകൾ കൈമാറാൻ തൊണ്ണൂറ് വകുപ്പുകളുടെ എക്സ്റ്റൻഷൻ നമ്പറുകൾ അവൾ മനഃപാഠമാക്കി.",
+          "meaningHi": "उन्होंने कॉलों को तुरंत ट्रांसफर करने के लिए नब्बे विभागों के नंबर याद कर लिए हैं।",
+          "meaningTa": "அழைப்பாளர்களை காத்திருக்க வைக்காமல் இணைக்க தொண்ணூறு எண்களை மனப்பாடம் செய்துள்ளார்.",
+          "audioPrompt": "She memorized the extensions of ninety internal departments to transfer high-priority calls without putting callers on long hold."
+        },
+        {
+          "text": "During international crisis evacuations, her steady composure guided panicked citizens to emergency rescue hotlines.",
+          "meaningMl": "അന്താരാഷ്ട്ര പ്രതിസന്ധികളിലും ഒഴിപ്പിക്കൽ സമയങ്ങളിലും, അവളുടെ സമചിത്തത പരിഭ്രാന്തരായ പൗരന്മാരെ എമർജൻസി ഹോട്ട്ലൈനുകളിലേക്ക് നയിച്ചു.",
+          "meaningHi": "संकट के दौरान, उनके धैर्य ने नागरिकों को आपातकालीन हेल्पलाइन से जोड़ा।",
+          "meaningTa": "நெருக்கடி காலங்களில், அவரது அமைதியான வழிகாட்டல் குடிமக்களை அவசர உதவிக்கு அனுப்பியது.",
+          "audioPrompt": "During international crisis evacuations, her steady composure guided panicked citizens to emergency rescue hotlines."
+        },
+        {
+          "text": "Sunita demonstrates daily that genuine human warmth over a phone line can dissolve distress and foster international goodwill.",
+          "meaningMl": "ഫോണിലൂടെയുള്ള ഒരു നല്ല പെരുമാറ്റത്തിന് ഏത് പ്രയാസത്തെയും ഇല്ലാതാക്കാനും സൗഹൃദം വളർത്താനും കഴിയുമെന്ന് സുനിത തെളിയിക്കുന്നു.",
+          "meaningHi": "सुनीता साबित करती हैं कि फोन पर मानवीय गर्मजोशी तनाव को दूर कर सद्भावना को बढ़ाती है।",
+          "meaningTa": "தொலைபேசியில் கனிவான பேச்சு மன அழுத்தத்தைப் போக்கி நல்லெண்ணத்தை வளர்க்கும் என்பதை சுனிதா உணர்த்துகிறார்.",
+          "audioPrompt": "Sunita demonstrates daily that genuine human warmth over a phone line can dissolve distress and foster international goodwill."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "For how many years has Sunita served as the frontline voice of the consulate?",
+            "ml": "സുനിത എത്ര വർഷമായി കോൺസുലേറ്റിൽ പ്രവർത്തിക്കുന്നു?",
+            "hi": "सुनीता कितने वर्षों से काम कर रही हैं?",
+            "ta": "சுனிதா எத்தனை ஆண்டுகளாகப் பணியாற்றுகிறார்?"
+          },
+          "options": [
+            "Two months",
+            "Twenty-two years",
+            "Ten years",
+            "Five years"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "For twenty-two years.",
+            "ml": "22 വർഷമായി (Twenty-two years)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How many department extensions did she memorize to expedite call transfers?",
+            "ml": "കോൾ കൈമാറാൻ എത്ര വകുപ്പുകളുടെ നമ്പറുകളാണ് അവൾ മനഃപാഠമാക്കിയത്?",
+            "hi": "उन्होंने कितने विभागों के नंबर याद किए हैं?",
+            "ta": "எத்தனை துறை எண்களை அவர் மனப்பாடம் செய்தார்?"
+          },
+          "options": [
+            "Five",
+            "Ninety internal departments",
+            "One",
+            "A thousand"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Extensions of ninety internal departments.",
+            "ml": "90 വകുപ്പുകളുടെ നമ്പറുകൾ (ninety internal departments)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did her steady composure help accomplish during international evacuations?",
+            "ml": "അന്താരാഷ്ട്ര ഒഴിപ്പിക്കലുകളിൽ അവളുടെ സമചിത്തത സഹായിച്ചത് എന്തിനാണ്?",
+            "hi": "संकट में उनके धैर्य ने क्या करने में मदद की?",
+            "ta": "நெருக்கடி காலங்களில் அவரது அமைதி எதற்கு உதவியது?"
+          },
+          "options": [
+            "Guided panicked citizens to emergency rescue hotlines",
+            "Ordered fast food delivery",
+            "Canceled all flights",
+            "Closed the main gate"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Guided panicked citizens to emergency hotlines.",
+            "ml": "ജനങ്ങളെ എമർജൻസി ഹോട്ട്ലൈനുകളിലേക്ക് നയിച്ചു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d74_1",
-          "question": "Which word represents: 'ബന്ധിപ്പിക്കുക'?",
+          "id": 1,
+          "question": "When answering an incoming business telephone call, which introduction is most professional?",
           "options": [
-            "create",
-            "remember",
-            "discover",
-            "connect"
+            "Yeah, who is this?",
+            "Good morning, Apex Solutions, this is Maya speaking. How may I help you?",
+            "Hello, I am Maya from Apex, what do you want?",
+            "Speak up, I am busy."
           ],
-          "answer": "connect",
-          "explanation": "connect എന്നാൽ ബന്ധിപ്പിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "ഓഫീസിൽ കോൾ എടുക്കുമ്പോൾ സ്ഥാപനത്തിന്റെ പേര്, സ്വന്തം പേര്, അഭിവാദ്യം എന്നിവ ഉൾപ്പെടുന്നതാണ് മാന്യമായ രീതി ('Good morning, Apex Solutions, this is Maya speaking...')."
         },
         {
-          "id": "trap_d74_2",
-          "question": "What is the past form (V2) of 'hold'?",
+          "id": 2,
+          "question": "When calling someone for business, how should you introduce yourself?",
           "options": [
-            "holding",
-            "held",
-            "has hold",
-            "holds"
+            "Myself John calling.",
+            "This is John calling from Vertex Systems.",
+            "I am called John.",
+            "John is here on the call."
           ],
-          "answer": "held",
-          "explanation": "hold ന്റെ ഭൂതകാല രൂപം held ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "ഫോൺ ചെയ്യുമ്പോൾ 'This is [Name] calling from [Company]' എന്ന് പറയുന്നതാണ് സ്വാഭാവിക ഇംഗ്ലീഷ്. 'Myself John' എന്നത് വ്യാകരണ തെറ്റാണ്."
         },
         {
-          "id": "trap_d74_3",
-          "question": "What is the correct English word for 'കോൾ'?",
+          "id": 3,
+          "question": "What does 'hold the line' mean?",
           "options": [
-            "routine",
-            "knowledge",
-            "call",
-            "schedule"
+            "Hang up the phone immediately.",
+            "Wait on the phone without disconnecting.",
+            "Cut the phone wire.",
+            "Call back tomorrow."
           ],
-          "answer": "call",
-          "explanation": "കോൾ എന്നാൽ ഇംഗ്ലീഷിൽ call."
+          "correctIndex": 1,
+          "explanationMl": "'Hold the line' എന്നാൽ ഫോൺ കട്ട് ചെയ്യാതെ ലൈനിൽ കാത്തിരിക്കുക (Wait without hanging up) എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 74 Gate Exam (5 Qs)",

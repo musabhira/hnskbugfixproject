@@ -22,112 +22,96 @@
     "totalCoinsReward": 122
   },
   "grammarRule": {
-    "formula": "Cleft Sentences",
+    "formula": "Subject + must be + Adjective/Noun (95% Sure Yes) | can't be (95% Sure No)",
     "explanation": {
-      "ml": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be) എന്ന വിഷയത്തിൽ Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) correctly in spoken English."
+      "ml": "ലഭ്യമായ തെളിവുകളുടെ അടിസ്ഥാനത്തിൽ ഒരു കാര്യം തീർച്ചയായും സത്യമായിരിക്കും എന്ന് ഉറപ്പിച്ചു പറയാൻ 'must be' എന്നും, ഒരിക്കലും സത്യമാകാൻ വഴിയില്ലെന്ന് പറയാൻ 'can't be' എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Modals of Deduction: Must be vs Can't be with clear formula: Subject + must be + Adjective/Noun (95% Sure Yes) | can't be (95% Sure No)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: He must be tired after work.",
-      "en": "Golden Rule: Practice 'He must be tired after work.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Must be = തീർച്ചയായും ആയിരിക്കും (Sure it is true). Can't be = ഒരിക്കലും ആകില്ല (Impossible).",
+      "en": "Golden Tip: Must be = തീർച്ചയായും ആയിരിക്കും (Sure it is true). Can't be = ഒരിക്കലും ആകില്ല (Impossible)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "be",
-        "v2": "was",
-        "v3": "been",
-        "meaning": {
-          "ml": "ആയിരിക്കുക",
-          "hi": "होना",
-          "ta": "இரு"
-        },
-        "example": "He must be tired after work.",
-        "exampleMl": "ആയിരിക്കും എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "joke",
-        "v2": "joked",
-        "v3": "joked",
-        "meaning": {
-          "ml": "തമാശ പറയുക",
-          "hi": "തമാശ പറയുക",
-          "ta": "തമാശ പറയുക"
-        },
-        "example": "You can't be serious; it must be a joke.",
-        "exampleMl": "തമാശ പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "lie",
-        "v2": "lied",
-        "v3": "lied",
-        "meaning": {
-          "ml": "നുണ പറയുക",
-          "hi": "നുണ പറയുക",
-          "ta": "നുണ പറയുക"
-        },
-        "example": "She can't be lying.",
-        "exampleMl": "നുണ പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "know",
-        "v2": "knew",
-        "v3": "known",
-        "meaning": {
-          "ml": "അറിയുക",
-          "hi": "जानना",
-          "ta": "அறி / தெரி"
-        },
-        "example": "He must know the truth.",
-        "exampleMl": "അറിയുമായിരിക്കും എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "logic",
+        "word": "Inevitable",
+        "partOfSpeech": "adjective",
+        "definition": "Certain to happen; unavoidable.",
         "meaning": {
-          "ml": "യുക്തി",
-          "hi": "യുക്തി",
-          "ta": "യുക്തി"
+          "ml": "ഒഴിവാക്കാനാവാത്ത / സംഭവിക്കാതിരിക്കാൻ കഴിയാത്ത",
+          "hi": "अपरिहार्य / अनिवार्य",
+          "ta": "தவிர்க்க முடியாத",
+          "te": "అనివార్యమైన",
+          "kn": "ಅನಿವಾರ್ಯ"
         },
-        "example": "We learned about logic in today's lesson."
+        "example": "With rapid industrialization, technological change became inevitable."
       },
       {
-        "word": "deduction",
+        "word": "Deduction",
+        "partOfSpeech": "noun",
+        "definition": "The action of deducting or subtracting something, or the inference of particular instances by reference to a general law.",
         "meaning": {
-          "ml": "നിഗമനം",
-          "hi": "നിഗമനം",
-          "ta": "നിഗമനം"
+          "ml": "യുക്തിപരമായ നിഗമനം",
+          "hi": "निगमन / निष्कर्ष",
+          "ta": "அனுமானம் / துப்பறிதல்",
+          "te": "తార్కిక ముగింపు",
+          "kn": "ತಾರ್ಕಿಕ ತೀರ್ಮಾನ"
         },
-        "example": "We learned about deduction in today's lesson."
+        "example": "Sherlock Holmes solved mysterious criminal cases through brilliant logical deduction."
       },
       {
-        "word": "fact",
+        "word": "Conclusive",
+        "partOfSpeech": "adjective",
+        "definition": "Serving to settle an issue; convincing or decisive.",
         "meaning": {
-          "ml": "സത്യം",
-          "hi": "സത്യം",
-          "ta": "സത്യം"
+          "ml": "നിർണ്ണായകമായ / അനിഷേധ്യമായ തെളിവുള്ള",
+          "hi": "निर्णायक",
+          "ta": "முடிவான / உறுதியான",
+          "te": "నిర్ణయాత్మక",
+          "kn": "ನಿರ್ಣಾಯಕ"
         },
-        "example": "We learned about fact in today's lesson."
+        "example": "DNA fingerprint matching provided conclusive proof in the court trial."
       },
       {
-        "word": "truth",
+        "word": "Authentic",
+        "partOfSpeech": "adjective",
+        "definition": "Of undisputed origin; genuine.",
         "meaning": {
-          "ml": "സത്യം",
-          "hi": "സത്യം",
-          "ta": "സത്യം"
+          "ml": "യഥാർത്ഥമായ / വിശ്വസനീയമായ",
+          "hi": "प्रामाणिक / असली",
+          "ta": "உண்மையான",
+          "te": "నిజమైన / ప్రామాణిక",
+          "kn": "ಅಧಿಕೃತ / ಅಸಲಿ"
         },
-        "example": "We learned about truth in today's lesson."
+        "example": "The antique gallery confirmed that the seventeenth-century bronze coin is authentic."
       },
       {
-        "word": "proof",
+        "word": "Counterfeit",
+        "partOfSpeech": "adjective",
+        "definition": "Made in exact imitation of something valuable with the intention to deceive or defraud.",
         "meaning": {
-          "ml": "തെളിവ്",
-          "hi": "തെളിവ്",
-          "ta": "തെളിവ്"
+          "ml": "വ്യാജമായ / കള്ള",
+          "hi": "नकली / जाली",
+          "ta": "போலி",
+          "te": "నకిలీ",
+          "kn": "ನಕಲಿ"
         },
-        "example": "We learned about proof in today's lesson."
+        "example": "Customs authorities seized thousands of counterfeit designer wristwatches at the border."
+      },
+      {
+        "word": "Evidence",
+        "partOfSpeech": "noun",
+        "definition": "The available body of facts or information indicating whether a belief or proposition is true or valid.",
+        "meaning": {
+          "ml": "തെളിവ് / സാക്ഷ്യം",
+          "hi": "सबूत / साक्ष्य",
+          "ta": "சான்று / ஆதாரம்",
+          "te": "సాక్ష్యము",
+          "kn": "ಸಾಕ್ಷ್ಯ"
+        },
+        "example": "The archeologist uncovered compelling physical evidence of an ancient river civilization."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Logical Deductions: Must be vs Can't be",
-        "ml": "പാഠം: യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be)"
+        "en": "Concept Room: Modals of Deduction: Must be vs Can't be",
+        "ml": "പാഠം: യുക്തിസഹമായ നിഗമനങ്ങൾ (Must be vs Can't be)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + must be + Adjective/Noun (95% Sure Yes) | can't be (95% Sure No)",
+        "ml": "ലഭ്യമായ തെളിവുകളുടെ അടിസ്ഥാനത്തിൽ ഒരു കാര്യം തീർച്ചയായും സത്യമായിരിക്കും എന്ന് ഉറപ്പിച്ചു പറയാൻ 'must be' എന്നും, ഒരിക്കലും സത്യമാകാൻ വഴിയില്ലെന്ന് പറയാൻ 'can't be' എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "He must be tired after work.",
-        "You can't be serious; it must be a joke.",
-        "She can't be lying."
+        "He worked an eighteen hour shift without sleep , so he must be completely fatigued .",
+        "That luxury sports car can't be his because he just started his internship yesterday .",
+        "The museum lights are still shining brightly , so the curators must still be inside .",
+        "This signature can't be authentic because the ink formula was only invented in the nineteenth century .",
+        "She has won five consecutive gold medals , so she must be an exceptionally gifted athlete ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Logical Deductions: Must be vs Can't be",
-        "ml": "റീഡിങ് റൂം: യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be)"
+        "en": "Reading Room: The Mystery of the Sanskrit Manuscript",
+        "ml": "റീഡിങ് റൂം: യുക്തിസഹമായ നിഗമനങ്ങൾ (Must be vs Can't be)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "He must be tired after work.",
-          "meaningMl": "ആയിരിക്കും - He must be tired after work.",
-          "audioPrompt": "He must be tired after work."
+          "text": "Epigraphist Dr. Shanti examined a brittle birch-bark manuscript discovered inside a mountain cave in Ladakh.",
+          "meaningMl": "ലഡാക്കിലെ ഒരു മലമുകളിലെ ഗുഹയിൽ നിന്ന് കണ്ടെത്തിയ പുരാതന ബിർച്ച് മരത്തൊലിയിലെ കൈയെഴുത്തുപ്രതി എപ്പിഗ്രാഫിസ്റ്റ് ഡോ. ശാന്തി പരിശോധിച്ചു.",
+          "meaningHi": "पुरालेखवेत्ता डॉ. शांति ने लद्दाख की गुफा से मिली प्राचीन पांडुलिपि की जांच की।",
+          "meaningTa": "கல்வெட்டு ஆய்வாளர் டாக்டர் சாந்தி லடாக்கில் கண்டுபிடிக்கப்பட்ட பழங்கால ஓலைச்சுவடியை ஆய்வு செய்தார்.",
+          "audioPrompt": "Epigraphist Dr. Shanti examined a brittle birch-bark manuscript discovered inside a mountain cave in Ladakh."
         },
         {
-          "text": "You can't be serious; it must be a joke.",
-          "meaningMl": "തമാശ പറയുക - You can't be serious; it must be a joke.",
-          "audioPrompt": "You can't be serious; it must be a joke."
+          "text": "The intricate calligraphic script featured archaic Brahmi vowel ligatures, so it must be at least fifteen hundred years old.",
+          "meaningMl": "പുരാതന ബ്രാഹ്മി ലിപിയിലുള്ള സങ്കീർണ്ണമായ അക്ഷരങ്ങൾ ഉള്ളതിനാൽ, ഇതിന് കുറഞ്ഞത് ആയിരത്തിയഞ്ഞൂറ് വർഷമെങ്കിലും പഴക്കമുണ്ടാകണം.",
+          "meaningHi": "दुर्लभ ब्राह्मी लिपि होने के कारण यह पांडुलिपि कम से कम पंद्रह सौ साल पुरानी होनी चाहिए।",
+          "meaningTa": "பழங்கால பிராமி எழுத்துக்கள் இருப்பதால், இது குறைந்தது ஆயிரத்து ஐந்நூறு ஆண்டுகள் பழமையானதாக இருக்க வேண்டும்.",
+          "audioPrompt": "The intricate calligraphic script featured archaic Brahmi vowel ligatures, so it must be at least fifteen hundred years old."
         },
         {
-          "text": "Daily practice of Logical Deductions: Must be vs Can't be gives you great confidence in English.",
-          "meaningMl": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Logical Deductions: Must be vs Can't be gives you great confidence in English."
+          "text": "One visiting amateur claimed that the text described modern steam locomotives, which can't be true because trains did not exist then.",
+          "meaningMl": "ഇതിൽ ആധുനിക സ്റ്റീം എഞ്ചിനുകളെക്കുറിച്ച് പറയുന്നുണ്ടെന്ന് ഒരു സന്ദർശകൻ വാദിച്ചു, എന്നാൽ ട്രെയിനുകൾ അക്കാലത്ത് ഇല്ലാത്തതിനാൽ അത് ഒരിക്കലും സത്യമാകാൻ വഴിയില്ല.",
+          "meaningHi": "एक आगंतुक ने दावा किया कि इसमें रेलगाड़ियों का वर्णन है, जो सच नहीं हो सकता क्योंकि तब ट्रेनें नहीं थीं।",
+          "meaningTa": "ரயில் பற்றி இதில் உள்ளதாக ஒருவர் கூறினார், அக்காலத்தில் ரயில்கள் இல்லாததால் அது உண்மையாக இருக்க முடியாது.",
+          "audioPrompt": "One visiting amateur claimed that the text described modern steam locomotives, which can't be true because trains did not exist then."
+        },
+        {
+          "text": "Radiocarbon testing on the natural organic pigments provided conclusive corroboration of fourth-century origins.",
+          "meaningMl": "പ്രകൃതിദത്ത ചായങ്ങളുടെ കാർബൺ ഡേറ്റിംഗ് പരിശോധന നാലാം നൂറ്റാണ്ടിലെ ഉത്ഭവത്തിന് അനിഷേധ്യമായ തെളിവ് നൽകി.",
+          "meaningHi": "कार्बन डेटिंग ने इसके चौथी शताब्दी का होने का निर्णायक प्रमाण दिया।",
+          "meaningTa": "கார்பன் பரிசோதனை இது நான்காம் நூற்றாண்டைச் சேர்ந்தது என்பதற்கான ஆதாரத்தை அளித்தது.",
+          "audioPrompt": "Radiocarbon testing on the natural organic pigments provided conclusive corroboration of fourth-century origins."
+        },
+        {
+          "text": "The preserved botanical treatises contained sophisticated Ayurvedic medicinal formulas for curing respiratory ailments.",
+          "meaningMl": "സംരക്ഷിക്കപ്പെട്ട സസ്യശാസ്ത്ര കൃതികളിൽ ശ്വാസകോശ രോഗങ്ങൾ സുഖപ്പെടുത്തുന്നതിനുള്ള വിപുലമായ ആയുർവേദ ചികിത്സാ രീതികൾ അടങ്ങിയിരുന്നു.",
+          "meaningHi": "इसमें सांस की बीमारियों को ठीक करने के आयुर्वेदिक उपचार सूत्र शामिल थे।",
+          "meaningTa": "இதில் சுவாச நோய்களைக் குணப்படுத்தும் ஆயுர்வேத மருத்துவ குறிப்புகள் இருந்தன.",
+          "audioPrompt": "The preserved botanical treatises contained sophisticated Ayurvedic medicinal formulas for curing respiratory ailments."
+        },
+        {
+          "text": "Through patient deduction and rigorous material analysis, Shanti authenticated a magnificent treasure of human heritage.",
+          "meaningMl": "ക്ഷമയോടെയുള്ള നിഗമനങ്ങളിലൂടെയും ആഴത്തിലുള്ള ശാസ്ത്രീയ പരിശോധനയിലൂടെയും ശാന്തി മനുഷ്യ പൈതൃകത്തിന്റെ ഒരു മഹാ നിധിയെ സാക്ഷ്യപ്പെടുത്തി.",
+          "meaningHi": "धैर्यपूर्ण कटौती और विश्लेषण के माध्यम से, शांति ने मानव विरासत के खजाने को प्रमाणित किया।",
+          "meaningTa": "பொறுமையான அனுமானம் மற்றும் அறிவியல் பகுப்பாய்வு மூலம், சாந்தி ஒரு வரலாற்றுப் பொக்கிஷத்தை மெய்ப்பித்தார்.",
+          "audioPrompt": "Through patient deduction and rigorous material analysis, Shanti authenticated a magnificent treasure of human heritage."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where was the birch-bark manuscript discovered?",
+            "ml": "കൈയെഴുത്തുപ്രതി എവിടെ നിന്നാണ് കണ്ടെത്തിയത്?",
+            "hi": "पांडुलिपि कहां से मिली थी?",
+            "ta": "ஓலைச்சுவடி எங்கு கண்டுபிடிக்கப்பட்டது?"
+          },
+          "options": [
+            "Inside a modern bank vault",
+            "Inside a mountain cave in Ladakh",
+            "At an underwater coral reef",
+            "In an office drawer"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Inside a mountain cave in Ladakh.",
+            "ml": "ലഡാക്കിലെ ഒരു ഗുഹയിൽ നിന്ന് (cave in Ladakh)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Why can't the claim about steam locomotives be true?",
+            "ml": "സ്റ്റീം ട്രെയിനുകളെക്കുറിച്ചുള്ള അവകാശവാദം സത്യമാകാൻ വഴിയില്ലെന്ന് പറയാൻ കാരണം എന്താണ്?",
+            "hi": "ट्रेनों वाला दावा सच क्यों नहीं हो सकता?",
+            "ta": "ரயில் பற்றிய கூற்று ஏன் உண்மையாக இருக்க முடியாது?"
+          },
+          "options": [
+            "Because steam engines were not invented until many centuries later",
+            "Because the manuscript was written in French",
+            "Because the cave was too cold",
+            "Because paper did not exist"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Steam engines did not exist fifteen hundred years ago.",
+            "ml": "അക്കാലത്ത് സ്റ്റീം എഞ്ചിനുകൾ കണ്ടുപിടിച്ചിരുന്നില്ല."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did radiocarbon testing confirm about the manuscript's origins?",
+            "ml": "റേഡിയോ കാർബൺ പരിശോധന സ്ഥിരീകരിച്ചത് എന്താണ്?",
+            "hi": "कार्बन डेटिंग ने क्या पुष्टि की?",
+            "ta": "கார்பன் பரிசோதனை எதை உறுதிப்படுத்தியது?"
+          },
+          "options": [
+            "It was created last week",
+            "Fourth-century origins",
+            "It was completely artificial plastic",
+            "It belonged to the twenty-first century"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Conclusive corroboration of fourth-century origins.",
+            "ml": "നാലാം നൂറ്റാണ്ടിലെ ഉത്ഭവം (Fourth-century origins)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d72_1",
-          "question": "Which word represents: 'ആയിരിക്കുക'?",
+          "id": 1,
+          "question": "You see someone wearing a heavy wool coat, shivering in the snow. What is the logical deduction?",
           "options": [
-            "create",
-            "listen",
-            "forget",
-            "be"
+            "He must be cold.",
+            "He can't be cold.",
+            "He might be sweating.",
+            "He should be warm."
           ],
-          "answer": "be",
-          "explanation": "be എന്നാൽ ആയിരിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "മഞ്ഞിൽ വിറയ്ക്കുന്ന ഒരാളെ കാണുമ്പോൾ അദ്ദേഹം തീർച്ചയായും തണുപ്പ് അനുഭവിക്കുന്നുണ്ടാകും എന്ന് ഉറപ്പിക്കാൻ 'He must be cold' ഉപയോഗിക്കുന്നു."
         },
         {
-          "id": "trap_d72_2",
-          "question": "What is the past form (V2) of 'joke'?",
+          "id": 2,
+          "question": "John has lived in London his entire life and speaks with a Cockney accent. Someone says: 'John can't speak English.' What is the correct deduction?",
           "options": [
-            "joked",
-            "jokeing",
-            "jokes",
-            "has joke"
+            "That must be true.",
+            "That can't be true; he is a native speaker.",
+            "That should be impossible.",
+            "That might not be true."
           ],
-          "answer": "joked",
-          "explanation": "joke ന്റെ ഭൂതകാല രൂപം joked ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "ലണ്ടനിൽ ജനിച്ചു വളർന്നയാൾക്ക് ഇംഗ്ലീഷ് അറിയില്ലെന്ന വാദം ഒരിക്കലും സത്യമാകില്ല ('That can't be true')."
         },
         {
-          "id": "trap_d72_3",
-          "question": "What is the correct English word for 'യുക്തി'?",
+          "id": 3,
+          "question": "Which modal of deduction expresses near-certain negative impossibility?",
           "options": [
-            "logic",
-            "success",
-            "courage",
-            "knowledge"
+            "Mustn't",
+            "Can't",
+            "Shouldn't",
+            "May not"
           ],
-          "answer": "logic",
-          "explanation": "യുക്തി എന്നാൽ ഇംഗ്ലീഷിൽ logic."
+          "correctIndex": 1,
+          "explanationMl": "ഒരു കാര്യം ഒരിക്കലും സാധ്യമല്ലെന്ന് യുക്തിപരമായി നിഗമനം ചെയ്യാൻ 'can't be' ആണ് ഉപയോഗിക്കുന്നത്."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 72 Gate Exam (5 Qs)",

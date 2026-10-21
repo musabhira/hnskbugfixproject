@@ -22,112 +22,109 @@
     "totalCoinsReward": 71
   },
   "grammarRule": {
-    "formula": "Present Simple Tense",
+    "formula": "What / Where + is / are / do / does + Subject + (Verb)?",
     "explanation": {
-      "ml": "What & Where ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ What is...? / Where is...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use What is...? / Where is...? correctly in spoken English."
+      "ml": "ഒരു കാര്യത്തെക്കുറിച്ചോ വസ്തുവിനെക്കുറിച്ചോ അറിയാൻ 'What' (എന്ത്) എന്നും, ഒരു സ്ഥലത്തെക്കുറിച്ചോ സ്ഥാനത്തെക്കുറിച്ചോ അറിയാൻ 'Where' (എവിടെ) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Asking Questions: What & Where with clear formula: What / Where + is / are / do / does + Subject + (Verb)?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Ask a question.",
-      "en": "Golden Rule: Practice 'Ask a question.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Where is...' ഒരു വസ്തുവിന്റെയോ വ്യക്തിയുടെയോ ഇപ്പോഴത്തെ സ്ഥാനം ചോദിക്കാൻ ഉപയോഗിക്കുന്നു. 'Where do you...' സ്ഥിരമായ താമസസ്ഥലം ചോദിക്കാൻ ഉപയോഗിക്കുന്നു.",
+      "en": "Golden Tip: 💡 'Where is...' ഒരു വസ്തുവിന്റെയോ വ്യക്തിയുടെയോ ഇപ്പോഴത്തെ സ്ഥാനം ചോദിക്കാൻ ഉപയോഗിക്കുന്നു. 'Where do you...' സ്ഥിരമായ താമസസ്ഥലം ചോദിക്കാൻ ഉപയോഗിക്കുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "ask",
-        "v2": "asked",
-        "v3": "asked",
+        "v1": "inquire",
+        "v2": "inquireed",
+        "v3": "inquireed",
         "meaning": {
-          "ml": "ചോദിക്കുക",
-          "hi": "पूछना",
-          "ta": "கேள்"
+          "ml": "അന്വേഷിക്കുക / ചോദിച്ചറിയുക",
+          "hi": "पूछताछ करना",
+          "ta": "விசாரிக்க"
         },
-        "example": "Ask a question.",
-        "exampleMl": "ചോദിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "search",
-        "v2": "searched",
-        "v3": "searched",
-        "meaning": {
-          "ml": "തിരയുക",
-          "hi": "खोजना",
-          "ta": "தேடு"
-        },
-        "example": "Search for the keys.",
-        "exampleMl": "തിരയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "lose",
-        "v2": "lost",
-        "v3": "lost",
-        "meaning": {
-          "ml": "നഷ്ടപ്പെടുക",
-          "hi": "खोना",
-          "ta": "இழ / தொலை"
-        },
-        "example": "Where did you lose it?",
-        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "locate",
-        "v2": "located",
-        "v3": "located",
-        "meaning": {
-          "ml": "കണ്ടെത്തുക",
-          "hi": "पता लगाना",
-          "ta": "கண்டுபிடி"
-        },
-        "example": "Locate the shop.",
-        "exampleMl": "കണ്ടെത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I called to inquire where the event is happening.",
+        "exampleMl": "To ask for information from someone."
       }
     ],
     "nouns": [
       {
-        "word": "what",
+        "word": "Location",
+        "partOfSpeech": "noun",
+        "definition": "A particular place or position.",
         "meaning": {
-          "ml": "എന്ത്",
-          "hi": "എന്ത്",
-          "ta": "എന്ത്"
+          "ml": "സ്ഥലം / സ്ഥാനം",
+          "hi": "स्थान",
+          "ta": "இடம்",
+          "te": "స్థలము",
+          "kn": "ಸ್ಥಳ"
         },
-        "example": "We learned about what in today's lesson."
+        "example": "What is your current office location?"
       },
       {
-        "word": "where",
+        "word": "Inquire",
+        "partOfSpeech": "verb",
+        "definition": "To ask for information from someone.",
         "meaning": {
-          "ml": "എവിടെ",
-          "hi": "എവിടെ",
-          "ta": "എവിടെ"
+          "ml": "അന്വേഷിക്കുക / ചോദിച്ചറിയുക",
+          "hi": "पूछताछ करना",
+          "ta": "விசாரிக்க",
+          "te": "విచారించు",
+          "kn": "ವಿಚಾರಿಸು"
         },
-        "example": "We learned about where in today's lesson."
+        "example": "I called to inquire where the event is happening."
       },
       {
-        "word": "place",
+        "word": "Schedule",
+        "partOfSpeech": "noun",
+        "definition": "A plan that gives expected times for different things to happen.",
         "meaning": {
-          "ml": "സ്ഥലം",
-          "hi": "സ്ഥലം",
-          "ta": "സ്ഥലം"
+          "ml": "സമയക്രമം / കാര്യപരിപാടി",
+          "hi": "समय सारणी",
+          "ta": "அட்டவணை",
+          "te": "సమయ పట్టిక",
+          "kn": "ಸಮಯಪಟ್ಟಿ"
         },
-        "example": "We learned about place in today's lesson."
+        "example": "What is your schedule for tomorrow morning?"
       },
       {
-        "word": "address",
+        "word": "Destination",
+        "partOfSpeech": "noun",
+        "definition": "The place to which someone or something is going.",
         "meaning": {
-          "ml": "മേൽവിലാസം",
-          "hi": "മേൽവിലാസം",
-          "ta": "മേൽവിലാസം"
+          "ml": "ലക്ഷ്യസ്ഥാനം / എത്തിച്ചേരേണ്ട സ്ഥലം",
+          "hi": "गंतव्य स्थान",
+          "ta": "சேருமிடம்",
+          "te": "గమ్యస్థానము",
+          "kn": "ಗಮ್ಯಸ್ಥಾನ"
         },
-        "example": "We learned about address in today's lesson."
+        "example": "Where is your final travel destination?"
       },
       {
-        "word": "map",
+        "word": "Preference",
+        "partOfSpeech": "noun",
+        "definition": "A greater liking for one alternative over another.",
         "meaning": {
-          "ml": "മാപ്പ്",
-          "hi": "മാപ്പ്",
-          "ta": "മാപ്പ്"
+          "ml": "മുൻഗണന / കൂടുതൽ ഇഷ്ടം",
+          "hi": "प्राथमिकता",
+          "ta": "விருப்பம்",
+          "te": "ప్రాధాన్యత",
+          "kn": "ಆದ್ಯತೆ"
         },
-        "example": "We learned about map in today's lesson."
+        "example": "What is your food preference for lunch?"
+      },
+      {
+        "word": "Nearby",
+        "partOfSpeech": "adjective",
+        "definition": "Not far away; located close at hand.",
+        "meaning": {
+          "ml": "അടുത്ത് സ്ഥിതി ചെയ്യുന്ന",
+          "hi": "पास का",
+          "ta": "அருகிலுள்ள",
+          "te": "దగ్గరలో",
+          "kn": "ಹತ್ತಿರದ"
+        },
+        "example": "Where is the nearest medical store nearby?"
       }
     ]
   },
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "What / Where + is / are / do / does + Subject + (Verb)?",
+        "ml": "ഒരു കാര്യത്തെക്കുറിച്ചോ വസ്തുവിനെക്കുറിച്ചോ അറിയാൻ 'What' (എന്ത്) എന്നും, ഒരു സ്ഥലത്തെക്കുറിച്ചോ സ്ഥാനത്തെക്കുറിച്ചോ അറിയാൻ 'Where' (എവിടെ) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Ask a question.",
-        "Search for the keys.",
-        "Where did you lose it?"
+        "What is the reason for this sudden meeting ?",
+        "Where do you keep the spare car keys ?",
+        "What time does the last express train arrive ?",
+        "Where can we find clean drinking water here ?",
+        "What are your main expectations from this project ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Ask a question.",
-          "meaningMl": "ചോദിക്കുക - Ask a question.",
-          "audioPrompt": "Ask a question."
+          "text": "Ravi arrives in the busy capital city for the first time.",
+          "meaningMl": "രവി ആദ്യമായി തിരക്കേറിയ തലസ്ഥാന നഗരിയിൽ എത്തിച്ചേരുന്നു.",
+          "meaningHi": "रवि पहली बार व्यस्त राजधानी शहर में पहुँचता है।",
+          "meaningTa": "ரவி முதன்முறையாக பரபரப்பான தலைநகரத்திற்கு வருகிறார்.",
+          "audioPrompt": "Ravi arrives in the busy capital city for the first time."
         },
         {
-          "text": "Search for the keys.",
-          "meaningMl": "തിരയുക - Search for the keys.",
-          "audioPrompt": "Search for the keys."
+          "text": "He asks the security guard what the quickest route to the metro is.",
+          "meaningMl": "മെട്രോയിലേക്കുള്ള ഏറ്റവും വേഗതയേറിയ വഴി ഏതാണെന്ന് അവൻ സെക്യൂരിറ്റി ഗാർഡിനോട് ചോദിക്കുന്നു.",
+          "meaningHi": "वह सुरक्षा गार्ड से पूछता है कि मेट्रो का सबसे तेज़ रास्ता क्या है।",
+          "meaningTa": "மெட்ரோவுக்கு மிக விரைவான வழி எது என்று அவர் பாதுகாப்புக் காவலரிடம் கேட்கிறார்.",
+          "audioPrompt": "He asks the security guard what the quickest route to the metro is."
         },
         {
-          "text": "Daily practice of Asking Questions: What & Where gives you great confidence in English.",
-          "meaningMl": "What & Where ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Asking Questions: What & Where gives you great confidence in English."
+          "text": "The guard points across the square and shows him where to buy tickets.",
+          "meaningMl": "ഗാർഡ് ചത്വരത്തിന് കുറുകെ വിരൽ ചൂണ്ടി ടിക്കറ്റ് എവിടെ വാങ്ങണമെന്ന് കാണിച്ചുകൊടുക്കുന്നു.",
+          "meaningHi": "गार्ड चौराहे के पार इशारा करता है और दिखाता है कि टिकट कहाँ खरीदना है।",
+          "meaningTa": "காவலர் சதுக்கத்திற்கு குறுக்கே சுட்டிக்காட்டி டிக்கெட் எங்கு வாங்குவது என்று காட்டுகிறார்.",
+          "audioPrompt": "The guard points across the square and shows him where to buy tickets."
+        },
+        {
+          "text": "Ravi notices a digital board displaying what services are active today.",
+          "meaningMl": "ഇന്ന് ഏതൊക്കെ സർവീസുകൾ ലഭ്യമാണെന്ന് കാണിക്കുന്ന ഡിജിറ്റൽ ബോർഡ് രവി ശ്രദ്ധിക്കുന്നു.",
+          "meaningHi": "रवि एक डिजिटल बोर्ड देखता है जो दिखाता है कि आज कौन सी सेवाएँ सक्रिय हैं।",
+          "meaningTa": "இன்று என்னென்ன சேவைகள் இயங்குகின்றன என்பதைக் காட்டும் டிஜிட்டல் பலகையை ரவி கவனிக்கிறார்.",
+          "audioPrompt": "Ravi notices a digital board displaying what services are active today."
+        },
+        {
+          "text": "He finds a comfortable seat near the window and smiles with relief.",
+          "meaningMl": "ജനലിനടുത്ത് ഒരു സുഖപ്രദമായ ഇരിപ്പിടം കണ്ടെത്തി അവൻ ആശ്വാസത്തോടെ പുഞ്ചിരിക്കുന്നു.",
+          "meaningHi": "वह खिड़की के पास एक आरामदायक सीट पाता है और राहत से मुस्कुराता है।",
+          "meaningTa": "ஜன்னல் அருகே ஒரு வசதியான இருக்கையைக் கண்டுபிடித்து நிம்மதியுடன் புன்னகைக்கிறார்.",
+          "audioPrompt": "He finds a comfortable seat near the window and smiles with relief."
+        },
+        {
+          "text": "Knowing where you are going makes every travel experience pleasant.",
+          "meaningMl": "നിങ്ങൾ എങ്ങോട്ടാണ് പോകുന്നതെന്ന് വ്യക്തമായി അറിയുന്നത് ഓരോ യാത്രയും മനോഹരമാക്കുന്നു.",
+          "meaningHi": "यह जानना कि आप कहाँ जा रहे हैं, हर यात्रा को सुखद बनाता है।",
+          "meaningTa": "நீங்கள் எங்கே போகிறீர்கள் என்று தெரிந்து கொள்வது பயணத்தை இனிமையாக்குகிறது.",
+          "audioPrompt": "Knowing where you are going makes every travel experience pleasant."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who did Ravi ask for directions to the metro?",
+            "ml": "മെട്രോയിലേക്കുള്ള വഴിക്കായി രവി ആരോടാണ് ചോദിച്ചത്?",
+            "hi": "रवि ने मेट्रो के रास्ते के लिए किससे पूछा?",
+            "ta": "ரவி யாரிடம் வழி கேட்டார்?"
+          },
+          "options": [
+            "A shopkeeper",
+            "The security guard",
+            "A bus driver",
+            "A tourist"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Ravi asked the security guard for the quickest route.",
+            "ml": "രവി സെക്യൂരിറ്റി ഗാർഡിനോടാണ് വഴി ചോദിച്ചത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did the digital board display?",
+            "ml": "ഡിജിറ്റൽ ബോർഡിൽ എന്താണ് കാണിച്ചിരുന്നത്?",
+            "hi": "डिजिटल बोर्ड पर क्या प्रदर्शित था?",
+            "ta": "டிஜிட்டல் பலகையில் என்ன காட்டப்பட்டது?"
+          },
+          "options": [
+            "Movie timings",
+            "Active train services today",
+            "Weather alerts",
+            "Food prices"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The board displayed what services were active today.",
+            "ml": "ഇന്ന് ഏതൊക്കെ സർവീസുകൾ ലഭ്യമാണെന്നാണ് ബോർഡിൽ കാണിച്ചിരുന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Where did Ravi sit inside the metro?",
+            "ml": "മെട്രോയ്ക്കുള്ളിൽ രവി എവിടെയാണ് ഇരുന്നത്?",
+            "hi": "रवि मेट्रो के अंदर कहाँ बैठा?",
+            "ta": "ரவி எங்கு அமர்ந்தார்?"
+          },
+          "options": [
+            "Near the door",
+            "On the floor",
+            "Near the window",
+            "At the back"
+          ],
+          "correctIndex": 2,
+          "explanation": {
+            "en": "He found a comfortable seat near the window.",
+            "ml": "ജനലിനടുത്തുള്ള (near the window) ഇരിപ്പിടത്തിലാണ് അവൻ ഇരുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d21_1",
-          "question": "Which word represents: 'ചോദിക്കുക'?",
+          "question": "Select the grammatically correct question to ask someone's workplace:",
           "options": [
-            "ask",
-            "borrow",
-            "forget",
-            "listen"
+            "Where you work?",
+            "Where do you work?",
+            "Where are you work?",
+            "What place you work?"
           ],
-          "answer": "ask",
-          "explanation": "ask എന്നാൽ ചോദിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Simple present questions with regular verbs require the auxiliary 'do': 'Where do you work?'",
+          "ruleHint": "Rule: WH-word + do/does + Subject + Base Verb (V1)"
         },
         {
-          "id": "trap_d21_2",
-          "question": "What is the past form (V2) of 'search'?",
+          "question": "How do you ask about someone's designation or profession?",
           "options": [
-            "searched",
-            "searching",
-            "searchs",
-            "has search"
+            "What is your work you do?",
+            "What do you do for a living?",
+            "Where is your occupation?",
+            "What do you doing?"
           ],
-          "answer": "searched",
-          "explanation": "search ന്റെ ഭൂതകാല രൂപം searched ആണ്."
+          "correctIndex": 1,
+          "explanation": "'What do you do for a living?' is the natural native idiom to ask what someone does for work.",
+          "ruleHint": "Native phrasing: 'What do you do for a living?'"
         },
         {
-          "id": "trap_d21_3",
-          "question": "What is the correct English word for 'എന്ത്'?",
+          "question": "Choose the correct sentence to ask where the keys are right now:",
           "options": [
-            "journey",
-            "what",
-            "courage",
-            "success"
+            "Where is the car keys?",
+            "Where are the car keys?",
+            "Where does the car keys be?",
+            "What are the car keys located?"
           ],
-          "answer": "what",
-          "explanation": "എന്ത് എന്നാൽ ഇംഗ്ലീഷിൽ what."
+          "correctIndex": 1,
+          "explanation": "'Keys' is plural, so it must agree with the plural verb 'are': 'Where are the car keys?'",
+          "ruleHint": "Subject-Verb Agreement: Plural subject (keys) requires 'are'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 21 Gate Exam (5 Qs)",

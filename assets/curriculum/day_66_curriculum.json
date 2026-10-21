@@ -22,112 +22,96 @@
     "totalCoinsReward": 116
   },
   "grammarRule": {
-    "formula": "Relative Pronouns and Relative Adverbs",
+    "formula": "I have been working as a [Role] at [Company] for [Years]",
     "explanation": {
-      "ml": "തൊഴിൽ പരിചയം വിവരിക്കൽ എന്ന വിഷയത്തിൽ I have been working as a [Role] for [Years] എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I have been working as a [Role] for [Years] correctly in spoken English."
+      "ml": "തൊഴിൽ രംഗത്തെ അനുഭവം, നിലവിലെ ജോലി, മുൻകാല അനുഭവങ്ങൾ എന്നിവ ഔദ്യോഗികമായി അവതരിപ്പിക്കാൻ 'I have been working as a... for... years' ഉപയോഗിക്കുന്നു.",
+      "en": "Master Career History & Experience: Working as a [Role] with clear formula: I have been working as a [Role] at [Company] for [Years]"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I manage client communications.",
-      "en": "Golden Rule: Practice 'I manage client communications.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: തൊഴിലിന്റെ പേരിന് മുന്നിൽ 'a' അല്ലെങ്കിൽ 'an' ഉപയോഗിക്കാൻ മറക്കരുത്: 'as an engineer', 'as a manager'.",
+      "en": "Golden Tip: തൊഴിലിന്റെ പേരിന് മുന്നിൽ 'a' അല്ലെങ്കിൽ 'an' ഉപയോഗിക്കാൻ മറക്കരുത്: 'as an engineer', 'as a manager'."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "manage",
-        "v2": "managed",
-        "v3": "managed",
-        "meaning": {
-          "ml": "കൈകാര്യം ചെയ്യുക",
-          "hi": "प्रबंधन करना",
-          "ta": "நிர்வகி"
-        },
-        "example": "I manage client communications.",
-        "exampleMl": "കൈകാര്യം ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "handle",
-        "v2": "handled",
-        "v3": "handled",
-        "meaning": {
-          "ml": "നോക്കുക / കൈകാര്യം ചെയ്യുക",
-          "hi": "संभालना",
-          "ta": "கையாளு"
-        },
-        "example": "I handle software projects.",
-        "exampleMl": "നോക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "lead",
-        "v2": "led",
-        "v3": "led",
-        "meaning": {
-          "ml": "നയിക്കുക",
-          "hi": "नेतृत्व करना",
-          "ta": "வழிநடத்து"
-        },
-        "example": "I lead a team of five.",
-        "exampleMl": "നയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "deliver",
-        "v2": "delivered",
-        "v3": "delivered",
-        "meaning": {
-          "ml": "പൂർത്തിയാക്കി നൽകുക",
-          "hi": "प्रस्तुत करना / पूरा करना",
-          "ta": "வழங்கு"
-        },
-        "example": "We deliver on deadlines.",
-        "exampleMl": "പൂർത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "career",
+        "word": "Profession",
+        "partOfSpeech": "noun",
+        "definition": "A paid occupation, especially one that involves prolonged training and a formal qualification.",
         "meaning": {
-          "ml": "തൊഴിൽ",
-          "hi": "തൊഴിൽ",
-          "ta": "തൊഴിൽ"
+          "ml": "തൊഴിൽ / ഉദ്യോഗം",
+          "hi": "व्यवसाय / पेशा",
+          "ta": "தொழில்",
+          "te": "వృత్తి",
+          "kn": "ವೃತ್ತಿ"
         },
-        "example": "We learned about career in today's lesson."
+        "example": "She entered the teaching profession after completing her doctoral research."
       },
       {
-        "word": "experience",
+        "word": "Specialization",
+        "partOfSpeech": "noun",
+        "definition": "The concentration of one's efforts on a specific area of study, activity, or field.",
         "meaning": {
-          "ml": "പരിചയം",
-          "hi": "अनुभव",
-          "ta": "அனுபவம்"
+          "ml": "പ്രത്യേക മേഖലയിലെ വൈദഗ്ധ്യം / സ്പെഷ്യലൈസേഷൻ",
+          "hi": "विशेषज्ञता",
+          "ta": "சிறப்புத் துறை",
+          "te": "ప్రత్యేకత",
+          "kn": "ವಿಶೇಷ ಪರಿಣತಿ"
         },
-        "example": "Real experience builds true confidence."
+        "example": "His clinical specialization is pediatric cardiology and heart surgery."
       },
       {
-        "word": "role",
+        "word": "Enterprise",
+        "partOfSpeech": "noun",
+        "definition": "A business or company, or a project or undertaking, typically one that is difficult or requires effort.",
         "meaning": {
-          "ml": "പദവി",
-          "hi": "പദവി",
-          "ta": "പദവി"
+          "ml": "സംരംഭം / വലിയ ബിസിനസ് സ്ഥാപനം",
+          "hi": "उद्यम / व्यापारिक संस्था",
+          "ta": "நிறுவனம் / தொழில் முயற்சி",
+          "te": "సంస్థ / వ్యాపారం",
+          "kn": "ಉದ್ಯಮ"
         },
-        "example": "We learned about role in today's lesson."
+        "example": "The multinational technology enterprise employs thousands of creative engineers."
       },
       {
-        "word": "team",
+        "word": "Competency",
+        "partOfSpeech": "noun",
+        "definition": "The ability to do something successfully or efficiently.",
         "meaning": {
-          "ml": "ടീം",
-          "hi": "ടീം",
-          "ta": "ടീം"
+          "ml": "പ്രാപ്തി / പ്രാവീണ്യം",
+          "hi": "योग्यता / क्षमता",
+          "ta": "திறமை / தகுதி",
+          "te": "సామర్థ్యము",
+          "kn": "ಸಾಮರ್ಥ್ಯ"
         },
-        "example": "We learned about team in today's lesson."
+        "example": "Core linguistic competency is essential for international diplomatic roles."
       },
       {
-        "word": "company",
+        "word": "Expertise",
+        "partOfSpeech": "noun",
+        "definition": "Expert skill or knowledge in a particular field.",
         "meaning": {
-          "ml": "കമ്പനി",
-          "hi": "കമ്പനി",
-          "ta": "കമ്പനി"
+          "ml": "വിദഗ്ധ ജ്ഞാനം / പ്രാവീണ്യം",
+          "hi": "विशेषज्ञता / निपुणता",
+          "ta": "நிபுணத்துவம்",
+          "te": "నైపుణ్యం",
+          "kn": "ಪರಿಣತಿ"
         },
-        "example": "We learned about company in today's lesson."
+        "example": "We sought her legal expertise to navigate corporate compliance regulations."
+      },
+      {
+        "word": "Seniority",
+        "partOfSpeech": "noun",
+        "definition": "The fact or state of being older or higher in rank or status than someone else.",
+        "meaning": {
+          "ml": "സീനിയോറിറ്റി / ഉയർന്ന പദവി",
+          "hi": "वरिष्ठता",
+          "ta": "பணி மூப்பு",
+          "te": "సీనియారిటీ",
+          "kn": "ಹಿರಿತನ"
+        },
+        "example": "Promotion within the judicial system is based on merit alongside seniority."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Describing Career & Work Experience",
-        "ml": "പാഠം: തൊഴിൽ പരിചയം വിവരിക്കൽ"
+        "en": "Concept Room: Career History & Experience: Working as a [Role]",
+        "ml": "പാഠം: കരിയർ അനുഭവങ്ങൾ പങ്കുവെക്കൽ (I have been working as...)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I have been working as a [Role] at [Company] for [Years]",
+        "ml": "തൊഴിൽ രംഗത്തെ അനുഭവം, നിലവിലെ ജോലി, മുൻകാല അനുഭവങ്ങൾ എന്നിവ ഔദ്യോഗികമായി അവതരിപ്പിക്കാൻ 'I have been working as a... for... years' ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I manage client communications.",
-        "I handle software projects.",
-        "I lead a team of five."
+        "I have been working as a software development lead for four consecutive years .",
+        "She manages cross functional engineering teams across three global corporate offices .",
+        "Prior to joining this firm , he served as a data analytics consultant .",
+        "My core expertise lies in financial risk modeling and investment portfolio strategy .",
+        "They have built a reputable consulting enterprise over the past twelve years ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Describing Career & Work Experience",
-        "ml": "റീഡിങ് റൂം: തൊഴിൽ പരിചയം വിവരിക്കൽ"
+        "en": "Reading Room: The Visionary Technologist",
+        "ml": "റീഡിങ് റൂം: കരിയർ അനുഭവങ്ങൾ പങ്കുവെക്കൽ (I have been working as...)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I manage client communications.",
-          "meaningMl": "കൈകാര്യം ചെയ്യുക - I manage client communications.",
-          "audioPrompt": "I manage client communications."
+          "text": "Chief Technology Officer Ananya has been working in artificial intelligence infrastructure for eighteen demanding years.",
+          "meaningMl": "ചീഫ് ടെക്നോളജി ഓഫീസർ അനന്യ പതിനെട്ട് വർഷമായി ആർട്ടിഫിഷ്യൽ ഇന്റലിജൻസ് ഇൻഫ്രാസ്ട്രക്ചർ മേഖലയിൽ ജോലി ചെയ്തുവരികയാണ്.",
+          "meaningHi": "सीटीओ अनन्या अठारह वर्षों से कृत्रिम बुद्धिमत्ता के क्षेत्र में काम कर रही हैं।",
+          "meaningTa": "தலைமை தொழில்நுட்ப அதிகாரி அனன்யா பதினெட்டு ஆண்டுகளாக செயற்கை நுண்ணறிவு துறையில் பணியாற்றி வருகிறார்.",
+          "audioPrompt": "Chief Technology Officer Ananya has been working in artificial intelligence infrastructure for eighteen demanding years."
         },
         {
-          "text": "I handle software projects.",
-          "meaningMl": "നോക്കുക - I handle software projects.",
-          "audioPrompt": "I handle software projects."
+          "text": "She began her inspiring journey as a junior systems programmer at a modest startup laboratory in Hyderabad.",
+          "meaningMl": "ഹൈദരാബാദിലെ ഒരു സാധാരണ സ്റ്റാർട്ടപ്പ് ലബോറട്ടറിയിൽ ജൂനിയർ സിസ്റ്റംസ് പ്രോഗ്രാമറായാണ് അവൾ തന്റെ യാത്ര ആരംഭിച്ചത്.",
+          "meaningHi": "उन्होंने हैदराबाद की एक प्रयोगशाला में जूनियर प्रोग्रामर के रूप में अपनी यात्रा शुरू की।",
+          "meaningTa": "ஹைதராபாத்தில் ஒரு தொடக்க நிறுவனத்தில் இளநிலை புரோகிராமராகத் தனது பயணத்தைத் தொடங்கினார்.",
+          "audioPrompt": "She began her inspiring journey as a junior systems programmer at a modest startup laboratory in Hyderabad."
         },
         {
-          "text": "Daily practice of Describing Career & Work Experience gives you great confidence in English.",
-          "meaningMl": "തൊഴിൽ പരിചയം വിവരിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Describing Career & Work Experience gives you great confidence in English."
+          "text": "Through tireless dedication, she developed specialized algorithmic patents that reduced computational energy consumption by forty percent.",
+          "meaningMl": "കഠിനാധ്വാനത്തിലൂടെ, കമ്പ്യൂട്ടേഷണൽ ഊർജ്ജ ഉപഭോഗം നാൽപ്പത് ശതമാനം കുറയ്ക്കുന്ന പേറ്റന്റുകൾ അവൾ വികസിപ്പിച്ചു.",
+          "meaningHi": "कड़ी मेहनत से उन्होंने ऐसे पेटेंट विकसित किए जिन्होंने ऊर्जा खपत को चालीस प्रतिशत तक घटाया।",
+          "meaningTa": "கடும் உழைப்பால் கணினி ஆற்றல் பயன்பாட்டை நாற்பது சதவீதம் குறைக்கும் காப்புரிமைகளை உருவாக்கினார்.",
+          "audioPrompt": "Through tireless dedication, she developed specialized algorithmic patents that reduced computational energy consumption by forty percent."
+        },
+        {
+          "text": "Global tech enterprises recognized her technical competency and appointed her to board advisory committees.",
+          "meaningMl": "ആഗോള സാങ്കേതിക സ്ഥാപനങ്ങൾ അവളുടെ പ്രാവീണ്യം തിരിച്ചറിയുകയും ബോർഡ് ഉപദേശക സമിതികളിൽ നിയമിക്കുകയും ചെയ്തു.",
+          "meaningHi": "वैश्विक कंपनियों ने उनकी योग्यता को पहचाना और उन्हें सलाहकार समितियों में नियुक्त किया।",
+          "meaningTa": "உலகளாவிய நிறுவனங்கள் அவரது திறமையை அங்கீகரித்து ஆலோசனைக் குழுக்களில் நியமித்தன.",
+          "audioPrompt": "Global tech enterprises recognized her technical competency and appointed her to board advisory committees."
+        },
+        {
+          "text": "Ananya mentors young women entering STEM fields, urging them to embrace lifelong curiosity and technical bravery.",
+          "meaningMl": "ശാസ്ത്ര-സാങ്കേതിക മേഖലകളിലേക്ക് വരുന്ന യുവതികളെ അനന്യ മാർഗ്ഗനിർദ്ദേശം ചെയ്യുന്നു, ആജീവനാന്ത ജിജ്ഞാസയും ധൈര്യവും ഉൾക്കൊള്ളാൻ അവരെ പ്രേരിപ്പിക്കുന്നു.",
+          "meaningHi": "अनन्या विज्ञान के क्षेत्र में आने वाली युवतियों का मार्गदर्शन करती हैं।",
+          "meaningTa": "அனன்யா இளம் பெண்களுக்கு வழிகாட்டி, தைரியத்துடன் முன்னேற ஊக்குவிக்கிறார்.",
+          "audioPrompt": "Ananya mentors young women entering STEM fields, urging them to embrace lifelong curiosity and technical bravery."
+        },
+        {
+          "text": "True career fulfillment emerges not from status titles, but from solving genuine problems that elevate human society.",
+          "meaningMl": "യഥാർത്ഥ കരിയർ സംതൃപ്തി പദവികളിൽ നിന്നല്ല, മറിച്ച് മനുഷ്യ സമൂഹത്തിന് പ്രയോജനപ്പെടുന്ന പ്രശ്നങ്ങൾ പരിഹരിക്കുന്നതിൽ നിന്നാണ് ഉണ്ടാകുന്നത്.",
+          "meaningHi": "सच्ची संतुष्टि पदवियों से नहीं, बल्कि समाज की समस्याओं को हल करने से मिलती है।",
+          "meaningTa": "உண்மையான திருப்தி பதவிப் பெயர்களால் அல்ல, சமூகப் பிரச்சனைகளைத் தீர்ப்பதாலேயே கிடைக்கிறது.",
+          "audioPrompt": "True career fulfillment emerges not from status titles, but from solving genuine problems that elevate human society."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many years has Ananya been working in AI infrastructure?",
+            "ml": "അനന്യ എത്ര വർഷമായി എഐ ഇൻഫ്രാസ്ട്രക്ചർ മേഖലയിൽ ജോലി ചെയ്യുന്നു?",
+            "hi": "अनन्या कितने वर्षों से एआई क्षेत्र में काम कर रही हैं?",
+            "ta": "அனன்யா எத்தனை ஆண்டுகளாக பணியாற்றி வருகிறார்?"
+          },
+          "options": [
+            "Five years",
+            "Eighteen demanding years",
+            "Fifty years",
+            "One year"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She has been working in the domain for eighteen demanding years.",
+            "ml": "18 വർഷമായി (eighteen demanding years)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What was Ananya's very first professional role?",
+            "ml": "അനന്യയുടെ ആദ്യത്തെ ജോലി എന്തായിരുന്നു?",
+            "hi": "अनन्या का पहला पद क्या था?",
+            "ta": "அனன்யாவின் முதல் பதவி என்ன?"
+          },
+          "options": [
+            "Managing Director",
+            "Junior systems programmer",
+            "Human resources manager",
+            "Finance director"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Junior systems programmer at a startup lab.",
+            "ml": "ജൂനിയർ സിസ്റ്റംസ് പ്രോഗ്രാമർ (Junior systems programmer)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "By what percentage did her patented algorithms reduce energy consumption?",
+            "ml": "അവളുടെ പേറ്റന്റുകൾ ഊർജ്ജ ഉപഭോഗം എത്ര ശതമാനം കുറച്ചു?",
+            "hi": "उनके पेटेंट ने ऊर्जा खपत को कितने प्रतिशत कम किया?",
+            "ta": "அவரது காப்புரிமை மின் பயன்பாட்டை எத்தனை சதவீதம் குறைத்தது?"
+          },
+          "options": [
+            "Ten percent",
+            "Forty percent",
+            "Five percent",
+            "Ninety percent"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "By forty percent.",
+            "ml": "40 ശതമാനം (forty percent)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d66_1",
-          "question": "Which word represents: 'കൈകാര്യം ചെയ്യുക'?",
+          "id": 1,
+          "question": "Select the sentence with the correct indefinite article before a job title:",
           "options": [
-            "decide",
-            "remember",
-            "manage",
-            "prepare"
+            "I work as engineer in Dubai.",
+            "I work as an engineer in Dubai.",
+            "I work as the engineer in Dubai.",
+            "I work as a engineer in Dubai."
           ],
-          "answer": "manage",
-          "explanation": "manage എന്നാൽ കൈകാര്യം ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Engineer' എന്ന വാക്ക് സ്വരാക്ഷര ശബ്ദത്തിൽ (vowel sound 'e') തുടങ്ങുന്നതിനാൽ 'an engineer' എന്ന് പറയണം."
         },
         {
-          "id": "trap_d66_2",
-          "question": "What is the past form (V2) of 'handle'?",
+          "id": 2,
+          "question": "Which tense best describes an ongoing career that started in the past?",
           "options": [
-            "handles",
-            "handleing",
-            "handled",
-            "has handle"
+            "Past Simple ('I worked as a doctor.')",
+            "Present Perfect Continuous ('I have been working as a doctor for 7 years.')",
+            "Future Continuous ('I will be working as a doctor.')",
+            "Past Continuous ('I was working as a doctor.')"
           ],
-          "answer": "handled",
-          "explanation": "handle ന്റെ ഭൂതകാല രൂപം handled ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "മുമ്പ് തുടങ്ങി ഇപ്പോഴും തുടരുന്ന കരിയർ പറയാൻ 'have been working... for 7 years' ആണ് ഏറ്റവും അനുയോജ്യം."
         },
         {
-          "id": "trap_d66_3",
-          "question": "What is the correct English word for 'തൊഴിൽ'?",
+          "id": 3,
+          "question": "Find the error: 'She has been working as an manager since 3 years.'",
           "options": [
-            "career",
-            "schedule",
-            "progress",
-            "partner"
+            "It should be 'a manager' and 'for 3 years'.",
+            "It should be 'has work'.",
+            "It should be 'as the manager'.",
+            "There is no error."
           ],
-          "answer": "career",
-          "explanation": "തൊഴിൽ എന്നാൽ ഇംഗ്ലീഷിൽ career."
+          "correctIndex": 0,
+          "explanationMl": "'Manager' എന്നതിന് മുന്നിൽ 'a manager' എന്നും, '3 years' കാലയളവായതിനാൽ 'for 3 years' എന്നും വരണം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 66 Gate Exam (5 Qs)",

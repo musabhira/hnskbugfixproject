@@ -29,6 +29,7 @@ class DailyVocabItem {
   /// Convenience getters for backward compatibility
   String get definitionMl => malayalamMeaning;
   String get example => exampleSentence;
+  String get localizedMeaning => getMeaning(PocketLanguageService.currentLanguage);
 
   Map<String, dynamic> toMap() => {
         'word': word,

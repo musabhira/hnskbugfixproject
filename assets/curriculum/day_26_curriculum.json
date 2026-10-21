@@ -22,112 +22,109 @@
     "totalCoinsReward": 76
   },
   "grammarRule": {
-    "formula": "Past Continuous Tense",
+    "formula": "Go straight / Turn left / It is opposite to [Landmark]",
     "explanation": {
-      "ml": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ എന്ന വിഷയത്തിൽ Imperative Commands: Turn left, Go straight എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Imperative Commands: Turn left, Go straight correctly in spoken English."
+      "ml": "വഴി ചോദിക്കുന്നവർക്ക് കൃത്യമായ നിർദ്ദേശങ്ങൾ നൽകാൻ: 'Go straight' (നേരെ പോവുക), 'Turn right' (വലത്തോട്ട് തിരിയുക), 'Opposite to' (എതിർവശത്ത്), 'Next to' (അടുത്തായി) തുടങ്ങിയ പദങ്ങൾ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Giving Simple Directions with clear formula: Go straight / Turn left / It is opposite to [Landmark]"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Turn left at the signal.",
-      "en": "Golden Rule: Practice 'Turn left at the signal.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വഴികാട്ടുമ്പോൾ പ്രധാന അടയാളങ്ങൾ (Landmarks) പറയുക: 'Turn right at the traffic signal' അല്ലെങ്കിൽ 'It is right next to the post office'.",
+      "en": "Golden Tip: 💡 വഴികാട്ടുമ്പോൾ പ്രധാന അടയാളങ്ങൾ (Landmarks) പറയുക: 'Turn right at the traffic signal' അല്ലെങ്കിൽ 'It is right next to the post office'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "turn",
-        "v2": "turned",
-        "v3": "turned",
+        "v1": "straight",
+        "v2": "straighted",
+        "v3": "straighted",
         "meaning": {
-          "ml": "തിരിയുക",
-          "hi": "मुड़ना",
-          "ta": "திருப்பு"
+          "ml": "നേരെ",
+          "hi": "सीधे",
+          "ta": "நேராக"
         },
-        "example": "Turn left at the signal.",
-        "exampleMl": "തിരിയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "cross",
-        "v2": "crossed",
-        "v3": "crossed",
-        "meaning": {
-          "ml": "മുറിച്ചുകടക്കുക",
-          "hi": "पार करना",
-          "ta": "கடந்து செல்"
-        },
-        "example": "Cross the road safely.",
-        "exampleMl": "മുറിച്ചുകടക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "follow",
-        "v2": "followed",
-        "v3": "followed",
-        "meaning": {
-          "ml": "പിന്തുടരുക",
-          "hi": "अनुसरण करना",
-          "ta": "பின்பற்று"
-        },
-        "example": "Follow this road.",
-        "exampleMl": "പിന്തുടരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "pass",
-        "v2": "passed",
-        "v3": "passed",
-        "meaning": {
-          "ml": "വിജയിക്കുക",
-          "hi": "उत्तीर्ण होना",
-          "ta": "தேர்ச்சி பெறு"
-        },
-        "example": "Pass the temple.",
-        "exampleMl": "കടന്നുപോകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Walk straight ahead for two hundred meters.",
+        "exampleMl": "In a straight line; without turning or bending."
       }
     ],
     "nouns": [
       {
-        "word": "left",
+        "word": "Intersection",
+        "partOfSpeech": "noun",
+        "definition": "A point at which two or more things intersect, especially roads.",
         "meaning": {
-          "ml": "ഇടത്",
-          "hi": "ഇടത്",
-          "ta": "ഇടത്"
+          "ml": "റോഡ് കവല / നാലുമുക്ക്",
+          "hi": "चौराहा",
+          "ta": "சாலை சந்திப்பு",
+          "te": "కూడలి",
+          "kn": "ರಸ್ತೆ ಜಂಕ್ಷನ್"
         },
-        "example": "We learned about left in today's lesson."
+        "example": "Turn right at the busy traffic intersection."
       },
       {
-        "word": "right",
-        "meaning": {
-          "ml": "വലത്",
-          "hi": "വലത്",
-          "ta": "വലത്"
-        },
-        "example": "We learned about right in today's lesson."
-      },
-      {
-        "word": "straight",
+        "word": "Straight",
+        "partOfSpeech": "adverb",
+        "definition": "In a straight line; without turning or bending.",
         "meaning": {
           "ml": "നേരെ",
-          "hi": "നേരെ",
-          "ta": "നേരെ"
+          "hi": "सीधे",
+          "ta": "நேராக",
+          "te": "నేరుగా",
+          "kn": "ನೇರವಾಗಿ"
         },
-        "example": "We learned about straight in today's lesson."
+        "example": "Walk straight ahead for two hundred meters."
       },
       {
-        "word": "signal",
+        "word": "Opposite",
+        "partOfSpeech": "preposition",
+        "definition": "In a position on the other side of a specific space from someone or something.",
         "meaning": {
-          "ml": "സിഗ്നൽ",
-          "hi": "സിഗ്നൽ",
-          "ta": "സിഗ്നൽ"
+          "ml": "എതിർവശത്ത്",
+          "hi": "के सामने / विपरीत",
+          "ta": "எதிரே",
+          "te": "ఎదురుగా",
+          "kn": "ಎದುರಿಗೆ"
         },
-        "example": "We learned about signal in today's lesson."
+        "example": "The community hospital is located directly opposite the central park."
       },
       {
-        "word": "junction",
+        "word": "Roundabout",
+        "partOfSpeech": "noun",
+        "definition": "A road junction at which traffic moves in one direction round a central island.",
         "meaning": {
-          "ml": "കവല",
-          "hi": "കവല",
-          "ta": "കവല"
+          "ml": "റൗണ്ട് എബൗട്ട് / ട്രാഫിക് സർക്കിൾ",
+          "hi": "गोल चक्कर",
+          "ta": "வட்டச்சுற்று",
+          "te": "రౌండ్‌ఎబౌట్",
+          "kn": "ವೃತ್ತ"
         },
-        "example": "We learned about junction in today's lesson."
+        "example": "Take the second exit at the roundabout."
+      },
+      {
+        "word": "Landmark",
+        "partOfSpeech": "noun",
+        "definition": "An object or feature of a landscape or town that is easily seen and recognized from a distance.",
+        "meaning": {
+          "ml": "പ്രധാന അടയാളം / പ്രശസ്തമായ സ്ഥലം",
+          "hi": "सीमाचिह्न / पहचान स्थल",
+          "ta": "முக்கிய அடையாளம்",
+          "te": "గుర్తు",
+          "kn": "ಗುರುತು"
+        },
+        "example": "The white clock tower serves as an excellent visual landmark."
+      },
+      {
+        "word": "Pedestrian",
+        "partOfSpeech": "noun",
+        "definition": "A person walking rather than traveling in a vehicle.",
+        "meaning": {
+          "ml": "കാൽനടയാത്രക്കാരൻ",
+          "hi": "पैदल यात्री",
+          "ta": "பாதசாரி",
+          "te": "పాదచారి",
+          "kn": "ಪಾದಚಾರಿ"
+        },
+        "example": "Always cross the busy road using the pedestrian zebra crossing."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Giving Simple Directions",
-        "ml": "പാഠം: വഴികൾ പറഞ്ഞു കൊടുക്കൽ"
+        "ml": "പാഠം: ലളിതമായ വഴികാട്ടലുകൾ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Go straight / Turn left / It is opposite to [Landmark]",
+        "ml": "വഴി ചോദിക്കുന്നവർക്ക് കൃത്യമായ നിർദ്ദേശങ്ങൾ നൽകാൻ: 'Go straight' (നേരെ പോവുക), 'Turn right' (വലത്തോട്ട് തിരിയുക), 'Opposite to' (എതിർവശത്ത്), 'Next to' (അടുത്തായി) തുടങ്ങിയ പദങ്ങൾ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Turn left at the signal.",
-        "Cross the road safely.",
-        "Follow this road."
+        "Go straight along this avenue until you see the cathedral .",
+        "Take a sharp left turn just past the petrol pump .",
+        "The pharmacy is on your right hand side opposite the bank .",
+        "Walk across the footbridge to reach the platform safely .",
+        "Can you guide me towards the nearest automated teller machine ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Giving Simple Directions",
-        "ml": "റീഡിങ് റൂം: വഴികൾ പറഞ്ഞു കൊടുക്കൽ"
+        "ml": "റീഡിങ് റൂം: ലളിതമായ വഴികാട്ടലുകൾ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Turn left at the signal.",
-          "meaningMl": "തിരിയുക - Turn left at the signal.",
-          "audioPrompt": "Turn left at the signal."
+          "text": "Anand held a handwritten note with directions to an antique bookstore.",
+          "meaningMl": "പഴയൊരു പുസ്തകശാലയിലേക്കുള്ള വഴിയെഴുതിയ കുറിപ്പുമായി ആനന്ദ് നടന്നു.",
+          "meaningHi": "आनंद के पास एक पुरानी किताबों की दुकान के पते की हाथ से लिखी पर्ची थी।",
+          "meaningTa": "ஆனந்த் ஒரு பழங்கால புத்தகக் கடைக்கான வழிக் குறிப்பை வைத்திருந்தான்.",
+          "audioPrompt": "Anand held a handwritten note with directions to an antique bookstore."
         },
         {
-          "text": "Cross the road safely.",
-          "meaningMl": "മുറിച്ചുകടക്കുക - Cross the road safely.",
-          "audioPrompt": "Cross the road safely."
+          "text": "The note instructed him to walk straight past the stone fountain in the market square.",
+          "meaningMl": "ചന്തയിലെ കൽ ജലധാരയും കഴിഞ്ഞ് നേരെ നടക്കാൻ കുറിപ്പിൽ നിർദ്ദേശിച്ചിരുന്നു.",
+          "meaningHi": "पर्ची में बाज़ार के चौराहे पर लगे पत्थर के फव्वारे के पास सीधे जाने का निर्देश था।",
+          "meaningTa": "சந்தை சதுக்கத்தில் உள்ள கல் நீரூற்றைத் தாண்டி நேராக நடக்கச் சொல்லியிருந்தது.",
+          "audioPrompt": "The note instructed him to walk straight past the stone fountain in the market square."
         },
         {
-          "text": "Daily practice of Giving Simple Directions gives you great confidence in English.",
-          "meaningMl": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Giving Simple Directions gives you great confidence in English."
+          "text": "At the old bakery, he turned right into a quiet cobblestone alleyway.",
+          "meaningMl": "പഴയ ബേക്കറിയുടെ അടുത്തെത്തിയപ്പോൾ അവൻ ശാന്തമായ ഒരു ഇടവഴിയിലേക്ക് വലത്തോട്ട് തിരിഞ്ഞു.",
+          "meaningHi": "पुरानी बेकरी के पास वह एक शांत पत्थर की गली में दाईं ओर मुड़ा।",
+          "meaningTa": "பழைய பேக்கரியில் அவன் ஒரு அமைதியான சந்துக்குள் வலதுபுறம் திரும்பினான்.",
+          "audioPrompt": "At the old bakery, he turned right into a quiet cobblestone alleyway."
+        },
+        {
+          "text": "He looked for a brass lantern hanging directly opposite a green wooden bench.",
+          "meaningMl": "പച്ച മരബെഞ്ചിന്റെ എതിർവശത്ത് തൂക്കിയിട്ടിരിക്കുന്ന പിച്ചള വിളക്ക് അവൻ തിരഞ്ഞു.",
+          "meaningHi": "उसने हरे रंग की लकड़ी की बेंच के ठीक सामने लटके पीतल के लालटेन को देखा।",
+          "meaningTa": "பச்சை மர பெஞ்சிற்கு எதிரே தொங்கும் பித்தளை விளக்கை அவன் தேடினான்.",
+          "audioPrompt": "He looked for a brass lantern hanging directly opposite a green wooden bench."
+        },
+        {
+          "text": "Underneath the lantern, a narrow wooden doorway welcomed book lovers inside.",
+          "meaningMl": "വിളക്കിന് താഴെയായി ഇടുങ്ങിയ ഒരു തടി വാതിൽ പുസ്തക പ്രേമികളെ ഉള്ളിലേക്ക് സ്വാഗതം ചെയ്തു.",
+          "meaningHi": "लालटेन के नीचे एक संकरा लकड़ी का दरवाज़ा पुस्तक प्रेमियों का स्वागत कर रहा था।",
+          "meaningTa": "விளக்கின் கீழே ஒரு குறுகிய மரக் கதவு புத்தகப் பிரியர்களை வரவேற்றது.",
+          "audioPrompt": "Underneath the lantern, a narrow wooden doorway welcomed book lovers inside."
+        },
+        {
+          "text": "Following precise directions had led Anand to a magical paradise of reading.",
+          "meaningMl": "കൃത്യമായ വഴി അടയാളങ്ങൾ പിന്തുടർന്നത് ആനന്ദിനെ അറിവിന്റെ മാന്ത്രിക ലോകത്തേക്ക് എത്തിച്ചു.",
+          "meaningHi": "सटीक निर्देशों का पालन करने से आनंद पढ़ने के एक जादुई स्वर्ग में पहुँच गया।",
+          "meaningTa": "சரியான வழியைப் பின்பற்றியது ஆனந்தை ஒரு வாசிப்பு சொர்க்கத்திற்கு அழைத்துச் சென்றது.",
+          "audioPrompt": "Following precise directions had led Anand to a magical paradise of reading."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What landmark was Anand instructed to walk past first?",
+            "ml": "ആദ്യം ഏത് അടയാളം കടന്നുപോകാനാണ് ആനന്ദിനോട് നിർദ്ദേശിച്ചിരുന്നത്?",
+            "hi": "आनंद को पहले किस लैंडमार्क के पास से जाने का निर्देश दिया गया था?",
+            "ta": "ஆனந்த் முதலில் எதைத் தாண்டி செல்ல வேண்டும்?"
+          },
+          "options": [
+            "A tall bridge",
+            "The stone fountain",
+            "A railway station",
+            "A police station"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The note instructed him to walk past the stone fountain.",
+            "ml": "കൽ ജലധാര (stone fountain) കടന്നുപോകാനാണ് പറഞ്ഞിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Where did Anand turn right?",
+            "ml": "ആനന്ദ് എവിടെവെച്ചാണ് വലത്തോട്ട് തിരിഞ്ഞത്?",
+            "hi": "आनंद कहाँ दाईं ओर मुड़ा?",
+            "ta": "ஆனந்த் எங்கே வலதுபுறம் திரும்பினான்?"
+          },
+          "options": [
+            "At the old bakery",
+            "At the airport",
+            "Near the school gate",
+            "Behind the cinema"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "At the old bakery, he turned right.",
+            "ml": "പഴയ ബേക്കറിയുടെ അടുത്തെത്തിയപ്പോഴാണ് തിരിഞ്ഞത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What hung directly opposite the green wooden bench?",
+            "ml": "പച്ച മരബെഞ്ചിന്റെ എതിർവശത്ത് എന്താണ് തൂക്കിയിട്ടിരുന്നത്?",
+            "hi": "हरी लकड़ी की बेंच के सामने क्या लटका हुआ था?",
+            "ta": "பச்சை மர பெஞ்சிற்கு எதிரே என்ன தொங்கியது?"
+          },
+          "options": [
+            "A silver bell",
+            "A brass lantern",
+            "A painted clock",
+            "A flower basket"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A brass lantern hung directly opposite the bench.",
+            "ml": "പിച്ചള വിളക്കാണ് (brass lantern) തൂക്കിയിട്ടിരുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d26_1",
-          "question": "Which word represents: 'തിരിയുക'?",
+          "question": "Select the correct way to tell someone to turn right at the traffic lights:",
           "options": [
-            "prepare",
-            "decide",
-            "remember",
-            "turn"
+            "Turn right in the traffic light.",
+            "Turn right at the traffic lights.",
+            "Turn right on the traffic lights.",
+            "Right turning with traffic lights."
           ],
-          "answer": "turn",
-          "explanation": "turn എന്നാൽ തിരിയുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Specific points and signals take the preposition 'at': 'Turn right at the traffic lights.'",
+          "ruleHint": "Preposition of Place: 'at the traffic lights / at the corner'."
         },
         {
-          "id": "trap_d26_2",
-          "question": "What is the past form (V2) of 'cross'?",
+          "question": "How do you say that the library is across from the post office?",
           "options": [
-            "crosss",
-            "crossing",
-            "crossed",
-            "has cross"
+            "The library is opposite the post office.",
+            "The library is behind opposite of post office.",
+            "The library is upside the post office.",
+            "The library is in front of opposite."
           ],
-          "answer": "crossed",
-          "explanation": "cross ന്റെ ഭൂതകാല രൂപം crossed ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Opposite the post office' or 'opposite to the post office' correctly indicates facing across the road.",
+          "ruleHint": "Spatial Preposition: Opposite = facing each other across a space."
         },
         {
-          "id": "trap_d26_3",
-          "question": "What is the correct English word for 'ഇടത്'?",
+          "question": "Choose the natural phrase to tell someone to continue walking in the same direction:",
           "options": [
-            "partner",
-            "progress",
-            "schedule",
-            "left"
+            "Keep walking straight ahead.",
+            "Keep walking straightly.",
+            "Make walk straight front.",
+            "Go straight forwardly."
           ],
-          "answer": "left",
-          "explanation": "ഇടത് എന്നാൽ ഇംഗ്ലീഷിൽ left."
+          "correctIndex": 0,
+          "explanation": "'Straight' is already an adverb; 'straightly' is non-standard: 'Keep walking straight ahead.'",
+          "ruleHint": "Adverb Rule: Use 'straight', never 'straightly'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 26 Gate Exam (5 Qs)",

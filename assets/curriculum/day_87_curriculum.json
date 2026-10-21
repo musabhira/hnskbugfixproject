@@ -22,112 +22,96 @@
     "totalCoinsReward": 137
   },
   "grammarRule": {
-    "formula": "Pronunciation – Word Stress and Sentence Stress",
+    "formula": "Under the weather / Hit the nail on the head / Once in a blue moon / Take it with a grain of salt / Blessing in disguise / Cost an arm and a leg",
     "explanation": {
-      "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2 എന്ന വിഷയത്തിൽ Under the weather, Hit the nail on the head, Once in a blue moon എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Under the weather, Hit the nail on the head, Once in a blue moon correctly in spoken English."
+      "ml": "ആശയവിനിമയം കൂടുതൽ മികവുറ്റതാക്കാൻ ഉപയോഗിക്കുന്ന അടുത്ത സെറ്റ് സ്വാഭാവിക ശൈലികൾ. ആരോഗ്യസ്ഥിതി, കൃത്യമായ നിഗമനങ്ങൾ, അപൂർവ്വത, ആശ്വാസങ്ങൾ എന്നിവ പ്രകടിപ്പിക്കാൻ ഇവ സഹായിക്കുന്നു.",
+      "en": "Master Native Idioms in Context: Vol 2 with clear formula: Under the weather / Hit the nail on the head / Once in a blue moon / Take it with a grain of salt / Blessing in disguise / Cost an arm and a leg"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: You hit the nail on the head.",
-      "en": "Golden Rule: Practice 'You hit the nail on the head.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഈ ശൈലികൾ അക്ഷരാർത്ഥത്തിൽ ഉള്ളതല്ല. ഉദാഹരണത്തിന് 'Under the weather' എന്നാൽ മഴ നനഞ്ഞു എന്നല്ല, ചെറിയ അസുഖം/ക്ഷീണം അനുഭവപ്പെടുന്നു എന്നാണ് അർത്ഥം.",
+      "en": "Golden Tip: ഈ ശൈലികൾ അക്ഷരാർത്ഥത്തിൽ ഉള്ളതല്ല. ഉദാഹരണത്തിന് 'Under the weather' എന്നാൽ മഴ നനഞ്ഞു എന്നല്ല, ചെറിയ അസുഖം/ക്ഷീണം അനുഭവപ്പെടുന്നു എന്നാണ് അർത്ഥം."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "hit",
-        "v2": "hit",
-        "v3": "hit",
-        "meaning": {
-          "ml": "കൃത്യമായി പറയുക",
-          "hi": "കൃത്യമായി പറയുക",
-          "ta": "കൃത്യമായി പറയുക"
-        },
-        "example": "You hit the nail on the head.",
-        "exampleMl": "കൃത്യമായി പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "miss",
-        "v2": "missed",
-        "v3": "missed",
-        "meaning": {
-          "ml": "നഷ്ടപ്പെടുക",
-          "hi": "നഷ്ടപ്പെടുക",
-          "ta": "നഷ്ടപ്പെടുക"
-        },
-        "example": "Don't miss the boat.",
-        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "burn",
-        "v2": "burnt",
-        "v3": "burnt",
-        "meaning": {
-          "ml": "അദ്ധ്വാനിക്കുക",
-          "hi": "അദ്ധ്വാനിക്കുക",
-          "ta": "അദ്ധ്വാനിക്കുക"
-        },
-        "example": "Burn the midnight oil.",
-        "exampleMl": "അദ്ധ്വാനിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "see",
-        "v2": "saw",
-        "v3": "seen",
-        "meaning": {
-          "ml": "കാണുക",
-          "hi": "देखना",
-          "ta": "பார்"
-        },
-        "example": "We see eye to eye.",
-        "exampleMl": "യോജിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "idiom",
+        "word": "Nuanced",
+        "partOfSpeech": "adjective",
+        "definition": "Characterized by subtle shades of meaning or expression.",
         "meaning": {
-          "ml": "ശൈലി",
-          "hi": "ശൈലി",
-          "ta": "ശൈലി"
+          "ml": "സൂക്ഷ്മ അർത്ഥതലങ്ങളുള്ള",
+          "hi": "सूक्ष्म अर्थ वाला",
+          "ta": "நுட்பமான பொருள் கொண்ட",
+          "te": "సూక్ష్మమైన",
+          "kn": "ಸೂಕ್ಷ್ಮವಾದ"
         },
-        "example": "We learned about idiom in today's lesson."
+        "example": "Her nuanced legal analysis distinguished between unintentional error and deliberate fraud."
       },
       {
-        "word": "metaphor",
+        "word": "Colloquialism",
+        "partOfSpeech": "noun",
+        "definition": "A word or phrase that is not formal or literary, typically one used in ordinary or familiar conversation.",
         "meaning": {
-          "ml": "ഉപമ",
-          "hi": "ഉപമ",
-          "ta": "ഉപമ"
+          "ml": "സാധാരണ സംഭാഷണ ശൈലി",
+          "hi": "बोलचाल का शब्द",
+          "ta": "பேச்சு வழக்குச் சொல்",
+          "te": "వ్యావహారిక పదం",
+          "kn": "ಆಡುಮಾತಿನ ಪ್ರಯೋಗ"
         },
-        "example": "We learned about metaphor in today's lesson."
+        "example": "Writers use authentic regional colloquialisms to make novel characters feel alive."
       },
       {
-        "word": "conversation",
+        "word": "Proverb",
+        "partOfSpeech": "noun",
+        "definition": "A short pithy saying in general use, stating a general truth or piece of advice.",
         "meaning": {
-          "ml": "സംഭാഷണം",
-          "hi": "സംഭാഷണം",
-          "ta": "സംഭാഷണം"
+          "ml": "പഴഞ്ചൊല്ല് / പ്രമാണം",
+          "hi": "कहावत / लोकोक्ति",
+          "ta": "பழமொழி",
+          "te": "సామెత",
+          "kn": "ಗಾದೆ"
         },
-        "example": "We learned about conversation in today's lesson."
+        "example": "'Actions speak louder than words' is a timeless universal proverb."
       },
       {
-        "word": "richness",
+        "word": "Contextual",
+        "partOfSpeech": "adjective",
+        "definition": "Depending on or relating to the circumstances that form the setting for an event, statement, or idea.",
         "meaning": {
-          "ml": "സമ്പന്നത",
-          "hi": "സമ്പന്നത",
-          "ta": "സമ്പന്നത"
+          "ml": "സന്ദർഭോചിതമായ",
+          "hi": "प्रासंगिक / संदर्भात्मक",
+          "ta": "சூழல் சார்ந்த",
+          "te": "సందర్భోచిత",
+          "kn": "ಸಂದರ್ಭೋಚಿತ"
         },
-        "example": "We learned about richness in today's lesson."
+        "example": "Translating idioms accurately requires a deep contextual understanding of culture."
       },
       {
-        "word": "fluency",
+        "word": "Wit",
+        "partOfSpeech": "noun",
+        "definition": "Mental sharpness and inventiveness; keen intelligence.",
         "meaning": {
-          "ml": "ഫ്ലുവെൻസി",
-          "hi": "ഫ്ലുവെൻസി",
-          "ta": "ഫ്ലുവെൻസി"
+          "ml": "ബുദ്ധിവൈഭവം / നർമ്മബോധം",
+          "hi": "हाजिरजवाबी / तीक्ष्ण बुद्धि",
+          "ta": "சமயோசித புத்தி / நகைச்சுவை உணர்வு",
+          "te": "సమయస్ఫూర్తి",
+          "kn": "ಸಮಯಪ್ರಜ್ಞೆ"
         },
-        "example": "We learned about fluency in today's lesson."
+        "example": "The barrister's courtroom wit and quick rebuttals delighted the jury."
+      },
+      {
+        "word": "Symbolism",
+        "partOfSpeech": "noun",
+        "definition": "The use of symbols to represent ideas or qualities.",
+        "meaning": {
+          "ml": "പ്രതീകാത്മകത",
+          "hi": "प्रतीकात्मकता",
+          "ta": "குறியீட்டுத் தன்மை",
+          "te": "ప్రతీకాత్మకత",
+          "kn": "ಸಾಂಕೇತಿಕತೆ"
+        },
+        "example": "The white dove carries global symbolism representing peace and harmony."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Native Everyday Idioms: Volume 2",
-        "ml": "പാഠം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2"
+        "en": "Concept Room: Native Idioms in Context: Vol 2",
+        "ml": "പാഠം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 2)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Under the weather / Hit the nail on the head / Once in a blue moon / Take it with a grain of salt / Blessing in disguise / Cost an arm and a leg",
+        "ml": "ആശയവിനിമയം കൂടുതൽ മികവുറ്റതാക്കാൻ ഉപയോഗിക്കുന്ന അടുത്ത സെറ്റ് സ്വാഭാവിക ശൈലികൾ. ആരോഗ്യസ്ഥിതി, കൃത്യമായ നിഗമനങ്ങൾ, അപൂർവ്വത, ആശ്വാസങ്ങൾ എന്നിവ പ്രകടിപ്പിക്കാൻ ഇവ സഹായിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "You hit the nail on the head.",
-        "Don't miss the boat.",
-        "Burn the midnight oil."
+        "I am feeling a bit under the weather today , so I will be working from home .",
+        "Priya ' s insightful analysis really hit the nail on the head regarding our customer retention drop .",
+        "He only travels back to his hometown once in a blue moon due to heavy business travel .",
+        "Losing that initial job offer was a blessing in disguise because it led her to start her own venture .",
+        "Importing proprietary enterprise database software can cost an arm and a leg for a seed startup ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Native Everyday Idioms: Volume 2",
-        "ml": "റീഡിങ് റൂം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2"
+        "en": "Reading Room: The Fortunate Misfortune",
+        "ml": "റീഡിങ് റൂം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 2)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "You hit the nail on the head.",
-          "meaningMl": "കൃത്യമായി പറയുക - You hit the nail on the head.",
-          "audioPrompt": "You hit the nail on the head."
+          "text": "When pharmaceutical researcher Dr. Meera was unexpectedly laid off during a major corporate restructuring, she felt completely devastated.",
+          "meaningMl": "കമ്പനിയിലെ പുനഃസംഘടനയ്ക്കിടെ അപ്രതീക്ഷിതമായി ജോലി നഷ്ടപ്പെട്ടപ്പോൾ ഗവേഷകയായ ഡോ. മീര കടുത്ത നിരാശയിലായി.",
+          "meaningHi": "कंपनी से निकाले जाने पर वैज्ञानिक डॉ. मीरा पूरी तरह टूट गई थीं।",
+          "meaningTa": "வேலையிலிருந்து நீக்கப்பட்ட போது ஆராய்ச்சியாளர் டாக்டர் மீரா மிகுந்த அதிர்ச்சியடைந்தார்.",
+          "audioPrompt": "When pharmaceutical researcher Dr. Meera was unexpectedly laid off during a major corporate restructuring, she felt completely devastated."
         },
         {
-          "text": "Don't miss the boat.",
-          "meaningMl": "നഷ്ടപ്പെടുക - Don't miss the boat.",
-          "audioPrompt": "Don't miss the boat."
+          "text": "Commercial laboratory equipment usually cost an arm and a leg, making independent private clinical research seem financially impossible.",
+          "meaningMl": "ലബോറട്ടറി ഉപകരണങ്ങൾക്ക് വലിയ വിലയായതിനാൽ, സ്വന്തമായി ഗവേഷണം നടത്തുക എന്നത് അപ്രാപ്യമായി തോന്നി.",
+          "meaningHi": "उपकरण बहुत महंगे थे, जिससे स्वतंत्र शोध असंभव लगता था।",
+          "meaningTa": "ஆய்வக கருவிகள் மிக அதிக விலை என்பதால் சொந்தமாக ஆராய்ச்சி செய்வது இயலாது என்று தோன்றியது.",
+          "audioPrompt": "Commercial laboratory equipment usually cost an arm and a leg, making independent private clinical research seem financially impossible."
         },
         {
-          "text": "Daily practice of Native Everyday Idioms: Volume 2 gives you great confidence in English.",
-          "meaningMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2 ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Native Everyday Idioms: Volume 2 gives you great confidence in English."
+          "text": "She felt under the weather for two weeks, wrestling with uncertainty and self-doubt in her modest suburban apartment.",
+          "meaningMl": "തന്റെ ചെറിയ അപ്പാർട്ട്‌മെന്റിൽ അനിശ്ചിതത്വത്തോടും സംശയങ്ങളോടും പൊരുതി രണ്ടാഴ്ചയോളം അവൾ മാനസികമായി തളർന്നു.",
+          "meaningHi": "दो हफ्तों तक वह अस्वस्थ और निराश महसूस कर रही थीं।",
+          "meaningTa": "இரண்டு வாரங்களாக மன உளைச்சலுடனும் சோர்வுடனும் அவர் வீட்டில் இருந்தார்.",
+          "audioPrompt": "She felt under the weather for two weeks, wrestling with uncertainty and self-doubt in her modest suburban apartment."
+        },
+        {
+          "text": "Her mentor offered wise counsel: 'Take corporate layoffs with a grain of salt; your core scientific genius remains undiminished.'",
+          "meaningMl": "അവരുടെ വഴികാട്ടി ഉപദേശിച്ചു: 'ഇത്തരം കാര്യങ്ങളെ ലഘുവായി കാണുക; നിന്റെ ശാസ്ത്രീയ പ്രതിഭയ്ക്ക് ഒരു കുറവും വന്നിട്ടില്ല.'",
+          "meaningHi": "उनके गुरु ने सलाह दी: 'इसे हल्के में लें, आपकी प्रतिभा कम नहीं हुई है।'",
+          "meaningTa": "அவரது ஆசிரியர் அறிவுரை கூறினார்: 'இதை பெரிதாக எடுத்துக்கொள்ளாதே, உன் திறமை குறையவில்லை.'",
+          "audioPrompt": "Her mentor offered wise counsel: 'Take corporate layoffs with a grain of salt; your core scientific genius remains undiminished.'"
+        },
+        {
+          "text": "Unconstrained by corporate bureaucracy, Meera discovered a novel low-cost botanical compound that cures tropical bacterial infections.",
+          "meaningMl": "കമ്പനി നിയന്ത്രണങ്ങളില്ലാതെ ഗവേഷണം നടത്തിയ മീര ബാക്ടീരിയ അണുബാധകളെ സുഖപ്പെടുത്തുന്ന ചെലവ് കുറഞ്ഞ ഒരു പ്രകൃതിദത്ത ഔഷധം കണ്ടെത്തി.",
+          "meaningHi": "मीरा ने एक सस्ती प्राकृतिक दवा की खोज की जो संक्रमण को ठीक करती है।",
+          "meaningTa": "மீரா குறைந்த விலையில் தொற்றுநோய்களைக் குணப்படுத்தும் ஒரு புதிய மூலிகையைக் கண்டறிந்தார்.",
+          "audioPrompt": "Unconstrained by corporate bureaucracy, Meera discovered a novel low-cost botanical compound that cures tropical bacterial infections."
+        },
+        {
+          "text": "Losing that comfortable corporate job proved to be the greatest blessing in disguise of her entire professional life.",
+          "meaningMl": "ആ പഴയ ജോലി നഷ്ടപ്പെട്ടത് അവളുടെ ജീവിതത്തിലെ ഏറ്റവും വലിയ അനുഗ്രഹമായി മാറിയെന്ന് കാലം തെളിയിച്ചു.",
+          "meaningHi": "वह नौकरी खोना उनके जीवन का सबसे बड़ा छिपा हुआ वरदान साबित हुआ।",
+          "meaningTa": "அந்த வேலையை இழந்ததே அவரது வாழ்வின் மிகப்பெரிய ஆசீர்வாதமாக மாறியது.",
+          "audioPrompt": "Losing that comfortable corporate job proved to be the greatest blessing in disguise of her entire professional life."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What idiom explains why independent private research seemed financially impossible?",
+            "ml": "സ്വകാര്യ ഗവേഷണം സാമ്പത്തികമായി അപ്രാപ്യമാണെന്ന് കാണിക്കാൻ ഉപയോഗിച്ച ശൈലി ഏതാണ്?",
+            "hi": "शोध को आर्थिक रूप से असंभव बताने के लिए किस मुहावरे का प्रयोग हुआ?",
+            "ta": "ஆராய்ச்சி செய்வது கடினம் என்பதைக் குறிக்கும் பழமொழி எது?"
+          },
+          "options": [
+            "Piece of cake",
+            "Cost an arm and a leg",
+            "Break the ice",
+            "Call it a day"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Equipment cost an arm and a leg (extremely expensive).",
+            "ml": "വലിയ ചെലവ് വരുന്നവ (Cost an arm and a leg)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did losing her corporate job ultimately turn out in the long run?",
+            "ml": "ജോലി നഷ്ടപ്പെട്ടത് ഒടുവിൽ അവൾക്ക് എങ്ങനെയാണ് ഭവിച്ചത്?",
+            "hi": "नौकरी खोना अंततः कैसा साबित हुआ?",
+            "ta": "வேலையை இழந்தது முடிவில் எவ்வாறு அமைந்தது?"
+          },
+          "options": [
+            "A total lifelong tragedy",
+            "The greatest blessing in disguise of her life",
+            "She never worked again",
+            "She moved to another planet"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The greatest blessing in disguise.",
+            "ml": "ഏറ്റവും വലിയ അനുഗ്രഹമായി മാറി (Blessing in disguise)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What does 'take it with a grain of salt' mean in her mentor's advice?",
+            "ml": "വഴികാട്ടിയുടെ ഉപദേശത്തിലെ 'take it with a grain of salt' എന്നതിന്റെ അർത്ഥം എന്താണ്?",
+            "hi": "'नमक के साथ लें' का क्या अर्थ है?",
+            "ta": "இதன் பொருள் என்ன?"
+          },
+          "options": [
+            "Eat food with plenty of salty seasoning",
+            "Maintain healthy skepticism and do not take criticism too heavily",
+            "Buy a bag of table salt",
+            "Throw salt over your shoulder"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Maintain healthy skepticism / do not take it too heavily.",
+            "ml": "പൂർണ്ണമായി വിശ്വസിക്കാതിരിക്കുക അല്ലെങ്കിൽ അമിതമായി കാര്യമാക്കാതിരിക്കുക."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d87_1",
-          "question": "Which word represents: 'കൃത്യമായി പറയുക'?",
+          "id": 1,
+          "question": "If a coworker says 'I'm feeling under the weather', what should you reply?",
           "options": [
-            "hit",
-            "decide",
-            "prepare",
-            "arrive"
+            "'Bring an umbrella then.'",
+            "'I'm sorry to hear that; please take rest and feel better soon.'",
+            "'What is the cloud temperature?'",
+            "'Why are you standing under the sky?'"
           ],
-          "answer": "hit",
-          "explanation": "hit എന്നാൽ കൃത്യമായി പറയുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Under the weather' എന്നാൽ ചെറിയ അസുഖം/ക്ഷീണം അനുഭവപ്പെടുന്നു എന്നാണ് അർത്ഥം. 'Please take rest and feel better soon' എന്നാണ് മറുപടി നൽകേണ്ടത്."
         },
         {
-          "id": "trap_d87_2",
-          "question": "What is the past form (V2) of 'miss'?",
+          "id": 2,
+          "question": "When someone 'hits the nail on the head', what did they do?",
           "options": [
-            "misss",
-            "missing",
-            "has miss",
-            "missed"
+            "Injured their thumb with a metal hammer.",
+            "Said or identified something with exact accuracy.",
+            "Built a wooden furniture chair.",
+            "Made a very loud noise."
           ],
-          "answer": "missed",
-          "explanation": "miss ന്റെ ഭൂതകാല രൂപം missed ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'Hit the nail on the head' എന്നാൽ ഒരു കാര്യത്തിന്റെ കൃത്യമായ കാരണം അല്ലെങ്കിൽ ശരി കണ്ടെത്തുക (exactly right) എന്നാണ് അർത്ഥം."
         },
         {
-          "id": "trap_d87_3",
-          "question": "What is the correct English word for 'ശൈലി'?",
+          "id": 3,
+          "question": "What does the expression 'once in a blue moon' mean?",
           "options": [
-            "station",
-            "partner",
-            "progress",
-            "idiom"
+            "Every single evening when the moon is visible.",
+            "Something that happens very rarely.",
+            "Whenever the ocean tide is blue.",
+            "Every twenty-four hours."
           ],
-          "answer": "idiom",
-          "explanation": "ശൈലി എന്നാൽ ഇംഗ്ലീഷിൽ idiom."
+          "correctIndex": 1,
+          "explanationMl": "'Once in a blue moon' എന്നാൽ വളരെ വിരളമായി മാത്രം സംഭവിക്കുന്നത് (very rarely) എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 87 Gate Exam (5 Qs)",

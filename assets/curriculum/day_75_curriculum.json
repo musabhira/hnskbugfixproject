@@ -22,112 +22,96 @@
     "totalCoinsReward": 125
   },
   "grammarRule": {
-    "formula": "Parallel Structure in Sentences",
+    "formula": "Could you take a message? / Please tell [Name] that [Message] and ask him to call me at [Number]",
     "explanation": {
-      "ml": "വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും എന്ന വിഷയത്തിൽ Could you take a message? / Please tell him that... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Could you take a message? / Please tell him that... correctly in spoken English."
+      "ml": "ഒരാൾ ഫോൺ എടുക്കാതിരിക്കുമ്പോൾ വ്യക്തമായ വോയ്‌സ്‌മെയിൽ സന്ദേശം നൽകാനും, മറ്റൊരാൾക്ക് വന്ന സന്ദേശം കൃത്യമായി കുറിച്ചെടുക്കാനുമുള്ള പ്രായോഗിക ഇംഗ്ലീഷ് പരിശീലനം.",
+      "en": "Master Voicemails & Taking Messages Professionally with clear formula: Could you take a message? / Please tell [Name] that [Message] and ask him to call me at [Number]"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Can I leave a message?",
-      "en": "Golden Rule: Practice 'Can I leave a message?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഒരു നല്ല മെസ്സേജിൽ 4 കാര്യങ്ങൾ ഉണ്ടായിരിക്കണം: ആര് വിളിച്ചു (Who), ഏത് സ്ഥാപനം (Company), എന്താണ് കാര്യം (Purpose), തിരിച്ചുവിളിക്കേണ്ട നമ്പർ (Callback Number).",
+      "en": "Golden Tip: ഒരു നല്ല മെസ്സേജിൽ 4 കാര്യങ്ങൾ ഉണ്ടായിരിക്കണം: ആര് വിളിച്ചു (Who), ഏത് സ്ഥാപനം (Company), എന്താണ് കാര്യം (Purpose), തിരിച്ചുവിളിക്കേണ്ട നമ്പർ (Callback Number)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "leave",
-        "v2": "left",
-        "v3": "left",
-        "meaning": {
-          "ml": "ഇറങ്ങുക",
-          "hi": "निकलना / छोड़ना",
-          "ta": "புறப்படு"
-        },
-        "example": "Can I leave a message?",
-        "exampleMl": "നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "note",
-        "v2": "noted",
-        "v3": "noted",
-        "meaning": {
-          "ml": "കുറിച്ചെടുക്കുക",
-          "hi": "കുറിച്ചെടുക്കുക",
-          "ta": "കുറിച്ചെടുക്കുക"
-        },
-        "example": "I have noted down your number.",
-        "exampleMl": "കുറിച്ചെടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "deliver",
-        "v2": "delivered",
-        "v3": "delivered",
-        "meaning": {
-          "ml": "പൂർത്തിയാക്കി നൽകുക",
-          "hi": "प्रस्तुत करना / पूरा करना",
-          "ta": "வழங்கு"
-        },
-        "example": "I will deliver the message.",
-        "exampleMl": "എത്തിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "remind",
-        "v2": "reminded",
-        "v3": "reminded",
-        "meaning": {
-          "ml": "ഓർമ്മിപ്പിക്കുക",
-          "hi": "ഓർമ്മിപ്പിക്കുക",
-          "ta": "ഓർമ്മിപ്പിക്കുക"
-        },
-        "example": "Please remind him to call.",
-        "exampleMl": "ഓർമ്മിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "voicemail",
+        "word": "Voicemail",
+        "partOfSpeech": "noun",
+        "definition": "A centralized electronic system which can store messages from telephone callers.",
         "meaning": {
-          "ml": "വോയ്‌സ് മെയിൽ",
-          "hi": "വോയ്‌സ് മെയിൽ",
-          "ta": "വോയ്‌സ് മെയിൽ"
+          "ml": "വോയ്‌സ്‌മെയിൽ / ഫോൺ സന്ദേശ റെക്കോർഡിംഗ്",
+          "hi": "वॉइसमेल / ध्वनि संदेश",
+          "ta": "குரல் அஞ்சல்",
+          "te": "వాయిస్‌మెయిల్",
+          "kn": "ಧ್ವನಿ ಸಂದೇಶ"
         },
-        "example": "We learned about voicemail in today's lesson."
+        "example": "I left a detailed voicemail explaining the delivery schedule changes."
       },
       {
-        "word": "note",
+        "word": "Urgency",
+        "partOfSpeech": "noun",
+        "definition": "Importance requiring swift action.",
         "meaning": {
-          "ml": "കുറിപ്പ്",
-          "hi": "കുറിപ്പ്",
-          "ta": "കുറിപ്പ്"
+          "ml": "അടിയന്തിര സ്വഭാവം / പ്രാധാന്യം",
+          "hi": "तात्कालिकता / अत्यावश्यकता",
+          "ta": "அவசரம்",
+          "te": "అత్యవసరం",
+          "kn": "ತುರ್ತು"
         },
-        "example": "We learned about note in today's lesson."
+        "example": "The nurse stressed the urgency of having the blood test results verified."
       },
       {
-        "word": "number",
+        "word": "Callback",
+        "partOfSpeech": "noun",
+        "definition": "An invitation or return telephone call made to someone who phoned earlier.",
         "meaning": {
-          "ml": "ഫോൺ നമ്പർ",
-          "hi": "ഫോൺ നമ്പർ",
-          "ta": "ഫോൺ നമ്പർ"
+          "ml": "തിരിച്ചുവിളിക്കൽ / കോൾബാക്ക്",
+          "hi": "कॉल बैक / पुनः कॉल",
+          "ta": "மீண்டும் அழைத்தல்",
+          "te": "తిరిగి కాల్ చేయడం",
+          "kn": "ಮರುಕರೆ"
         },
-        "example": "We learned about number in today's lesson."
+        "example": "Customer support promised a callback within thirty minutes."
       },
       {
-        "word": "client",
+        "word": "Timestamp",
+        "partOfSpeech": "noun",
+        "definition": "A digital record of the time of occurrence of a particular event.",
         "meaning": {
-          "ml": "ക്ലയന്റ്",
-          "hi": "ക്ലയന്റ്",
-          "ta": "ക്ലയന്റ്"
+          "ml": "സമയരേഖ / ടൈംസ്റ്റാമ്പ്",
+          "hi": "समय मोहर / टाइमस्टैम्प",
+          "ta": "நேர முத்திரை",
+          "te": "సమయ ముద్రిక",
+          "kn": "ಸಮಯದ ಮುದ್ರೆ"
         },
-        "example": "We learned about client in today's lesson."
+        "example": "The server logs display an exact timestamp for every received email."
       },
       {
-        "word": "urgent",
+        "word": "Dispatcher",
+        "partOfSpeech": "noun",
+        "definition": "A person who coordinates and transmits messages, vehicles, or emergency teams.",
         "meaning": {
-          "ml": "അടിയന്തിരം",
-          "hi": "അടിയന്തിരം",
-          "ta": "അടിയന്തിരം"
+          "ml": "വാഹനങ്ങളോ സന്ദേശങ്ങളോ നിയന്ത്രിക്കുന്നയാൾ / ഡിസ്പാച്ചർ",
+          "hi": "प्रेषक / डिस्पैचर",
+          "ta": "அனுப்புகை மேற்பார்வையாளர்",
+          "te": "సరుకు పంపే అధికారి",
+          "kn": "ರವಾನೆದಾರ"
         },
-        "example": "We learned about urgent in today's lesson."
+        "example": "The emergency ambulance dispatcher maintained calm communication with the accident caller."
+      },
+      {
+        "word": "Transcription",
+        "partOfSpeech": "noun",
+        "definition": "A written or printed representation of something spoken.",
+        "meaning": {
+          "ml": "സംഭാഷണം എഴുതിയെടുക്കൽ / ട്രാൻസ്ക്രിപ്ഷൻ",
+          "hi": "प्रतिलेखन / लिखित प्रति",
+          "ta": "எழுத்து வடிவம் / ஒலிபெயர்ப்பு",
+          "te": "లిఖిత రూపం",
+          "kn": "ಲಿಖಿತ ರೂಪ"
+        },
+        "example": "The court reporter produced an accurate transcription of the witness testimony."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Taking Messages & Leaving Voicemails",
-        "ml": "പാഠം: വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും"
+        "en": "Concept Room: Voicemails & Taking Messages Professionally",
+        "ml": "പാഠം: സന്ദേശങ്ങൾ കുറിച്ചെടുക്കലും വോയ്‌സ്‌മെയിലും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Could you take a message? / Please tell [Name] that [Message] and ask him to call me at [Number]",
+        "ml": "ഒരാൾ ഫോൺ എടുക്കാതിരിക്കുമ്പോൾ വ്യക്തമായ വോയ്‌സ്‌മെയിൽ സന്ദേശം നൽകാനും, മറ്റൊരാൾക്ക് വന്ന സന്ദേശം കൃത്യമായി കുറിച്ചെടുക്കാനുമുള്ള പ്രായോഗിക ഇംഗ്ലീഷ് പരിശീലനം."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Can I leave a message?",
-        "I have noted down your number.",
-        "I will deliver the message."
+        "Could you please take a message for Dr . Anand and request him to call me back ?",
+        "Please inform Ms . Deepa that our supplier confirmed the cargo shipment will arrive tomorrow .",
+        "Hi , you have reached the voicemail of David Paul ; please leave your name and number .",
+        "I am calling regarding the commercial lease contract and need a brief clarification .",
+        "He can reach me on my mobile at nine eight four seven zero one two three four five ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Taking Messages & Leaving Voicemails",
-        "ml": "റീഡിങ് റൂം: വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും"
+        "en": "Reading Room: The Emergency Dispatch Coordinator",
+        "ml": "റീഡിങ് റൂം: സന്ദേശങ്ങൾ കുറിച്ചെടുക്കലും വോയ്‌സ്‌മെയിലും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Can I leave a message?",
-          "meaningMl": "നൽകുക - Can I leave a message?",
-          "audioPrompt": "Can I leave a message?"
+          "text": "Paramedic communication supervisor Tariq commands the emergency medical ambulance dispatch center for a district of three million residents.",
+          "meaningMl": "മൂന്ന് ദശലക്ഷം ആളുകളുള്ള ജില്ലയിലെ എമർജൻസി ആംബുലൻസ് ഡിസ്പാച്ച് സെന്റർ നിയന്ത്രിക്കുന്നത് പാരമെഡിക് സൂപ്പർവൈസർ താരിഖ് ആണ്.",
+          "meaningHi": "तारिक तीन मिलियन आबादी वाले जिले के आपातकालीन एम्बुलेंस केंद्र की कमान संभालते हैं।",
+          "meaningTa": "தாரிக் மூன்று மில்லியன் மக்கள் வசிக்கும் மாவட்டத்தின் ஆம்புலன்ஸ் கட்டுப்பாட்டு மையத்தை வழிநடத்துகிறார்.",
+          "audioPrompt": "Paramedic communication supervisor Tariq commands the emergency medical ambulance dispatch center for a district of three million residents."
         },
         {
-          "text": "I have noted down your number.",
-          "meaningMl": "കുറിച്ചെടുക്കുക - I have noted down your number.",
-          "audioPrompt": "I have noted down your number."
+          "text": "Every incoming emergency call requires instant audio transcription and rapid verification of street coordinates.",
+          "meaningMl": "ഓരോ എമർജൻസി കോളും ഉടനടി സന്ദേശം കുറിച്ചെടുക്കാനും ലൊക്കേഷൻ വേഗത്തിൽ സ്ഥിരീകരിക്കാനും ആവശ്യപ്പെടുന്നു.",
+          "meaningHi": "हर आपातकालीन कॉल में पते का त्वरित सत्यापन आवश्यक होता है।",
+          "meaningTa": "ஒவ்வொரு அவசர அழைப்புக்கும் உடனடி முகவரி சரிபார்ப்பு தேவைப்படுகிறது.",
+          "audioPrompt": "Every incoming emergency call requires instant audio transcription and rapid verification of street coordinates."
         },
         {
-          "text": "Daily practice of Taking Messages & Leaving Voicemails gives you great confidence in English.",
-          "meaningMl": "വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Taking Messages & Leaving Voicemails gives you great confidence in English."
+          "text": "When telephone lines experience temporary congestion during major freeway accidents, callers are routed to an automated emergency queue.",
+          "meaningMl": "ഹൈവേ അപകടങ്ങൾ ഉണ്ടാകുമ്പോൾ ഫോൺ ലൈനുകളിൽ തിരക്ക് അനുഭവപ്പെട്ടാൽ, ആളുകളെ ഓട്ടോമേറ്റഡ് എമർജൻസി ക്യൂവിലേക്ക് മാറ്റുന്നു.",
+          "meaningHi": "हादसों के दौरान व्यस्त लाइनों को स्वचालित आपातकालीन कतार में भेजा जाता है।",
+          "meaningTa": "நெடுஞ்சாலை விபத்துகளின் போது அழைப்புகள் தானியங்கி வரிசைக்கு மாற்றப்படுகின்றன.",
+          "audioPrompt": "When telephone lines experience temporary congestion during major freeway accidents, callers are routed to an automated emergency queue."
+        },
+        {
+          "text": "Tariq trained his dispatch officers to record essential caller metrics: patient condition, exact landmarks, and callback telephone contacts.",
+          "meaningMl": "രോഗിയുടെ അവസ്ഥ, പ്രധാന അടയാളങ്ങൾ, തിരിച്ചുവിളിക്കേണ്ട നമ്പർ എന്നീ വിവരങ്ങൾ കൃത്യമായി രേഖപ്പെടുത്താൻ താരിഖ് തന്റെ ഓഫീസർമാരെ പരിശീലിപ്പിച്ചു.",
+          "meaningHi": "तारिक ने अपने अधिकारियों को मरीज की हालत और फोन नंबर रिकॉर्ड करने के लिए प्रशिक्षित किया।",
+          "meaningTa": "நோயாளியின் நிலை மற்றும் தொடர்பு எண்ணை பதிவு செய்ய தாரிக் தனது குழுவுக்கு பயிற்சி அளித்தார்.",
+          "audioPrompt": "Tariq trained his dispatch officers to record essential caller metrics: patient condition, exact landmarks, and callback telephone contacts."
+        },
+        {
+          "text": "A clear, well-documented message transmitted to first responders en route can save vital minutes between life and death.",
+          "meaningMl": "രക്ഷാപ്രവർത്തകർക്ക് നൽകുന്ന വ്യക്തവും കൃത്യവുമായ സന്ദേശം ജീവനും മരണത്തിനും ഇടയിലുള്ള നിർണായക മിനിറ്റുകളെ സംരക്ഷിക്കും.",
+          "meaningHi": "राहत कर्मियों को भेजा गया स्पष्ट संदेश जीवन और मृत्यु के बीच कीमती मिनट बचा सकता है।",
+          "meaningTa": "ஆம்புலன்ஸ் குழுவுக்கு அனுப்பப்படும் தெளிவான தகவல் விலைமதிப்பற்ற உயிர்களைக் காப்பாற்ற உதவும்.",
+          "audioPrompt": "A clear, well-documented message transmitted to first responders en route can save vital minutes between life and death."
+        },
+        {
+          "text": "Accurate communication during critical moments is the invisible thread that safeguards public health and human lives.",
+          "meaningMl": "നിർണായക നിമിഷങ്ങളിലെ കൃത്യമായ ആശയവിനിമയം പൊതുജനാരോഗ്യത്തെയും മനുഷ്യ ജീവനുകളെയും കാത്തുസൂക്ഷിക്കുന്ന അദൃശ്യ ചരടാണ്.",
+          "meaningHi": "संकट के समय सटीक संचार वह अदृश्य धागा है जो मानव जीवन की रक्षा करता है।",
+          "meaningTa": "நெருக்கடியான நேரங்களில் சரியான தொடர்பு என்பது மனித உயிர்களைக் காக்கும் கண்ணுக்குத் தெரியாத கயிறு.",
+          "audioPrompt": "Accurate communication during critical moments is the invisible thread that safeguards public health and human lives."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How large is the population served by the ambulance dispatch center?",
+            "ml": "ആംബുലൻസ് ഡിസ്പാച്ച് സെന്റർ എത്ര ജനസംഖ്യയ്ക്കാണ് സേവനം നൽകുന്നത്?",
+            "hi": "एम्बुलेंस केंद्र कितनी आबादी को सेवा प्रदान करता है?",
+            "ta": "மையம் எத்தனை மக்களுக்கு சேவை செய்கிறது?"
+          },
+          "options": [
+            "Three thousand",
+            "Three million residents",
+            "Ten thousand",
+            "One hundred"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A district of three million residents.",
+            "ml": "30 ലക്ഷം ജനങ്ങൾ (three million residents)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What essential metrics did Tariq train his officers to record?",
+            "ml": "ഏതൊക്കെ വിവരങ്ങൾ കുറിച്ചെടുക്കാനാണ് താരിഖ് ഉദ്യോഗസ്ഥരെ പരിശീലിപ്പിച്ചത്?",
+            "hi": "तारिक ने कौन से आंकड़े रिकॉर्ड करने का प्रशिक्षण दिया?",
+            "ta": "என்ன முக்கியமான தகவல்களைப் பதிவு செய்ய தாரிக் பயிற்சி அளித்தார்?"
+          },
+          "options": [
+            "Patient favorite food and colors",
+            "Patient condition, exact landmarks, and callback contacts",
+            "Vehicle model and paint color",
+            "Weather temperature forecast"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Patient condition, exact landmarks, and callback telephone contacts.",
+            "ml": "രോഗിയുടെ അവസ്ഥ, പ്രധാന അടയാളങ്ങൾ, തിരിച്ചുവിളിക്കേണ്ട നമ്പർ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What can a clear message transmitted to first responders en route save?",
+            "ml": "രക്ഷാപ്രവർത്തകർക്ക് നൽകുന്ന വ്യക്തമായ സന്ദേശം എന്ത് ലാഭിക്കാൻ സഹായിക്കും?",
+            "hi": "स्पष्ट संदेश क्या बचा सकता है?",
+            "ta": "தெளிவான செய்தி எதைச் சேமிக்க உதவும்?"
+          },
+          "options": [
+            "Gasoline fuel only",
+            "Vital minutes between life and death",
+            "Printer paper sheets",
+            "Toll road money"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Vital minutes between life and death.",
+            "ml": "ജീവനും മരണത്തിനും ഇടയിലുള്ള നിർണായക മിനിറ്റുകൾ."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d75_1",
-          "question": "Which word represents: 'ഇറങ്ങുക'?",
+          "id": 1,
+          "question": "What are the essential elements required when taking a telephone message?",
           "options": [
-            "decide",
-            "leave",
-            "remember",
-            "discover"
+            "Only the caller's first name.",
+            "Caller's name, company/organization, clear message, and callback phone number.",
+            "Only the time of day.",
+            "The caller's age and hobbies."
           ],
-          "answer": "leave",
-          "explanation": "leave എന്നാൽ ഇറങ്ങുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "ഒരു ഫോൺ മെസ്സേജിൽ വിളിച്ച ആളുടെ പേര്, സ്ഥാപനം, സന്ദേശം, തിരിച്ചുവിളിക്കേണ്ട നമ്പർ എന്നിവ നിർബന്ധമാണ്."
         },
         {
-          "id": "trap_d75_2",
-          "question": "What is the past form (V2) of 'note'?",
+          "id": 2,
+          "question": "Select the most professional phrase to ask for a caller's telephone number:",
           "options": [
-            "notes",
-            "noteing",
-            "has note",
-            "noted"
+            "Give me your phone number right now.",
+            "Could you please share the best phone number where you can be reached?",
+            "What is your number so he calls you?",
+            "Write your digits down."
           ],
-          "answer": "noted",
-          "explanation": "note ന്റെ ഭൂതകാല രൂപം noted ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'Could you please share the best phone number where you can be reached?' എന്നത് വളരെ മാന്യവും ഔദ്യോഗികവുമായ ചോദ്യമാണ്."
         },
         {
-          "id": "trap_d75_3",
-          "question": "What is the correct English word for 'വോയ്‌സ് മെയിൽ'?",
+          "id": 3,
+          "question": "Which of the following is the best opening for a professional voicemail recording?",
           "options": [
-            "routine",
-            "voicemail",
-            "progress",
-            "schedule"
+            "Hey, leave a text.",
+            "Hello, you have reached [Name] at [Company]. I am away from my desk; please leave a detailed message.",
+            "Do not call me right now.",
+            "I am sleeping, call back tomorrow."
           ],
-          "answer": "voicemail",
-          "explanation": "വോയ്‌സ് മെയിൽ എന്നാൽ ഇംഗ്ലീഷിൽ voicemail."
+          "correctIndex": 1,
+          "explanationMl": "ഔദ്യോഗിക വോയ്‌സ്‌മെയിലിൽ പേര്, സ്ഥാപനം, കാര്യം വ്യക്തമാക്കാൻ അഭ്യർത്ഥിക്കൽ എന്നിവ ഉണ്ടാകണം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 75 Gate Exam (5 Qs)",

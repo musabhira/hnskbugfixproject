@@ -22,112 +22,96 @@
     "totalCoinsReward": 110
   },
   "grammarRule": {
-    "formula": "Second Conditional",
+    "formula": "Consolidation of Modals, Polite Requests, Shopping, Transit & Social Fluency",
     "explanation": {
-      "ml": "ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം എന്ന വിഷയത്തിൽ Past, Future, Modals & Situation Integration എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Past, Future, Modals & Situation Integration correctly in spoken English."
+      "ml": "കഴിഞ്ഞ 60 ദിവസങ്ങളിലെ പഠന യാത്രയിലെ സുപ്രധാനമായ നാഴികക്കല്ല്! വസ്ത്രം വാങ്ങൽ, റസ്റ്റോറന്റ്, വിമാനത്താവളം, ഹോട്ടൽ ചെക്ക്-ഇൻ, മാന്യമായ ക്ഷണങ്ങൾ, ഉപദേശങ്ങൾ (Should/Must) എന്നിവയുടെ സമഗ്രമായ വിലയിരുത്തൽ.",
+      "en": "Master House 2 Grand Review & Gate Exam with clear formula: Consolidation of Modals, Polite Requests, Shopping, Transit & Social Fluency"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Conquer House 2.",
-      "en": "Golden Rule: Practice 'Conquer House 2.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 60 ദിവസങ്ങൾ പൂർത്തിയാക്കിയ നിങ്ങൾ ഇപ്പോൾ ദൈനംദിന ജീവിതത്തിലെ ഏത് സാഹചര്യത്തിലും (ഷോപ്പിംഗ്, യാത്ര, ഹോട്ടൽ, സൗഹൃദ സംഭാഷണം) ഇംഗ്ലീഷിൽ സംസാരിക്കാൻ പ്രാപ്തനാണ്!",
+      "en": "Golden Tip: 💡 60 ദിവസങ്ങൾ പൂർത്തിയാക്കിയ നിങ്ങൾ ഇപ്പോൾ ദൈനംദിന ജീവിതത്തിലെ ഏത് സാഹചര്യത്തിലും (ഷോപ്പിംഗ്, യാത്ര, ഹോട്ടൽ, സൗഹൃദ സംഭാഷണം) ഇംഗ്ലീഷിൽ സംസാരിക്കാൻ പ്രാപ്തനാണ്!"
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "conquer",
-        "v2": "conquered",
-        "v3": "conquered",
-        "meaning": {
-          "ml": "കീഴടക്കുക",
-          "hi": "കീഴടക്കുക",
-          "ta": "കീഴടക്കുക"
-        },
-        "example": "Conquer House 2.",
-        "exampleMl": "കീഴടക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "celebrate",
-        "v2": "celebrated",
-        "v3": "celebrated",
-        "meaning": {
-          "ml": "ആഘോഷിക്കുക",
-          "hi": "जश्न मनाना",
-          "ta": "கொண்டாடு"
-        },
-        "example": "Celebrate milestone.",
-        "exampleMl": "ആഘോഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "advance",
-        "v2": "advanced",
-        "v3": "advanced",
-        "meaning": {
-          "ml": "മുന്നേറുക",
-          "hi": "മുന്നേറുക",
-          "ta": "മുന്നേറുക"
-        },
-        "example": "Advance to House 3.",
-        "exampleMl": "മുന്നേറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "prove",
-        "v2": "proved",
-        "v3": "proved",
-        "meaning": {
-          "ml": "തെളിയിക്കുക",
-          "hi": "തെളിയിക്കുക",
-          "ta": "തെളിയിക്കുക"
-        },
-        "example": "Prove your fluency.",
-        "exampleMl": "തെളിയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "trophy",
+        "word": "Breakthrough",
+        "partOfSpeech": "noun",
+        "definition": "A significant stage or event in the development of something.",
         "meaning": {
-          "ml": "ട്രോഫി",
-          "hi": "ट्रॉफी",
-          "ta": "வெற்றிக் கோப்பை"
+          "ml": "സുപ്രധാന നാഴികക്കല്ല്",
+          "hi": "महत्वपूर्ण पड़ाव",
+          "ta": "முக்கிய மைல்கல்",
+          "te": "ముఖ్యమైన ముందడుగు",
+          "kn": "ಮಹತ್ವದ ಪ್ರಗತಿ"
         },
-        "example": "Win the House Master trophy."
+        "example": "Reaching Day Sixty is a monumental milestone in your English journey."
       },
       {
-        "word": "level",
+        "word": "Proficiency",
+        "partOfSpeech": "noun",
+        "definition": "A high degree of competence or skill; expertise.",
         "meaning": {
-          "ml": "ലെവൽ",
-          "hi": "ലെവൽ",
-          "ta": "ലെവൽ"
+          "ml": "പ്രാവീണ്യം / വൈദഗ്ധ്യം",
+          "hi": "दक्षता / प्रवीणता",
+          "ta": "தேர்ச்சி",
+          "te": "ప్రావీణ్యం",
+          "kn": "ಪ್ರಾವೀಣ್ಯತೆ"
         },
-        "example": "We learned about level in today's lesson."
+        "example": "Your conversational speaking proficiency has blossomed remarkably."
       },
       {
-        "word": "milestone",
+        "word": "Consolidation",
+        "partOfSpeech": "noun",
+        "definition": "The action or process of combining several things into a single more effective whole.",
         "meaning": {
-          "ml": "മൈൽസ്റ്റോൺ",
-          "hi": "മൈൽസ്റ്റോൺ",
-          "ta": "മൈൽസ്റ്റോൺ"
+          "ml": "ഏകോപനം / അറിവ് ദൃഢമാക്കൽ",
+          "hi": "सुदृढ़ीकरण",
+          "ta": "ஒருங்கிணைப்பு",
+          "te": "ఏకీకరణ",
+          "kn": "ದೃಢೀಕರಣ"
         },
-        "example": "We learned about milestone in today's lesson."
+        "example": "This grand gate exam serves as an empowering consolidation of House Two."
       },
       {
-        "word": "exam",
+        "word": "Transition",
+        "partOfSpeech": "noun",
+        "definition": "The process or a period of changing from one state or condition to another.",
         "meaning": {
-          "ml": "പരീക്ഷ",
-          "hi": "പരീക്ഷ",
-          "ta": "പരീക്ഷ"
+          "ml": "പരിവർത്തനം / അടുത്ത ഘട്ടത്തിലേക്കുള്ള മാറ്റം",
+          "hi": "संक्रमण / बदलाव",
+          "ta": "மாற்றம்",
+          "te": "పరివర్తన",
+          "kn": "ಪರಿವರ್ತನೆ"
         },
-        "example": "We learned about exam in today's lesson."
+        "example": "You are making a smooth transition into advanced workplace communication."
       },
       {
-        "word": "success",
+        "word": "Distinction",
+        "partOfSpeech": "noun",
+        "definition": "Excellence that sets someone or something apart from others.",
         "meaning": {
-          "ml": "വിജയം",
-          "hi": "വിജയം",
-          "ta": "വിജയം"
+          "ml": "ഉന്നത വിജയം / പ്രത്യേക പ്രശംസ",
+          "hi": "विशिष्टता",
+          "ta": "சிறப்புத் தகுதி",
+          "te": "విశిష్టత",
+          "kn": "ವಿಶಿಷ್ಟತೆ"
         },
-        "example": "We learned about success in today's lesson."
+        "example": "You have passed all spoken agility drills with flying colors and distinction."
+      },
+      {
+        "word": "Celebration",
+        "partOfSpeech": "noun",
+        "definition": "The action of celebrating an important day or event.",
+        "meaning": {
+          "ml": "ആഘോഷം",
+          "hi": "उत्सव / जश्न",
+          "ta": "கொண்டாட்டம்",
+          "te": "వేడుక",
+          "kn": "ಆಚರಣೆ"
+        },
+        "example": "Completing sixty days of consistent habit calls for a joyous celebration."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: House 2 Grand Review & Gate Exam",
-        "ml": "പാഠം: ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം"
+        "ml": "പാഠം: ഹൗസ് 2 ഗ്രാൻഡ് റിവ്യൂ & ഗേറ്റ് എക്സാം"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Consolidation of Modals, Polite Requests, Shopping, Transit & Social Fluency",
+        "ml": "കഴിഞ്ഞ 60 ദിവസങ്ങളിലെ പഠന യാത്രയിലെ സുപ്രധാനമായ നാഴികക്കല്ല്! വസ്ത്രം വാങ്ങൽ, റസ്റ്റോറന്റ്, വിമാനത്താവളം, ഹോട്ടൽ ചെക്ക്-ഇൻ, മാന്യമായ ക്ഷണങ്ങൾ, ഉപദേശങ്ങൾ (Should/Must) എന്നിവയുടെ സമഗ്രമായ വിലയിരുത്തൽ."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Conquer House 2.",
-        "Celebrate milestone.",
-        "Advance to House 3."
+        "I can now navigate shopping, transit, hotels, and dining in English with complete ease .",
+        "Consistent daily spoken practice transforms hesitation into articulate confident eloquence .",
+        "Would you like to review our favorite conversational highlights from House Two ?",
+        "We must celebrate this sixty-day habit achievement with pride and renewed enthusiasm .",
+        "I am ready to step boldly into advanced workplace communication and professional debate ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: House 2 Grand Review & Gate Exam",
-        "ml": "റീഡിങ് റൂം: ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം"
+        "ml": "റീഡിങ് റൂം: ഹൗസ് 2 ഗ്രാൻഡ് റിവ്യൂ & ഗേറ്റ് എക്സാം"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Conquer House 2.",
-          "meaningMl": "കീഴടക്കുക - Conquer House 2.",
-          "audioPrompt": "Conquer House 2."
+          "text": "Sixty days into his mountain expedition, young trekker Ashwin reached the expansive second plateau.",
+          "meaningMl": "പർവ്വതാരോഹണത്തിന്റെ അറുപതാം ദിവസം, യുവ മലകയറ്റക്കാരൻ അശ്വിൻ വിശാലമായ രണ്ടാമത്തെ പർവ്വത തട്ടിലെത്തിച്ചേർന്നു.",
+          "meaningHi": "अपने अभियान के साठवें दिन, युवा ट्रेकर अश्विन विशाल दूसरे पठार पर पहुँचे।",
+          "meaningTa": "தனது மலையேற்றத்தின் அறுபதாவது நாளில் அஸ்வின் இரண்டாவது பீடபூமியை அடைந்தான்.",
+          "audioPrompt": "Sixty days into his mountain expedition, young trekker Ashwin reached the expansive second plateau."
         },
         {
-          "text": "Celebrate milestone.",
-          "meaningMl": "ആഘോഷിക്കുക - Celebrate milestone.",
-          "audioPrompt": "Celebrate milestone."
+          "text": "Looking down through drifting morning mists, he saw the winding valleys of House One and House Two far below.",
+          "meaningMl": "പ്രഭാത മഞ്ഞിലൂടെ താഴേക്ക് നോക്കുമ്പോൾ ഹൗസ് ഒന്നും രണ്ടും വളരെ താഴെ താഴ്‌വരകളിലായി അവൻ കണ്ടു.",
+          "meaningHi": "सुबह के कोहरे में से नीचे देखते हुए, उसने घाटियों को बहुत नीचे देखा।",
+          "meaningTa": "காலை பனிமூட்டத்தின் வழியே அவன் கடந்து வந்த பாதைகளைப் பார்த்தான்.",
+          "audioPrompt": "Looking down through drifting morning mists, he saw the winding valleys of House One and House Two far below."
         },
         {
-          "text": "Daily practice of House 2 Grand Review & Gate Exam gives you great confidence in English.",
-          "meaningMl": "ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of House 2 Grand Review & Gate Exam gives you great confidence in English."
+          "text": "Where once steep rocky ledges intimidated his trembling steps, his calves were now seasoned and unshakeable.",
+          "meaningMl": "മുൻപ് കാലുകൾ വിറപ്പിച്ചിരുന്ന കുത്തനെയുള്ള പാറക്കെട്ടുകൾ കയറി അവന്റെ പേശികൾ ഇപ്പോൾ കരുത്തുറ്റതായി മാറിയിരുന്നു.",
+          "meaningHi": "जहाँ कभी खड़ी चट्टानें उसके कदमों को डराती थीं, अब उसके पैर अनुभवी और अटूट थे।",
+          "meaningTa": "செங்குத்தான பாறைகளைக் கடந்து அவனது கால்கள் இப்போது வலுவடைந்திருந்தன.",
+          "audioPrompt": "Where once steep rocky ledges intimidated his trembling steps, his calves were now seasoned and unshakeable."
+        },
+        {
+          "text": "His seasoned Sherpa guide patted his shoulder proudly: 'You no longer merely climb the mountain; the mountain lives within you.'",
+          "meaningMl": "അവന്റെ ഗൈഡ് സ്നേഹത്തോടെ അവന്റെ തോളിൽ തട്ടി: 'നീ ഇനി വെറുമൊരു മലകയറ്റക്കാരനല്ല; പർവ്വതത്തിന്റെ കരുത്ത് ഇപ്പോൾ നിന്നിലുണ്ട്.'",
+          "meaningHi": "गाइड ने गर्व से उसकी पीठ थपथपाई: 'अब पहाड़ तुम्हारे भीतर रहता है।'",
+          "meaningTa": "வழிகாட்டி பெருமையுடன்: 'மலையின் வலிமை இப்போது உனக்குள் இருக்கிறது' என்றார்.",
+          "audioPrompt": "His seasoned Sherpa guide patted his shoulder proudly: 'You no longer merely climb the mountain; the mountain lives within you.'"
+        },
+        {
+          "text": "Above him loomed the snow-crowned pinnacle of House Three, glowing golden in the brilliant morning sunrise.",
+          "meaningMl": "അവന് മുകളിലായി ഹൗസ് മൂന്നിന്റെ മഞ്ഞുമൂടിയ കൊടുമുടി പ്രഭാത സൂര്യകിരണങ്ങളിൽ സ്വർണ്ണനിറത്തിൽ തിളങ്ങിനിന്നു.",
+          "meaningHi": "उसके ऊपर सुबह के सूर्योदय में सुनहरी चमकती हुई अंतिम चोटी दिखाई दे रही थी।",
+          "meaningTa": "அவனுக்கு மேலே பனி படர்ந்த சிகரம் தங்க நிறத்தில் பிரகாசித்தது.",
+          "audioPrompt": "Above him loomed the snow-crowned pinnacle of House Three, glowing golden in the brilliant morning sunrise."
+        },
+        {
+          "text": "Unstoppable perseverance turns difficult aspirations into breathtaking vistas of victorious mastery.",
+          "meaningMl": "അചഞ്ചലമായ സ്ഥിരോത്സാഹം ഏത് വലിയ സ്വപ്നങ്ങളെയും വിജയത്തിന്റെ മനോഹരമായ കാഴ്ചകളാക്കി മാറ്റുന്നു.",
+          "meaningHi": "निरंतर दृढ़ता कठिन आकांक्षाओं को विजयी महारत के लुभावने दृश्यों में बदल देती है।",
+          "meaningTa": "விடாமுயற்சியே கடினமான லட்சியங்களை வெற்றிகரமான சாதனைகளாக மாற்றுகிறது.",
+          "audioPrompt": "Unstoppable perseverance turns difficult aspirations into breathtaking vistas of victorious mastery."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many days had Ashwin been trekking when he reached the second plateau?",
+            "ml": "രണ്ടാമത്തെ പർവ്വത തട്ടിലെത്തുമ്പോൾ അശ്വിൻ എത്ര ദിവസമായി മല കയറുകയായിരുന്നു?",
+            "hi": "अश्विन कितने दिनों से ट्रेकिंग कर रहा था?",
+            "ta": "அஸ்வின் எத்தனை நாட்களாக மலையேறினான்?"
+          },
+          "options": [
+            "Ten days",
+            "Sixty days",
+            "Five days",
+            "A hundred days"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Sixty days into his mountain expedition.",
+            "ml": "അറുപത് ദിവസമായി (Sixty days) അവൻ യാത്രയിലായിരുന്നു."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did his seasoned Sherpa guide say to him on the plateau?",
+            "ml": "ഗൈഡ് അശ്വിനോട് എന്താണ് പറഞ്ഞത്?",
+            "hi": "गाइड ने उससे क्या कहा?",
+            "ta": "வழிகாட்டி அவனிடம் என்ன கூறினார்?"
+          },
+          "options": [
+            "Go back down immediately",
+            "You no longer merely climb the mountain; the mountain lives within you",
+            "Give me more money",
+            "The weather is bad"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "'You no longer merely climb the mountain; the mountain lives within you.'",
+            "ml": "'പർവ്വതത്തിന്റെ കരുത്ത് ഇപ്പോൾ നിന്നിലുണ്ട്' എന്നാണ് ഗൈഡ് പറഞ്ഞത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What loomed above him glowing golden in the morning sunrise?",
+            "ml": "പ്രഭാത സൂര്യോദയത്തിൽ അവന് മുകളിലായി സ്വർണ്ണനിറത്തിൽ തിളങ്ങിനിന്നത് എന്തായിരുന്നു?",
+            "hi": "सूर्योदय में उसके ऊपर क्या चमक रहा था?",
+            "ta": "சூரிய உதயத்தில் மேலே என்ன பிரகாசித்தது?"
+          },
+          "options": [
+            "A black cloud",
+            "The snow-crowned pinnacle of House Three",
+            "An airplane",
+            "A wooden house"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The snow-crowned pinnacle of House Three.",
+            "ml": "ഹൗസ് മൂന്നിന്റെ മഞ്ഞുമൂടിയ കൊടുമുടിയാണ് തിളങ്ങിനിന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d60_1",
-          "question": "Which word represents: 'കീഴടക്കുക'?",
+          "question": "Select the sentence demonstrating situational spoken English mastery:",
           "options": [
-            "borrow",
-            "finish",
-            "forget",
-            "conquer"
+            "I can speak simple words only with hesitation.",
+            "I navigate shopping, transit, hotels, and dining with complete confidence.",
+            "English makes me tension so I avoid speaking.",
+            "I have learn 60 days but cannot talk."
           ],
-          "answer": "conquer",
-          "explanation": "conquer എന്നാൽ കീഴടക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'I navigate shopping, transit, hotels, and dining with complete confidence' reflects comprehensive situational fluency.",
+          "ruleHint": "Fluency Standard: Confident situational vocabulary and grammar."
         },
         {
-          "id": "trap_d60_2",
-          "question": "What is the past form (V2) of 'celebrate'?",
+          "question": "What modal verb indicates obligation to celebrate a major personal milestone?",
           "options": [
-            "celebrates",
-            "celebrated",
-            "celebrateing",
-            "has celebrate"
+            "Must ('We must celebrate this achievement!')",
+            "Might",
+            "Could",
+            "Would"
           ],
-          "answer": "celebrated",
-          "explanation": "celebrate ന്റെ ഭൂതകാല രൂപം celebrated ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Must' expresses heartfelt conviction and joyful obligation: 'We must celebrate this achievement!'",
+          "ruleHint": "Modal Usage: Must = positive conviction."
         },
         {
-          "id": "trap_d60_3",
-          "question": "What is the correct English word for 'ട്രോഫി'?",
+          "question": "What is the meaning of 'conquering a milestone' in language learning?",
           "options": [
-            "airport",
-            "success",
-            "trophy",
-            "journey"
+            "Fighting a battle with weapons",
+            "Successfully achieving a major learning goal with dedicated effort",
+            "Forgetting past lessons",
+            "Skipping days of practice"
           ],
-          "answer": "trophy",
-          "explanation": "ട്രോഫി എന്നാൽ ഇംഗ്ലീഷിൽ trophy."
+          "correctIndex": 1,
+          "explanation": "Conquering a milestone means successfully accomplishing a major developmental stage.",
+          "ruleHint": "Metaphor: Conquering a milestone = achieving a major stage."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "House 2 Cumulative Gate Exam",

@@ -22,112 +22,96 @@
     "totalCoinsReward": 127
   },
   "grammarRule": {
-    "formula": "Common Confusing Words in English",
+    "formula": "Yesterday I completed [Task]. Today I am focusing on [Task]. I have no blockers.",
     "explanation": {
-      "ml": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും എന്ന വിഷയത്തിൽ Yesterday I completed..., Today I am working on..., No blockers. എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Yesterday I completed..., Today I am working on..., No blockers. correctly in spoken English."
+      "ml": "ഐടിയിലും modern കമ്പനികളിലും ദിവസവും രാവിലെ 10-15 മിനിറ്റ് നടക്കുന്ന മീറ്റിംഗിൽ 3 കാര്യങ്ങൾ വ്യക്തമായി പറയണം: ഇന്നലെ എന്ത് ചെയ്തു, ഇന്ന് എന്ത് ചെയ്യുന്നു, എന്തെങ്കിലും തടസ്സങ്ങൾ (blockers) ഉണ്ടോ.",
+      "en": "Master Daily Standups & Agile Meetings with clear formula: Yesterday I completed [Task]. Today I am focusing on [Task]. I have no blockers."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Here is my daily update.",
-      "en": "Golden Rule: Practice 'Here is my daily update.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: സ്റ്റാൻഡ്അപ്പിൽ നീണ്ട കഥകൾ പറയരുത്. 60 സെക്കൻഡിൽ 3 പോയിന്റുകൾ ക്രിസ്പായി പറയുക: Yesterday I finished..., Today I am working on..., No blockers.",
+      "en": "Golden Tip: സ്റ്റാൻഡ്അപ്പിൽ നീണ്ട കഥകൾ പറയരുത്. 60 സെക്കൻഡിൽ 3 പോയിന്റുകൾ ക്രിസ്പായി പറയുക: Yesterday I finished..., Today I am working on..., No blockers."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "update",
-        "v2": "updated",
-        "v3": "updated",
-        "meaning": {
-          "ml": "വിവരങ്ങൾ അറിയിക്കുക",
-          "hi": "വിവരങ്ങൾ അറിയിക്കുക",
-          "ta": "വിവരങ്ങൾ അറിയിക്കുക"
-        },
-        "example": "Here is my daily update.",
-        "exampleMl": "വിവരങ്ങൾ അറിയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "block",
-        "v2": "blocked",
-        "v3": "blocked",
-        "meaning": {
-          "ml": "തടസ്സപ്പെടുക",
-          "hi": "തടസ്സപ്പെടുക",
-          "ta": "തടസ്സപ്പെടുക"
-        },
-        "example": "I have no blockers today.",
-        "exampleMl": "തടസ്സപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "collaborate",
-        "v2": "collaborated",
-        "v3": "collaborated",
-        "meaning": {
-          "ml": "ഒരുമിച്ച് പ്രവർത്തിക്കുക",
-          "hi": "ഒരുമിച്ച് പ്രവർത്തിക്കുക",
-          "ta": "ഒരുമിച്ച് പ്രവർത്തിക്കുക"
-        },
-        "example": "I will collaborate with team.",
-        "exampleMl": "ഒരുമിച്ച് പ്രവർത്തിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "sync",
-        "v2": "synced",
-        "v3": "synced",
-        "meaning": {
-          "ml": "ഏകോപിപ്പിക്കുക",
-          "hi": "ഏകോപിപ്പിക്കുക",
-          "ta": "ഏകോപിപ്പിക്കുക"
-        },
-        "example": "Let's sync up after lunch.",
-        "exampleMl": "ഏകോപിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "standup",
+        "word": "Blocker",
+        "partOfSpeech": "noun",
+        "definition": "An obstacle or issue that prevents a task from progressing or being completed.",
         "meaning": {
-          "ml": "സ്റ്റാൻഡ് അപ്പ്",
-          "hi": "സ്റ്റാൻഡ് അപ്പ്",
-          "ta": "സ്റ്റാൻഡ് അപ്പ്"
+          "ml": "തടസ്സം / ജോലി മുന്നോട്ട് പോകുന്നത് തടയുന്ന പ്രശ്നം",
+          "hi": "बाधा / अड़चन",
+          "ta": "முன்னேற்றத் தடை",
+          "te": "అడ్డంకి",
+          "kn": "ಅಡಚಣೆ"
         },
-        "example": "We learned about standup in today's lesson."
+        "example": "A delay in server access permissions is our primary technical blocker this morning."
       },
       {
-        "word": "task",
+        "word": "Sprint",
+        "partOfSpeech": "noun",
+        "definition": "A set period of time during which specific work has to be completed and made ready for review.",
         "meaning": {
-          "ml": "ടാസ്ക്",
-          "hi": "ടാസ്ക്",
-          "ta": "ടാസ്ക്"
+          "ml": "സ്പ്രിന്റ് / നിശ്ചിത ജോലി കാലയളവ് (രണ്ടാഴ്ച)",
+          "hi": "कार्य अवधि / स्प्रिंट",
+          "ta": "குறிப்பிட்ட பணிக்காலம் (ஸ்பிரிண்ட்)",
+          "te": "నిర్దిష్ట పని కాలం",
+          "kn": "ನಿರ್ದಿಷ್ಟ ಕೆಲಸದ ಅವಧಿ"
         },
-        "example": "We learned about task in today's lesson."
+        "example": "Our software development team committed to twelve user stories for this two-week sprint."
       },
       {
-        "word": "blocker",
+        "word": "Bottleneck",
+        "partOfSpeech": "noun",
+        "definition": "A situation that causes delay in a process or system.",
         "meaning": {
-          "ml": "തടസ്സം",
-          "hi": "തടസ്സം",
-          "ta": "തടസ്സം"
+          "ml": "തടസ്സമുണ്ടാക്കുന്ന ഘട്ടം / ബോട്ടിൽനെക്ക്",
+          "hi": "अवरोध / रुकावट",
+          "ta": "நெரிசல் புள்ளி / தாமதக் காரணி",
+          "te": "అవరోధం",
+          "kn": "ಅಡಚಣೆಯ ಹಂತ"
         },
-        "example": "We learned about blocker in today's lesson."
+        "example": "Manual quality assurance testing became a critical bottleneck in the release cycle."
       },
       {
-        "word": "milestone",
+        "word": "Deliverable",
+        "partOfSpeech": "noun",
+        "definition": "A thing able to be provided, especially as a product of a development process.",
         "meaning": {
-          "ml": "മൈൽസ്റ്റോൺ",
-          "hi": "മൈൽസ്റ്റോൺ",
-          "ta": "മൈൽസ്റ്റോൺ"
+          "ml": "സമർപ്പിക്കേണ്ട ഉൽപ്പന്നം / ഔട്ട്പുട്ട്",
+          "hi": "प्रदेय वस्तु / डिलीवरेबल",
+          "ta": "வழங்கப்பட வேண்டிய பணிப் பொருள்",
+          "te": "అందించాల్సిన పని",
+          "kn": "ಒಪ್ಪಿಸಬೇಕಾದ ಕಾರ್ಯ"
         },
-        "example": "We learned about milestone in today's lesson."
+        "example": "The design prototype is the primary deliverable expected by Friday afternoon."
       },
       {
-        "word": "deadline",
+        "word": "Standup",
+        "partOfSpeech": "noun",
+        "definition": "A short, regular meeting where team members stand and report their daily progress and challenges.",
         "meaning": {
-          "ml": "ഡെഡ്‌ലൈൻ",
-          "hi": "ഡെഡ്‌ലൈൻ",
-          "ta": "ഡെഡ്‌ലൈൻ"
+          "ml": "ഹ്രസ്വ ദൈനംദിന മീറ്റിംഗ് / സ്റ്റാൻഡ്അപ്പ്",
+          "hi": "दैनिक संक्षिप्त बैठक",
+          "ta": "தினசரி நிலவரக் கூட்டம்",
+          "te": "రోజువారీ సమీక్షా సమావేశం",
+          "kn": "ದೈನಂದಿನ ಕಿರು ಸಭೆ"
         },
-        "example": "We learned about deadline in today's lesson."
+        "example": "Our engineering squad holds a ten-minute virtual standup every morning at nine thirty."
+      },
+      {
+        "word": "Deployment",
+        "partOfSpeech": "noun",
+        "definition": "The action of bringing resources into effective action, or installing software on servers.",
+        "meaning": {
+          "ml": "സോഫ്റ്റ്‌വെയർ വിന്യാസം / ഡിപ്ലോയ്മെന്റ്",
+          "hi": "सॉफ्टवेयर परिनियोजन / डिप्लॉयमेंट",
+          "ta": "மென்பொருள் நிலைநிறுத்தம்",
+          "te": "సాఫ్ట్‌వేర్ విస్తరణ",
+          "kn": "ಸಾಫ್ಟ್‌ವೇರ್ ಅಳವಡಿಕೆ"
+        },
+        "example": "The production deployment completed smoothly with zero server downtime."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Daily Standups & Meeting Updates",
-        "ml": "പാഠം: ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും"
+        "en": "Concept Room: Daily Standups & Agile Meetings",
+        "ml": "പാഠം: ഡെയ്‌ലി സ്റ്റാൻഡ്അപ്പ് മീറ്റിംഗുകൾ (Agile Standup)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Yesterday I completed [Task]. Today I am focusing on [Task]. I have no blockers.",
+        "ml": "ഐടിയിലും modern കമ്പനികളിലും ദിവസവും രാവിലെ 10-15 മിനിറ്റ് നടക്കുന്ന മീറ്റിംഗിൽ 3 കാര്യങ്ങൾ വ്യക്തമായി പറയണം: ഇന്നലെ എന്ത് ചെയ്തു, ഇന്ന് എന്ത് ചെയ്യുന്നു, എന്തെങ്കിലും തടസ്സങ്ങൾ (blockers) ഉണ്ടോ."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Here is my daily update.",
-        "I have no blockers today.",
-        "I will collaborate with team."
+        "Yesterday I completed the user authentication module and wrote all unit test cases .",
+        "Today I am focusing on integrating the payment gateway API with our mobile backend .",
+        "I currently have no blockers and anticipate finishing this task before tomorrow noon .",
+        "I am facing one blocker regarding API server credentials from the third party vendor .",
+        "Can we take this detailed technical architectural discussion offline after the standup concludes ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Daily Standups & Meeting Updates",
-        "ml": "റീഡിങ് റൂം: ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും"
+        "en": "Reading Room: The Heartbeat of the Agile Sprint",
+        "ml": "റീഡിങ് റൂം: ഡെയ്‌ലി സ്റ്റാൻഡ്അപ്പ് മീറ്റിംഗുകൾ (Agile Standup)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Here is my daily update.",
-          "meaningMl": "വിവരങ്ങൾ അറിയിക്കുക - Here is my daily update.",
-          "audioPrompt": "Here is my daily update."
+          "text": "At nine-fifteen every morning, the fintech software development squad gathers around their digital Kanban progress board.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ ഒൻപതേകാലിന്, ഫിൻടെക് സോഫ്റ്റ്‌വെയർ ഡെവലപ്‌മെന്റ് ടീം തങ്ങളുടെ ഡിജിറ്റൽ കാൻബാൻ ബോർഡിന് ചുറ്റും ഒത്തുകൂടുന്നു.",
+          "meaningHi": "हर सुबह सवा नौ बजे फिनटेक टीम अपने डिजिटल बोर्ड के सामने इकट्ठा होती है।",
+          "meaningTa": "ஒவ்வொரு காலையிலும் ஒன்பதேகால் மணிக்கு மென்பொருள் குழு டிஜிட்டல் போர்டின் முன் கூடுகிறது.",
+          "audioPrompt": "At nine-fifteen every morning, the fintech software development squad gathers around their digital Kanban progress board."
         },
         {
-          "text": "I have no blockers today.",
-          "meaningMl": "തടസ്സപ്പെടുക - I have no blockers today.",
-          "audioPrompt": "I have no blockers today."
+          "text": "Scrum Master Deepa ensures the daily standup adheres strictly to a fifteen-minute timebox so productivity remains paramount.",
+          "meaningMl": "ജോലിയുടെ കാര്യക്ഷമത നിലനിർത്താൻ സ്ക്രം മാസ്റ്റർ ദീപ പ്രതിദിന മീറ്റിംഗ് കൃത്യമായി പതിനഞ്ച് മിനിറ്റിൽ ഒതുക്കുന്നു.",
+          "meaningHi": "स्क्रम मास्टर दीपा सुनिश्चित करती हैं कि बैठक पंद्रह मिनट में समाप्त हो।",
+          "meaningTa": "உற்பத்தித்திறனைப் பராமரிக்க கூட்டம் பதினைந்து நிமிடங்களில் முடிவதை தீபா உறுதி செய்கிறார்.",
+          "audioPrompt": "Scrum Master Deepa ensures the daily standup adheres strictly to a fifteen-minute timebox so productivity remains paramount."
         },
         {
-          "text": "Daily practice of Daily Standups & Meeting Updates gives you great confidence in English.",
-          "meaningMl": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Daily Standups & Meeting Updates gives you great confidence in English."
+          "text": "Each software engineer articulates three vital checkpoints: completed tasks from yesterday, today's targets, and emerging blockers.",
+          "meaningMl": "ഓരോ എഞ്ചിനീയറും മൂന്ന് പ്രധാന കാര്യങ്ങൾ വ്യക്തമാക്കുന്നു: ഇന്നലെ പൂർത്തിയാക്കിയവ, ഇന്നത്തെ ലക്ഷ്യങ്ങൾ, തടസ്സങ്ങൾ.",
+          "meaningHi": "प्रत्येक इंजीनियर तीन महत्वपूर्ण बिंदु बताता है: कल के कार्य, आज के लक्ष्य और बाधाएं।",
+          "meaningTa": "ஒவ்வொரு பொறியாளரும் மூன்று விஷயங்களைக் கூறுகிறார்: நேற்றைய பணிகள், இன்றைய இலக்குகள், தடைகள்.",
+          "audioPrompt": "Each software engineer articulates three vital checkpoints: completed tasks from yesterday, today's targets, and emerging blockers."
+        },
+        {
+          "text": "When junior developer Kiran reported a stalled cloud credential blocker, a senior architect immediately offered a swift offline resolution.",
+          "meaningMl": "ജൂനിയർ ഡെവലപ്പർ കിരൺ ക്ലൗഡ് പെർമിഷൻ തടസ്സം അറിയിച്ചപ്പോൾ, സീനിയർ ആർക്കിടെക്റ്റ് ഉടൻ തന്നെ മീറ്റിംഗിന് ശേഷം പരിഹാരം നൽകാമെന്ന് ഏറ്റു.",
+          "meaningHi": "किरण की समस्या पर एक वरिष्ठ आर्किटेक्ट ने तुरंत मदद की पेशकश की।",
+          "meaningTa": "கிரணின் தொழில்நுட்பத் தடைக்கு மூத்த நிபுணர் உடனடியாக உதவ முன்வந்தார்.",
+          "audioPrompt": "When junior developer Kiran reported a stalled cloud credential blocker, a senior architect immediately offered a swift offline resolution."
+        },
+        {
+          "text": "By identifying bottlenecks early every morning, the squad avoids painful last-minute scrambles before release deployments.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ തന്നെ തടസ്സങ്ങൾ തിരിച്ചറിയുന്നതിലൂടെ, സോഫ്റ്റ്‌വെയർ റിലീസിന് മുമ്പുള്ള അവസാന നിമിഷത്തെ വെപ്രാളം ടീം ഒഴിവാക്കുന്നു.",
+          "meaningHi": "सुबह ही बाधाओं को पहचानकर टीम अंतिम समय की परेशानी से बचती है।",
+          "meaningTa": "காலையிலேயே தடைகளைக் கண்டறிவதன் மூலம் கடைசி நிமிட பதற்றத்தை குழு தவிர்க்கிறது.",
+          "audioPrompt": "By identifying bottlenecks early every morning, the squad avoids painful last-minute scrambles before release deployments."
+        },
+        {
+          "text": "Transparent daily communication and rapid mutual assistance transform individual talents into an unstoppable high-velocity unit.",
+          "meaningMl": "സുതാര്യമായ പ്രതിദിന ആശയവിനിമയവും പരസ്പര സഹായവും വ്യക്തിഗത കഴിവുകളെ ശക്തമായ ഒരു മികച്ച ടീമാക്കി മാറ്റുന്നു.",
+          "meaningHi": "पारदर्शी दैनिक संचार व्यक्तिगत प्रतिभा को एक अजेय टीम में बदल देता है।",
+          "meaningTa": "தெளிவான தினசரி தொடர்பும் பரஸ்பர உதவியும் திறமைகளை ஒரு வலிமையான குழுவாக மாற்றுகிறது.",
+          "audioPrompt": "Transparent daily communication and rapid mutual assistance transform individual talents into an unstoppable high-velocity unit."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What is the maximum timebox for Deepa's daily standup meeting?",
+            "ml": "ദീപയുടെ സ്റ്റാൻഡ്അപ്പ് മീറ്റിംഗിന്റെ പരമാവധി സമയപരിധി എത്രയാണ്?",
+            "hi": "बैठक की अधिकतम समय सीमा क्या है?",
+            "ta": "கூட்டத்தின் அதிகபட்ச நேர வரம்பு என்ன?"
+          },
+          "options": [
+            "One hour",
+            "Fifteen minutes",
+            "Forty-five minutes",
+            "Three minutes"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Strictly adheres to a fifteen-minute timebox.",
+            "ml": "15 മിനിറ്റ് (fifteen-minute timebox)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What three vital checkpoints does each engineer articulate?",
+            "ml": "ഓരോ എഞ്ചിനീയറും വ്യക്തമാക്കുന്ന മൂന്ന് പ്രധാന കാര്യങ്ങൾ എന്തൊക്കെയാണ്?",
+            "hi": "प्रत्येक इंजीनियर किन तीन बिंदुओं को बताता है?",
+            "ta": "பொறியாளர்கள் கூறும் மூன்று விஷயங்கள் என்ன?"
+          },
+          "options": [
+            "Weather, breakfast, and traffic",
+            "Completed tasks from yesterday, today's targets, and emerging blockers",
+            "Vacation plans, salary, and hobbies",
+            "Computer brand, desk location, and shoes"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Completed tasks from yesterday, today's targets, and emerging blockers.",
+            "ml": "ഇന്നലെ പൂർത്തിയാക്കിയവ, ഇന്നത്തെ ലക്ഷ്യങ്ങൾ, തടസ്സങ്ങൾ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What does identifying bottlenecks early help the squad avoid?",
+            "ml": "തടസ്സങ്ങൾ നേരത്തെ തിരിച്ചറിയുന്നത് എന്ത് ഒഴിവാക്കാൻ സഹായിക്കുന്നു?",
+            "hi": "बाधाओं को जल्दी पहचानना क्या टालने में मदद करता है?",
+            "ta": "தடைகளை முன்கூட்டியே அறிவது எதைத் தவிர்க்க உதவுகிறது?"
+          },
+          "options": [
+            "Morning coffee breaks",
+            "Painful last-minute scrambles before release deployments",
+            "Weekly payroll bonuses",
+            "Office cleaning chores"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Painful last-minute scrambles before deployments.",
+            "ml": "റിലീസിന് മുമ്പുള്ള അവസാന നിമിഷത്തെ വെപ്രാളം."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d77_1",
-          "question": "Which word represents: 'വിവരങ്ങൾ അറിയിക്കുക'?",
+          "id": 1,
+          "question": "What does the phrase 'Let's take this offline' mean during a group standup meeting?",
           "options": [
-            "prepare",
-            "decide",
-            "update",
-            "arrive"
+            "Disconnect all office internet cables immediately.",
+            "Discuss this specific topic separately after the meeting with only the relevant individuals.",
+            "Delete the software project entirely.",
+            "Never talk about this topic ever again."
           ],
-          "answer": "update",
-          "explanation": "update എന്നാൽ വിവരങ്ങൾ അറിയിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Let's take this offline' എന്നാൽ മീറ്റിംഗിൽ സമയം കളയാതെ ബന്ധപ്പെട്ടവർ മാത്രം പിന്നീട് പ്രത്യേകം സംസാരിക്കുക എന്നാണ് അർത്ഥം."
         },
         {
-          "id": "trap_d77_2",
-          "question": "What is the past form (V2) of 'block'?",
+          "id": 2,
+          "question": "What are the three core questions of an agile daily standup?",
           "options": [
-            "blocking",
-            "has block",
-            "blocked",
-            "blocks"
+            "What did you eat? Where are you going? Who is your friend?",
+            "What did you accomplish yesterday? What will you do today? Are there any blockers?",
+            "How much do you earn? When will you resign? Who is your manager?",
+            "What is your title? How old are you? Where do you live?"
           ],
-          "answer": "blocked",
-          "explanation": "block ന്റെ ഭൂതകാല രൂപം blocked ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "സ്റ്റാൻഡ്അപ്പിലെ 3 ചോദ്യങ്ങൾ: ഇന്നലെ എന്ത് ചെയ്തു, ഇന്ന് എന്ത് ചെയ്യുന്നു, എന്തെങ്കിലും തടസ്സങ്ങൾ ഉണ്ടോ (blockers)."
         },
         {
-          "id": "trap_d77_3",
-          "question": "What is the correct English word for 'സ്റ്റാൻഡ് അപ്പ്'?",
+          "id": 3,
+          "question": "How long should an individual's standup update typically take?",
           "options": [
-            "station",
-            "partner",
-            "progress",
-            "standup"
+            "Under sixty to ninety seconds.",
+            "Fifteen minutes per person.",
+            "Forty-five minutes.",
+            "Two hours."
           ],
-          "answer": "standup",
-          "explanation": "സ്റ്റാൻഡ് അപ്പ് എന്നാൽ ഇംഗ്ലീഷിൽ standup."
+          "correctIndex": 0,
+          "explanationMl": "സ്റ്റാൻഡ്അപ്പിൽ ഒരാൾ പരമാവധി 60 മുതൽ 90 സെക്കൻഡിനുള്ളിൽ തങ്ങളുടെ അപ്‌ഡേറ്റ് ചുരുക്കി പറയണം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 77 Gate Exam (5 Qs)",

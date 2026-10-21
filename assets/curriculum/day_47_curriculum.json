@@ -22,112 +22,121 @@
     "totalCoinsReward": 97
   },
   "grammarRule": {
-    "formula": "Gerunds vs Infinitives",
+    "formula": "Would you like to + Base Verb (V1)? / I'd love to, thank you!",
     "explanation": {
-      "ml": "വിനയത്തോടെ ക്ഷണിക്കൽ എന്ന വിഷയത്തിൽ Would you like + to V1 / noun (Would you like tea?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Would you like + to V1 / noun (Would you like tea?) correctly in spoken English."
+      "ml": "മറ്റുള്ളവരെ സ്നേഹത്തോടും മാന്യതയോടും കൂടി ക്ഷണിക്കാൻ 'Would you like to...' (നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടോ?) ഉപയോഗിക്കുന്നു. ക്ഷണം സ്വീകരിക്കാൻ 'I'd love to, thank you!' (തീർച്ചയായും സന്തോഷത്തോടെ വരാം!) എന്ന് പറയുന്നു.",
+      "en": "Master Polite Invitations: Would you like to...? with clear formula: Would you like to + Base Verb (V1)? / I'd love to, thank you!"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I invite you to dinner.",
-      "en": "Golden Rule: Practice 'I invite you to dinner.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Do you want to come?' എന്ന് പരുഷമായി ചോദിക്കുന്നതിന് പകരം മാന്യമായി ചോദിക്കാൻ: ✅ 'Would you like to join us for dinner?' എന്ന് ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: 💡 'Do you want to come?' എന്ന് പരുഷമായി ചോദിക്കുന്നതിന് പകരം മാന്യമായി ചോദിക്കാൻ: ✅ 'Would you like to join us for dinner?' എന്ന് ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "invite",
-        "v2": "invited",
-        "v3": "invited",
+        "v1": "accompany",
+        "v2": "accompanyed",
+        "v3": "accompanyed",
         "meaning": {
-          "ml": "ക്ഷണിക്കുക",
-          "hi": "ക്ഷണിക്കുക",
-          "ta": "ക്ഷണിക്കുക"
+          "ml": "കൂടെ വരിക / അനുഗമിക്കുക",
+          "hi": "साथ जाना",
+          "ta": "உடன் செல்"
         },
-        "example": "I invite you to dinner.",
-        "exampleMl": "ക്ഷണിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Would you like to accompany me to the cultural art exhibition?",
+        "exampleMl": "Go somewhere with someone as a companion or escort."
       },
       {
-        "v1": "join",
-        "v2": "joined",
-        "v3": "joined",
+        "v1": "gather",
+        "v2": "gathered",
+        "v3": "gathered",
         "meaning": {
-          "ml": "കൂടുക",
-          "hi": "കൂടുക",
-          "ta": "കൂടുക"
+          "ml": "ഒത്തുകൂടുക",
+          "hi": "एकत्र होना",
+          "ta": "ஒன்றுகூடு"
         },
-        "example": "Would you like to join?",
-        "exampleMl": "കൂടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "visit",
-        "v2": "visited",
-        "v3": "visited",
-        "meaning": {
-          "ml": "സന്ദർശിക്കുക",
-          "hi": "സന്ദർശിക്കുക",
-          "ta": "സന്ദർശിക്കുക"
-        },
-        "example": "Would you like to visit?",
-        "exampleMl": "സന്ദർശിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "come",
-        "v2": "came",
-        "v3": "come",
-        "meaning": {
-          "ml": "വരുക",
-          "hi": "आना",
-          "ta": "வா"
-        },
-        "example": "Please come over.",
-        "exampleMl": "വരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Our entire extended family will gather for the harvest feast.",
+        "exampleMl": "Come together; assemble or accumulate."
       }
     ],
     "nouns": [
       {
-        "word": "invitation",
+        "word": "Invitation",
+        "partOfSpeech": "noun",
+        "definition": "A written or spoken request considering someone to go somewhere or to do something.",
         "meaning": {
-          "ml": "ക്ഷണം",
-          "hi": "ക്ഷണം",
-          "ta": "ക്ഷണം"
+          "ml": "ക്ഷണം / ക്ഷണക്കത്ത്",
+          "hi": "निमंत्रण",
+          "ta": "அழைப்பு",
+          "te": "ఆహ్వానం",
+          "kn": "ಆಹ್ವಾನ"
         },
-        "example": "We learned about invitation in today's lesson."
+        "example": "We received a cordial dinner invitation from our new neighbors."
       },
       {
-        "word": "party",
+        "word": "Accompany",
+        "partOfSpeech": "verb",
+        "definition": "Go somewhere with someone as a companion or escort.",
         "meaning": {
-          "ml": "പാർട്ടി",
-          "hi": "പാർട്ടി",
-          "ta": "പാർട്ടി"
+          "ml": "കൂടെ വരിക / അനുഗമിക്കുക",
+          "hi": "साथ जाना",
+          "ta": "உடன் செல்",
+          "te": "తోడుగా వెళ్ళు",
+          "kn": "ಜೊತೆಯಲ್ಲಿ ಹೋಗು"
         },
-        "example": "We learned about party in today's lesson."
+        "example": "Would you like to accompany me to the cultural art exhibition?"
       },
       {
-        "word": "tea",
+        "word": "Hospitality",
+        "partOfSpeech": "noun",
+        "definition": "The friendly and generous reception and entertainment of guests, visitors, or strangers.",
         "meaning": {
-          "ml": "ചായ",
-          "hi": "ചായ",
-          "ta": "ചായ"
+          "ml": "ആതിഥ്യമര്യാദ / സ്നേഹത്തോടെയുള്ള സ്വീകരണം",
+          "hi": "आतिथ्य सत्कार",
+          "ta": "விருந்தோம்பல்",
+          "te": "ఆతిథ్యం",
+          "kn": "ಆತಿಥ್ಯ"
         },
-        "example": "We learned about tea in today's lesson."
+        "example": "We were deeply humbled by their warm and generous hospitality."
       },
       {
-        "word": "guest",
+        "word": "Gather",
+        "partOfSpeech": "verb",
+        "definition": "Come together; assemble or accumulate.",
         "meaning": {
-          "ml": "അതിഥി",
-          "hi": "അതിഥി",
-          "ta": "അതിഥി"
+          "ml": "ഒത്തുകൂടുക",
+          "hi": "एकत्र होना",
+          "ta": "ஒன்றுகூடு",
+          "te": "సమావేశమగు",
+          "kn": "ಒಟ್ಟಿಗೆ ಸೇರು"
         },
-        "example": "We learned about guest in today's lesson."
+        "example": "Our entire extended family will gather for the harvest feast."
       },
       {
-        "word": "weekend",
+        "word": "Delightful",
+        "partOfSpeech": "adjective",
+        "definition": "Causing great pleasure, charm, or satisfaction.",
         "meaning": {
-          "ml": "വാരാന്ത്യം",
-          "hi": "വാരാന്ത്യം",
-          "ta": "വാരാന്ത്യം"
+          "ml": "വളരെ സന്തോഷം നൽകുന്ന / മനോഹരമായ",
+          "hi": "आनंददायक",
+          "ta": "மகிழ்ச்சியான",
+          "te": "ఆనందకరమైన",
+          "kn": "ಆನಂದದಾಯಕ"
         },
-        "example": "We learned about weekend in today's lesson."
+        "example": "It was a delightful evening filled with laughter, music, and stories."
+      },
+      {
+        "word": "Honor",
+        "partOfSpeech": "noun",
+        "definition": "High respect; great esteem, or a privilege.",
+        "meaning": {
+          "ml": "ബഹുമതി / വലിയ ഭാഗ്യം",
+          "hi": "सम्मान / सौभाग्य",
+          "ta": "கௌரவம்",
+          "te": "గౌరవం",
+          "kn": "ಗೌರವ"
+        },
+        "example": "It would be our greatest honor if you could grace our housewarming."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Polite Invitations: Would you like to...?",
-        "ml": "പാഠം: വിനയത്തോടെ ക്ഷണിക്കൽ"
+        "ml": "പാഠം: സ്നേഹപൂർവ്വമായ ക്ഷണങ്ങൾ: Would you like to...?"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Would you like to + Base Verb (V1)? / I'd love to, thank you!",
+        "ml": "മറ്റുള്ളവരെ സ്നേഹത്തോടും മാന്യതയോടും കൂടി ക്ഷണിക്കാൻ 'Would you like to...' (നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടോ?) ഉപയോഗിക്കുന്നു. ക്ഷണം സ്വീകരിക്കാൻ 'I'd love to, thank you!' (തീർച്ചയായും സന്തോഷത്തോടെ വരാം!) എന്ന് പറയുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I invite you to dinner.",
-        "Would you like to join?",
-        "Would you like to visit?"
+        "Would you like to join our family for dinner at our home this Saturday evening ?",
+        "We would be delighted if you could attend our daughter's graduation ceremony .",
+        "Would you like to have a cup of hot cardamom tea and homemade biscuits ?",
+        "Thank you so much for the thoughtful invite; I would love to attend !",
+        "Would you like to accompany me to the weekend book fair in town ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Polite Invitations: Would you like to...?",
-        "ml": "റീഡിങ് റൂം: വിനയത്തോടെ ക്ഷണിക്കൽ"
+        "ml": "റീഡിങ് റൂം: സ്നേഹപൂർവ്വമായ ക്ഷണങ്ങൾ: Would you like to...?"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I invite you to dinner.",
-          "meaningMl": "ക്ഷണിക്കുക - I invite you to dinner.",
-          "audioPrompt": "I invite you to dinner."
+          "text": "As autumn leaves turned amber, Uncle Joseph handwrote twenty ornate invitations on rice parchment.",
+          "meaningMl": "ശരത്കാല ഇലകൾ സ്വർണ്ണനിറമായപ്പോൾ ജോസഫ് അങ്കിൾ അരിപ്പേപ്പറിൽ ഭംഗിയുള്ള ഇരുപത് ക്ഷണക്കത്തുകൾ കൈകൊണ്ട് എഴുതി.",
+          "meaningHi": "जैसे ही पतझड़ के पत्ते सुनहरे हुए, अंकल जोसेफ ने हाथ से बीस सुंदर निमंत्रण लिखे।",
+          "meaningTa": "இலையுதிர் காலம் வந்ததும் ஜோசப் மாமா அழகான இருபது அழைப்பிதழ்களை எழுதினார்.",
+          "audioPrompt": "As autumn leaves turned amber, Uncle Joseph handwrote twenty ornate invitations on rice parchment."
         },
         {
-          "text": "Would you like to join?",
-          "meaningMl": "കൂടുക - Would you like to join?",
-          "audioPrompt": "Would you like to join?"
+          "text": "He personally visited each neighbor's porch, asking: 'Would you honor us with your presence at our harvest dinner?'",
+          "meaningMl": "അദ്ദേഹം നേരിട്ട് ഓരോ അയൽക്കാരന്റെയും വീട്ടിൽ ചെന്ന് ചോദിച്ചു: 'ഞങ്ങളുടെ വിളവെടുപ്പ് വിരുന്നിൽ പങ്കെടുത്ത് അനുഗ്രഹിക്കാമോ?'",
+          "meaningHi": "उन्होंने हर पड़ोसी से व्यक्तिगत रूप से पूछा: 'क्या आप हमारे रात्रिभोज में आकर हमारा सम्मान करेंगे?'",
+          "meaningTa": "அவர் ஒவ்வொரு வீட்டிற்கும் சென்று: 'எங்கள் விருந்தில் கலந்து கொள்வீர்களா?' என்று கேட்டார்.",
+          "audioPrompt": "He personally visited each neighbor's porch, asking: 'Would you honor us with your presence at our harvest dinner?'"
         },
         {
-          "text": "Daily practice of Polite Invitations: Would you like to...? gives you great confidence in English.",
-          "meaningMl": "വിനയത്തോടെ ക്ഷണിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Polite Invitations: Would you like to...? gives you great confidence in English."
+          "text": "Everyone accepted with bright smiles, eager to celebrate the annual festival under glowing garden lanterns.",
+          "meaningMl": "പൂന്തോട്ടത്തിലെ വർണ്ണ വിളക്കുകൾക്ക് താഴെ വാർഷിക ഉത്സവം ആഘോഷിക്കാൻ എല്ലാവരും സന്തോഷത്തോടെ ക്ഷണം സ്വീകരിച്ചു.",
+          "meaningHi": "हर किसी ने मुस्कुराते हुए बगीचे की लालटेन के नीचे वार्षिक त्योहार मनाने का निमंत्रण स्वीकार किया।",
+          "meaningTa": "விளக்குகளின் கீழ் திருவிழாவைக் கொண்டாட அனைவரும் புன்னகையுடன் அழைப்பை ஏற்றனர்.",
+          "audioPrompt": "Everyone accepted with bright smiles, eager to celebrate the annual festival under glowing garden lanterns."
+        },
+        {
+          "text": "Families brought earthen pots of stew, freshly pressed apple cider, and warm sourdough loaves.",
+          "meaningMl": "നാട്ടുകാർ ചൂടുള്ള പച്ചക്കറി വിഭവങ്ങളും ശുദ്ധമായ ആപ്പിൾ ജ്യൂസും നല്ല ബ്രെഡും ഒരുക്കിക്കൊണ്ടുവന്നു.",
+          "meaningHi": "परिवार मिट्टी के बर्तनों में खाना, ताज़ा सेब का रस और गर्म रोटियाँ लेकर आए।",
+          "meaningTa": "குடும்பங்கள் சுவையான உணவுகளையும் ஆப்பிள் பழச்சாறுகளையும் கொண்டு வந்தன.",
+          "audioPrompt": "Families brought earthen pots of stew, freshly pressed apple cider, and warm sourdough loaves."
+        },
+        {
+          "text": "Musicians played mellow violins as children chased fireflies across the moonlit meadow grass.",
+          "meaningMl": "കുട്ടികൾ പുൽത്തകിടിയിൽ മിന്നാമിനുങ്ങുകളുടെ പിന്നാലെ ഓടിയപ്പോൾ സംഗീതജ്ഞർ വയലിനിൽ മധുരമായ ഈണങ്ങൾ മീട്ടി.",
+          "meaningHi": "संगीतकारों ने मधुर वायलिन बजाया जबकि बच्चे चांदनी घास पर जुगनुओं का पीछा कर रहे थे।",
+          "meaningTa": "இசைக்கலைஞர்கள் வயலின் வாசித்தபோது குழந்தைகள் மின்மினிப் பூச்சிகளைத் துரத்தினர்.",
+          "audioPrompt": "Musicians played mellow violins as children chased fireflies across the moonlit meadow grass."
+        },
+        {
+          "text": "A heartfelt invitation builds a bridge of warmth where simple gatherings turn into lifelong memories.",
+          "meaningMl": "സ്നേഹം നിറഞ്ഞ ഒരു ക്ഷണം ലളിതമായ ഒത്തുചേരലുകളെപ്പോലും ജീവിതകാലം മുഴുവൻ ഓർക്കുന്ന നല്ല ഓർമ്മകളാക്കി മാറ്റുന്നു.",
+          "meaningHi": "एक हार्दिक निमंत्रण गर्मजोशी का एक पुल बनाता है जहाँ साधारण सभाएँ आजीवन यादों में बदल जाती हैं।",
+          "meaningTa": "அன்பான அழைப்பு எளிய சந்திப்புகளைக் கூட மறக்க முடியாத நினைவுகளாக மாற்றுகிறது.",
+          "audioPrompt": "A heartfelt invitation builds a bridge of warmth where simple gatherings turn into lifelong memories."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many ornate invitations did Uncle Joseph handwrite?",
+            "ml": "ജോസഫ് അങ്കിൾ കൈകൊണ്ട് എത്ര ക്ഷണക്കത്തുകളാണ് എഴുതിയത്?",
+            "hi": "अंकल जोसेफ ने हाथ से कितने निमंत्रण लिखे?",
+            "ta": "ஜோசப் மாமா எத்தனை அழைப்பிதழ்களை எழுதினார்?"
+          },
+          "options": [
+            "Five letters",
+            "Twenty ornate invitations",
+            "A hundred emails",
+            "Two postcards"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He handwrote twenty ornate invitations on rice parchment.",
+            "ml": "ഇരുപത് ക്ഷണക്കത്തുകളാണ് (twenty ornate invitations) എഴുതിയത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did families bring along to the harvest dinner?",
+            "ml": "വിളവെടുപ്പ് വിരുന്നിനായി കുടുംബങ്ങൾ എന്തൊക്കെയാണ് കൊണ്ടുവന്നത്?",
+            "hi": "परिवार अपने साथ क्या लेकर आए?",
+            "ta": "குடும்பங்கள் என்ன உணவுகளைக் கொண்டு வந்தன?"
+          },
+          "options": [
+            "Plastic toys",
+            "Pots of stew, apple cider, and sourdough loaves",
+            "Gold coins",
+            "Empty wooden plates"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They brought pots of stew, apple cider, and sourdough loaves.",
+            "ml": "ചൂടുള്ള ഭക്ഷണവും ആപ്പിൾ ജ്യൂസും ബ്രെഡുമാണ് കൊണ്ടുവന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What instrument did musicians play during the evening?",
+            "ml": "വൈകുന്നേരത്തെ സംഗീതത്തിനായി കലാകാരന്മാർ ഏത് ഉപകരണമാണ് വായിച്ചത്?",
+            "hi": "शाम को संगीतकारों ने कौन सा वाद्य यंत्र बजाया?",
+            "ta": "இசைக்கலைஞர்கள் என்ன இசைக்கருவியை வாசித்தனர்?"
+          },
+          "options": [
+            "Loud brass trumpets",
+            "Mellow violins",
+            "Electric synthesisers",
+            "Bass drums"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Musicians played mellow violins.",
+            "ml": "വയലിനാണ് (mellow violins) വായിച്ചത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d47_1",
-          "question": "Which word represents: 'ക്ഷണിക്കുക'?",
+          "question": "Select the most polite English phrasing to invite someone for lunch:",
           "options": [
-            "arrive",
-            "invite",
-            "decide",
-            "prepare"
+            "You must come eat lunch with me.",
+            "Would you like to join me for lunch?",
+            "Do you want lunch now?",
+            "Come to lunch with me directly."
           ],
-          "answer": "invite",
-          "explanation": "invite എന്നാൽ ക്ഷണിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Would you like to join me for lunch?' is the standard polite formula for invitations.",
+          "ruleHint": "Invitation Formula: Would you like to + V1?"
         },
         {
-          "id": "trap_d47_2",
-          "question": "What is the past form (V2) of 'join'?",
+          "question": "How do you enthusiastically accept a party invitation?",
           "options": [
-            "joins",
-            "joining",
-            "has join",
-            "joined"
+            "I will see if I am free or not.",
+            "I would love to! Thank you for inviting me.",
+            "Maybe I can come if I have time.",
+            "Okay fine whatever."
           ],
-          "answer": "joined",
-          "explanation": "join ന്റെ ഭൂതകാല രൂപം joined ആണ്."
+          "correctIndex": 1,
+          "explanation": "'I would love to! Thank you for inviting me' is warm, appreciative, and polite.",
+          "ruleHint": "Polite Acceptance: 'I would love to! Thank you for inviting me.'"
         },
         {
-          "id": "trap_d47_3",
-          "question": "What is the correct English word for 'ക്ഷണം'?",
+          "question": "Which form follows 'Would you like to'?",
           "options": [
-            "progress",
-            "station",
-            "invitation",
-            "partner"
+            "Base verb (V1: come, eat, join)",
+            "Past verb (V2: came, ate, joined)",
+            "Continuous (-ing: coming, eating)",
+            "Past participle (V3: eaten)"
           ],
-          "answer": "invitation",
-          "explanation": "ക്ഷണം എന്നാൽ ഇംഗ്ലീഷിൽ invitation."
+          "correctIndex": 0,
+          "explanation": "'Would you like to' is followed by the bare base verb (infinitive with 'to'): 'to come / to join'.",
+          "ruleHint": "Infinitive Rule: Would you like to + Base Verb (V1)."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 47 Gate Exam (5 Qs)",

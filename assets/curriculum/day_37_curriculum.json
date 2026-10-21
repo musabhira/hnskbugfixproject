@@ -22,112 +22,133 @@
     "totalCoinsReward": 87
   },
   "grammarRule": {
-    "formula": "WH-Questions – Formation and Usage",
+    "formula": "Subject + was / were + Verb-ing + when / while...",
     "explanation": {
-      "ml": "അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Was/Were + Verb-ing (While I was sleeping) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Was/Were + Verb-ing (While I was sleeping) correctly in spoken English."
+      "ml": "കഴിഞ്ഞകാലത്ത് ഒരു പ്രത്യേക സമയത്ത് നടന്നുകൊണ്ടിരുന്ന പ്രവൃത്തിയെ സൂചിപ്പിക്കാൻ 'was / were + verb-ing' (ചെയ്യുകയായിരുന്നു) ഉപയോഗിക്കുന്നു.",
+      "en": "Master Past Continuous: Was/Were + ing with clear formula: Subject + was / were + Verb-ing + when / while..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I was sleeping then.",
-      "en": "Golden Rule: Practice 'I was sleeping then.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 പെട്ടെന്ന് സംഭവിച്ച ഒരു കാര്യം (V2) നടക്കുമ്പോൾ, നിലവിൽ നടന്നുകൊണ്ടിരുന്ന പ്രവൃത്തിയെ 'was/were + ing' ഉപയോഗിച്ച് പറയുന്നു: 'I was sleeping when the phone rang'.",
+      "en": "Golden Tip: 💡 പെട്ടെന്ന് സംഭവിച്ച ഒരു കാര്യം (V2) നടക്കുമ്പോൾ, നിലവിൽ നടന്നുകൊണ്ടിരുന്ന പ്രവൃത്തിയെ 'was/were + ing' ഉപയോഗിച്ച് പറയുന്നു: 'I was sleeping when the phone rang'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "sleep",
-        "v2": "slept",
-        "v3": "slept",
+        "v1": "interrupt",
+        "v2": "interrupted",
+        "v3": "interrupted",
         "meaning": {
-          "ml": "ഉറങ്ങുക",
-          "hi": "सोना",
-          "ta": "தூங்கு"
+          "ml": "തടസ്സപ്പെടുത്തുക / ഇടയിൽ കയറുക",
+          "hi": "बाधा डालना",
+          "ta": "குறுக்கிடு"
         },
-        "example": "I was sleeping then.",
-        "exampleMl": "ഉറങ്ങുകയായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "A loud knock interrupted our quiet dinner conversation.",
+        "exampleMl": "Stop the continuous progress of an activity or process."
       },
       {
-        "v1": "drive",
-        "v2": "drove",
-        "v3": "driven",
+        "v1": "observe",
+        "v2": "observeed",
+        "v3": "observeed",
         "meaning": {
-          "ml": "ഓടിക്കുക",
-          "hi": "गाड़ी चलाना",
-          "ta": "ஓட்டு"
+          "ml": "നിരീക്ഷിക്കുക / ശ്രദ്ധിക്കുക",
+          "hi": "निरीक्षण करना",
+          "ta": "கவனி"
         },
-        "example": "He was driving home.",
-        "exampleMl": "ഓടിക്കുകയായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We were observing migratory cranes through high-power binoculars.",
+        "exampleMl": "Notice or perceive something and register it as being significant."
       },
       {
-        "v1": "study",
-        "v2": "studied",
-        "v3": "studied",
+        "v1": "surround",
+        "v2": "surrounded",
+        "v3": "surrounded",
         "meaning": {
-          "ml": "പഠിക്കുക",
-          "hi": "अध्ययन करना",
-          "ta": "படி"
+          "ml": "വളയുക / ചുറ്റപ്പെടുക",
+          "hi": "घेरना",
+          "ta": "சூழ்ந்துகொள்"
         },
-        "example": "They were studying.",
-        "exampleMl": "പഠിക്കുകയായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "rain",
-        "v2": "rained",
-        "v3": "rained",
-        "meaning": {
-          "ml": "പെയ്യുക",
-          "hi": "बारिश होना",
-          "ta": "மழை பெய்"
-        },
-        "example": "It was raining heavily.",
-        "exampleMl": "പെയ്യുകയായിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Towering pine trees were surrounding the wooden lake cabin.",
+        "exampleMl": "Be all around someone or something."
       }
     ],
     "nouns": [
       {
-        "word": "moment",
+        "word": "Simultaneous",
+        "partOfSpeech": "adjective",
+        "definition": "Occurring, operating, or done at the same time.",
         "meaning": {
-          "ml": "നിമിഷം",
-          "hi": "നിമിഷം",
-          "ta": "നിമിഷം"
+          "ml": "ഒരേസമയം നടക്കുന്ന",
+          "hi": "समकालिक",
+          "ta": "ஒரே நேரத்தில் நிகழும்",
+          "te": "ఏకకాలంలో జరిగే",
+          "kn": "ಏಕಕಾಲೀನ"
         },
-        "example": "We learned about moment in today's lesson."
+        "example": "Two simultaneous announcements were playing across the airport speakers."
       },
       {
-        "word": "accident",
+        "word": "Interrupt",
+        "partOfSpeech": "verb",
+        "definition": "Stop the continuous progress of an activity or process.",
         "meaning": {
-          "ml": "അപകടം",
-          "hi": "അപകടം",
-          "ta": "അപകടം"
+          "ml": "തടസ്സപ്പെടുത്തുക / ഇടയിൽ കയറുക",
+          "hi": "बाधा डालना",
+          "ta": "குறுக்கிடு",
+          "te": "అంతరాయం కలిగించు",
+          "kn": "ಅಡ್ಡಿಪಡಿಸು"
         },
-        "example": "We learned about accident in today's lesson."
+        "example": "A loud knock interrupted our quiet dinner conversation."
       },
       {
-        "word": "call",
+        "word": "Ongoing",
+        "partOfSpeech": "adjective",
+        "definition": "Still in progress; continuing.",
         "meaning": {
-          "ml": "ഫോൺകോൾ",
-          "hi": "ഫോൺകോൾ",
-          "ta": "ഫോൺകോൾ"
+          "ml": "തുടർന്നുകൊണ്ടിരിക്കുന്ന",
+          "hi": "जारी / चालू",
+          "ta": "தொடர்ந்து கொண்டிருக்கும்",
+          "te": "కొనసాగుతున్న",
+          "kn": "ಮುಂದುವರಿಯುತ್ತಿರುವ"
         },
-        "example": "We learned about call in today's lesson."
+        "example": "The road repair works were ongoing throughout the stormy monsoon week."
       },
       {
-        "word": "storm",
+        "word": "Observe",
+        "partOfSpeech": "verb",
+        "definition": "Notice or perceive something and register it as being significant.",
         "meaning": {
-          "ml": "കൊടുങ്കാറ്റ്",
-          "hi": "കൊടുങ്കാറ്റ്",
-          "ta": "കൊടുങ്കാറ്റ്"
+          "ml": "നിരീക്ഷിക്കുക / ശ്രദ്ധിക്കുക",
+          "hi": "निरीक्षण करना",
+          "ta": "கவனி",
+          "te": "పరిశీలించు",
+          "kn": "ವೀಕ್ಷಿಸು"
         },
-        "example": "We learned about storm in today's lesson."
+        "example": "We were observing migratory cranes through high-power binoculars."
       },
       {
-        "word": "sound",
+        "word": "Coincidence",
+        "partOfSpeech": "noun",
+        "definition": "A remarkable concurrence of events or circumstances without apparent causal connection.",
         "meaning": {
-          "ml": "ശബ്ദം",
-          "hi": "ശബ്ദം",
-          "ta": "ശബ്ദം"
+          "ml": "യാദൃശ്ചിക സംഭവം",
+          "hi": "संयोग",
+          "ta": "எதேச்சையான நிகழ்வு",
+          "te": "యాదృచ్ఛికం",
+          "kn": "ಕಾಕತಾಳೀಯ"
         },
-        "example": "We learned about sound in today's lesson."
+        "example": "It was a pure coincidence that we were both reading the exact same book."
+      },
+      {
+        "word": "Surround",
+        "partOfSpeech": "verb",
+        "definition": "Be all around someone or something.",
+        "meaning": {
+          "ml": "വളയുക / ചുറ്റപ്പെടുക",
+          "hi": "घेरना",
+          "ta": "சூழ்ந்துகொள்",
+          "te": "చుట్టుముట్టు",
+          "kn": "ಸುತ್ತುವರೆ"
+        },
+        "example": "Towering pine trees were surrounding the wooden lake cabin."
       }
     ]
   },
@@ -137,7 +158,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Past Continuous: Was/Were + ing",
-        "ml": "പാഠം: അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ"
+        "ml": "പാഠം: കഴിഞ്ഞകാലത്ത് തുടർന്നുകൊണ്ടിരുന്ന പ്രവൃത്തികൾ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + was / were + Verb-ing + when / while...",
+        "ml": "കഴിഞ്ഞകാലത്ത് ഒരു പ്രത്യേക സമയത്ത് നടന്നുകൊണ്ടിരുന്ന പ്രവൃത്തിയെ സൂചിപ്പിക്കാൻ 'was / were + verb-ing' (ചെയ്യുകയായിരുന്നു) ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I was sleeping then.",
-        "He was driving home.",
-        "They were studying."
+        "I was working on the project presentation when my laptop battery died .",
+        "While my mother was preparing tea, my father was reading the morning newspaper .",
+        "They were waiting outside the cinema hall because it was raining heavily .",
+        "What were you doing at seven yesterday evening when I phoned your mobile ?",
+        "The children were laughing and splashing happily in the shallow garden pool ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +240,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Past Continuous: Was/Were + ing",
-        "ml": "റീഡിങ് റൂം: അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ"
+        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞകാലത്ത് തുടർന്നുകൊണ്ടിരുന്ന പ്രവൃത്തികൾ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I was sleeping then.",
-          "meaningMl": "ഉറങ്ങുകയായിരുന്നു - I was sleeping then.",
-          "audioPrompt": "I was sleeping then."
+          "text": "Last night at nine, Dr. Sen was calibrating his rooftop telescope under a starry sky.",
+          "meaningMl": "ഇന്നലെ രാത്രി ഒമ്പത് മണിക്ക് നക്ഷത്രങ്ങൾ നിറഞ്ഞ ആകാശത്തിന് താഴെ ഡോ. സെൻ തന്റെ ടെലിസ്കോപ്പ് ക്രമീകരിക്കുകയായിരുന്നു.",
+          "meaningHi": "कल रात नौ बजे डॉ. सेन तारों भरे आसमान के नीचे अपनी दूरबीन को व्यवस्थित कर रहे थे।",
+          "meaningTa": "நேற்று இரவு ஒன்பது மணிக்கு டாக்டர் சென் தனது தொலைநோக்கியைச் சரிசெய்து கொண்டிருந்தார்.",
+          "audioPrompt": "Last night at nine, Dr. Sen was calibrating his rooftop telescope under a starry sky."
         },
         {
-          "text": "He was driving home.",
-          "meaningMl": "ഓടിക്കുകയായിരുന്നു - He was driving home.",
-          "audioPrompt": "He was driving home."
+          "text": "Down in the courtyard, his students were setting up sensitive astronomical cameras.",
+          "meaningMl": "മുറ്റത്ത് താഴെ, അദ്ദേഹത്തിന്റെ വിദ്യാർത്ഥികൾ കൃത്യതയുള്ള ആസ്ട്രോണമി ക്യാമറകൾ ഒരുക്കുകയായിരുന്നു.",
+          "meaningHi": "नीचे प्रांगण में, उनके छात्र संवेदनशील खगोलीय कैमरे लगा रहे थे।",
+          "meaningTa": "முற்றத்தில் மாணவர்கள் தொலைநோக்கிக் கேமராக்களை அமைத்துக் கொண்டிருந்தனர்.",
+          "audioPrompt": "Down in the courtyard, his students were setting up sensitive astronomical cameras."
         },
         {
-          "text": "Daily practice of Past Continuous: Was/Were + ing gives you great confidence in English.",
-          "meaningMl": "അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Past Continuous: Was/Were + ing gives you great confidence in English."
+          "text": "Gentle night breezes were blowing through the tall pine branches on the quiet hill.",
+          "meaningMl": "ശാന്തമായ കുന്നിലെ പൈൻ മരച്ചില്ലകളിലൂടെ രാത്രിയിലെ ഇളംകാറ്റ് വീശിക്കൊണ്ടിരുന്നു.",
+          "meaningHi": "शांत पहाड़ी पर चीड़ की ऊंची शाखाओं में से रात की हल्की हवा बह रही थी।",
+          "meaningTa": "அமைதியான மலையில் பைன் மரங்களின் வழியே இரவுத் தென்றல் வீசிக்கொண்டிருந்தது.",
+          "audioPrompt": "Gentle night breezes were blowing through the tall pine branches on the quiet hill."
+        },
+        {
+          "text": "While everyone was waiting eagerly, a shadow began creeping across the full silver moon.",
+          "meaningMl": "എല്ലാവരും ആകാംക്ഷയോടെ കാത്തിരിക്കുമ്പോൾ, വെള്ളി ചന്ദ്രന് കുറുകെ ഒരു നിഴൽ പതിയെ പടരാൻ തുടങ്ങി.",
+          "meaningHi": "जब हर कोई बेसब्री से इंतज़ार कर रहा था, तब पूरे चाँदी जैसे चाँद पर एक छाया रेंगने लगी।",
+          "meaningTa": "அனைவரும் ஆவலுடன் காத்திருந்தபோது, வெள்ளி நிலவின் மீது ஒரு நிழல் படரத் தொடங்கியது.",
+          "audioPrompt": "While everyone was waiting eagerly, a shadow began creeping across the full silver moon."
+        },
+        {
+          "text": "A rare lunar eclipse was transforming the glowing night sky into a mystical deep crimson.",
+          "meaningMl": "അപൂർവ്വമായ ഒരു ചന്ദ്രഗ്രഹണം രാത്രി ആകാശത്തെ മാന്ത്രികമായ കടും ചുവപ്പ് നിറത്തിലേക്ക് മാറ്റിക്കൊണ്ടിരുന്നു.",
+          "meaningHi": "एक दुर्लभ चंद्र ग्रहण रात के चमकते आकाश को एक रहस्यमयी गहरे लाल रंग में बदल रहा था।",
+          "meaningTa": "ஒரு அரிய சந்திர கிரகணம் இரவு வானத்தை ஆழமான சிவப்பு நிறமாக மாற்றிக்கொண்டிருந்தது.",
+          "audioPrompt": "A rare lunar eclipse was transforming the glowing night sky into a mystical deep crimson."
+        },
+        {
+          "text": "Witnessing celestial wonders while learning together creates memories that never fade.",
+          "meaningMl": "ഒരുമിച്ച് പഠിക്കുന്നതിനിടയിൽ ആകാശവിസ്മയങ്ങൾക്ക് സാക്ഷ്യം വഹിക്കുന്നത് ഒരിക്കലും മായാത്ത ഓർമ്മകൾ സമ്മാനിക്കുന്നു.",
+          "meaningHi": "एक साथ सीखते हुए आकाशीय चमत्कारों को देखना ऐसी यादें बनाता है जो कभी फीकी नहीं पड़तीं।",
+          "meaningTa": "ஒன்றாகக் கற்கும் போது வானத்து அதிசயங்களைக் காண்பது மறக்க முடியாத நினைவுகளை உருவாக்குகிறது.",
+          "audioPrompt": "Witnessing celestial wonders while learning together creates memories that never fade."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What was Dr. Sen doing on the rooftop last night?",
+            "ml": "ഇന്നലെ രാത്രി ഡോ. സെൻ മേൽക്കൂരയിൽ എന്തെടുക്കുകയായിരുന്നു?",
+            "hi": "कल रात डॉ. सेन छत पर क्या कर रहे थे?",
+            "ta": "நேற்று இரவு டாக்டர் சென் மாடியில் என்ன செய்து கொண்டிருந்தார்?"
+          },
+          "options": [
+            "Sleeping on a cot",
+            "Calibrating his rooftop telescope",
+            "Painting the walls",
+            "Drinking hot soup"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Dr. Sen was calibrating his rooftop telescope.",
+            "ml": "തന്റെ ടെലിസ്കോപ്പ് ക്രമീകരിക്കുകയായിരുന്നു (calibrating his telescope)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What were the students doing in the courtyard below?",
+            "ml": "താഴെ മുറ്റത്ത് വിദ്യാർത്ഥികൾ എന്തെടുക്കുകയായിരുന്നു?",
+            "hi": "छात्र नीचे प्रांगण में क्या कर रहे थे?",
+            "ta": "மாணவர்கள் கீழே என்ன செய்து கொண்டிருந்தனர்?"
+          },
+          "options": [
+            "Playing loud music",
+            "Setting up sensitive astronomical cameras",
+            "Eating street snacks",
+            "Reading novels"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They were setting up sensitive astronomical cameras.",
+            "ml": "ആസ്ട്രോണമി ക്യാമറകൾ ഒരുക്കുകയായിരുന്നു."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Into what color was the lunar eclipse transforming the sky?",
+            "ml": "ആകാശത്തെ ചന്ദ്രഗ്രഹണം ഏത് നിറത്തിലേക്കാണ് മാറ്റിക്കൊണ്ടിരുന്നത്?",
+            "hi": "ग्रहण आसमान को किस रंग में बदल रहा था?",
+            "ta": "கிரகணம் வானத்தை என்ன நிறமாக மாற்றியது?"
+          },
+          "options": [
+            "Bright neon green",
+            "A mystical deep crimson",
+            "Pitch pitch black",
+            "Golden yellow"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It was transforming the sky into a mystical deep crimson.",
+            "ml": "കടും ചുവപ്പ് നിറത്തിലേക്കാണ് (deep crimson) മാറ്റിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d37_1",
-          "question": "Which word represents: 'ഉറങ്ങുക'?",
+          "question": "Select the sentence with correct past continuous grammar:",
           "options": [
-            "sleep",
-            "decide",
-            "prepare",
-            "arrive"
+            "I was read when he entered.",
+            "I was reading when he entered.",
+            "I were reading when he entered.",
+            "I reading when he entered."
           ],
-          "answer": "sleep",
-          "explanation": "sleep എന്നാൽ ഉറങ്ങുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Subject 'I' takes 'was' + verb-ing: 'I was reading when he entered.'",
+          "ruleHint": "Past Continuous Formula: I was + verb-ing."
         },
         {
-          "id": "trap_d37_2",
-          "question": "What is the past form (V2) of 'drive'?",
+          "question": "Choose the correct sentence with 'While' connecting two continuous actions:",
           "options": [
-            "drove",
-            "driveing",
-            "has drive",
-            "drives"
+            "While she was singing, he was playing the guitar.",
+            "While she sang, he was played the guitar.",
+            "While she was sing, he played.",
+            "While she is singing, he was playing."
           ],
-          "answer": "drove",
-          "explanation": "drive ന്റെ ഭൂതകാല രൂപം drove ആണ്."
+          "correctIndex": 0,
+          "explanation": "Two parallel ongoing past actions: 'While she was singing, he was playing the guitar.'",
+          "ruleHint": "Parallel Actions: While [was/were -ing], [was/were -ing]."
         },
         {
-          "id": "trap_d37_3",
-          "question": "What is the correct English word for 'നിമിഷം'?",
+          "question": "How do you ask what someone was doing at a specific past time?",
           "options": [
-            "station",
-            "partner",
-            "moment",
-            "progress"
+            "What did you doing yesterday at eight?",
+            "What were you doing yesterday at eight?",
+            "What was you doing yesterday at eight?",
+            "What you were doing yesterday at eight?"
           ],
-          "answer": "moment",
-          "explanation": "നിമിഷം എന്നാൽ ഇംഗ്ലീഷിൽ moment."
+          "correctIndex": 1,
+          "explanation": "'You' requires 'were' inverted: 'What were you doing yesterday at eight?'",
+          "ruleHint": "Question Rule: WH + were + you + verb-ing?"
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 37 Gate Exam (5 Qs)",

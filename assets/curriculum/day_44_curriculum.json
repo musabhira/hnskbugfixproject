@@ -22,112 +22,96 @@
     "totalCoinsReward": 94
   },
   "grammarRule": {
-    "formula": "Past Modals",
+    "formula": "Here is my passport / Which gate does flight [X] board from?",
     "explanation": {
-      "ml": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും എന്ന വിഷയത്തിൽ Check-in, Boarding, Luggage & Security എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Check-in, Boarding, Luggage & Security correctly in spoken English."
+      "ml": "വിമാനത്താവളത്തിലെ ചെക്ക്-ഇൻ കൗണ്ടറിലും സുരക്ഷാ പരിശോധനയിലും ഉപയോഗിക്കുന്ന വാക്യങ്ങൾ: 'Here is my passport and ticket' (ഇതാ എന്റെ പാസ്‌പോർട്ടും ടിക്കറ്റും), 'Do I need to take out my laptop?' (ലാപ്‌ടോപ്പ് പുറത്തെടുക്കേണ്ടതുണ്ടോ?), 'Which boarding gate?' (ഏത് ബോർഡിംഗ് ഗേറ്റ്?).",
+      "en": "Master At the Airport & Flight Journey with clear formula: Here is my passport / Which gate does flight [X] board from?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Check in your luggage.",
-      "en": "Golden Rule: Practice 'Check in your luggage.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വിമാനത്താവള പദാവലി: Boarding pass (ബോർഡിംഗ് പാസ്), Gate (ഗേറ്റ്), Check-in luggage (ലഗേജ്), Cabin bag (കൈയിൽ കരുതുന്ന ബാഗ്), Security check (സുരക്ഷാ പരിശോധന).",
+      "en": "Golden Tip: 💡 വിമാനത്താവള പദാവലി: Boarding pass (ബോർഡിംഗ് പാസ്), Gate (ഗേറ്റ്), Check-in luggage (ലഗേജ്), Cabin bag (കൈയിൽ കരുതുന്ന ബാഗ്), Security check (സുരക്ഷാ പരിശോധന)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "check in",
-        "v2": "checked in",
-        "v3": "checked in",
-        "meaning": {
-          "ml": "ചെക്ക്-ഇൻ ചെയ്യുക",
-          "hi": "ചെക്ക്-ഇൻ ചെയ്യുക",
-          "ta": "ചെക്ക്-ഇൻ ചെയ്യുക"
-        },
-        "example": "Check in your luggage.",
-        "exampleMl": "ചെക്ക്-ഇൻ ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "board",
-        "v2": "boarded",
-        "v3": "boarded",
-        "meaning": {
-          "ml": "കയറുക",
-          "hi": "കയറുക",
-          "ta": "കയറുക"
-        },
-        "example": "Board the flight.",
-        "exampleMl": "കയറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "land",
-        "v2": "landed",
-        "v3": "landed",
-        "meaning": {
-          "ml": "ഇറങ്ങുക",
-          "hi": "ഇറങ്ങുക",
-          "ta": "ഇറങ്ങുക"
-        },
-        "example": "Flight landed safely.",
-        "exampleMl": "ഇറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "fly",
-        "v2": "flew",
-        "v3": "flown",
-        "meaning": {
-          "ml": "പറക്കുക",
-          "hi": "പറക്കുക",
-          "ta": "പറക്കുക"
-        },
-        "example": "We are flying to Dubai.",
-        "exampleMl": "പറക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "airport",
+        "word": "Boarding",
+        "partOfSpeech": "noun",
+        "definition": "The action of getting on or into a ship, aircraft, or other vehicle.",
         "meaning": {
-          "ml": "എയർപോർട്ട്",
-          "hi": "എയർപോർട്ട്",
-          "ta": "എയർപോർട്ട്"
+          "ml": "വിമാനത്തിൽ കയറുന്ന പ്രക്രിയ / ബോർഡിംഗ്",
+          "hi": "विमान पर चढ़ना",
+          "ta": "விமானத்தில் ஏறுதல்",
+          "te": "ఎక్కడం",
+          "kn": "ವಿಮಾನ ಹತ್ತುವುದು"
         },
-        "example": "We learned about airport in today's lesson."
+        "example": "Final boarding announcement has been made for flight six hundred and two."
       },
       {
-        "word": "flight",
+        "word": "Terminal",
+        "partOfSpeech": "noun",
+        "definition": "A building at an airport where passengers transfer between ground transportation and the facilities that allow them to board.",
         "meaning": {
-          "ml": "ഫ്ലൈറ്റ്",
-          "hi": "ഫ്ലൈറ്റ്",
-          "ta": "ഫ്ലൈറ്റ്"
+          "ml": "വിമാനത്താവള ടെർമിനൽ",
+          "hi": "हवाई अड्डा टर्मिनल",
+          "ta": "முனையம்",
+          "te": "టెర్మినల్",
+          "kn": "ಟರ್ಮಿನಲ್"
         },
-        "example": "We learned about flight in today's lesson."
+        "example": "International departures operate exclusively from Terminal Two."
       },
       {
-        "word": "passport",
+        "word": "Declaration",
+        "partOfSpeech": "noun",
+        "definition": "A formal or explicit statement or announcement, especially customs goods.",
         "meaning": {
-          "ml": "പാസ്പോർട്ട്",
-          "hi": "പാസ്പോർട്ട്",
-          "ta": "പാസ്പോർട്ട്"
+          "ml": "കസ്റ്റംസ് പ്രഖ്യാപന രേഖ / സ്റ്റേറ്റ്മെന്റ്",
+          "hi": "घोषणा पत्र",
+          "ta": "அறிவிப்புப் படிவம்",
+          "te": "ప్రకటన పత్రం",
+          "kn": "ಘೋಷಣಾ ಪತ್ರ"
         },
-        "example": "We learned about passport in today's lesson."
+        "example": "Please fill out this customs declaration form before arriving at immigration."
       },
       {
-        "word": "gate",
+        "word": "Security",
+        "partOfSpeech": "noun",
+        "definition": "Procedures followed or measures taken to ensure the safety of an aircraft and passengers.",
         "meaning": {
-          "ml": "ഗേറ്റ്",
-          "hi": "ഗേറ്റ്",
-          "ta": "ഗേറ്റ്"
+          "ml": "സുരക്ഷാ പരിശോധന വിഭാഗം",
+          "hi": "सुरक्षा जांच",
+          "ta": "பாதுகாப்புப் பிரிவு",
+          "te": "భద్రతా తనిఖీ",
+          "kn": "ಭದ್ರತಾ ತಪಾಸಣೆ"
         },
-        "example": "We learned about gate in today's lesson."
+        "example": "Place all metallic items and mobile phones in the security scanner tray."
       },
       {
-        "word": "luggage",
+        "word": "Conveyor",
+        "partOfSpeech": "noun",
+        "definition": "A continuous moving band of fabric, rubber, or metal used for moving baggage.",
         "meaning": {
-          "ml": "ലഗേജ്",
-          "hi": "ലഗേജ്",
-          "ta": "ലഗേജ്"
+          "ml": "ലഗേജ് വരുന്ന കൺവെയർ ബെൽറ്റ്",
+          "hi": "कन्वेयर बेल्ट",
+          "ta": "பொருட்கள் வரும் பட்டை",
+          "te": "కన్వేయర్ బెల్ట్",
+          "kn": "ಕನ್ವೇಯರ್ ಬೆಲ್ಟ್"
         },
-        "example": "We learned about luggage in today's lesson."
+        "example": "Passengers collected their checked luggage from conveyor belt number four."
+      },
+      {
+        "word": "Immigration",
+        "partOfSpeech": "noun",
+        "definition": "The place at an airport where government officials check the passports of incoming travelers.",
+        "meaning": {
+          "ml": "ഇമിഗ്രേഷൻ കൗണ്ടർ / പാസ്‌പോർട്ട് പരിശോധന",
+          "hi": "आव्रजन जांच",
+          "ta": "குடிவரவு சோதனை",
+          "te": "ఇమ్మిగ్రేషన్",
+          "kn": "ವಲಸೆ ತಪಾಸಣೆ"
+        },
+        "example": "The immigration officer examined my passport and stamped my entry visa."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: At the Airport & Flight Journey",
-        "ml": "പാഠം: വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും"
+        "ml": "പാഠം: വിമാനത്താവളത്തിലെ സംസാരവും യാത്രാ നടപടികളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Here is my passport / Which gate does flight [X] board from?",
+        "ml": "വിമാനത്താവളത്തിലെ ചെക്ക്-ഇൻ കൗണ്ടറിലും സുരക്ഷാ പരിശോധനയിലും ഉപയോഗിക്കുന്ന വാക്യങ്ങൾ: 'Here is my passport and ticket' (ഇതാ എന്റെ പാസ്‌പോർട്ടും ടിക്കറ്റും), 'Do I need to take out my laptop?' (ലാപ്‌ടോപ്പ് പുറത്തെടുക്കേണ്ടതുണ്ടോ?), 'Which boarding gate?' (ഏത് ബോർഡിംഗ് ഗേറ്റ്?)."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Check in your luggage.",
-        "Board the flight.",
-        "Flight landed safely."
+        "Here is my passport and electronic flight ticket booking confirmation .",
+        "Would you prefer a window seat or an aisle seat for this flight ?",
+        "Please place your laptop and liquids separately in this scanning tray .",
+        "Which boarding gate is flight four hundred and fifty departing from ?",
+        "Please remain seated with your seatbelts fastened until the aircraft comes to a complete halt ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: At the Airport & Flight Journey",
-        "ml": "റീഡിങ് റൂം: വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും"
+        "ml": "റീഡിങ് റൂം: വിമാനത്താവളത്തിലെ സംസാരവും യാത്രാ നടപടികളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Check in your luggage.",
-          "meaningMl": "ചെക്ക്-ഇൻ ചെയ്യുക - Check in your luggage.",
-          "audioPrompt": "Check in your luggage."
+          "text": "Kiran stood inside the glass atrium of Kochi International Airport with an excited fluttering heart.",
+          "meaningMl": "കൊച്ചി അന്താരാഷ്ട്ര വിമാനത്താവളത്തിന്റെ ഗ്ലാസ് ടെർമിനലിൽ ആവേശത്തോടെ കിരൺ നിന്നു.",
+          "meaningHi": "किरण एक उत्साहित दिल के साथ कोच्चि अंतर्राष्ट्रीय हवाई अड्डे के कांच के आलिंद में खड़ा था।",
+          "meaningTa": "கொச்சி சர்வதேச விமான நிலையத்தின் கண்ணாடி முனையத்தில் கிரண் உற்சாகத்துடன் நின்றான்.",
+          "audioPrompt": "Kiran stood inside the glass atrium of Kochi International Airport with an excited fluttering heart."
         },
         {
-          "text": "Board the flight.",
-          "meaningMl": "കയറുക - Board the flight.",
-          "audioPrompt": "Board the flight."
+          "text": "It was his very first international flight abroad to attend a prestigious robotics championship.",
+          "meaningMl": "പ്രശസ്തമായ റോബോട്ടിക്സ് മത്സരത്തിൽ പങ്കെടുക്കാനുള്ള അവന്റെ ആദ്യത്തെ വിദേശ വിമാനയാത്രയായിരുന്നു അത്.",
+          "meaningHi": "एक प्रतिष्ठित रोबोटिक्स चैंपियनशिप में भाग लेने के लिए यह उसकी विदेश की पहली उड़ान थी।",
+          "meaningTa": "ஒரு சர்வதேச ரோபோட்டிக்ஸ் போட்டியில் கலந்துகொள்ள அவனது முதல் வெளிநாட்டுப் பயணம் இது.",
+          "audioPrompt": "It was his very first international flight abroad to attend a prestigious robotics championship."
         },
         {
-          "text": "Daily practice of At the Airport & Flight Journey gives you great confidence in English.",
-          "meaningMl": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of At the Airport & Flight Journey gives you great confidence in English."
+          "text": "At the check-in desk, the polite ground hostess handed him his boarding pass and verified his visa.",
+          "meaningMl": "ചെക്ക്-ഇൻ ഡെസ്കിൽ എയർലൈൻ ഉദ്യോഗസ്ഥ അവന് ബോർഡിംഗ് പാസ് നൽകുകയും വിസ പരിശോധിക്കുകയും ചെയ്തു.",
+          "meaningHi": "चेक-इन डेस्क पर, ग्राउंड होस्टेस ने उसे उसका बोर्डिंग पास सौंपा और वीज़ा सत्यापित किया।",
+          "meaningTa": "செக்-இன் மேசையில் அதிகாரி அவனுக்கு போர்டிங் பாஸைக் கொடுத்து விசாவைச் சரிபார்த்தார்.",
+          "audioPrompt": "At the check-in desk, the polite ground hostess handed him his boarding pass and verified his visa."
+        },
+        {
+          "text": "He walked through security screening, keeping his passport and boarding pass securely inside his blazer.",
+          "meaningMl": "പാസ്‌പോർട്ടും ബോർഡിംഗ് പാസും കോട്ടിനുള്ളിൽ സുരക്ഷിതമായി സൂക്ഷിച്ച് അവൻ സുരക്ഷാ പരിശോധന കടന്നുപോയി.",
+          "meaningHi": "उसने सुरक्षा जांच पूरी की, अपने पासपोर्ट और बोर्डिंग पास को सुरक्षित रखा।",
+          "meaningTa": "பாஸ்போர்ட்டை பத்திரமாக வைத்துக்கொண்டு அவன் பாதுகாப்பு சோதனையை கடந்தான்.",
+          "audioPrompt": "He walked through security screening, keeping his passport and boarding pass securely inside his blazer."
+        },
+        {
+          "text": "As the powerful twin engines roared and lifted the silver jet above misty clouds, he smiled.",
+          "meaningMl": "ശക്തമായ ജെറ്റ് എഞ്ചിനുകൾ ഗർജ്ജിച്ച് വിമാനം വെള്ളിമേഘങ്ങൾക്ക് മീതെ പറന്നുയർന്നപ്പോൾ അവൻ പുഞ്ചിരിച്ചു.",
+          "meaningHi": "जैसे ही शक्तिशाली इंजन दहाड़े और चांदी के जेट को बादलों के ऊपर उठाया, वह मुस्कुराया।",
+          "meaningTa": "விமானம் மேகங்களுக்கு மேலே பறந்தபோது அவன் புன்னகைத்தான்.",
+          "audioPrompt": "As the powerful twin engines roared and lifted the silver jet above misty clouds, he smiled."
+        },
+        {
+          "text": "Crossing continents expands horizons and turns young dreamers into fearless global citizens.",
+          "meaningMl": "ഭൂഖണ്ഡങ്ങൾ താണ്ടിയുള്ള യാത്രകൾ കാഴ്ചപ്പാടുകൾ വിശാലമാക്കുകയും സ്വപ്നങ്ങളെ ആഗോള തലത്തിലേക്ക് ഉയർത്തുകയും ചെയ്യുന്നു.",
+          "meaningHi": "महाद्वीपों को पार करना सीमाओं का विस्तार करता है और युवा सपने देखने वालों को निडर वैश्विक नागरिक बनाता है।",
+          "meaningTa": "கண்டங்களைத் தாண்டிப் பயணம் செய்வது பார்வையை விரிவுபடுத்தி உலகளாவிய குடிமக்களாக மாற்றுகிறது.",
+          "audioPrompt": "Crossing continents expands horizons and turns young dreamers into fearless global citizens."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Why was Kiran traveling abroad on his first flight?",
+            "ml": "കിരൺ എന്തിനാണ് ആദ്യമായി വിദേശത്തേക്ക് വിമാനയാത്ര ചെയ്തത്?",
+            "hi": "किरण अपनी पहली उड़ान से विदेश क्यों जा रहा था?",
+            "ta": "கிரண் ஏன் வெளிநாட்டுக்குப் பயணம் செய்தான்?"
+          },
+          "options": [
+            "To buy a car",
+            "To attend a prestigious robotics championship",
+            "To visit a zoo",
+            "To learn cooking"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To attend a prestigious robotics championship.",
+            "ml": "റോബോട്ടിക്സ് മത്സരത്തിൽ പങ്കെടുക്കാനാണ് അവൻ പോയത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "From which airport was Kiran departing?",
+            "ml": "കിരൺ ഏത് വിമാനത്താവളത്തിൽ നിന്നാണ് യാത്ര തിരിച്ചത്?",
+            "hi": "किरण किस हवाई अड्डे से प्रस्थान कर रहा था?",
+            "ta": "கிரண் எந்த விமான நிலையத்திலிருந்து புறப்பட்டான்?"
+          },
+          "options": [
+            "Delhi Airport",
+            "Kochi International Airport",
+            "Dubai Airport",
+            "London Heathrow"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Kochi International Airport.",
+            "ml": "കൊച്ചി അന്താരാഷ്ട്ര വിമാനത്താവളത്തിൽ നിന്നാണ് (Kochi Airport)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Where did he keep his passport and boarding pass safely?",
+            "ml": "പാസ്‌പോർട്ടും ബോർഡിംഗ് പാസും അവൻ എവിടെയാണ് സുരക്ഷിതമായി വെച്ചിരുന്നത്?",
+            "hi": "उसने अपना पासपोर्ट और बोर्डिंग पास कहाँ सुरक्षित रखा?",
+            "ta": "பாஸ்போர்ட்டை அவன் எங்கு வைத்திருந்தான்?"
+          },
+          "options": [
+            "In his shoe",
+            "Inside his blazer pocket",
+            "In his checked luggage",
+            "In his hand"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Inside his blazer.",
+            "ml": "കോട്ടിനുള്ളിലാണ് (inside his blazer) അവൻ സൂക്ഷിച്ചത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d44_1",
-          "question": "Which word represents: 'ചെക്ക്-ഇൻ ചെയ്യുക'?",
+          "question": "Select the correct term for the document required to board an aircraft:",
           "options": [
-            "remember",
-            "discover",
-            "create",
-            "check in"
+            "Boarding card / pass",
+            "Flight bill",
+            "Entry coupon",
+            "Airport receipt"
           ],
-          "answer": "check in",
-          "explanation": "check in എന്നാൽ ചെക്ക്-ഇൻ ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Boarding pass' is the official global aviation term for the flight access document.",
+          "ruleHint": "Aviation Terms: Boarding pass."
         },
         {
-          "id": "trap_d44_2",
-          "question": "What is the past form (V2) of 'board'?",
+          "question": "Choose the correct spelling: The corridor between rows of passenger seats is an ______.",
           "options": [
-            "has board",
-            "boarded",
-            "boarding",
-            "boards"
+            "isle",
+            "aisle",
+            "ial",
+            "ile"
           ],
-          "answer": "boarded",
-          "explanation": "board ന്റെ ഭൂതകാല രൂപം boarded ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Aisle' (silent 's') is the walkway between seat rows. An 'isle' is a small island.",
+          "ruleHint": "Spelling: Aisle seat (walkway) vs Isle (island)."
         },
         {
-          "id": "trap_d44_3",
-          "question": "What is the correct English word for 'എയർപോർട്ട്'?",
+          "question": "How do you ask about luggage allowance at check-in?",
           "options": [
-            "schedule",
-            "routine",
-            "knowledge",
-            "airport"
+            "How many luggage allowed?",
+            "How much baggage weight is permitted?",
+            "How much is luggage count?",
+            "What weight luggage can I take?"
           ],
-          "answer": "airport",
-          "explanation": "എയർപോർട്ട് എന്നാൽ ഇംഗ്ലീഷിൽ airport."
+          "correctIndex": 1,
+          "explanation": "'How much baggage weight is permitted?' is formal, clear, and grammatically accurate.",
+          "ruleHint": "Luggage is uncountable: 'How much baggage weight is permitted?'"
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 44 Gate Exam (5 Qs)",

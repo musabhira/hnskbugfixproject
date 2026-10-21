@@ -22,112 +22,109 @@
     "totalCoinsReward": 108
   },
   "grammarRule": {
-    "formula": "Reported Speech – Backshifting and Exceptions",
+    "formula": "Instant response without hesitation: 'Certainly!', 'By all means!', 'I'm on it!'",
     "explanation": {
-      "ml": "വേഗത്തിലുള്ള മറുപടികൾ (Reflex) എന്ന വിഷയത്തിൽ Eliminating Translation Delay: Direct English Response എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Eliminating Translation Delay: Direct English Response correctly in spoken English."
+      "ml": "മറ്റുള്ളവർ ചോദിക്കുമ്പോൾ ആലോചിച്ചു നിൽക്കാതെ പെട്ടെന്ന് ഇംഗ്ലീഷിൽ പ്രതികരിക്കാൻ സഹായിക്കുന്ന ശൈലികൾ: 'Certainly!' (തീർച്ചയായും!), 'I'm on it!' (ഞാൻ അത് ഇപ്പോൾ തന്നെ ചെയ്യാം!), 'Couldn't agree more!' (ഞാൻ പൂർണ്ണമായും യോജിക്കുന്നു!).",
+      "en": "Master Rapid Fire Reflex Drills: Spontaneous Speech with clear formula: Instant response without hesitation: 'Certainly!', 'By all means!', 'I'm on it!'"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: React within 3 seconds.",
-      "en": "Golden Rule: Practice 'React within 3 seconds.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 സംസാരിക്കുമ്പോൾ 'Aa... Um...' എന്ന് ശബ്ദമുണ്ടാക്കുന്നതിന് പകരം സ്വാഭാവിക കണക്റ്ററുകൾ ഉപയോഗിക്കുക: 'Well, let me think...', 'To be completely honest...', 'As far as I know...'.",
+      "en": "Golden Tip: 💡 സംസാരിക്കുമ്പോൾ 'Aa... Um...' എന്ന് ശബ്ദമുണ്ടാക്കുന്നതിന് പകരം സ്വാഭാവിക കണക്റ്ററുകൾ ഉപയോഗിക്കുക: 'Well, let me think...', 'To be completely honest...', 'As far as I know...'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "react",
-        "v2": "reacted",
-        "v3": "reacted",
+        "v1": "punctually",
+        "v2": "punctuallyed",
+        "v3": "punctuallyed",
         "meaning": {
-          "ml": "പ്രതികരിക്കുക",
-          "hi": "പ്രതികരിക്കുക",
-          "ta": "പ്രതികരിക്കുക"
+          "ml": "കാലതാമസമില്ലാതെ / വേഗത്തിൽ",
+          "hi": "समय पर / ठीक समय पर",
+          "ta": "சரியான நேரத்தில்"
         },
-        "example": "React within 3 seconds.",
-        "exampleMl": "പ്രതികരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "speak",
-        "v2": "spoke",
-        "v3": "spoken",
-        "meaning": {
-          "ml": "സംസാരിക്കുക",
-          "hi": "बोलना",
-          "ta": "பேசு"
-        },
-        "example": "Speak without pause.",
-        "exampleMl": "സംസാരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "think",
-        "v2": "thought",
-        "v3": "thought",
-        "meaning": {
-          "ml": "ചിന്തിക്കുക",
-          "hi": "ചിന്തിക്കുക",
-          "ta": "ചിന്തിക്കുക"
-        },
-        "example": "Think directly in English.",
-        "exampleMl": "ചിന്തിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "reply",
-        "v2": "replied",
-        "v3": "replied",
-        "meaning": {
-          "ml": "മറുപടി നൽകുക",
-          "hi": "മറുപടി നൽകുക",
-          "ta": "മറുപടി നൽകുക"
-        },
-        "example": "Reply with confidence.",
-        "exampleMl": "മറുപടി നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "He answered the interviewer's technical questions promptly and accurately.",
+        "exampleMl": "At the agreed or proper time; on time."
       }
     ],
     "nouns": [
       {
-        "word": "speed",
+        "word": "Instinctive",
+        "partOfSpeech": "adjective",
+        "definition": "Performed or occurring as a result of a sudden impulse and without premeditation.",
         "meaning": {
-          "ml": "വേഗത",
-          "hi": "വേഗത",
-          "ta": "വേഗത"
+          "ml": "ആലോചിച്ചു നിൽക്കാതെ പെട്ടെന്ന് പറയുന്ന / സ്വാഭാവികമായ",
+          "hi": "स्वाभाविक / तुरंत",
+          "ta": "தன்னிச்சையான",
+          "te": "తక్షణ",
+          "kn": "ಸ್ವಯಂಪ್ರೇರಿತ"
         },
-        "example": "We learned about speed in today's lesson."
+        "example": "Her spontaneous response during the interview impressed the entire panel."
       },
       {
-        "word": "reflex",
+        "word": "Articulate",
+        "partOfSpeech": "adjective",
+        "definition": "Having or showing the ability to speak fluently and coherently.",
         "meaning": {
-          "ml": "പ്രതികരണം",
-          "hi": "പ്രതികരണം",
-          "ta": "പ്രതികരണം"
+          "ml": "കാര്യങ്ങൾ ഭംഗിയായി പറഞ്ഞു ഫലിപ്പിക്കുന്ന",
+          "hi": "स्पष्ट वक्ता",
+          "ta": "தெளிவாக பேசும் திறன் கொண்ட",
+          "te": "స్పష్టంగా మాట్లాడే",
+          "kn": "ಸ್ಪಷ್ಟವಾಗಿ ಮಾತನಾಡುವ"
         },
-        "example": "We learned about reflex in today's lesson."
+        "example": "She is an exceptionally articulate spokesperson for environmental causes."
       },
       {
-        "word": "fluency",
+        "word": "Hesitation",
+        "partOfSpeech": "noun",
+        "definition": "The action of pausing or hesitating before saying or doing something.",
         "meaning": {
-          "ml": "ഒഴുക്ക്",
-          "hi": "ഒഴുക്ക്",
-          "ta": "ഒഴുക്ക്"
+          "ml": "മടിയോ ശങ്കയോ / വാക്കുകൾ കിട്ടാതെ പരുങ്ങൽ",
+          "hi": "हिचकिचाहट",
+          "ta": "தயக்கம்",
+          "te": "సంకోచము",
+          "kn": "ಹಿಂಜರಿಕೆ"
         },
-        "example": "We learned about fluency in today's lesson."
+        "example": "Daily voice practice eliminates nervous hesitation during live dialogues."
       },
       {
-        "word": "habit",
+        "word": "Reflex",
+        "partOfSpeech": "noun",
+        "definition": "An action that is performed without conscious thought as a response to a stimulus.",
         "meaning": {
-          "ml": "ശീലം",
-          "hi": "ശീലം",
-          "ta": "ശീലം"
+          "ml": "പെട്ടെന്നുള്ള പ്രതികരണം / റിഫ്ലക്സ്",
+          "hi": "प्रतिक्षेपी क्रिया",
+          "ta": "உடனடி எதிர்வினை",
+          "te": "ప్రతిస్పందన",
+          "kn": "ಪ್ರತಿಕ್ರಿಯೆ"
         },
-        "example": "We learned about habit in today's lesson."
+        "example": "Quick spoken English reflexes develop through consistent rapid-fire drills."
       },
       {
-        "word": "confidence",
+        "word": "Punctually",
+        "partOfSpeech": "adverb",
+        "definition": "At the agreed or proper time; on time.",
         "meaning": {
-          "ml": "ആത്മവിശ്വാസം",
-          "hi": "ആത്മവിശ്വാസം",
-          "ta": "ആത്മവിശ്വാസം"
+          "ml": "കാലതാമസമില്ലാതെ / വേഗത്തിൽ",
+          "hi": "समय पर / ठीक समय पर",
+          "ta": "சரியான நேரத்தில்",
+          "te": "ఖచ్చితమైన సమయానికి",
+          "kn": "ತಕ್ಷಣ"
         },
-        "example": "We learned about confidence in today's lesson."
+        "example": "He answered the interviewer's technical questions promptly and accurately."
+      },
+      {
+        "word": "Enthusiastic",
+        "partOfSpeech": "adjective",
+        "definition": "Having or showing intense and eager enjoyment, interest, or approval.",
+        "meaning": {
+          "ml": "ഉത്സാഹഭരിതമായ / ആവേശമുള്ള",
+          "hi": "उत्साही",
+          "ta": "உற்சாகமான",
+          "te": "ఉత్సాహవంతమైన",
+          "kn": "ಉತ್ಸಾಹಿ"
+        },
+        "example": "The energetic team gave an enthusiastic presentation to the investors."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Rapid Fire Reflex Drills: Spontaneous Speech",
-        "ml": "പാഠം: വേഗത്തിലുള്ള മറുപടികൾ (Reflex)"
+        "ml": "പാഠം: പെട്ടെന്ന് മറുപടി നൽകാനുള്ള സംസാര വ്യായാമങ്ങൾ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Instant response without hesitation: 'Certainly!', 'By all means!', 'I'm on it!'",
+        "ml": "മറ്റുള്ളവർ ചോദിക്കുമ്പോൾ ആലോചിച്ചു നിൽക്കാതെ പെട്ടെന്ന് ഇംഗ്ലീഷിൽ പ്രതികരിക്കാൻ സഹായിക്കുന്ന ശൈലികൾ: 'Certainly!' (തീർച്ചയായും!), 'I'm on it!' (ഞാൻ അത് ഇപ്പോൾ തന്നെ ചെയ്യാം!), 'Couldn't agree more!' (ഞാൻ പൂർണ്ണമായും യോജിക്കുന്നു!)."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "React within 3 seconds.",
-        "Speak without pause.",
-        "Think directly in English."
+        "I will take care of finalizing the presentation slides right away !",
+        "I couldn't agree with you more on this crucial strategic decision .",
+        "Well, to be completely candid with you, there is a better alternative .",
+        "Consider it done; I will dispatch the signed agreement before lunchtime .",
+        "That sounds like a brilliant suggestion; let us test it immediately !"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Rapid Fire Reflex Drills: Spontaneous Speech",
-        "ml": "റീഡിങ് റൂം: വേഗത്തിലുള്ള മറുപടികൾ (Reflex)"
+        "ml": "റീഡിങ് റൂം: പെട്ടെന്ന് മറുപടി നൽകാനുള്ള സംസാര വ്യായാമങ്ങൾ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "React within 3 seconds.",
-          "meaningMl": "പ്രതികരിക്കുക - React within 3 seconds.",
-          "audioPrompt": "React within 3 seconds."
+          "text": "In the majestic court of Vijayanagara, King Krishnadevaraya loved challenging his courtiers with tricky riddles.",
+          "meaningMl": "വിജയനഗര കൊട്ടാരത്തിൽ, കൃഷ്ണദേവരായ രാജാവ് സദസ്സിലുള്ളവരെ ബുദ്ധിമുട്ടുള്ള കടങ്കഥകൾ കൊണ്ട് പരീക്ഷിക്കാൻ ഇഷ്ടപ്പെട്ടിരുന്നു.",
+          "meaningHi": "विजयनगर के राजदरबार में, राजा कृष्णदेवराय पहेलियों से दरबारियों को चुनौती देना पसंद करते थे।",
+          "meaningTa": "விஜயநகர அரசவையில் கிருஷ்ணதேவராயர் விடுகதைகளால் அவையோரை சோதிக்க விரும்பினார்.",
+          "audioPrompt": "In the majestic court of Vijayanagara, King Krishnadevaraya loved challenging his courtiers with tricky riddles."
         },
         {
-          "text": "Speak without pause.",
-          "meaningMl": "സംസാരിക്കുക - Speak without pause.",
-          "audioPrompt": "Speak without pause."
+          "text": "While grave ministers stuttered with hesitation, court poet Tenali Raman always responded with lightning wit.",
+          "meaningMl": "മന്ത്രിമാർ മടിച്ചുനിന്നപ്പോൾ കൊട്ടാരകവി തെന്നാലി രാമൻ മിന്നൽ വേഗത്തിലുള്ള നർമ്മബുദ്ധിയോടെ മറുപടി നൽകി.",
+          "meaningHi": "जहाँ गंभीर मंत्री झिझकते थे, वहीं कवि तेनाली रमन हमेशा बिजली जैसी बुद्धि से जवाब देते थे।",
+          "meaningTa": "அமைச்சர்கள் தயங்கியபோது தெனாலிராமன் மின்னல் வேகப் புத்தியுடன் பதிலளித்தார்.",
+          "audioPrompt": "While grave ministers stuttered with hesitation, court poet Tenali Raman always responded with lightning wit."
         },
         {
-          "text": "Daily practice of Rapid Fire Reflex Drills: Spontaneous Speech gives you great confidence in English.",
-          "meaningMl": "വേഗത്തിലുള്ള മറുപടികൾ (Reflex) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Rapid Fire Reflex Drills: Spontaneous Speech gives you great confidence in English."
+          "text": "One afternoon, the king asked: 'What is the fastest phenomenon in the entire vast universe?'",
+          "meaningMl": "ഒരു ഉച്ചയ്ക്ക് രാജാവ് ചോദിച്ചു: 'ഈ പ്രപഞ്ചത്തിലെ ഏറ്റവും വേഗതയേറിയ കാര്യം എന്താണ്?'",
+          "meaningHi": "एक दोपहर, राजा ने पूछा: 'पूरे ब्रह्मांड में सबसे तेज क्या है?'",
+          "meaningTa": "ஒரு நாள் ராஜா: 'இந்த பிரபஞ்சத்தில் மிக வேகமானது எது?' என்று கேட்டார்.",
+          "audioPrompt": "One afternoon, the king asked: 'What is the fastest phenomenon in the entire vast universe?'"
+        },
+        {
+          "text": "Without a moment's pause, Raman bowed smilingly and answered: 'The human thought, Your Majesty!'",
+          "meaningMl": "ഒരു നിമിഷം പോലും ആലോചിച്ചുനിൽക്കാതെ രാമൻ പുഞ്ചിരിയോടെ പറഞ്ഞു: 'മനുഷ്യന്റെ ചിന്തകളാണ് പ്രഭോ!'",
+          "meaningHi": "बिना रुके, रमन ने मुस्कुराते हुए उत्तर दिया: 'मानव का विचार, महाराज!'",
+          "meaningTa": "தயங்காமல் ராமன் புன்னகையுடன்: 'மனிதனின் எண்ணமே மன்னா!' என்றார்.",
+          "audioPrompt": "Without a moment's pause, Raman bowed smilingly and answered: 'The human thought, Your Majesty!'"
+        },
+        {
+          "text": "'In a single instant, thought travels from this throne to the furthest stars and back again.'",
+          "meaningMl": "'ഒറ്റ നിമിഷം കൊണ്ട് ചിന്തകൾക്ക് ഈ സിംഹാസനത്തിൽ നിന്ന് ദൂരെയുള്ള നക്ഷത്രങ്ങളിലേക്ക് സഞ്ചരിച്ച് തിരിച്ചെത്താനാകും.'",
+          "meaningHi": "'एक ही पल में, विचार इस सिंहासन से दूर के तारों तक जाकर वापस आ सकता है।'",
+          "meaningTa": "'ஒரே நொடியில் எண்ணங்கள் இங்கிருந்து நட்சத்திரங்களுக்குச் சென்று திரும்பும்.'",
+          "audioPrompt": "'In a single instant, thought travels from this throne to the furthest stars and back again.'"
+        },
+        {
+          "text": "Spontaneous eloquence rooted in sharp observation and fearless confidence conquers every royal court in life.",
+          "meaningMl": "നിരീക്ഷണ പാടവത്തിലും ആത്മവിശ്വാസത്തിലും ഉറച്ച പെട്ടെന്നുള്ള സംസാര ചാതുര്യം ജീവിതത്തിലെ എല്ലാ സദസ്സുകളെയും കീഴടക്കുന്നു.",
+          "meaningHi": "तीक्ष्ण अवलोकन और निर्भीक आत्मविश्वास में निहित हाजिरजवाबी जीवन के हर दरबार को जीत लेती है।",
+          "meaningTa": "கூர்மையான கவனிப்பும் தன்னம்பிக்கையும் கொண்ட பேச்சாற்றல் வாழ்க்கையின் எல்லா அவைகளையும் வெல்லும்.",
+          "audioPrompt": "Spontaneous eloquence rooted in sharp observation and fearless confidence conquers every royal court in life."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who loved challenging courtiers with tricky riddles in Vijayanagara?",
+            "ml": "വിജയനഗര കൊട്ടാരത്തിൽ കടങ്കഥകൾ ചോദിക്കാൻ ഇഷ്ടപ്പെട്ടിരുന്നത് ആരാണ്?",
+            "hi": "विजयनगर में पहेलियां पूछना किसे पसंद था?",
+            "ta": "விஜயநகரத்தில் விடுகதைகள் கேட்க விரும்பியது யார்?"
+          },
+          "options": [
+            "A foreign spy",
+            "King Krishnadevaraya",
+            "A palace cook",
+            "The court dancer"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "King Krishnadevaraya.",
+            "ml": "കൃഷ്ണദേവരായ രാജാവാണ് (King Krishnadevaraya)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What riddle question did the king ask one afternoon?",
+            "ml": "രാജാവ് ചോദിച്ച കടങ്കഥ എന്തായിരുന്നു?",
+            "hi": "राजा ने कौन सी पहेली पूछी?",
+            "ta": "ராஜா என்ன விடுகதை கேட்டார்?"
+          },
+          "options": [
+            "How many stars are in the sky?",
+            "What is the fastest phenomenon in the vast universe?",
+            "Who made the palace walls?",
+            "Where is the river coming from?"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "What is the fastest phenomenon in the entire vast universe?",
+            "ml": "പ്രപഞ്ചത്തിലെ ഏറ്റവും വേഗതയേറിയ കാര്യം എന്താണ് എന്നാണ് ചോദിച്ചത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What was Tenali Raman's lightning fast answer?",
+            "ml": "തെന്നാലി രാമൻ നൽകിയ മിന്നൽ മറുപടി എന്തായിരുന്നു?",
+            "hi": "तेनाली रमन का तुरंत उत्तर क्या था?",
+            "ta": "தெனாலிராமனின் பதில் என்ன?"
+          },
+          "options": [
+            "A running cheetah",
+            "A flying arrow",
+            "The human thought",
+            "A flash of lightning"
+          ],
+          "correctIndex": 2,
+          "explanation": {
+            "en": "The human thought, Your Majesty!",
+            "ml": "മനുഷ്യന്റെ ചിന്തകൾ (The human thought) എന്നാണ് മറുപടി നൽകിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d58_1",
-          "question": "Which word represents: 'പ്രതികരിക്കുക'?",
+          "question": "Select the native conversational idiom meaning 'I am handling this task immediately':",
           "options": [
-            "finish",
-            "prepare",
-            "arrive",
-            "react"
+            "I am on it!",
+            "I am onto it doing.",
+            "I am over it fast.",
+            "I am under taking."
           ],
-          "answer": "react",
-          "explanation": "react എന്നാൽ പ്രതികരിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'I'm on it!' is the standard idiomatic native response indicating immediate action on a request.",
+          "ruleHint": "Native Spoken Idiom: 'I'm on it!'."
         },
         {
-          "id": "trap_d58_2",
-          "question": "What is the past form (V2) of 'speak'?",
+          "question": "How do you strongly agree with someone's opinion without hesitation?",
           "options": [
-            "spoke",
-            "speaking",
-            "speaks",
-            "has speak"
+            "I couldn't agree with you more.",
+            "I am not agree with you more.",
+            "I could agree you more.",
+            "I am totally agreed on you."
           ],
-          "answer": "spoke",
-          "explanation": "speak ന്റെ ഭൂതകാല രൂപം spoke ആണ്."
+          "correctIndex": 0,
+          "explanation": "'I couldn't agree with you more' means 'It is impossible to agree with you to a greater degree; I agree 100%'.",
+          "ruleHint": "Agreement Idiom: 'I couldn't agree with you more'."
         },
         {
-          "id": "trap_d58_3",
-          "question": "What is the correct English word for 'വേഗത'?",
+          "question": "Which conversational phrase buys you three seconds to think gracefully?",
           "options": [
-            "speed",
-            "airport",
-            "station",
-            "partner"
+            "Well, let me think about that for a second...",
+            "Wait, don't talk now...",
+            "Shut up my mind is working...",
+            "Uhhhhhh..."
           ],
-          "answer": "speed",
-          "explanation": "വേഗത എന്നാൽ ഇംഗ്ലീഷിൽ speed."
+          "correctIndex": 0,
+          "explanation": "'Well, let me think about that for a second...' or 'That's an interesting question...' fills pauses gracefully.",
+          "ruleHint": "Conversational Bridge: 'Well, let me think about that for a second...'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 58 Gate Exam (5 Qs)",

@@ -22,14 +22,14 @@
     "totalCoinsReward": 80
   },
   "grammarRule": {
-    "formula": "Future Continuous and Future Perfect Tenses",
+    "formula": "Consolidation of Question Words, Daily Routines & Situational English",
     "explanation": {
-      "ml": "ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം എന്ന വിഷയത്തിൽ Full Foundation Integration (Days 1–29) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Full Foundation Integration (Days 1–29) correctly in spoken English."
+      "ml": "കഴിഞ്ഞ 30 ദിവസങ്ങളിൽ നാം പഠിച്ച ചോദ്യ രൂപീകരണങ്ങൾ (What, Where, When, Why, Who, Which, How, How Much), ദിനചര്യകൾ, മാർക്കറ്റ് സംസാരം, വഴികാട്ടൽ എന്നിവ സമഗ്രമായി പുനരവലോകനം ചെയ്യുന്നു.",
+      "en": "Master House 1 Grand Review & Gate Exam with clear formula: Consolidation of Question Words, Daily Routines & Situational English"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Review your lessons.",
-      "en": "Golden Rule: Practice 'Review your lessons.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ആത്മവിശ്വാസത്തോടെയുള്ള ഇംഗ്ലീഷ് സംസാരത്തിന് വ്യാകരണത്തേക്കാൾ പ്രധാനം നിരന്തരമായ സംസാര പരിശീലനമാണ്. തെറ്റുകളെ ഭയക്കാതെ ധൈര്യമായി സംസാരിക്കുക!",
+      "en": "Golden Tip: 💡 ആത്മവിശ്വാസത്തോടെയുള്ള ഇംഗ്ലീഷ് സംസാരത്തിന് വ്യാകരണത്തേക്കാൾ പ്രധാനം നിരന്തരമായ സംസാര പരിശീലനമാണ്. തെറ്റുകളെ ഭയക്കാതെ ധൈര്യമായി സംസാരിക്കുക!"
     }
   },
   "vocabulary": {
@@ -39,95 +39,92 @@
         "v2": "reviewed",
         "v3": "reviewed",
         "meaning": {
-          "ml": "വിലയിരുത്തുക",
+          "ml": "പുനരവലോകനം ചെയ്യുക / ഓർമ്മ പുതുക്കുക",
           "hi": "समीक्षा करना",
-          "ta": "மீள்பார்வை செய்"
+          "ta": "மறுபரிசீலனை செய்"
         },
-        "example": "Review your lessons.",
-        "exampleMl": "വിലയിരുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "master",
-        "v2": "mastered",
-        "v3": "mastered",
-        "meaning": {
-          "ml": "സ്വായത്തമാക്കുക",
-          "hi": "महारत हासिल करना",
-          "ta": "முழுமை பெறு"
-        },
-        "example": "Master your grammar.",
-        "exampleMl": "സ്വായത്തമാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "pass",
-        "v2": "passed",
-        "v3": "passed",
-        "meaning": {
-          "ml": "വിജയിക്കുക",
-          "hi": "उत्तीर्ण होना",
-          "ta": "தேர்ச்சி பெறு"
-        },
-        "example": "Pass the gate exam.",
-        "exampleMl": "വിജയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "celebrate",
-        "v2": "celebrated",
-        "v3": "celebrated",
-        "meaning": {
-          "ml": "ആഘോഷിക്കുക",
-          "hi": "जश्न मनाना",
-          "ta": "கொண்டாடு"
-        },
-        "example": "Celebrate Day 30.",
-        "exampleMl": "ആഘോഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Take some quiet time to review all grammar notes before the gate exam.",
+        "exampleMl": "Assess or examine something critically again."
       }
     ],
     "nouns": [
       {
-        "word": "gate",
+        "word": "Milestone",
+        "partOfSpeech": "noun",
+        "definition": "A significant stage or event in the development of something.",
         "meaning": {
-          "ml": "ഗേറ്റ്",
-          "hi": "ഗേറ്റ്",
-          "ta": "ഗേറ്റ്"
+          "ml": "പ്രധാന നാഴികക്കല്ല് / നിർണ്ണായക ഘട്ടം",
+          "hi": "मील का पत्थर",
+          "ta": "மைல்கல்",
+          "te": "మైలురాయి",
+          "kn": "ಮೈಲಿಗಲ್ಲು"
         },
-        "example": "We learned about gate in today's lesson."
+        "example": "Completing the first thirty days marks a monumental learning milestone."
       },
       {
-        "word": "exam",
+        "word": "Fluency",
+        "partOfSpeech": "noun",
+        "definition": "The ability to speak or write a foreign language easily and accurately.",
         "meaning": {
-          "ml": "പരീക്ഷ",
-          "hi": "പരീക്ഷ",
-          "ta": "പരീക്ഷ"
+          "ml": "സുഗമമായി സംസാരിക്കാനുള്ള കഴിവ് / വാക്ചാതുര്യം",
+          "hi": "धाराप्रवाह बोलना",
+          "ta": "தடையில்லா பேச்சுத்திறன்",
+          "te": "ధారాళత",
+          "kn": "ನಿರರ್ಗಳತೆ"
         },
-        "example": "We learned about exam in today's lesson."
+        "example": "Daily speaking practice with audio feedback builds natural conversational fluency."
       },
       {
-        "word": "badge",
+        "word": "Accomplishment",
+        "partOfSpeech": "noun",
+        "definition": "Something that has been achieved successfully.",
         "meaning": {
-          "ml": "ബാഡ്ജ്",
-          "hi": "ബാഡ്ജ്",
-          "ta": "ബാഡ്ജ്"
+          "ml": "വിജയകരമായ നേട്ടം",
+          "hi": "उपलब्धि",
+          "ta": "சாதனை",
+          "te": "సాధన / విజయం",
+          "kn": "ಸಾಧನೆ"
         },
-        "example": "We learned about badge in today's lesson."
+        "example": "Mastering daily conversational questions is a proud personal accomplishment."
       },
       {
-        "word": "shield",
+        "word": "Review",
+        "partOfSpeech": "verb",
+        "definition": "Assess or examine something critically again.",
         "meaning": {
-          "ml": "ഷീൽഡ്",
-          "hi": "ഷീൽഡ്",
-          "ta": "ഷീൽഡ്"
+          "ml": "പുനരവലോകനം ചെയ്യുക / ഓർമ്മ പുതുക്കുക",
+          "hi": "समीक्षा करना",
+          "ta": "மறுபரிசீலனை செய்",
+          "te": "పునఃసమీక్షించు",
+          "kn": "ಪುನರಾವರ್ತಿಸು"
         },
-        "example": "We learned about shield in today's lesson."
+        "example": "Take some quiet time to review all grammar notes before the gate exam."
       },
       {
-        "word": "trophy",
+        "word": "Confidence",
+        "partOfSpeech": "noun",
+        "definition": "A feeling of self-assurance arising from one's appreciation of one's own abilities.",
         "meaning": {
-          "ml": "ട്രോഫി",
-          "hi": "ट्रॉफी",
-          "ta": "வெற்றிக் கோப்பை"
+          "ml": "ആത്മവിശ്വാസം",
+          "hi": "आत्मविश्वास",
+          "ta": "தன்னம்பிக்கை",
+          "te": "ఆత్మవిశ్వాసం",
+          "kn": "ಆತ್ಮವಿಶ್ವಾಸ"
         },
-        "example": "Win the House Master trophy."
+        "example": "Speaking without fear of making mistakes builds real spoken confidence."
+      },
+      {
+        "word": "Reflection",
+        "partOfSpeech": "noun",
+        "definition": "Serious thought or consideration of past actions and learning.",
+        "meaning": {
+          "ml": "ചിന്ത / വിലയിരുത്തൽ",
+          "hi": "आत्मचिंतन",
+          "ta": "சிந்தனை",
+          "te": "ఆలోచన",
+          "kn": "ಚಿಂತನೆ"
+        },
+        "example": "Self-reflection helps you recognize how much your English has grown."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: House 1 Grand Review & Gate Exam",
-        "ml": "പാഠം: ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം"
+        "ml": "പാഠം: ഹൗസ് 1 റിവ്യൂ & ഗേറ്റ് എക്സാം"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Consolidation of Question Words, Daily Routines & Situational English",
+        "ml": "കഴിഞ്ഞ 30 ദിവസങ്ങളിൽ നാം പഠിച്ച ചോദ്യ രൂപീകരണങ്ങൾ (What, Where, When, Why, Who, Which, How, How Much), ദിനചര്യകൾ, മാർക്കറ്റ് സംസാരം, വഴികാട്ടൽ എന്നിവ സമഗ്രമായി പുനരവലോകനം ചെയ്യുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Review your lessons.",
-        "Master your grammar.",
-        "Pass the gate exam."
+        "I can now ask and answer daily conversational questions with high confidence .",
+        "Consistent daily effort transforms hesitant learners into articulate fluent speakers .",
+        "Which topic from House One did you enjoy practicing the most ?",
+        "Always focus on communicating your core idea clearly rather than worrying about grammar .",
+        "We are stepping confidently into the next exciting phase of English mastery ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: House 1 Grand Review & Gate Exam",
-        "ml": "റീഡിങ് റൂം: ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം"
+        "ml": "റീഡിങ് റൂം: ഹൗസ് 1 റിവ്യൂ & ഗേറ്റ് എക്സാം"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Review your lessons.",
-          "meaningMl": "വിലയിരുത്തുക - Review your lessons.",
-          "audioPrompt": "Review your lessons."
+          "text": "Thirty days ago, Arjun stood at the base of the learning mountain with nervous hesitation.",
+          "meaningMl": "മുപ്പത് ദിവസങ്ങൾക്ക് മുൻപ്, സങ്കോചത്തോടെ അർജുൻ പഠന പർവതത്തിന്റെ അടിവാരത്തിൽ നിന്നു.",
+          "meaningHi": "तीस दिन पहले, अर्जुन झिझक के साथ सीखने के पहाड़ के आधार पर खड़ा था।",
+          "meaningTa": "முப்பது நாட்களுக்கு முன் தயக்கத்துடன் அர்ஜுன் மலையடிவாரத்தில் நின்றான்.",
+          "audioPrompt": "Thirty days ago, Arjun stood at the base of the learning mountain with nervous hesitation."
         },
         {
-          "text": "Master your grammar.",
-          "meaningMl": "സ്വായത്തമാക്കുക - Master your grammar.",
-          "audioPrompt": "Master your grammar."
+          "text": "Every morning, he dedicated twenty focused minutes to repeating pronunciation drills and sentence patterns.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ ഉച്ചാരണ വ്യായാമങ്ങൾക്കും വാക്യങ്ങൾക്കും അവൻ ശ്രദ്ധാപൂർവ്വം ഇരുപത് മിനിറ്റ് നീക്കിവെച്ചു.",
+          "meaningHi": "हर सुबह, उसने उच्चारण अभ्यास और वाक्य पैटर्न दोहराने के लिए बीस मिनट समर्पित किए।",
+          "meaningTa": "ஒவ்வொரு காலையிலும் உச்சரிப்பு பயிற்சிக்கு இருபது நிமிடங்களை அவன் ஒதுக்கினான்.",
+          "audioPrompt": "Every morning, he dedicated twenty focused minutes to repeating pronunciation drills and sentence patterns."
         },
         {
-          "text": "Daily practice of House 1 Grand Review & Gate Exam gives you great confidence in English.",
-          "meaningMl": "ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of House 1 Grand Review & Gate Exam gives you great confidence in English."
+          "text": "Gradually, the awkward tongue-twisters smoothed out into effortless everyday speech.",
+          "meaningMl": "ക്രമേണ, ബുദ്ധിമുട്ടേറിയ വാക്കുകൾ ആയാസരഹിതമായ നിത്യഭാഷണമായി മാറിത്തുടങ്ങി.",
+          "meaningHi": "धीरे-धीरे, कठिन शब्द सहज दैनिक बातचीत में बदलने लगे।",
+          "meaningTa": "படிப்படியாக கடினமான வார்த்தைகள் எளிதான அன்றாட பேச்சாக மாறின.",
+          "audioPrompt": "Gradually, the awkward tongue-twisters smoothed out into effortless everyday speech."
+        },
+        {
+          "text": "He spoke with local shopkeepers, gave directions to travelers, and ordered meals without fear.",
+          "meaningMl": "അവൻ നാട്ടിലെ കടക്കാരോട് സംസാരിക്കുകയും യാത്രക്കാർക്ക് വഴികാണിക്കുകയും ഭയമില്ലാതെ ഭക്ഷണം ഓർഡർ ചെയ്യുകയും ചെയ്തു.",
+          "meaningHi": "उसने स्थानीय दुकानदारों से बात की, यात्रियों को रास्ता दिखाया और बिना डर के खाना ऑर्डर किया।",
+          "meaningTa": "அவன் கடைக்காரர்களிடம் பேசினான், பயணிகளுக்கு வழிகாட்டினான், பயமின்றி உணவை ஆர்டர் செய்தான்.",
+          "audioPrompt": "He spoke with local shopkeepers, gave directions to travelers, and ordered meals without fear."
+        },
+        {
+          "text": "Looking back down the winding trail today, he saw thirty glowing beacons of accomplishment.",
+          "meaningMl": "ഇന്ന് മലമ്പാതയിലേക്ക് തിരിഞ്ഞുനോക്കുമ്പോൾ, വിജയത്തിന്റെ മുപ്പത് തിളങ്ങുന്ന ദീപങ്ങൾ അവൻ കണ്ടു.",
+          "meaningHi": "आज घुमावदार रास्ते पर पीछे मुड़कर देखते हुए, उसने उपलब्धि के तीस चमकते दीप देखे।",
+          "meaningTa": "இன்று திரும்பிப் பார்க்கும்போது முப்பது ஒளிரும் சாதனை விளக்குகளை அவன் கண்டான்.",
+          "audioPrompt": "Looking back down the winding trail today, he saw thirty glowing beacons of accomplishment."
+        },
+        {
+          "text": "True confidence does not come overnight; it is built brick by brick with daily perseverance.",
+          "meaningMl": "യഥാർത്ഥ ആത്മവിശ്വാസം ഒറ്റരാത്രികൊണ്ട് ഉണ്ടാവുന്നതല്ല; അത് ദിനംപ്രതിയുള്ള സ്ഥിരോത്സാഹത്തിലൂടെ പടുത്തുയർത്തുന്നതാണ്.",
+          "meaningHi": "सच्चा आत्मविश्वास रातों-रात नहीं आता; यह रोज़ के परिश्रम से एक-एक ईंट जोड़कर बनता है।",
+          "meaningTa": "உண்மையான தன்னம்பிக்கை ஒரே இரவில் வருவதில்லை; அது தினசரி முயற்சியால் உருவாக்கப்படுகிறது.",
+          "audioPrompt": "True confidence does not come overnight; it is built brick by brick with daily perseverance."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many minutes did Arjun dedicate every morning to his English practice?",
+            "ml": "എല്ലാ ദിവസവും രാവിലെ അർജുൻ എത്ര മിനിറ്റാണ് പരിശീലനത്തിനായി മാറ്റിവെച്ചത്?",
+            "hi": "अर्जुन रोज़ सुबह कितने मिनट अभ्यास करता था?",
+            "ta": "அர்ஜுன் தினமும் காலையில் எத்தனை நிமிடங்கள் பயிற்சி செய்தான்?"
+          },
+          "options": [
+            "Five minutes",
+            "Twenty focused minutes",
+            "Two hours",
+            "Forty-five minutes"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He dedicated twenty focused minutes every morning.",
+            "ml": "ഇരുപത് മിനിറ്റാണ് (twenty focused minutes) മാറ്റിവെച്ചത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did Arjun do without fear after practicing?",
+            "ml": "പരിശീലനത്തിന് ശേഷം അർജുൻ ഭയമില്ലാതെ ചെയ്ത കാര്യങ്ങൾ എന്തൊക്കെയായിരുന്നു?",
+            "hi": "अभ्यास के बाद अर्जुन ने बिना डर के क्या किया?",
+            "ta": "பயிற்சிக்குப் பிறகு அர்ஜுன் பயமின்றி என்ன செய்தான்?"
+          },
+          "options": [
+            "Slept all day",
+            "Gave directions and ordered meals",
+            "Stayed home silently",
+            "Stopped studying"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He gave directions and ordered meals without fear.",
+            "ml": "യാത്രക്കാർക്ക് വഴികാണിക്കുകയും ഭക്ഷണം ഓർഡർ ചെയ്യുകയും ചെയ്തു."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "According to the story, how is true confidence built?",
+            "ml": "കഥ പ്രകാരം യഥാർത്ഥ ആത്മവിശ്വാസം എങ്ങനെയാണ് പടുത്തുയർത്തപ്പെടുന്നത്?",
+            "hi": "कहानी के अनुसार सच्चा आत्मविश्वास कैसे बनता है?",
+            "ta": "கதையின் படி உண்மையான தன்னம்பிக்கை எப்படி உருவாகிறது?"
+          },
+          "options": [
+            "Overnight with luck",
+            "Brick by brick with daily perseverance",
+            "By buying expensive books",
+            "By staying silent"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It is built brick by brick with daily perseverance.",
+            "ml": "ദിനംപ്രതിയുള്ള സ്ഥിരോത്സാഹത്തിലൂടെയാണ് (daily perseverance) പടുത്തുയർത്തപ്പെടുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d30_1",
-          "question": "Which word represents: 'വിലയിരുത്തുക'?",
+          "question": "Select the sentence that best demonstrates conversational fluency:",
           "options": [
-            "borrow",
-            "review",
-            "forget",
-            "finish"
+            "I am having many doubts on English grammar rules.",
+            "I can express my daily thoughts clearly and confidently.",
+            "English is very hard so I cannot speak fastly.",
+            "Myself learned thirty days."
           ],
-          "answer": "review",
-          "explanation": "review എന്നാൽ വിലയിരുത്തുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'I can express my daily thoughts clearly and confidently' demonstrates natural vocabulary and correct grammar.",
+          "ruleHint": "Fluency Standard: Clear subject + modal + base verb + adverbs."
         },
         {
-          "id": "trap_d30_2",
-          "question": "What is the past form (V2) of 'master'?",
+          "question": "How do you ask someone for constructive feedback on your English?",
           "options": [
-            "mastered",
-            "mastering",
-            "masters",
-            "has master"
+            "How is my speaking? Can you correct my mistakes?",
+            "Tell me I am right or wrong now.",
+            "Does my talking sounding good to you?",
+            "Mistakes are made by me or not?"
           ],
-          "answer": "mastered",
-          "explanation": "master ന്റെ ഭൂതകാല രൂപം mastered ആണ്."
+          "correctIndex": 0,
+          "explanation": "'How is my speaking? Can you correct my mistakes?' is polite, friendly, and natural.",
+          "ruleHint": "Polite Feedback: 'How is my speaking? Could you share feedback?'"
         },
         {
-          "id": "trap_d30_3",
-          "question": "What is the correct English word for 'ഗേറ്റ്'?",
+          "question": "Which word correctly completes: 'I have ______ the first milestone.'?",
           "options": [
-            "airport",
-            "success",
-            "gate",
-            "journey"
+            "achieve",
+            "achieved",
+            "achieving",
+            "achieves"
           ],
-          "answer": "gate",
-          "explanation": "ഗേറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ gate."
+          "correctIndex": 1,
+          "explanation": "The present perfect 'have' requires the past participle (V3): 'achieved'.",
+          "ruleHint": "Present Perfect Rule: have + V3 (achieved)."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "House 1 Cumulative Gate Exam",

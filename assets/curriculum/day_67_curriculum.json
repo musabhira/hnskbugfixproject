@@ -22,112 +22,109 @@
     "totalCoinsReward": 117
   },
   "grammarRule": {
-    "formula": "Reduced Relative Clauses",
+    "formula": "Clause + because + Reason | Cause + so / as a result + Outcome",
     "explanation": {
-      "ml": "കാരണവും ഫലവും പറയൽ (Because & So) എന്ന വിഷയത്തിൽ Cause (Because) vs Result (So) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Cause (Because) vs Result (So) correctly in spoken English."
+      "ml": "ഒരു കാര്യം സംഭവിച്ചതിന്റെ കാരണം വ്യക്തമാക്കാൻ 'Because' ഉപയോഗിക്കുന്നു. ആ കാരണം കൊണ്ട് എന്തുണ്ടായി എന്ന് ഫലം പറയാൻ 'So' അല്ലെങ്കിൽ 'As a result' ഉപയോഗിക്കുന്നു.",
+      "en": "Master Logical Connectors: Cause & Effect (Because, So, As a result) with clear formula: Clause + because + Reason | Cause + so / as a result + Outcome"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I studied hard, so I passed.",
-      "en": "Golden Rule: Practice 'I studied hard, so I passed.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Because = കാരണം (Reason). So / As a result = ഫലം (Result / Outcome).",
+      "en": "Golden Tip: Because = കാരണം (Reason). So / As a result = ഫലം (Result / Outcome)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "study",
-        "v2": "studied",
-        "v3": "studied",
+        "v1": "consequently",
+        "v2": "consequentlyed",
+        "v3": "consequentlyed",
         "meaning": {
-          "ml": "പഠിക്കുക",
-          "hi": "अध्ययन करना",
-          "ta": "படி"
+          "ml": "തൽഫലമായി / അതിനാൽ",
+          "hi": "परिणामस्वरूप",
+          "ta": "இதன் விளைவாக"
         },
-        "example": "I studied hard, so I passed.",
-        "exampleMl": "പഠിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "tire",
-        "v2": "tired",
-        "v3": "tired",
-        "meaning": {
-          "ml": "ക്ഷീണിച്ചു",
-          "hi": "ക്ഷീണിച്ചു",
-          "ta": "ക്ഷീണിച്ചു"
-        },
-        "example": "I was tired, so I slept.",
-        "exampleMl": "ക്ഷീണിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "succeed",
-        "v2": "succeeded",
-        "v3": "succeeded",
-        "meaning": {
-          "ml": "വിജയിച്ചു",
-          "hi": "വിജയിച്ചു",
-          "ta": "വിജയിച്ചു"
-        },
-        "example": "He succeeded because he persisted.",
-        "exampleMl": "വിജയിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "improve",
-        "v2": "improved",
-        "v3": "improved",
-        "meaning": {
-          "ml": "മെച്ചപ്പെട്ടു",
-          "hi": "മെച്ചപ്പെട്ടു",
-          "ta": "മെച്ചപ്പെട്ടു"
-        },
-        "example": "English improved because I practiced.",
-        "exampleMl": "മെച്ചപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The supplier missed the production deadline; consequently, shipments were rescheduled.",
+        "exampleMl": "As a result; therefore."
       }
     ],
     "nouns": [
       {
-        "word": "reason",
+        "word": "Consequently",
+        "partOfSpeech": "adverb",
+        "definition": "As a result; therefore.",
         "meaning": {
-          "ml": "കാരണം",
-          "hi": "കാരണം",
-          "ta": "കാരണം"
+          "ml": "തൽഫലമായി / അതിനാൽ",
+          "hi": "परिणामस्वरूप",
+          "ta": "இதன் விளைவாக",
+          "te": "తత్ఫలితంగా",
+          "kn": "ಪರಿಣಾಮವಾಗಿ"
         },
-        "example": "We learned about reason in today's lesson."
+        "example": "The supplier missed the production deadline; consequently, shipments were rescheduled."
       },
       {
-        "word": "result",
+        "word": "Rationale",
+        "partOfSpeech": "noun",
+        "definition": "A set of reasons or a logical basis for a course of action or belief.",
         "meaning": {
-          "ml": "ഫലം",
-          "hi": "ഫലം",
-          "ta": "ഫലം"
+          "ml": "യുക്തിസഹമായ കാരണം / അടിസ്ഥാന തത്വം",
+          "hi": "तर्कसंगत आधार",
+          "ta": "அடிப்படை நியாயம்",
+          "te": "హేతుబద్ధత",
+          "kn": "ತಾರ್ಕಿಕ ಆಧಾರ"
         },
-        "example": "We learned about result in today's lesson."
+        "example": "The director clearly explained the economic rationale behind the organizational restructuring."
       },
       {
-        "word": "effort",
+        "word": "Impact",
+        "partOfSpeech": "noun",
+        "definition": "The marked effect or influence of something on another.",
         "meaning": {
-          "ml": "പ്രയത്നം",
-          "hi": "പ്രയത്നം",
-          "ta": "പ്രയത്നം"
+          "ml": "പ്രഭാവം / സ്വാധീനം / ആഘാതം",
+          "hi": "प्रभाव / असर",
+          "ta": "தாக்கம்",
+          "te": "ప్రభావము",
+          "kn": "ಪರಿಣಾಮ"
         },
-        "example": "We learned about effort in today's lesson."
+        "example": "The educational scholarship had a profound impact on rural students' lives."
       },
       {
-        "word": "success",
+        "word": "Outcome",
+        "partOfSpeech": "noun",
+        "definition": "The way a thing turns out; a consequence or result.",
         "meaning": {
-          "ml": "വിജയം",
-          "hi": "വിജയം",
-          "ta": "വിജയം"
+          "ml": "ഫലം / അനന്തരഫലം",
+          "hi": "परिणाम / नतीजा",
+          "ta": "முடிவு / விளைவு",
+          "te": "ఫలితము",
+          "kn": "ಫಲಿತಾಂಶ"
         },
-        "example": "We learned about success in today's lesson."
+        "example": "We are eagerly anticipating the final election outcome this evening."
       },
       {
-        "word": "connection",
+        "word": "Strategic",
+        "partOfSpeech": "adjective",
+        "definition": "Relating to the identification of long-term or overall aims and interests and the means of achieving them.",
         "meaning": {
-          "ml": "ബന്ധം",
-          "hi": "ബന്ധം",
-          "ta": "ബന്ധം"
+          "ml": "തന്ത്രപരമായ / ദീർഘവീക്ഷണമുള്ള",
+          "hi": "रणनीतिक",
+          "ta": "மூலோபாய",
+          "te": "వ్యూహాత్మక",
+          "kn": "ಕಾರ್ಯತಂತ್ರದ"
         },
-        "example": "We learned about connection in today's lesson."
+        "example": "Opening a warehouse near the sea was a brilliant strategic decision."
+      },
+      {
+        "word": "Efficient",
+        "partOfSpeech": "adjective",
+        "definition": "Achieving maximum productivity with minimum wasted effort or expense.",
+        "meaning": {
+          "ml": "കാര്യക്ഷമമായ / കൃത്യതയുള്ള",
+          "hi": "कुशल / कार्यक्षम",
+          "ta": "திறமையான",
+          "te": "సమర్థవంతమైన",
+          "kn": "ದಕ್ಷ"
+        },
+        "example": "Our newly adopted workflow is much more efficient than the old manual system."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Connecting Ideas: Because & So",
-        "ml": "പാഠം: കാരണവും ഫലവും പറയൽ (Because & So)"
+        "en": "Concept Room: Logical Connectors: Cause & Effect (Because, So, As a result)",
+        "ml": "പാഠം: കാരണവും ഫലവും വ്യക്തമാക്കൽ (Because vs So)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Clause + because + Reason | Cause + so / as a result + Outcome",
+        "ml": "ഒരു കാര്യം സംഭവിച്ചതിന്റെ കാരണം വ്യക്തമാക്കാൻ 'Because' ഉപയോഗിക്കുന്നു. ആ കാരണം കൊണ്ട് എന്തുണ്ടായി എന്ന് ഫലം പറയാൻ 'So' അല്ലെങ്കിൽ 'As a result' ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I studied hard, so I passed.",
-        "I was tired, so I slept.",
-        "He succeeded because he persisted."
+        "The morning train was canceled because severe electrical storms damaged the railway signal cables .",
+        "Our team completed the software audit early , so we received a performance commendation .",
+        "Production costs escalated rapidly ; as a result , retail prices were adjusted upward .",
+        "He missed the executive briefing because his international connecting flight was delayed in Dubai .",
+        "The solar panels generated surplus clean electricity , so operational energy bills dropped significantly ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Connecting Ideas: Because & So",
-        "ml": "റീഡിങ് റൂം: കാരണവും ഫലവും പറയൽ (Because & So)"
+        "en": "Reading Room: The Clean River Initiative",
+        "ml": "റീഡിങ് റൂം: കാരണവും ഫലവും വ്യക്തമാക്കൽ (Because vs So)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I studied hard, so I passed.",
-          "meaningMl": "പഠിച്ചു - I studied hard, so I passed.",
-          "audioPrompt": "I studied hard, so I passed."
+          "text": "The historic Periyar River faced severe ecological distress because untreated industrial effluents were dumped into its upper tributaries.",
+          "meaningMl": "ശുദ്ധീകരിക്കാത്ത വ്യവസായ മാലിന്യങ്ങൾ കൈവഴികളിലേക്ക് തള്ളിയതിനാൽ ചരിത്രപ്രസിദ്ധമായ പെരിയാർ നദി കടുത്ത പാരിസ്ഥിതിക പ്രതിസന്ധി നേരിട്ടു.",
+          "meaningHi": "अनौपचारिक औद्योगिक कचरा बहाए जाने के कारण ऐतिहासिक पेरियार नदी गंभीर संकट में थी।",
+          "meaningTa": "சுத்திகரிக்கப்படாத ஆலை கழிவுகள் கொட்டப்பட்டதால் பெரியாறு நதி கடுமையான நெருக்கடியை சந்தித்தது.",
+          "audioPrompt": "The historic Periyar River faced severe ecological distress because untreated industrial effluents were dumped into its upper tributaries."
         },
         {
-          "text": "I was tired, so I slept.",
-          "meaningMl": "ക്ഷീണിച്ചു - I was tired, so I slept.",
-          "audioPrompt": "I was tired, so I slept."
+          "text": "Local fishing families lost their primary daily livelihoods; consequently, youth activists launched a vigorous public campaign.",
+          "meaningMl": "പ്രാദേശിക മത്സ്യത്തൊഴിലാളി കുടുംബങ്ങൾക്ക് അവരുടെ ഉപജീവനമാർഗ്ഗം നഷ്ടപ്പെട്ടു; തൽഫലമായി, യുവ പ്രവർത്തകർ ശക്തമായ ജനകീയ പ്രചാരണം ആരംഭിച്ചു.",
+          "meaningHi": "मछुआरों की आजीविका छिन गई; फलस्वरूप, युवा कार्यकर्ताओं ने एक आंदोलन शुरू किया।",
+          "meaningTa": "மீனவர்கள் தங்கள் வாழ்வாதாரத்தை இழந்தனர்; இதன் விளைவாக, இளைஞர்கள் தீவிர பிரச்சாரத்தைத் தொடங்கினர்.",
+          "audioPrompt": "Local fishing families lost their primary daily livelihoods; consequently, youth activists launched a vigorous public campaign."
         },
         {
-          "text": "Daily practice of Connecting Ideas: Because & So gives you great confidence in English.",
-          "meaningMl": "കാരണവും ഫലവും പറയൽ (Because & So) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Connecting Ideas: Because & So gives you great confidence in English."
+          "text": "The community mobilized legal petitions, so state high court judges promptly intervened to mandate strict biological filtration plants.",
+          "meaningMl": "നാട്ടുകാർ നിയമപരമായ ഹർജികൾ നൽകി, അതിനാൽ കർശനമായ ഫിൽട്ടറേഷൻ പ്ലാന്റുകൾ സ്ഥാപിക്കാൻ ഹൈക്കോടതി ജഡ്ജിമാർ ഉത്തരവിട്ടു.",
+          "meaningHi": "समुदाय ने याचिकाएं दायर कीं, इसलिए उच्च न्यायालय ने सख्त जल शोधन संयंत्रों का आदेश दिया।",
+          "meaningTa": "பொதுமக்கள் மனு அளித்ததால், நீர் சுத்திகரிப்பு நிலையங்களை நிறுவ உயர்நீதிமன்றம் உத்தரவிட்டது.",
+          "audioPrompt": "The community mobilized legal petitions, so state high court judges promptly intervened to mandate strict biological filtration plants."
+        },
+        {
+          "text": "Because solar-powered monitoring sensors were installed along the riverbanks, polluters could no longer discharge toxic chemicals covertly.",
+          "meaningMl": "നദീതീരങ്ങളിൽ സൗരോർജ്ജ സെൻസറുകൾ സ്ഥാപിച്ചതിനാൽ, മലിനീകരണക്കാർക്ക് ഇനി രഹസ്യമായി രാസമാലിന്യങ്ങൾ പുറന്തള്ളാൻ കഴിഞ്ഞില്ല.",
+          "meaningHi": "सौर सेंसर लगाए गए, इसलिए प्रदूषक अब गुप्त रूप से रसायन नहीं बहा सकते थे।",
+          "meaningTa": "கண்காணிப்பு சென்சார்கள் பொருத்தப்பட்டதால், ரசாயனங்களை ரகசியமாக வெளியேற்ற முடியவில்லை.",
+          "audioPrompt": "Because solar-powered monitoring sensors were installed along the riverbanks, polluters could no longer discharge toxic chemicals covertly."
+        },
+        {
+          "text": "Over three resilient years, river water dissolved oxygen levels recovered, so indigenous freshwater fish returned in abundance.",
+          "meaningMl": "മൂന്ന് വർഷത്തിനുള്ളിൽ നദിയിലെ ഓക്സിജന്റെ അളവ് വീണ്ടെടുത്തു, അതിനാൽ ശുദ്ധജല മത്സ്യങ്ങൾ സമൃദ്ധമായി തിരിച്ചെത്തി.",
+          "meaningHi": "तीन वर्षों में पानी में ऑक्सीजन का स्तर सुधरा, इसलिए मछलियां बहुतायत में लौट आईं।",
+          "meaningTa": "மூன்று ஆண்டுகளில் ஆக்சிஜன் அளவு சீரானதால், உள்நாட்டு மீன்கள் அதிகளவில் திரும்பின.",
+          "audioPrompt": "Over three resilient years, river water dissolved oxygen levels recovered, so indigenous freshwater fish returned in abundance."
+        },
+        {
+          "text": "Collective ecological stewardship yields enduring prosperity because nature generously rewards thoughtful human care.",
+          "meaningMl": "കൂട്ടായ പാരിസ്ഥിതിക സംരക്ഷണം ശാശ്വതമായ സമൃദ്ധി നൽകുന്നു, കാരണം പ്രകൃതി മനുഷ്യന്റെ കരുതലിന് ഉദാരമായി പ്രതിഫലം നൽകുന്നു.",
+          "meaningHi": "सामूहिक संरक्षण समृद्धि लाता है क्योंकि प्रकृति मानवीय देखभाल का उदारतापूर्वक पुरस्कार देती है।",
+          "meaningTa": "கூட்டு பாதுகாப்பு செழிப்பைக் கொண்டுவருகிறது, ஏனெனில் இயற்கை மனித அக்கறைக்கு வெகுமதி அளிக்கிறது.",
+          "audioPrompt": "Collective ecological stewardship yields enduring prosperity because nature generously rewards thoughtful human care."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Why did the river encounter severe ecological distress?",
+            "ml": "നദി കടുത്ത പാരിസ്ഥിതിക പ്രതിസന്ധി നേരിടാൻ കാരണമെന്താണ്?",
+            "hi": "नदी गंभीर संकट में क्यों आ गई?",
+            "ta": "நதி ஏன் கடுமையான நெருக்கடியை சந்தித்தது?"
+          },
+          "options": [
+            "Severe drought and dry weather",
+            "Untreated industrial effluents were dumped into its tributaries",
+            "Too many tourist cruise boats",
+            "Heavy snowfall"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Because untreated industrial effluents were dumped into it.",
+            "ml": "ശുദ്ധീകരിക്കാത്ത വ്യവസായ മാലിന്യങ്ങൾ തള്ളിയതിനാൽ."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did the high court mandate after community legal petitions?",
+            "ml": "ഹർജികൾക്ക് ശേഷം ഹൈക്കോടതി ഉത്തരവിട്ടത് എന്താണ്?",
+            "hi": "हाई कोर्ट ने क्या आदेश दिया?",
+            "ta": "உயர் நீதிமன்றம் என்ன உத்தரவிட்டது?"
+          },
+          "options": [
+            "Building high concrete walls",
+            "Strict biological filtration plants",
+            "Draining all river water",
+            "Closing all nearby schools"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Strict biological filtration plants.",
+            "ml": "കർശനമായ ഫിൽട്ടറേഷൻ പ്ലാന്റുകൾ സ്ഥാപിക്കാൻ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What returned in abundance once dissolved oxygen levels recovered?",
+            "ml": "ഓക്സിജന്റെ അളവ് കൂടിയപ്പോൾ സമൃദ്ധമായി തിരിച്ചെത്തിയത് എന്താണ്?",
+            "hi": "ऑक्सीजन स्तर सुधरने पर क्या लौटा?",
+            "ta": "ஆக்சிஜன் அளவு சீரானதும் என்ன திரும்பின?"
+          },
+          "options": [
+            "Saltwater sharks",
+            "Indigenous freshwater fish",
+            "Plastic bottles",
+            "Motor speedboats"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Indigenous freshwater fish returned in abundance.",
+            "ml": "ശുദ്ധജല മത്സ്യങ്ങൾ (Indigenous freshwater fish)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d67_1",
-          "question": "Which word represents: 'പഠിക്കുക'?",
+          "id": 1,
+          "question": "Select the sentence where cause and effect are properly connected:",
           "options": [
-            "arrive",
-            "prepare",
-            "decide",
-            "study"
+            "It rained heavily so I stayed inside because the house.",
+            "It rained heavily, so I stayed inside with a book.",
+            "Because it rained heavily so I stayed inside.",
+            "So it rained heavily because I stayed inside."
           ],
-          "answer": "study",
-          "explanation": "study എന്നാൽ പഠിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Because' ഉം 'so' യും ഒരേ സമയം ഉപയോഗിക്കരുത്. 'It rained heavily, so I stayed inside' ആണ് ശരി."
         },
         {
-          "id": "trap_d67_2",
-          "question": "What is the past form (V2) of 'tire'?",
+          "id": 2,
+          "question": "Which of the following contains a redundant connector error?",
           "options": [
-            "has tire",
-            "tires",
-            "tireing",
-            "tired"
+            "Because he was sick, he couldn't attend the exam.",
+            "He was sick, so he couldn't attend the exam.",
+            "Because he was sick, so he couldn't attend the exam.",
+            "He couldn't attend the exam because he was sick."
           ],
-          "answer": "tired",
-          "explanation": "tire ന്റെ ഭൂതകാല രൂപം tired ആണ്."
+          "correctIndex": 2,
+          "explanationMl": "'Because' ഉപയോഗിച്ച് തുടങ്ങിയ വാക്യത്തിൽ വീണ്ടും 'so' ഉപയോഗിക്കുന്നത് വലിയ വ്യാകരണ തെറ്റാണ് (Redundancy)."
         },
         {
-          "id": "trap_d67_3",
-          "question": "What is the correct English word for 'കാരണം'?",
+          "id": 3,
+          "question": "Fill in the blank: 'We missed our connecting flight _____ the heavy snowstorm.'",
           "options": [
-            "progress",
-            "partner",
-            "reason",
-            "station"
+            "because of",
+            "because",
+            "so",
+            "as a result"
           ],
-          "answer": "reason",
-          "explanation": "കാരണം എന്നാൽ ഇംഗ്ലീഷിൽ reason."
+          "correctIndex": 0,
+          "explanationMl": "'the heavy snowstorm' എന്നത് ഒരു noun phrase ആയതിനാൽ 'because of' ഉപയോഗിക്കണം ('because of the heavy snowstorm')."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 67 Gate Exam (5 Qs)",

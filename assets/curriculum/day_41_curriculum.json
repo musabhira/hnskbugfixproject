@@ -22,112 +22,96 @@
     "totalCoinsReward": 91
   },
   "grammarRule": {
-    "formula": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
+    "formula": "Can I try this on? / Do you have this in a medium / large size?",
     "explanation": {
-      "ml": "വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും എന്ന വിഷയത്തിൽ Size, Fit, Color & Trial Room Conversation എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Size, Fit, Color & Trial Room Conversation correctly in spoken English."
+      "ml": "തുണിക്കടകളിൽ വസ്ത്രങ്ങൾ നോക്കുമ്പോൾ 'Can I try this on?' (എനിക്കിതൊന്ന് ഇട്ടുനോക്കാമോ?), 'Where is the trial room?' (ട്രയൽ റൂം എവിടെയാണ്?), 'Do you have a smaller size?' (ഇതിന്റെ ചെറിയ അളവ് ഉണ്ടോ?) തുടങ്ങിയ സ്വാഭാവിക ശൈലികൾ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Shopping for Clothes & Trial Room with clear formula: Can I try this on? / Do you have this in a medium / large size?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Does this shirt fit you?",
-      "en": "Golden Rule: Practice 'Does this shirt fit you?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 അളവുകൾ ചോദിക്കുമ്പോൾ: Small (എസ്), Medium (എം), Large (എൽ), Extra Large (എക്സ് എൽ). പാകമാണോ എന്നറിയാൻ: 'Does it fit well?' (നന്നായി ചേരുന്നുണ്ടോ?).",
+      "en": "Golden Tip: 💡 അളവുകൾ ചോദിക്കുമ്പോൾ: Small (എസ്), Medium (എം), Large (എൽ), Extra Large (എക്സ് എൽ). പാകമാണോ എന്നറിയാൻ: 'Does it fit well?' (നന്നായി ചേരുന്നുണ്ടോ?)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "fit",
-        "v2": "fitted",
-        "v3": "fitted",
-        "meaning": {
-          "ml": "പാകമാകുക",
-          "hi": "പാകമാകുക",
-          "ta": "പാകമാകുക"
-        },
-        "example": "Does this shirt fit you?",
-        "exampleMl": "പാകമാകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "try",
-        "v2": "tried",
-        "v3": "tried",
-        "meaning": {
-          "ml": "ധരിച്ചു നോക്കുക",
-          "hi": "ധരിച്ചു നോക്കുക",
-          "ta": "ധരിച്ചു നോക്കുക"
-        },
-        "example": "Try this in the trial room.",
-        "exampleMl": "ധരിച്ചു നോക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "change",
-        "v2": "changed",
-        "v3": "changed",
-        "meaning": {
-          "ml": "മാറുക",
-          "hi": "बदलना",
-          "ta": "மாறு"
-        },
-        "example": "Can I change this size?",
-        "exampleMl": "മാറ്റി വാങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "select",
-        "v2": "selected",
-        "v3": "selected",
-        "meaning": {
-          "ml": "തിരഞ്ഞെടുക്കുക",
-          "hi": "തിരഞ്ഞെടുക്കുക",
-          "ta": "തിരഞ്ഞെടുക്കുക"
-        },
-        "example": "Select your color.",
-        "exampleMl": "തിരഞ്ഞെടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "size",
+        "word": "Garment",
+        "partOfSpeech": "noun",
+        "definition": "An item of clothing.",
         "meaning": {
-          "ml": "സൈസ്",
-          "hi": "സൈസ്",
-          "ta": "സൈസ്"
+          "ml": "വസ്ത്രം / ഉടുപ്പ്",
+          "hi": "वस्त्र / कपड़ा",
+          "ta": "ஆடை",
+          "te": "వస్త్రము",
+          "kn": "ಉಡುಪು"
         },
-        "example": "We learned about size in today's lesson."
+        "example": "This cotton garment is handcrafted by local traditional weavers."
       },
       {
-        "word": "shirt",
+        "word": "Fitting",
+        "partOfSpeech": "noun",
+        "definition": "The action of trying on clothes to see if they fit properly.",
         "meaning": {
-          "ml": "ഷർട്ട്",
-          "hi": "ഷർട്ട്",
-          "ta": "ഷർട്ട്"
+          "ml": "പാകമാകൽ / ഫിറ്റിംഗ്",
+          "hi": "नाप / फिटिंग",
+          "ta": "அளவு பொருத்தம்",
+          "te": "సరిపోవడం",
+          "kn": "ಹೊಂದಿಕೊಳ್ಳುವುದು"
         },
-        "example": "We learned about shirt in today's lesson."
+        "example": "The shoulders and sleeve length have a perfect tailored fitting."
       },
       {
-        "word": "dress",
+        "word": "Fabric",
+        "partOfSpeech": "noun",
+        "definition": "Cloth produced through weaving, knitting, or felting fibers.",
         "meaning": {
-          "ml": "വസ്ത്രം",
-          "hi": "വസ്ത്രം",
-          "ta": "വസ്ത്രം"
+          "ml": "തുണിത്തരത്തിന്റെ തുണി / ഫാബ്രിക്",
+          "hi": "कपड़ा / रेशे",
+          "ta": "துணி வகை",
+          "te": "వస్త్రం",
+          "kn": "ಬಟ್ಟೆ"
         },
-        "example": "We learned about dress in today's lesson."
+        "example": "Pure linen fabric feels breathable and cool during hot summer days."
       },
       {
-        "word": "trial",
+        "word": "Casual",
+        "partOfSpeech": "adjective",
+        "definition": "Relaxed and unconcerned; not formal.",
         "meaning": {
-          "ml": "ട്രയൽ",
-          "hi": "ട്രയൽ",
-          "ta": "ട്രയൽ"
+          "ml": "സാധാരണ ധരിക്കുന്ന / ഔപചാരികമല്ലാത്ത",
+          "hi": "अनौपचारिक",
+          "ta": "சாதாரண உடை",
+          "te": "సాధారణ",
+          "kn": "ಸಾಮಾನ್ಯ ಉಡುಗೆ"
         },
-        "example": "We learned about trial in today's lesson."
+        "example": "He prefers comfortable casual shirts for weekend gatherings."
       },
       {
-        "word": "discount",
+        "word": "Alteration",
+        "partOfSpeech": "noun",
+        "definition": "A change or modification made to clothing for a better fit.",
         "meaning": {
-          "ml": "കിഴിവ്",
-          "hi": "കിഴിവ്",
-          "ta": "കിഴിവ്"
+          "ml": "അളവ് ക്രമീകരിക്കൽ / തുന്നി മാറ്റൽ",
+          "hi": "फेरबदल / अल्टरेशन",
+          "ta": "மாற்றியமைத்தல்",
+          "te": "మార్పు",
+          "kn": "ಬದಲಾವಣೆ"
         },
-        "example": "We learned about discount in today's lesson."
+        "example": "Does the clothing store provide free alteration for trousers?"
+      },
+      {
+        "word": "Fashionable",
+        "partOfSpeech": "adjective",
+        "definition": "Characteristic of, influenced by, or representing a current popular style.",
+        "meaning": {
+          "ml": "പുതിയ ട്രെൻഡിലുള്ള / ഫാഷനായ",
+          "hi": "फैशनेबल",
+          "ta": "நாகரீகமான",
+          "te": "ఆధునిక",
+          "kn": "ಫ್ಯಾಶನೇಬಲ್"
+        },
+        "example": "These embroidered denim jackets are very fashionable among youngsters."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Shopping for Clothes & Trial Room",
-        "ml": "പാഠം: വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും"
+        "ml": "പാഠം: തുണിക്കടയിലെ സംസാരവും ട്രയൽ റൂമും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Can I try this on? / Do you have this in a medium / large size?",
+        "ml": "തുണിക്കടകളിൽ വസ്ത്രങ്ങൾ നോക്കുമ്പോൾ 'Can I try this on?' (എനിക്കിതൊന്ന് ഇട്ടുനോക്കാമോ?), 'Where is the trial room?' (ട്രയൽ റൂം എവിടെയാണ്?), 'Do you have a smaller size?' (ഇതിന്റെ ചെറിയ അളവ് ഉണ്ടോ?) തുടങ്ങിയ സ്വാഭാവിക ശൈലികൾ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Does this shirt fit you?",
-        "Try this in the trial room.",
-        "Can I change this size?"
+        "Excuse me, where is the trial room located in this section ?",
+        "This shirt feels slightly tight around the collar; do you have a larger size ?",
+        "Can you show me some formal linen trousers in beige or cream color ?",
+        "How much is the discounted price after applying the festival offer ?",
+        "I will take both the sky blue shirt and the navy blazer, please ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Shopping for Clothes & Trial Room",
-        "ml": "റീഡിങ് റൂം: വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും"
+        "ml": "റീഡിങ് റൂം: തുണിക്കടയിലെ സംസാരവും ട്രയൽ റൂമും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Does this shirt fit you?",
-          "meaningMl": "പാകമാകുക - Does this shirt fit you?",
-          "audioPrompt": "Does this shirt fit you?"
+          "text": "Master weaver Raman sat at his wooden pit loom, gliding shuttle spools of pure mulberry silk.",
+          "meaningMl": "നെയ്ത്തുകാരനായ രാമൻ തന്റെ തറിക്ക് മുന്നിലിരുന്ന് പട്ടുനൂലുകൾ കോർത്ത് തുണി നെയ്യുകയായിരുന്നു.",
+          "meaningHi": "मास्टर बुनकर रमन अपने करघे पर बैठे, शहतूत के रेशम के धागों को पिरो रहे थे।",
+          "meaningTa": "நெசவாளர் ராமன் தன் தறியின் முன் அமர்ந்து பட்டு நூல்களை நெய்து கொண்டிருந்தார்.",
+          "audioPrompt": "Master weaver Raman sat at his wooden pit loom, gliding shuttle spools of pure mulberry silk."
         },
         {
-          "text": "Try this in the trial room.",
-          "meaningMl": "ധരിച്ചു നോക്കുക - Try this in the trial room.",
-          "audioPrompt": "Try this in the trial room."
+          "text": "Every vibrant sari featured intricate temple borders woven with genuine silver and gold threads.",
+          "meaningMl": "ഓരോ സാരിയിലും ശുദ്ധമായ വെള്ളിയും സ്വർണ്ണ നൂലുകളും കൊണ്ട് ക്ഷേത്ര മാതൃകയിലുള്ള ബോർഡറുകൾ നെയ്തിരുന്നു.",
+          "meaningHi": "प्रत्येक जीवंत साड़ी में चांदी और सोने के धागों से बुने हुए जटिल मंदिर के बॉर्डर थे।",
+          "meaningTa": "ஒவ்வொரு சேலையிலும் தங்கம் மற்றும் வெள்ளி நூல்களால் கோவில் பார்டர்கள் நெய்யப்பட்டிருந்தன.",
+          "audioPrompt": "Every vibrant sari featured intricate temple borders woven with genuine silver and gold threads."
         },
         {
-          "text": "Daily practice of Shopping for Clothes & Trial Room gives you great confidence in English.",
-          "meaningMl": "വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Shopping for Clothes & Trial Room gives you great confidence in English."
+          "text": "A bride and her mother arrived at his loom cottage to select garments for the wedding day.",
+          "meaningMl": "വിവാഹത്തിനായി വസ്ത്രങ്ങൾ തിരഞ്ഞെടുക്കാൻ ഒരു വധുവും അമ്മയും അദ്ദേഹത്തിന്റെ പണിപ്പുരയിലെത്തി.",
+          "meaningHi": "एक दुल्हन और उसकी माँ शादी के दिन के लिए वस्त्र चुनने उसकी झोपड़ी में आईं।",
+          "meaningTa": "திருமண ஆடை தேர்ந்தெடுக்க ஒரு மணமகளும் அவளது தாயும் குடிசைக்கு வந்தனர்.",
+          "audioPrompt": "A bride and her mother arrived at his loom cottage to select garments for the wedding day."
+        },
+        {
+          "text": "Raman draped a rich peacock-blue silk across the mother's shoulder to display its shimmering luster.",
+          "meaningMl": "പട്ടിന്റെ തിളക്കം കാണിക്കാനായി മനോഹരമായ മയിൽപ്പീലി നീല പട്ട് രാമൻ അമ്മയുടെ തോളിൽ വിരിച്ചു കാണിച്ചു.",
+          "meaningHi": "रमन ने रेशम की चमक दिखाने के लिए माँ के कंधे पर मोरपंखी नीले रंग का रेशम डाला।",
+          "meaningTa": "பட்டின் பளபளப்பைக் காட்ட ராமன் மயில் நீல பட்டை தாயின் தோளில் விரித்துக் காட்டினார்.",
+          "audioPrompt": "Raman draped a rich peacock-blue silk across the mother's shoulder to display its shimmering luster."
+        },
+        {
+          "text": "The bride touched the delicate fabric and smiled happily, knowing she had found her dream attire.",
+          "meaningMl": "വധു മൃദുവായ ആ പട്ടുതുണി തൊട്ടുനോക്കുകയും തന്റെ സ്വപ്ന വസ്ത്രം കണ്ടെത്തിയ സന്തോഷത്തിൽ പുഞ്ചിരിക്കുകയും ചെയ്തു.",
+          "meaningHi": "दुल्हन ने नाजुक कपड़े को छुआ और खुशी से मुस्कुराई, यह जानकर कि उसे अपनी मनपसंद पोशाक मिल गई है।",
+          "meaningTa": "மணமகள் மென்மையான பட்டைத் தொட்டுப் பார்த்து மகிழ்ச்சியுடன் புன்னகைத்தாள்.",
+          "audioPrompt": "The bride touched the delicate fabric and smiled happily, knowing she had found her dream attire."
+        },
+        {
+          "text": "Centuries of dedicated artisanal heritage breathe timeless elegance into every single woven thread.",
+          "meaningMl": "നൂറ്റാണ്ടുകളുടെ സമർപ്പണമുള്ള പാരമ്പര്യം ഓരോ തയ്യൽ നൂലിലും ശാശ്വതമായ സൗന്ദര്യം നിറയ്ക്കുന്നു.",
+          "meaningHi": "सदियों की समर्पित कारीगरी हर एक बुने हुए धागे में कालजयी लालित्य भर देती है।",
+          "meaningTa": "பல நூற்றாண்டுகளின் பாரம்பரியம் நெய்யப்பட்ட ஒவ்வொரு நூலிலும் அழகை நிரப்புகிறது.",
+          "audioPrompt": "Centuries of dedicated artisanal heritage breathe timeless elegance into every single woven thread."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What kind of silk threads was Master Raman weaving at his loom?",
+            "ml": "രാമൻ തന്റെ തറിയിൽ ഏത് തരം പട്ടുനൂലുകളാണ് നെയ്തുകൊണ്ടിരുന്നത്?",
+            "hi": "रमन किस प्रकार के रेशम के धागे बुन रहे थे?",
+            "ta": "ராமன் என்ன வகையான பட்டு நூல்களை நெய்தார்?"
+          },
+          "options": [
+            "Synthetic nylon fibers",
+            "Pure mulberry silk",
+            "Rough jute yarn",
+            "Paper ribbons"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He was weaving pure mulberry silk.",
+            "ml": "ശുദ്ധമായ മൾബറി പട്ടുനൂലുകളാണ് (pure mulberry silk) നെയ്തത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What patterns were woven along the sari borders?",
+            "ml": "സാരിയുടെ ബോർഡറുകളിൽ ഏത് തരം ഡിസൈനുകളാണ് നെയ്തിരുന്നത്?",
+            "hi": "साड़ी के बॉर्डर पर किस तरह के डिज़ाइन बुने गए थे?",
+            "ta": "சேலையின் பார்டரில் என்ன டிசைன்கள் நெய்யப்பட்டன?"
+          },
+          "options": [
+            "Modern geometric squares",
+            "Intricate temple borders with silver and gold",
+            "Plain black stripes",
+            "Plastic beads"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Intricate temple borders woven with silver and gold threads.",
+            "ml": "വെള്ളിയും സ്വർണ്ണ നൂലുകളും കൊണ്ടുള്ള ക്ഷേത്ര ഡിസൈനുകൾ."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What color silk did Raman drape across the mother's shoulder?",
+            "ml": "അമ്മയുടെ തോളിൽ രാമൻ വിരിച്ചു കാണിച്ച പട്ടിന്റെ നിറം എന്തായിരുന്നു?",
+            "hi": "रमन ने किस रंग का रेशम माँ के कंधे पर डाला?",
+            "ta": "ராமன் தாயின் தோளில் என்ன நிற பட்டை விரித்தார்?"
+          },
+          "options": [
+            "Pale gray",
+            "Rich peacock-blue silk",
+            "Dark muddy brown",
+            "Bright orange"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He draped a rich peacock-blue silk.",
+            "ml": "മയിൽപ്പീലി നീല നിറമുള്ള പട്ട് (peacock-blue silk)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d41_1",
-          "question": "Which word represents: 'പാകമാകുക'?",
+          "question": "Select the natural phrase to ask permission to wear a dress in the trial room:",
           "options": [
-            "fit",
-            "borrow",
-            "listen",
-            "forget"
+            "Can I try this on?",
+            "Can I wear this to test?",
+            "Can I put this on body now?",
+            "I will trial this dress."
           ],
-          "answer": "fit",
-          "explanation": "fit എന്നാൽ പാകമാകുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Can I try this on?' is the standard native idiom for trying on clothes in a shop.",
+          "ruleHint": "Phrasal Verb: 'try on' = put clothes on to see if they fit."
         },
         {
-          "id": "trap_d41_2",
-          "question": "What is the past form (V2) of 'try'?",
+          "question": "How do you ask for a bigger size politely?",
           "options": [
-            "trys",
-            "trying",
-            "has try",
-            "tried"
+            "Give me bigger size.",
+            "Do you have this in a larger size?",
+            "Is larger size available by you?",
+            "Does larger size exist here?"
           ],
-          "answer": "tried",
-          "explanation": "try ന്റെ ഭൂതകാല രൂപം tried ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Do you have this in a larger size?' is polite and natural.",
+          "ruleHint": "Shopping English: 'Do you have this in a [smaller/larger] size?'"
         },
         {
-          "id": "trap_d41_3",
-          "question": "What is the correct English word for 'സൈസ്'?",
+          "question": "Choose the correct preposition: 'The trial room is ______ your right.'",
           "options": [
-            "size",
-            "courage",
-            "journey",
-            "success"
+            "on",
+            "at",
+            "in",
+            "to"
           ],
-          "answer": "size",
-          "explanation": "സൈസ് എന്നാൽ ഇംഗ്ലീഷിൽ size."
+          "correctIndex": 0,
+          "explanation": "Directions use the preposition 'on': 'on your right / on your left'.",
+          "ruleHint": "Direction Rule: on your right / on your left."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 41 Gate Exam (5 Qs)",

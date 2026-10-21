@@ -22,112 +22,109 @@
     "totalCoinsReward": 126
   },
   "grammarRule": {
-    "formula": "Punctuation Rules for Clear Writing and Speaking",
+    "formula": "How was your weekend? / How is the new project coming along?",
     "explanation": {
-      "ml": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Casual Workplace Interaction: Projects, Weekend, Coffee എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Casual Workplace Interaction: Projects, Weekend, Coffee correctly in spoken English."
+      "ml": "ഓഫീസിലെ ഇടവേളകളിലും കോഫി മെഷീന്റെ അടുത്തും സഹപ്രവർത്തകരുമായി സംസാരിക്കുമ്പോൾ ബന്ധങ്ങൾ ദൃഢമാക്കാനും സ്വാഭാവികമായ സൗഹൃദം പങ്കുവെക്കാനുമുള്ള ഇംഗ്ലീഷ് ശൈലികൾ.",
+      "en": "Master Office Watercooler & Casual Workplace Talk with clear formula: How was your weekend? / How is the new project coming along?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Let's grab a coffee.",
-      "en": "Golden Rule: Practice 'Let's grab a coffee.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ചോദ്യത്തിന് വെറുമൊരു 'Fine' എന്ന് മാത്രം ഉത്തരം നൽകാതെ, ചെറിയൊരു വിവരണം നൽകി തിരിച്ച് അവരോടും ചോദിക്കുക: 'It was relaxing! I went cycling. How about yours?'",
+      "en": "Golden Tip: ചോദ്യത്തിന് വെറുമൊരു 'Fine' എന്ന് മാത്രം ഉത്തരം നൽകാതെ, ചെറിയൊരു വിവരണം നൽകി തിരിച്ച് അവരോടും ചോദിക്കുക: 'It was relaxing! I went cycling. How about yours?'"
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "grab",
-        "v2": "grabbed",
-        "v3": "grabbed",
+        "v1": "rejuvenate",
+        "v2": "rejuvenateed",
+        "v3": "rejuvenateed",
         "meaning": {
-          "ml": "കുടിക്കുക",
-          "hi": "കുടിക്കുക",
-          "ta": "കുടിക്കുക"
+          "ml": "നവോന്മേഷം നൽകുക / ഉന്മേഷം വീണ്ടെടുക്കുക",
+          "hi": "पुनर्जीवित करना / तरोताजा करना",
+          "ta": "புத்துணர்ச்சி பெறச் செய்"
         },
-        "example": "Let's grab a coffee.",
-        "exampleMl": "കുടിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "catch up",
-        "v2": "caught up",
-        "v3": "caught up",
-        "meaning": {
-          "ml": "വിശേഷങ്ങൾ പങ്കിടുക",
-          "hi": "വിശേഷങ്ങൾ പങ്കിടുക",
-          "ta": "വിശേഷങ്ങൾ പങ്കിടുക"
-        },
-        "example": "Good to catch up with you.",
-        "exampleMl": "വിശേഷങ്ങൾ പങ്കിടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "wrap up",
-        "v2": "wrapped up",
-        "v3": "wrapped up",
-        "meaning": {
-          "ml": "പൂർത്തിയാക്കുക",
-          "hi": "പൂർത്തിയാക്കുക",
-          "ta": "പൂർത്തിയാക്കുക"
-        },
-        "example": "Let's wrap up this task.",
-        "exampleMl": "പൂർത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "head out",
-        "v2": "headed out",
-        "v3": "headed out",
-        "meaning": {
-          "ml": "ഇറങ്ങുക",
-          "hi": "ഇറങ്ങുക",
-          "ta": "ഇറങ്ങുക"
-        },
-        "example": "Are you heading out now?",
-        "exampleMl": "ഇറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "A weekend hike through misty mountain tea plantations helped rejuvenate my mind.",
+        "exampleMl": "Make someone or something look or feel younger, fresher, or more lively."
       }
     ],
     "nouns": [
       {
-        "word": "coffee",
+        "word": "Camaraderie",
+        "partOfSpeech": "noun",
+        "definition": "Mutual trust and friendship among people who spend a lot of time together.",
         "meaning": {
-          "ml": "കോഫി",
-          "hi": "കോഫി",
-          "ta": "കോഫി"
+          "ml": "സഹപ്രവർത്തകർ തമ്മിലുള്ള സൗഹൃദവും ഐക്യവും",
+          "hi": "पारस्परिक सौहार्द / भाईचारा",
+          "ta": "தோழமை உணர்வு",
+          "te": "స్నేహభావం",
+          "kn": "ಗೆಳೆತನ / ಒಡನಾಟ"
         },
-        "example": "We learned about coffee in today's lesson."
+        "example": "A strong sense of camaraderie helped our engineering squad overcome grueling launch deadlines."
       },
       {
-        "word": "weekend",
+        "word": "Productive",
+        "partOfSpeech": "adjective",
+        "definition": "Producing or able to produce large amounts of goods, crops, or other commodities, or achieving significant results.",
         "meaning": {
-          "ml": "വാരാന്ത്യം",
-          "hi": "വാരാന്ത്യം",
-          "ta": "വാരാന്ത്യം"
+          "ml": "കാര്യക്ഷമമായ / മികച്ച ഫലം നൽകുന്ന",
+          "hi": "उत्पादक / फलदायी",
+          "ta": "பயனுள்ள / ஆக்கப்பூர்வமான",
+          "te": "ఉత్పాదక",
+          "kn": "ಉತ್ಪಾದಕ"
         },
-        "example": "We learned about weekend in today's lesson."
+        "example": "We had a highly productive morning brainstorm regarding the software user experience."
       },
       {
-        "word": "project",
+        "word": "Rejuvenate",
+        "partOfSpeech": "verb",
+        "definition": "Make someone or something look or feel younger, fresher, or more lively.",
         "meaning": {
-          "ml": "പ്രോജക്ട്",
-          "hi": "പ്രോജക്ട്",
-          "ta": "പ്രോജക്ട്"
+          "ml": "നവോന്മേഷം നൽകുക / ഉന്മേഷം വീണ്ടെടുക്കുക",
+          "hi": "पुनर्जीवित करना / तरोताजा करना",
+          "ta": "புத்துணர்ச்சி பெறச் செய்",
+          "te": "పునరుజ్జీవింపజేయు",
+          "kn": "ಪುನಶ್ಚೇತನಗೊಳಿಸು"
         },
-        "example": "We learned about project in today's lesson."
+        "example": "A weekend hike through misty mountain tea plantations helped rejuvenate my mind."
       },
       {
-        "word": "break",
+        "word": "Collaboration",
+        "partOfSpeech": "noun",
+        "definition": "The action of working with someone to produce or create something.",
         "meaning": {
-          "ml": "ഇടവേള",
-          "hi": "ഇടവേള",
-          "ta": "ഇടവേള"
+          "ml": "കൂട്ടായ്മ / സഹകരണം",
+          "hi": "सहयोग / सहभागिता",
+          "ta": "கூட்டுறவு / கூட்டுப்பணி",
+          "te": "సహకారము",
+          "kn": "ಸಹಯೋಗ"
         },
-        "example": "We learned about break in today's lesson."
+        "example": "Cross-departmental collaboration between design and marketing ensured brand consistency."
       },
       {
-        "word": "colleague",
+        "word": "Morale",
+        "partOfSpeech": "noun",
+        "definition": "The confidence, enthusiasm, and discipline of a person or group at a particular time.",
         "meaning": {
-          "ml": "സഹപ്രവർത്തകൻ",
-          "hi": "സഹപ്രവർത്തകൻ",
-          "ta": "സഹപ്രവർത്തകൻ"
+          "ml": "മനോവീര്യം / ആത്മവിശ്വാസം",
+          "hi": "मनोबल",
+          "ta": "மன உறுதி",
+          "te": "మనోధైర్యం",
+          "kn": "ಮನೋಬಲ"
         },
-        "example": "We learned about colleague in today's lesson."
+        "example": "Celebrating small project milestones boosts overall employee morale tremendously."
+      },
+      {
+        "word": "Synergy",
+        "partOfSpeech": "noun",
+        "definition": "The interaction or cooperation of two or more organizations, substances, or other agents to produce a combined effect greater than the sum of their separate effects.",
+        "meaning": {
+          "ml": "കൂട്ടായ സമന്വയം / സംയോജിത ശക്തി",
+          "hi": "समन्वय / तालमेल",
+          "ta": "கூட்டு ஒருங்கிணைவு",
+          "te": "సమన్వయం",
+          "kn": "ಸಂಯೋಜಿತ ಶಕ್ತಿ"
+        },
+        "example": "The synergy between data scientists and domain doctors accelerated cancer research."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Office Small Talk & Break Room English",
-        "ml": "പാഠം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണം"
+        "en": "Concept Room: Office Watercooler & Casual Workplace Talk",
+        "ml": "പാഠം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണങ്ങൾ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "How was your weekend? / How is the new project coming along?",
+        "ml": "ഓഫീസിലെ ഇടവേളകളിലും കോഫി മെഷീന്റെ അടുത്തും സഹപ്രവർത്തകരുമായി സംസാരിക്കുമ്പോൾ ബന്ധങ്ങൾ ദൃഢമാക്കാനും സ്വാഭാവികമായ സൗഹൃദം പങ്കുവെക്കാനുമുള്ള ഇംഗ്ലീഷ് ശൈലികൾ."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Let's grab a coffee.",
-        "Good to catch up with you.",
-        "Let's wrap up this task."
+        "How did your weekend go , Anita ? Did you manage to get some rest ?",
+        "The coffee machine on the third floor cafeteria is finally working properly again .",
+        "Are you attending the company cricket tournament scheduled for this Saturday afternoon ?",
+        "How is the client presentation preparation coming along for your team ?",
+        "Let us grab a quick lunch together at the garden bistro downstairs ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Office Small Talk & Break Room English",
-        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണം"
+        "en": "Reading Room: The Creative Courtyard",
+        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണങ്ങൾ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Let's grab a coffee.",
-          "meaningMl": "കുടിക്കുക - Let's grab a coffee.",
-          "audioPrompt": "Let's grab a coffee."
+          "text": "At Innovation Labs Bangalore, the central open-air courtyard serves as the beating heart of informal workplace collaboration.",
+          "meaningMl": "ഇന്നൊവേഷൻ ലാബ്‌സ് ബാംഗ്ലൂരിൽ, നടുമുറ്റത്തെ തുറന്ന പൂന്തോട്ടമാണ് സഹപ്രവർത്തകർ തമ്മിലുള്ള അനൗദ്യോഗിക കൂട്ടായ്മയുടെ കേന്ദ്രം.",
+          "meaningHi": "बैंगलोर में खुला आंगन कार्यस्थल पर अनौपचारिक सहयोग का केंद्र है।",
+          "meaningTa": "பெங்களூருவில் உள்ள திறந்தவெளி முற்றம் பணியிட தோழமையின் மையமாக செயல்படுகிறது.",
+          "audioPrompt": "At Innovation Labs Bangalore, the central open-air courtyard serves as the beating heart of informal workplace collaboration."
         },
         {
-          "text": "Good to catch up with you.",
-          "meaningMl": "വിശേഷങ്ങൾ പങ്കിടുക - Good to catch up with you.",
-          "audioPrompt": "Good to catch up with you."
+          "text": "Engineers, marketing strategists, and graphic illustrators gather around shaded stone benches with steaming cups of cardamom tea.",
+          "meaningMl": "എഞ്ചിനീയർമാരും മാർക്കറ്റിംഗ് വിദഗ്ധരും ഡിസൈനർമാരും ഏലക്കാ ചായയുമായി തണൽ മരങ്ങൾക്ക് കീഴിൽ ഒത്തുകൂടുന്നു.",
+          "meaningHi": "इंजीनियर और डिजाइनर इलायची चाय के साथ पेड़ों की छांव में बैठते हैं।",
+          "meaningTa": "பொறியாளர்களும் வடிவமைப்பாளர்களும் ஏலக்காய் டீயுடன் மரத்தடியில் கூடுகிறார்கள்.",
+          "audioPrompt": "Engineers, marketing strategists, and graphic illustrators gather around shaded stone benches with steaming cups of cardamom tea."
         },
         {
-          "text": "Daily practice of Office Small Talk & Break Room English gives you great confidence in English.",
-          "meaningMl": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Office Small Talk & Break Room English gives you great confidence in English."
+          "text": "Casual conversations about weekend football tournaments frequently spark groundbreaking cross-functional product ideas.",
+          "meaningMl": "വാരാന്ത്യ ഫുട്ബോൾ മത്സരങ്ങളെക്കുറിച്ചുള്ള ലളിതമായ സംസാരങ്ങൾ പലപ്പോഴും പുതിയ ഉൽപ്പന്ന ആശയങ്ങൾക്ക് തുടക്കമിടുന്നു.",
+          "meaningHi": "सप्ताहांत के फुटबॉल मैचों पर अनौपचारिक बातचीत अक्सर नए उत्पाद विचारों को जन्म देती है।",
+          "meaningTa": "கால்பந்து பற்றிய சாதாரண உரையாடல்கள் புதிய தயாரிப்பு யோசனைகளைத் தூண்டுகின்றன.",
+          "audioPrompt": "Casual conversations about weekend football tournaments frequently spark groundbreaking cross-functional product ideas."
+        },
+        {
+          "text": "Psychologists have discovered that relaxed social banter dissolves interpersonal barriers and nurtures enduring workplace camaraderie.",
+          "meaningMl": "ലളിതമായ സൗഹൃദ സംഭാഷണങ്ങൾ അകൽച്ച ഇല്ലാതാക്കാനും ആഴത്തിലുള്ള ടീം സൗഹൃദം വളർത്താനും സഹായിക്കുമെന്ന് മനശാസ്ത്രജ്ഞർ കണ്ടെത്തിയിട്ടുണ്ട്.",
+          "meaningHi": "मनोवैज्ञानिकों ने पाया है कि अनौपचारिक बातचीत आपसी बाधाओं को दूर करती है और भाईचारा बढ़ाती है।",
+          "meaningTa": "சாதாரண உரையாடல்கள் இடைவெளியைக் குறைத்து குழு ஒற்றுமையை வளர்க்கிறது என்று ஆய்வுகள் கூறுகின்றன.",
+          "audioPrompt": "Psychologists have discovered that relaxed social banter dissolves interpersonal barriers and nurtures enduring workplace camaraderie."
+        },
+        {
+          "text": "When employees feel comfortable sharing authentic laughter, team morale and collective creative resilience skyrocket.",
+          "meaningMl": "ജീവനക്കാർക്ക് സ്വതന്ത്രമായി ചിരിക്കാനും ഇടപഴകാനും കഴിയുമ്പോൾ, ടീമിന്റെ മനോവീര്യവും സർഗ്ഗാത്മകതയും വാനോളമുയരുന്നു.",
+          "meaningHi": "जब कर्मचारी खुलकर हंसते हैं, तो टीम का मनोबल और रचनात्मकता बढ़ती है।",
+          "meaningTa": "ஊழியர்கள் ஒன்றாக சிரித்து மகிழும்போது குழுவின் மன உறுதி உயர்கிறது.",
+          "audioPrompt": "When employees feel comfortable sharing authentic laughter, team morale and collective creative resilience skyrocket."
+        },
+        {
+          "text": "Genuine professional brilliance blossoms most vibrantly in environments anchored in warm human trust and mutual respect.",
+          "meaningMl": "പരസ്പര വിശ്വാസത്തിലും ആദരവിലും അധിഷ്ഠിതമായ അന്തരീക്ഷത്തിലാണ് യഥാർത്ഥ പ്രൊഫഷണൽ മികവ് ഏറ്റവും മനോഹരമായി വിരിയുന്നത്.",
+          "meaningHi": "सच्ची प्रतिभा आपसी विश्वास और सम्मान के माहौल में सबसे अधिक खिलती है।",
+          "meaningTa": "பரஸ்பர நம்பிக்கையும் மரியாதையும் உள்ள சூழலிலேயே உண்மையான திறமை மிளிர்கிறது.",
+          "audioPrompt": "Genuine professional brilliance blossoms most vibrantly in environments anchored in warm human trust and mutual respect."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What beverage do colleagues enjoy while gathering around shaded stone benches?",
+            "ml": "തണൽ ബെഞ്ചുകളിലിരുന്ന് സഹപ്രവർത്തകർ ആസ്വദിക്കുന്ന പാനീയം ഏതാണ്?",
+            "hi": "सहकर्मी कौन सा पेय पीते हैं?",
+            "ta": "ஊழியர்கள் என்ன பானம் குடிக்கிறார்கள்?"
+          },
+          "options": [
+            "Cold soda cans",
+            "Steaming cups of cardamom tea",
+            "Iced lemonade",
+            "Mineral water"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Steaming cups of cardamom tea.",
+            "ml": "ഏലക്കാ ചായ (cardamom tea)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What do casual weekend conversations frequently spark?",
+            "ml": "ലളിതമായ സംസാരങ്ങൾ പലപ്പോഴും എന്തിനാണ് തുടക്കമിടുന്നത്?",
+            "hi": "अनौपचारिक बातचीत क्या उत्पन्न करती है?",
+            "ta": "சாதாரண உரையாடல்கள் எதைத் தூண்டுகின்றன?"
+          },
+          "options": [
+            "Heated arguments",
+            "Groundbreaking cross-functional product ideas",
+            "Resignations",
+            "Complaints to management"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Groundbreaking cross-functional product ideas.",
+            "ml": "പുതിയ ഉൽപ്പന്ന ആശയങ്ങൾ (Groundbreaking product ideas)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What do psychologists say happens when employees share authentic laughter?",
+            "ml": "ജീവനക്കാർ ഒന്നിച്ച് ചിരിക്കുമ്പോൾ എന്ത് സംഭവിക്കുന്നു എന്നാണ് മനശാസ്ത്രജ്ഞർ പറയുന്നത്?",
+            "hi": "कर्मचारियों के हंसने पर क्या होता है?",
+            "ta": "ஊழியர்கள் சிரித்து மகிழும்போது என்ன நடக்கிறது?"
+          },
+          "options": [
+            "Work slows down completely",
+            "Team morale and creative resilience skyrocket",
+            "Offices become too noisy",
+            "Computers crash"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Team morale and creative resilience skyrocket.",
+            "ml": "ടീമിന്റെ മനോവീര്യവും സർഗ്ഗാത്മകതയും വാനോളമുയരുന്നു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d76_1",
-          "question": "Which word represents: 'കുടിക്കുക'?",
+          "id": 1,
+          "question": "When a colleague asks: 'How was your weekend?', which response keeps the conversation engaging and polite?",
           "options": [
-            "prepare",
-            "decide",
-            "remember",
-            "grab"
+            "Good.",
+            "It was very restful! I went hiking in the hills. How was yours?",
+            "Why are you asking me personal questions?",
+            "Nothing."
           ],
-          "answer": "grab",
-          "explanation": "grab എന്നാൽ കുടിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "ഒരു ചെറിയ വിവരണം നൽകി തിരിച്ച് അവരോടും ചോദിക്കുന്നതാണ് ('It was very restful! I went hiking... How was yours?') ഏറ്റവും അനുയോജ്യമായ സംഭാഷണ രീതി."
         },
         {
-          "id": "trap_d76_2",
-          "question": "What is the past form (V2) of 'catch up'?",
+          "id": 2,
+          "question": "What does 'watercooler talk' mean in a modern workplace?",
           "options": [
-            "catch uping",
-            "caught up",
-            "catch ups",
-            "has catch up"
+            "Fixing plumbing pipes.",
+            "Casual, informal conversations between colleagues during breaks.",
+            "Selling bottled mineral water.",
+            "Arguing with the office janitor."
           ],
-          "answer": "caught up",
-          "explanation": "catch up ന്റെ ഭൂതകാല രൂപം caught up ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'Watercooler talk' എന്നാൽ ഓഫീസിലെ ഇടവേളകളിൽ സഹപ്രവർത്തകർ നടത്തുന്ന സൗഹൃദ സംഭാഷണങ്ങളാണ് (casual informal conversation)."
         },
         {
-          "id": "trap_d76_3",
-          "question": "What is the correct English word for 'കോഫി'?",
+          "id": 3,
+          "question": "Choose the natural phrase to invite a teammate for lunch:",
           "options": [
-            "partner",
-            "progress",
-            "coffee",
-            "schedule"
+            "Consume food with me now.",
+            "Let's grab a quick bite at the cafeteria downstairs.",
+            "You must eat lunch at this second.",
+            "Order food for me immediately."
           ],
-          "answer": "coffee",
-          "explanation": "കോഫി എന്നാൽ ഇംഗ്ലീഷിൽ coffee."
+          "correctIndex": 1,
+          "explanationMl": "'Let's grab a quick bite at the cafeteria...' എന്നത് സഹപ്രവർത്തകരെ ലഞ്ചിന് ക്ഷണിക്കാൻ ഉപയോഗിക്കുന്ന ഏറ്റവും സ്വാഭാവിക ഇംഗ്ലീഷാണ്."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 76 Gate Exam (5 Qs)",

@@ -1,8 +1,11 @@
+import 'curriculum_data/pocket_90day_sentence_builder_data.dart';
+import 'pocket_90day_vocab_curriculum.dart';
+
 /// 🎙️ Master 90-Day Spoken Gate Exam Curriculum (House Gate 1 to Gate 90)
 /// Features:
 /// - 100% Unique Practical Questions per Day tailored to that day's specific topic!
-/// - ZERO DUPLICATES across all 14 days (and scalable to 90 days).
-/// - English prompt, Malayalam prompt, exact target text for speech evaluation, and 4 multiple-choice options.
+/// - Days 1 to 90 fully covered (Days 1–14 handcrafted, Days 15–90 dynamically generated from that day's target sentences & vocab).
+/// - Multilingual prompt support (English, Hindi, Tamil, Telugu, Kannada, Malayalam).
 class Pocket90DaySpokenExamCurriculum {
   /// Returns the curated list of 4 spoken exam questions for any given day (1 to 90)
   static List<Map<String, dynamic>> getExamForDay(int day) {
@@ -14,75 +17,100 @@ class Pocket90DaySpokenExamCurriculum {
       return exam;
     }
 
-    // Dynamic procedural fallback for any day beyond pre-compiled list
+    final sentences = Pocket90DaySentenceBuilderData.getSentencesForDay(day);
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
+
+    final s0 = sentences.isNotEmpty ? sentences[0].sentence : 'I practice speaking English every day.';
+    final s1 = sentences.length > 1 ? sentences[1].sentence : 'I communicate with great confidence.';
+    final s2 = sentences.length > 2 ? sentences[2].sentence : 'Consistency leads to English fluency.';
+    final v0 = vocab.isNotEmpty ? vocab[0] : null;
+    final vWord = v0 != null ? v0.word : 'practice';
+    final vSentence = (v0 != null && v0.exampleSentence.isNotEmpty) ? v0.exampleSentence : 'We practice English regularly.';
+
     return [
       {
         'id': 1,
         'question': {
-          'en': 'Speak aloud your daily English practice goal for Day $day:',
-          'ml': 'ഡേ $day-ലെ നിങ്ങളുടെ ഇംഗ്ലീഷ് പരിശീലന ലക്ഷ്യം ഉറക്കെ പറയുക:',
+          'en': 'Speak aloud today\'s Day $day key conversational sentence:',
+          'ml': 'ഡേ $day-ലെ പ്രധാന വാക്യം ഉറക്കെ സംസാരിക്കുക:',
+          'hi': 'डे $day का मुख्य वाक्य ज़ोर से बोलें:',
+          'ta': 'நாள் $day இன் முக்கிய வாக்கியத்தை சத்தமாகப் பேசுங்கள்:',
+          'te': 'డే $day యొక్క ముఖ్య వాక్యాన్ని బిగ్గరగా మాట్లాడండి:',
+          'kn': 'ದಿನ $day ರ ಪ್ರಮುಖ ವಾಕ್ಯವನ್ನು ಗಟ್ಟಿಯಾಗಿ ಮಾತನಾಡಿ:',
         },
-        'targetText': 'I practice English every day',
-        'voicePrompt': 'Say: I practice English every day',
+        'targetText': s0,
+        'voicePrompt': 'Say: $s0',
         'options': [
-          'I practice English every day',
-          'I sleep all day',
-          'I never speak English',
-          'I forget my practice',
+          s0,
+          'I sleep all day without practicing',
+          'Speaking English is impossible',
+          'I will stop learning today',
         ],
         'correctIndex': 0,
-        'explanation': {'ml': 'സ്ഥിരമായി ഇംഗ്ലീഷ് സംസാരിച്ചു പരിശീലിക്കുക.'},
+        'explanation': {'en': 'Speak clearly with rhythm and steady pace.'},
       },
       {
         'id': 2,
         'question': {
-          'en': 'Speak aloud a confident English sentence for Day $day:',
-          'ml': 'ഡേ $day-ൽ ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷിൽ സംസാരിക്കുക:',
+          'en': 'Speak aloud the second conversational sentence for Day $day:',
+          'ml': 'ഡേ $day-ലെ രണ്ടാമത്തെ വാക്യം ആത്മവിശ്വാസത്തോടെ സംസാരിക്കുക:',
+          'hi': 'डे $day का दूसरा वाक्य आत्मविश्वास के साथ बोलें:',
+          'ta': 'நாள் $day இன் இரண்டாவது வாக்கியத்தை பேசுங்கள்:',
+          'te': 'డే $day యొక్క రెండవ వాక్యాన్ని మాట్లాడండి:',
+          'kn': 'ದಿನ $day ರ ಎರಡನೇ ವಾಕ್ಯವನ್ನು ಮಾತನಾಡಿ:',
         },
-        'targetText': 'I am learning to speak fluently',
-        'voicePrompt': 'Say: I am learning to speak fluently',
+        'targetText': s1,
+        'voicePrompt': 'Say: $s1',
         'options': [
-          'I am learning to speak fluently',
-          'I cannot speak at all',
-          'Speaking is impossible for me',
-          'I give up learning',
+          s1,
+          'I cannot speak at all today',
+          'Silence is always better',
+          'I forget all my words',
         ],
         'correctIndex': 0,
-        'explanation': {'ml': 'ആത്മവിശ്വാസത്തോടെയുള്ള ഇംഗ്ലീഷ് സംഭാഷണം.'},
+        'explanation': {'en': 'Practice pronouncing each syllable clearly.'},
       },
       {
         'id': 3,
         'question': {
-          'en': 'Speak aloud an encouraging phrase to your study partner:',
-          'ml': 'നിങ്ങളുടെ സുഹൃത്തിനോട് പ്രോത്സാഹന വാക്ക് ഉറക്കെ പറയുക:',
+          'en': 'Use today\'s vocabulary word "$vWord" in a spoken sentence:',
+          'ml': 'ഇന്നത്തെ പദമായ "$vWord" ഉപയോഗിച്ചുള്ള വാചകം ഉറക്കെ പറയുക:',
+          'hi': 'आज के शब्द "$vWord" का प्रयोग करते हुए वाक्य बोलें:',
+          'ta': 'இன்றைய சொல்லான "$vWord" ஐ வாக்கியத்தில் பேசுங்கள்:',
+          'te': 'ఈరోజు పదం "$vWord" తో వాక్యం మాట్లాడండి:',
+          'kn': 'ಇಂದಿನ ಪದ "$vWord" ಅನ್ನು ವಾಕ್ಯದಲ್ಲಿ ಮಾತನಾಡಿ:',
         },
-        'targetText': 'Keep up the great work',
-        'voicePrompt': 'Say: Keep up the great work',
+        'targetText': vSentence,
+        'voicePrompt': 'Say: $vSentence',
         'options': [
-          'Keep up the great work',
-          'Stop doing your work',
-          'You are doing terrible',
-          'Never try again',
+          vSentence,
+          'Never use new vocabulary',
+          'Words have no practical value',
+          'I do not remember this word',
         ],
         'correctIndex': 0,
-        'explanation': {'ml': 'മറ്റുള്ളവരെ പ്രോത്സാഹിപ്പിക്കാൻ ഈ വാക്യം ഉപയോഗിക്കാം.'},
+        'explanation': {'en': 'Active vocabulary memorization through speaking.'},
       },
       {
         'id': 4,
         'question': {
-          'en': 'Express your commitment to completing the 90-day journey:',
-          'ml': '90 ദിവസത്തെ ഇംഗ്ലീഷ് യാത്ര പൂർത്തിയാക്കുമെന്ന് ഉറക്കെ പറയുക:',
+          'en': 'Speak today\'s Day $day fluency milestone sentence aloud:',
+          'ml': 'ഡേ $day-ലെ ഫ്ലുവെൻസി ലക്ഷ്യം ഉറക്കെ പ്രഖ്യാപിക്കുക:',
+          'hi': 'डे $day का अपना फ़्लूएंसी लक्ष्य ज़ोर से बोलें:',
+          'ta': 'நாள் $day இன் உங்கள் பேசும் இலக்கை சத்தமாகப் பேசுங்கள்:',
+          'te': 'డే $day యొక్క మీ మాట్లాడే లక్ష్యాన్ని బిగ్గరగా చెప్పండి:',
+          'kn': 'ದಿನ $day ರ ನಿಮ್ಮ ಮಾತನಾಡುವ ಗುರಿಯನ್ನು ಗಟ್ಟಿಯಾಗಿ ಹೇಳಿ:',
         },
-        'targetText': 'I will complete all ninety days',
-        'voicePrompt': 'Say: I will complete all ninety days',
+        'targetText': s2,
+        'voicePrompt': 'Say: $s2',
         'options': [
-          'I will complete all ninety days',
-          'I will stop after one week',
-          'I do not care about learning',
-          'Ninety days is too long',
+          s2,
+          'I will quit learning English',
+          'Fluency is not for me',
+          'Ninety days is too long to try',
         ],
         'correctIndex': 0,
-        'explanation': {'ml': 'ലക്ഷ്യം നേടാനുള്ള പ്രതിബദ്ധത വ്യക്തമാക്കുക.'},
+        'explanation': {'en': 'Celebrating progressive speaking fluency every day.'},
       },
     ];
   }

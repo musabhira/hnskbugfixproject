@@ -22,112 +22,109 @@
     "totalCoinsReward": 114
   },
   "grammarRule": {
-    "formula": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
+    "formula": "Since + starting point of time | For + duration/period of time",
     "explanation": {
-      "ml": "Since vs For (കാലയളവ് പറയൽ) എന്ന വിഷയത്തിൽ Since + Starting point (Since 2020) | For + Period (For 3 years) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Since + Starting point (Since 2020) | For + Period (For 3 years) correctly in spoken English."
+      "ml": "ഒരു കാര്യം തുടങ്ങിയ നിർദ്ദിഷ്ട സമയം (2018, Monday, morning) പറയാൻ 'Since' ഉപയോഗിക്കുന്നു. ആകെ എത്ര സമയം (3 hours, 5 years, 2 weeks) നീണ്ടുനിന്നു എന്ന് പറയാൻ 'For' ഉപയോഗിക്കുന്നു.",
+      "en": "Master Duration: Since vs For with clear formula: Since + starting point of time | For + duration/period of time"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I have lived here for 5 years.",
-      "en": "Golden Rule: Practice 'I have lived here for 5 years.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Point in time = Since (Since 9 AM). Length of time = For (For 4 hours).",
+      "en": "Golden Tip: Point in time = Since (Since 9 AM). Length of time = For (For 4 hours)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "live",
-        "v2": "lived",
-        "v3": "lived",
+        "v1": "resided",
+        "v2": "resideded",
+        "v3": "resideded",
         "meaning": {
-          "ml": "താമസിക്കുക",
-          "hi": "रहना",
-          "ta": "வாழ் / வசி"
+          "ml": "താമസിച്ചു / വസിച്ചു",
+          "hi": "निवास किया",
+          "ta": "வசித்தார்"
         },
-        "example": "I have lived here for 5 years.",
-        "exampleMl": "താമസിച്ചുവരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "work",
-        "v2": "worked",
-        "v3": "worked",
-        "meaning": {
-          "ml": "ജോലി ചെയ്യുക",
-          "hi": "काम करना",
-          "ta": "வேலை செய்"
-        },
-        "example": "She has worked here since May.",
-        "exampleMl": "ജോലി ചെയ്യുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "wait",
-        "v2": "waited",
-        "v3": "waited",
-        "meaning": {
-          "ml": "കാത്തിരിക്കുക",
-          "hi": "प्रतीक्षा करना",
-          "ta": "காத்திரு"
-        },
-        "example": "I have waited for two hours.",
-        "exampleMl": "കാത്തിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "know",
-        "v2": "knew",
-        "v3": "known",
-        "meaning": {
-          "ml": "അറിയുക",
-          "hi": "जानना",
-          "ta": "அறி / தெரி"
-        },
-        "example": "We have known each other since school.",
-        "exampleMl": "പരിചയമുണ്ട് എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "My grandparents have resided in this peaceful coastal village since 1975.",
+        "exampleMl": "Have one's permanent home in a particular place."
       }
     ],
     "nouns": [
       {
-        "word": "duration",
+        "word": "Decade",
+        "partOfSpeech": "noun",
+        "definition": "A period of ten years.",
         "meaning": {
-          "ml": "കാലയളവ്",
-          "hi": "കാലയളവ്",
-          "ta": "കാലയളവ്"
+          "ml": "ദശാബ്ദം (പത്തു വർഷം)",
+          "hi": "दशक (दस वर्ष)",
+          "ta": "பத்தாண்டு",
+          "te": "దశాబ్దము",
+          "kn": "ದಶಕ"
         },
-        "example": "We learned about duration in today's lesson."
+        "example": "Our software enterprise has operated in this technology park for over a decade."
       },
       {
-        "word": "year",
+        "word": "Tenure",
+        "partOfSpeech": "noun",
+        "definition": "The conditions under which land or buildings are held or occupied, or period of holding office.",
         "meaning": {
-          "ml": "വർഷം",
-          "hi": "വർഷം",
-          "ta": "വർഷം"
+          "ml": "സേവന കാലാവധി / പദവി കാലാവധി",
+          "hi": "कार्यकाल",
+          "ta": "பதவிக்காலம்",
+          "te": "పదవీకాలం",
+          "kn": "ಅವಧಿ"
         },
-        "example": "We learned about year in today's lesson."
+        "example": "During her tenure as principal, school academic test scores increased dramatically."
       },
       {
-        "word": "month",
+        "word": "Resided",
+        "partOfSpeech": "verb",
+        "definition": "Have one's permanent home in a particular place.",
         "meaning": {
-          "ml": "മാസം",
-          "hi": "മാസം",
-          "ta": "മാസം"
+          "ml": "താമസിച്ചു / വസിച്ചു",
+          "hi": "निवास किया",
+          "ta": "வசித்தார்",
+          "te": "నివసించారు",
+          "kn": "ವಾಸಿಸಿದರು"
         },
-        "example": "We learned about month in today's lesson."
+        "example": "My grandparents have resided in this peaceful coastal village since 1975."
       },
       {
-        "word": "period",
+        "word": "Established",
+        "partOfSpeech": "adjective",
+        "definition": "Having existed or done something for a long time and therefore recognized and generally accepted.",
         "meaning": {
-          "ml": "സമയം",
-          "hi": "സമയം",
-          "ta": "സമയം"
+          "ml": "സുസ്ഥാപിതമായ / പ്രശസ്തമായ",
+          "hi": "स्थापित",
+          "ta": "நிறுவப்பட்ட",
+          "te": "స్థాపించబడిన",
+          "kn": "ಸ್ಥಾಪಿತ"
         },
-        "example": "We learned about period in today's lesson."
+        "example": "This century-old publishing house is an established name in academic literature."
       },
       {
-        "word": "beginning",
+        "word": "Dedicated",
+        "partOfSpeech": "adjective",
+        "definition": "Devoted to a task or purpose.",
         "meaning": {
-          "ml": "തുടക്കം",
-          "hi": "തുടക്കം",
-          "ta": "തുടക്കം"
+          "ml": "സമർപ്പിതമായ",
+          "hi": "समर्पित",
+          "ta": "அர்ப்பணிப்புள்ள",
+          "te": "అంకితమైన",
+          "kn": "ಅರ್ಪಿತವಾದ"
         },
-        "example": "We learned about beginning in today's lesson."
+        "example": "The dedicated nursing staff has cared for intensive care patients tirelessly."
+      },
+      {
+        "word": "Sustained",
+        "partOfSpeech": "adjective",
+        "definition": "Continuing for an extended period or without interruption.",
+        "meaning": {
+          "ml": "തുടർച്ചയായ / നിലനിർത്തപ്പെട്ട",
+          "hi": "निरंतर / निरंतरित",
+          "ta": "நீடித்த",
+          "te": "నిరంతర",
+          "kn": "ನಿರಂತರ"
+        },
+        "example": "The renewable energy farm has maintained sustained power output throughout storm season."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Since vs For: Duration of Action",
-        "ml": "പാഠം: Since vs For (കാലയളവ് പറയൽ)"
+        "en": "Concept Room: Duration: Since vs For",
+        "ml": "പാഠം: കാലയളവ് സൂചിപ്പിക്കൽ: Since vs For"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Since + starting point of time | For + duration/period of time",
+        "ml": "ഒരു കാര്യം തുടങ്ങിയ നിർദ്ദിഷ്ട സമയം (2018, Monday, morning) പറയാൻ 'Since' ഉപയോഗിക്കുന്നു. ആകെ എത്ര സമയം (3 hours, 5 years, 2 weeks) നീണ്ടുനിന്നു എന്ന് പറയാൻ 'For' ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I have lived here for 5 years.",
-        "She has worked here since May.",
-        "I have waited for two hours."
+        "He has worked as an electrical engineer at the plant for six years .",
+        "Our family has resided in this heritage neighborhood since nineteen ninety five .",
+        "She has been the senior project coordinator since last November .",
+        "They have maintained this community organic garden for more than a decade .",
+        "I have waited at the customer support desk for forty five minutes ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Since vs For: Duration of Action",
-        "ml": "റീഡിങ് റൂം: Since vs For (കാലയളവ് പറയൽ)"
+        "en": "Reading Room: The Guardian of the Lighthouse",
+        "ml": "റീഡിങ് റൂം: കാലയളവ് സൂചിപ്പിക്കൽ: Since vs For"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I have lived here for 5 years.",
-          "meaningMl": "താമസിച്ചുവരുന്നു - I have lived here for 5 years.",
-          "audioPrompt": "I have lived here for 5 years."
+          "text": "Captain Mohan has served as the chief keeper of the treacherous northern coastal lighthouse for thirty-five years.",
+          "meaningMl": "ക്യാപ്റ്റൻ മോഹൻ മുപ്പത്തിയഞ്ച് വർഷമായി വടക്കൻ തീരദേശ വിളക്കുമാടത്തിന്റെ മുഖ്യ സൂക്ഷിപ്പുകാരനായി സേവനമനുഷ്ഠിക്കുന്നു.",
+          "meaningHi": "कैप्टन मोहन पैंतीस वर्षों से उत्तरी तटीय लाइटहाउस के मुख्य रक्षक के रूप में कार्यरत हैं।",
+          "meaningTa": "கேப்டன் மோகன் முப்பத்தைந்து ஆண்டுகளாக கலங்கரை விளக்கத்தின் தலைமைப் பாதுகாவலராகப் பணியாற்றி வருகிறார்.",
+          "audioPrompt": "Captain Mohan has served as the chief keeper of the treacherous northern coastal lighthouse for thirty-five years."
         },
         {
-          "text": "She has worked here since May.",
-          "meaningMl": "ജോലി ചെയ്യുന്നു - She has worked here since May.",
-          "audioPrompt": "She has worked here since May."
+          "text": "He has lived atop the rugged granite cliffs with his loyal rescue retriever since nineteen eighty-nine.",
+          "meaningMl": "1989 മുതൽ അദ്ദേഹം തന്റെ വിശ്വസ്തനായ നായയോടൊപ്പം പാറക്കെട്ടുകൾ നിറഞ്ഞ കുന്നിൻ മുകളിലാണ് താമസിക്കുന്നത്.",
+          "meaningHi": "वह 1989 से अपनी वफादार खोजी कुत्ते के साथ चट्टानों पर रह रहे हैं।",
+          "meaningTa": "அவர் 1989 முதல் தன் நாயுடன் பாறைப் பகுதியில் வசித்து வருகிறார்.",
+          "audioPrompt": "He has lived atop the rugged granite cliffs with his loyal rescue retriever since nineteen eighty-nine."
         },
         {
-          "text": "Daily practice of Since vs For: Duration of Action gives you great confidence in English.",
-          "meaningMl": "Since vs For (കാലയളവ് പറയൽ) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Since vs For: Duration of Action gives you great confidence in English."
+          "text": "Modern electronic radars have guided mega cargo vessels across open seas for several decades.",
+          "meaningMl": "ആധുനിക ഇലക്ട്രോണിക് റഡാറുകൾ പതിറ്റാണ്ടുകളായി തുറന്ന കടലിലൂടെ വലിയ ചരക്കു കപ്പലുകളെ നയിക്കുന്നുണ്ട്.",
+          "meaningHi": "आधुनिक रडार कई दशकों से विशाल मालवाहक जहाजों का मार्गदर्शन कर रहे हैं।",
+          "meaningTa": "நவீன ரேடார்கள் பல தசாப்தங்களாக பெரிய கப்பல்களை வழிநடத்தி வருகின்றன.",
+          "audioPrompt": "Modern electronic radars have guided mega cargo vessels across open seas for several decades."
+        },
+        {
+          "text": "Yet, seafaring captains have trusted Mohan's powerful sweeping beacon light whenever violent cyclones disabled electronic navigation.",
+          "meaningMl": "എന്നിരുന്നാലും, അതിശക്തമായ ചുഴലിക്കാറ്റുകൾ ഇലക്ട്രോണിക് സംവിധാനങ്ങൾ തകരാറിലാക്കുമ്പോഴെല്ലാം നാവികർ മോഹന്റെ ശക്തമായ പ്രകാശത്തെ ആശ്രയിച്ചിട്ടുണ്ട്.",
+          "meaningHi": "फिर भी, तूफान में नेविगेशन फेल होने पर नाविक मोहन के प्रकाश पर भरोसा करते हैं।",
+          "meaningTa": "புயல் சமயங்களில் மின் சாதனம் செயலிழந்தால் மாலுமிகள் மோகனின் ஒளியை நம்பியுள்ளனர்.",
+          "audioPrompt": "Yet, seafaring captains have trusted Mohan's powerful sweeping beacon light whenever violent cyclones disabled electronic navigation."
+        },
+        {
+          "text": "He has maintained the rotating prismatic lenses with immaculate precision since his very first apprentice shift.",
+          "meaningMl": "തന്റെ ആദ്യത്തെ പരിശീലന കാലം മുതൽ തന്നെ അദ്ദേഹം ഭ്രമണം ചെയ്യുന്ന ലെൻസുകൾ കുറ്റമറ്റ കൃത്യതയോടെ പരിപാലിക്കുന്നു.",
+          "meaningHi": "उन्होंने अपने पहले दिन से ही लेंसों का रखरखाव पूरी सटीकता से किया है।",
+          "meaningTa": "தனது ஆரம்ப காலம் முதலே சுழலும் லென்ஸ்களை மிகத் துல்லியமாகப் பராமரித்து வருகிறார்.",
+          "audioPrompt": "He has maintained the rotating prismatic lenses with immaculate precision since his very first apprentice shift."
+        },
+        {
+          "text": "Maritime authorities have honored him with three national commendations for his sustained and heroic vigilance.",
+          "meaningMl": "അദ്ദേഹത്തിന്റെ നീണ്ട ധീരമായ ജാഗ്രതയ്ക്ക് സമുദ്ര അധികൃതർ മൂന്ന് ദേശീയ ബഹുമതികൾ നൽകി ആദരിച്ചിട്ടുണ്ട്.",
+          "meaningHi": "समुद्री अधिकारियों ने उनकी निरंतर सतर्कता के लिए उन्हें तीन राष्ट्रीय पुरस्कारों से सम्मानित किया है।",
+          "meaningTa": "அவரது தொடர் சேவைக்கு கடல்சார் அதிகாரிகள் மூன்று தேசிய விருதுகளை வழங்கியுள்ளனர்.",
+          "audioPrompt": "Maritime authorities have honored him with three national commendations for his sustained and heroic vigilance."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "For how many years has Captain Mohan served as the lighthouse keeper?",
+            "ml": "ക്യാപ്റ്റൻ മോഹൻ എത്ര വർഷമായി ലൈറ്റ് ഹൗസ് സൂക്ഷിപ്പുകാരനായി സേവനമനുഷ്ഠിക്കുന്നു?",
+            "hi": "मोहन कितने वर्षों से लाइटहाउस के रक्षक हैं?",
+            "ta": "மோகன் எத்தனை ஆண்டுகளாக கலங்கரை விளக்கக் காவலராக உள்ளார்?"
+          },
+          "options": [
+            "Five years",
+            "Thirty-five years",
+            "Ten years",
+            "Two years"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He has served for thirty-five years.",
+            "ml": "35 വർഷമായി (thirty-five years)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Since which year has he resided atop the rugged cliffs?",
+            "ml": "ഏത് വർഷം മുതലാണ് അദ്ദേഹം പാറക്കെട്ടുകൾക്ക് മുകളിൽ താമസിക്കുന്നത്?",
+            "hi": "वह किस वर्ष से चट्टानों पर रह रहे हैं?",
+            "ta": "அவர் எந்த ஆண்டு முதல் அங்கு வசிக்கிறார்?"
+          },
+          "options": [
+            "Since 2015",
+            "Since 1989",
+            "Since 2000",
+            "Since 1950"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He has lived there since nineteen eighty-nine.",
+            "ml": "1989 മുതൽ (Since 1989)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How many national commendations has Mohan received from maritime authorities?",
+            "ml": "മോഹന് അധികൃതരിൽ നിന്ന് എത്ര ദേശീയ ബഹുമതികൾ ലഭിച്ചു?",
+            "hi": "मोहन को कितने राष्ट्रीय पुरस्कार मिले हैं?",
+            "ta": "மோகனுக்கு எத்தனை தேசிய விருதுகள் கிடைத்துள்ளன?"
+          },
+          "options": [
+            "One",
+            "Three national commendations",
+            "Ten",
+            "None"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He received three national commendations.",
+            "ml": "3 ദേശീയ ബഹുമതികൾ (three national commendations)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d64_1",
-          "question": "Which word represents: 'താമസിക്കുക'?",
+          "id": 1,
+          "question": "Fill in the blank: 'I have been studying English _____ three months.'",
           "options": [
-            "discover",
-            "live",
-            "remember",
-            "create"
+            "since",
+            "for",
+            "from",
+            "during"
           ],
-          "answer": "live",
-          "explanation": "live എന്നാൽ താമസിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'three months' എന്നത് ഒരു കാലയളവ് (duration) ആയതിനാൽ 'for' ഉപയോഗിക്കണം ('for three months')."
         },
         {
-          "id": "trap_d64_2",
-          "question": "What is the past form (V2) of 'work'?",
+          "id": 2,
+          "question": "Fill in the blank: 'She has lived in London _____ 2018.'",
           "options": [
-            "works",
-            "has work",
-            "working",
-            "worked"
+            "for",
+            "since",
+            "in",
+            "ago"
           ],
-          "answer": "worked",
-          "explanation": "work ന്റെ ഭൂതകാല രൂപം worked ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'2018' എന്നത് ഒരു പ്രത്യേക വർഷം/തുടക്ക ബിന്ദു (point in time) ആയതിനാൽ 'since' ഉപയോഗിക്കണം ('since 2018')."
         },
         {
-          "id": "trap_d64_3",
-          "question": "What is the correct English word for 'കാലയളവ്'?",
+          "id": 3,
+          "question": "Which sentence correctly pairs the preposition with the time expression?",
           "options": [
-            "routine",
-            "schedule",
-            "duration",
-            "knowledge"
+            "He has been waiting since four hours.",
+            "He has been waiting for four hours.",
+            "He has been waiting for yesterday morning.",
+            "He has been waiting since two weeks."
           ],
-          "answer": "duration",
-          "explanation": "കാലയളവ് എന്നാൽ ഇംഗ്ലീഷിൽ duration."
+          "correctIndex": 1,
+          "explanationMl": "'four hours' കാലയളവായതിനാൽ 'for' ആണ് ശരി ('for four hours')."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 64 Gate Exam (5 Qs)",

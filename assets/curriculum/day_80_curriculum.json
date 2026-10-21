@@ -22,112 +22,133 @@
     "totalCoinsReward": 130
   },
   "grammarRule": {
-    "formula": "Idioms and Expressions for Natural Fluency",
+    "formula": "First, I will cover... Moving on to... To summarize... In conclusion...",
     "explanation": {
-      "ml": "പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ എന്ന വിഷയത്തിൽ Signposting: First, moving on to, finally, to conclude എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Signposting: First, moving on to, finally, to conclude correctly in spoken English."
+      "ml": "ഒരു യോഗത്തിലോ വേദിയിലോ പ്രസന്റേഷൻ നടത്തുമ്പോൾ കേൾവിക്കാരെ ഓരോ ഘട്ടത്തിലൂടെയും കൃത്യമായി നയിക്കാൻ ഉപയോഗിക്കുന്ന 'Signposting' വാക്കുകൾ (First, Next, Moving on to, To illustrate, In conclusion).",
+      "en": "Master Delivering Presentations & Signposting with clear formula: First, I will cover... Moving on to... To summarize... In conclusion..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I am excited to present this.",
-      "en": "Golden Rule: Practice 'I am excited to present this.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഒരു റോഡ് മാപ്പ് പോലെയാണ് Signposts. കേൾവിക്കാർക്ക് ഇപ്പോൾ എവിടെ നിൽക്കുന്നു, അടുത്തത് എന്താണ് വരുന്നത് എന്ന് വ്യക്തമായി മനസ്സിലാക്കാൻ ഇത് സഹായിക്കുന്നു.",
+      "en": "Golden Tip: ഒരു റോഡ് മാപ്പ് പോലെയാണ് Signposts. കേൾവിക്കാർക്ക് ഇപ്പോൾ എവിടെ നിൽക്കുന്നു, അടുത്തത് എന്താണ് വരുന്നത് എന്ന് വ്യക്തമായി മനസ്സിലാക്കാൻ ഇത് സഹായിക്കുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "present",
-        "v2": "presented",
-        "v3": "presented",
+        "v1": "illustrate",
+        "v2": "illustrateed",
+        "v3": "illustrateed",
         "meaning": {
-          "ml": "അവതരിപ്പിക്കുക",
-          "hi": "അവതരിപ്പിക്കുക",
-          "ta": "അവതരിപ്പിക്കുക"
+          "ml": "ഉദാഹരണങ്ങളിലൂടെ വ്യക്തമാക്കുക",
+          "hi": "उदाहरण देकर समझाना",
+          "ta": "விளக்கு / வரைபடம் மூலம் காட்டு"
         },
-        "example": "I am excited to present this.",
-        "exampleMl": "അവതരിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Let me share an authentic customer case study to illustrate this principle.",
+        "exampleMl": "Explain or make something clear by using examples, charts, or pictures."
       },
       {
-        "v1": "highlight",
-        "v2": "highlighted",
-        "v3": "highlighted",
+        "v1": "conclude",
+        "v2": "concludeed",
+        "v3": "concludeed",
         "meaning": {
-          "ml": "എടുത്തുപറയുക",
-          "hi": "എടുത്തുപറയുക",
-          "ta": "എടുത്തുപറയുക"
+          "ml": "ഉപസംഹരിക്കുക / അവസാനിപ്പിക്കുക",
+          "hi": "समाप्त करना / निष्कर्ष निकालना",
+          "ta": "முடிவு செய் / நிறைவு செய்"
         },
-        "example": "Let me highlight key benefits.",
-        "exampleMl": "എടുത്തുപറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "To conclude, sustainable renewable energy is both an environmental and economic necessity.",
+        "exampleMl": "Bring or come to an end; arrive at an opinion by reasoning."
       },
       {
-        "v1": "summarize",
-        "v2": "summarized",
-        "v3": "summarized",
+        "v1": "transitioning",
+        "v2": "transitioninged",
+        "v3": "transitioninged",
         "meaning": {
-          "ml": "ചുരുക്കി പറയുക",
-          "hi": "ചുരുക്കി പറയുക",
-          "ta": "ചുരുക്കി പറയുക"
+          "ml": "അടുത്ത വിഷയത്തിലേക്ക് മാറുക",
+          "hi": "परिवर्तन करना / अगले बिंदु पर जाना",
+          "ta": "மாற்றமடைதல்"
         },
-        "example": "To summarize the main points...",
-        "exampleMl": "ചുരുക്കി പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "invite",
-        "v2": "invited",
-        "v3": "invited",
-        "meaning": {
-          "ml": "ക്ഷണിക്കുക",
-          "hi": "ക്ഷണിക്കുക",
-          "ta": "ക്ഷണിക്കുക"
-        },
-        "example": "Now I invite any questions.",
-        "exampleMl": "ക്ഷണിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Transitioning now to our quarterly financial projections, revenue has grown fifteen percent.",
+        "exampleMl": "Undergoing or causing to undergo a process or period of change from one state or condition to another."
       }
     ],
     "nouns": [
       {
-        "word": "slide",
+        "word": "Overview",
+        "partOfSpeech": "noun",
+        "definition": "A general review or summary of a subject.",
         "meaning": {
-          "ml": "സ്ലൈഡ്",
-          "hi": "സ്ലൈഡ്",
-          "ta": "സ്ലൈഡ്"
+          "ml": "പൊതുവായ അവലോകനം / രൂപരേഖ",
+          "hi": "अवलोकन / सारांश",
+          "ta": "பொதுப் பார்வை / மேலோட்டம்",
+          "te": "సమీక్ష",
+          "kn": "ಸ್ಥೂಲ ಅವಲೋಕನ"
         },
-        "example": "We learned about slide in today's lesson."
+        "example": "Allow me to provide a brief introductory overview of our agenda today."
       },
       {
-        "word": "presentation",
+        "word": "Signpost",
+        "partOfSpeech": "noun",
+        "definition": "A word, phrase, or device that directs attention to a transition in a spoken talk or presentation.",
         "meaning": {
-          "ml": "പ്രസന്റേഷൻ",
-          "hi": "പ്രസന്റേഷൻ",
-          "ta": "പ്രസന്റേഷൻ"
+          "ml": "പ്രസന്റേഷനിലെ ദിശാസൂചക വാക്ക്",
+          "hi": "दिशा-सूचक संकेत",
+          "ta": "வழிகாட்டுச் சொல்",
+          "te": "దిశా నిర్దేశ పదం",
+          "kn": "ಮಾರ್ಗದರ್ಶಿ ಪದ"
         },
-        "example": "We learned about presentation in today's lesson."
+        "example": "Using clear verbal signposts keeps your executive audience engaged and attentive."
       },
       {
-        "word": "audience",
+        "word": "Illustrate",
+        "partOfSpeech": "verb",
+        "definition": "Explain or make something clear by using examples, charts, or pictures.",
         "meaning": {
-          "ml": "കേൾവിക്കാർ",
-          "hi": "കേൾവിക്കാർ",
-          "ta": "കേൾവിക്കാർ"
+          "ml": "ഉദാഹരണങ്ങളിലൂടെ വ്യക്തമാക്കുക",
+          "hi": "उदाहरण देकर समझाना",
+          "ta": "விளக்கு / வரைபடம் மூலம் காட்டு",
+          "te": "ఉదాహరణలతో వివరించు",
+          "kn": "ವಿವರಿಸು"
         },
-        "example": "We learned about audience in today's lesson."
+        "example": "Let me share an authentic customer case study to illustrate this principle."
       },
       {
-        "word": "topic",
+        "word": "Conclude",
+        "partOfSpeech": "verb",
+        "definition": "Bring or come to an end; arrive at an opinion by reasoning.",
         "meaning": {
-          "ml": "വിഷയം",
-          "hi": "വിഷയം",
-          "ta": "വിഷയം"
+          "ml": "ഉപസംഹരിക്കുക / അവസാനിപ്പിക്കുക",
+          "hi": "समाप्त करना / निष्कर्ष निकालना",
+          "ta": "முடிவு செய் / நிறைவு செய்",
+          "te": "ముగించు",
+          "kn": "ಮುಕ್ತಾಯಗೊಳಿಸು"
         },
-        "example": "We learned about topic in today's lesson."
+        "example": "To conclude, sustainable renewable energy is both an environmental and economic necessity."
       },
       {
-        "word": "overview",
+        "word": "Transitioning",
+        "partOfSpeech": "verb",
+        "definition": "Undergoing or causing to undergo a process or period of change from one state or condition to another.",
         "meaning": {
-          "ml": "അവലോകനം",
-          "hi": "അവലോകനം",
-          "ta": "അവലോകനം"
+          "ml": "അടുത്ത വിഷയത്തിലേക്ക് മാറുക",
+          "hi": "परिवर्तन करना / अगले बिंदु पर जाना",
+          "ta": "மாற்றமடைதல்",
+          "te": "మారడం",
+          "kn": "ವರ್ಗಾವಣೆಗೊಳ್ಳುವುದು"
         },
-        "example": "We learned about overview in today's lesson."
+        "example": "Transitioning now to our quarterly financial projections, revenue has grown fifteen percent."
+      },
+      {
+        "word": "Visuals",
+        "partOfSpeech": "noun",
+        "definition": "Pictures, pieces of film, or displays used to illustrate or accompany something.",
+        "meaning": {
+          "ml": "ചിത്രങ്ങളും ചാർട്ടുകളും / വിഷ്വൽസ്",
+          "hi": "दृश्य / चित्र",
+          "ta": "காட்சிகள் / வரைபடங்கள்",
+          "te": "దృశ్య చిత్రాలు",
+          "kn": "ದೃಶ್ಯಗಳು"
+        },
+        "example": "The presentation slides featured clean infographics and uncluttered visuals."
       }
     ]
   },
@@ -136,8 +157,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Delivering Confident Presentations",
-        "ml": "പാഠം: പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ"
+        "en": "Concept Room: Delivering Presentations & Signposting",
+        "ml": "പാഠം: പ്രസന്റേഷനുകളും ആശയവിനിമയ ഘടനയും (Signposting)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "First, I will cover... Moving on to... To summarize... In conclusion...",
+        "ml": "ഒരു യോഗത്തിലോ വേദിയിലോ പ്രസന്റേഷൻ നടത്തുമ്പോൾ കേൾവിക്കാരെ ഓരോ ഘട്ടത്തിലൂടെയും കൃത്യമായി നയിക്കാൻ ഉപയോഗിക്കുന്ന 'Signposting' വാക്കുകൾ (First, Next, Moving on to, To illustrate, In conclusion)."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I am excited to present this.",
-        "Let me highlight key benefits.",
-        "To summarize the main points..."
+        "Good morning everyone ; today I am delighted to present our new corporate product strategy .",
+        "First , I will provide an overview of our market research findings from three continents .",
+        "Moving on to our second key point , let us examine the quarterly user engagement metrics .",
+        "To illustrate this trend , please turn your attention to the bar graph on this slide .",
+        "To conclude , adopting this digital platform will significantly streamline enterprise communications ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +239,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Delivering Confident Presentations",
-        "ml": "റീഡിങ് റൂം: പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ"
+        "en": "Reading Room: The Keynote That Moved an Industry",
+        "ml": "റീഡിങ് റൂം: പ്രസന്റേഷനുകളും ആശയവിനിമയ ഘടനയും (Signposting)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I am excited to present this.",
-          "meaningMl": "അവതരിപ്പിക്കുക - I am excited to present this.",
-          "audioPrompt": "I am excited to present this."
+          "text": "Standing before three thousand global delegates in Geneva, clean-tech innovator Dr. Priya adjusted her lavalier microphone with quiet poise.",
+          "meaningMl": "ജനീവയിലെ മൂവായിരം അന്താരാഷ്ട്ര പ്രതിനിധികൾക്ക് മുന്നിൽ നിന്ന് ക്ലീൻ-ടെക് ഇന്നൊവേറ്റർ ഡോ. പ്രിയ തന്റെ മൈക്രോഫോൺ ശാന്തതയോടെ ക്രമീകരിച്ചു.",
+          "meaningHi": "जिनेवा में तीन हजार प्रतिनिधियों के सामने डॉ. प्रिया ने पूरे आत्मविश्वास के साथ शुरुआत की।",
+          "meaningTa": "ஜெனீவாவில் மூவாயிரம் பிரதிநிதிகள் முன் டாக்டர் பிரியா அமைதியுடன் பேசத் தொடங்கினார்.",
+          "audioPrompt": "Standing before three thousand global delegates in Geneva, clean-tech innovator Dr. Priya adjusted her lavalier microphone with quiet poise."
         },
         {
-          "text": "Let me highlight key benefits.",
-          "meaningMl": "എടുത്തുപറയുക - Let me highlight key benefits.",
-          "audioPrompt": "Let me highlight key benefits."
+          "text": "She anchored her hour-long keynote address with masterfully placed rhetorical signposts that guided listeners through intricate thermodynamics.",
+          "meaningMl": "സങ്കീർണ്ണമായ ശാസ്ത്ര വിഷയങ്ങളിലൂടെ കേൾവിക്കാരെ നയിക്കാൻ അവൾ സമർത്ഥമായി തയ്യാറാക്കിയ സൈൻപോസ്റ്റിംഗ് വാചകങ്ങൾ ഉപയോഗിച്ചു.",
+          "meaningHi": "उन्होंने अपने व्याख्यान में ऐसे दिशा-संकेत शामिल किए जिन्होंने जटिल विज्ञान को सरल बना दिया।",
+          "meaningTa": "அவர் தனது உரையில் பார்வையாளர்களை வழிநடத்தும் தெளிவான வழிகாட்டுச் சொற்களைப் பயன்படுத்தினார்.",
+          "audioPrompt": "She anchored her hour-long keynote address with masterfully placed rhetorical signposts that guided listeners through intricate thermodynamics."
         },
         {
-          "text": "Daily practice of Delivering Confident Presentations gives you great confidence in English.",
-          "meaningMl": "പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Delivering Confident Presentations gives you great confidence in English."
+          "text": "'First, we will examine why conventional lithium battery manufacturing strains terrestrial freshwater ecosystems,' she began calmly.",
+          "meaningMl": "'ആദ്യം, പരമ്പരാഗത ലിഥിയം ബാറ്ററി നിർമ്മാണം ശുദ്ധജല ആവാസവ്യവസ്ഥയെ എങ്ങനെ ബാധിക്കുന്നു എന്ന് നമുക്ക് പരിശോധിക്കാം,' അവൾ ശാന്തമായി തുടങ്ങി.",
+          "meaningHi": "'पहले, हम देखेंगे कि बैटरी निर्माण से पानी की कमी कैसे होती है,' उन्होंने शुरुआत की।",
+          "meaningTa": "'முதலில், பேட்டரி உற்பத்தி நீர்நிலைகளை எவ்வாறு பாதிக்கிறது என்பதைப் பார்ப்போம்' என்று தொடங்கினார்.",
+          "audioPrompt": "'First, we will examine why conventional lithium battery manufacturing strains terrestrial freshwater ecosystems,' she began calmly."
+        },
+        {
+          "text": "'Moving on to our second breakthrough, allow me to illustrate how organic sodium from seawater provides a completely clean alternative.'",
+          "meaningMl": "'ഞങ്ങളുടെ രണ്ടാമത്തെ കണ്ടുപിടുത്തത്തിലേക്ക് കടക്കുമ്പോൾ, കടൽവെള്ളത്തിലെ സോഡിയം എങ്ങനെ പൂർണ്ണമായും ശുദ്ധമായ ഒരു ബദൽ നൽകുന്നു എന്ന് ഞാൻ വ്യക്തമാക്കാം.'",
+          "meaningHi": "'अब हमारे दूसरे नवाचार की ओर बढ़ते हुए, मैं दिखाती हूँ कि समुद्री नमक कैसे विकल्प बनता है।'",
+          "meaningTa": "'அடுத்ததாக, கடல் உப்பு எவ்வாறு சுத்தமான மாற்றாகிறது என்பதை விளக்குகிறேன் என்றார்.'",
+          "audioPrompt": "'Moving on to our second breakthrough, allow me to illustrate how organic sodium from seawater provides a completely clean alternative.'"
+        },
+        {
+          "text": "'To conclude, our technological future must not extract from the Earth, but harmonize with its timeless natural chemistry.'",
+          "meaningMl": "'ഉപസംഹരിക്കുമ്പോൾ, നമ്മുടെ സാങ്കേതിക ഭാവി ഭൂമിയെ ചൂഷണം ചെയ്യുന്നതാവരുത്, മറിച്ച് പ്രകൃതിയുടെ സ്വാഭാവിക നിയമങ്ങളുമായി ഇണങ്ങിനിൽക്കുന്നതാവണം.'",
+          "meaningHi": "'निष्कर्षतः, हमारा तकनीकी भविष्य पृथ्वी के साथ तालमेल बिठाने वाला होना चाहिए।'",
+          "meaningTa": "'முடிவாக, நமது தொழில்நுட்ப எதிர்காலம் பூமியை சுரண்டுவதாக இருக்கக்கூடாது, அதனுடன் இணக்கமாக இருக்க வேண்டும்.'",
+          "audioPrompt": "'To conclude, our technological future must not extract from the Earth, but harmonize with its timeless natural chemistry.'"
+        },
+        {
+          "text": "As her closing words resonated, the entire international convention hall rose in a thunderous standing ovation.",
+          "meaningMl": "അവളുടെ സമാപന വാക്കുകൾ മുഴങ്ങിയപ്പോൾ, അന്താരാഷ്ട്ര കൺവെൻഷൻ ഹാൾ ഒന്നടങ്കം എഴുന്നേറ്റുനിന്ന് കരഘോഷം മുഴക്കി.",
+          "meaningHi": "उनके अंतिम शब्दों पर पूरा हॉल तालियों की गड़गड़ाहट से गूंज उठा।",
+          "meaningTa": "அவரது இறுதி உரையைத் தொடர்ந்து அரங்கம் முழுவதும் எழுந்து நின்று கைதட்டி பாராட்டியது.",
+          "audioPrompt": "As her closing words resonated, the entire international convention hall rose in a thunderous standing ovation."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where did Dr. Priya deliver her keynote presentation to three thousand delegates?",
+            "ml": "മൂവായിരം പ്രതിനിധികൾക്ക് മുന്നിൽ ഡോ. പ്രിയ തന്റെ പ്രസന്റേഷൻ നടത്തിയത് എവിടെ വെച്ചാണ്?",
+            "hi": "डॉ. प्रिया ने अपना भाषण कहाँ दिया?",
+            "ta": "டாக்டர் பிரியா தனது உரையை எங்கு நிகழ்த்தினார்?"
+          },
+          "options": [
+            "In Geneva",
+            "At a subway train station",
+            "Inside a small library",
+            "In a school classroom"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "In Geneva before three thousand delegates.",
+            "ml": "ജനീവയിൽ (In Geneva)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What clean alternative from seawater did she illustrate in the second part of her talk?",
+            "ml": "തന്റെ പ്രസംഗത്തിന്റെ രണ്ടാം ഭാഗത്തിൽ കടൽവെള്ളത്തിൽ നിന്നുള്ള ഏത് ബദലാണ് അവൾ വ്യക്തമാക്കിയത്?",
+            "hi": "उन्होंने समुद्री जल से किस स्वच्छ विकल्प का प्रदर्शन किया?",
+            "ta": "கடல் நீரிலிருந்து என்ன சுத்தமான மாற்றை அவர் விளக்கினார்?"
+          },
+          "options": [
+            "Heavy plastic tar",
+            "Organic sodium from seawater",
+            "Diesel engine oil",
+            "Toxic lead metals"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Organic sodium from seawater.",
+            "ml": "കടൽവെള്ളത്തിലെ ഓർഗാനിക് സോഡിയം (Organic sodium from seawater)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How did the international audience react as she finished her presentation?",
+            "ml": "പ്രസന്റേഷൻ കഴിഞ്ഞപ്പോൾ സദസ്സ് എങ്ങനെയാണ് പ്രതികരിച്ചത്?",
+            "hi": "भाषण समाप्त होने पर दर्शकों की क्या प्रतिक्रिया थी?",
+            "ta": "உரை முடிந்ததும் பார்வையாளர்கள் எவ்வாறு எதிர்வினையாற்றினர்?"
+          },
+          "options": [
+            "Everyone fell asleep",
+            "A thunderous standing ovation",
+            "Everyone left the hall quietly",
+            "People booed"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A thunderous standing ovation.",
+            "ml": "എഴുന്നേറ്റുനിന്ന് വലിയ കരഘോഷം (standing ovation)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d80_1",
-          "question": "Which word represents: 'അവതരിപ്പിക്കുക'?",
+          "id": 1,
+          "question": "What is the primary function of 'signposting' phrases in a presentation?",
           "options": [
-            "borrow",
-            "finish",
-            "present",
-            "forget"
+            "To show pictures of traffic road signs.",
+            "To guide the audience through the structure and transitions of the talk clearly.",
+            "To confuse the listeners with complicated vocabulary.",
+            "To make the speaker sound robotic."
           ],
-          "answer": "present",
-          "explanation": "present എന്നാൽ അവതരിപ്പിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "പ്രസന്റേഷൻ കേൾക്കുന്നവർക്ക് ഓരോ ഘട്ടവും മാറ്റങ്ങളും വ്യക്തമായി മനസ്സിലാക്കാൻ വഴി കാണിക്കുന്നവയാണ് Signposting വാക്കുകൾ."
         },
         {
-          "id": "trap_d80_2",
-          "question": "What is the past form (V2) of 'highlight'?",
+          "id": 2,
+          "question": "Select the phrase that best signals a transition to the next topic:",
           "options": [
-            "has highlight",
-            "highlighting",
-            "highlights",
-            "highlighted"
+            "Moving on to our next key finding...",
+            "Stop listening right now.",
+            "I forgot what comes next.",
+            "That is all I know."
           ],
-          "answer": "highlighted",
-          "explanation": "highlight ന്റെ ഭൂതകാല രൂപം highlighted ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "'Moving on to our next key finding...' എന്നത് അടുത്ത വിഷയത്തിലേക്ക് കടക്കാൻ ഉപയോഗിക്കുന്ന കൃത്യമായ Signpost ആണ്."
         },
         {
-          "id": "trap_d80_3",
-          "question": "What is the correct English word for 'സ്ലൈഡ്'?",
+          "id": 3,
+          "question": "Which of the following phrases is commonly used to introduce an illustrative example or data chart?",
           "options": [
-            "slide",
-            "success",
-            "airport",
-            "journey"
+            "To illustrate this point, let us look at the chart on the screen.",
+            "Forget about this slide.",
+            "This image is boring.",
+            "I will not explain this graph."
           ],
-          "answer": "slide",
-          "explanation": "സ്ലൈഡ് എന്നാൽ ഇംഗ്ലീഷിൽ slide."
+          "correctIndex": 0,
+          "explanationMl": "'To illustrate this point, let us look at...' എന്നത് ഉദാഹരണങ്ങളോ ചാർട്ടുകളോ കാണിക്കാൻ ഉപയോഗിക്കുന്ന ഔദ്യോഗിക ശൈലിയാണ്."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 80 Gate Exam (5 Qs)",

@@ -43,6 +43,7 @@ import 'spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'games/sentence_builder_flame_game.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/verb_timeline_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_verb_localization_service.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -1200,13 +1201,19 @@ class _PocketDay1InteractiveFlowPageState
         case 5:
           return _buildStep5ReadingRoom(step);
         case 6:
-          return _buildStep9GroupChat(step); // Step 6: English Hub Community Chat
+          return _buildStep6SpokenLab(step);
         case 7:
-          return _buildStep10HouseDefense(step); // Step 7: House Defense Shield
+          return _buildStep5ReadingRoom(step);
         case 8:
-          return _buildStep8PocketTalk(step); // Step 8: PocketTalk 4-Day Pact
+          return _buildStep8VerbTimeline(step); // Step 8: 3-Tier Time Machine Builder (Past, Present & Future)
         case 9:
-          return _buildHouseAttackStep(step); // Step 9: House Attack Quest
+          return _buildStep9GroupChat(step); // Step 9: English Hub Community Chat
+        case 10:
+          return _buildStep10HouseDefense(step); // Step 10: House Defense Shield
+        case 11:
+          return _buildStep8PocketTalk(step); // Step 11: PocketTalk 4-Day Pact
+        case 12:
+          return _buildHouseAttackStep(step); // Step 12: House Attack Quest
         default:
           return const SizedBox.shrink();
       }
@@ -1228,11 +1235,15 @@ class _PocketDay1InteractiveFlowPageState
       case 7:
         return _buildStep7RandomCall(step);
       case 8:
-        return _buildHouseAttackStep(step);
+        return _buildStep8VerbTimeline(step);
       case 9:
-        return _buildStep8PocketTalk(step);
+        return _buildStep9GroupChat(step);
       case 10:
         return _buildStep10HouseDefense(step);
+      case 11:
+        return _buildStep8PocketTalk(step);
+      case 12:
+        return _buildHouseAttackStep(step);
       default:
         return const SizedBox.shrink();
     }
@@ -4454,6 +4465,116 @@ class _PocketDay1InteractiveFlowPageState
           ),
         ),
       ],
+    );
+  }
+
+  // -------------------------------------------------------------
+  // STEP 8: 3-TIER TIME MACHINE BUILDER (PAST, PRESENT & FUTURE)
+  // -------------------------------------------------------------
+  Widget _buildStep8VerbTimeline(Day1StepModel step) {
+    final lang = _nativeLanguage.toLowerCase();
+    String title = '3-Tier Time Machine Verb Builder';
+    String desc = 'Master action verbs across Yesterday (Past), Today (Present), and Tomorrow (Future) with 3-tier interactive word tiles and speech audio!';
+    String btnText = 'LAUNCH VERB ARCADE ➔';
+
+    if (lang.contains('malay') || lang.startsWith('ml')) {
+      title = '3-തട്ട് ടൈം മെഷീൻ സെന്റൻസ് ബിൽഡർ ⏳';
+      desc = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ ക്രമീകരിച്ച് ആക്ഷൻ വെർബുകൾ പഠിക്കുക!';
+      btnText = 'ടൈം മെഷീൻ ഗെയിം തുടങ്ങുക ➔';
+    } else if (lang.contains('hind') || lang.startsWith('hi')) {
+      title = '3-स्तरीय टाइम मशीन क्रिया बिल्डर ⏳';
+      desc = 'भूतकाल (Past), वर्तमान (Present) और भविष्य (Future) काल के वाक्यों को 3 स्तरों में सीखें!';
+      btnText = 'टाइम मशीन गेम शुरू करें ➔';
+    } else if (lang.contains('tamil') || lang.startsWith('ta')) {
+      title = '3-அடுக்கு நேர இயந்திர வினைச்சொல் உருவாக்குநர் ⏳';
+      desc = 'கடந்த (Past), நிகழ்கால (Present) மற்றும் எதிர்கால (Future) வாக்கியங்களை 3 அடுக்குகளில் கற்றுக் கொள்ளுங்கள்!';
+      btnText = 'நேர இயந்திர விளையாட்டைத் தொடங்கவும் ➔';
+    } else if (lang.contains('telug') || lang.startsWith('te')) {
+      title = '3-అంచెల టైమ్ మెషిన్ వెర్బ్ బిల్డర్ ⏳';
+      desc = 'గత (Past), వర్తమాన (Present) మరియు భవిష్యత్ (Future) కాల వాక్యాలను 3 అంచెల్లో నేర్చుకోండి!';
+      btnText = 'టైమ్ మెషిన్ గేమ్‌ను ప్రారంభించండి ➔';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFF9100), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF9100).withValues(alpha: 0.15),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF9100).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFF9100), width: 2),
+            ),
+            child: const Text('⏳', style: TextStyle(fontSize: 42)),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: PocketVerbLocalizationService.getNativeTextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            desc,
+            style: PocketVerbLocalizationService.getNativeTextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9100),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 4,
+            ),
+            onPressed: () async {
+              final res = await PocketVerbTimelineGamePage.show(
+                context,
+                day: widget.day,
+                userId: widget.userId,
+                onStepFinished: (finished) => _markStepCompleted(8),
+              );
+              if (res == true) {
+                _markStepCompleted(8);
+              }
+            },
+            icon: const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 22),
+            label: Text(
+              btnText,
+              style: PocketVerbLocalizationService.getNativeTextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -22,112 +22,96 @@
     "totalCoinsReward": 121
   },
   "grammarRule": {
-    "formula": "Inversion for Emphasis",
+    "formula": "Subject + may / might / could + V1 (Base verb)",
     "explanation": {
-      "ml": "സാധ്യതകൾ: May, Might, Could എന്ന വിഷയത്തിൽ Expressing 50% vs 30% Probability എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Expressing 50% vs 30% Probability correctly in spoken English."
+      "ml": "ഒരു കാര്യം നടക്കാൻ 50% ഓ അതിൽ താഴെയോ സാധ്യതയുള്ളപ്പോൾ may, might, could എന്നിവ ഉപയോഗിക്കുന്നു. 'May' കുറച്ചുകൂടി ഔദ്യോഗികവും ഉയർന്ന സാധ്യതയുള്ളതുമാണ് (50%), 'Might' കുറഞ്ഞ സാധ്യതയെയും (30-40%), 'Could' സൈദ്ധാന്തിക സാധ്യതയെയും സൂചിപ്പിക്കുന്നു.",
+      "en": "Master Modals of Probability: May, Might, Could with clear formula: Subject + may / might / could + V1 (Base verb)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: It might rain this evening.",
-      "en": "Golden Rule: Practice 'It might rain this evening.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: May/might/could ന് ശേഷം എപ്പോഴും ക്രിയയുടെ അടിസ്ഥാന രൂപം (V1) മാത്രം ഉപയോഗിക്കുക ('He might arrive', NOT 'He might arrives').",
+      "en": "Golden Tip: May/might/could ന് ശേഷം എപ്പോഴും ക്രിയയുടെ അടിസ്ഥാന രൂപം (V1) മാത്രം ഉപയോഗിക്കുക ('He might arrive', NOT 'He might arrives')."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "rain",
-        "v2": "rained",
-        "v3": "rained",
-        "meaning": {
-          "ml": "പെയ്യുക",
-          "hi": "बारिश होना",
-          "ta": "மழை பெய்"
-        },
-        "example": "It might rain this evening.",
-        "exampleMl": "മഴ പെയ്തേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "visit",
-        "v2": "visited",
-        "v3": "visited",
-        "meaning": {
-          "ml": "വന്നേക്കാം",
-          "hi": "വന്നേക്കാം",
-          "ta": "വന്നേക്കാം"
-        },
-        "example": "He may visit us today.",
-        "exampleMl": "വന്നേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "succeed",
-        "v2": "succeeded",
-        "v3": "succeeded",
-        "meaning": {
-          "ml": "വിജയിച്ചേക്കാം",
-          "hi": "വിജയിച്ചേക്കാം",
-          "ta": "വിജയിച്ചേക്കാം"
-        },
-        "example": "The plan could succeed.",
-        "exampleMl": "വിജയിച്ചേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "delay",
-        "v2": "delayed",
-        "v3": "delayed",
-        "meaning": {
-          "ml": "വൈകിക്കുക",
-          "hi": "देरी करना",
-          "ta": "தாமதப்படுத்து"
-        },
-        "example": "The train might be delayed.",
-        "exampleMl": "വൈകിയേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "probability",
+        "word": "Projection",
+        "partOfSpeech": "noun",
+        "definition": "An estimate or forecast of a future situation based on a study of present trends.",
         "meaning": {
-          "ml": "സാധ്യത",
-          "hi": "സാധ്യത",
-          "ta": "സാധ്യത"
+          "ml": "ഭാവി കണക്കുകൂട്ടൽ / പ്രവചനം",
+          "hi": "अनुमान / प्रक्षेपण",
+          "ta": "எதிர்காலக் கணிப்பு",
+          "te": "అంచనా",
+          "kn": "ಅಂದಾಜು"
         },
-        "example": "We learned about probability in today's lesson."
+        "example": "Financial analysts presented their revenue projection for the forthcoming fiscal quarter."
       },
       {
-        "word": "guess",
+        "word": "Ambiguity",
+        "partOfSpeech": "noun",
+        "definition": "The quality of being open to more than one interpretation; inexactness.",
         "meaning": {
-          "ml": "ഊഹം",
-          "hi": "ഊഹം",
-          "ta": "ഊഹം"
+          "ml": "അവ്യക്തത / ഇരട്ടപ്പൊരുൾ",
+          "hi": "अस्पष्टता / द्वयर्थकता",
+          "ta": "தெளிவின்மை / தெளிவற்ற நிலை",
+          "te": "అస్పష్టత",
+          "kn": "ಅಸ್ಪಷ್ಟತೆ"
         },
-        "example": "We learned about guess in today's lesson."
+        "example": "Legal contracts should avoid legal ambiguity to protect both trading partners."
       },
       {
-        "word": "chance",
+        "word": "Speculation",
+        "partOfSpeech": "noun",
+        "definition": "The forming of a theory or conjecture without firm evidence.",
         "meaning": {
-          "ml": "അവസരം",
-          "hi": "അവസരം",
-          "ta": "അവസരം"
+          "ml": "ഊഹാപോഹം / സങ്കല്പം",
+          "hi": "अटकलबाजी / अनुमान",
+          "ta": "ஊகம்",
+          "te": "ఊహాగానాలు",
+          "kn": "ಊಹೆ"
         },
-        "example": "We learned about chance in today's lesson."
+        "example": "Stock market prices surged following widespread media speculation about a corporate merger."
       },
       {
-        "word": "doubt",
+        "word": "Fluctuating",
+        "partOfSpeech": "adjective",
+        "definition": "Rising and falling irregularly in number or amount.",
         "meaning": {
-          "ml": "സംശയം",
-          "hi": "സംശയം",
-          "ta": "സംശയം"
+          "ml": "മാറിമറിഞ്ഞുകൊണ്ടിരിക്കുന്ന",
+          "hi": "उतार-चढ़ाव वाला",
+          "ta": "ஏற்ற இறக்கமுள்ள",
+          "te": "అస్థిరమైన",
+          "kn": "ಏರಿಳಿತಗೊಳ್ಳುವ"
         },
-        "example": "We learned about doubt in today's lesson."
+        "example": "Fluctuating crude fuel costs impacted the profit margins of international airlines."
       },
       {
-        "word": "weather",
+        "word": "Uncertainty",
+        "partOfSpeech": "noun",
+        "definition": "The state of being uncertain; doubt or hesitation.",
         "meaning": {
-          "ml": "കാലാവസ്ഥ",
-          "hi": "കാലാവസ്ഥ",
-          "ta": "കാലാവസ്ഥ"
+          "ml": "അനിശ്ചിതത്വം",
+          "hi": "अनिश्चितता",
+          "ta": "நிச்சயமற்ற தன்மை",
+          "te": "అనిశ్చితి",
+          "kn": "ಅನಿಶ್ಚಿತತೆ"
         },
-        "example": "We learned about weather in today's lesson."
+        "example": "Geopolitical tensions generated profound economic uncertainty across world trade markets."
+      },
+      {
+        "word": "Plausible",
+        "partOfSpeech": "adjective",
+        "definition": "Seeming reasonable or probable.",
+        "meaning": {
+          "ml": "വിശ്വസനീയമായ / സാധ്യതയുള്ള",
+          "hi": "विश्वसनीय / मुमकिन",
+          "ta": "நம்பத்தகுந்த / சாத்தியமான",
+          "te": "నమ్మదగిన",
+          "kn": "ವಿಶ್ವಾಸಾರ್ಹ"
+        },
+        "example": "The detective proposed a plausible explanation for how the museum jewels disappeared."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Modals of Probability: May, Might, Could",
-        "ml": "പാഠം: സാധ്യതകൾ: May, Might, Could"
+        "ml": "പാഠം: സാധ്യതകൾ പ്രകടിപ്പിക്കൽ (May, Might, Could)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + may / might / could + V1 (Base verb)",
+        "ml": "ഒരു കാര്യം നടക്കാൻ 50% ഓ അതിൽ താഴെയോ സാധ്യതയുള്ളപ്പോൾ may, might, could എന്നിവ ഉപയോഗിക്കുന്നു. 'May' കുറച്ചുകൂടി ഔദ്യോഗികവും ഉയർന്ന സാധ്യതയുള്ളതുമാണ് (50%), 'Might' കുറഞ്ഞ സാധ്യതയെയും (30-40%), 'Could' സൈദ്ധാന്തിക സാധ്യതയെയും സൂചിപ്പിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "It might rain this evening.",
-        "He may visit us today.",
-        "The plan could succeed."
+        "Heavy afternoon thunderstorms may delay our scheduled flight to Singapore by two hours .",
+        "The executive committee might approve additional engineering hiring during tomorrow's session .",
+        "You could explore renewable solar solutions to reduce manufacturing operational overhead .",
+        "We might not receive the final government permit before the end of this month .",
+        "Could this technical glitch be related to yesterday's cloud database migration ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Modals of Probability: May, Might, Could",
-        "ml": "റീഡിങ് റൂം: സാധ്യതകൾ: May, Might, Could"
+        "en": "Reading Room: The Weather Forecasting Pioneers",
+        "ml": "റീഡിങ് റൂം: സാധ്യതകൾ പ്രകടിപ്പിക്കൽ (May, Might, Could)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "It might rain this evening.",
-          "meaningMl": "മഴ പെയ്തേക്കാം - It might rain this evening.",
-          "audioPrompt": "It might rain this evening."
+          "text": "Meteorological scientist Dr. Arvind monitors supercomputer satellite radar streams to decipher unpredictable monsoonal patterns.",
+          "meaningMl": "കാലാവസ്ഥാ ശാസ്ത്രജ്ഞൻ ഡോ. അരവിന്ദ് പ്രവചനാതീതമായ മൺസൂൺ മാറ്റങ്ങൾ മനസ്സിലാക്കാൻ ഉപഗ്രഹ റഡാർ വിവരങ്ങൾ നിരീക്ഷിക്കുന്നു.",
+          "meaningHi": "मौसम वैज्ञानिक डॉ. अरविंद अप्रत्याशित मानसून पैटर्न का अध्ययन करने के लिए उपग्रह डेटा की निगरानी करते हैं।",
+          "meaningTa": "வானிலை விஞ்ஞானி டாக்டர் அரவிந்த் கணிக்க முடியாத பருவமழையைக் கணிக்க செயற்கைக்கோள் தரவுகளைக் கண்காணிக்கிறார்.",
+          "audioPrompt": "Meteorological scientist Dr. Arvind monitors supercomputer satellite radar streams to decipher unpredictable monsoonal patterns."
         },
         {
-          "text": "He may visit us today.",
-          "meaningMl": "വന്നേക്കാം - He may visit us today.",
-          "audioPrompt": "He may visit us today."
+          "text": "A sudden atmospheric depression over the Bay of Bengal may trigger severe coastal gales within forty-eight hours.",
+          "meaningMl": "ബംഗാൾ ഉൾക്കടലിലെ പെട്ടെന്നുള്ള ന്യൂനമർദ്ദം നാൽപ്പത്തിയെട്ട് മണിക്കൂറിനുള്ളിൽ ശക്തമായ തീരദേശ കാറ്റിന് കാരണമായേക്കാം.",
+          "meaningHi": "बंगाल की खाड़ी में कम दबाव का क्षेत्र गंभीर तटीय तूफानों को जन्म दे सकता है।",
+          "meaningTa": "வங்காள விரிகுடாவில் திடீர் காற்றழுத்த தாழ்வு நிலை பலத்த சூறாவளியைத் தூண்டக்கூடும்.",
+          "audioPrompt": "A sudden atmospheric depression over the Bay of Bengal may trigger severe coastal gales within forty-eight hours."
         },
         {
-          "text": "Daily practice of Modals of Probability: May, Might, Could gives you great confidence in English.",
-          "meaningMl": "സാധ്യതകൾ: May, Might, Could ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Modals of Probability: May, Might, Could gives you great confidence in English."
+          "text": "Warm ocean temperature anomalies could intensify tropical storm velocity beyond earlier computer simulations.",
+          "meaningMl": "സമുദ്രോപരിതലത്തിലെ അസാധാരണ ചൂട് മുൻ കമ്പ്യൂട്ടർ കണക്കുകൂട്ടലുകൾക്കുമപ്പുറം കൊടുങ്കാറ്റിന്റെ വേഗത വർദ്ധിപ്പിച്ചേക്കാം.",
+          "meaningHi": "समुद्र का असामान्य तापमान तूफान की गति को पहले के अनुमानों से अधिक बढ़ा सकता है।",
+          "meaningTa": "கடல் வெப்பம் புயலின் வேகத்தை எதிர்பார்த்ததை விட அதிகரிக்கக்கூடும்.",
+          "audioPrompt": "Warm ocean temperature anomalies could intensify tropical storm velocity beyond earlier computer simulations."
+        },
+        {
+          "text": "Local fishing authorities might issue strict maritime advisories to prevent small wooden trawlers from venturing into deep water.",
+          "meaningMl": "ചെറിയ തടി വള്ളങ്ങൾ ആഴക്കടലിലേക്ക് പോകുന്നത് തടയാൻ മത്സ്യബന്ധന അധികൃതർ കർശന നിർദ്ദേശങ്ങൾ പുറപ്പെടുവിച്ചേക്കാം.",
+          "meaningHi": "अधिकारी छोटी नौकाओं को गहरे समुद्र में जाने से रोकने के लिए सलाह जारी कर सकते हैं।",
+          "meaningTa": "சிறிய படகுகள் கடலுக்குள் செல்வதைத் தடுக்க அதிகாரிகள் கடுமையான எச்சரிக்கைகளை வெளியிடக்கூடும்.",
+          "audioPrompt": "Local fishing authorities might issue strict maritime advisories to prevent small wooden trawlers from venturing into deep water."
+        },
+        {
+          "text": "If the storm track shifts eastward, coastal farmlands might escape catastrophic inundation entirely.",
+          "meaningMl": "കൊടുങ്കാറ്റിന്റെ പാത കിഴക്കോട്ട് മാറുകയാണെങ്കിൽ, തീരദേശ കൃഷിയിടങ്ങൾ കനത്ത വെള്ളപ്പൊക്കത്തിൽ നിന്ന് പൂർണ്ണമായും രക്ഷപ്പെട്ടേക്കാം.",
+          "meaningHi": "यदि तूफान पूर्व की ओर मुड़ता है, तो खेत विनाशकारी बाढ़ से बच सकते हैं।",
+          "meaningTa": "புயல் பாதை கிழக்கே மாறினால், விவசாய நிலங்கள் வெள்ளத்திலிருந்து முற்றிலும் தப்பக்கூடும்.",
+          "audioPrompt": "If the storm track shifts eastward, coastal farmlands might escape catastrophic inundation entirely."
+        },
+        {
+          "text": "Modern atmospheric science proves that timely probabilistic warnings can save countless human and animal lives.",
+          "meaningMl": "കൃത്യസമയത്തുള്ള മുൻകൂർ മുന്നറിയിപ്പുകൾക്ക് എണ്ണമറ്റ മനുഷ്യ-മൃഗ ജീവനുകൾ രക്ഷിക്കാൻ കഴിയുമെന്ന് ആധുനിക കാലാവസ്ഥാ ശാസ്ത്രം തെളിയിക്കുന്നു.",
+          "meaningHi": "आधुनिक विज्ञान साबित करता है कि समय पर दी गई चेतावनियाँ अनगिनत जीवन बचा सकती हैं।",
+          "meaningTa": "சரியான நேரத்தில் வழங்கப்படும் எச்சரிக்கைகள் எண்ணற்ற உயிர்களைக் காப்பாற்ற முடியும் என்பதை அறிவியல் நிரூபிக்கிறது.",
+          "audioPrompt": "Modern atmospheric science proves that timely probabilistic warnings can save countless human and animal lives."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Within how many hours may the atmospheric depression trigger coastal gales?",
+            "ml": "എത്ര മണിക്കൂറിനുള്ളിൽ ന്യൂനമർദ്ദം തീരദേശ കാറ്റിന് കാരണമായേക്കാം?",
+            "hi": "कितने घंटों के भीतर दबाव तूफान ला सकता है?",
+            "ta": "எத்தனை மணி நேரத்திற்குள் காற்றழுத்தம் புயலை உருவாக்கக்கூடும்?"
+          },
+          "options": [
+            "Ten minutes",
+            "Within forty-eight hours",
+            "Two weeks",
+            "Six months"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Within forty-eight hours.",
+            "ml": "48 മണിക്കൂറിനുള്ളിൽ (Within forty-eight hours)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What water body is the depression developing over?",
+            "ml": "ന്യൂനമർദ്ദം രൂപപ്പെടുന്നത് ഏത് സമുദ്ര ഭാഗത്താണ്?",
+            "hi": "दबाव किस जलक्षेत्र के ऊपर बन रहा है?",
+            "ta": "காற்றழுத்த தாழ்வு நிலை எங்கு உருவாகிறது?"
+          },
+          "options": [
+            "The Mediterranean Sea",
+            "The Bay of Bengal",
+            "Lake Superior",
+            "The Arctic Ocean"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Over the Bay of Bengal.",
+            "ml": "ബംഗാൾ ഉൾക്കടൽ (Bay of Bengal)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What might escape catastrophic inundation if the storm track shifts eastward?",
+            "ml": "കൊടുങ്കാറ്റ് കിഴക്കോട്ട് മാറിയാൽ വെള്ളപ്പൊക്കത്തിൽ നിന്ന് രക്ഷപ്പെടാൻ സാധ്യതയുള്ളത് എന്താണ്?",
+            "hi": "तूफान पूर्व की ओर मुड़ने पर क्या बाढ़ से बच सकता है?",
+            "ta": "புயல் கிழக்கே மாறினால் வெள்ளத்திலிருந்து தப்பக்கூடுவது எது?"
+          },
+          "options": [
+            "Coastal farmlands",
+            "Underground mines",
+            "Desert sand dunes",
+            "Mountain peaks"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Coastal farmlands might escape inundation.",
+            "ml": "തീരദേശ കൃഷിയിടങ്ങൾ (Coastal farmlands)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d71_1",
-          "question": "Which word represents: 'പെയ്യുക'?",
+          "id": 1,
+          "question": "Select the sentence with correct modal verb usage:",
           "options": [
-            "rain",
-            "borrow",
-            "listen",
-            "forget"
+            "He might arrives late because of traffic.",
+            "He might arrive late because of traffic.",
+            "He might to arrive late because of traffic.",
+            "He might arrived late because of traffic."
           ],
-          "answer": "rain",
-          "explanation": "rain എന്നാൽ പെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "മോഡൽ ക്രിയകൾക്ക് (might, may, could) ശേഷം 'to' ഇല്ലാതെ ക്രിയയുടെ അടിസ്ഥാന രൂപമായ V1 മാത്രം വരണം ('might arrive')."
         },
         {
-          "id": "trap_d71_2",
-          "question": "What is the past form (V2) of 'visit'?",
+          "id": 2,
+          "question": "What is the difference between 'may' and 'might' regarding certainty?",
           "options": [
-            "has visit",
-            "visiting",
-            "visited",
-            "visits"
+            "'May' indicates higher probability (~50%) than 'might' (~30-40%).",
+            "'Might' is only used for past tense actions.",
+            "There is zero difference in English.",
+            "'May' is only used with plural subjects."
           ],
-          "answer": "visited",
-          "explanation": "visit ന്റെ ഭൂതകാല രൂപം visited ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "'May' കൂടുതൽ സാധ്യതയെയും (50%), 'Might' താരതമ്യേന കുറഞ്ഞ സാധ്യതയെയും (30-40%) സൂചിപ്പിക്കുന്നു."
         },
         {
-          "id": "trap_d71_3",
-          "question": "What is the correct English word for 'സാധ്യത'?",
+          "id": 3,
+          "question": "Find the error: 'They could to finish the construction project next week.'",
           "options": [
-            "probability",
-            "journey",
-            "courage",
-            "success"
+            "'to' must be removed after the modal verb 'could'.",
+            "'could' should be 'can'.",
+            "'finish' should be 'finishing'.",
+            "There is no error."
           ],
-          "answer": "probability",
-          "explanation": "സാധ്യത എന്നാൽ ഇംഗ്ലീഷിൽ probability."
+          "correctIndex": 0,
+          "explanationMl": "'could' ന് ശേഷം 'to' ഉപയോഗിക്കാൻ പാടില്ല ('They could finish')."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 71 Gate Exam (5 Qs)",

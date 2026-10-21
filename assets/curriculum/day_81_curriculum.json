@@ -22,112 +22,96 @@
     "totalCoinsReward": 131
   },
   "grammarRule": {
-    "formula": "Discourse Markers and Fillers for Smooth Speech",
+    "formula": "Past Foundation + Present Core Impact + Future Strategic Goal",
     "explanation": {
-      "ml": "ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch) എന്ന വിഷയത്തിൽ The 3-Part Pitch: Past Background + Present Role + Future Goal എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use The 3-Part Pitch: Past Background + Present Role + Future Goal correctly in spoken English."
+      "ml": "'Tell me about yourself' എന്ന ഏറ്റവും നിർണായകമായ ചോദ്യത്തിന് 90 സെക്കൻഡിൽ ശക്തമായ ഉത്തരം നൽകാനുള്ള 3 ഘട്ട ഫോർമുല: മുൻകാല അടിത്തറ (Past), നിലവിലെ നേട്ടങ്ങൾ (Present), ഭാവിയിലെ സംഭാവനകൾ (Future).",
+      "en": "Master Job Interview Pitch: The 3-Part Pitch Framework with clear formula: Past Foundation + Present Core Impact + Future Strategic Goal"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Allow me to introduce myself.",
-      "en": "Golden Rule: Practice 'Allow me to introduce myself.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ബയോഡാറ്റ തുടക്കം മുതൽ വായിച്ചു കേൾപ്പിക്കരുത്. നിങ്ങളുടെ യാത്രയിലെ ഏറ്റവും മികച്ച നേട്ടങ്ങളും ഈ കമ്പനിക്ക് എന്ത് മൂല്യം നൽകാൻ കഴിയും എന്നതും മാത്രം പറയുക.",
+      "en": "Golden Tip: ബയോഡാറ്റ തുടക്കം മുതൽ വായിച്ചു കേൾപ്പിക്കരുത്. നിങ്ങളുടെ യാത്രയിലെ ഏറ്റവും മികച്ച നേട്ടങ്ങളും ഈ കമ്പനിക്ക് എന്ത് മൂല്യം നൽകാൻ കഴിയും എന്നതും മാത്രം പറയുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "introduce",
-        "v2": "introduced",
-        "v3": "introduced",
-        "meaning": {
-          "ml": "പരിചയപ്പെടുത്തുക",
-          "hi": "പരിചയപ്പെടുത്തുക",
-          "ta": "പരിചയപ്പെടുത്തുക"
-        },
-        "example": "Allow me to introduce myself.",
-        "exampleMl": "പരിചയപ്പെടുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "graduate",
-        "v2": "graduated",
-        "v3": "graduated",
-        "meaning": {
-          "ml": "വിജയകരമായി പൂർത്തിയാക്കുക",
-          "hi": "स्नातक होना / पूरा करना",
-          "ta": "பட்டம் பெறு"
-        },
-        "example": "I graduated in engineering.",
-        "exampleMl": "ബിരുദം നേടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "specialize",
-        "v2": "specialized",
-        "v3": "specialized",
-        "meaning": {
-          "ml": "പ്രാവീണ്യം നേടുക",
-          "hi": "പ്രാവീണ്യം നേടുക",
-          "ta": "പ്രാവീണ്യം നേടുക"
-        },
-        "example": "I specialize in communication.",
-        "exampleMl": "പ്രാവീണ്യം നേടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "aspire",
-        "v2": "aspired",
-        "v3": "aspired",
-        "meaning": {
-          "ml": "ആഗ്രഹിക്കുക",
-          "hi": "ആഗ്രഹിക്കുക",
-          "ta": "ആഗ്രഹിക്കുക"
-        },
-        "example": "I aspire to grow in this role.",
-        "exampleMl": "ആഗ്രഹിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "interview",
+        "word": "Narrative",
+        "partOfSpeech": "noun",
+        "definition": "A spoken or written account of connected events; a story.",
         "meaning": {
-          "ml": "ഇന്റർവ്യൂ",
-          "hi": "साक्षात्कार",
-          "ta": "நேர்காணல்"
+          "ml": "കഥന രൂപം / അവതരണ ശൈലി",
+          "hi": "कथानक / वृत्तांत",
+          "ta": "விவரிப்பு / கதைக்களம்",
+          "te": "కథనం",
+          "kn": "ನಿರೂಪಣೆ"
         },
-        "example": "Prepare well for the job interview."
+        "example": "Structure your professional narrative around tangible achievements and continuous learning."
       },
       {
-        "word": "candidate",
+        "word": "Catalyst",
+        "partOfSpeech": "noun",
+        "definition": "A person or thing that precipitates an event or change.",
         "meaning": {
-          "ml": "അഭ്യർത്ഥി",
-          "hi": "അഭ്യർത്ഥി",
-          "ta": "അഭ്യർത്ഥി"
+          "ml": "മാറ്റത്തിന് കാരണമാകുന്ന പ്രേരകശക്തി / ഉത്തേജകം",
+          "hi": "उत्प्रेरक / परिवर्तनकारी कारक",
+          "ta": "மாற்றத்திற்கான காரணி",
+          "te": "ఉత్ప్రేరకం",
+          "kn": "ವೇಗವರ್ಧಕ"
         },
-        "example": "We learned about candidate in today's lesson."
+        "example": "Her technical leadership acted as a major catalyst for company-wide digital transformation."
       },
       {
-        "word": "pitch",
+        "word": "Credential",
+        "partOfSpeech": "noun",
+        "definition": "A qualification, achievement, personal quality, or aspect of a person's background.",
         "meaning": {
-          "ml": "വിവരണം",
-          "hi": "വിവരണം",
-          "ta": "വിവരണം"
+          "ml": "യോഗ്യതാരേഖ / യോഗ്യത",
+          "hi": "योग्यता प्रमाण पत्र",
+          "ta": "தகுதிச் சான்று",
+          "te": "ధృవీకరణ పత్రం",
+          "kn": "ಅರ್ಹತಾ ಪತ್ರ"
         },
-        "example": "We learned about pitch in today's lesson."
+        "example": "Her doctoral research in artificial intelligence provided an impeccable academic credential."
       },
       {
-        "word": "passion",
+        "word": "Trajectory",
+        "partOfSpeech": "noun",
+        "definition": "The path followed by a projectile flying or an object moving, or a chosen course or progression of development.",
         "meaning": {
-          "ml": "താൽപര്യം",
-          "hi": "താൽപര്യം",
-          "ta": "താൽപര്യം"
+          "ml": "വളർച്ചാ പാത / കരിയർ പ്രയാണം",
+          "hi": "प्रक्षेपवक्र / विकास पथ",
+          "ta": "வளர்ச்சிப் பாதை",
+          "te": "గమన మార్గం",
+          "kn": "ಗತಿಪಥ"
         },
-        "example": "We learned about passion in today's lesson."
+        "example": "Joining this fast-growing technology startup dramatically accelerated his career trajectory."
       },
       {
-        "word": "opportunity",
+        "word": "Alignment",
+        "partOfSpeech": "noun",
+        "definition": "Arrangement in a straight line, or an alliance or agreement between persons, groups, or ideas.",
         "meaning": {
-          "ml": "അവസരം",
-          "hi": "अवसर",
-          "ta": "வாய்ப்பு"
+          "ml": "പൊരുത്തം / ഒത്തുപോവൽ / ഏകോപനം",
+          "hi": "संरेखण / तालमेल",
+          "ta": "இணைவு / ஒத்திசைவு",
+          "te": "సమన్వయం",
+          "kn": "ಹೊಂದಾಣಿಕೆ"
         },
-        "example": "Never let a good opportunity pass."
+        "example": "There is perfect strategic alignment between my personal values and your company's mission."
+      },
+      {
+        "word": "Articulation",
+        "partOfSpeech": "noun",
+        "definition": "The action of putting into words an idea or feeling of a specified type with clarity.",
+        "meaning": {
+          "ml": "വ്യക്തമായ ആവിഷ്കാരം / സംസാര വ്യക്തത",
+          "hi": "स्पष्ट अभिव्यक्ति",
+          "ta": "தெளிவான வெளிப்பாடு",
+          "te": "స్పష్టమైన వ్యక్తీకరణ",
+          "kn": "ಸ್ಪಷ್ಟ ಉಚ್ಚಾರಣೆ / ಅಭಿವ್ಯಕ್ತಿ"
+        },
+        "example": "Clear verbal articulation of complex technical concepts is essential for senior consultants."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Job Interview Part 1: 'Tell Me About Yourself'",
-        "ml": "പാഠം: ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch)"
+        "en": "Concept Room: Job Interview Pitch: The 3-Part Pitch Framework",
+        "ml": "പാഠം: ജോബ് ഇന്റർവ്യൂ പിച്ച് (The 3-Part Pitch)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Past Foundation + Present Core Impact + Future Strategic Goal",
+        "ml": "'Tell me about yourself' എന്ന ഏറ്റവും നിർണായകമായ ചോദ്യത്തിന് 90 സെക്കൻഡിൽ ശക്തമായ ഉത്തരം നൽകാനുള്ള 3 ഘട്ട ഫോർമുല: മുൻകാല അടിത്തറ (Past), നിലവിലെ നേട്ടങ്ങൾ (Present), ഭാവിയിലെ സംഭാവനകൾ (Future)."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Allow me to introduce myself.",
-        "I graduated in engineering.",
-        "I specialize in communication."
+        "I began my career in mechanical engineering before pivoting into software systems architecture .",
+        "Currently , I manage a high performing squad that scales cloud infrastructure for millions of active users .",
+        "What excites me about this leadership role is your organization ' s focus on sustainable green technology .",
+        "My core strength lies in translating complex stakeholder requirements into elegant technical solutions .",
+        "I am eager to contribute my decade of enterprise expertise toward driving your next phase of growth ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Job Interview Part 1: 'Tell Me About Yourself'",
-        "ml": "റീഡിങ് റൂം: ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch)"
+        "en": "Reading Room: The Ninety-Second Pitch That Won the Board",
+        "ml": "റീഡിങ് റൂം: ജോബ് ഇന്റർവ്യൂ പിച്ച് (The 3-Part Pitch)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Allow me to introduce myself.",
-          "meaningMl": "പരിചയപ്പെടുത്തുക - Allow me to introduce myself.",
-          "audioPrompt": "Allow me to introduce myself."
+          "text": "Standing inside the glass executive boardroom of an international venture capital firm in London, engineer Aisha prepared to deliver her career pitch.",
+          "meaningMl": "ലണ്ടനിലെ ഒരു വെഞ്ചർ ക്യാപിറ്റൽ സ്ഥാപനത്തിന്റെ ഗ്ലാസ് ബോർഡ് റൂമിൽ നിന്ന് എൻജിനീയർ ആയിഷ തന്റെ കരിയർ പിച്ച് അവതരിപ്പിക്കാൻ തയ്യാറെടുത്തു.",
+          "meaningHi": "लंदन में एक वेंचर कैपिटल फर्म के सामने इंजीनियर आयशा ने अपनी प्रस्तुति दी।",
+          "meaningTa": "லண்டனில் உள்ள வென்ச்சர் கேபிடல் நிறுவனத்தின் முன் பொறியாளர் ஆயிஷா பேசத் தயாரானார்.",
+          "audioPrompt": "Standing inside the glass executive boardroom of an international venture capital firm in London, engineer Aisha prepared to deliver her career pitch."
         },
         {
-          "text": "I graduated in engineering.",
-          "meaningMl": "ബിരുദം നേടുക - I graduated in engineering.",
-          "audioPrompt": "I graduated in engineering."
+          "text": "Rather than reciting an exhaustive chronological resume, she framed her professional trajectory using the three-part pitch architecture.",
+          "meaningMl": "തന്റെ റെസ്യുമെ മുഴുവൻ വായിച്ചു കേൾപ്പിക്കുന്നതിന് പകരം, 3 ഘട്ട ഫോർമുല ഉപയോഗിച്ച് അവൾ തന്റെ വളർച്ചാ പാത അവതരിപ്പിച്ചു.",
+          "meaningHi": "पूरी सीवी पढ़ने के बजाय, उन्होंने तीन चरणों वाले फॉर्मूले का इस्तेमाल किया।",
+          "meaningTa": "நீண்ட பயோடேட்டாவை வாசிப்பதற்குப் பதிலாக, மூன்று அடுக்கு முறையைப் பயன்படுத்தினார்.",
+          "audioPrompt": "Rather than reciting an exhaustive chronological resume, she framed her professional trajectory using the three-part pitch architecture."
         },
         {
-          "text": "Daily practice of Job Interview Part 1: 'Tell Me About Yourself' gives you great confidence in English.",
-          "meaningMl": "ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Job Interview Part 1: 'Tell Me About Yourself' gives you great confidence in English."
+          "text": "'I began my foundation in biomedical sensors, discovering early on that preventative health data can revolutionize human longevity,' she articulated.",
+          "meaningMl": "'രോഗപ്രതിരോധ ഡാറ്റയ്ക്ക് മനുഷ്യന്റെ ആയുസ്സ് വർദ്ധിപ്പിക്കാൻ കഴിയുമെന്ന് തിരിച്ചറിഞ്ഞ് ബയോമെഡിക്കൽ സെൻസറുകളിലാണ് ഞാൻ തുടക്കം കുറിച്ചത്,' അവൾ വ്യക്തമാക്കി.",
+          "meaningHi": "'मैंने बायोमेडिकल सेंसर से शुरुआत की और पाया कि प्रिवेंटिव हेल्थ डेटा जीवन बदल सकता है।'",
+          "meaningTa": "'பயோமெடிக்கல் சென்சாரில் தொடங்கி, சுகாதாரத் தரவு ஆயுளைக் கூட்டும் என்பதைக் கண்டறிந்தேன் என்றார்.'",
+          "audioPrompt": "'I began my foundation in biomedical sensors, discovering early on that preventative health data can revolutionize human longevity,' she articulated."
+        },
+        {
+          "text": "'In my present role as engineering director, my squad developed diagnostic algorithms currently utilized across one hundred clinics.'",
+          "meaningMl": "'നിലവിൽ എഞ്ചിനീയറിംഗ് ഡയറക്ടർ എന്ന നിലയിൽ, നൂറിലധികം ക്ലിനിക്കുകൾ ഉപയോഗിക്കുന്ന ഡയഗ്നോസ്റ്റിക് അൽഗോരിതങ്ങൾ എന്റെ ടീം വികസിപ്പിച്ചു.'",
+          "meaningHi": "'वर्तमान में, मेरी टीम ने ऐसे एल्गोरिदम विकसित किए हैं जो सौ से अधिक क्लीनिकों में उपयोग किए जा रहे हैं।'",
+          "meaningTa": "'தற்போது, நூற்றுக்கும் மேற்பட்ட கிளினிக்குகள் பயன்படுத்தும் தொழில்நுட்பத்தை எனது குழு உருவாக்கியுள்ளது.'",
+          "audioPrompt": "'In my present role as engineering director, my squad developed diagnostic algorithms currently utilized across one hundred clinics.'"
+        },
+        {
+          "text": "'Looking ahead, I am eager to deploy this exact scalable architecture across your newly funded global telemedicine network.'",
+          "meaningMl": "'ഭാവിയിലേക്ക് നോക്കുമ്പോൾ, നിങ്ങളുടെ പുതിയ ആഗോള ടെലിമെഡിസിൻ ശൃംഖലയിൽ ഈ സാങ്കേതികവിദ്യ വിന്യസിക്കാൻ ഞാൻ അതീവ തല്പരയാണ്.'",
+          "meaningHi": "'आगे बढ़ते हुए, मैं आपके वैश्विक टेलीमेडिसिन नेटवर्क में इस तकनीक को लागू करने के लिए उत्सुक हूँ।'",
+          "meaningTa": "'வருங்காலத்தில், உங்கள் உலகளாவிய டெலிமெடிசின் நெட்வொர்க்கில் இந்த அமைப்பை செயல்படுத்த விரும்புகிறேன்.'",
+          "audioPrompt": "'Looking ahead, I am eager to deploy this exact scalable architecture across your newly funded global telemedicine network.'"
+        },
+        {
+          "text": "Her precise brevity, authentic vision, and strategic alignment captivated the partners, securing her appointment as Chief Innovation Officer.",
+          "meaningMl": "അവളുടെ കൃത്യതയും ദീർഘവീക്ഷണവും പങ്കാളികളെ ആകർഷിക്കുകയും ചീഫ് ഇന്നൊവേഷൻ ഓഫീസറായി നിയമനം നേടിക്കൊടുക്കുകയും ചെയ്തു.",
+          "meaningHi": "उनकी संक्षिप्तता और दृष्टि ने सभी को प्रभावित किया और उन्हें पद मिल गया।",
+          "meaningTa": "அவரது தெளிவும் தொலைநோக்குப் பார்வையும் நிர்வாகிகளை ஈர்த்து அவருக்கு தலைமைப் பதவியைப் பெற்றுத் தந்தது.",
+          "audioPrompt": "Her precise brevity, authentic vision, and strategic alignment captivated the partners, securing her appointment as Chief Innovation Officer."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What architecture did Aisha use instead of reciting her entire resume?",
+            "ml": "റെസ്യുമെ മുഴുവൻ പറയുന്നതിന് പകരം ആയിഷ ഉപയോഗിച്ച ഘടന എന്താണ്?",
+            "hi": "आयशा ने किस संरचना का उपयोग किया?",
+            "ta": "ஆயிஷா என்ன முறையைப் பயன்படுத்தினார்?"
+          },
+          "options": [
+            "Random storytelling",
+            "The three-part pitch architecture (Past, Present, Future)",
+            "A comedy routine",
+            "Silent presentation"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The three-part pitch architecture.",
+            "ml": "3 ഘട്ട പിച്ച് ഫോർമുല (The three-part pitch architecture)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Across how many clinics are her diagnostic algorithms currently utilized?",
+            "ml": "എത്ര ക്ലിനിക്കുകളിലാണ് അവരുടെ അൽഗോരിതങ്ങൾ നിലവിൽ ഉപയോഗിക്കുന്നത്?",
+            "hi": "उनके एल्गोरिदम कितने क्लीनिकों में उपयोग किए जा रहे हैं?",
+            "ta": "எத்தனை கிளினிக்குகளில் அவரது தொழில்நுட்பம் பயன்படுகிறது?"
+          },
+          "options": [
+            "One single clinic",
+            "Across one hundred clinics",
+            "Ten clinics",
+            "Five thousand"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Currently utilized across one hundred clinics.",
+            "ml": "100 ലധികം ക്ലിനിക്കുകളിൽ (one hundred clinics)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "To what executive title was Aisha ultimately appointed?",
+            "ml": "ഏത് ഉയർന്ന പദവിയിലേക്കാണ് ആയിഷ നിയമിക്കപ്പെട്ടത്?",
+            "hi": "आयशा को किस पद पर नियुक्त किया गया?",
+            "ta": "ஆயிஷா என்ன பதவியில் நியமிக்கப்பட்டார்?"
+          },
+          "options": [
+            "Assistant receptionist",
+            "Chief Innovation Officer",
+            "Junior intern",
+            "Office accountant"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She was appointed Chief Innovation Officer.",
+            "ml": "ചീഫ് ഇന്നൊവേഷൻ ഓഫീസർ (Chief Innovation Officer)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d81_1",
-          "question": "Which word represents: 'പരിചയപ്പെടുത്തുക'?",
+          "id": 1,
+          "question": "When an interviewer asks 'Tell me about yourself', what is the biggest mistake candidates make?",
           "options": [
-            "listen",
-            "forget",
-            "borrow",
-            "introduce"
+            "Speaking about future goals.",
+            "Reciting their entire resume line-by-line chronologically from high school.",
+            "Mentioning their proudest achievement.",
+            "Keeping their answer under two minutes."
           ],
-          "answer": "introduce",
-          "explanation": "introduce എന്നാൽ പരിചയപ്പെടുത്തുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "സ്കൂൾ തലം മുതൽ റെസ്യുമെയിലെ ഓരോ വരിയും വായിച്ചു കേൾപ്പിക്കുന്നത് അഭിമുഖം നടത്തുന്നവരെ ബോറടിപ്പിക്കും. 3 ഘട്ട ഫോർമുലയിലൂടെ പ്രധാന നേട്ടങ്ങളും ഭാവി ലക്ഷ്യങ്ങളും പറയുകയാണ് വേണ്ടത്."
         },
         {
-          "id": "trap_d81_2",
-          "question": "What is the past form (V2) of 'graduate'?",
+          "id": 2,
+          "question": "What are the three pillars of an executive job interview pitch?",
           "options": [
-            "graduated",
-            "graduateing",
-            "graduates",
-            "has graduate"
+            "Past Foundation, Present Impact, Future Strategic Alignment.",
+            "Salary expectation, Vacation days, Sick leave.",
+            "Favorite hobbies, Childhood dreams, Favorite movies.",
+            "Complaints about previous boss, Commute distance, Coffee preferences."
           ],
-          "answer": "graduated",
-          "explanation": "graduate ന്റെ ഭൂതകാല രൂപം graduated ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "പിച്ച് ഫോർമുല: മുൻകാല അടിത്തറ (Past), നിലവിലെ നേട്ടങ്ങൾ (Present), ഭാവിയിലെ സംഭാവനകൾ (Future)."
         },
         {
-          "id": "trap_d81_3",
-          "question": "What is the correct English word for 'ഇന്റർവ്യൂ'?",
+          "id": 3,
+          "question": "What should the duration of a crisp introductory pitch typically be?",
           "options": [
-            "interview",
-            "journey",
-            "courage",
-            "success"
+            "Thirty to forty minutes.",
+            "Sixty to ninety seconds.",
+            "Ten seconds.",
+            "One hour."
           ],
-          "answer": "interview",
-          "explanation": "ഇന്റർവ്യൂ എന്നാൽ ഇംഗ്ലീഷിൽ interview."
+          "correctIndex": 1,
+          "explanationMl": "ഇൻട്രൊഡക്ഷൻ പിച്ച് എപ്പോഴും 60 മുതൽ 90 സെക്കൻഡിനുള്ളിൽ (1-1.5 മിനിറ്റ്) ഒതുക്കണം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 81 Gate Exam (5 Qs)",

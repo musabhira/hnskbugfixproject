@@ -22,112 +22,96 @@
     "totalCoinsReward": 102
   },
   "grammarRule": {
-    "formula": "Prepositional Verbs and Phrasal-Prepositional Verbs",
+    "formula": "I feel [delighted / anxious / overwhelmed / content] because...",
     "explanation": {
-      "ml": "വികാരങ്ങളും മാനസികാവസ്ഥയും എന്ന വിഷയത്തിൽ I feel proud / nervous / thrilled / upset എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I feel proud / nervous / thrilled / upset correctly in spoken English."
+      "ml": "മനസ്സിലെ വികാരങ്ങൾ കൃത്യമായി പ്രകടിപ്പിക്കാൻ വെറും 'happy', 'sad' എന്നതിന് പകരം ഉന്നതമായ പദങ്ങൾ ഉപയോഗിക്കുന്നു: 'Delighted' (വളരെ സന്തോഷം), 'Anxious' (ഉത്കണ്ഠ), 'Overwhelmed' (വികാരഭരിതമായ ഭാരം), 'Content' (തൃപ്തി).",
+      "en": "Master Expressing Feelings & Emotions with clear formula: I feel [delighted / anxious / overwhelmed / content] because..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I feel confident now.",
-      "en": "Golden Rule: Practice 'I feel confident now.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'I am having tension' എന്ന് പറയരുത് ❌. ശരിയായ ഇംഗ്ലീഷ് ശൈലി: ✅ 'I feel anxious' അല്ലെങ്കിൽ 'I am under a lot of stress'.",
+      "en": "Golden Tip: 💡 'I am having tension' എന്ന് പറയരുത് ❌. ശരിയായ ഇംഗ്ലീഷ് ശൈലി: ✅ 'I feel anxious' അല്ലെങ്കിൽ 'I am under a lot of stress'."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "feel",
-        "v2": "felt",
-        "v3": "felt",
-        "meaning": {
-          "ml": "തോന്നുക",
-          "hi": "महसूस करना",
-          "ta": "உணர்"
-        },
-        "example": "I feel confident now.",
-        "exampleMl": "തോന്നുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "worry",
-        "v2": "worried",
-        "v3": "worried",
-        "meaning": {
-          "ml": "ആശങ്കപ്പെടുക",
-          "hi": "ആശങ്കപ്പെടുക",
-          "ta": "ആശങ്കപ്പെടുക"
-        },
-        "example": "Don't worry at all.",
-        "exampleMl": "ആശങ്കപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "cheer",
-        "v2": "cheered",
-        "v3": "cheered",
-        "meaning": {
-          "ml": "സന്തോഷിപ്പിക്കുക",
-          "hi": "സന്തോഷിപ്പിക്കുക",
-          "ta": "സന്തോഷിപ്പിക്കുക"
-        },
-        "example": "Cheer up, all is well.",
-        "exampleMl": "സന്തോഷിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "calm",
-        "v2": "calmed",
-        "v3": "calmed",
-        "meaning": {
-          "ml": "ശാന്തമാവുക",
-          "hi": "ശാന്തമാവുക",
-          "ta": "ശാന്തമാവുക"
-        },
-        "example": "Calm down and breathe.",
-        "exampleMl": "ശാന്തമാവുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "emotion",
+        "word": "Ecstatic",
+        "partOfSpeech": "adjective",
+        "definition": "Feeling or expressing overwhelming happiness or joyful excitement.",
         "meaning": {
-          "ml": "വികാരം",
-          "hi": "വികാരം",
-          "ta": "വികാരം"
+          "ml": "അതീവ സന്തുഷ്ടനായ / ആനന്ദഭരിതനായ",
+          "hi": "प्रसन्न / आनंदित",
+          "ta": "மகிழ்ச்சியடைந்த",
+          "te": "ఆనందపడిన",
+          "kn": "ಹರ್ಷಗೊಂಡ"
         },
-        "example": "We learned about emotion in today's lesson."
+        "example": "We were delighted to hear about your outstanding university exam results."
       },
       {
-        "word": "happy",
+        "word": "Anxious",
+        "partOfSpeech": "adjective",
+        "definition": "Experiencing worry, unease, or nervousness, typically about an imminent event.",
         "meaning": {
-          "ml": "സന്തോഷം",
-          "hi": "സന്തോഷം",
-          "ta": "സന്തോഷം"
+          "ml": "ഉത്കണ്ഠാകുലനായ / ആശങ്കയുള്ള",
+          "hi": "चिंतित / व्याकुल",
+          "ta": "பதற்றமான",
+          "te": "ఆందోళన గల",
+          "kn": "ಆತಂಕಗೊಂಡ"
         },
-        "example": "We learned about happy in today's lesson."
+        "example": "He felt slightly anxious before walking onto the interview stage."
       },
       {
-        "word": "fear",
+        "word": "Overwhelmed",
+        "partOfSpeech": "adjective",
+        "definition": "Inundated with an overwhelming amount of emotion, work, or responsibility.",
         "meaning": {
-          "ml": "ഭയം",
-          "hi": "ഭയം",
-          "ta": "ഭയം"
+          "ml": "ഭാരത്താൽ വീർപ്പുമുട്ടുന്ന / വികാരഭരിതമായ",
+          "hi": "अभिभूत / अत्यधिक भार महसूस करने वाला",
+          "ta": "மனப்பாரத்தால் திணறும்",
+          "te": "ఉక్కిరిబిక్కిరి అయిన",
+          "kn": "ಮಿತಿಮೀರಿದ ಭಾರ ಹೊತ್ತ"
         },
-        "example": "We learned about fear in today's lesson."
+        "example": "She felt overwhelmed by the sudden flood of congratulatory messages."
       },
       {
-        "word": "courage",
+        "word": "Content",
+        "partOfSpeech": "adjective",
+        "definition": "In a state of peaceful happiness and satisfaction.",
         "meaning": {
-          "ml": "ധൈര്യം",
-          "hi": "ധൈര്യം",
-          "ta": "ധൈര്യം"
+          "ml": "തൃപ്തിയുള്ള / മനസ്സമാധാനമുള്ള",
+          "hi": "संतुष्ट",
+          "ta": "திருப்தியான",
+          "te": "సంతృప్తి చెందిన",
+          "kn": "ತೃಪ್ತಿಯುಳ್ಳ"
         },
-        "example": "We learned about courage in today's lesson."
+        "example": "He is completely content with his simple, peaceful countryside lifestyle."
       },
       {
-        "word": "peace",
+        "word": "Frustrated",
+        "partOfSpeech": "adjective",
+        "definition": "Feeling or expressing distress and annoyance, especially because of inability to change something.",
         "meaning": {
-          "ml": "സമാധാനം",
-          "hi": "സമാധാനം",
-          "ta": "സമാധാനം"
+          "ml": "നിരാശയും ദേഷ്യവും തോന്നുന്ന",
+          "hi": "हताश / निराश",
+          "ta": "ஏமாற்றமடைந்த",
+          "te": "నిరాశ చెందిన",
+          "kn": "ಹತಾಶಗೊಂಡ"
         },
-        "example": "We learned about peace in today's lesson."
+        "example": "Commuters grew frustrated with the frequent unpredictable train delays."
+      },
+      {
+        "word": "Relieved",
+        "partOfSpeech": "adjective",
+        "definition": "No longer feeling distressed or anxious; reassured.",
+        "meaning": {
+          "ml": "ആശ്വാസം കൊണ്ട / ഭാരം ഒഴിഞ്ഞ",
+          "hi": "राहत महसूस करने वाला",
+          "ta": "நிம்மதியடைந்த",
+          "te": "ఉపశమనం పొందిన",
+          "kn": "ನೆಮ್ಮದಿ ಪಡೆದ"
+        },
+        "example": "We were immensely relieved when the doctor confirmed the report was benign."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Expressing Feelings & Emotions",
-        "ml": "പാഠം: വികാരങ്ങളും മാനസികാവസ്ഥയും"
+        "ml": "പാഠം: വികാരങ്ങളും മാനസികാവസ്ഥകളും പ്രകടിപ്പിക്കൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I feel [delighted / anxious / overwhelmed / content] because...",
+        "ml": "മനസ്സിലെ വികാരങ്ങൾ കൃത്യമായി പ്രകടിപ്പിക്കാൻ വെറും 'happy', 'sad' എന്നതിന് പകരം ഉന്നതമായ പദങ്ങൾ ഉപയോഗിക്കുന്നു: 'Delighted' (വളരെ സന്തോഷം), 'Anxious' (ഉത്കണ്ഠ), 'Overwhelmed' (വികാരഭരിതമായ ഭാരം), 'Content' (തൃപ്തി)."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I feel confident now.",
-        "Don't worry at all.",
-        "Cheer up, all is well."
+        "I feel incredibly delighted to announce that our research paper has been published .",
+        "Do not feel anxious about the presentation; you have prepared exceptionally well .",
+        "I felt slightly overwhelmed by the massive workload, so I asked my manager for assistance .",
+        "She is perfectly content with her quiet morning routine and steaming cup of filter coffee .",
+        "We were immensely relieved when the rescue helicopter landed safely at the base camp ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Expressing Feelings & Emotions",
-        "ml": "റീഡിങ് റൂം: വികാരങ്ങളും മാനസികാവസ്ഥയും"
+        "ml": "റീഡിങ് റൂം: വികാരങ്ങളും മാനസികാവസ്ഥകളും പ്രകടിപ്പിക്കൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I feel confident now.",
-          "meaningMl": "തോന്നുക - I feel confident now.",
-          "audioPrompt": "I feel confident now."
+          "text": "When heavy corporate deadlines piled up, engineer Sarah often felt overwhelmed by relentless mental stress.",
+          "meaningMl": "ഓഫീസിലെ സമയപരിധികൾ അടുത്തടുത്തുവന്നപ്പോൾ നിരന്തരമായ മാനസിക സമ്മർദ്ദത്താൽ സാറയ്ക്ക് കഠിനമായ ഭാരം തോന്നി.",
+          "meaningHi": "जब समय सीमाएँ नज़दीक आईं, तो इंजीनियर सारा ने लगातार तनाव से भारी बोझ महसूस किया।",
+          "meaningTa": "பணிச்சுமை அதிகமானபோது சாரா கடுமையான மன அழுத்தத்தால் திணறினாள்.",
+          "audioPrompt": "When heavy corporate deadlines piled up, engineer Sarah often felt overwhelmed by relentless mental stress."
         },
         {
-          "text": "Don't worry at all.",
-          "meaningMl": "ആശങ്കപ്പെടുക - Don't worry at all.",
-          "audioPrompt": "Don't worry at all."
+          "text": "Her heart felt anxious and restless whenever alert chimes rang across her laptop screen.",
+          "meaningMl": "ലാപ്‌ടോപ്പ് സ്ക്രീനിൽ നോട്ടിഫിക്കേഷൻ ശബ്ദങ്ങൾ മുഴങ്ങുമ്പോഴെല്ലാം അവളുടെ മനസ്സ് ഉത്കണ്ഠാകുലമായി.",
+          "meaningHi": "जब भी स्क्रीन पर नोटिफिकेशन की आवाज आती, उसका दिल चिंतित और बेचैन हो जाता था।",
+          "meaningTa": "அறிவிப்பு ஒலிக்கும் போதெல்லாம் அவளது மனம் பதற்றமடைந்தது.",
+          "audioPrompt": "Her heart felt anxious and restless whenever alert chimes rang across her laptop screen."
         },
         {
-          "text": "Daily practice of Expressing Feelings & Emotions gives you great confidence in English.",
-          "meaningMl": "വികാരങ്ങളും മാനസികാവസ്ഥയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Expressing Feelings & Emotions gives you great confidence in English."
+          "text": "One weekend, she escaped to an alpine sanctuary where a crystal-clear mountain lake mirrored blue skies.",
+          "meaningMl": "ഒരു വാരാന്ത്യത്തിൽ, തെളിഞ്ഞ നീലാകാശം പ്രതിഫലിക്കുന്ന ഒരു മലയോര തടാകക്കരയിലേക്ക് അവൾ യാത്രയായി.",
+          "meaningHi": "एक सप्ताहांत, वह एक ऐसी झील पर गई जहाँ नीले आसमान का प्रतिबिंब दिखता था।",
+          "meaningTa": "ஒரு வார இறுதியில், நீல வானத்தைப் பிரதிபலிக்கும் மலை ஏரிக்கு அவள் சென்றாள்.",
+          "audioPrompt": "One weekend, she escaped to an alpine sanctuary where a crystal-clear mountain lake mirrored blue skies."
+        },
+        {
+          "text": "Sitting on a mossy boulder, she watched water ripples settle into utter glass-like tranquility.",
+          "meaningMl": "പായൽ മൂടിയ പാറയിലിരുന്ന് ഓളങ്ങൾ അടങ്ങി വെള്ളം കണ്ണാടി പോലെ ശാന്തമാകുന്നത് അവൾ കണ്ടു.",
+          "meaningHi": "एक चट्टान पर बैठकर, उसने लहरों को शांत होते देखा।",
+          "meaningTa": "பாறையின் மீது அமர்ந்து அலைகள் அடங்கி நீர் அமைதியாவதை அவள் பார்த்தாள்.",
+          "audioPrompt": "Sitting on a mossy boulder, she watched water ripples settle into utter glass-like tranquility."
+        },
+        {
+          "text": "Gradually, her frustrated thoughts dissolved, replaced by a deep wave of content and grateful peace.",
+          "meaningMl": "ക്രമേണ, അവളുടെ ഉള്ളിലെ നിരാശകൾ മാറി അവിടെ ശാന്തമായ തൃപ്തിയും നന്ദിയും നിറഞ്ഞ സമാധാനം ഉണ്ടായി.",
+          "meaningHi": "धीरे-धीरे, उसके निराश विचार गायब हो गए और गहरी शांति आ गई।",
+          "meaningTa": "மெதுவாக அவளது ஏமாற்றம் மறைந்து ஆழ்ந்த மன அமைதி ஏற்பட்டது.",
+          "audioPrompt": "Gradually, her frustrated thoughts dissolved, replaced by a deep wave of content and grateful peace."
+        },
+        {
+          "text": "Acknowledging our vulnerable feelings without judgment is the sacred doorway to true emotional healing.",
+          "meaningMl": "നമ്മുടെ വികാരങ്ങളെ കുറ്റപ്പെടുത്തലുകളില്ലാതെ തിരിച്ചറിയുന്നത് ആന്തരിക രോഗശാന്തിയിലേക്കുള്ള പവിത്രമായ വാതിലാണ്.",
+          "meaningHi": "अपनी भावनाओं को बिना किसी निर्णय के स्वीकार करना भावनात्मक उपचार का द्वार है।",
+          "meaningTa": "நம் உணர்வுகளை தீர்ப்பின்றி உணர்வதே உண்மையான குணமடைதலுக்கான பாதையாகும்.",
+          "audioPrompt": "Acknowledging our vulnerable feelings without judgment is the sacred doorway to true emotional healing."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Why did engineer Sarah feel overwhelmed initially?",
+            "ml": "ആദ്യം സാറയ്ക്ക് മാനസിക ഭാരം തോന്നാൻ കാരണം എന്തായിരുന്നു?",
+            "hi": "सारा शुरुआत में अत्यधिक तनाव क्यों महसूस कर रही थी?",
+            "ta": "சாரா ஆரம்பத்தில் ஏன் மன அழுத்தத்தை உணர்ந்தாள்?"
+          },
+          "options": [
+            "She lost her house keys",
+            "Heavy corporate deadlines piled up with mental stress",
+            "She failed an exam",
+            "She had no food"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Heavy corporate deadlines piled up with mental stress.",
+            "ml": "ഓഫീസിലെ സമയപരിധികളും കടുത്ത മാനസിക സമ്മർദ്ദവും കാരണമാണ്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Where did she escape for the weekend?",
+            "ml": "വാരാന്ത്യത്തിൽ അവൾ എങ്ങോട്ടാണ് യാത്ര പോയത്?",
+            "hi": "सप्ताहांत के लिए वह कहाँ गई?",
+            "ta": "வார இறுதியில் அவள் எங்கே சென்றாள்?"
+          },
+          "options": [
+            "To a crowded cinema",
+            "To a crystal-clear mountain lake sanctuary",
+            "To a busy supermarket",
+            "To a railway station"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To a crystal-clear mountain lake sanctuary.",
+            "ml": "മലയോര തടാകക്കരയിലേക്കാണ് (mountain lake sanctuary) അവൾ പോയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What replaced her frustrated thoughts as she watched the water?",
+            "ml": "തടാകത്തിലെ വെള്ളം കണ്ടപ്പോൾ അവളുടെ നിരാശയ്ക്ക് പകരം എന്താണ് ഉണ്ടായത്?",
+            "hi": "पानी देखने के बाद उसके मन में क्या आया?",
+            "ta": "நீரைப் பார்த்ததும் அவளது மனதில் என்ன தோன்றியது?"
+          },
+          "options": [
+            "Anger and shouting",
+            "A deep wave of content and grateful peace",
+            "Sleepiness and boredom",
+            "Fear of the dark"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A deep wave of content and grateful peace.",
+            "ml": "ശാന്തമായ തൃപ്തിയും നന്ദി നിറഞ്ഞ സമാധാനവും (content and grateful peace)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d52_1",
-          "question": "Which word represents: 'തോന്നുക'?",
+          "question": "Select the natural English expression for mental tension and worry:",
           "options": [
-            "feel",
-            "forget",
-            "create",
-            "listen"
+            "I am taking too much tension.",
+            "I am having heavy tension.",
+            "I feel quite anxious and stressed.",
+            "Tension is happening on me."
           ],
-          "answer": "feel",
-          "explanation": "feel എന്നാൽ തോന്നുക എന്നർത്ഥം."
+          "correctIndex": 2,
+          "explanation": "'I feel anxious and stressed' is idiomatic native English; 'taking tension' is an Indianism.",
+          "ruleHint": "Idiomatic Emotion: 'I feel anxious / stressed'."
         },
         {
-          "id": "trap_d52_2",
-          "question": "What is the past form (V2) of 'worry'?",
+          "question": "What does 'delighted' mean?",
           "options": [
-            "has worry",
-            "worried",
-            "worrys",
-            "worrying"
+            "Extremely happy and pleased",
+            "Dark and without light",
+            "Very angry",
+            "Tired and sleepy"
           ],
-          "answer": "worried",
-          "explanation": "worry ന്റെ ഭൂതകാല രൂപം worried ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Delighted' means experiencing great joy, pleasure, and satisfaction.",
+          "ruleHint": "Vocabulary: Delighted = highly pleased."
         },
         {
-          "id": "trap_d52_3",
-          "question": "What is the correct English word for 'വികാരം'?",
+          "question": "How do you express feeling satisfied and peaceful with your life?",
           "options": [
-            "emotion",
-            "success",
-            "courage",
-            "knowledge"
+            "I am content with my life.",
+            "I am contented with contents.",
+            "I am full of happy contents.",
+            "I have contenting."
           ],
-          "answer": "emotion",
-          "explanation": "വികാരം എന്നാൽ ഇംഗ്ലീഷിൽ emotion."
+          "correctIndex": 0,
+          "explanation": "'I am content with my life' uses the adjective 'content' (pronounced con-TENT) meaning peaceful satisfaction.",
+          "ruleHint": "Vocabulary: Content (adj) = peacefully satisfied."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 52 Gate Exam (5 Qs)",

@@ -3978,9 +3978,9 @@
         "hi": "Asking Questions: What & Where",
         "ta": "Asking Questions: What & Where"
       },
-      "themeEn": "Present Simple Tense",
-      "themeMl": "സിമ്പിൾ പ്രസന്റ് ടെൻസ്",
-      "grammarTarget": "What is...? / Where is...?",
+      "themeEn": "Asking Questions: What & Where",
+      "themeMl": "What & Where ചോദ്യങ്ങൾ",
+      "grammarTarget": "What / Where + is / are / do / does + Subject + (Verb)?",
       "grammarRule": {
         "formula": "Present Simple Tense",
         "explanation": {
@@ -4164,6 +4164,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Location",
+        "Inquire",
+        "Schedule",
+        "Destination",
+        "Preference",
+        "Nearby"
       ]
     },
     {
@@ -4175,9 +4183,9 @@
         "hi": "Asking Questions: When & Why",
         "ta": "Asking Questions: When & Why"
       },
-      "themeEn": "Present Continuous Tense",
-      "themeMl": "പ്രസന്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
-      "grammarTarget": "When do you...? / Why are you...?",
+      "themeEn": "Asking Questions: When & Why",
+      "themeMl": "When & Why ചോദ്യങ്ങൾ",
+      "grammarTarget": "When / Why + do / does / did / is / are + Subject + (Verb)?",
       "grammarRule": {
         "formula": "Present Continuous Tense",
         "explanation": {
@@ -4361,6 +4369,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Deadline",
+        "Occasion",
+        "Postpone",
+        "Promptly",
+        "Reasonable",
+        "Annual"
       ]
     },
     {
@@ -4372,9 +4388,9 @@
         "hi": "Asking Questions: Who & Which",
         "ta": "Asking Questions: Who & Which"
       },
-      "themeEn": "Present Perfect Tense",
-      "themeMl": "പ്രസന്റ് പെർഫെക്റ്റ് ടെൻസ്",
-      "grammarTarget": "Who is that? / Which one do you like?",
+      "themeEn": "Asking Questions: Who & Which",
+      "themeMl": "Who & Which ചോദ്യങ്ങൾ",
+      "grammarTarget": "Who + Verb / Which + Noun + Aux + Subject + Verb?",
       "grammarRule": {
         "formula": "Present Perfect Tense",
         "explanation": {
@@ -4558,6 +4574,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Candidate",
+        "Colleague",
+        "Select",
+        "Organizer",
+        "Option",
+        "Responsible"
       ]
     },
     {
@@ -4569,9 +4593,9 @@
         "hi": "Asking Questions: How & How Much",
         "ta": "Asking Questions: How & How Much"
       },
-      "themeEn": "Present Perfect Continuous Tense",
-      "themeMl": "പ്രസന്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
-      "grammarTarget": "How are you? / How much does it cost?",
+      "themeEn": "Asking Questions: How & How Much",
+      "themeMl": "How & How Much ചോദ്യങ്ങൾ",
+      "grammarTarget": "How + adjective / How much + uncountable noun + aux + Subject?",
       "grammarRule": {
         "formula": "Present Perfect Continuous Tense",
         "explanation": {
@@ -4755,6 +4779,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Estimate",
+        "Method",
+        "Capacity",
+        "Affordable",
+        "Effort",
+        "Frequently"
       ]
     },
     {
@@ -4766,9 +4798,9 @@
         "hi": "Buying Groceries & Market Talk",
         "ta": "Buying Groceries & Market Talk"
       },
-      "themeEn": "Past Simple Tense",
-      "themeMl": "സിമ്പിൾ പാസ്റ്റ് ടെൻസ്",
-      "grammarTarget": "Quantity Words: Kilo, Packet, Bottle, Dozen",
+      "themeEn": "Buying Groceries & Market Talk",
+      "themeMl": "പച്ചക്കറി വാങ്ങലും ചന്തയിലെ സംസാരവും",
+      "grammarTarget": "Can I have + quantity + of [Item]? / How much per kilo?",
       "grammarRule": {
         "formula": "Past Simple Tense",
         "explanation": {
@@ -4952,6 +4984,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Grocery",
+        "Bargain",
+        "Receipt",
+        "Weigh",
+        "Discount",
+        "Organic"
       ]
     },
     {
@@ -4963,9 +5003,9 @@
         "hi": "Giving Simple Directions",
         "ta": "Giving Simple Directions"
       },
-      "themeEn": "Past Continuous Tense",
-      "themeMl": "പാസ്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
-      "grammarTarget": "Imperative Commands: Turn left, Go straight",
+      "themeEn": "Giving Simple Directions",
+      "themeMl": "ലളിതമായ വഴികാട്ടലുകൾ",
+      "grammarTarget": "Go straight / Turn left / It is opposite to [Landmark]",
       "grammarRule": {
         "formula": "Past Continuous Tense",
         "explanation": {
@@ -5149,6 +5189,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Intersection",
+        "Straight",
+        "Opposite",
+        "Roundabout",
+        "Landmark",
+        "Pedestrian"
       ]
     },
     {
@@ -5160,9 +5208,9 @@
         "hi": "Health, Body & Minor Ailments",
         "ta": "Health, Body & Minor Ailments"
       },
-      "themeEn": "Past Perfect Tense",
-      "themeMl": "പാസ്റ്റ് പെർഫെക്റ്റ് ടെൻസ്",
-      "grammarTarget": "I have a headache / stomach ache / fever",
+      "themeEn": "Health, Body & Minor Ailments",
+      "themeMl": "ആരോഗ്യവും ചെറിയ അസുഖങ്ങളും",
+      "grammarTarget": "I have a + [headache / sore throat] / My [body part] hurts.",
       "grammarRule": {
         "formula": "Past Perfect Tense",
         "explanation": {
@@ -5346,6 +5394,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Headache",
+        "Fever",
+        "Sprain",
+        "Fatigue",
+        "Dizziness",
+        "Bandage"
       ]
     },
     {
@@ -5357,9 +5413,9 @@
         "hi": "At the Pharmacy & Medicine",
         "ta": "At the Pharmacy & Medicine"
       },
-      "themeEn": "Past Perfect Continuous Tense",
-      "themeMl": "പാസ്റ്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
-      "grammarTarget": "Dosage instructions: Before/After food, Twice daily",
+      "themeEn": "At the Pharmacy & Medicine",
+      "themeMl": "മരുന്നുകടയിലെ സംസാരവും നിർദ്ദേശങ്ങളും",
+      "grammarTarget": "Take this + dosage + before / after food / twice a day",
       "grammarRule": {
         "formula": "Past Perfect Continuous Tense",
         "explanation": {
@@ -5543,6 +5599,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Prescription",
+        "Dosage",
+        "Antibiotic",
+        "Ointment",
+        "Capsule",
+        "Symptom"
       ]
     },
     {
@@ -5554,9 +5618,9 @@
         "hi": "Weather, Climate & Nature",
         "ta": "Weather, Climate & Nature"
       },
-      "themeEn": "Future Simple Tense and 'Going to'",
-      "themeMl": "സിമ്പിൾ ഫ്യൂച്ചർ ടെൻസും 'Going to' പ്രയോഗവും",
-      "grammarTarget": "It is sunny / rainy / cloudy / humid",
+      "themeEn": "Weather, Climate & Nature",
+      "themeMl": "കാലാവസ്ഥയും പ്രകൃതിയും",
+      "grammarTarget": "It is [sunny / rainy / humid / cloudy] / The forecast predicts...",
       "grammarRule": {
         "formula": "Future Simple Tense and 'Going to'",
         "explanation": {
@@ -5740,6 +5804,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Forecast",
+        "Humid",
+        "Drizzle",
+        "Breeze",
+        "Thunderstorm",
+        "Pleasant"
       ]
     },
     {
@@ -5751,9 +5823,9 @@
         "hi": "House 1 Grand Review & Gate Exam",
         "ta": "House 1 Grand Review & Gate Exam"
       },
-      "themeEn": "Future Continuous and Future Perfect Tenses",
-      "themeMl": "ഫ്യൂച്ചർ കണ്ടിന്യൂവസും ഫ്യൂച്ചർ പെർഫെക്റ്റും",
-      "grammarTarget": "Full Foundation Integration (Days 1–29)",
+      "themeEn": "House 1 Grand Review & Gate Exam",
+      "themeMl": "ഹൗസ് 1 റിവ്യൂ & ഗേറ്റ് എക്സാം",
+      "grammarTarget": "Consolidation of Question Words, Daily Routines & Situational English",
       "grammarRule": {
         "formula": "Future Continuous and Future Perfect Tenses",
         "explanation": {
@@ -5937,6 +6009,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Milestone",
+        "Fluency",
+        "Accomplishment",
+        "Review",
+        "Confidence",
+        "Reflection"
       ]
     },
     {
@@ -5948,9 +6028,9 @@
         "hi": "Past State: Was vs Were",
         "ta": "Past State: Was vs Were"
       },
-      "themeEn": "Future Perfect Continuous Tense",
-      "themeMl": "ഫ്യൂച്ചർ പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
-      "grammarTarget": "Was (I/He/She/It) vs Were (You/We/They)",
+      "themeEn": "Past State: Was vs Were",
+      "themeMl": "കഴിഞ്ഞകാല അവസ്ഥ: Was & Were",
+      "grammarTarget": "I / He / She / It + was | You / We / They + were",
       "grammarRule": {
         "formula": "Future Perfect Continuous Tense",
         "explanation": {
@@ -6134,6 +6214,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Exhausted",
+        "Delighted",
+        "Absent",
+        "Crowded",
+        "Curious",
+        "Punctual"
       ]
     },
     {
@@ -6145,9 +6233,9 @@
         "hi": "Past Actions: Simple Past V2",
         "ta": "Past Actions: Simple Past V2"
       },
-      "themeEn": "Tense Consistency and Sequence of Tenses",
-      "themeMl": "ടെൻസ് സ്ഥിരതയും ക്രമവും",
-      "grammarTarget": "Subject + V2 past verb (I visited, I bought)",
+      "themeEn": "Past Actions: Simple Past V2",
+      "themeMl": "കഴിഞ്ഞകാല പ്രവൃത്തികൾ: Simple Past V2",
+      "grammarTarget": "Subject + Verb 2 (Past Form: went, visited, built, bought) + Object",
       "grammarRule": {
         "formula": "Tense Consistency and Sequence of Tenses",
         "explanation": {
@@ -6331,6 +6419,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Incident",
+        "Accomplish",
+        "Deliver",
+        "Previous",
+        "Recently",
+        "Memorable"
       ]
     },
     {
@@ -6342,9 +6438,9 @@
         "hi": "Asking in the Past: Did you...?",
         "ta": "Asking in the Past: Did you...?"
       },
-      "themeEn": "Stative Verbs vs Dynamic Verbs",
-      "themeMl": "സ്റ്റേറ്റീവ് വെർബുകളും ഡൈനാമിക് വെർബുകളും",
-      "grammarTarget": "Did + Subject + V1 base verb (Did you go?)",
+      "themeEn": "Asking in the Past: Did you...?",
+      "themeMl": "കഴിഞ്ഞകാല ചോദ്യങ്ങൾ: Did you...?",
+      "grammarTarget": "Did + Subject + Base Verb (V1) + Object?",
       "grammarRule": {
         "formula": "Stative Verbs vs Dynamic Verbs",
         "explanation": {
@@ -6528,6 +6624,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Notice",
+        "Receive",
+        "Attend",
+        "Confirm",
+        "Lock",
+        "Inform"
       ]
     },
     {
@@ -6539,9 +6643,9 @@
         "hi": "Negative Past: Didn't + V1",
         "ta": "Negative Past: Didn't + V1"
       },
-      "themeEn": "Auxiliary Verbs – Be, Do, Have",
-      "themeMl": "ഓക്സിലറി വെർബുകൾ – Be, Do, Have",
-      "grammarTarget": "Didn't + V1 (Never use V2 after didn't!)",
+      "themeEn": "Negative Past: Didn't + V1",
+      "themeMl": "കഴിഞ്ഞകാല നിഷേധ വാക്യങ്ങൾ: Didn't + V1",
+      "grammarTarget": "Subject + didn't (did not) + Base Verb (V1) + Object",
       "grammarRule": {
         "formula": "Auxiliary Verbs – Be, Do, Have",
         "explanation": {
@@ -6725,6 +6829,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Expect",
+        "Realize",
+        "Disturb",
+        "Hesitate",
+        "Misunderstand",
+        "Bother"
       ]
     },
     {
@@ -6736,9 +6848,9 @@
         "hi": "Yesterday's Full Story",
         "ta": "Yesterday's Full Story"
       },
-      "themeEn": "Negative Sentences and Contractions",
-      "themeMl": "നിഷേധ വാക്യങ്ങളും ചുരുക്കെഴുത്തുകളും",
-      "grammarTarget": "Time Sequencers: In the morning, Then, Later",
+      "themeEn": "Yesterday's Full Story",
+      "themeMl": "കഴിഞ്ഞ ദിവസത്തെ കഥ പറയൽ",
+      "grammarTarget": "First + V2... Then + V2... After that + V2... Finally + V2...",
       "grammarRule": {
         "formula": "Negative Sentences and Contractions",
         "explanation": {
@@ -6922,6 +7034,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Chrono",
+        "Commence",
+        "Encounter",
+        "Eventually",
+        "Unwind",
+        "Narrate"
       ]
     },
     {
@@ -6933,9 +7053,9 @@
         "hi": "Childhood Habits: Used to",
         "ta": "Childhood Habits: Used to"
       },
-      "themeEn": "Yes/No Questions and Short Answers",
-      "themeMl": "Yes/No ചോദ്യങ്ങളും ചെറു ഉത്തരങ്ങളും",
-      "grammarTarget": "Used to + V1 (Things you did in the past but not now)",
+      "themeEn": "Childhood Habits: Used to",
+      "themeMl": "പഴയ ശീലങ്ങൾ: Used to",
+      "grammarTarget": "Subject + used to + Base Verb (V1) + (past time marker)",
       "grammarRule": {
         "formula": "Yes/No Questions and Short Answers",
         "explanation": {
@@ -7119,6 +7239,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Nostalgic",
+        "Childhood",
+        "Tradition",
+        "Folk",
+        "Innocent",
+        "Neighborhood"
       ]
     },
     {
@@ -7130,9 +7258,9 @@
         "hi": "Past Continuous: Was/Were + ing",
         "ta": "Past Continuous: Was/Were + ing"
       },
-      "themeEn": "WH-Questions – Formation and Usage",
-      "themeMl": "WH-ചോദ്യ രൂപീകരണവും പ്രയോഗവും",
-      "grammarTarget": "Was/Were + Verb-ing (While I was sleeping)",
+      "themeEn": "Past Continuous: Was/Were + ing",
+      "themeMl": "കഴിഞ്ഞകാലത്ത് തുടർന്നുകൊണ്ടിരുന്ന പ്രവൃത്തികൾ",
+      "grammarTarget": "Subject + was / were + Verb-ing + when / while...",
       "grammarRule": {
         "formula": "WH-Questions – Formation and Usage",
         "explanation": {
@@ -7316,6 +7444,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Simultaneous",
+        "Interrupt",
+        "Ongoing",
+        "Observe",
+        "Coincidence",
+        "Surround"
       ]
     },
     {
@@ -7327,9 +7463,9 @@
         "hi": "Past Narrative & Incident Storytelling",
         "ta": "Past Narrative & Incident Storytelling"
       },
-      "themeEn": "Question Tags",
-      "themeMl": "ക്വസ്റ്റ്യൻ ടാഗുകൾ",
-      "grammarTarget": "Past narrative: First, then, suddenly",
+      "themeEn": "Past Narrative & Incident Storytelling",
+      "themeMl": "സംഭവങ്ങളും കഥകളും മനോഹരമായി പറയൽ",
+      "grammarTarget": "Suddenly / Unexpectedly / As soon as + Past Simple (V2)",
       "grammarRule": {
         "formula": "Question Tags",
         "explanation": {
@@ -7513,6 +7649,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Suddenly",
+        "Luckily",
+        "Astonished",
+        "Emergency",
+        "Relief",
+        "Witness"
       ]
     },
     {
@@ -7524,9 +7668,9 @@
         "hi": "Future Promises & Instant Decisions: Will",
         "ta": "Future Promises & Instant Decisions: Will"
       },
-      "themeEn": "Indirect and Embedded Questions",
-      "themeMl": "ഇൻഡയറക്റ്റ് & എംബഡഡ് ചോദ്യങ്ങൾ",
-      "grammarTarget": "Subject + Will + V1 (I will help you)",
+      "themeEn": "Future Promises & Instant Decisions: Will",
+      "themeMl": "ഭാവി വാഗ്ദാനങ്ങളും പെട്ടെന്നുള്ള തീരുമാനങ്ങളും: Will",
+      "grammarTarget": "Subject + will + Base Verb (V1) | I'll / We'll + V1",
       "grammarRule": {
         "formula": "Indirect and Embedded Questions",
         "explanation": {
@@ -7710,6 +7854,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Commitment",
+        "Spontaneous",
+        "Definite",
+        "Assure",
+        "Prompt",
+        "Guarantee"
       ]
     },
     {
@@ -7721,9 +7873,9 @@
         "hi": "Definite Future Plans: Going to",
         "ta": "Definite Future Plans: Going to"
       },
-      "themeEn": "Imperative Sentences – Commands, Requests and Suggestions",
-      "themeMl": "നിർദ്ദേശങ്ങളും അഭ്യർത്ഥനകളും (Imperatives)",
-      "grammarTarget": "Am/Is/Are + Going to + V1 (I am going to buy a car)",
+      "themeEn": "Definite Future Plans: Going to",
+      "themeMl": "മുൻകൂട്ടി തീരുമാനിച്ച ഭാവി പ്ലാനുകൾ: Going to",
+      "grammarTarget": "Subject + am / is / are + going to + Base Verb (V1)",
       "grammarRule": {
         "formula": "Imperative Sentences – Commands, Requests and Suggestions",
         "explanation": {
@@ -7907,6 +8059,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Intention",
+        "Roadmap",
+        "Renovate",
+        "Enroll",
+        "Upcoming",
+        "Arrangement"
       ]
     },
     {
@@ -7918,9 +8078,9 @@
         "hi": "Shopping for Clothes & Trial Room",
         "ta": "Shopping for Clothes & Trial Room"
       },
-      "themeEn": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
-      "themeMl": "മോഡൽ വെർബുകൾ – Can, Could, May, Might",
-      "grammarTarget": "Size, Fit, Color & Trial Room Conversation",
+      "themeEn": "Shopping for Clothes & Trial Room",
+      "themeMl": "തുണിക്കടയിലെ സംസാരവും ട്രയൽ റൂമും",
+      "grammarTarget": "Can I try this on? / Do you have this in a medium / large size?",
       "grammarRule": {
         "formula": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
         "explanation": {
@@ -8104,6 +8264,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Garment",
+        "Fitting",
+        "Fabric",
+        "Casual",
+        "Alteration",
+        "Fashionable"
       ]
     },
     {
@@ -8115,9 +8283,9 @@
         "hi": "At a Restaurant: Ordering & Bill",
         "ta": "At a Restaurant: Ordering & Bill"
       },
-      "themeEn": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
-      "themeMl": "കടമയും നിർബന്ധവും – Must, Have to, Should",
-      "grammarTarget": "Can I have...? / Could we get the bill?",
+      "themeEn": "At a Restaurant: Ordering & Bill",
+      "themeMl": "റസ്റ്റോറന്റിലെ ഓർഡറും ബില്ലും",
+      "grammarTarget": "Can I have + [dish]? / Could we get the bill, please?",
       "grammarRule": {
         "formula": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
         "explanation": {
@@ -8301,6 +8469,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Appetizer",
+        "Beverage",
+        "Cuisine",
+        "Delicious",
+        "Vegetarian",
+        "Dessert"
       ]
     },
     {
@@ -8312,9 +8488,9 @@
         "hi": "Public Transport: Bus & Train Travel",
         "ta": "Public Transport: Bus & Train Travel"
       },
-      "themeEn": "Modal Verbs of Probability and Deduction",
-      "themeMl": "സാധ്യതകളും നിഗമനങ്ങളും സൂചിപ്പിക്കുന്ന മോഡലുകൾ",
-      "grammarTarget": "Asking Timing, Stops & Platforms",
+      "themeEn": "Public Transport: Bus & Train Travel",
+      "themeMl": "ബസ്, ട്രെയിൻ യാത്രകളിലെ സംസാരം",
+      "grammarTarget": "Which platform does the train arrive on? / Does this bus go to...?",
       "grammarRule": {
         "formula": "Modal Verbs of Probability and Deduction",
         "explanation": {
@@ -8498,6 +8674,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Commuter",
+        "Platform",
+        "Conductor",
+        "Fare",
+        "Baggage",
+        "Transfer"
       ]
     },
     {
@@ -8509,9 +8693,9 @@
         "hi": "At the Airport & Flight Journey",
         "ta": "At the Airport & Flight Journey"
       },
-      "themeEn": "Past Modals",
-      "themeMl": "പാസ്റ്റ് മോഡൽ വെർബുകൾ",
-      "grammarTarget": "Check-in, Boarding, Luggage & Security",
+      "themeEn": "At the Airport & Flight Journey",
+      "themeMl": "വിമാനത്താവളത്തിലെ സംസാരവും യാത്രാ നടപടികളും",
+      "grammarTarget": "Here is my passport / Which gate does flight [X] board from?",
       "grammarRule": {
         "formula": "Past Modals",
         "explanation": {
@@ -8695,6 +8879,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Boarding",
+        "Terminal",
+        "Declaration",
+        "Security",
+        "Conveyor",
+        "Immigration"
       ]
     },
     {
@@ -8706,9 +8898,9 @@
         "hi": "Hotel Stay & Check-in",
         "ta": "Hotel Stay & Check-in"
       },
-      "themeEn": "Gerunds – Formation and Functions",
-      "themeMl": "ജെറണ്ടുകൾ – രൂപീകരണവും ധർമ്മങ്ങളും",
-      "grammarTarget": "I have a reservation under the name...",
+      "themeEn": "Hotel Stay & Check-in",
+      "themeMl": "ഹോട്ടലിലെ താമസവും ചെക്ക്-ഇന്നും",
+      "grammarTarget": "I have a reservation under the name... / What time is breakfast served?",
       "grammarRule": {
         "formula": "Gerunds – Formation and Functions",
         "explanation": {
@@ -8892,6 +9084,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Reservation",
+        "Amenity",
+        "Housekeeping",
+        "Complimentary",
+        "Concierge",
+        "Voucher"
       ]
     },
     {
@@ -8903,9 +9103,9 @@
         "hi": "Tomorrow's Schedule & Appointments",
         "ta": "Tomorrow's Schedule & Appointments"
       },
-      "themeEn": "Infinitives – Bare Infinitive and To-Infinitive",
-      "themeMl": "ഇൻഫിനിറ്റീവുകൾ – Bare & To-Infinitive",
-      "grammarTarget": "Setting & Confirming Meeting Times",
+      "themeEn": "Tomorrow's Schedule & Appointments",
+      "themeMl": "നാളത്തെ സമയക്രമവും അപ്പോയിന്റ്‌മെന്റുകളും",
+      "grammarTarget": "I have an appointment at [Time] with [Person] / Let us reschedule...",
       "grammarRule": {
         "formula": "Infinitives – Bare Infinitive and To-Infinitive",
         "explanation": {
@@ -9089,6 +9289,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Appointment",
+        "Reschedule",
+        "Priority",
+        "Reminder",
+        "Availability",
+        "Agenda"
       ]
     },
     {
@@ -9100,9 +9308,9 @@
         "hi": "Polite Invitations: Would you like to...?",
         "ta": "Polite Invitations: Would you like to...?"
       },
-      "themeEn": "Gerunds vs Infinitives",
-      "themeMl": "ജെറണ്ടുകളും ഇൻഫിനിറ്റീവുകളും തമ്മിലുള്ള വ്യത്യാസം",
-      "grammarTarget": "Would you like + to V1 / noun (Would you like tea?)",
+      "themeEn": "Polite Invitations: Would you like to...?",
+      "themeMl": "സ്നേഹപൂർവ്വമായ ക്ഷണങ്ങൾ: Would you like to...?",
+      "grammarTarget": "Would you like to + Base Verb (V1)? / I'd love to, thank you!",
       "grammarRule": {
         "formula": "Gerunds vs Infinitives",
         "explanation": {
@@ -9286,6 +9494,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Invitation",
+        "Accompany",
+        "Hospitality",
+        "Gather",
+        "Delightful",
+        "Honor"
       ]
     },
     {
@@ -9297,9 +9513,9 @@
         "hi": "Polite Requests: Could you please...",
         "ta": "Polite Requests: Could you please..."
       },
-      "themeEn": "Participles – Present, Past and Perfect Participles",
-      "themeMl": "പാർട്ടിസിപ്പിളുകൾ – Present, Past, Perfect",
-      "grammarTarget": "Could you please + V1 / Would you mind + V-ing",
+      "themeEn": "Polite Requests: Could you please...",
+      "themeMl": "മാന്യമായ അഭ്യർത്ഥനകൾ: Could you please...",
+      "grammarTarget": "Could you please + Base Verb (V1) + Object? / Would you mind + Verb-ing?",
       "grammarRule": {
         "formula": "Participles – Present, Past and Perfect Participles",
         "explanation": {
@@ -9483,6 +9699,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Assistance",
+        "Favor",
+        "Inconvenience",
+        "Clarify",
+        "Considerate",
+        "Patiently"
       ]
     },
     {
@@ -9494,9 +9718,9 @@
         "hi": "Giving Advice: Should & Ought to",
         "ta": "Giving Advice: Should & Ought to"
       },
-      "themeEn": "Transitive and Intransitive Verbs",
-      "themeMl": "ട്രാൻസിറ്റീവ്, ഇൻട്രാൻസിറ്റീവ് വെർബുകൾ",
-      "grammarTarget": "You should + V1 (You should sleep early)",
+      "themeEn": "Giving Advice: Should & Ought to",
+      "themeMl": "ഉപദേശങ്ങളും നിർദ്ദേശങ്ങളും: Should & Ought to",
+      "grammarTarget": "Subject + should / ought to + Base Verb (V1) | You shouldn't + V1",
       "grammarRule": {
         "formula": "Transitive and Intransitive Verbs",
         "explanation": {
@@ -9680,6 +9904,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Recommendation",
+        "Prudent",
+        "Well-being",
+        "Moderation",
+        "Consult",
+        "Posture"
       ]
     },
     {
@@ -9691,9 +9923,9 @@
         "hi": "Compulsion & Rules: Must vs Have to",
         "ta": "Compulsion & Rules: Must vs Have to"
       },
-      "themeEn": "Verb Patterns",
-      "themeMl": "വെർബ് പാറ്റേണുകൾ",
-      "grammarTarget": "Must (Personal/Strict) vs Have to (External rule)",
+      "themeEn": "Compulsion & Rules: Must vs Have to",
+      "themeMl": "കർശന നിയമങ്ങളും ബാധ്യതകളും: Must & Have to",
+      "grammarTarget": "Subject + must / have to + Base Verb (V1) | You mustn't...",
       "grammarRule": {
         "formula": "Verb Patterns",
         "explanation": {
@@ -9877,6 +10109,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Obligation",
+        "Mandatory",
+        "Regulation",
+        "Strict",
+        "Penalty",
+        "Requirement"
       ]
     },
     {
@@ -9888,9 +10128,9 @@
         "hi": "Accepting & Declining Politely",
         "ta": "Accepting & Declining Politely"
       },
-      "themeEn": "Phrasal Verbs – Separable and Inseparable",
-      "themeMl": "ഫ്രേസൽ വെർബുകൾ – വേർതിരിക്കാവുന്നവയും അല്ലാത്തവയും",
-      "grammarTarget": "I'd love to! vs I wish I could, but...",
+      "themeEn": "Accepting & Declining Politely",
+      "themeMl": "ക്ഷണങ്ങൾ സ്വീകരിക്കലും സൗമ്യമായി നിരസിക്കലും",
+      "grammarTarget": "I'd love to, but unfortunately... / Thank you, I'd be delighted!",
       "grammarRule": {
         "formula": "Phrasal Verbs – Separable and Inseparable",
         "explanation": {
@@ -10074,6 +10314,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Unfortunately",
+        "Pledge",
+        "Grateful",
+        "Regret",
+        "Cordial",
+        "Alternative"
       ]
     },
     {
@@ -10085,9 +10333,9 @@
         "hi": "Expressing Feelings & Emotions",
         "ta": "Expressing Feelings & Emotions"
       },
-      "themeEn": "Prepositional Verbs and Phrasal-Prepositional Verbs",
-      "themeMl": "പ്രിപോസിഷണൽ വെർബുകൾ",
-      "grammarTarget": "I feel proud / nervous / thrilled / upset",
+      "themeEn": "Expressing Feelings & Emotions",
+      "themeMl": "വികാരങ്ങളും മാനസികാവസ്ഥകളും പ്രകടിപ്പിക്കൽ",
+      "grammarTarget": "I feel [delighted / anxious / overwhelmed / content] because...",
       "grammarRule": {
         "formula": "Prepositional Verbs and Phrasal-Prepositional Verbs",
         "explanation": {
@@ -10271,6 +10519,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Ecstatic",
+        "Anxious",
+        "Overwhelmed",
+        "Content",
+        "Frustrated",
+        "Relieved"
       ]
     },
     {
@@ -10282,9 +10538,9 @@
         "hi": "Handling Complaints & Polite Feedback",
         "ta": "Handling Complaints & Polite Feedback"
       },
-      "themeEn": "Active Voice and Passive Voice – Basics",
-      "themeMl": "ആക്റ്റീവ് & പാസ്സീവ് വോയ്സ് – അടിസ്ഥാന പാഠങ്ങൾ",
-      "grammarTarget": "I am afraid there is a problem with...",
+      "themeEn": "Handling Complaints & Polite Feedback",
+      "themeMl": "പരാതികളും മാന്യമായ ഫീഡ്‌ബാക്കും പറയൽ",
+      "grammarTarget": "I'm afraid there is a slight issue with... / Could you please look into this?",
       "grammarRule": {
         "formula": "Active Voice and Passive Voice – Basics",
         "explanation": {
@@ -10468,6 +10724,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Defect",
+        "Rectify",
+        "Dissatisfied",
+        "Replacement",
+        "Apology",
+        "Resolution"
       ]
     },
     {
@@ -10479,9 +10743,9 @@
         "hi": "Banking & Money Transactions",
         "ta": "Banking & Money Transactions"
       },
-      "themeEn": "Passive Voice – Advanced Structures",
-      "themeMl": "പാസ്സീവ് വോയ്സ് – വിപുല ഘടനകൾ",
-      "grammarTarget": "Deposit, Withdraw, Transfer, UPI & Balance",
+      "themeEn": "Banking & Money Transactions",
+      "themeMl": "ബാങ്കിംഗ് ഇടപാടുകളും പണമിടപാടുകളും",
+      "grammarTarget": "I would like to deposit / withdraw [Amount] / What is my balance?",
       "grammarRule": {
         "formula": "Passive Voice – Advanced Structures",
         "explanation": {
@@ -10665,6 +10929,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Deposit",
+        "Withdraw",
+        "Balance",
+        "Statement",
+        "Remit",
+        "Beneficiary"
       ]
     },
     {
@@ -10676,9 +10948,9 @@
         "hi": "Technology, Mobiles & Connectivity",
         "ta": "Technology, Mobiles & Connectivity"
       },
-      "themeEn": "Causative Structures – Have, Get, Make, Let, Help",
-      "themeMl": "കോസറ്റീവ് സ്ട്രക്ചറുകൾ – Have, Get, Make",
-      "grammarTarget": "My battery is low / Network is weak / Restart",
+      "themeEn": "Technology, Mobiles & Connectivity",
+      "themeMl": "സാങ്കേതികവിദ്യയും മൊബൈൽ കണക്റ്റിവിറ്റിയും",
+      "grammarTarget": "My phone battery died / The Wi-Fi signal is weak / Let me restart the router.",
       "grammarRule": {
         "formula": "Causative Structures – Have, Get, Make, Let, Help",
         "explanation": {
@@ -10862,6 +11134,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Connectivity",
+        "Reboot",
+        "Bandwidth",
+        "Glitch",
+        "Sync",
+        "Compatible"
       ]
     },
     {
@@ -10873,9 +11153,9 @@
         "hi": "Lost Items & Urgent Emergencies",
         "ta": "Lost Items & Urgent Emergencies"
       },
-      "themeEn": "Direct and Indirect Speech – Statements",
-      "themeMl": "പ്രത്യക്ഷവും പരോക്ഷവുമായ സംഭാഷണങ്ങൾ – പ്രസ്താവനകൾ",
-      "grammarTarget": "I lost my... / Please call an ambulance / Urgent",
+      "themeEn": "Lost Items & Urgent Emergencies",
+      "themeMl": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അടിയന്തിര സാഹചര്യങ്ങളും",
+      "grammarTarget": "I lost my [Item]! / Please call an ambulance / Help me find my...",
       "grammarRule": {
         "formula": "Direct and Indirect Speech – Statements",
         "explanation": {
@@ -11059,6 +11339,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Crisis",
+        "Belongings",
+        "Misplace",
+        "Ambulance",
+        "Stolen",
+        "Paramedic"
       ]
     },
     {
@@ -11070,9 +11358,9 @@
         "hi": "Doctor Consultation: Explaining Symptoms",
         "ta": "Doctor Consultation: Explaining Symptoms"
       },
-      "themeEn": "Direct and Indirect Speech – Questions and Commands",
-      "themeMl": "ചോദ്യങ്ങളും നിർദ്ദേശങ്ങളും പരോക്ഷ രൂപത്തിൽ",
-      "grammarTarget": "I have been having this pain since yesterday",
+      "themeEn": "Doctor Consultation: Explaining Symptoms",
+      "themeMl": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ വ്യക്തമായി പറയൽ",
+      "grammarTarget": "I have been experiencing [symptom] for [duration] / The pain is sharp / throbbing.",
       "grammarRule": {
         "formula": "Direct and Indirect Speech – Questions and Commands",
         "explanation": {
@@ -11256,6 +11544,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Diagnosis",
+        "Throbbing",
+        "Persistent",
+        "Allergy",
+        "Examination",
+        "Severity"
       ]
     },
     {
@@ -11267,9 +11563,9 @@
         "hi": "Rapid Fire Reflex Drills: Spontaneous Speech",
         "ta": "Rapid Fire Reflex Drills: Spontaneous Speech"
       },
-      "themeEn": "Reported Speech – Backshifting and Exceptions",
-      "themeMl": "റിപ്പോർട്ടഡ് സ്പീച്ച് – ബാക്ക്ഷിഫ്റ്റിംഗും അപവാദങ്ങളും",
-      "grammarTarget": "Eliminating Translation Delay: Direct English Response",
+      "themeEn": "Rapid Fire Reflex Drills: Spontaneous Speech",
+      "themeMl": "പെട്ടെന്ന് മറുപടി നൽകാനുള്ള സംസാര വ്യായാമങ്ങൾ",
+      "grammarTarget": "Instant response without hesitation: 'Certainly!', 'By all means!', 'I'm on it!'",
       "grammarRule": {
         "formula": "Reported Speech – Backshifting and Exceptions",
         "explanation": {
@@ -11453,6 +11749,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Instinctive",
+        "Articulate",
+        "Hesitation",
+        "Reflex",
+        "Punctually",
+        "Enthusiastic"
       ]
     },
     {
@@ -11464,9 +11768,9 @@
         "hi": "Social Small Talk with Strangers",
         "ta": "Social Small Talk with Strangers"
       },
-      "themeEn": "Zero and First Conditionals",
-      "themeMl": "സീറോ & ഫസ്റ്റ് കണ്ടീഷണലുകൾ",
-      "grammarTarget": "Weather, Commute, Compliments & Safe Topics",
+      "themeEn": "Social Small Talk with Strangers",
+      "themeMl": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം",
+      "grammarTarget": "Pleasant day today, isn't it? / Are you traveling far?",
       "grammarRule": {
         "formula": "Zero and First Conditionals",
         "explanation": {
@@ -11650,6 +11954,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Commute",
+        "Pleasantry",
+        "Stranger",
+        "Bustling",
+        "Acquaintance",
+        "Atmosphere"
       ]
     },
     {
@@ -11661,9 +11973,9 @@
         "hi": "House 2 Grand Review & Gate Exam",
         "ta": "House 2 Grand Review & Gate Exam"
       },
-      "themeEn": "Second Conditional",
-      "themeMl": "സെക്കൻഡ് കണ്ടീഷണൽ (സാങ്കൽപ്പിക അവസ്ഥകൾ)",
-      "grammarTarget": "Past, Future, Modals & Situation Integration",
+      "themeEn": "House 2 Grand Review & Gate Exam",
+      "themeMl": "ഹൗസ് 2 ഗ്രാൻഡ് റിവ്യൂ & ഗേറ്റ് എക്സാം",
+      "grammarTarget": "Consolidation of Modals, Polite Requests, Shopping, Transit & Social Fluency",
       "grammarRule": {
         "formula": "Second Conditional",
         "explanation": {
@@ -11847,6 +12159,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Breakthrough",
+        "Proficiency",
+        "Consolidation",
+        "Transition",
+        "Distinction",
+        "Celebration"
       ]
     },
     {
@@ -11858,9 +12178,9 @@
         "hi": "Present Perfect: Have/Has + V3",
         "ta": "Present Perfect: Have/Has + V3"
       },
-      "themeEn": "Third Conditional",
-      "themeMl": "തേർഡ് കണ്ടീഷണൽ (ഭൂതകാല സാധ്യതകൾ)",
-      "grammarTarget": "Have/Has + V3 (Action completed with present connection)",
+      "themeEn": "Present Perfect Tense: Have/Has + V3",
+      "themeMl": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ (Have/Has + V3)",
+      "grammarTarget": "Subject + have/has + V3 (Past Participle) + Object",
       "grammarRule": {
         "formula": "Third Conditional",
         "explanation": {
@@ -12044,6 +12364,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Achievement",
+        "Pinnacle",
+        "Finalized",
+        "Accomplished",
+        "Updated",
+        "Portfolio"
       ]
     },
     {
@@ -12055,9 +12383,9 @@
         "hi": "Life Experiences: Have you ever...?",
         "ta": "Life Experiences: Have you ever...?"
       },
-      "themeEn": "Mixed Conditionals",
-      "themeMl": "മിക്സഡ് കണ്ടീഷണലുകൾ",
-      "grammarTarget": "Have you ever + V3? / I have never + V3",
+      "themeEn": "Life Experiences: Have you ever...? / I have never...",
+      "themeMl": "ജീവിതാനുഭവങ്ങൾ പങ്കുവെക്കൽ (Have you ever / I have never)",
+      "grammarTarget": "Have you ever + V3...? / I have never + V3...",
       "grammarRule": {
         "formula": "Mixed Conditionals",
         "explanation": {
@@ -12241,6 +12569,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Adventurous",
+        "Expedition",
+        "Summit",
+        "Trekking",
+        "Unforgettable",
+        "Continent"
       ]
     },
     {
@@ -12252,9 +12588,9 @@
         "hi": "Just, Already & Yet",
         "ta": "Just, Already & Yet"
       },
-      "themeEn": "Expressing Wishes, Regrets and Hypothetical Situations",
-      "themeMl": "ആഗ്രഹങ്ങളും ഖേദങ്ങളും പ്രകടിപ്പിക്കൽ",
-      "grammarTarget": "Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല)",
+      "themeEn": "Time Adverbs with Present Perfect: Just, Already, Yet",
+      "themeMl": "സമയ സൂചകങ്ങൾ (Just, Already, Yet)",
+      "grammarTarget": "Subject + have/has + just/already + V3 / Haven't + V3... yet",
       "grammarRule": {
         "formula": "Expressing Wishes, Regrets and Hypothetical Situations",
         "explanation": {
@@ -12438,6 +12774,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Shipment",
+        "Warehouse",
+        "Notification",
+        "Dispatch",
+        "Delivered",
+        "Lately"
       ]
     },
     {
@@ -12449,9 +12793,9 @@
         "hi": "Since vs For: Duration of Action",
         "ta": "Since vs For: Duration of Action"
       },
-      "themeEn": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
-      "themeMl": "സബ്ജങ്ക്റ്റീവ് മൂഡും പ്രത്യേക പ്രയോഗങ്ങളും",
-      "grammarTarget": "Since + Starting point (Since 2020) | For + Period (For 3 years)",
+      "themeEn": "Duration: Since vs For",
+      "themeMl": "കാലയളവ് സൂചിപ്പിക്കൽ: Since vs For",
+      "grammarTarget": "Since + starting point of time | For + duration/period of time",
       "grammarRule": {
         "formula": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
         "explanation": {
@@ -12635,6 +12979,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Decade",
+        "Tenure",
+        "Resided",
+        "Established",
+        "Dedicated",
+        "Sustained"
       ]
     },
     {
@@ -12646,9 +12998,9 @@
         "hi": "Present Perfect Continuous: Have been doing",
         "ta": "Present Perfect Continuous: Have been doing"
       },
-      "themeEn": "Relative Clauses – Defining and Non-Defining",
-      "themeMl": "റിലേറ്റീവ് ക്ലോസുകൾ",
-      "grammarTarget": "Have/Has been + V-ing (Action started in past and still continuing)",
+      "themeEn": "Present Perfect Continuous: Have/Has been + V-ing",
+      "themeMl": "തുടർന്നുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ (Have/Has been + V-ing)",
+      "grammarTarget": "Subject + have/has been + verb-ing + Object (for/since)",
       "grammarRule": {
         "formula": "Relative Clauses – Defining and Non-Defining",
         "explanation": {
@@ -12832,6 +13184,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Continuous",
+        "Tenacious",
+        "Perpetual",
+        "Striving",
+        "Progressing",
+        "Investigating"
       ]
     },
     {
@@ -12843,9 +13203,9 @@
         "hi": "Describing Career & Work Experience",
         "ta": "Describing Career & Work Experience"
       },
-      "themeEn": "Relative Pronouns and Relative Adverbs",
-      "themeMl": "റിലേറ്റീവ് പ്രൊനൗണുകളും അഡ്വെർബുകളും",
-      "grammarTarget": "I have been working as a [Role] for [Years]",
+      "themeEn": "Career History & Experience: Working as a [Role]",
+      "themeMl": "കരിയർ അനുഭവങ്ങൾ പങ്കുവെക്കൽ (I have been working as...)",
+      "grammarTarget": "I have been working as a [Role] at [Company] for [Years]",
       "grammarRule": {
         "formula": "Relative Pronouns and Relative Adverbs",
         "explanation": {
@@ -13029,6 +13389,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Profession",
+        "Specialization",
+        "Enterprise",
+        "Competency",
+        "Expertise",
+        "Seniority"
       ]
     },
     {
@@ -13040,9 +13408,9 @@
         "hi": "Connecting Ideas: Because & So",
         "ta": "Connecting Ideas: Because & So"
       },
-      "themeEn": "Reduced Relative Clauses",
-      "themeMl": "റെഡ്യൂസ്ഡ് റിലേറ്റീവ് ക്ലോസുകൾ",
-      "grammarTarget": "Cause (Because) vs Result (So)",
+      "themeEn": "Logical Connectors: Cause & Effect (Because, So, As a result)",
+      "themeMl": "കാരണവും ഫലവും വ്യക്തമാക്കൽ (Because vs So)",
+      "grammarTarget": "Clause + because + Reason | Cause + so / as a result + Outcome",
       "grammarRule": {
         "formula": "Reduced Relative Clauses",
         "explanation": {
@@ -13226,6 +13594,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Consequently",
+        "Rationale",
+        "Impact",
+        "Outcome",
+        "Strategic",
+        "Efficient"
       ]
     },
     {
@@ -13237,9 +13613,9 @@
         "hi": "Contrast Connectors: Although, However, But",
         "ta": "Contrast Connectors: Although, However, But"
       },
-      "themeEn": "Noun Clauses",
-      "themeMl": "നൗൺ ക്ലോസുകൾ",
-      "grammarTarget": "Although + Clause (Although it rained, we enjoyed)",
+      "themeEn": "Contrast Connectors: Although, Even though, However",
+      "themeMl": "വൈരുദ്ധ്യങ്ങൾ വ്യക്തമാക്കൽ (Although, However)",
+      "grammarTarget": "Although / Even though + Clause, Main clause | Clause. However, clause",
       "grammarRule": {
         "formula": "Noun Clauses",
         "explanation": {
@@ -13423,6 +13799,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Obstacle",
+        "Resilience",
+        "Nevertheless",
+        "Constraint",
+        "Perseverance",
+        "Unforeseen"
       ]
     },
     {
@@ -13434,9 +13818,9 @@
         "hi": "Real Conditions: If it rains, I will stay",
         "ta": "Real Conditions: If it rains, I will stay"
       },
-      "themeEn": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
-      "themeMl": "അഡ്വെർബിയൽ ക്ലോസുകൾ",
-      "grammarTarget": "If + Present Simple, Will + V1",
+      "themeEn": "First Conditional: Real Future Possibilities",
+      "themeMl": "ഭാവിയിലെ യാഥാർത്ഥ്യങ്ങൾ (If + Present, Will + V1)",
+      "grammarTarget": "If + Subject + Present Simple (V1), Subject + will + V1 (Base verb)",
       "grammarRule": {
         "formula": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
         "explanation": {
@@ -13620,6 +14004,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Prerequisite",
+        "Prospective",
+        "Feasible",
+        "Opportunity",
+        "Probability",
+        "Favorable"
       ]
     },
     {
@@ -13631,9 +14023,9 @@
         "hi": "Imaginary Situations: If I were... / Would",
         "ta": "Imaginary Situations: If I were... / Would"
       },
-      "themeEn": "Coordination and Subordination",
-      "themeMl": "കോർഡിനേഷനും സബോർഡിനേഷനും",
-      "grammarTarget": "If + Past Simple, Would + V1 (If I had money, I would travel)",
+      "themeEn": "Second Conditional: Hypothetical Situations & Dreams",
+      "themeMl": "സാങ്കൽപ്പിക കാര്യങ്ങളും സ്വപ്നങ്ങളും (If + Past, Would + V1)",
+      "grammarTarget": "If + Subject + Past Simple (V2), Subject + would + V1 (Base verb)",
       "grammarRule": {
         "formula": "Coordination and Subordination",
         "explanation": {
@@ -13817,6 +14209,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Imagination",
+        "Ideal",
+        "Venture",
+        "Philanthropy",
+        "Hypothetical",
+        "Aspiration"
       ]
     },
     {
@@ -13828,9 +14228,9 @@
         "hi": "Modals of Probability: May, Might, Could",
         "ta": "Modals of Probability: May, Might, Could"
       },
-      "themeEn": "Inversion for Emphasis",
-      "themeMl": "ഇൻവേർഷൻ – വാക്യങ്ങളിൽ ഊന്നൽ നൽകൽ",
-      "grammarTarget": "Expressing 50% vs 30% Probability",
+      "themeEn": "Modals of Probability: May, Might, Could",
+      "themeMl": "സാധ്യതകൾ പ്രകടിപ്പിക്കൽ (May, Might, Could)",
+      "grammarTarget": "Subject + may / might / could + V1 (Base verb)",
       "grammarRule": {
         "formula": "Inversion for Emphasis",
         "explanation": {
@@ -14014,6 +14414,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Projection",
+        "Ambiguity",
+        "Speculation",
+        "Fluctuating",
+        "Uncertainty",
+        "Plausible"
       ]
     },
     {
@@ -14025,9 +14433,9 @@
         "hi": "Logical Deductions: Must be vs Can't be",
         "ta": "Logical Deductions: Must be vs Can't be"
       },
-      "themeEn": "Cleft Sentences",
-      "themeMl": "ക്ലെഫ്റ്റ് സെന്റൻസുകൾ",
-      "grammarTarget": "Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല)",
+      "themeEn": "Modals of Deduction: Must be vs Can't be",
+      "themeMl": "യുക്തിസഹമായ നിഗമനങ്ങൾ (Must be vs Can't be)",
+      "grammarTarget": "Subject + must be + Adjective/Noun (95% Sure Yes) | can't be (95% Sure No)",
       "grammarRule": {
         "formula": "Cleft Sentences",
         "explanation": {
@@ -14211,6 +14619,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Inevitable",
+        "Deduction",
+        "Conclusive",
+        "Authentic",
+        "Counterfeit",
+        "Evidence"
       ]
     },
     {
@@ -14222,9 +14638,9 @@
         "hi": "Passive Voice in Daily Spoken Speech",
         "ta": "Passive Voice in Daily Spoken Speech"
       },
-      "themeEn": "Fronting and Emphasis Techniques",
-      "themeMl": "ഫ്രണ്ടിംഗ് & ഊന്നൽ വിദ്യകൾ",
-      "grammarTarget": "The flight is delayed / I was told / It is made of...",
+      "themeEn": "Passive Voice in Business & Reports",
+      "themeMl": "ഔദ്യോഗിക കാര്യങ്ങൾ പറയൽ (Passive Voice)",
+      "grammarTarget": "Object + is/are/was/were/has been + V3 (Past Participle)",
       "grammarRule": {
         "formula": "Fronting and Emphasis Techniques",
         "explanation": {
@@ -14408,6 +14824,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Distributed",
+        "Broadcast",
+        "Authorization",
+        "Manufactured",
+        "Documented",
+        "Commissioned"
       ]
     },
     {
@@ -14419,9 +14843,9 @@
         "hi": "Professional Telephone Etiquette",
         "ta": "Professional Telephone Etiquette"
       },
-      "themeEn": "Ellipsis and Substitution",
-      "themeMl": "എലിപ്സിസും സബ്സ്റ്റിറ്റ്യൂഷനും",
-      "grammarTarget": "May I speak with...? / May I ask who is calling?",
+      "themeEn": "Professional Telephone Etiquette & Connecting Calls",
+      "themeMl": "ഔദ്യോഗിക ഫോൺ സംഭാഷണങ്ങൾ (May I speak with...)",
+      "grammarTarget": "May I speak with [Name]? / Could you please connect me to [Department]?",
       "grammarRule": {
         "formula": "Ellipsis and Substitution",
         "explanation": {
@@ -14605,6 +15029,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Extension",
+        "Teleconference",
+        "Recipient",
+        "Courteous",
+        "Intercom",
+        "Reiterate"
       ]
     },
     {
@@ -14616,9 +15048,9 @@
         "hi": "Taking Messages & Leaving Voicemails",
         "ta": "Taking Messages & Leaving Voicemails"
       },
-      "themeEn": "Parallel Structure in Sentences",
-      "themeMl": "പാരലൽ സ്ട്രക്ചർ – വാക്യ സന്തുലിതാവസ്ഥ",
-      "grammarTarget": "Could you take a message? / Please tell him that...",
+      "themeEn": "Voicemails & Taking Messages Professionally",
+      "themeMl": "സന്ദേശങ്ങൾ കുറിച്ചെടുക്കലും വോയ്‌സ്‌മെയിലും",
+      "grammarTarget": "Could you take a message? / Please tell [Name] that [Message] and ask him to call me at [Number]",
       "grammarRule": {
         "formula": "Parallel Structure in Sentences",
         "explanation": {
@@ -14802,6 +15234,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Voicemail",
+        "Urgency",
+        "Callback",
+        "Timestamp",
+        "Dispatcher",
+        "Transcription"
       ]
     },
     {
@@ -14813,9 +15253,9 @@
         "hi": "Office Small Talk & Break Room English",
         "ta": "Office Small Talk & Break Room English"
       },
-      "themeEn": "Punctuation Rules for Clear Writing and Speaking",
-      "themeMl": "വിരാമചിഹ്ന നിയമങ്ങൾ",
-      "grammarTarget": "Casual Workplace Interaction: Projects, Weekend, Coffee",
+      "themeEn": "Office Watercooler & Casual Workplace Talk",
+      "themeMl": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണങ്ങൾ",
+      "grammarTarget": "How was your weekend? / How is the new project coming along?",
       "grammarRule": {
         "formula": "Punctuation Rules for Clear Writing and Speaking",
         "explanation": {
@@ -14999,6 +15439,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Camaraderie",
+        "Productive",
+        "Rejuvenate",
+        "Collaboration",
+        "Morale",
+        "Synergy"
       ]
     },
     {
@@ -15010,9 +15458,9 @@
         "hi": "Daily Standups & Meeting Updates",
         "ta": "Daily Standups & Meeting Updates"
       },
-      "themeEn": "Common Confusing Words in English",
-      "themeMl": "ആശയക്കുഴപ്പമുണ്ടാക്കുന്ന ഇംഗ്ലീഷ് വാക്കുകൾ",
-      "grammarTarget": "Yesterday I completed..., Today I am working on..., No blockers.",
+      "themeEn": "Daily Standups & Agile Meetings",
+      "themeMl": "ഡെയ്‌ലി സ്റ്റാൻഡ്അപ്പ് മീറ്റിംഗുകൾ (Agile Standup)",
+      "grammarTarget": "Yesterday I completed [Task]. Today I am focusing on [Task]. I have no blockers.",
       "grammarRule": {
         "formula": "Common Confusing Words in English",
         "explanation": {
@@ -15196,6 +15644,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Blocker",
+        "Sprint",
+        "Bottleneck",
+        "Deliverable",
+        "Standup",
+        "Deployment"
       ]
     },
     {
@@ -15207,9 +15663,9 @@
         "hi": "Giving Professional Opinions Politely",
         "ta": "Giving Professional Opinions Politely"
       },
-      "themeEn": "Collocations – Essential Word Combinations",
-      "themeMl": "കൊളൊക്കേഷനുകൾ – സ്വാഭാവിക വാക്ക് കൂട്ടുകെട്ടുകൾ",
-      "grammarTarget": "In my opinion / From my perspective / As far as I can tell",
+      "themeEn": "Sharing Opinions Diplomatically in Meetings",
+      "themeMl": "അഭിപ്രായങ്ങൾ നയപരമായി പറയൽ",
+      "grammarTarget": "In my opinion / From my perspective / As far as I can tell, [Opinion]",
       "grammarRule": {
         "formula": "Collocations – Essential Word Combinations",
         "explanation": {
@@ -15393,6 +15849,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Perspective",
+        "Feasibility",
+        "Viable",
+        "Viewpoint",
+        "Proposition",
+        "Nuance"
       ]
     },
     {
@@ -15404,9 +15868,9 @@
         "hi": "Diplomatic Disagreement & Debating",
         "ta": "Diplomatic Disagreement & Debating"
       },
-      "themeEn": "Phrasal Verbs for Everyday Communication",
-      "themeMl": "നിത്യജീവിതത്തിലെ ഫ്രേസൽ വെർബുകൾ",
-      "grammarTarget": "I see your point, but... / Respectfully, I disagree",
+      "themeEn": "Diplomatic Disagreement & Constructive Feedback",
+      "themeMl": "മാന്യമായി വിയോജിക്കലും ഫീഡ്‌ബാക്കും",
+      "grammarTarget": "I see your point, but... / Respectfully, I have a different perspective on this",
       "grammarRule": {
         "formula": "Phrasal Verbs for Everyday Communication",
         "explanation": {
@@ -15590,6 +16054,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Counterpoint",
+        "Constructive",
+        "Diplomatic",
+        "Discrepancy",
+        "Reconcile",
+        "Workaround"
       ]
     },
     {
@@ -15601,9 +16073,9 @@
         "hi": "Delivering Confident Presentations",
         "ta": "Delivering Confident Presentations"
       },
-      "themeEn": "Idioms and Expressions for Natural Fluency",
-      "themeMl": "ശൈലികളും ഇഡിയംസും",
-      "grammarTarget": "Signposting: First, moving on to, finally, to conclude",
+      "themeEn": "Delivering Presentations & Signposting",
+      "themeMl": "പ്രസന്റേഷനുകളും ആശയവിനിമയ ഘടനയും (Signposting)",
+      "grammarTarget": "First, I will cover... Moving on to... To summarize... In conclusion...",
       "grammarRule": {
         "formula": "Idioms and Expressions for Natural Fluency",
         "explanation": {
@@ -15787,6 +16259,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Overview",
+        "Signpost",
+        "Illustrate",
+        "Conclude",
+        "Transitioning",
+        "Visuals"
       ]
     },
     {
@@ -15798,9 +16278,9 @@
         "hi": "Job Interview Part 1: 'Tell Me About Yourself'",
         "ta": "Job Interview Part 1: 'Tell Me About Yourself'"
       },
-      "themeEn": "Discourse Markers and Fillers for Smooth Speech",
-      "themeMl": "ഡിസ്കോഴ്സ് മാർക്കറുകളും ഫില്ലറുകളും",
-      "grammarTarget": "The 3-Part Pitch: Past Background + Present Role + Future Goal",
+      "themeEn": "Job Interview Pitch: The 3-Part Pitch Framework",
+      "themeMl": "ജോബ് ഇന്റർവ്യൂ പിച്ച് (The 3-Part Pitch)",
+      "grammarTarget": "Past Foundation + Present Core Impact + Future Strategic Goal",
       "grammarRule": {
         "formula": "Discourse Markers and Fillers for Smooth Speech",
         "explanation": {
@@ -15984,6 +16464,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Narrative",
+        "Catalyst",
+        "Credential",
+        "Trajectory",
+        "Alignment",
+        "Articulation"
       ]
     },
     {
@@ -15995,9 +16483,9 @@
         "hi": "Job Interview Part 2: Strengths & Weaknesses",
         "ta": "Job Interview Part 2: Strengths & Weaknesses"
       },
-      "themeEn": "Expressing Opinions, Agreement and Disagreement",
-      "themeMl": "അഭിപ്രായങ്ങളും യോജിപ്പും വിയോജിപ്പും",
-      "grammarTarget": "Framing weaknesses constructively into learning habits",
+      "themeEn": "Strengths & Constructive Weaknesses in Interviews",
+      "themeMl": "കഴിവുകളും പോരായ്മകളും മാന്യമായി അവതരിപ്പിക്കൽ",
+      "grammarTarget": "A genuine weakness + Concrete remedial step + Positive habit developed",
       "grammarRule": {
         "formula": "Expressing Opinions, Agreement and Disagreement",
         "explanation": {
@@ -16181,6 +16669,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Shortcoming",
+        "Proactive",
+        "Mitigate",
+        "Diligence",
+        "Self-awareness",
+        "Introspection"
       ]
     },
     {
@@ -16192,9 +16688,9 @@
         "hi": "Job Interview Part 3: The STAR Method",
         "ta": "Job Interview Part 3: The STAR Method"
       },
-      "themeEn": "Politeness Strategies, Softening and Hedging",
-      "themeMl": "വിനയം പ്രകടിപ്പിക്കാനുള്ള തന്ത്രങ്ങൾ",
-      "grammarTarget": "Storytelling Framework: Situation -> Task -> Action -> Result",
+      "themeEn": "Behavioral Questions & The STAR Method",
+      "themeMl": "STAR രീതിയിലുള്ള ഉത്തരങ്ങൾ (Situation, Task, Action, Result)",
+      "grammarTarget": "Situation (Context) -> Task (Goal) -> Action (My steps) -> Result (Quantifiable outcome)",
       "grammarRule": {
         "formula": "Politeness Strategies, Softening and Hedging",
         "explanation": {
@@ -16378,6 +16874,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Circumstance",
+        "Objective",
+        "Execution",
+        "Quantifiable",
+        "Culmination",
+        "Retrospective"
       ]
     },
     {
@@ -16389,9 +16893,9 @@
         "hi": "Job Interview Part 4: Asking Smart Questions",
         "ta": "Job Interview Part 4: Asking Smart Questions"
       },
-      "themeEn": "Asking for Clarification and Checking Understanding",
-      "themeMl": "സംശയ നിവാരണവും വ്യക്തത വരുത്തലും",
-      "grammarTarget": "What does success look like in this role? / Team Culture",
+      "themeEn": "Asking Strategic Questions to Interview Panels",
+      "themeMl": "ഇന്റർവ്യൂ ബോർഡിനോട് തന്ത്രപ്രധാനമായ ചോദ്യങ്ങൾ ചോദിക്കൽ",
+      "grammarTarget": "What does success look like in the first 90 days? / How does the team approach [Strategy]?",
       "grammarRule": {
         "formula": "Asking for Clarification and Checking Understanding",
         "explanation": {
@@ -16575,6 +17079,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Benchmark",
+        "Solicit",
+        "Longevity",
+        "Cohesion",
+        "Prospectus",
+        "Equilibrium"
       ]
     },
     {
@@ -16586,9 +17098,9 @@
         "hi": "Salary Negotiation & Offer Discussion",
         "ta": "Salary Negotiation & Offer Discussion"
       },
-      "themeEn": "Everyday Social English – Small Talk, Introductions, Farewells",
-      "themeMl": "ദൈനംദിന സൗഹൃദ സംഭാഷണങ്ങൾ",
-      "grammarTarget": "Discussing compensation package with confidence & diplomacy",
+      "themeEn": "Salary & Compensation Package Negotiation",
+      "themeMl": "ശമ്പള ചർച്ചകളും ആനുകൂല്യങ്ങളും (Salary Negotiation)",
+      "grammarTarget": "Express excitement + Anchor with market data + Negotiate total package with diplomacy",
       "grammarRule": {
         "formula": "Everyday Social English – Small Talk, Introductions, Farewells",
         "explanation": {
@@ -16772,6 +17284,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Remuneration",
+        "Negotiation",
+        "Counteroffer",
+        "Compensation",
+        "Gratuity",
+        "Perquisite"
       ]
     },
     {
@@ -16783,9 +17303,9 @@
         "hi": "Native Everyday Idioms: Volume 1",
         "ta": "Native Everyday Idioms: Volume 1"
       },
-      "themeEn": "Professional and Formal English – Meetings, Emails, Presentations",
-      "themeMl": "ഔദ്യോഗിക ഇംഗ്ലീഷ് – മീറ്റിംഗുകൾ, ഇമെയിലുകൾ",
-      "grammarTarget": "Bite the bullet, Break the ice, Piece of cake",
+      "themeEn": "Native Idioms in Context: Vol 1",
+      "themeMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 1)",
+      "grammarTarget": "Bite the bullet / Break the ice / Call it a day / Burn the midnight oil / See eye to eye / Piece of cake",
       "grammarRule": {
         "formula": "Professional and Formal English – Meetings, Emails, Presentations",
         "explanation": {
@@ -16969,6 +17489,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Idiomatic",
+        "Metaphor",
+        "Expression",
+        "Vernacular",
+        "Figurative",
+        "Eloquence"
       ]
     },
     {
@@ -16980,9 +17508,9 @@
         "hi": "Native Everyday Idioms: Volume 2",
         "ta": "Native Everyday Idioms: Volume 2"
       },
-      "themeEn": "Pronunciation – Word Stress and Sentence Stress",
-      "themeMl": "ഉച്ചാരണം – വാക്ക് & വാക്യ സ്ട്രെസ്",
-      "grammarTarget": "Under the weather, Hit the nail on the head, Once in a blue moon",
+      "themeEn": "Native Idioms in Context: Vol 2",
+      "themeMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 2)",
+      "grammarTarget": "Under the weather / Hit the nail on the head / Once in a blue moon / Take it with a grain of salt / Blessing in disguise / Cost an arm and a leg",
       "grammarRule": {
         "formula": "Pronunciation – Word Stress and Sentence Stress",
         "explanation": {
@@ -17166,6 +17694,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Nuanced",
+        "Colloquialism",
+        "Proverb",
+        "Contextual",
+        "Wit",
+        "Symbolism"
       ]
     },
     {
@@ -17177,9 +17713,9 @@
         "hi": "Essential Workplace Phrasal Verbs",
         "ta": "Essential Workplace Phrasal Verbs"
       },
-      "themeEn": "Pronunciation – Intonation, Rhythm and Connected Speech",
-      "themeMl": "സ്വരഭേദം (Intonation) & കണക്റ്റഡ് സ്പീച്ച്",
-      "grammarTarget": "Figure out, Look into, Call off, Follow up, Carry on",
+      "themeEn": "High-Impact Workplace Phrasal Verbs in Action",
+      "themeMl": "ഓഫീസിലെ പ്രധാന ഫ്രേസൽ വെർബുകൾ (Phrasal Verbs)",
+      "grammarTarget": "Figure out / Look into / Call off / Follow up / Carry on / Back out",
       "grammarRule": {
         "formula": "Pronunciation – Intonation, Rhythm and Connected Speech",
         "explanation": {
@@ -17363,6 +17899,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Ascertain",
+        "Defer",
+        "Revisit",
+        "Persevere",
+        "Delegate",
+        "Troubleshoot"
       ]
     },
     {
@@ -17374,9 +17918,9 @@
         "hi": "Public Speaking & Confident Storytelling",
         "ta": "Public Speaking & Confident Storytelling"
       },
-      "themeEn": "Common Spoken English Mistakes and How to Avoid Them",
-      "themeMl": "പൊതുവായി വരുത്തുന്ന സംസാര തെറ്റുകൾ",
-      "grammarTarget": "Hook the audience, Speak with conviction, Inspire action",
+      "themeEn": "Public Speaking, Storytelling & Persuasion",
+      "themeMl": "പ്രസംഗകലയും സ്വാധീനശക്തിയും (Public Speaking)",
+      "grammarTarget": "Hook the audience -> Build emotional stakes -> Deliver core insight -> Call to action",
       "grammarRule": {
         "formula": "Common Spoken English Mistakes and How to Avoid Them",
         "explanation": {
@@ -17560,6 +18104,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Rhetoric",
+        "Persuasion",
+        "Charisma",
+        "Conviction",
+        "Oratory",
+        "Resonate"
       ]
     },
     {
@@ -17571,9 +18123,9 @@
         "hi": "Grand Graduation Day & Lifetime Mastery",
         "ta": "Grand Graduation Day & Lifetime Mastery"
       },
-      "themeEn": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
-      "themeMl": "സംസാര ഇംഗ്ലീഷ് മാസ്റ്ററി – ആത്മവിശ്വാസത്തോടെ സംസാരിക്കാം",
-      "grammarTarget": "90-Day Spoken English Master Badge & Lifetime Fluency",
+      "themeEn": "Grand Capstone Review & Spoken English Graduation",
+      "themeMl": "90 ദിന സ്പോക്കൺ ഇംഗ്ലീഷ് ബിരുദം (Mastery & Graduation)",
+      "grammarTarget": "Mastery of all 4 Houses: Everyday Foundation + Situational Fluency + Professional Polish + Elite Leadership",
       "grammarRule": {
         "formula": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
         "explanation": {
@@ -17757,6 +18309,14 @@
           "gameType": "daily_exam",
           "passScore": 70
         }
+      ],
+      "target_vocabulary": [
+        "Graduation",
+        "Mastery",
+        "Triumph",
+        "Aptitude",
+        "Transformation",
+        "Empowerment"
       ]
     }
   ]

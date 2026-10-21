@@ -22,112 +22,121 @@
     "totalCoinsReward": 89
   },
   "grammarRule": {
-    "formula": "Indirect and Embedded Questions",
+    "formula": "Subject + will + Base Verb (V1) | I'll / We'll + V1",
     "explanation": {
-      "ml": "ഭാവി കാര്യങ്ങൾ: Will എന്ന വിഷയത്തിൽ Subject + Will + V1 (I will help you) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Subject + Will + V1 (I will help you) correctly in spoken English."
+      "ml": "സംസാരിക്കുന്ന ആ നിമിഷത്തിൽ എടുക്കുന്ന പെട്ടെന്നുള്ള തീരുമാനങ്ങൾക്കും (Instant decisions), മറ്റുള്ളവർക്ക് നൽകുന്ന ഉറപ്പുകൾക്കും വാഗ്ദാനങ്ങൾക്കും (Promises) 'will + V1' ഉപയോഗിക്കുന്നു.",
+      "en": "Master Future Promises & Instant Decisions: Will with clear formula: Subject + will + Base Verb (V1) | I'll / We'll + V1"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I promise I will help.",
-      "en": "Golden Rule: Practice 'I promise I will help.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 പെട്ടെന്നുള്ള തീരുമാനം: 'The phone is ringing. I will answer it' (ഫോൺ അടിക്കുന്നു, ഞാൻ എടുക്കാം). വാഗ്ദാനം: 'I will definitely help you tomorrow' (നാളെ ഞാൻ തീർച്ചയായും സഹായിക്കും).",
+      "en": "Golden Tip: 💡 പെട്ടെന്നുള്ള തീരുമാനം: 'The phone is ringing. I will answer it' (ഫോൺ അടിക്കുന്നു, ഞാൻ എടുക്കാം). വാഗ്ദാനം: 'I will definitely help you tomorrow' (നാളെ ഞാൻ തീർച്ചയായും സഹായിക്കും)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "promise",
-        "v2": "promised",
-        "v3": "promised",
+        "v1": "assure",
+        "v2": "assureed",
+        "v3": "assureed",
         "meaning": {
-          "ml": "വാഗ്ദാനം ചെയ്യുക",
-          "hi": "വാഗ്ദാനം ചെയ്യുക",
-          "ta": "വാഗ്ദാനം ചെയ്യുക"
+          "ml": "ഉറപ്പുനൽകുക",
+          "hi": "आश्वस्त करना",
+          "ta": "உறுதியளி"
         },
-        "example": "I promise I will help.",
-        "exampleMl": "വാഗ്ദാനം ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I assure you that our team will handle your request with urgency.",
+        "exampleMl": "Tell someone something positively or confidently to dispel any doubts."
       },
       {
-        "v1": "call",
-        "v2": "called",
-        "v3": "called",
+        "v1": "guarantee",
+        "v2": "guaranteeed",
+        "v3": "guaranteeed",
         "meaning": {
-          "ml": "വിളിക്കുക",
-          "hi": "बुलाना / कॉल करना",
-          "ta": "அழை"
+          "ml": "ഉത്തരവാദിത്തം ഏൽക്കുക / ഗ്യാരണ്ടി നൽകുക",
+          "hi": "गारंटी देना",
+          "ta": "உத்தரவாதம் அளி"
         },
-        "example": "I will call you tonight.",
-        "exampleMl": "വിളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "send",
-        "v2": "sent",
-        "v3": "sent",
-        "meaning": {
-          "ml": "അയക്കുക",
-          "hi": "भेजना",
-          "ta": "அனுப்பு"
-        },
-        "example": "I will send the photo.",
-        "exampleMl": "അയക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "join",
-        "v2": "joined",
-        "v3": "joined",
-        "meaning": {
-          "ml": "ചേരുക",
-          "hi": "ചേരുക",
-          "ta": "ചേരുക"
-        },
-        "example": "We will join tomorrow.",
-        "exampleMl": "ചേരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We guarantee that the parcel will reach your doorstep tomorrow.",
+        "exampleMl": "Provide a formal assurance, especially that certain conditions will be fulfilled."
       }
     ],
     "nouns": [
       {
-        "word": "future",
+        "word": "Commitment",
+        "partOfSpeech": "noun",
+        "definition": "An engagement or obligation that restricts freedom of action; a pledge.",
         "meaning": {
-          "ml": "ഭാവി",
-          "hi": "ഭാവി",
-          "ta": "ഭാവി"
+          "ml": "ഉറച്ച വാഗ്ദാനം / പ്രതിബദ്ധത",
+          "hi": "प्रतिबद्धता / वादा",
+          "ta": "அர்ப்பணிப்பு / உறுதிமொழி",
+          "te": "నిబద్ధత",
+          "kn": "ಬದ್ಧತೆ"
         },
-        "example": "We learned about future in today's lesson."
+        "example": "I give you my personal commitment that we will deliver on schedule."
       },
       {
-        "word": "promise",
+        "word": "Spontaneous",
+        "partOfSpeech": "adjective",
+        "definition": "Performed or occurring as a result of a sudden impulse and without premeditation.",
         "meaning": {
-          "ml": "വാക്ക്",
-          "hi": "വാക്ക്",
-          "ta": "വാക്ക്"
+          "ml": "പെട്ടെന്നുള്ള / സ്വമേധയാ ഉള്ള",
+          "hi": "स्वाभाविक / तुरंत किया गया",
+          "ta": "தன்னிச்சையான",
+          "te": "తక్షణ",
+          "kn": "ಸ್ವಯಂಪ್ರೇರಿತ"
         },
-        "example": "We learned about promise in today's lesson."
+        "example": "Helping the stranded traveler was a spontaneous act of kindness."
       },
       {
-        "word": "plan",
+        "word": "Definite",
+        "partOfSpeech": "adjective",
+        "definition": "Clearly stated or decided; not vague or doubtful.",
         "meaning": {
-          "ml": "പ്ലാൻ",
-          "hi": "പ്ലാൻ",
-          "ta": "പ്ലാൻ"
+          "ml": "വ്യക്തമായ / ഉറപ്പായ",
+          "hi": "निश्चित",
+          "ta": "தெளிவான / உறுதியான",
+          "te": "ఖచ్చితమైన",
+          "kn": "ಖಚಿತವಾದ"
         },
-        "example": "We learned about plan in today's lesson."
+        "example": "I will provide a definite answer before five PM today."
       },
       {
-        "word": "decision",
+        "word": "Assure",
+        "partOfSpeech": "verb",
+        "definition": "Tell someone something positively or confidently to dispel any doubts.",
         "meaning": {
-          "ml": "തീരുമാനം",
-          "hi": "തീരുമാനം",
-          "ta": "തീരുമാനം"
+          "ml": "ഉറപ്പുനൽകുക",
+          "hi": "आश्वस्त करना",
+          "ta": "உறுதியளி",
+          "te": "హామీ ఇచ్చు",
+          "kn": "ಭರವಸೆ ನೀಡು"
         },
-        "example": "We learned about decision in today's lesson."
+        "example": "I assure you that our team will handle your request with urgency."
       },
       {
-        "word": "hope",
+        "word": "Prompt",
+        "partOfSpeech": "adjective",
+        "definition": "Done without delay; immediate.",
         "meaning": {
-          "ml": "പ്രതീക്ഷ",
-          "hi": "പ്രതീക്ഷ",
-          "ta": "പ്രതീക്ഷ"
+          "ml": "വേഗത്തിലുള്ള / കൃത്യമായ",
+          "hi": "त्वरित",
+          "ta": "உடனடி",
+          "te": "సత్వర",
+          "kn": "ತ್ವರಿತ"
         },
-        "example": "We learned about hope in today's lesson."
+        "example": "We will ensure prompt customer support for all software queries."
+      },
+      {
+        "word": "Guarantee",
+        "partOfSpeech": "verb",
+        "definition": "Provide a formal assurance, especially that certain conditions will be fulfilled.",
+        "meaning": {
+          "ml": "ഉത്തരവാദിത്തം ഏൽക്കുക / ഗ്യാരണ്ടി നൽകുക",
+          "hi": "गारंटी देना",
+          "ta": "உத்தரவாதம் அளி",
+          "te": "హామీ ఇవ్వు",
+          "kn": "ಖಾತರಿ ನೀಡು"
+        },
+        "example": "We guarantee that the parcel will reach your doorstep tomorrow."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Future Promises & Instant Decisions: Will",
-        "ml": "പാഠം: ഭാവി കാര്യങ്ങൾ: Will"
+        "ml": "പാഠം: ഭാവി വാഗ്ദാനങ്ങളും പെട്ടെന്നുള്ള തീരുമാനങ്ങളും: Will"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + will + Base Verb (V1) | I'll / We'll + V1",
+        "ml": "സംസാരിക്കുന്ന ആ നിമിഷത്തിൽ എടുക്കുന്ന പെട്ടെന്നുള്ള തീരുമാനങ്ങൾക്കും (Instant decisions), മറ്റുള്ളവർക്ക് നൽകുന്ന ഉറപ്പുകൾക്കും വാഗ്ദാനങ്ങൾക്കും (Promises) 'will + V1' ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I promise I will help.",
-        "I will call you tonight.",
-        "I will send the photo."
+        "The doorbell is ringing, so I will go and answer it immediately .",
+        "Do not worry about the presentation slides; I will finalize them tonight .",
+        "We will definitely support your charity fundraising event next weekend .",
+        "I will transfer the remaining project payment directly to your bank account .",
+        "Will you accompany me to the dental clinic tomorrow morning ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Future Promises & Instant Decisions: Will",
-        "ml": "റീഡിങ് റൂം: ഭാവി കാര്യങ്ങൾ: Will"
+        "ml": "റീഡിങ് റൂം: ഭാവി വാഗ്ദാനങ്ങളും പെട്ടെന്നുള്ള തീരുമാനങ്ങളും: Will"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I promise I will help.",
-          "meaningMl": "വാഗ്ദാനം ചെയ്യുക - I promise I will help.",
-          "audioPrompt": "I promise I will help."
+          "text": "Sitting on the village dock, young Dev gazed at the tranquil ripples of the night lake.",
+          "meaningMl": "ഗ്രാമത്തിലെ കടവിലിരുന്ന് കൊച്ചു ദേവ് രാത്രിയിലെ തടാകത്തിലെ ശാന്തമായ ഓളങ്ങളിലേക്ക് നോക്കി.",
+          "meaningHi": "गाँव की गोदी पर बैठकर युवा देव रात की झील की शांत लहरों को देख रहा था।",
+          "meaningTa": "கிராமத்து படகுத்துறையில் அமர்ந்து தேவ் ஏரியின் அமைதியான அலைகளைப் பார்த்தான்.",
+          "audioPrompt": "Sitting on the village dock, young Dev gazed at the tranquil ripples of the night lake."
         },
         {
-          "text": "I will call you tonight.",
-          "meaningMl": "വിളിക്കുക - I will call you tonight.",
-          "audioPrompt": "I will call you tonight."
+          "text": "His elder sister Maya sat beside him and asked why he looked so solemn and contemplative.",
+          "meaningMl": "അവന്റെ ചേച്ചി മായ അവന്റെ അരികിലിരുന്ന് എന്തുകൊണ്ടാണ് അവൻ ഇത്ര ഗൗരവത്തോടെ ഇരിക്കുന്നതെന്ന് ചോദിച്ചു.",
+          "meaningHi": "उसकी बड़ी बहन माया उसके पास बैठी और पूछा कि वह इतना गंभीर क्यों दिख रहा है।",
+          "meaningTa": "அவன் அக்கா மாயா அருகில் அமர்ந்து அவன் ஏன் இவ்வளவு அமைதியாக இருக்கிறான் என்று கேட்டாள்.",
+          "audioPrompt": "His elder sister Maya sat beside him and asked why he looked so solemn and contemplative."
         },
         {
-          "text": "Daily practice of Future Promises & Instant Decisions: Will gives you great confidence in English.",
-          "meaningMl": "ഭാവി കാര്യങ്ങൾ: Will ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Future Promises & Instant Decisions: Will gives you great confidence in English."
+          "text": "Dev shared his dream: 'One day, I will construct a solar-powered water pump for our village.'",
+          "meaningMl": "ദേവ് തന്റെ സ്വപ്നം പങ്കുവെച്ചു: 'ഒരു ദിവസം, നമ്മുടെ ഗ്രാമത്തിനായി ഞാൻ സൗരോർജ്ജത്തിൽ പ്രവർത്തിക്കുന്ന ഒരു വാട്ടർ പമ്പ് നിർമ്മിക്കും.'",
+          "meaningHi": "देव ने अपना सपना साझा किया: 'एक दिन, मैं अपने गाँव के लिए सौर ऊर्जा से चलने वाला पानी का पंप बनाऊँगा।'",
+          "meaningTa": "தேவ் தன் கனவைப் பகிர்ந்தான்: 'ஒரு நாள் நம் கிராமத்திற்கு சூரிய ஒளி நீர் பம்பை உருவாக்குவேன்.'",
+          "audioPrompt": "Dev shared his dream: 'One day, I will construct a solar-powered water pump for our village.'"
+        },
+        {
+          "text": "Maya smiled proudly and placed a reassuring hand on his shoulder: 'I will support you every step.'",
+          "meaningMl": "മായ അഭിമാനത്തോടെ പുഞ്ചിരിച്ച് അവന്റെ തോളിൽ കൈവെച്ചു: 'ഓരോ ചുവടിലും ഞാൻ നിന്നെ പിന്തുണയ്ക്കും.'",
+          "meaningHi": "माया ने गर्व से मुस्कुराते हुए उसके कंधे पर हाथ रखा: 'मैं हर कदम पर तुम्हारा साथ दूँगी।'",
+          "meaningTa": "மாயா புன்னகையுடன் அவன் தோளில் கை வைத்தாள்: 'ஒவ்வொரு அடியிலும் நான் உனக்குத் துணையிருப்பேன்.'",
+          "audioPrompt": "Maya smiled proudly and placed a reassuring hand on his shoulder: 'I will support you every step.'"
+        },
+        {
+          "text": "'Whenever you face challenging exams, I will stay up and help you review mathematics.'",
+          "meaningMl": "'ബുദ്ധിമുട്ടുള്ള പരീക്ഷകൾ വരുമ്പോഴെല്ലാം ഞാൻ ഉറക്കമൊഴിഞ്ഞ് കണക്ക് പഠിക്കാൻ നിന്നെ സഹായിക്കും.'",
+          "meaningHi": "'जब भी तुम्हारी कठिन परीक्षाएँ होंगी, मैं जागकर तुम्हें गणित दोहराने में मदद करूँगी।'",
+          "meaningTa": "'கடினமான தேர்வுகள் வரும்போது நான் விழித்திருந்து உனக்குக் கணக்கு சொல்லித் தருவேன்.'",
+          "audioPrompt": "'Whenever you face challenging exams, I will stay up and help you review mathematics.'"
+        },
+        {
+          "text": "A sincere promise between loving siblings becomes a powerful engine that drives grand destinies.",
+          "meaningMl": "സഹോദരങ്ങൾ തമ്മിലുള്ള ആത്മാർത്ഥമായ വാഗ്ദാനം വലിയ സ്വപ്നങ്ങളിലേക്ക് നയിക്കുന്ന ശക്തമായ ഇന്ധനമായി മാറുന്നു.",
+          "meaningHi": "भाई-बहनों के बीच का एक सच्चा वादा एक शक्तिशाली इंजन बन जाता है जो महान मंजिलों की ओर ले जाता है।",
+          "meaningTa": "உடன்பிறப்புகளின் உண்மையான உறுதிமொழி பெரிய லட்சியங்களை அடையும் உந்துசக்தியாக மாறுகிறது.",
+          "audioPrompt": "A sincere promise between loving siblings becomes a powerful engine that drives grand destinies."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where was young Dev sitting with his sister?",
+            "ml": "ദേവ് സഹോദരിക്കൊപ്പം എവിടെയാണ് ഇരുന്നിരുന്നത്?",
+            "hi": "देव अपनी बहन के साथ कहाँ बैठा था?",
+            "ta": "தேவ் தன் அக்காவுடன் எங்கே அமர்ந்திருந்தான்?"
+          },
+          "options": [
+            "On the school bus",
+            "On the village dock beside the night lake",
+            "Inside a library",
+            "At a cinema theater"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He was sitting on the village dock.",
+            "ml": "ഗ്രാമത്തിലെ കടവിലാണ് (village dock) അവൻ ഇരുന്നിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did Dev promise he will construct one day for the village?",
+            "ml": "ഗ്രാമത്തിനായി ഒരു ദിവസം താൻ എന്ത് നിർമ്മിക്കുമെന്നാണ് ദേവ് വാക്ക് നൽകിയത്?",
+            "hi": "देव ने गाँव के लिए क्या बनाने का वादा किया?",
+            "ta": "கிராமத்திற்கு எதை உருவாக்குவதாக தேவ் கூறினான்?"
+          },
+          "options": [
+            "A tall shopping mall",
+            "A solar-powered water pump",
+            "A wooden bridge",
+            "A stone fortress"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He promised to construct a solar-powered water pump.",
+            "ml": "സൗരോർജ്ജ വാട്ടർ പമ്പാണ് (solar-powered water pump) നിർമ്മിക്കുമെന്ന് പറഞ്ഞത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did Maya promise to help him with during exams?",
+            "ml": "പരീക്ഷാ സമയത്ത് എന്ത് പഠിക്കാൻ സഹായിക്കാമെന്നാണ് മായ ഉറപ്പുനൽകിയത്?",
+            "hi": "माया ने किस विषय में मदद करने का वादा किया?",
+            "ta": "தேர்வின் போது மாயா எதில் உதவுவதாகக் கூறினாள்?"
+          },
+          "options": [
+            "Cooking food",
+            "Reviewing mathematics",
+            "Singing songs",
+            "Painting pictures"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She promised to help him review mathematics.",
+            "ml": "കണക്ക് പഠിക്കാൻ (review mathematics) സഹായിക്കാമെന്ന് അവൾ പറഞ്ഞു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d39_1",
-          "question": "Which word represents: 'വാഗ്ദാനം ചെയ്യുക'?",
+          "question": "Select the correct sentence for an instant spontaneous decision:",
           "options": [
-            "finish",
-            "promise",
-            "borrow",
-            "arrive"
+            "Someone is at the door. I am opening it.",
+            "Someone is at the door. I will open it.",
+            "Someone is at the door. I will to open it.",
+            "Someone is at the door. I open it now."
           ],
-          "answer": "promise",
-          "explanation": "promise എന്നാൽ വാഗ്ദാനം ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Instant spontaneous decisions made at the moment of speaking use 'will + V1': 'I will open it.'",
+          "ruleHint": "Instant Decisions: Use 'I will + V1 (open)'."
         },
         {
-          "id": "trap_d39_2",
-          "question": "What is the past form (V2) of 'call'?",
+          "question": "How do you make a firm promise to return money tomorrow?",
           "options": [
-            "called",
-            "calling",
-            "calls",
-            "has call"
+            "I will definitely return your money tomorrow.",
+            "I will returning your money tomorrow.",
+            "I am definitely return money tomorrow.",
+            "I will to return money tomorrow."
           ],
-          "answer": "called",
-          "explanation": "call ന്റെ ഭൂതകാല രൂപം called ആണ്."
+          "correctIndex": 0,
+          "explanation": "'will + base verb' with adverb 'definitely': 'I will definitely return your money tomorrow.'",
+          "ruleHint": "Promise Formula: will + base verb (return)."
         },
         {
-          "id": "trap_d39_3",
-          "question": "What is the correct English word for 'ഭാവി'?",
+          "question": "Which modal verb is followed directly by the base verb without 'to'?",
           "options": [
-            "future",
-            "station",
-            "journey",
-            "airport"
+            "Will",
+            "Want",
+            "Need",
+            "Have"
           ],
-          "answer": "future",
-          "explanation": "ഭാവി എന്നാൽ ഇംഗ്ലീഷിൽ future."
+          "correctIndex": 0,
+          "explanation": "'Will' is a modal verb and takes a bare infinitive (V1) without 'to': 'I will come' (not 'I will to come').",
+          "ruleHint": "Bare Infinitive: will + V1 (no 'to')."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 39 Gate Exam (5 Qs)",

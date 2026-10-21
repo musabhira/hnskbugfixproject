@@ -22,14 +22,14 @@
     "totalCoinsReward": 104
   },
   "grammarRule": {
-    "formula": "Passive Voice – Advanced Structures",
+    "formula": "I would like to deposit / withdraw [Amount] / What is my balance?",
     "explanation": {
-      "ml": "ബാങ്കും പണമിടപാടുകളും എന്ന വിഷയത്തിൽ Deposit, Withdraw, Transfer, UPI & Balance എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Deposit, Withdraw, Transfer, UPI & Balance correctly in spoken English."
+      "ml": "ബാങ്കുകളിൽ പണം നിക്ഷേപിക്കാനും പിൻവലിക്കാനും സംസാരിക്കുന്ന രീതികൾ: 'I'd like to deposit this cheque' (ഈ ചെക്ക് നിക്ഷേപിക്കാൻ ആഗ്രഹിക്കുന്നു), 'I want to withdraw five thousand rupees' (അയ്യായിരം രൂപ പിൻവലിക്കണം), 'Could you print my account statement?' (സ്റ്റേറ്റ്മെന്റ് തരുമോ?).",
+      "en": "Master Banking & Money Transactions with clear formula: I would like to deposit / withdraw [Amount] / What is my balance?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Deposit money in account.",
-      "en": "Golden Rule: Practice 'Deposit money in account.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ബാങ്കിംഗ് പദങ്ങൾ: Deposit (നിക്ഷേപിക്കുക), Withdraw (പിൻവലിക്കുക), Account balance (ബാക്കി തുക), Cheque (ചെക്ക്), Statement (അക്കൗണ്ട് വിവരങ്ങൾ).",
+      "en": "Golden Tip: 💡 ബാങ്കിംഗ് പദങ്ങൾ: Deposit (നിക്ഷേപിക്കുക), Withdraw (പിൻവലിക്കുക), Account balance (ബാക്കി തുക), Cheque (ചെക്ക്), Statement (അക്കൗണ്ട് വിവരങ്ങൾ)."
     }
   },
   "vocabulary": {
@@ -39,95 +39,116 @@
         "v2": "deposited",
         "v3": "deposited",
         "meaning": {
-          "ml": "നിക്ഷേപിക്കുക",
-          "hi": "നിക്ഷേപിക്കുക",
-          "ta": "നിക്ഷേപിക്കുക"
+          "ml": "ബാങ്കിൽ പണം നിക്ഷേപിക്കുക",
+          "hi": "जमा करना",
+          "ta": "வைப்பு செய்"
         },
-        "example": "Deposit money in account.",
-        "exampleMl": "നിക്ഷേപിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I would like to deposit ten thousand rupees into my savings account.",
+        "exampleMl": "Put or keep money in a bank or other account."
       },
       {
         "v1": "withdraw",
-        "v2": "withdrew",
-        "v3": "withdrawn",
+        "v2": "withdrawed",
+        "v3": "withdrawed",
         "meaning": {
-          "ml": "പിൻവലിക്കുക",
-          "hi": "പിൻവലിക്കുക",
-          "ta": "പിൻവലിക്കുക"
+          "ml": "ബാങ്കിൽ നിന്ന് പണം പിൻവലിക്കുക",
+          "hi": "पैसे निकालना",
+          "ta": "பணம் எடு"
         },
-        "example": "Withdraw cash from ATM.",
-        "exampleMl": "പിൻവലിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "You can withdraw cash conveniently using your ATM debit card.",
+        "exampleMl": "Remove money from a bank account."
       },
       {
-        "v1": "transfer",
-        "v2": "transferred",
-        "v3": "transferred",
+        "v1": "remit",
+        "v2": "remited",
+        "v3": "remited",
         "meaning": {
-          "ml": "കൈമാറുക",
-          "hi": "കൈമാറുക",
-          "ta": "കൈമാറുക"
+          "ml": "പണം മറ്റൊരു അക്കൗണ്ടിലേക്ക് അയക്കുക",
+          "hi": "पैसे स्थानांतरित करना",
+          "ta": "பணப் பரிமாற்றம் செய்"
         },
-        "example": "Transfer via UPI.",
-        "exampleMl": "കൈമാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "save",
-        "v2": "saved",
-        "v3": "saved",
-        "meaning": {
-          "ml": "സൂക്ഷിക്കുക",
-          "hi": "സൂക്ഷിക്കുക",
-          "ta": "സൂക്ഷിക്കുക"
-        },
-        "example": "Save monthly income.",
-        "exampleMl": "സൂക്ഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I used net banking to transfer the monthly apartment rent.",
+        "exampleMl": "Move money from one bank account or place to another."
       }
     ],
     "nouns": [
       {
-        "word": "bank",
+        "word": "Deposit",
+        "partOfSpeech": "verb",
+        "definition": "Put or keep money in a bank or other account.",
         "meaning": {
-          "ml": "ബാങ്ക്",
-          "hi": "ബാങ്ക്",
-          "ta": "ബാങ്ക്"
+          "ml": "ബാങ്കിൽ പണം നിക്ഷേപിക്കുക",
+          "hi": "जमा करना",
+          "ta": "வைப்பு செய்",
+          "te": "డిపాజిట్ చేయు",
+          "kn": "ಜಮೆ ಮಾಡು"
         },
-        "example": "We learned about bank in today's lesson."
+        "example": "I would like to deposit ten thousand rupees into my savings account."
       },
       {
-        "word": "account",
+        "word": "Withdraw",
+        "partOfSpeech": "verb",
+        "definition": "Remove money from a bank account.",
         "meaning": {
-          "ml": "അക്കൗണ്ട്",
-          "hi": "അക്കൗണ്ട്",
-          "ta": "അക്കൗണ്ട്"
+          "ml": "ബാങ്കിൽ നിന്ന് പണം പിൻവലിക്കുക",
+          "hi": "पैसे निकालना",
+          "ta": "பணம் எடு",
+          "te": "విత్‌డ్రా చేయు",
+          "kn": "ಹಿಂಪಡೆ"
         },
-        "example": "We learned about account in today's lesson."
+        "example": "You can withdraw cash conveniently using your ATM debit card."
       },
       {
-        "word": "atm",
+        "word": "Balance",
+        "partOfSpeech": "noun",
+        "definition": "An amount of money remaining in a bank account after accounting for deposits and withdrawals.",
         "meaning": {
-          "ml": "എടിഎം",
-          "hi": "എടിഎം",
-          "ta": "എടിഎം"
+          "ml": "അക്കൗണ്ടിലെ ബാക്കി തുക / ബാലൻസ്",
+          "hi": "शेष राशि",
+          "ta": "மீதி இருப்பு",
+          "te": "ఖాతా నిల్వ",
+          "kn": "ಖಾತೆ ಶಿಲ್ಕು"
         },
-        "example": "We learned about atm in today's lesson."
+        "example": "Could you please tell me my current outstanding account balance?"
       },
       {
-        "word": "balance",
+        "word": "Statement",
+        "partOfSpeech": "noun",
+        "definition": "A printed document issued periodically by a bank to a customer, listing all transactions.",
         "meaning": {
-          "ml": "ബാക്കി തുക",
-          "hi": "ബാക്കി തുക",
-          "ta": "ബാക്കി തുക"
+          "ml": "ബാങ്ക് ഇടപാട് വിവരരേഖ / സ്റ്റേറ്റ്മെന്റ്",
+          "hi": "बैंक खाता विवरण",
+          "ta": "கணக்கு அறிக்கை",
+          "te": "బ్యాంక్ స్టేట్‌మెంట్",
+          "kn": "ಖಾತೆ ವಿವರ"
         },
-        "example": "We learned about balance in today's lesson."
+        "example": "I need a stamped six-month bank statement for my passport renewal."
       },
       {
-        "word": "cash",
+        "word": "Remit",
+        "partOfSpeech": "verb",
+        "definition": "Move money from one bank account or place to another.",
         "meaning": {
-          "ml": "പണം",
-          "hi": "പണം",
-          "ta": "പണം"
+          "ml": "പണം മറ്റൊരു അക്കൗണ്ടിലേക്ക് അയക്കുക",
+          "hi": "पैसे स्थानांतरित करना",
+          "ta": "பணப் பரிமாற்றம் செய்",
+          "te": "బదిలీ చేయు",
+          "kn": "ವರ್ಗಾಯಿಸು"
         },
-        "example": "We learned about cash in today's lesson."
+        "example": "I used net banking to transfer the monthly apartment rent."
+      },
+      {
+        "word": "Beneficiary",
+        "partOfSpeech": "noun",
+        "definition": "A person who derives advantage from something, especially a trust or money transfer.",
+        "meaning": {
+          "ml": "പണം കൈപ്പറ്റുന്ന ഗുണഭോക്താവ്",
+          "hi": "लाभार्थी",
+          "ta": "பயனாளி",
+          "te": "లబ్ధిదారుడు",
+          "kn": "ಫಲಾನುಭವಿ"
+        },
+        "example": "Add the new landlord's bank account as an approved beneficiary."
       }
     ]
   },
@@ -137,7 +158,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Banking & Money Transactions",
-        "ml": "പാഠം: ബാങ്കും പണമിടപാടുകളും"
+        "ml": "പാഠം: ബാങ്കിംഗ് ഇടപാടുകളും പണമിടപാടുകളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I would like to deposit / withdraw [Amount] / What is my balance?",
+        "ml": "ബാങ്കുകളിൽ പണം നിക്ഷേപിക്കാനും പിൻവലിക്കാനും സംസാരിക്കുന്ന രീതികൾ: 'I'd like to deposit this cheque' (ഈ ചെക്ക് നിക്ഷേപിക്കാൻ ആഗ്രഹിക്കുന്നു), 'I want to withdraw five thousand rupees' (അയ്യായിരം രൂപ പിൻവലിക്കണം), 'Could you print my account statement?' (സ്റ്റേറ്റ്മെന്റ് തരുമോ?)."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Deposit money in account.",
-        "Withdraw cash from ATM.",
-        "Transfer via UPI."
+        "I would like to deposit this account payee cheque into my savings account .",
+        "Could you please print an official six-month bank account statement with seal ?",
+        "What is the daily maximum cash withdrawal limit at your branch automated teller ?",
+        "Please update my new permanent residential address and mobile phone number in your records .",
+        "I noticed an unauthorized card debit transaction and want to block my card immediately ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +240,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Banking & Money Transactions",
-        "ml": "റീഡിങ് റൂം: ബാങ്കും പണമിടപാടുകളും"
+        "ml": "റീഡിങ് റൂം: ബാങ്കിംഗ് ഇടപാടുകളും പണമിടപാടുകളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Deposit money in account.",
-          "meaningMl": "നിക്ഷേപിക്കുക - Deposit money in account.",
-          "audioPrompt": "Deposit money in account."
+          "text": "In the bustling riverside town of Aluva stood the modest tiled branch of Gramin Bank.",
+          "meaningMl": "ആലുവയിലെ തിരക്കേറിയ നദീതീര പട്ടണത്തിൽ ഗ്രാമീൺ ബാങ്കിന്റെ ചെറിയൊരു ശാഖ പ്രവർത്തിച്ചിരുന്നു.",
+          "meaningHi": "अलुवा के हलचल भरे शहर में ग्रामीण बैंक की एक मामूली शाखा थी।",
+          "meaningTa": "ஆலுவாவில் கிராமின் வங்கியின் ஒரு சிறிய கிளை இருந்தது.",
+          "audioPrompt": "In the bustling riverside town of Aluva stood the modest tiled branch of Gramin Bank."
         },
         {
-          "text": "Withdraw cash from ATM.",
-          "meaningMl": "പിൻവലിക്കുക - Withdraw cash from ATM.",
-          "audioPrompt": "Withdraw cash from ATM."
+          "text": "Branch manager Raghu knew every local farmer, artisan, and spice trader by their first name.",
+          "meaningMl": "ബ്രാഞ്ച് മാനേജർ രഘുവിന് നാട്ടിലെ ഓരോ കർഷകനെയും വ്യാപാരിയെയും പേരെടുത്ത് അറിയാമായിരുന്നു.",
+          "meaningHi": "शाखा प्रबंधक रघु हर स्थानीय किसान और व्यापारी को नाम से जानते थे।",
+          "meaningTa": "மேலாளர் ரகுவுக்கு ஒவ்வொரு விவசாயியையும் வியாபாரியையும் பெயர் சொல்லித் தெரியும்.",
+          "audioPrompt": "Branch manager Raghu knew every local farmer, artisan, and spice trader by their first name."
         },
         {
-          "text": "Daily practice of Banking & Money Transactions gives you great confidence in English.",
-          "meaningMl": "ബാങ്കും പണമിടപാടുകളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Banking & Money Transactions gives you great confidence in English."
+          "text": "When elderly weaver Lakshmi arrived with her small brass tin of crumpled coins, Raghu greeted her warmly.",
+          "meaningMl": "ചെറിയ ടിൻ പാത്രത്തിൽ ചില്ലറക്കാശുമായി വൃദ്ധയായ ലക്ഷ്മിയമ്മ വന്നപ്പോൾ രഘു അവരെ സ്നേഹത്തോടെ സ്വീകരിച്ചു.",
+          "meaningHi": "जब बुजुर्ग बुनकर लक्ष्मी सिक्कों के साथ आईं, तो रघु ने उनका गर्मजोशी से स्वागत किया।",
+          "meaningTa": "நெசவாளர் லட்சுமி சில்லறை நாணயங்களுடன் வந்தபோது ரகு அன்புடன் வரவேற்றார்.",
+          "audioPrompt": "When elderly weaver Lakshmi arrived with her small brass tin of crumpled coins, Raghu greeted her warmly."
+        },
+        {
+          "text": "He patiently counted each coin, deposited the sum into her passbook, and stamped the balance.",
+          "meaningMl": "അദ്ദേഹം ക്ഷമയോടെ ഓരോ നാണയവും എണ്ണി പാസ്ബുക്കിൽ രേഖപ്പെടുത്തി ബാലൻസ് സീൽ ചെയ്തു നൽകി.",
+          "meaningHi": "उन्होंने धैर्यपूर्वक प्रत्येक सिक्के को गिना और उनकी पासबुक में जमा किया।",
+          "meaningTa": "அவர் நாணயங்களை எண்ணி பாஸ்புக்கில் வரவு வைத்து முத்திரையிட்டார்.",
+          "audioPrompt": "He patiently counted each coin, deposited the sum into her passbook, and stamped the balance."
+        },
+        {
+          "text": "He explained how simple recurring deposits turn modest daily savings into a secure golden future.",
+          "meaningMl": "ദിവസവുമുള്ള ചെറിയ സമ്പാദ്യങ്ങൾ എങ്ങനെയാണ് ഭാവിയിൽ വലിയ തണലായി മാറുന്നതെന്ന് അദ്ദേഹം പറഞ്ഞു കൊടുത്തു.",
+          "meaningHi": "उन्होंने समझाया कि छोटी बचत कैसे एक सुरक्षित सुनहरे भविष्य में बदल जाती है।",
+          "meaningTa": "சிறு சேமிப்பு எவ்வாறு பாதுகாப்பான எதிர்காலத்தை உருவாக்கும் என்று விளக்கினார்.",
+          "audioPrompt": "He explained how simple recurring deposits turn modest daily savings into a secure golden future."
+        },
+        {
+          "text": "True banking is not merely moving cold ledger numbers; it is safeguarding human trust and dreams.",
+          "meaningMl": "യഥാർത്ഥ ബാങ്കിംഗ് എന്നത് വെറും കണക്കുകൾ കൂട്ടലല്ല; അത് മനുഷ്യരുടെ വിശ്വാസത്തെയും സ്വപ്നങ്ങളെയും കാത്തുസൂക്ഷിക്കലാണ്.",
+          "meaningHi": "सच्ची बैंकिंग केवल संख्याओं को स्थानांतरित करना नहीं है; यह मानवीय विश्वास की रक्षा करना है।",
+          "meaningTa": "உண்மையான வங்கி என்பது வெறும் எண்கள் அல்ல; அது மனித நம்பிக்கையைக் காப்பதாகும்.",
+          "audioPrompt": "True banking is not merely moving cold ledger numbers; it is safeguarding human trust and dreams."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where was the modest tiled branch of Gramin Bank located?",
+            "ml": "ഗ്രാമീൺ ബാങ്കിന്റെ ശാഖ എവിടെയാണ് സ്ഥിതി ചെയ്തിരുന്നത്?",
+            "hi": "ग्रामीण बैंक की शाखा कहाँ स्थित थी?",
+            "ta": "கிராமின் வங்கி கிளை எங்கு அமைந்திருந்தது?"
+          },
+          "options": [
+            "In New York Wall Street",
+            "In the bustling riverside town of Aluva",
+            "Inside an airport lounge",
+            "On a ship"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "In the bustling riverside town of Aluva.",
+            "ml": "ആലുവയിലെ നദീതീര പട്ടണത്തിലാണ് (Aluva)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Who arrived with a small brass tin of crumpled coins?",
+            "ml": "ചെറിയ ടിൻ പാത്രത്തിൽ ചില്ലറക്കാശുമായി എത്തിയത് ആരാണ്?",
+            "hi": "सिक्कों के साथ कौन आया?",
+            "ta": "சில்லறை நாணயங்களுடன் வந்தது யார்?"
+          },
+          "options": [
+            "A rich king",
+            "Elderly weaver Lakshmi",
+            "A gold merchant",
+            "A police officer"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Elderly weaver Lakshmi.",
+            "ml": "ലക്ഷ്മിയമ്മയാണ് (weaver Lakshmi) എത്തിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did manager Raghu do patiently?",
+            "ml": "മാനേജർ രഘു ക്ഷമയോടെ എന്താണ് ചെയ്തത്?",
+            "hi": "प्रबंधक रघु ने क्या किया?",
+            "ta": "மேலாளர் ரகு என்ன செய்தார்?"
+          },
+          "options": [
+            "Sent her away",
+            "Counted each coin, deposited the sum, and stamped the balance",
+            "Kept the money for himself",
+            "Tore the passbook"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He counted each coin, deposited the sum, and stamped the balance.",
+            "ml": "നാണയങ്ങൾ എണ്ണിത്തിട്ടപ്പെടുത്തി പാസ്ബുക്കിൽ രേഖപ്പെടുത്തി നൽകി."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d54_1",
-          "question": "Which word represents: 'നിക്ഷേപിക്കുക'?",
+          "question": "Select the correct term for putting money into an account:",
           "options": [
-            "deposit",
-            "remember",
-            "create",
-            "discover"
+            "Withdraw money",
+            "Deposit money",
+            "Lose money",
+            "Spend money"
           ],
-          "answer": "deposit",
-          "explanation": "deposit എന്നാൽ നിക്ഷേപിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Deposit' specifically means placing money into a bank account.",
+          "ruleHint": "Banking Vocabulary: Deposit = put money in; Withdraw = take money out."
         },
         {
-          "id": "trap_d54_2",
-          "question": "What is the past form (V2) of 'withdraw'?",
+          "question": "How do you ask for your current remaining money in the bank?",
           "options": [
-            "withdrawing",
-            "withdrew",
-            "has withdraw",
-            "withdraws"
+            "What is my current account balance?",
+            "How much money is balance in me?",
+            "Tell me my bank counts.",
+            "What is remaining money counts?"
           ],
-          "answer": "withdrew",
-          "explanation": "withdraw ന്റെ ഭൂതകാല രൂപം withdrew ആണ്."
+          "correctIndex": 0,
+          "explanation": "'What is my current account balance?' is the standard and exact phrase.",
+          "ruleHint": "Banking Phrase: 'What is my account balance?'"
         },
         {
-          "id": "trap_d54_3",
-          "question": "What is the correct English word for 'ബാങ്ക്'?",
+          "question": "When salary arrives in your account, it is ______.",
           "options": [
-            "bank",
-            "knowledge",
-            "routine",
-            "schedule"
+            "credited",
+            "debited",
+            "subtracted",
+            "withdrawn"
           ],
-          "answer": "bank",
-          "explanation": "ബാങ്ക് എന്നാൽ ഇംഗ്ലീഷിൽ bank."
+          "correctIndex": 0,
+          "explanation": "Incoming money added to an account is 'credited'. Outgoing money removed is 'debited'.",
+          "ruleHint": "Banking Rule: Credit = incoming (+); Debit = outgoing (-)."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 54 Gate Exam (5 Qs)",

@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
@@ -868,11 +869,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item.malayalamMeaning,
-                              style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12.5, fontWeight: FontWeight.w600),
-                            ),
+                            if (!PocketLanguageService.isEnglish && item.localizedMeaning.isNotEmpty && item.localizedMeaning != item.definition) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                item.localizedMeaning,
+                                style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12.5, fontWeight: FontWeight.w600),
+                              ),
+                            ],
                             const SizedBox(height: 4),
                             Text(
                               item.definition,

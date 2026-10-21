@@ -22,112 +22,109 @@
     "totalCoinsReward": 129
   },
   "grammarRule": {
-    "formula": "Phrasal Verbs for Everyday Communication",
+    "formula": "I see your point, but... / Respectfully, I have a different perspective on this",
     "explanation": {
-      "ml": "മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ എന്ന വിഷയത്തിൽ I see your point, but... / Respectfully, I disagree എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I see your point, but... / Respectfully, I disagree correctly in spoken English."
+      "ml": "ഒരു യോഗത്തിലോ ചർച്ചയിലോ മറ്റൊരാളുടെ ആശയത്തോട് യോജിക്കാൻ കഴിയാത്തപ്പോൾ പരുക്കനാവാതെ, അവരുടെ ആശയം മാനിച്ചുകൊണ്ട് തന്നെ മാന്യമായി വിയോജിപ്പ് പ്രകടിപ്പിക്കാനുള്ള ശൈലികൾ.",
+      "en": "Master Diplomatic Disagreement & Constructive Feedback with clear formula: I see your point, but... / Respectfully, I have a different perspective on this"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I respectfully disagree.",
-      "en": "Golden Rule: Practice 'I respectfully disagree.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഒരിക്കലും 'You are wrong' എന്ന് പറയരുത്. 'I see where you are coming from, however...' എന്ന് തുടങ്ങുക.",
+      "en": "Golden Tip: ഒരിക്കലും 'You are wrong' എന്ന് പറയരുത്. 'I see where you are coming from, however...' എന്ന് തുടങ്ങുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "disagree",
-        "v2": "disagreed",
-        "v3": "disagreed",
+        "v1": "reconcile",
+        "v2": "reconcileed",
+        "v3": "reconcileed",
         "meaning": {
-          "ml": "വിയോജിക്കുക",
-          "hi": "വിയോജിക്കുക",
-          "ta": "വിയോജിക്കുക"
+          "ml": "പൊരുത്തപ്പെടുത്തുക / രമ്യതയിലാക്കുക",
+          "hi": "समाधान करना / सामंजस्य बिठाना",
+          "ta": "இணங்கச் செய் / சமரசம் செய்"
         },
-        "example": "I respectfully disagree.",
-        "exampleMl": "വിയോജിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "appreciate",
-        "v2": "appreciated",
-        "v3": "appreciated",
-        "meaning": {
-          "ml": "വിലമതിക്കുക",
-          "hi": "വിലമതിക്കുക",
-          "ta": "വിലമതിക്കുക"
-        },
-        "example": "I appreciate your thought, but...",
-        "exampleMl": "വിലമതിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "reconsider",
-        "v2": "reconsidered",
-        "v3": "reconsidered",
-        "meaning": {
-          "ml": "പുനഃപരിശോധിക്കുക",
-          "hi": "പുനഃപരിശോധിക്കുക",
-          "ta": "പുനഃപരിശോധിക്കുക"
-        },
-        "example": "Can we reconsider this?",
-        "exampleMl": "പുനഃപരിശോധിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "conclude",
-        "v2": "concluded",
-        "v3": "concluded",
-        "meaning": {
-          "ml": "ഉപസംഹരിക്കുക",
-          "hi": "ഉപസംഹരിക്കുക",
-          "ta": "ഉപസംഹരിക്കുക"
-        },
-        "example": "Let's conclude positively.",
-        "exampleMl": "ഉപസംഹരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The financial accountant worked late to reconcile the ledger accounts.",
+        "exampleMl": "Restore friendly relations between, or make one account consistent with another."
       }
     ],
     "nouns": [
       {
-        "word": "debate",
+        "word": "Counterpoint",
+        "partOfSpeech": "noun",
+        "definition": "An argument, idea, or theme used to create a contrast with the main element.",
         "meaning": {
-          "ml": "സംവാദം",
-          "hi": "സംവാദം",
-          "ta": "സംവാദം"
+          "ml": "മറുവാദം / എതിർ വീക്ഷണം",
+          "hi": "जवाबी तर्क / प्रतिवाद",
+          "ta": "எதிர்வாதம்",
+          "te": "ప్రతివాదన",
+          "kn": "ಪ್ರತಿವಾದ"
         },
-        "example": "We learned about debate in today's lesson."
+        "example": "She offered a compelling economic counterpoint to the proposed factory closure."
       },
       {
-        "word": "diplomacy",
+        "word": "Constructive",
+        "partOfSpeech": "adjective",
+        "definition": "Serving a useful purpose; tending to build up.",
         "meaning": {
-          "ml": "നയതന്ത്രം",
-          "hi": "നയതന്ത്രം",
-          "ta": "നയതന്ത്രം"
+          "ml": "ഗുണപരമായ / വളർച്ചയ്ക്ക് സഹായിക്കുന്ന",
+          "hi": "रचनात्मक / सकारात्मक",
+          "ta": "ஆக்கப்பூர்வமான",
+          "te": "నిర్మాణాత్మక",
+          "kn": "ರಚನಾತ್ಮಕ"
         },
-        "example": "We learned about diplomacy in today's lesson."
+        "example": "The design mentor provided constructive feedback that elevated her portfolio."
       },
       {
-        "word": "argument",
+        "word": "Diplomatic",
+        "partOfSpeech": "adjective",
+        "definition": "Having or showing an ability to deal with people in a sensitive and effective way.",
         "meaning": {
-          "ml": "വാദം",
-          "hi": "വാദം",
-          "ta": "വാദം"
+          "ml": "നയതന്ത്രപരമായ / സൗമ്യമായ",
+          "hi": "राजनयिक / कुशल",
+          "ta": "சாணக்கியமான / இணக்கமான",
+          "te": "దౌత్యపరమైన",
+          "kn": "ರಾಜತಾಂತ್ರಿಕ / ನಯವಾದ"
         },
-        "example": "We learned about argument in today's lesson."
+        "example": "His diplomatic intervention diffused the heated boardroom dispute."
       },
       {
-        "word": "respect",
+        "word": "Discrepancy",
+        "partOfSpeech": "noun",
+        "definition": "A lack of compatibility or similarity between two or more facts.",
         "meaning": {
-          "ml": "ബഹുമാനം",
-          "hi": "ബഹുമാനം",
-          "ta": "ബഹുമാനം"
+          "ml": "വ്യത്യാസം / പൊരുത്തക്കേട്",
+          "hi": "विसंगति / अंतर",
+          "ta": "முரண்பாடு / வேறுபாடு",
+          "te": "తేడా / వ్యత్యాసం",
+          "kn": "ವ್ಯತ್ಯಾಸ"
         },
-        "example": "We learned about respect in today's lesson."
+        "example": "The internal audit revealed a minor discrepancy between warehouse receipts and invoices."
       },
       {
-        "word": "consensus",
+        "word": "Reconcile",
+        "partOfSpeech": "verb",
+        "definition": "Restore friendly relations between, or make one account consistent with another.",
         "meaning": {
-          "ml": "യോജിപ്പ്",
-          "hi": "യോജിപ്പ്",
-          "ta": "യോജിപ്പ്"
+          "ml": "പൊരുത്തപ്പെടുത്തുക / രമ്യതയിലാക്കുക",
+          "hi": "समाधान करना / सामंजस्य बिठाना",
+          "ta": "இணங்கச் செய் / சமரசம் செய்",
+          "te": "సయోధ్య కుదుర్చు",
+          "kn": "ಹೊಂದಾಣಿಕೆ ಮಾಡು"
         },
-        "example": "We learned about consensus in today's lesson."
+        "example": "The financial accountant worked late to reconcile the ledger accounts."
+      },
+      {
+        "word": "Workaround",
+        "partOfSpeech": "noun",
+        "definition": "A method for overcoming a problem or limitation, especially in software.",
+        "meaning": {
+          "ml": "താൽക്കാലിക പരിഹാരം / ബദൽ മാർഗ്ഗം",
+          "hi": "अस्थायी समाधान / विकल्प",
+          "ta": "மாற்று வழி",
+          "te": "ప్రత్యామ్నాయ పరిష్కారం",
+          "kn": "ಪರ್ಯಾಯ ಮಾರ್ಗ"
+        },
+        "example": "The developer implemented a clever workaround until the official software patch arrived."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Diplomatic Disagreement & Debating",
-        "ml": "പാഠം: മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ"
+        "en": "Concept Room: Diplomatic Disagreement & Constructive Feedback",
+        "ml": "പാഠം: മാന്യമായി വിയോജിക്കലും ഫീഡ്‌ബാക്കും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I see your point, but... / Respectfully, I have a different perspective on this",
+        "ml": "ഒരു യോഗത്തിലോ ചർച്ചയിലോ മറ്റൊരാളുടെ ആശയത്തോട് യോജിക്കാൻ കഴിയാത്തപ്പോൾ പരുക്കനാവാതെ, അവരുടെ ആശയം മാനിച്ചുകൊണ്ട് തന്നെ മാന്യമായി വിയോജിപ്പ് പ്രകടിപ്പിക്കാനുള്ള ശൈലികൾ."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I respectfully disagree.",
-        "I appreciate your thought, but...",
-        "Can we reconsider this?"
+        "I see your point regarding speed , but rushing deployment might compromise user security .",
+        "Respectfully , I have a slightly different perspective on our marketing budget allocation .",
+        "I appreciate that suggestion ; however , our existing server architecture cannot support that volume .",
+        "While I agree with your long term vision , I worry about immediate cash flow constraints .",
+        "Could we perhaps explore a middle ground that accommodates both speed and security testing ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Diplomatic Disagreement & Debating",
-        "ml": "റീഡിങ് റൂം: മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ"
+        "en": "Reading Room: The Architecture Council Debate",
+        "ml": "റീഡിങ് റൂം: മാന്യമായി വിയോജിക്കലും ഫീഡ്‌ബാക്കും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I respectfully disagree.",
-          "meaningMl": "വിയോജിക്കുക - I respectfully disagree.",
-          "audioPrompt": "I respectfully disagree."
+          "text": "During the city urban planning tribunal, two distinguished architects debated the redevelopment of the historic waterfront district.",
+          "meaningMl": "നഗര ആസൂത്രണ സമിതിയിൽ, ചരിത്രപ്രസിദ്ധമായ തീരദേശത്തിന്റെ പുനർവികസനത്തെക്കുറിച്ച് രണ്ട് പ്രമുഖ വാസ്തുശില്പികൾ ചർച്ച നടത്തി.",
+          "meaningHi": "शहरी नियोजन बैठक में दो वास्तुकारों ने ऐतिहासिक वाटरफ्रंट के पुनर्विकास पर बहस की।",
+          "meaningTa": "நகர திட்டமிடல் கூட்டத்தில் இரண்டு கட்டடக் கலைஞர்கள் வரலாற்று சிறப்புமிக்க கடற்கரை பகுதியை மறுசீரமைப்பது பற்றி விவாதித்தனர்.",
+          "audioPrompt": "During the city urban planning tribunal, two distinguished architects debated the redevelopment of the historic waterfront district."
         },
         {
-          "text": "I appreciate your thought, but...",
-          "meaningMl": "വിലമതിക്കുക - I appreciate your thought, but...",
-          "audioPrompt": "I appreciate your thought, but..."
+          "text": "Architect Nair proposed demolishing century-old colonial spice warehouses to construct modern commercial glass towers.",
+          "meaningMl": "ആധുനിക ഗ്ലാസ് ടവറുകൾ പണിയാൻ നൂറ്റാണ്ടുകൾ പഴക്കമുള്ള സുഗന്ധവ്യഞ്ജന വെയർഹൗസുകൾ പൊളിച്ചുമാറ്റണമെന്ന് വാസ്തുശില്പി നായർ നിർദ്ദേശിച്ചു.",
+          "meaningHi": "नायर ने आधुनिक टावर बनाने के लिए पुरानी इमारतों को गिराने का प्रस्ताव रखा।",
+          "meaningTa": "நாயர் நவீன கண்ணாடிக் கோபுரங்களைக் கட்ட பழங்கால கிடங்குகளை இடிக்க முன்மொழிந்தார்.",
+          "audioPrompt": "Architect Nair proposed demolishing century-old colonial spice warehouses to construct modern commercial glass towers."
         },
         {
-          "text": "Daily practice of Diplomatic Disagreement & Debating gives you great confidence in English.",
-          "meaningMl": "മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Diplomatic Disagreement & Debating gives you great confidence in English."
+          "text": "Heritage architect Fatima responded with impeccable diplomacy: 'I completely see your point regarding commercial vitality.'",
+          "meaningMl": "പൈതൃക വാസ്തുശില്പി ഫാത്തിമ മാന്യമായി പ്രതികരിച്ചു: 'വാണിജ്യ വളർച്ചയെക്കുറിച്ചുള്ള താങ്കളുടെ കാഴ്ചപ്പാട് ഞാൻ പൂർണ്ണമായും മനസ്സിലാക്കുന്നു.'",
+          "meaningHi": "फातिमा ने विनम्रता से उत्तर दिया: 'मैं व्यावसायिक विकास पर आपका दृष्टिकोण समझती हूँ।'",
+          "meaningTa": "பாத்திமா பணிவுடன் பதிலளித்தார்: 'வணிக வளர்ச்சி குறித்த உங்கள் பார்வையை நான் புரிகிறேன்.'",
+          "audioPrompt": "Heritage architect Fatima responded with impeccable diplomacy: 'I completely see your point regarding commercial vitality.'"
+        },
+        {
+          "text": "'However, respectfully, demolishing our irreplaceable cultural heritage would permanently erase the city's architectural soul.'",
+          "meaningMl": "'എന്നിരുന്നാലും, ബഹുമാനത്തോടെ പറയട്ടെ, നമ്മുടെ പകരം വെക്കാനില്ലാത്ത പൈതൃകം നശിപ്പിക്കുന്നത് നഗരത്തിന്റെ ആത്മാവിനെ തന്നെ ഇല്ലാതാക്കും.'",
+          "meaningHi": "'तथापि, हमारी सांस्कृतिक विरासत को नष्ट करना शहर की आत्मा को मिटा देगा।'",
+          "meaningTa": "'ஆயினும், நமது பாரம்பரியத்தை அழிப்பது நகரத்தின் ஆன்மாவை அழித்துவிடும்.'",
+          "audioPrompt": "'However, respectfully, demolishing our irreplaceable cultural heritage would permanently erase the city's architectural soul.'"
+        },
+        {
+          "text": "She presented an ingenious adaptive-reuse counterproposal: converting ancient wooden warehouses into vibrant technology incubators.",
+          "meaningMl": "പഴയ തടി വെയർഹൗസുകളെ ആധുനിക ടെക്നോളജി ഇൻകുബേറ്ററുകളാക്കി മാറ്റുന്ന മനോഹരമായ ഒരു ബദൽ നിർദ്ദേശം അവൾ മുന്നോട്ടുവെച്ചു.",
+          "meaningHi": "उन्होंने पुरानी इमारतों को तकनीक केंद्रों में बदलने का एक वैकल्पिक प्रस्ताव प्रस्तुत किया।",
+          "meaningTa": "பழைய கிடங்குகளை தொழில்நுட்ப மையங்களாக மாற்றும் மாற்றுத் திட்டத்தை அவர் முன்வைத்தார்.",
+          "audioPrompt": "She presented an ingenious adaptive-reuse counterproposal: converting ancient wooden warehouses into vibrant technology incubators."
+        },
+        {
+          "text": "Moved by her constructive vision, Nair wholeheartedly embraced the compromise, proving that respectful disagreement sparks true genius.",
+          "meaningMl": "അവരുടെ ക്രിയാത്മകമായ കാഴ്ചപ്പാടിൽ മതിപ്പുതോന്നിയ നായർ ആ ഒത്തുതീർപ്പ് പൂർണ്ണ മനസ്സോടെ സ്വീകരിച്ചു; മാന്യമായ വിയോജിപ്പ് പുതിയ സാധ്യതകൾ തുറക്കുമെന്ന് ഇത് തെളിയിച്ചു.",
+          "meaningHi": "नायर ने इस समझौते को सहर्ष स्वीकार कर लिया, यह साबित करते हुए कि सम्मानजनक असहमति से नई संभावनाएं खुलती हैं।",
+          "meaningTa": "நாயர் அந்த திட்டத்தை ஏற்றுக்கொண்டார்; மரியாதையான மாற்றுக் கருத்துக்கள் சிறந்த தீர்வுகளைத் தரும் என்பதை இது நிரூபித்தது.",
+          "audioPrompt": "Moved by her constructive vision, Nair wholeheartedly embraced the compromise, proving that respectful disagreement sparks true genius."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did Architect Nair initially propose doing to the old spice warehouses?",
+            "ml": "പഴയ വെയർഹൗസുകൾ എന്ത് ചെയ്യണമെന്നാണ് നായർ ആദ്യം നിർദ്ദേശിച്ചത്?",
+            "hi": "नायर ने पुरानी इमारतों के साथ क्या करने का प्रस्ताव रखा था?",
+            "ta": "நாயர் ஆரம்பத்தில் என்ன செய்ய முன்மொழிந்தார்?"
+          },
+          "options": [
+            "Painting them bright yellow",
+            "Demolishing them to build modern glass towers",
+            "Abandoning them completely",
+            "Turning them into a swimming pool"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Demolishing them to construct glass towers.",
+            "ml": "അവ പൊളിച്ചുമാറ്റി ഗ്ലാസ് ടവറുകൾ നിർമ്മിക്കാൻ."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did Fatima open her disagreement with Nair?",
+            "ml": "നായരുടെ ആശയത്തോട് ഫാത്തിമ വിയോജിപ്പ് തുടങ്ങിയത് എങ്ങനെയാണ്?",
+            "hi": "फातिमा ने अपनी असहमति कैसे शुरू की?",
+            "ta": "பாத்திமா தனது மாற்றுக் கருத்தை எவ்வாறு தொடங்கினார்?"
+          },
+          "options": [
+            "By telling him he lacked taste",
+            "'I completely see your point regarding commercial vitality; however...'",
+            "By calling security guards",
+            "By leaving the room quietly"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She acknowledged his point about commercial vitality diplomatically.",
+            "ml": "അദ്ദേഹത്തിന്റെ കാഴ്ചപ്പാട് മനസ്സിലാക്കുന്നു എന്ന് പറഞ്ഞുകൊണ്ട്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What adaptive-reuse plan did Fatima propose instead?",
+            "ml": "പകരം ഫാത്തിമ മുന്നോട്ടുവെച്ച ബദൽ പദ്ധതി എന്തായിരുന്നു?",
+            "hi": "फातिमा ने इसके बजाय क्या योजना प्रस्तावित की?",
+            "ta": "பாத்திமா முன்வைத்த மாற்றுத் திட்டம் என்ன?"
+          },
+          "options": [
+            "A parking garage for three thousand cars",
+            "Converting the warehouses into vibrant technology incubators",
+            "A shopping mall with plastic stores",
+            "An open amusement park"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Converting warehouses into vibrant technology incubators.",
+            "ml": "ടെക്നോളജി ഇൻകുബേറ്ററുകളാക്കി മാറ്റുക (technology incubators)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d79_1",
-          "question": "Which word represents: 'വിയോജിക്കുക'?",
+          "id": 1,
+          "question": "Which of the following is the most professional and constructive way to disagree in a workplace meeting?",
           "options": [
-            "disagree",
-            "arrive",
-            "finish",
-            "borrow"
+            "That is a stupid idea and it won't work.",
+            "I see your point, but have we considered the potential cybersecurity risks?",
+            "You don't understand how coding works.",
+            "No way, absolutely not."
           ],
-          "answer": "disagree",
-          "explanation": "disagree എന്നാൽ വിയോജിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'I see your point, but have we considered...?' എന്നത് മറ്റുള്ളവരുടെ ആശയത്തെ ബഹുമാനിച്ചുകൊണ്ട് റിസ്കുകൾ ചൂണ്ടിക്കാണിക്കുന്ന ഏറ്റവും മികച്ച മാന്യമായ രീതിയാണ്."
         },
         {
-          "id": "trap_d79_2",
-          "question": "What is the past form (V2) of 'appreciate'?",
+          "id": 2,
+          "question": "What makes the phrase 'Respectfully, I have a different view' effective?",
           "options": [
-            "has appreciate",
-            "appreciated",
-            "appreciateing",
-            "appreciates"
+            "It softens the disagreement and shows professional courtesy.",
+            "It threatens the other person.",
+            "It forces everyone to agree immediately.",
+            "It ends the meeting."
           ],
-          "answer": "appreciated",
-          "explanation": "appreciate ന്റെ ഭൂതകാല രൂപം appreciated ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "ഈ വാചകം വിയോജിപ്പിന്റെ കാഠിന്യം കുറയ്ക്കുകയും (softens disagreement) പ്രൊഫഷണൽ മര്യാദ നിലനിർത്തുകയും ചെയ്യുന്നു."
         },
         {
-          "id": "trap_d79_3",
-          "question": "What is the correct English word for 'സംവാദം'?",
+          "id": 3,
+          "question": "Instead of saying 'You are wrong about the budget', what should a diplomatic communicator say?",
           "options": [
-            "debate",
-            "journey",
-            "station",
-            "airport"
+            "Your math is terrible.",
+            "My calculations show slightly different figures; let us cross-check together.",
+            "You lied on the report.",
+            "Fire the accountant."
           ],
-          "answer": "debate",
-          "explanation": "സംവാദം എന്നാൽ ഇംഗ്ലീഷിൽ debate."
+          "correctIndex": 1,
+          "explanationMl": "'My calculations show slightly different figures; let us cross-check together' എന്നത് കുറ്റപ്പെടുത്താതെ വസ്തുതകൾ ഒരുമിച്ച് പരിശോധിക്കാൻ ക്ഷണിക്കുന്ന ശൈലിയാണ്."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 79 Gate Exam (5 Qs)",

@@ -22,112 +22,109 @@
     "totalCoinsReward": 103
   },
   "grammarRule": {
-    "formula": "Active Voice and Passive Voice – Basics",
+    "formula": "I'm afraid there is a slight issue with... / Could you please look into this?",
     "explanation": {
-      "ml": "പരാതികളും ഫീഡ്ബാക്കും എന്ന വിഷയത്തിൽ I am afraid there is a problem with... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I am afraid there is a problem with... correctly in spoken English."
+      "ml": "ഒരു സേവനത്തിലോ ഉൽപ്പന്നത്തിലോ അപാകതകൾ ഉണ്ടാകുമ്പോൾ ദേഷ്യപ്പെടാതെ മാന്യമായി പരാതിപ്പെടാൻ: 'I'm afraid there is a slight mistake' (ഒരു ചെറിയ തെറ്റ് പറ്റിയിട്ടുണ്ടെന്ന് തോന്നുന്നു), 'Could you please look into this matter?' (ഇതൊന്ന് പരിശോധിക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Handling Complaints & Polite Feedback with clear formula: I'm afraid there is a slight issue with... / Could you please look into this?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I have a small complaint.",
-      "en": "Golden Rule: Practice 'I have a small complaint.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'You gave me wrong food!' എന്ന് ദേഷ്യപ്പെടുന്നതിന് പകരം: ✅ 'Excuse me, I'm afraid this is not what I ordered. Could you please check with the kitchen?' എന്ന് പറയുക.",
+      "en": "Golden Tip: 💡 'You gave me wrong food!' എന്ന് ദേഷ്യപ്പെടുന്നതിന് പകരം: ✅ 'Excuse me, I'm afraid this is not what I ordered. Could you please check with the kitchen?' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "complain",
-        "v2": "complained",
-        "v3": "complained",
+        "v1": "rectify",
+        "v2": "rectifyed",
+        "v3": "rectifyed",
         "meaning": {
-          "ml": "പരാതിപ്പെടുക",
-          "hi": "പരാതിപ്പെടുക",
-          "ta": "പരാതിപ്പെടുക"
+          "ml": "പരിഹരിക്കുക / ശരിയാക്കുക",
+          "hi": "सुधारना / ठीक करना",
+          "ta": "சரிசெய்"
         },
-        "example": "I have a small complaint.",
-        "exampleMl": "പരാതിപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "replace",
-        "v2": "replaced",
-        "v3": "replaced",
-        "meaning": {
-          "ml": "മാറ്റി നൽകുക",
-          "hi": "മാറ്റി നൽകുക",
-          "ta": "മാറ്റി നൽകുക"
-        },
-        "example": "Could you replace this?",
-        "exampleMl": "മാറ്റി നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "fix",
-        "v2": "fixed",
-        "v3": "fixed",
-        "meaning": {
-          "ml": "നന്നാക്കുക",
-          "hi": "നന്നാക്കുക",
-          "ta": "നന്നാക്കുക"
-        },
-        "example": "Please fix the issue.",
-        "exampleMl": "നന്നാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "refund",
-        "v2": "refunded",
-        "v3": "refunded",
-        "meaning": {
-          "ml": "പണം തിരികെ നൽകുക",
-          "hi": "പണം തിരികെ നൽകുക",
-          "ta": "പണം തിരികെ നൽകുക"
-        },
-        "example": "Can I get a refund?",
-        "exampleMl": "പണം തിരികെ നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Our technical team will rectify the billing discrepancy within twenty-four hours.",
+        "exampleMl": "Put right; correct."
       }
     ],
     "nouns": [
       {
-        "word": "issue",
+        "word": "Defect",
+        "partOfSpeech": "noun",
+        "definition": "A shortcoming, imperfection, or lack.",
         "meaning": {
-          "ml": "പ്രശ്നം",
-          "hi": "പ്രശ്നം",
-          "ta": "പ്രശ്നം"
+          "ml": "തകരാറ് / ന്യൂനത",
+          "hi": "दोष / खराबी",
+          "ta": "குறைபாடு",
+          "te": "లోపం",
+          "kn": "ದೋಷ"
         },
-        "example": "We learned about issue in today's lesson."
+        "example": "We noticed a minor manufacturing defect along the left zipper seam."
       },
       {
-        "word": "damage",
+        "word": "Rectify",
+        "partOfSpeech": "verb",
+        "definition": "Put right; correct.",
         "meaning": {
-          "ml": "കേടുപാട്",
-          "hi": "കേടുപാട്",
-          "ta": "കേടുപാട്"
+          "ml": "പരിഹരിക്കുക / ശരിയാക്കുക",
+          "hi": "सुधारना / ठीक करना",
+          "ta": "சரிசெய்",
+          "te": "సరిదిద్దు",
+          "kn": "ಸರಿಪಡಿಸು"
         },
-        "example": "We learned about damage in today's lesson."
+        "example": "Our technical team will rectify the billing discrepancy within twenty-four hours."
       },
       {
-        "word": "service",
+        "word": "Dissatisfied",
+        "partOfSpeech": "adjective",
+        "definition": "Not content or happy with something.",
         "meaning": {
-          "ml": "സേവനം",
-          "hi": "സേവനം",
-          "ta": "സേവനം"
+          "ml": "തൃപ്തിയില്ലാത്ത / അതൃപ്തി തോന്നിയ",
+          "hi": "असंतोष",
+          "ta": "திருப்தியற்ற",
+          "te": "అసంతృప్తి చెందిన",
+          "kn": "ಅಸಂತುಷ್ಟ"
         },
-        "example": "We learned about service in today's lesson."
+        "example": "The client was dissatisfied with the unexpected delivery turnaround delay."
       },
       {
-        "word": "feedback",
+        "word": "Replacement",
+        "partOfSpeech": "noun",
+        "definition": "A person or thing that takes the place of another.",
         "meaning": {
-          "ml": "ഫീഡ്ബാക്ക്",
-          "hi": "प्रतिक्रिया",
-          "ta": "கருத்து"
+          "ml": "പകരമുള്ള ഉൽപ്പന്നം / മാറ്റിക്കൊടുക്കൽ",
+          "hi": "प्रतिस्थापन / बदला हुआ सामान",
+          "ta": "மாற்றுப் பொருள்",
+          "te": "ప్రత్యామ్నాయం",
+          "kn": "ಬದಲಿ ವಸ್ತು"
         },
-        "example": "Constructive feedback helps you grow."
+        "example": "We dispatched an immediate replacement unit with express courier delivery."
       },
       {
-        "word": "manager",
+        "word": "Apology",
+        "partOfSpeech": "noun",
+        "definition": "A regretful acknowledgment of an offense or failure.",
         "meaning": {
-          "ml": "മാനേജർ",
-          "hi": "മാനേജർ",
-          "ta": "മാനേജർ"
+          "ml": "ക്ഷമാപണം / മാപ്പ് പറയൽ",
+          "hi": "माफ़ी",
+          "ta": "மன்னிப்புக் கோரல்",
+          "te": "క్షమాపణ",
+          "kn": "ಕ್ಷಮಾಪಣೆ"
         },
-        "example": "We learned about manager in today's lesson."
+        "example": "Please accept our sincere apology for the oversight during packaging."
+      },
+      {
+        "word": "Resolution",
+        "partOfSpeech": "noun",
+        "definition": "A firm decision to do or not to do something; solving of a problem.",
+        "meaning": {
+          "ml": "പ്രശ്നപരിഹാരം",
+          "hi": "समाधान",
+          "ta": "தீர்வு",
+          "te": "పరిష్కారం",
+          "kn": "ಪರಿಹಾರ"
+        },
+        "example": "Our customer desk provided an effective resolution within minutes."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Handling Complaints & Polite Feedback",
-        "ml": "പാഠം: പരാതികളും ഫീഡ്ബാക്കും"
+        "ml": "പാഠം: പരാതികളും മാന്യമായ ഫീഡ്‌ബാക്കും പറയൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I'm afraid there is a slight issue with... / Could you please look into this?",
+        "ml": "ഒരു സേവനത്തിലോ ഉൽപ്പന്നത്തിലോ അപാകതകൾ ഉണ്ടാകുമ്പോൾ ദേഷ്യപ്പെടാതെ മാന്യമായി പരാതിപ്പെടാൻ: 'I'm afraid there is a slight mistake' (ഒരു ചെറിയ തെറ്റ് പറ്റിയിട്ടുണ്ടെന്ന് തോന്നുന്നു), 'Could you please look into this matter?' (ഇതൊന്ന് പരിശോധിക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I have a small complaint.",
-        "Could you replace this?",
-        "Please fix the issue."
+        "I am afraid there is an overcharge error on our dinner invoice bill .",
+        "Could you please look into why our internet connection has been fluctuating today ?",
+        "This laptop screen arrived with a visible scratch; I would like a replacement .",
+        "We appreciate your feedback and will rectify the software glitch immediately .",
+        "Please accept our sincere apologies for the delayed shipment of your books ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Handling Complaints & Polite Feedback",
-        "ml": "റീഡിങ് റൂം: പരാതികളും ഫീഡ്ബാക്കും"
+        "ml": "റീഡിങ് റൂം: പരാതികളും മാന്യമായ ഫീഡ്‌ബാക്കും പറയൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I have a small complaint.",
-          "meaningMl": "പരാതിപ്പെടുക - I have a small complaint.",
-          "audioPrompt": "I have a small complaint."
+          "text": "Master clockmaker David was renowned throughout the province for manufacturing flawless brass pendulum clocks.",
+          "meaningMl": "പിച്ചള പെൻഡുലം ക്ലോക്കുകൾ നിർമ്മിക്കുന്നതിൽ പ്രവിശ്യ മുഴുവൻ പ്രശസ്തനായിരുന്നു ഡേവിഡ് എന്ന ഘടികാര ശിൽപി.",
+          "meaningHi": "मास्टर घड़ीसाज़ डेविड निर्दोष पीतल की पेंडुलम घड़ियों के निर्माण के लिए प्रसिद्ध थे।",
+          "meaningTa": "பித்தளை கடிகாரங்களை உருவாக்குவதில் டேவிட் மிகவும் பிரபலமானவர்.",
+          "audioPrompt": "Master clockmaker David was renowned throughout the province for manufacturing flawless brass pendulum clocks."
         },
         {
-          "text": "Could you replace this?",
-          "meaningMl": "മാറ്റി നൽകുക - Could you replace this?",
-          "audioPrompt": "Could you replace this?"
+          "text": "One morning, an elderly schoolmaster brought back a grandfather clock that consistently lost ten minutes every night.",
+          "meaningMl": "ഒരു പ്രഭാതത്തിൽ, എല്ലാ രാത്രിയിലും പത്ത് മിനിറ്റ് പതുക്കെയാകുന്ന ഒരു വലിയ ക്ലോക്കുമായി ഒരു പ്രധാനാധ്യാപകൻ കടയിലെത്തി.",
+          "meaningHi": "एक सुबह, एक बुजुर्ग हेडमास्टर एक घड़ी वापस लाए जो हर रात दस मिनट धीमी हो जाती थी।",
+          "meaningTa": "ஒரு காலை வேளையில், தினமும் பத்து நிமிடம் மெதுவாக ஓடும் கடிகாரத்துடன் தலைமை ஆசிரியர் வந்தார்.",
+          "audioPrompt": "One morning, an elderly schoolmaster brought back a grandfather clock that consistently lost ten minutes every night."
         },
         {
-          "text": "Daily practice of Handling Complaints & Polite Feedback gives you great confidence in English.",
-          "meaningMl": "പരാതികളും ഫീഡ്ബാക്കും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Handling Complaints & Polite Feedback gives you great confidence in English."
+          "text": "The teacher explained politely: 'I'm afraid there is a small mechanical friction in the escapement gear wheel.'",
+          "meaningMl": "അധ്യാപകൻ മാന്യമായി പറഞ്ഞു: 'ഇതിന്റെ പൽച്ചക്രങ്ങളിൽ ചെറിയൊരു ഉരസൽ ഉള്ളതായി തോന്നുന്നു.'",
+          "meaningHi": "शिक्षक ने विनम्रता से समझाया: 'मुझे डर है कि गियर में थोड़ा घर्षण है।'",
+          "meaningTa": "ஆசிரியர் பணிவாக: 'பற்களில் சிறிய உராய்வு இருப்பதாகத் தெரிகிறது' என்றார்.",
+          "audioPrompt": "The teacher explained politely: 'I'm afraid there is a small mechanical friction in the escapement gear wheel.'"
+        },
+        {
+          "text": "David did not argue or make defensive excuses; instead, he bowed respectfully and offered a sincere apology.",
+          "meaningMl": "ഡേവിഡ് തർക്കിക്കുകയോ ഒഴികഴിവുകൾ പറയുകയോ ചെയ്തില്ല; പകരം ആത്മാർത്ഥമായി ക്ഷമ ചോദിച്ചു.",
+          "meaningHi": "डेविड ने कोई बहस नहीं की; इसके बजाय उन्होंने झुककर ईमानदारी से माफ़ी मांगी।",
+          "meaningTa": "டேவிட் வாக்குவாதம் செய்யாமல் பணிவுடன் மன்னிப்புக் கேட்டார்.",
+          "audioPrompt": "David did not argue or make defensive excuses; instead, he bowed respectfully and offered a sincere apology."
+        },
+        {
+          "text": "He dismantled the mechanism, polished each jewel bearing, and rectified the flaw with consummate devotion.",
+          "meaningMl": "അദ്ദേഹം ക്ലോക്ക് അഴിച്ച് ഓരോ ഭാഗങ്ങളും മിനുക്കി പൂർണ്ണ സമർപ്പണത്തോടെ ആ തകരാർ പരിഹരിച്ചു.",
+          "meaningHi": "उन्होंने तंत्र को खोला, प्रत्येक हिस्से को पॉलिश किया और पूरी लगन से दोष को सुधारा।",
+          "meaningTa": "அவர் கடிகாரத்தைப் பிரித்து, பாகங்களை மெருகூட்டி முழுமையாகச் சரிசெய்தார்.",
+          "audioPrompt": "He dismantled the mechanism, polished each jewel bearing, and rectified the flaw with consummate devotion."
+        },
+        {
+          "text": "Handling complaints with humility and genuine accountability elevates craftsmanship into noble integrity.",
+          "meaningMl": "പരാതികളെ വിനയത്തോടും ഉത്തരവാദിത്തത്തോടും കൂടി നേരിടുന്നത് തൊഴിലിനെ ഉന്നതമായ ആദർശമാക്കി മാറ്റുന്നു.",
+          "meaningHi": "विनम्रता और जवाबदेही के साथ शिकायतों को संभालना शिल्प कौशल को सत्यनिष्ठा में बदल देता है।",
+          "meaningTa": "புகார்களைப் பணிவோடு அணுகுவது கைவினைத்திறனை உன்னத நேர்மையாக உயர்த்துகிறது.",
+          "audioPrompt": "Handling complaints with humility and genuine accountability elevates craftsmanship into noble integrity."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What problem did the grandfather clock have?",
+            "ml": "ആ വലിയ ക്ലോക്കിന് എന്തായിരുന്നു പ്രശ്നം?",
+            "hi": "घड़ी में क्या समस्या थी?",
+            "ta": "கடிகாரத்தில் என்ன பிரச்சனை இருந்தது?"
+          },
+          "options": [
+            "It rang too loudly",
+            "It consistently lost ten minutes every night",
+            "It caught fire",
+            "It was painted red"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It consistently lost ten minutes every night.",
+            "ml": "എല്ലാ രാത്രിയിലും പത്ത് മിനിറ്റ് പതുക്കെയാകുമായിരുന്നു."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How did clockmaker David respond to the complaint?",
+            "ml": "പരാതിയോട് ഡേവിഡ് എങ്ങനെയാണ് പ്രതികരിച്ചത്?",
+            "hi": "शिकायत पर डेविड ने कैसी प्रतिक्रिया दी?",
+            "ta": "புகாருக்கு டேவிட் எப்படி பதிலளித்தார்?"
+          },
+          "options": [
+            "He shouted angrily",
+            "He bowed respectfully and offered a sincere apology",
+            "He charged double fee",
+            "He closed his shop"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He bowed respectfully and offered a sincere apology.",
+            "ml": "ആദരവോടെ കുനിഞ്ഞ് ആത്മാർത്ഥമായി ക്ഷമ ചോദിച്ചു."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did David do to fix the defect?",
+            "ml": "തകരാർ പരിഹരിക്കാൻ ഡേവിഡ് എന്താണ് ചെയ്തത്?",
+            "hi": "दोष को ठीक करने के लिए डेविड ने क्या किया?",
+            "ta": "குறையைச் சரிசெய்ய டேவிட் என்ன செய்தார்?"
+          },
+          "options": [
+            "Threw it away",
+            "Dismantled, polished each bearing, and rectified the flaw",
+            "Sold a new plastic watch",
+            "Added heavy water"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He dismantled, polished each bearing, and rectified the flaw.",
+            "ml": "അഴിച്ച് പരിശോധിച്ച് ഭാഗങ്ങൾ മിനുക്കി തകരാർ പരിഹരിച്ചു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d53_1",
-          "question": "Which word represents: 'പരാതിപ്പെടുക'?",
+          "question": "Select the most diplomatic way to start a complaint about a bill:",
           "options": [
-            "create",
-            "listen",
-            "complain",
-            "discover"
+            "You cheated me on this bill!",
+            "I'm afraid there is a slight mistake on this invoice.",
+            "Give my money back immediately.",
+            "Your billing is completely wrong."
           ],
-          "answer": "complain",
-          "explanation": "complain എന്നാൽ പരാതിപ്പെടുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'I'm afraid there is a slight mistake...' is polite, diplomatic, and disarms tension.",
+          "ruleHint": "Diplomatic Complaint: 'I'm afraid there is a slight mistake...'"
         },
         {
-          "id": "trap_d53_2",
-          "question": "What is the past form (V2) of 'replace'?",
+          "question": "What verb means to correct a mistake or flaw?",
           "options": [
-            "has replace",
-            "replaceing",
-            "replaces",
-            "replaced"
+            "Rectify",
+            "Damage",
+            "Dispute",
+            "Hesitate"
           ],
-          "answer": "replaced",
-          "explanation": "replace ന്റെ ഭൂതകാല രൂപം replaced ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Rectify' means to put right or correct a problem.",
+          "ruleHint": "Vocabulary: Rectify = to correct or resolve."
         },
         {
-          "id": "trap_d53_3",
-          "question": "What is the correct English word for 'പ്രശ്നം'?",
+          "question": "How do you politely ask a manager to investigate a problem?",
           "options": [
-            "routine",
-            "knowledge",
-            "courage",
-            "issue"
+            "Look at this now!",
+            "Could you please look into this matter?",
+            "Why are you not seeing this?",
+            "Investigate fastly."
           ],
-          "answer": "issue",
-          "explanation": "പ്രശ്നം എന്നാൽ ഇംഗ്ലീഷിൽ issue."
+          "correctIndex": 1,
+          "explanation": "'Could you please look into this matter?' is standard professional English.",
+          "ruleHint": "Phrasal Verb: 'look into' = investigate / examine."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 53 Gate Exam (5 Qs)",

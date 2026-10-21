@@ -22,112 +22,121 @@
     "totalCoinsReward": 98
   },
   "grammarRule": {
-    "formula": "Participles – Present, Past and Perfect Participles",
+    "formula": "Could you please + Base Verb (V1) + Object? / Would you mind + Verb-ing?",
     "explanation": {
-      "ml": "മാന്യമായ ആവശ്യപ്പെടലുകൾ എന്ന വിഷയത്തിൽ Could you please + V1 / Would you mind + V-ing എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Could you please + V1 / Would you mind + V-ing correctly in spoken English."
+      "ml": "മറ്റുള്ളവരോട് സഹായം ചോദിക്കുമ്പോഴോ കാര്യങ്ങൾ ആവശ്യപ്പെടുമ്പോഴോ 'Could you please help me?' (ദയവായി എന്നെ സഹായിക്കാമോ?), 'Would you mind closing the door?' (വാതിൽ ഒന്ന് അടയ്ക്കാമോ?) എന്ന് അതീവ മാന്യതയോടെ സംസാരിക്കുന്നു.",
+      "en": "Master Polite Requests: Could you please... with clear formula: Could you please + Base Verb (V1) + Object? / Would you mind + Verb-ing?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Would you mind closing door?",
-      "en": "Golden Rule: Practice 'Would you mind closing door?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Can you...' എന്നത് സുഹൃത്തുക്കളോട് ചോദിക്കാം. എന്നാൽ ഓഫീസിലോ അപരിചിതരോടോ സംസാരിക്കുമ്പോൾ എപ്പോഴും കൂടുതൽ ബഹുമാനത്തോടെ: ✅ 'Could you please...' അല്ലെങ്കിൽ 'Would you mind...' ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: 💡 'Can you...' എന്നത് സുഹൃത്തുക്കളോട് ചോദിക്കാം. എന്നാൽ ഓഫീസിലോ അപരിചിതരോടോ സംസാരിക്കുമ്പോൾ എപ്പോഴും കൂടുതൽ ബഹുമാനത്തോടെ: ✅ 'Could you please...' അല്ലെങ്കിൽ 'Would you mind...' ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "mind",
-        "v2": "minded",
-        "v3": "minded",
+        "v1": "clarify",
+        "v2": "clarifyed",
+        "v3": "clarifyed",
         "meaning": {
-          "ml": "വിഷമമാവുക",
-          "hi": "വിഷമമാവുക",
-          "ta": "വിഷമമാവുക"
+          "ml": "വ്യക്തമാക്കുക / വിശദീകരിക്കുക",
+          "hi": "स्पष्ट करना",
+          "ta": "தெளிவுபடுத்து"
         },
-        "example": "Would you mind closing door?",
-        "exampleMl": "വിഷമമാവുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Could you please clarify the third clause in the agreement contract?",
+        "exampleMl": "Make a statement or situation less confused and more clearly comprehensible."
       },
       {
-        "v1": "favor",
-        "v2": "favored",
-        "v3": "favored",
+        "v1": "patiently",
+        "v2": "patientlyed",
+        "v3": "patientlyed",
         "meaning": {
-          "ml": "സഹായിക്കുക",
-          "hi": "സഹായിക്കുക",
-          "ta": "സഹായിക്കുക"
+          "ml": "ക്ഷമയോടെ",
+          "hi": "धैर्यपूर्वक",
+          "ta": "பொறுமையுடன்"
         },
-        "example": "Could you do me a favor?",
-        "exampleMl": "സഹായിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "pass",
-        "v2": "passed",
-        "v3": "passed",
-        "meaning": {
-          "ml": "വിജയിക്കുക",
-          "hi": "उत्तीर्ण होना",
-          "ta": "தேர்ச்சி பெறு"
-        },
-        "example": "Could you pass the water?",
-        "exampleMl": "കൈമാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "lend",
-        "v2": "lent",
-        "v3": "lent",
-        "meaning": {
-          "ml": "കടം നൽകുക",
-          "hi": "കടം നൽകുക",
-          "ta": "കടം നൽകുക"
-        },
-        "example": "Could you lend your pen?",
-        "exampleMl": "കടം നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The teacher listened patiently while the young student explained his doubt.",
+        "exampleMl": "In a way that shows tolerance of delays, problems, or suffering without becoming annoyed."
       }
     ],
     "nouns": [
       {
-        "word": "politeness",
+        "word": "Assistance",
+        "partOfSpeech": "noun",
+        "definition": "The provision of money, resources, or information to help someone.",
         "meaning": {
-          "ml": "വിനയം",
-          "hi": "വിനയം",
-          "ta": "വിനയം"
+          "ml": "സഹായം / പിന്തുണ",
+          "hi": "सहायता / मदद",
+          "ta": "உதவி",
+          "te": "సహాయం",
+          "kn": "ಸಹಾಯ"
         },
-        "example": "We learned about politeness in today's lesson."
+        "example": "Could you please provide some technical assistance with this software installation?"
       },
       {
-        "word": "favor",
+        "word": "Favor",
+        "partOfSpeech": "noun",
+        "definition": "An act of kindness beyond what is due or usual.",
         "meaning": {
-          "ml": "സഹായം",
-          "hi": "സഹായം",
-          "ta": "സഹായം"
+          "ml": "ഉപകാരം / സ്നേഹപൂർവ്വമായ സഹായം",
+          "hi": "उपकार / एहसान",
+          "ta": "உதவி",
+          "te": "మేలు / ఉపకారం",
+          "kn": "ಉಪಕಾರ"
         },
-        "example": "We learned about favor in today's lesson."
+        "example": "Could you please do me a small personal favor this afternoon?"
       },
       {
-        "word": "help",
+        "word": "Inconvenience",
+        "partOfSpeech": "noun",
+        "definition": "Trouble or difficulty caused to one's personal comfort or ease.",
         "meaning": {
-          "ml": "സഹായം",
-          "hi": "സഹായം",
-          "ta": "സഹായം"
+          "ml": "ബുദ്ധിമുട്ട് / അസൗകര്യം",
+          "hi": "असुविधा",
+          "ta": "சிரமம்",
+          "te": "ఇబ్బంది",
+          "kn": "ಅನಾನುಕೂಲತೆ"
         },
-        "example": "We learned about help in today's lesson."
+        "example": "We sincerely apologize for any brief inconvenience caused during maintenance."
       },
       {
-        "word": "respect",
+        "word": "Clarify",
+        "partOfSpeech": "verb",
+        "definition": "Make a statement or situation less confused and more clearly comprehensible.",
         "meaning": {
-          "ml": "ബഹുമാനം",
-          "hi": "ബഹുമാനം",
-          "ta": "ബഹുമാനം"
+          "ml": "വ്യക്തമാക്കുക / വിശദീകരിക്കുക",
+          "hi": "स्पष्ट करना",
+          "ta": "தெளிவுபடுத்து",
+          "te": "స్పష్టం చేయు",
+          "kn": "ಸ್ಪಷ್ಟಪಡಿಸು"
         },
-        "example": "We learned about respect in today's lesson."
+        "example": "Could you please clarify the third clause in the agreement contract?"
       },
       {
-        "word": "tone",
+        "word": "Considerate",
+        "partOfSpeech": "adjective",
+        "definition": "Carefully thought out; showing kindly awareness of others.",
         "meaning": {
-          "ml": "ശബ്ദരീതി",
-          "hi": "ശബ്ദരീതി",
-          "ta": "ശബ്ദരീതി"
+          "ml": "മറ്റുള്ളവരെ പരിഗണിക്കുന്ന / ദയയുള്ള",
+          "hi": "विचारशील",
+          "ta": "கனிவான",
+          "te": "దయగల",
+          "kn": "ವಿವೇಚನಾಶೀಲ"
         },
-        "example": "We learned about tone in today's lesson."
+        "example": "Speaking in quiet tones inside the hospital library is very considerate."
+      },
+      {
+        "word": "Patiently",
+        "partOfSpeech": "adverb",
+        "definition": "In a way that shows tolerance of delays, problems, or suffering without becoming annoyed.",
+        "meaning": {
+          "ml": "ക്ഷമയോടെ",
+          "hi": "धैर्यपूर्वक",
+          "ta": "பொறுமையுடன்",
+          "te": "ఓపికగా",
+          "kn": "ತಾಳ್ಮೆಯಿಂದ"
+        },
+        "example": "The teacher listened patiently while the young student explained his doubt."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Polite Requests: Could you please...",
-        "ml": "പാഠം: മാന്യമായ ആവശ്യപ്പെടലുകൾ"
+        "ml": "പാഠം: മാന്യമായ അഭ്യർത്ഥനകൾ: Could you please..."
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Could you please + Base Verb (V1) + Object? / Would you mind + Verb-ing?",
+        "ml": "മറ്റുള്ളവരോട് സഹായം ചോദിക്കുമ്പോഴോ കാര്യങ്ങൾ ആവശ്യപ്പെടുമ്പോഴോ 'Could you please help me?' (ദയവായി എന്നെ സഹായിക്കാമോ?), 'Would you mind closing the door?' (വാതിൽ ഒന്ന് അടയ്ക്കാമോ?) എന്ന് അതീവ മാന്യതയോടെ സംസാരിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Would you mind closing door?",
-        "Could you do me a favor?",
-        "Could you pass the water?"
+        "Could you please pass me the glass water bottle from the table ?",
+        "Would you mind lowering the volume of the television speaker slightly ?",
+        "Could you please guide me to the nearest metro station exit gate ?",
+        "Would you mind holding this heavy cardboard parcel while I open the door ?",
+        "Could you please double-check the final numbers before submitting the official report ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Polite Requests: Could you please...",
-        "ml": "റീഡിങ് റൂം: മാന്യമായ ആവശ്യപ്പെടലുകൾ"
+        "ml": "റീഡിങ് റൂം: മാന്യമായ അഭ്യർത്ഥനകൾ: Could you please..."
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Would you mind closing door?",
-          "meaningMl": "വിഷമമാവുക - Would you mind closing door?",
-          "audioPrompt": "Would you mind closing door?"
+          "text": "In the quiet suburban lane of Rosewood, Mr. Thomas was renowned for his unfailing polite manners.",
+          "meaningMl": "റോസ്‌വുഡ് തെരുവിൽ തോമസ് സാർ തന്റെ ഉന്നതമായ മര്യാദയ്ക്കും മാന്യമായ പെരുമാറ്റത്തിനും പ്രശസ്തനായിരുന്നു.",
+          "meaningHi": "रोज़वुड की शांत गली में, श्री थॉमस अपने विनम्र शिष्टाचार के लिए प्रसिद्ध थे।",
+          "meaningTa": "ரோஸ்வுட் தெருவில் திரு. தாமஸ் தனது சிறந்த நற்பண்புகளுக்குப் பெயர் பெற்றவர்.",
+          "audioPrompt": "In the quiet suburban lane of Rosewood, Mr. Thomas was renowned for his unfailing polite manners."
         },
         {
-          "text": "Could you do me a favor?",
-          "meaningMl": "സഹായിക്കുക - Could you do me a favor?",
-          "audioPrompt": "Could you do me a favor?"
+          "text": "Whenever he needed garden shears from his neighbor, he asked: 'Could you please spare your hedge trimmer for an hour?'",
+          "meaningMl": "അയൽക്കാരനിൽ നിന്ന് കത്രിക ആവശ്യമുള്ളപ്പോഴെല്ലാം അദ്ദേഹം ചോദിച്ചു: 'ഒരു മണിക്കൂർ നേരത്തേക്ക് നിങ്ങളുടെ കത്രിക തരാമോ?'",
+          "meaningHi": "जब भी उन्हें कैंची की आवश्यकता होती, वे पूछते: 'क्या आप एक घंटे के लिए कैंची दे सकते हैं?'",
+          "meaningTa": "கத்தரிக்கோல் தேவைப்படும்போதெல்லாம் அவர்: 'ஒரு மணி நேரம் கத்தரிக்கோலைத் தர முடியுமா?' என்று கேட்டார்.",
+          "audioPrompt": "Whenever he needed garden shears from his neighbor, he asked: 'Could you please spare your hedge trimmer for an hour?'"
         },
         {
-          "text": "Daily practice of Polite Requests: Could you please... gives you great confidence in English.",
-          "meaningMl": "മാന്യമായ ആവശ്യപ്പെടലുകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Polite Requests: Could you please... gives you great confidence in English."
+          "text": "He always returned borrowed tools meticulously cleaned, oiled, and accompanied by a small basket of ripe garden lemons.",
+          "meaningMl": "വാങ്ങിയ ഉപകരണങ്ങൾ എപ്പോഴും വൃത്തിയാക്കി എണ്ണയിട്ട്, കുറച്ച് നാടൻ നാരങ്ങകൾ കൂടി ചേർത്താണ് അദ്ദേഹം തിരികെ നൽകിയിരുന്നത്.",
+          "meaningHi": "वे हमेशा औजारों को साफ करके और नींबू की एक छोटी टोकरी के साथ लौटाते थे।",
+          "meaningTa": "வாங்கிய கருவிகளைச் சுத்தம் செய்து சில எலுமிச்சம்பழங்களுடன் அவர் திருப்பித் தருவார்.",
+          "audioPrompt": "He always returned borrowed tools meticulously cleaned, oiled, and accompanied by a small basket of ripe garden lemons."
+        },
+        {
+          "text": "When neighborhood boys accidentally kicked a cricket ball onto his lawn, he never scolded them angrily.",
+          "meaningMl": "നാട്ടിലെ കുട്ടികൾ അബദ്ധത്തിൽ ക്രിക്കറ്റ് പന്ത് അദ്ദേഹത്തിന്റെ മുറ്റത്തേക്ക് അടിച്ചപ്പോൾ അദ്ദേഹം ഒരിക്കലും അവരെ ദേഷ്യപ്പെട്ടില്ല.",
+          "meaningHi": "जब बच्चों ने उनकी लॉन में गेंद फेंकी, तो उन्होंने कभी उन्हें डांटा नहीं।",
+          "meaningTa": "சிறுவர்கள் பந்தை அவரது தோட்டத்தில் அடித்தபோது அவர் ஒருபோதும் கோபப்படவில்லை.",
+          "audioPrompt": "When neighborhood boys accidentally kicked a cricket ball onto his lawn, he never scolded them angrily."
+        },
+        {
+          "text": "Instead, he smiled gently and said: 'Could you please be mindful of the glass greenhouse windows?'",
+          "meaningMl": "പകരം അദ്ദേഹം ചിരിച്ചുകൊണ്ട് പറഞ്ഞു: 'ജനൽ ചില്ലുകൾ ഉടയാതിരിക്കാൻ ദയവായി അല്പം ശ്രദ്ധിക്കാമോ കുട്ടികളേ?'",
+          "meaningHi": "इसके बजाय, वे मुस्कुराए: 'क्या आप कांच की खिड़कियों का ध्यान रख सकते हैं?'",
+          "meaningTa": "மாறாக அவர் புன்னகையுடன்: 'கண்ணாடி ஜன்னல்களைக் கொஞ்சம் கவனித்துக் கொள்ளுங்கள்' என்றார்.",
+          "audioPrompt": "Instead, he smiled gently and said: 'Could you please be mindful of the glass greenhouse windows?'"
+        },
+        {
+          "text": "Gentle words spoken with genuine respect soften hard hearts and create lasting harmony.",
+          "meaningMl": "സ്നേഹത്തോടെ പറയുന്ന സൗമ്യമായ വാക്കുകൾ കഠിന ഹൃദയങ്ങളെപ്പോലും അലിയിക്കുകയും സമൂഹത്തിൽ സമാധാനം കൊണ്ടുവരികയും ചെയ്യുന്നു.",
+          "meaningHi": "सच्चे सम्मान से बोले गए सौम्य शब्द दिलों को छूते हैं और सद्भाव पैदा करते हैं।",
+          "meaningTa": "மரியாதையுடன் பேசப்படும் மென்மையான வார்த்தைகள் ஒற்றுமையை உருவாக்குகின்றன.",
+          "audioPrompt": "Gentle words spoken with genuine respect soften hard hearts and create lasting harmony."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What was Mr. Thomas renowned for in Rosewood lane?",
+            "ml": "റോസ്‌വുഡ് തെരുവിൽ തോമസ് സാർ എന്തിനാണ് പ്രശസ്തനായിരുന്നത്?",
+            "hi": "श्री थॉमस रोज़वुड गली में किस लिए प्रसिद्ध थे?",
+            "ta": "திரு. தாமஸ் எதற்குப் பெயர் பெற்றவர்?"
+          },
+          "options": [
+            "His rich sports cars",
+            "His unfailing polite manners and courtesy",
+            "His anger and loud shouting",
+            "His antique jewelry"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "His unfailing polite manners.",
+            "ml": "അദ്ദേഹത്തിന്റെ ഉന്നതമായ മര്യാദയ്ക്കും നല്ല പെരുമാറ്റത്തിനുമാണ് പ്രശസ്തനായത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did he include when returning borrowed garden tools?",
+            "ml": "വാങ്ങിയ ഉപകരണങ്ങൾ തിരികെ നൽകുമ്പോൾ അദ്ദേഹം ഒപ്പം എന്താണ് നൽകിയിരുന്നത്?",
+            "hi": "उपकरण लौटाते समय वे क्या देते थे?",
+            "ta": "கருவிகளைத் திருப்பிக் கொடுக்கும்போது அவர் என்ன கொடுத்தார்?"
+          },
+          "options": [
+            "Money coins",
+            "Cleaned tools with a basket of ripe lemons",
+            "Broken pieces",
+            "Old newspapers"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Cleaned tools and a basket of garden lemons.",
+            "ml": "വൃത്തിയാക്കിയ ഉപകരണങ്ങളും ഒരു കൊട്ട നാരങ്ങയും (basket of ripe lemons)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How did he respond when children kicked a ball onto his lawn?",
+            "ml": "കുട്ടികളുടെ പന്ത് മുറ്റത്ത് വീണപ്പോൾ അദ്ദേഹം എങ്ങനെയാണ് പ്രതികരിച്ചത്?",
+            "hi": "गेंद गिरने पर उन्होंने कैसी प्रतिक्रिया दी?",
+            "ta": "பந்து விழுந்தபோது அவர் எப்படி பதிலளித்தார்?"
+          },
+          "options": [
+            "He burst the ball with a knife",
+            "He gently requested them to be mindful of the windows",
+            "He called the police",
+            "He locked his gate"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He gently requested them to be mindful of the glass windows.",
+            "ml": "ജനൽ ചില്ലുകൾ ശ്രദ്ധിക്കണമെന്ന് സൗമ്യമായി അഭ്യർത്ഥിച്ചു."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d48_1",
-          "question": "Which word represents: 'വിഷമമാവുക'?",
+          "question": "Select the most polite way to ask someone to open a window:",
           "options": [
-            "arrive",
-            "prepare",
-            "mind",
-            "finish"
+            "Open the window please.",
+            "Could you please open the window?",
+            "Can you open window fastly?",
+            "You must open the window."
           ],
-          "answer": "mind",
-          "explanation": "mind എന്നാൽ വിഷമമാവുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Could you please open the window?' softens the request with maximum courtesy.",
+          "ruleHint": "Polite Request: Could you please + Base Verb (V1)?"
         },
         {
-          "id": "trap_d48_2",
-          "question": "What is the past form (V2) of 'favor'?",
+          "question": "When someone asks 'Would you mind helping me?', what does 'Not at all!' mean?",
           "options": [
-            "has favor",
-            "favoring",
-            "favored",
-            "favors"
+            "No, I will not help you.",
+            "I don't mind; I am happy to help you!",
+            "I mind very much.",
+            "Never ask me again."
           ],
-          "answer": "favored",
-          "explanation": "favor ന്റെ ഭൂതകാല രൂപം favored ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Would you mind' asks if it bothers you. Saying 'Not at all!' means 'It does not bother me; I am glad to do it!'",
+          "ruleHint": "Native Idiom: 'Would you mind...?' -> 'Not at all!' (Yes, I will happily help)."
         },
         {
-          "id": "trap_d48_3",
-          "question": "What is the correct English word for 'വിനയം'?",
+          "question": "Which form follows 'Would you mind'?",
           "options": [
-            "politeness",
-            "partner",
-            "station",
-            "airport"
+            "Base verb (close)",
+            "Gerund / verb-ing (closing)",
+            "Past verb (closed)",
+            "Infinitive (to close)"
           ],
-          "answer": "politeness",
-          "explanation": "വിനയം എന്നാൽ ഇംഗ്ലീഷിൽ politeness."
+          "correctIndex": 1,
+          "explanation": "'Would you mind' is always followed by a gerund (-ing form): 'Would you mind closing the door?'",
+          "ruleHint": "Grammar Rule: Would you mind + Verb-ing?"
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 48 Gate Exam (5 Qs)",

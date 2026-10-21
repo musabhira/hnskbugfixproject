@@ -22,112 +22,96 @@
     "totalCoinsReward": 92
   },
   "grammarRule": {
-    "formula": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
+    "formula": "Can I have + [dish]? / Could we get the bill, please?",
     "explanation": {
-      "ml": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും എന്ന വിഷയത്തിൽ Can I have...? / Could we get the bill? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Can I have...? / Could we get the bill? correctly in spoken English."
+      "ml": "ഭക്ഷണശാലകളിൽ ഭക്ഷണം ഓർഡർ ചെയ്യുമ്പോൾ 'Can I have the menu?' (മെനു തരാമോ?), 'I would like to order...' (ഓർഡർ ചെയ്യാൻ ആഗ്രഹിക്കുന്നു), 'Could we get the bill, please?' (ബിൽ തരുമോ?) എന്ന് മാന്യമായി സംസാരിക്കുന്നു.",
+      "en": "Master At a Restaurant: Ordering & Bill with clear formula: Can I have + [dish]? / Could we get the bill, please?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Are you ready to order?",
-      "en": "Golden Rule: Practice 'Are you ready to order?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Bring the bill' എന്ന് പരുഷമായി പറയരുത്. പകരം എപ്പോഴും: ✅ 'Could we have the check / bill, please?' എന്ന് പറയുക.",
+      "en": "Golden Tip: 💡 'Bring the bill' എന്ന് പരുഷമായി പറയരുത്. പകരം എപ്പോഴും: ✅ 'Could we have the check / bill, please?' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "order",
-        "v2": "ordered",
-        "v3": "ordered",
-        "meaning": {
-          "ml": "ഓർഡർ ചെയ്യുക",
-          "hi": "ഓർഡർ ചെയ്യുക",
-          "ta": "ഓർഡർ ചെയ്യുക"
-        },
-        "example": "Are you ready to order?",
-        "exampleMl": "ഓർഡർ ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "taste",
-        "v2": "tasted",
-        "v3": "tasted",
-        "meaning": {
-          "ml": "രുചിക്കുക",
-          "hi": "चखना",
-          "ta": "சுவை"
-        },
-        "example": "The soup tastes great.",
-        "exampleMl": "രുചിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "serve",
-        "v2": "served",
-        "v3": "served",
-        "meaning": {
-          "ml": "വിളമ്പുക",
-          "hi": "परोसना",
-          "ta": "பரிமாறு"
-        },
-        "example": "Please serve it hot.",
-        "exampleMl": "വിളമ്പുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "pay",
-        "v2": "paid",
-        "v3": "paid",
-        "meaning": {
-          "ml": "പണം നൽകുക",
-          "hi": "भुगतान करना",
-          "ta": "பணம் செலுத்து"
-        },
-        "example": "Can I pay by card?",
-        "exampleMl": "പണം നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "menu",
+        "word": "Appetizer",
+        "partOfSpeech": "noun",
+        "definition": "A small dish of food or a drink taken before a meal or the main course of a meal to stimulate one's appetite.",
         "meaning": {
-          "ml": "മെനു",
-          "hi": "മെനു",
-          "ta": "മെനു"
+          "ml": "വിശപ്പുണ്ടാക്കാൻ ആദ്യം കഴിക്കുന്ന ലഘുഭക്ഷണം / സ്റ്റാർട്ടർ",
+          "hi": "भूख बढ़ाने वाला अल्पाहार",
+          "ta": "தொடக்க உணவு",
+          "te": "ప్రారంభ ఆహారం",
+          "kn": "ಆರಂಭಿಕ ತಿನಿಸು"
         },
-        "example": "We learned about menu in today's lesson."
+        "example": "We ordered garlic bread and crispy corn as our appetizers."
       },
       {
-        "word": "waiter",
+        "word": "Beverage",
+        "partOfSpeech": "noun",
+        "definition": "A drink, especially one other than water.",
         "meaning": {
-          "ml": "സപ്ലയർ",
-          "hi": "സപ്ലയർ",
-          "ta": "സപ്ലയർ"
+          "ml": "പാനീയം",
+          "hi": "पेय पदार्थ",
+          "ta": "குடிபானம்",
+          "te": "పానీయము",
+          "kn": "ಪಾನೀಯ"
         },
-        "example": "We learned about waiter in today's lesson."
+        "example": "What refreshing cold beverages do you serve during summer?"
       },
       {
-        "word": "bill",
+        "word": "Cuisine",
+        "partOfSpeech": "noun",
+        "definition": "A style or method of cooking, especially as characteristic of a particular country, region, or establishment.",
         "meaning": {
-          "ml": "ബിൽ",
-          "hi": "ബിൽ",
-          "ta": "ബിൽ"
+          "ml": "പാചകരീതി / തനത് ഭക്ഷണവിഭവങ്ങൾ",
+          "hi": "व्यंजन शैली",
+          "ta": "சமையல் முறை",
+          "te": "వంటల శైలి",
+          "kn": "ಪಾಕಪದ್ಧತಿ"
         },
-        "example": "We learned about bill in today's lesson."
+        "example": "This restaurant specializes in authentic South Indian coastal cuisine."
       },
       {
-        "word": "table",
+        "word": "Delicious",
+        "partOfSpeech": "adjective",
+        "definition": "Highly pleasant to the taste.",
         "meaning": {
-          "ml": "മേശ",
-          "hi": "മേശ",
-          "ta": "മേശ"
+          "ml": "വളരെ സ്വാദിഷ്ടമായ",
+          "hi": "स्वादिष्ट",
+          "ta": "சுவையான",
+          "te": "రుచికరమైన",
+          "kn": "ರುಚಿಯಾದ"
         },
-        "example": "We learned about table in today's lesson."
+        "example": "The coconut fish curry was exceptionally fragrant and delicious."
       },
       {
-        "word": "tip",
+        "word": "Vegetarian",
+        "partOfSpeech": "noun",
+        "definition": "A person who does not eat meat or fish, or food consisting of plants.",
         "meaning": {
-          "ml": "ടിപ്പ്",
-          "hi": "ടിപ്പ്",
-          "ta": "ടിപ്പ്"
+          "ml": "സസ്യഭുക്ക് / വെജിറ്റേറിയൻ ഭക്ഷണം",
+          "hi": "शाकाहारी",
+          "ta": "சைவ உணவு",
+          "te": "శాకాహారి",
+          "kn": "ಸಸ್ಯಾಹಾರಿ"
         },
-        "example": "We learned about tip in today's lesson."
+        "example": "Do you have a dedicated vegetarian menu section?"
+      },
+      {
+        "word": "Dessert",
+        "partOfSpeech": "noun",
+        "definition": "The sweet course eaten at the end of a meal.",
+        "meaning": {
+          "ml": "ഭക്ഷണത്തിന് ശേഷം കഴിക്കുന്ന മധുരപലഹാരം",
+          "hi": "मिठाई",
+          "ta": "இனிப்பு உணவு",
+          "te": "తీపి వంటకం",
+          "kn": "ಸಿಹಿ ತಿನಿಸು"
+        },
+        "example": "We enjoyed warm chocolate brownie with vanilla ice cream for dessert."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: At a Restaurant: Ordering & Bill",
-        "ml": "പാഠം: ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും"
+        "ml": "പാഠം: റസ്റ്റോറന്റിലെ ഓർഡറും ബില്ലും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Can I have + [dish]? / Could we get the bill, please?",
+        "ml": "ഭക്ഷണശാലകളിൽ ഭക്ഷണം ഓർഡർ ചെയ്യുമ്പോൾ 'Can I have the menu?' (മെനു തരാമോ?), 'I would like to order...' (ഓർഡർ ചെയ്യാൻ ആഗ്രഹിക്കുന്നു), 'Could we get the bill, please?' (ബിൽ തരുമോ?) എന്ന് മാന്യമായി സംസാരിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Are you ready to order?",
-        "The soup tastes great.",
-        "Please serve it hot."
+        "Could we please have a table for four near the quiet window garden ?",
+        "Can you recommend the chef's special vegetarian dish for dinner ?",
+        "I would like to order one paneer tikka and two butter naans, please .",
+        "Please make the gravy medium spicy with less oil and green chillies .",
+        "Could we get the bill, please, and do you accept digital payment cards ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: At a Restaurant: Ordering & Bill",
-        "ml": "റീഡിങ് റൂം: ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും"
+        "ml": "റീഡിങ് റൂം: റസ്റ്റോറന്റിലെ ഓർഡറും ബില്ലും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Are you ready to order?",
-          "meaningMl": "ഓർഡർ ചെയ്യുക - Are you ready to order?",
-          "audioPrompt": "Are you ready to order?"
+          "text": "Nestled in an old cobblestone corner, Grandma Tara's cozy bistro was renowned for fragrant home cooking.",
+          "meaningMl": "പഴയൊരു തെരുവിന്റെ കോണിൽ സ്ഥിതി ചെയ്യുന്ന താര മുത്തശ്ശിയുടെ ചെറിയ റസ്റ്റോറന്റ് നാടൻ രുചികൾക്ക് പ്രശസ്തമായിരുന്നു.",
+          "meaningHi": "एक पुराने पत्थर के कोने में बसी, दादी तारा की आरामदायक बिस्ट्रो सुगंधित घर के खाने के लिए प्रसिद्ध थी।",
+          "meaningTa": "ஒரு தெருவின் மூலையில் அமைந்திருந்த தாரா பாட்டியின் உணவகம் வீட்டு சமையலுக்குப் பெயர் பெற்றது.",
+          "audioPrompt": "Nestled in an old cobblestone corner, Grandma Tara's cozy bistro was renowned for fragrant home cooking."
         },
         {
-          "text": "The soup tastes great.",
-          "meaningMl": "രുചിക്കുക - The soup tastes great.",
-          "audioPrompt": "The soup tastes great."
+          "text": "Every evening at six, a line of eager diners formed outside the yellow wooden doorway.",
+          "meaningMl": "എല്ലാ ദിവസവും വൈകുന്നേരം ആറുമണിക്ക് മഞ്ഞ വാതിലിനു പുറത്ത് ഭക്ഷണപ്രേമികളുടെ വലിയ നിര തന്നെ കാണാമായിരുന്നു.",
+          "meaningHi": "हर शाम छह बजे, पीले लकड़ी के दरवाजे के बाहर भोजन प्रेमियों की एक कतार लग जाती थी।",
+          "meaningTa": "ஒவ்வொரு மாலையிலும் ஆறு மணிக்கு வாசலுக்கு வெளியே வாடிக்கையாளர்களின் வரிசை நின்றது.",
+          "audioPrompt": "Every evening at six, a line of eager diners formed outside the yellow wooden doorway."
         },
         {
-          "text": "Daily practice of At a Restaurant: Ordering & Bill gives you great confidence in English.",
-          "meaningMl": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of At a Restaurant: Ordering & Bill gives you great confidence in English."
+          "text": "Travelers from across the state came to order her legendary clay-pot pumpkin curry with toasted cumin.",
+          "meaningMl": "ജീരകം ചേർത്ത അവരുടെ മൺചട്ടി മത്തങ്ങക്കറി ഓർഡർ ചെയ്യാൻ നാടിന്റെ നാനാഭാഗങ്ങളിൽ നിന്നും ആളുകൾ എത്തിയിരുന്നു.",
+          "meaningHi": "राज्य भर से यात्री भुने हुए जीरे के साथ उनकी प्रसिद्ध मिट्टी के बर्तन वाली कद्दू की करी ऑर्डर करने आते थे।",
+          "meaningTa": "அவரது புகழ்பெற்ற மண்பானை பூசணிக்கறியை ஆர்டர் செய்ய பல ஊர்களிலிருந்தும் மக்கள் வந்தனர்.",
+          "audioPrompt": "Travelers from across the state came to order her legendary clay-pot pumpkin curry with toasted cumin."
+        },
+        {
+          "text": "Her grandson Arun greeted each guest warmly, offering crisp lentil wafers as a complimentary appetizer.",
+          "meaningMl": "അവളുടെ കൊച്ചുമകൻ അരുൺ ഓരോ അതിഥിയെയും സ്നേഹത്തോടെ സ്വീകരിക്കുകയും മൊരിഞ്ഞ പപ്പടം സ്റ്റാർട്ടറായി നൽകുകയും ചെയ്തു.",
+          "meaningHi": "उनके पोते अरुण ने प्रत्येक अतिथि का गर्मजोशी से स्वागत किया और पापड़ दिए।",
+          "meaningTa": "அவரது பேரன் அருண் ஒவ்வொரு விருந்தினரையும் வரவேற்று அப்பளம் கொடுத்தான்.",
+          "audioPrompt": "Her grandson Arun greeted each guest warmly, offering crisp lentil wafers as a complimentary appetizer."
+        },
+        {
+          "text": "Guests always marveled at how perfectly balanced her aromatic spices and coconut gravies tasted.",
+          "meaningMl": "മസാലക്കൂട്ടുകളുടെയും തേങ്ങാപ്പാലിന്റെയും ആ സവിശേഷ രുചിക്കൂട്ട് കണ്ട് അതിഥികൾ എപ്പോഴും അത്ഭുതപ്പെട്ടു.",
+          "meaningHi": "मेहमान हमेशा इस बात से चकित होते थे कि उनके मसाले और नारियल की ग्रेवी कितनी संतुलित थी।",
+          "meaningTa": "அவரது மசாலாக்களும் தேங்காய்க் குழம்பும் எவ்வளவு சுவையாக இருக்கிறது என்று அனைவரும் வியந்தனர்.",
+          "audioPrompt": "Guests always marveled at how perfectly balanced her aromatic spices and coconut gravies tasted."
+        },
+        {
+          "text": "Grandma smiled and revealed her true secret: sincere devotion and love are the finest ingredients in life.",
+          "meaningMl": "മുത്തശ്ശി ചിരിച്ചുകൊണ്ട് ആ രഹസ്യം വെളിപ്പെടുത്തി: ആത്മാർത്ഥമായ സ്നേഹമാണ് ജീവിതത്തിലെ ഏറ്റവും മികച്ച ചേരുവ.",
+          "meaningHi": "दादी मुस्कुराईं और अपना असली रहस्य बताया: सच्चा प्यार जीवन की सबसे बेहतरीन सामग्री है।",
+          "meaningTa": "பாட்டி புன்னகையுடன் தன் ரகசியத்தைக் கூறினார்: உண்மையான அன்பே வாழ்க்கையின் மிகச் சிறந்த மூலப்பொருள்.",
+          "audioPrompt": "Grandma smiled and revealed her true secret: sincere devotion and love are the finest ingredients in life."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What was Grandma Tara's cozy bistro renowned for?",
+            "ml": "താര മുത്തശ്ശിയുടെ റസ്റ്റോറന്റ് എന്തിനാണ് പ്രശസ്തമായിരുന്നത്?",
+            "hi": "दादी तारा की बिस्ट्रो किस लिए प्रसिद्ध थी?",
+            "ta": "தாரா பாட்டியின் உணவகம் எதற்குப் பெயர் பெற்றது?"
+          },
+          "options": [
+            "Cold fizzy drinks",
+            "Fragrant home cooking",
+            "Expensive fast food",
+            "Ice cream cones"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It was renowned for fragrant home cooking.",
+            "ml": "നാടൻ വീട്ടുപാചകത്തിനാണ് (fragrant home cooking) അത് പ്രശസ്തമായിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What dish did travelers come from across the state to order?",
+            "ml": "ഏത് വിഭവം ഓർഡർ ചെയ്യാനാണ് ആളുകൾ ദൂരെ നിന്ന് എത്തിയത്?",
+            "hi": "लोग क्या ऑर्डर करने आते थे?",
+            "ta": "மக்கள் எதை ஆர்டர் செய்ய வந்தனர்?"
+          },
+          "options": [
+            "Clay-pot pumpkin curry with toasted cumin",
+            "Fried noodles",
+            "Cheese burgers",
+            "Pizza slices"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Her legendary clay-pot pumpkin curry.",
+            "ml": "മൺചട്ടി മത്തങ്ങക്കറിയാണ് (clay-pot pumpkin curry) അവർ ഓർഡർ ചെയ്തത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did Grandma Tara reveal as her true secret ingredient?",
+            "ml": "തന്റെ യഥാർത്ഥ രഹസ്യ ചേരുവയായി മുത്തശ്ശി വെളിപ്പെടുത്തിയത് എന്താണ്?",
+            "hi": "दादी ने अपनी गुप्त सामग्री क्या बताई?",
+            "ta": "பாட்டி தன் ரகசிய மூலப்பொருளாக எதைக் கூறினார்?"
+          },
+          "options": [
+            "Imported butter",
+            "Sincere devotion and love",
+            "Extra sugar",
+            "Secret food coloring"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Sincere devotion and love are the finest ingredients.",
+            "ml": "ആത്മാർത്ഥമായ സ്നേഹവും സമർപ്പണവുമാണ് (sincere devotion and love) ആ ചേരുവ."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d42_1",
-          "question": "Which word represents: 'ഓർഡർ ചെയ്യുക'?",
+          "question": "Select the polite and standard way to ask for the bill at a restaurant:",
           "options": [
-            "create",
-            "forget",
-            "order",
-            "listen"
+            "Give the bill now.",
+            "Could we get the bill, please?",
+            "Bring bill fastly waiter.",
+            "I want to pay the money now."
           ],
-          "answer": "order",
-          "explanation": "order എന്നാൽ ഓർഡർ ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Could we get the bill, please?' or 'Could we have the check, please?' is standard polite dining etiquette.",
+          "ruleHint": "Polite Request: Could we get the bill, please?"
         },
         {
-          "id": "trap_d42_2",
-          "question": "What is the past form (V2) of 'taste'?",
+          "question": "How do you ask for food without onions?",
           "options": [
-            "has taste",
-            "tastes",
-            "tasteing",
-            "tasted"
+            "Please prepare this without any onions.",
+            "Do not put onions in food strictly.",
+            "No onion having in my food.",
+            "Onion is prohibited for me."
           ],
-          "answer": "tasted",
-          "explanation": "taste ന്റെ ഭൂതകാല രൂപം tasted ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Please prepare this without any onions' is clean, polite, and unambiguous.",
+          "ruleHint": "Dietary Instructions: Please prepare this without [ingredient]."
         },
         {
-          "id": "trap_d42_3",
-          "question": "What is the correct English word for 'മെനു'?",
+          "question": "What is the course of sweet food eaten at the end of a meal called?",
           "options": [
-            "knowledge",
-            "success",
-            "menu",
-            "courage"
+            "Desert",
+            "Dessert",
+            "Desart",
+            "Dissert"
           ],
-          "answer": "menu",
-          "explanation": "മെനു എന്നാൽ ഇംഗ്ലീഷിൽ menu."
+          "correctIndex": 1,
+          "explanation": "'Dessert' with two 's's is the sweet course. 'Desert' with one 's' is a dry arid landscape.",
+          "ruleHint": "Spelling Trap: Dessert (sweet food) vs Desert (arid land)."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 42 Gate Exam (5 Qs)",

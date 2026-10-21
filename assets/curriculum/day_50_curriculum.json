@@ -22,112 +22,96 @@
     "totalCoinsReward": 100
   },
   "grammarRule": {
-    "formula": "Verb Patterns",
+    "formula": "Subject + must / have to + Base Verb (V1) | You mustn't...",
     "explanation": {
-      "ml": "നിർബന്ധങ്ങൾ: Must vs Have to എന്ന വിഷയത്തിൽ Must (Personal/Strict) vs Have to (External rule) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Must (Personal/Strict) vs Have to (External rule) correctly in spoken English."
+      "ml": "കർശനമായ നിയമങ്ങൾ, ഉത്തരവുകൾ, അത്യന്താപേക്ഷിതമായ ബാധ്യതകൾ എന്നിവ പറയാൻ 'must' (തീർച്ചയായും ചെയ്യണം) എന്നും, ബാഹ്യമായ നിയമങ്ങൾ പാലിക്കാൻ 'have to' (ചെയ്യേണ്ടതുണ്ട്) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Compulsion & Rules: Must vs Have to with clear formula: Subject + must / have to + Base Verb (V1) | You mustn't..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: You must follow rules.",
-      "en": "Golden Rule: Practice 'You must follow rules.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 കർശന വിലക്കുകൾക്ക് 'mustn't' ഉപയോഗിക്കുക: 'You mustn't park here' (ഇവിടെ പാർക്ക് ചെയ്യാൻ പാടില്ല - നിയമവിരുദ്ധമാണ്). ആവശ്യകത ഇല്ലാതിരിക്കാൻ 'don't have to' ഉപയോഗിക്കുക: 'You don't have to wear a suit' (ധരിക്കേണ്ടതില്ല - നിർബന്ധമില്ല).",
+      "en": "Golden Tip: 💡 കർശന വിലക്കുകൾക്ക് 'mustn't' ഉപയോഗിക്കുക: 'You mustn't park here' (ഇവിടെ പാർക്ക് ചെയ്യാൻ പാടില്ല - നിയമവിരുദ്ധമാണ്). ആവശ്യകത ഇല്ലാതിരിക്കാൻ 'don't have to' ഉപയോഗിക്കുക: 'You don't have to wear a suit' (ധരിക്കേണ്ടതില്ല - നിർബന്ധമില്ല)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "follow",
-        "v2": "followed",
-        "v3": "followed",
-        "meaning": {
-          "ml": "പിന്തുടരുക",
-          "hi": "अनुसरण करना",
-          "ta": "பின்பற்று"
-        },
-        "example": "You must follow rules.",
-        "exampleMl": "പാലിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "wear",
-        "v2": "wore",
-        "v3": "worn",
-        "meaning": {
-          "ml": "ധരിക്കുക",
-          "hi": "पहनना",
-          "ta": "அணி"
-        },
-        "example": "You must wear a helmet.",
-        "exampleMl": "ധരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "submit",
-        "v2": "submitted",
-        "v3": "submitted",
-        "meaning": {
-          "ml": "സമർപ്പിക്കുക",
-          "hi": "സമർപ്പിക്കുക",
-          "ta": "സമർപ്പിക്കുക"
-        },
-        "example": "I have to submit today.",
-        "exampleMl": "സമർപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "obey",
-        "v2": "obeyed",
-        "v3": "obeyed",
-        "meaning": {
-          "ml": "അനുസരിക്കുക",
-          "hi": "അനുസരിക്കുക",
-          "ta": "അനുസരിക്കുക"
-        },
-        "example": "We must obey traffic.",
-        "exampleMl": "അനുസരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "rule",
+        "word": "Obligation",
+        "partOfSpeech": "noun",
+        "definition": "An act or course of action to which a person is morally or legally bound; a duty.",
         "meaning": {
-          "ml": "നിയമം",
-          "hi": "നിയമം",
-          "ta": "നിയമം"
+          "ml": "ബാധ്യത / കടമ",
+          "hi": "दायित्व / कर्तव्य",
+          "ta": "கடமை / கட்டுப்பாடு",
+          "te": "బాధ్యత",
+          "kn": "ಬಾಧ್ಯತೆ"
         },
-        "example": "We learned about rule in today's lesson."
+        "example": "Citizens have a legal obligation to follow highway speed regulations."
       },
       {
-        "word": "law",
+        "word": "Mandatory",
+        "partOfSpeech": "adjective",
+        "definition": "Required by law or rules; compulsory.",
         "meaning": {
-          "ml": "നിയമം",
-          "hi": "നിയമം",
-          "ta": "നിയമം"
+          "ml": "നിർബന്ധിതമായ / ഒഴിവാക്കാനാവാത്ത",
+          "hi": "अनिवार्य",
+          "ta": "கட்டாயமான",
+          "te": "తప్పనిసరి",
+          "kn": "ಕಡ್ಡಾಯವಾದ"
         },
-        "example": "We learned about law in today's lesson."
+        "example": "Wearing a protective helmet is mandatory for all motorcycle riders."
       },
       {
-        "word": "helmet",
+        "word": "Regulation",
+        "partOfSpeech": "noun",
+        "definition": "A rule or directive made and maintained by an authority.",
         "meaning": {
-          "ml": "ഹെൽമെറ്റ്",
-          "hi": "ഹെൽമെറ്റ്",
-          "ta": "ഹെൽമെറ്റ്"
+          "ml": "നിയമം / നിയമാവലി",
+          "hi": "विनियम / नियम",
+          "ta": "விதிமுறை",
+          "te": "నిబంధన",
+          "kn": "ನಿಯಮಾವಳಿ"
         },
-        "example": "We learned about helmet in today's lesson."
+        "example": "All chemical lab visitors must comply with safety regulations."
       },
       {
-        "word": "duty",
+        "word": "Strict",
+        "partOfSpeech": "adjective",
+        "definition": "Demanding that rules concerning behavior or process are obeyed and observed.",
         "meaning": {
-          "ml": "കടമ",
-          "hi": "കടമ",
-          "ta": "കടമ"
+          "ml": "കർശനമായ",
+          "hi": "सख्त / कठोर",
+          "ta": "கடுமையான",
+          "te": "కఠినమైన",
+          "kn": "ಕಟ್ಟುನಿಟ್ಟಾದ"
         },
-        "example": "We learned about duty in today's lesson."
+        "example": "The university maintains strict anti-plagiarism guidelines for research papers."
       },
       {
-        "word": "license",
+        "word": "Penalty",
+        "partOfSpeech": "noun",
+        "definition": "A punishment imposed for breaking a law, rule, or contract.",
         "meaning": {
-          "ml": "ലൈസൻസ്",
-          "hi": "ലൈസൻസ്",
-          "ta": "ലൈസൻസ്"
+          "ml": "പിഴ / ശിക്ഷാ നടപടി",
+          "hi": "दंड / जुर्माना",
+          "ta": "அபராதம்",
+          "te": "జరిమానా",
+          "kn": "ದಂಡ"
         },
-        "example": "We learned about license in today's lesson."
+        "example": "Violating traffic red signals incurs a heavy statutory monetary penalty."
+      },
+      {
+        "word": "Requirement",
+        "partOfSpeech": "noun",
+        "definition": "A thing that is needed or wanted; a condition that must be met.",
+        "meaning": {
+          "ml": "ആവശ്യകത / നിബന്ധന",
+          "hi": "आवश्यकता / शर्त",
+          "ta": "தேவை / நிபந்தனை",
+          "te": "అవసరము",
+          "kn": "ಅಗತ್ಯತೆ"
+        },
+        "example": "A valid passport is an essential requirement for international departures."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Compulsion & Rules: Must vs Have to",
-        "ml": "പാഠം: നിർബന്ധങ്ങൾ: Must vs Have to"
+        "ml": "പാഠം: കർശന നിയമങ്ങളും ബാധ്യതകളും: Must & Have to"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + must / have to + Base Verb (V1) | You mustn't...",
+        "ml": "കർശനമായ നിയമങ്ങൾ, ഉത്തരവുകൾ, അത്യന്താപേക്ഷിതമായ ബാധ്യതകൾ എന്നിവ പറയാൻ 'must' (തീർച്ചയായും ചെയ്യണം) എന്നും, ബാഹ്യമായ നിയമങ്ങൾ പാലിക്കാൻ 'have to' (ചെയ്യേണ്ടതുണ്ട്) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "You must follow rules.",
-        "You must wear a helmet.",
-        "I have to submit today."
+        "You must wear a protective seatbelt while driving on the highway .",
+        "All employees have to submit their annual tax documents before Friday noon .",
+        "You mustn't take photographs inside the high security defense museum .",
+        "Tomorrow is a national holiday, so you don't have to report to the office .",
+        "International travelers must present a valid passport and entry visa at immigration ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Compulsion & Rules: Must vs Have to",
-        "ml": "റീഡിങ് റൂം: നിർബന്ധങ്ങൾ: Must vs Have to"
+        "ml": "റീഡിങ് റൂം: കർശന നിയമങ്ങളും ബാധ്യതകളും: Must & Have to"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "You must follow rules.",
-          "meaningMl": "പാലിക്കുക - You must follow rules.",
-          "audioPrompt": "You must follow rules."
+          "text": "High in the snowbound mountain pass stood the ancient stone bridge of Saint Bernard.",
+          "meaningMl": "മഞ്ഞുമൂടിയ മലമ്പാതയ്ക്ക് മുകളിൽ സെന്റ് ബെർണാഡിന്റെ പുരാതന കൽപ്പാലം സ്ഥിതി ചെയ്തിരുന്നു.",
+          "meaningHi": "बर्फ से ढके पहाड़ी दर्रे में सेंट बर्नार्ड का प्राचीन पत्थर का पुल था।",
+          "meaningTa": "பனி படர்ந்த மலையில் செயிண்ட் பெர்னார்டின் பழங்கால பாலம் நின்றது.",
+          "audioPrompt": "High in the snowbound mountain pass stood the ancient stone bridge of Saint Bernard."
         },
         {
-          "text": "You must wear a helmet.",
-          "meaningMl": "ധരിക്കുക - You must wear a helmet.",
-          "audioPrompt": "You must wear a helmet."
+          "text": "Heavy alpine transport regulations strictly governed every single vehicle crossing the narrow abyss.",
+          "meaningMl": "ഇടുങ്ങിയ കൊക്കയ്ക്ക് മുകളിലൂടെ പോകുന്ന ഓരോ വാഹനത്തിനും കർശനമായ നിയമങ്ങൾ ബാധകമായിരുന്നു.",
+          "meaningHi": "सख्त अल्पाइन परिवहन नियम संकीर्ण खाई को पार करने वाले प्रत्येक वाहन को नियंत्रित करते थे।",
+          "meaningTa": "குறுகிய பாதையைக் கடக்கும் ஒவ்வொரு வாகனத்திற்கும் கடுமையான விதிகள் இருந்தன.",
+          "audioPrompt": "Heavy alpine transport regulations strictly governed every single vehicle crossing the narrow abyss."
         },
         {
-          "text": "Daily practice of Compulsion & Rules: Must vs Have to gives you great confidence in English.",
-          "meaningMl": "നിർബന്ധങ്ങൾ: Must vs Have to ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Compulsion & Rules: Must vs Have to gives you great confidence in English."
+          "text": "Truck drivers had to mount heavy steel snow chains on their tyres before entering the steep incline.",
+          "meaningMl": "കുത്തനെയുള്ള കയറ്റം കയറുന്നതിന് മുൻപ് ട്രക്ക് ഡ്രൈവർമാർ ടയറുകളിൽ കട്ടിയുള്ള സ്റ്റീൽ ചങ്ങലകൾ ഘടിപ്പിക്കണമായിരുന്നു.",
+          "meaningHi": "ट्रक चालकों को खड़ी चढ़ाई पर जाने से पहले अपने टायरों पर लोहे की चेन लगानी पड़ती थी।",
+          "meaningTa": "டிரைவர்கள் டயர்களில் கனமான இரும்புச் சங்கிலிகளைக் கட்ட வேண்டியிருந்தது.",
+          "audioPrompt": "Truck drivers had to mount heavy steel snow chains on their tyres before entering the steep incline."
+        },
+        {
+          "text": "Chief Inspector Klaus warned that motorists mustn't exceed twenty kilometers per hour under any circumstance.",
+          "meaningMl": "യാതൊരു കാരണവശാലും മണിക്കൂറിൽ ഇരുപത് കിലോമീറ്ററിലധികം വേഗത കൂട്ടാൻ പാടില്ലെന്ന് ഇൻസ്പെക്ടർ ക്ലോസ് മുന്നറിയിപ്പ് നൽകി.",
+          "meaningHi": "मुख्य निरीक्षक क्लॉस ने चेतावनी दी कि किसी भी परिस्थिति में गति बीस किमी प्रति घंटे से अधिक नहीं होनी चाहिए।",
+          "meaningTa": "எக்காரணம் கொண்டும் மணிக்கு இருபது கிலோமீட்டருக்கு மேல் செல்லக் கூடாது என்று எச்சரித்தார்.",
+          "audioPrompt": "Chief Inspector Klaus warned that motorists mustn't exceed twenty kilometers per hour under any circumstance."
+        },
+        {
+          "text": "Violating load limits incurred immediate vehicle confiscation and heavy criminal court penalties.",
+          "meaningMl": "ഭാരപരിധി ലംഘിച്ചാൽ വാഹനം പിടിച്ചെടുക്കുകയും കനത്ത കോടതി പിഴ ഈടാക്കുകയും ചെയ്തിരുന്നു.",
+          "meaningHi": "भार सीमा का उल्लंघन करने पर तत्काल जब्ती और भारी कानूनी दंड लगता था।",
+          "meaningTa": "எடை வரம்பை மீறினால் வாகனம் பறிமுதல் செய்யப்பட்டு கடுமையான அபராதம் விதிக்கப்பட்டது.",
+          "audioPrompt": "Violating load limits incurred immediate vehicle confiscation and heavy criminal court penalties."
+        },
+        {
+          "text": "Rigorous adherence to safety rules is the unbreakable shield that protects human lives on dangerous roads.",
+          "meaningMl": "സുരക്ഷാ നിയമങ്ങൾ കർശനമായി പാലിക്കുക എന്നത് അപകടകരമായ റോഡുകളിൽ മനുഷ്യജീവനുകളെ സംരക്ഷിക്കുന്ന അഭേദ്യമായ കവചമാണ്.",
+          "meaningHi": "सुरक्षा नियमों का कड़ाई से पालन वह ढाल है जो खतरनाक सड़कों पर मानव जीवन की रक्षा करती है।",
+          "meaningTa": "பாதுகாப்பு விதிகளை கண்டிப்பாக பின்பற்றுவதே மனித உயிர்களைக் காக்கும் கவசமாகும்.",
+          "audioPrompt": "Rigorous adherence to safety rules is the unbreakable shield that protects human lives on dangerous roads."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where was the ancient stone bridge of Saint Bernard located?",
+            "ml": "സെന്റ് ബെർണാഡിന്റെ കൽപ്പാലം എവിടെയാണ് സ്ഥിതി ചെയ്തിരുന്നത്?",
+            "hi": "सेंट बर्नार्ड का प्राचीन पुल कहाँ स्थित था?",
+            "ta": "செயிண்ட் பெர்னார்டின் பாலம் எங்கு அமைந்திருந்தது?"
+          },
+          "options": [
+            "In a tropical rain jungle",
+            "High in the snowbound mountain pass",
+            "Beside an ocean shore",
+            "Inside a city tunnel"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "High in the snowbound mountain pass.",
+            "ml": "മഞ്ഞുമൂടിയ മലമ്പാതയിലാണ് (snowbound mountain pass)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did truck drivers have to mount on their tyres before the incline?",
+            "ml": "കയറ്റത്തിന് മുൻപ് ട്രക്ക് ഡ്രൈവർമാർ ടയറുകളിൽ എന്താണ് ഘടിപ്പിക്കേണ്ടിയിരുന്നത്?",
+            "hi": "ट्रक चालकों को टायरों पर क्या लगाना पड़ता था?",
+            "ta": "டிரைவர்கள் டயர்களில் என்ன பொருத்த வேண்டும்?"
+          },
+          "options": [
+            "Heavy steel snow chains",
+            "Silk ribbons",
+            "Plastic covers",
+            "Extra mirrors"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Heavy steel snow chains.",
+            "ml": "സ്റ്റീൽ ചങ്ങലകളാണ് (steel snow chains) ഘടിപ്പിച്ചത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What was the maximum speed limit motorists mustn't exceed?",
+            "ml": "ഡ്രൈവർമാർ കവിയാൻ പാടില്ലാത്ത പരമാവധി വേഗത എത്രയായിരുന്നു?",
+            "hi": "अधिकतम गति सीमा क्या थी?",
+            "ta": "அதிகபட்ச வேக வரம்பு என்ன?"
+          },
+          "options": [
+            "Eighty km/h",
+            "Twenty kilometers per hour",
+            "Fifty km/h",
+            "Hundred km/h"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Twenty kilometers per hour.",
+            "ml": "മണിക്കൂറിൽ ഇരുപത് കിലോമീറ്റർ (Twenty km/h)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d50_1",
-          "question": "Which word represents: 'പിന്തുടരുക'?",
+          "question": "Select the sentence expressing strict legal prohibition:",
           "options": [
-            "follow",
-            "finish",
-            "forget",
-            "borrow"
+            "You don't have to smoke here.",
+            "You mustn't smoke here.",
+            "You shouldn't smoke here if you want.",
+            "You not must smoke here."
           ],
-          "answer": "follow",
-          "explanation": "follow എന്നാൽ പിന്തുടരുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'You mustn't smoke here' means it is forbidden by law/rule. 'You don't have to' merely means it is optional.",
+          "ruleHint": "Prohibition: mustn't = strictly forbidden."
         },
         {
-          "id": "trap_d50_2",
-          "question": "What is the past form (V2) of 'wear'?",
+          "question": "Choose the correct sentence to express an absence of obligation (it is optional):",
           "options": [
-            "wears",
-            "wearing",
-            "wore",
-            "has wear"
+            "You mustn't wear a tie to the casual dinner.",
+            "You don't have to wear a tie to the casual dinner.",
+            "You haven't to wear a tie.",
+            "You must not have wearing a tie."
           ],
-          "answer": "wore",
-          "explanation": "wear ന്റെ ഭൂതകാല രൂപം wore ആണ്."
+          "correctIndex": 1,
+          "explanation": "'You don't have to' expresses that something is not required / optional.",
+          "ruleHint": "Lack of Obligation: don't have to = not necessary."
         },
         {
-          "id": "trap_d50_3",
-          "question": "What is the correct English word for 'നിയമം'?",
+          "question": "Which form completes: 'He ______ renew his passport today'?",
           "options": [
-            "success",
-            "journey",
-            "airport",
-            "rule"
+            "has to",
+            "have to",
+            "must to",
+            "having to"
           ],
-          "answer": "rule",
-          "explanation": "നിയമം എന്നാൽ ഇംഗ്ലീഷിൽ rule."
+          "correctIndex": 0,
+          "explanation": "Third person singular 'He' takes 'has to': 'He has to renew his passport today.'",
+          "ruleHint": "Subject Agreement: He/She/It + has to + V1."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 50 Gate Exam (5 Qs)",

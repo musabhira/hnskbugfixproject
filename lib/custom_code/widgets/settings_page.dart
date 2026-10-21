@@ -59,7 +59,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) {
       setState(() {
         _isVip = prefs.getBool('is_vip') ?? false;
-        _selectedLanguage = prefs.getString('preferred_language') ?? 'English';
+        _selectedLanguage = prefs.getString('preferred_language') ?? PocketLanguageService.currentLanguage;
         _isPowerSaving = prefs.getBool('power_saving_mode') ?? false;
         _isNotificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
         _voiceSpeed = prefs.getDouble('voice_speed') ?? 1.0;
@@ -789,6 +789,7 @@ class _SettingsPageState extends State<SettingsPage> {
       {'name': 'Tamil', 'native': 'தமிழ்'},
       {'name': 'Hindi', 'native': 'हिन्दी'},
       {'name': 'Telugu', 'native': 'తెలుగు'},
+      {'name': 'Kannada', 'native': 'ಕನ್ನಡ'},
     ];
 
     showModalBottomSheet(

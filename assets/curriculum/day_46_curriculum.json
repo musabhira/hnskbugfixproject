@@ -22,112 +22,109 @@
     "totalCoinsReward": 96
   },
   "grammarRule": {
-    "formula": "Infinitives – Bare Infinitive and To-Infinitive",
+    "formula": "I have an appointment at [Time] with [Person] / Let us reschedule...",
     "explanation": {
-      "ml": "നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ എന്ന വിഷയത്തിൽ Setting & Confirming Meeting Times എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Setting & Confirming Meeting Times correctly in spoken English."
+      "ml": "നാളത്തെ പരിപാടികളും കൂടിക്കാഴ്ചകളും ആസൂത്രണം ചെയ്യുമ്പോൾ 'I have an appointment at ten AM' (എനിക്ക് പത്തു മണിക്ക് അപ്പോയിന്റ്‌മെന്റ് ഉണ്ട്), 'Could we reschedule our meeting to Wednesday?' (നമ്മുടെ മീറ്റിംഗ് ബുധനാഴ്ചത്തേക്ക് മാറ്റിവെക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Tomorrow's Schedule & Appointments with clear formula: I have an appointment at [Time] with [Person] / Let us reschedule..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Schedule a meeting.",
-      "en": "Golden Rule: Practice 'Schedule a meeting.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 കൃത്യമായ സമയം പറയുമ്പോൾ 'at': 'at 10:30 AM', ദിവസങ്ങൾക്ക് മുൻപിൽ 'on': 'on Monday', മാസങ്ങൾക്കും വർഷങ്ങൾക്കും മുൻപിൽ 'in': 'in November / in 2026'.",
+      "en": "Golden Tip: 💡 കൃത്യമായ സമയം പറയുമ്പോൾ 'at': 'at 10:30 AM', ദിവസങ്ങൾക്ക് മുൻപിൽ 'on': 'on Monday', മാസങ്ങൾക്കും വർഷങ്ങൾക്കും മുൻപിൽ 'in': 'in November / in 2026'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "schedule",
-        "v2": "scheduled",
-        "v3": "scheduled",
+        "v1": "reschedule",
+        "v2": "rescheduleed",
+        "v3": "rescheduleed",
         "meaning": {
-          "ml": "സമയം നിശ്ചയിക്കുക",
-          "hi": "സമയം നിശ്ചയിക്കുക",
-          "ta": "സമയം നിശ്ചയിക്കുക"
+          "ml": "സമയം മാറ്റിവെക്കുക / പുതിയ തീയതി നിശ്ചയിക്കുക",
+          "hi": "पुनर्निर्धारित करना",
+          "ta": "மறுதிட்டமிடு"
         },
-        "example": "Schedule a meeting.",
-        "exampleMl": "സമയം നിശ്ചയിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "confirm",
-        "v2": "confirmed",
-        "v3": "confirmed",
-        "meaning": {
-          "ml": "ഉറപ്പാക്കുക",
-          "hi": "ഉറപ്പാക്കുക",
-          "ta": "ഉറപ്പാക്കുക"
-        },
-        "example": "Please confirm my slot.",
-        "exampleMl": "ഉറപ്പാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "postpone",
-        "v2": "postponed",
-        "v3": "postponed",
-        "meaning": {
-          "ml": "മാറ്റിവെയ്ക്കുക",
-          "hi": "മാറ്റിവെയ്ക്കുക",
-          "ta": "മാറ്റിവെയ്ക്കുക"
-        },
-        "example": "Can we postpone it?",
-        "exampleMl": "മാറ്റിവെയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "attend",
-        "v2": "attended",
-        "v3": "attended",
-        "meaning": {
-          "ml": "പങ്കെടുക്കുക",
-          "hi": "പങ്കെടുക്കുക",
-          "ta": "പങ്കെടുക്കുക"
-        },
-        "example": "I will attend on time.",
-        "exampleMl": "പങ്കെടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Could we reschedule our client presentation to Thursday afternoon?",
+        "exampleMl": "Change the time or date of a planned event."
       }
     ],
     "nouns": [
       {
-        "word": "appointment",
+        "word": "Appointment",
+        "partOfSpeech": "noun",
+        "definition": "An arrangement to meet someone at a particular time and place.",
         "meaning": {
-          "ml": "അപ്പോയിന്റ്മെന്റ്",
-          "hi": "അപ്പോയിന്റ്മെന്റ്",
-          "ta": "അപ്പോയിന്റ്മെന്റ്"
+          "ml": "കൂടിക്കാഴ്ചയ്ക്കുള്ള നിശ്ചിത സമയം / അപ്പോയിന്റ്‌മെന്റ്",
+          "hi": "नियत समय / मुलाक़ात",
+          "ta": "சந்திப்பு நேரம்",
+          "te": "నిర్ణీత సమయం",
+          "kn": "ಮುಂಗಡ ಭೇಟಿ ಸಮಯ"
         },
-        "example": "We learned about appointment in today's lesson."
+        "example": "I have a scheduled dental consultation appointment at four PM."
       },
       {
-        "word": "meeting",
+        "word": "Reschedule",
+        "partOfSpeech": "verb",
+        "definition": "Change the time or date of a planned event.",
         "meaning": {
-          "ml": "മീറ്റിംഗ്",
-          "hi": "बैठक",
-          "ta": "கூட்டம்"
+          "ml": "സമയം മാറ്റിവെക്കുക / പുതിയ തീയതി നിശ്ചയിക്കുക",
+          "hi": "पुनर्निर्धारित करना",
+          "ta": "மறுதிட்டமிடு",
+          "te": "రీషెడ్యూల్ చేయు",
+          "kn": "ಮರುಹೊಂದಿಸು"
         },
-        "example": "The team meeting starts at ten o'clock."
+        "example": "Could we reschedule our client presentation to Thursday afternoon?"
       },
       {
-        "word": "calendar",
+        "word": "Priority",
+        "partOfSpeech": "noun",
+        "definition": "The fact or condition of being regarded or treated as more important than others.",
         "meaning": {
-          "ml": "കലണ്ടർ",
-          "hi": "കലണ്ടർ",
-          "ta": "കലണ്ടർ"
+          "ml": "മുൻഗണന",
+          "hi": "प्राथमिकता",
+          "ta": "முன்னுரிமை",
+          "te": "ప్రాధాన్యత",
+          "kn": "ಆದ್ಯತೆ"
         },
-        "example": "We learned about calendar in today's lesson."
+        "example": "Resolving server security is our highest engineering priority."
       },
       {
-        "word": "reminder",
+        "word": "Reminder",
+        "partOfSpeech": "noun",
+        "definition": "A thing that causes someone to remember something.",
         "meaning": {
           "ml": "ഓർമ്മപ്പെടുത്തൽ",
-          "hi": "ഓർമ്മപ്പെടുത്തൽ",
-          "ta": "ഓർമ്മപ്പെടുത്തൽ"
+          "hi": "अनुस्मारक / याद दिलाने वाली चीज़",
+          "ta": "நினைவூட்டல்",
+          "te": "జ్ఞాపిక",
+          "kn": "ಜ್ಞಾಪನೆ"
         },
-        "example": "We learned about reminder in today's lesson."
+        "example": "Set a calendar reminder fifteen minutes before the team sync begins."
       },
       {
-        "word": "time",
+        "word": "Availability",
+        "partOfSpeech": "noun",
+        "definition": "The state of being able to be used, obtained, or free to meet.",
         "meaning": {
-          "ml": "സമയം",
-          "hi": "समय",
-          "ta": "நேரம்"
+          "ml": "ലഭ്യത / സൗകര്യപ്രദമായ സമയം",
+          "hi": "उपलब्धता",
+          "ta": "கிடைக்கும் தன்மை",
+          "te": "అందుబాటు",
+          "kn": "ಲಭ್ಯತೆ"
         },
-        "example": "Time waits for no one."
+        "example": "Please check the director's availability before booking the flight."
+      },
+      {
+        "word": "Agenda",
+        "partOfSpeech": "noun",
+        "definition": "A list of items of business to be considered and discussed at a meeting.",
+        "meaning": {
+          "ml": "മീറ്റിംഗിലെ കാര്യപരിപാടികൾ / അജണ്ട",
+          "hi": "कार्यसूची",
+          "ta": "நிகழ்ச்சி நிரல்",
+          "te": "కార్యక్రమ పట్టిక",
+          "kn": "ಕಾರ್ಯಸೂಚಿ"
+        },
+        "example": "The chairperson circulated the annual general meeting agenda via email."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Tomorrow's Schedule & Appointments",
-        "ml": "പാഠം: നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ"
+        "ml": "പാഠം: നാളത്തെ സമയക്രമവും അപ്പോയിന്റ്‌മെന്റുകളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I have an appointment at [Time] with [Person] / Let us reschedule...",
+        "ml": "നാളത്തെ പരിപാടികളും കൂടിക്കാഴ്ചകളും ആസൂത്രണം ചെയ്യുമ്പോൾ 'I have an appointment at ten AM' (എനിക്ക് പത്തു മണിക്ക് അപ്പോയിന്റ്‌മെന്റ് ഉണ്ട്), 'Could we reschedule our meeting to Wednesday?' (നമ്മുടെ മീറ്റിംഗ് ബുധനാഴ്ചത്തേക്ക് മാറ്റിവെക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Schedule a meeting.",
-        "Please confirm my slot.",
-        "Can we postpone it?"
+        "I have a scheduled doctor appointment tomorrow morning at nine-thirty sharp .",
+        "Could we please reschedule our budget review meeting to three PM tomorrow ?",
+        "What time works best for you to have a brief ten-minute telephone conversation ?",
+        "I will send a calendar invite right away with the secure video meeting link .",
+        "Please set a reminder alarm so we do not miss the afternoon client presentation ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Tomorrow's Schedule & Appointments",
-        "ml": "റീഡിങ് റൂം: നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ"
+        "ml": "റീഡിങ് റൂം: നാളത്തെ സമയക്രമവും അപ്പോയിന്റ്‌മെന്റുകളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Schedule a meeting.",
-          "meaningMl": "സമയം നിശ്ചയിക്കുക - Schedule a meeting.",
-          "audioPrompt": "Schedule a meeting."
+          "text": "Every Sunday evening, Dr. Shalini opened her leather appointment diary beneath a warm desk lamp.",
+          "meaningMl": "എല്ലാ ഞായറാഴ്ചയും വൈകുന്നേരം മേശവിളക്കിന്റെ വെളിച്ചത്തിൽ ഡോ. ശാലിനി തന്റെ അപ്പോയിന്റ്‌മെന്റ് ഡയറി തുറന്നു പരിശോധിച്ചു.",
+          "meaningHi": "हर रविवार की शाम, डॉ. शालिनी एक गर्म लैंप के नीचे अपनी डायरी खोलती थीं।",
+          "meaningTa": "ஒவ்வொரு ஞாயிறு மாலையும் டாக்டர் ஷாலினி தன் சந்திப்பு நாட்குறிப்பைத் திறப்பார்.",
+          "audioPrompt": "Every Sunday evening, Dr. Shalini opened her leather appointment diary beneath a warm desk lamp."
         },
         {
-          "text": "Please confirm my slot.",
-          "meaningMl": "ഉറപ്പാക്കുക - Please confirm my slot.",
-          "audioPrompt": "Please confirm my slot."
+          "text": "She carefully scheduled clinical consultations in the mornings and surgical procedures after two PM.",
+          "meaningMl": "രാവിലെകളിൽ ക്ലിനിക്കൽ പരിശോധനകളും ഉച്ചയ്ക്ക് രണ്ട് മണിക്ക് ശേഷം ശസ്ത്രക്രിയകളും അവർ ചിട്ടപ്പെടുത്തി.",
+          "meaningHi": "वह सुबह परामर्श और दोपहर 2 बजे के बाद सर्जरी का समय सावधानीपूर्वक तय करती थीं।",
+          "meaningTa": "அவர் காலையில் ஆலோசனைகளையும் மதியம் இரண்டு மணிக்கு மேல் அறுவை சிகிச்சையையும் திட்டமிட்டார்.",
+          "audioPrompt": "She carefully scheduled clinical consultations in the mornings and surgical procedures after two PM."
         },
         {
-          "text": "Daily practice of Tomorrow's Schedule & Appointments gives you great confidence in English.",
-          "meaningMl": "നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Tomorrow's Schedule & Appointments gives you great confidence in English."
+          "text": "She blocked a quiet thirty-minute window at midday exclusively for nutritious meals and mindful meditation.",
+          "meaningMl": "ഉച്ചഭക്ഷണത്തിനും മനസ്സ് ശാന്തമാക്കാനുമായി ഉച്ചയ്ക്ക് മുപ്പത് മിനിറ്റ് അവർ പ്രത്യേകം നീക്കിവെച്ചു.",
+          "meaningHi": "उन्होंने दोपहर में विशेष रूप से पौष्टिक भोजन और ध्यान के लिए तीस मिनट का समय रखा।",
+          "meaningTa": "மதிய உணவு மற்றும் தியானத்திற்காக முப்பது நிமிடங்களை ஒதுக்கி வைத்தார்.",
+          "audioPrompt": "She blocked a quiet thirty-minute window at midday exclusively for nutritious meals and mindful meditation."
+        },
+        {
+          "text": "Whenever an emergency patient arrived, her assistant smoothly rescheduled non-urgent routine checkups.",
+          "meaningMl": "അടിയന്തിര രോഗികൾ വരുമ്പോഴെല്ലാം അസിസ്റ്റന്റ് മറ്റ് പരിശോധനകൾ തടസ്സമില്ലാതെ മറ്റൊരു ദിവസത്തേക്ക് മാറ്റിവെച്ചു.",
+          "meaningHi": "जब भी कोई आपातकालीन मरीज आता, उनकी सहायक गैर-जरूरी चेकअप का समय बदल देती थी।",
+          "meaningTa": "அவசர நோயாளி வரும்போதெல்லாம் உதவியாளர் மற்ற சந்திப்புகளை மாற்றி வைப்பார்.",
+          "audioPrompt": "Whenever an emergency patient arrived, her assistant smoothly rescheduled non-urgent routine checkups."
+        },
+        {
+          "text": "By maintaining realistic buffers between meetings, she never felt flustered, hurried, or overwhelmed.",
+          "meaningMl": "ഓരോ കൂടിക്കാഴ്ചകൾക്കുമിടയിൽ കൃത്യമായ ഇടവേളകൾ നൽകിയതിനാൽ അവർക്ക് ഒരിക്കലും വെപ്രാളമോ ഭാരമോ തോന്നിയില്ല.",
+          "meaningHi": "मुलाकातों के बीच समय का अंतर रखने से, वह कभी घबराई या परेशान नहीं हुईं।",
+          "meaningTa": "சந்திப்புகளுக்கு இடையே சரியான இடைவெளி இருந்ததால் அவர் ஒருபோதும் பதற்றமடையவில்லை.",
+          "audioPrompt": "By maintaining realistic buffers between meetings, she never felt flustered, hurried, or overwhelmed."
+        },
+        {
+          "text": "Mastery of one's personal schedule is the golden key to professional excellence and peaceful inner balance.",
+          "meaningMl": "സ്വന്തം സമയത്തെ കൃത്യമായി നിയന്ത്രിക്കുക എന്നത് കർമ്മരംഗത്തെ മികവിനും മനസ്സിന്റെ ശാന്തിക്കുമുള്ള സുവർണ്ണ താക്കോലാണ്.",
+          "meaningHi": "अपने व्यक्तिगत समय पर महारत हासिल करना व्यावसायिक उत्कृष्टता और मानसिक शांति की कुंजी है।",
+          "meaningTa": "தனிப்பட்ட நேரத்தைத் திட்டமிடுவதே தொழில்முறை சிறப்பிற்கும் மன அமைதிக்கும் திறவுகோலாகும்.",
+          "audioPrompt": "Mastery of one's personal schedule is the golden key to professional excellence and peaceful inner balance."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "When did Dr. Shalini organize her schedule for the upcoming week?",
+            "ml": "വരുന്ന ആഴ്ചയിലെ സമയക്രമം ഡോ. ശാലിനി എപ്പോഴാണ് തയ്യാറാക്കിയിരുന്നത്?",
+            "hi": "डॉ. शालिनी आने वाले सप्ताह के लिए अपना समय कब तय करती थीं?",
+            "ta": "டாக்டர் ஷாலினி எப்போது தன் வாராந்திர நேரத்தைத் திட்டமிடுவார்?"
+          },
+          "options": [
+            "Monday morning at 8 AM",
+            "Every Sunday evening beneath her desk lamp",
+            "Friday afternoon",
+            "During lunch breaks"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Every Sunday evening beneath a warm desk lamp.",
+            "ml": "എല്ലാ ഞായറാഴ്ചയും വൈകുന്നേരമാണ് (Every Sunday evening) അവർ അത് ചെയ്തിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did she schedule after two PM?",
+            "ml": "ഉച്ചയ്ക്ക് രണ്ട് മണിക്ക് ശേഷം അവർ എന്താണ് നിശ്ചയിച്ചിരുന്നത്?",
+            "hi": "दोपहर दो बजे के बाद वह क्या तय करती थीं?",
+            "ta": "மதியம் இரண்டு மணிக்கு மேல் அவர் என்ன திட்டமிட்டார்?"
+          },
+          "options": [
+            "Vacations",
+            "Surgical procedures",
+            "Shopping trips",
+            "Tea parties"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Surgical procedures after two PM.",
+            "ml": "ശസ്ത്രക്രിയകളാണ് (surgical procedures) ഉച്ചയ്ക്ക് ശേഷം നിശ്ചയിച്ചിരുന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did she reserve a thirty-minute window at midday for?",
+            "ml": "ഉച്ചയ്ക്ക് മുപ്പത് മിനിറ്റ് അവർ എന്തിനായാണ് മാറ്റിവെച്ചത്?",
+            "hi": "दोपहर में तीस मिनट उन्होंने किस लिए रखे?",
+            "ta": "மதியம் முப்பது நிமிடங்களை எதற்காக ஒதுக்கினார்?"
+          },
+          "options": [
+            "Watching TV",
+            "Nutritious meals and mindful meditation",
+            "Sleeping on a bed",
+            "Writing letters"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Nutritious meals and mindful meditation.",
+            "ml": "നല്ല ഭക്ഷണത്തിനും ധ്യാനത്തിനുമായാണ് (nutritious meals and meditation) മാറ്റിവെച്ചത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d46_1",
-          "question": "Which word represents: 'സമയം നിശ്ചയിക്കുക'?",
+          "question": "Select the correct preposition for clock time:",
           "options": [
-            "prepare",
-            "schedule",
-            "remember",
-            "decide"
+            "I have a meeting at ten AM.",
+            "I have a meeting on ten AM.",
+            "I have a meeting in ten AM.",
+            "I have a meeting by into ten AM."
           ],
-          "answer": "schedule",
-          "explanation": "schedule എന്നാൽ സമയം നിശ്ചയിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "Specific clock times take the preposition 'at': 'at ten AM / at 4:30 PM'.",
+          "ruleHint": "Time Preposition: at + exact clock time."
         },
         {
-          "id": "trap_d46_2",
-          "question": "What is the past form (V2) of 'confirm'?",
+          "question": "How do you politely suggest moving an appointment to a new date?",
           "options": [
-            "confirmed",
-            "confirming",
-            "has confirm",
-            "confirms"
+            "Could we reschedule our appointment?",
+            "Cancel my time and make another.",
+            "I don't want tomorrow, give day after.",
+            "Change my booking fast."
           ],
-          "answer": "confirmed",
-          "explanation": "confirm ന്റെ ഭൂതകാല രൂപം confirmed ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Could we reschedule our appointment?' is professional, respectful, and standard.",
+          "ruleHint": "Business Politeness: 'Could we reschedule our appointment?'"
         },
         {
-          "id": "trap_d46_3",
-          "question": "What is the correct English word for 'അപ്പോയിന്റ്മെന്റ്'?",
+          "question": "Choose the correct preposition for days of the week: 'We are meeting ______ Wednesday.'",
           "options": [
-            "partner",
-            "appointment",
-            "schedule",
-            "progress"
+            "in",
+            "on",
+            "at",
+            "to"
           ],
-          "answer": "appointment",
-          "explanation": "അപ്പോയിന്റ്മെന്റ് എന്നാൽ ഇംഗ്ലീഷിൽ appointment."
+          "correctIndex": 1,
+          "explanation": "Days of the week take 'on': 'on Wednesday / on Friday morning'.",
+          "ruleHint": "Preposition of Time: on + day of the week."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 46 Gate Exam (5 Qs)",

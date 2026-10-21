@@ -22,112 +22,109 @@
     "totalCoinsReward": 118
   },
   "grammarRule": {
-    "formula": "Noun Clauses",
+    "formula": "Although / Even though + Clause, Main clause | Clause. However, clause",
     "explanation": {
-      "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) എന്ന വിഷയത്തിൽ Although + Clause (Although it rained, we enjoyed) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Although + Clause (Although it rained, we enjoyed) correctly in spoken English."
+      "ml": "രണ്ട് പരസ്പര വിരുദ്ധമായ കാര്യങ്ങൾ ഒരുമിച്ച് പറയുമ്പോൾ 'Although' (എന്നിരുന്നാലും / എങ്കിലും), 'However' (എങ്കിലും / പക്ഷെ) എന്നിവ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Contrast Connectors: Although, Even though, However with clear formula: Although / Even though + Clause, Main clause | Clause. However, clause"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Although he tried, it was hard.",
-      "en": "Golden Rule: Practice 'Although he tried, it was hard.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 'Although' ഉം 'but' ഉം ഒരേ വാക്യത്തിൽ ഒരുമിച്ച് ഉപയോഗിക്കരുത്. 'Although it was raining, we went out' (NOT 'Although it was raining, but we went out').",
+      "en": "Golden Tip: 'Although' ഉം 'but' ഉം ഒരേ വാക്യത്തിൽ ഒരുമിച്ച് ഉപയോഗിക്കരുത്. 'Although it was raining, we went out' (NOT 'Although it was raining, but we went out')."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "try",
-        "v2": "tried",
-        "v3": "tried",
+        "v1": "nevertheless",
+        "v2": "neverthelessed",
+        "v3": "neverthelessed",
         "meaning": {
-          "ml": "ശ്രമിച്ചു",
-          "hi": "ശ്രമിച്ചു",
-          "ta": "ശ്രമിച്ചു"
+          "ml": "എന്നിരുന്നാലും / അതുകൊണ്ട് തന്നെ",
+          "hi": "फिर भी / तथापि",
+          "ta": "ஆயினும்"
         },
-        "example": "Although he tried, it was hard.",
-        "exampleMl": "ശ്രമിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "continue",
-        "v2": "continued",
-        "v3": "continued",
-        "meaning": {
-          "ml": "തുടർന്നു",
-          "hi": "തുടർന്നു",
-          "ta": "തുടർന്നു"
-        },
-        "example": "However, we continued forward.",
-        "exampleMl": "തുടർന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "win",
-        "v2": "won",
-        "v3": "won",
-        "meaning": {
-          "ml": "ജയിച്ചു",
-          "hi": "ജയിച്ചു",
-          "ta": "ജയിച്ചു"
-        },
-        "example": "Although tired, they won.",
-        "exampleMl": "ജയിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "learn",
-        "v2": "learned",
-        "v3": "learned",
-        "meaning": {
-          "ml": "പഠിച്ചു",
-          "hi": "പഠിച്ചു",
-          "ta": "പഠിച്ചു"
-        },
-        "example": "It was tough; however, I learned.",
-        "exampleMl": "പഠിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The journey was arduous and exhausting; nevertheless, the hikers pressed onward.",
+        "exampleMl": "In spite of that; notwithstanding; all the same."
       }
     ],
     "nouns": [
       {
-        "word": "contrast",
+        "word": "Obstacle",
+        "partOfSpeech": "noun",
+        "definition": "A thing that blocks one's way or prevents or hinders progress.",
         "meaning": {
-          "ml": "വൈരുദ്ധ്യം",
-          "hi": "വൈരുദ്ധ്യം",
-          "ta": "വൈരുദ്ധ്യം"
+          "ml": "തടസ്സം / പ്രതിബന്ധം",
+          "hi": "बाधा / रुकावट",
+          "ta": "தடை",
+          "te": "అడ్డంకి",
+          "kn": "ಅಡಚಣೆ"
         },
-        "example": "We learned about contrast in today's lesson."
+        "example": "Lack of funding was the primary obstacle facing the scientific venture."
       },
       {
-        "word": "challenge",
+        "word": "Resilience",
+        "partOfSpeech": "noun",
+        "definition": "The capacity to recover quickly from difficulties; toughness.",
         "meaning": {
-          "ml": "വെല്ലുവിളി",
-          "hi": "വെല്ലുവിളി",
-          "ta": "വെല്ലുവിളി"
+          "ml": "പ്രതിസന്ധികളെ അതിജീവിക്കാനുള്ള ശേഷി",
+          "hi": "लचीलापन / पुनः संभलने की क्षमता",
+          "ta": "மீண்டு எழும் திறன்",
+          "te": "పునరుద్ధరణ శక్తి",
+          "kn": "ಚೇತರಿಸಿಕೊಳ್ಳುವ ಸಾಮರ್ಥ್ಯ"
         },
-        "example": "We learned about challenge in today's lesson."
+        "example": "The island community displayed extraordinary resilience following the monsoon flood."
       },
       {
-        "word": "effort",
+        "word": "Nevertheless",
+        "partOfSpeech": "adverb",
+        "definition": "In spite of that; notwithstanding; all the same.",
         "meaning": {
-          "ml": "ശ്രമം",
-          "hi": "ശ്രമം",
-          "ta": "ശ്രമം"
+          "ml": "എന്നിരുന്നാലും / അതുകൊണ്ട് തന്നെ",
+          "hi": "फिर भी / तथापि",
+          "ta": "ஆயினும்",
+          "te": "అయినప్పటికీ",
+          "kn": "ಆದಾಗ್ಯೂ"
         },
-        "example": "We learned about effort in today's lesson."
+        "example": "The journey was arduous and exhausting; nevertheless, the hikers pressed onward."
       },
       {
-        "word": "victory",
+        "word": "Constraint",
+        "partOfSpeech": "noun",
+        "definition": "A limitation or restriction.",
         "meaning": {
-          "ml": "വിജയം",
-          "hi": "വിജയം",
-          "ta": "വിജയം"
+          "ml": "പരിമിതി / നിയന്ത്രണം",
+          "hi": "बाध्यता / सीमा",
+          "ta": "கட்டுப்பாடு / வரம்பு",
+          "te": "పరిమితి",
+          "kn": "ಮಿತಿ"
         },
-        "example": "We learned about victory in today's lesson."
+        "example": "Severe budgetary constraints forced the school board to postpone library renovations."
       },
       {
-        "word": "fact",
+        "word": "Perseverance",
+        "partOfSpeech": "noun",
+        "definition": "Persistence in doing something despite difficulty or delay in achieving success.",
         "meaning": {
-          "ml": "വസ്തുത",
-          "hi": "വസ്തുത",
-          "ta": "വസ്തുത"
+          "ml": "സ്ഥിരോത്സാഹം / അചഞ്ചലമായ പരിശ്രമം",
+          "hi": "दृढ़ता / लगन",
+          "ta": "விடாமுயற்சி",
+          "te": "పట్టుదల",
+          "kn": "ಸತತ ಪರಿಶ್ರಮ"
         },
-        "example": "We learned about fact in today's lesson."
+        "example": "Through patient perseverance, the research scholar deciphered the ancient script."
+      },
+      {
+        "word": "Unforeseen",
+        "partOfSpeech": "adjective",
+        "definition": "Not anticipated or predicted.",
+        "meaning": {
+          "ml": "അപ്രതീക്ഷിതമായ / മുൻകൂട്ടി കാണാത്ത",
+          "hi": "अप्रत्याशित",
+          "ta": "எதிர்பாராத",
+          "te": "అనుకోని",
+          "kn": "ಅನಿರೀಕ್ಷಿತ"
+        },
+        "example": "Unforeseen supply shortages caused temporary delays on the construction site."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Contrast Connectors: Although, However, But",
-        "ml": "പാഠം: വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)"
+        "en": "Concept Room: Contrast Connectors: Although, Even though, However",
+        "ml": "പാഠം: വൈരുദ്ധ്യങ്ങൾ വ്യക്തമാക്കൽ (Although, However)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Although / Even though + Clause, Main clause | Clause. However, clause",
+        "ml": "രണ്ട് പരസ്പര വിരുദ്ധമായ കാര്യങ്ങൾ ഒരുമിച്ച് പറയുമ്പോൾ 'Although' (എന്നിരുന്നാലും / എങ്കിലും), 'However' (എങ്കിലും / പക്ഷെ) എന്നിവ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Although he tried, it was hard.",
-        "However, we continued forward.",
-        "Although tired, they won."
+        "Although the project deadline was extremely tight , the engineering team delivered exceptional results .",
+        "Even though she faced severe personal hardships , she maintained an inspiring positive attitude .",
+        "The prototype showed immense commercial potential ; however , manufacturing expenses remain elevated .",
+        "Although they lacked financial capital initially , their relentless passion attracted angel investors .",
+        "He studied medical literature until midnight every evening ; nevertheless , he woke up energized ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Contrast Connectors: Although, However, But",
-        "ml": "റീഡിങ് റൂം: വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)"
+        "en": "Reading Room: The Solo Sailor",
+        "ml": "റീഡിങ് റൂം: വൈരുദ്ധ്യങ്ങൾ വ്യക്തമാക്കൽ (Although, However)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Although he tried, it was hard.",
-          "meaningMl": "ശ്രമിച്ചു - Although he tried, it was hard.",
-          "audioPrompt": "Although he tried, it was hard."
+          "text": "Commander Abhilash embarked on a non-stop solo circumnavigation across treacherous global oceans aboard a compact sailing yacht.",
+          "meaningMl": "ഒരു ചെറിയ കപ്പലിൽ കമാൻഡർ അഭിലാഷ് ലോക സമുദ്രങ്ങളിലൂടെ നിർത്താതെയുള്ള ഏകാന്ത യാത്രാ ദൗത്യം ആരംഭിച്ചു.",
+          "meaningHi": "कमांडर अभिलाष ने एक पाल नौका पर वैश्विक महासागरों की अकेले यात्रा शुरू की।",
+          "meaningTa": "கமாண்டர் அபிலாஷ் சிறிய படகில் கடலில் தனியாக இடைவிடாத உலகப் பயணத்தைத் தொடங்கினார்.",
+          "audioPrompt": "Commander Abhilash embarked on a non-stop solo circumnavigation across treacherous global oceans aboard a compact sailing yacht."
         },
         {
-          "text": "However, we continued forward.",
-          "meaningMl": "തുടർന്നു - However, we continued forward.",
-          "audioPrompt": "However, we continued forward."
+          "text": "Although violent storms battered his mast in the Southern Ocean, he navigated through towering fifty-foot waves calmly.",
+          "meaningMl": "ദക്ഷിണ സമുദ്രത്തിൽ അതിശക്തമായ കൊടുങ്കാറ്റ് അദ്ദേഹത്തിന്റെ പായ്മരത്തിൽ അടിച്ചുകയറിയെങ്കിലും, അൻപതടി ഉയരമുള്ള തിരമാലകളിലൂടെ അദ്ദേഹം ശാന്തമായി യാത്ര ചെയ്തു.",
+          "meaningHi": "हालांकि तूफानों ने उनके मस्तूल को नुकसान पहुँचाया, उन्होंने शांत रहकर नौकायन किया।",
+          "meaningTa": "சூறாவளி படகைத் தாக்கிய போதிலும், அவர் அமைதியாகப் படகை வழிநடத்தினார்.",
+          "audioPrompt": "Although violent storms battered his mast in the Southern Ocean, he navigated through towering fifty-foot waves calmly."
         },
         {
-          "text": "Daily practice of Contrast Connectors: Although, However, But gives you great confidence in English.",
-          "meaningMl": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Contrast Connectors: Although, However, But gives you great confidence in English."
+          "text": "During one ferocious gale, his steering mechanism suffered mechanical failure; however, he repaired the cables with hand tools.",
+          "meaningMl": "ഒരു കനത്ത കാറ്റിൽ സ്റ്റിയറിംഗ് മെക്കാനിസം തകരാറിലായി; എങ്കിലും, അദ്ദേഹം കൈക്കരുത്തിൽ കേബിളുകൾ നന്നാക്കി.",
+          "meaningHi": "एक तूफान में स्टीयरिंग खराब हो गया; हालांकि, उन्होंने खुद उसकी मरम्मत की।",
+          "meaningTa": "ஒரு புயலில் ஸ்டீயரிங் பழுதடைந்தது; இருப்பினும், அவரே அதைச் சரிசெய்தார்.",
+          "audioPrompt": "During one ferocious gale, his steering mechanism suffered mechanical failure; however, he repaired the cables with hand tools."
+        },
+        {
+          "text": "Even though he endured seven solitary months without seeing another human soul, his mental fortitude never faltered.",
+          "meaningMl": "മറ്റൊരു മനുഷ്യനെപ്പോലും കാണാതെ ഏഴ് മാസം ഏകാന്തത അനുഭവിച്ചിട്ടും, അദ്ദേഹത്തിന്റെ മനോധൈര്യം ഒരിക്കലും പതറിയില്ല.",
+          "meaningHi": "सात महीने अकेले रहने के बावजूद, उनका मनोबल कभी नहीं टूटा।",
+          "meaningTa": "மற்றொரு மனிதரைக் காணாமல் ஏழு மாதங்கள் கழித்த போதிலும், அவரது மன உறுதி தளரவில்லை.",
+          "audioPrompt": "Even though he endured seven solitary months without seeing another human soul, his mental fortitude never faltered."
+        },
+        {
+          "text": "Food rations ran critically low near the final ocean stretch; nevertheless, he maintained strict nutritional discipline.",
+          "meaningMl": "അവസാന ഘട്ടത്തിൽ ഭക്ഷണ സാധനങ്ങൾ തീരെ കുറഞ്ഞു; എന്നിരുന്നാലും, അദ്ദേഹം കൃത്യമായ അച്ചടക്കം പാലിച്ചു.",
+          "meaningHi": "राशन कम हो गया था; फिर भी, उन्होंने सख्त अनुशासन बनाए रखा।",
+          "meaningTa": "உணவு குறைவாக இருந்தது; ஆயினும், அவர் கண்டிப்பான ஒழுக்கத்தைக் கடைப்பிடித்தார்.",
+          "audioPrompt": "Food rations ran critically low near the final ocean stretch; nevertheless, he maintained strict nutritional discipline."
+        },
+        {
+          "text": "When he crossed the celebratory harbor finish line, the nation celebrated an enduring triumph of perseverance over adversity.",
+          "meaningMl": "തുറമുഖത്തെ ഫിനിഷിംഗ് ലൈൻ കടന്നപ്പോൾ, പ്രതിസന്ധികൾക്ക് മേലുള്ള സ്ഥിരോത്സാഹത്തിന്റെ വിജയത്തെ രാജ്യം ഒന്നടങ്കം ആഘോഷിച്ചു.",
+          "meaningHi": "जब उन्होंने फिनिश लाइन पार की, तो पूरे देश ने उनकी लगन और दृढ़ता का जश्न मनाया।",
+          "meaningTa": "அவர் எல்லைக் கோட்டைத் தொட்டபோது, விடாமுயற்சியின் வெற்றியை நாடே கொண்டாடியது.",
+          "audioPrompt": "When he crossed the celebratory harbor finish line, the nation celebrated an enduring triumph of perseverance over adversity."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What weather challenge did Abhilash encounter in the Southern Ocean?",
+            "ml": "ദക്ഷിണ സമുദ്രത്തിൽ അഭിലാഷ് നേരിട്ട വെല്ലുവിളി എന്തായിരുന്നു?",
+            "hi": "अभिलाष को किस मौसम का सामना करना पड़ा?",
+            "ta": "தெற்குப் பெருங்கடலில் அபிலாஷ் எதிர்கொண்ட சவால் என்ன?"
+          },
+          "options": [
+            "Extreme tropical humidity",
+            "Violent storms with fifty-foot waves",
+            "Total lack of wind and currents",
+            "Floating iceberg glaciers"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Violent storms with towering fifty-foot waves.",
+            "ml": "അൻപതടി ഉയരമുള്ള തിരമാലകളോടുകൂടിയ കൊടുങ്കാറ്റ്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How many solitary months did he endure at sea without seeing another human?",
+            "ml": "മറ്റ് മനുഷ്യരെ കാണാതെ എത്ര മാസങ്ങൾ അദ്ദേഹം ഏകാന്തമായി ചെലവഴിച്ചു?",
+            "hi": "उन्होंने समुद्र में अकेले कितने महीने बिताए?",
+            "ta": "மனித நடமாட்டமின்றி எத்தனை மாதங்கள் கழித்தார்?"
+          },
+          "options": [
+            "Two months",
+            "Seven solitary months",
+            "Twelve months",
+            "Three weeks"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Seven solitary months.",
+            "ml": "ഏഴ് മാസങ്ങൾ (Seven solitary months)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What ran critically low near the final stretch of the voyage?",
+            "ml": "യാത്രയുടെ അവസാന ഘട്ടത്തിൽ തീരെ കുറഞ്ഞത് എന്താണ്?",
+            "hi": "सफर के अंत में किस चीज की कमी हो गई?",
+            "ta": "பயணத்தின் முடிவில் எதில் பற்றாக்குறை ஏற்பட்டது?"
+          },
+          "options": [
+            "Fuel for the engine",
+            "Food rations",
+            "Radio batteries",
+            "Compass charts"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Food rations ran critically low.",
+            "ml": "ഭക്ഷണ സാധനങ്ങൾ (Food rations)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d68_1",
-          "question": "Which word represents: 'ശ്രമിച്ചു'?",
+          "id": 1,
+          "question": "Which of the following sentences has a double conjunction error?",
           "options": [
-            "arrive",
-            "prepare",
-            "finish",
-            "try"
+            "Although it was expensive, they bought the equipment.",
+            "It was expensive, but they bought the equipment.",
+            "Although it was expensive, but they bought the equipment.",
+            "Even though it was expensive, they purchased it."
           ],
-          "answer": "try",
-          "explanation": "try എന്നാൽ ശ്രമിച്ചു എന്നർത്ഥം."
+          "correctIndex": 2,
+          "explanationMl": "'Although' ഉം 'but' ഉം ഒരേ വാക്യത്തിൽ ഒരുമിച്ച് ഉപയോഗിക്കുന്നത് തെറ്റാണ്. 'Although it was expensive, they bought the equipment' ആണ് ശരി."
         },
         {
-          "id": "trap_d68_2",
-          "question": "What is the past form (V2) of 'continue'?",
+          "id": 2,
+          "question": "Choose the sentence that correctly uses 'However' between two independent clauses:",
           "options": [
-            "continueing",
-            "continues",
-            "has continue",
-            "continued"
+            "The flight was delayed however we arrived on time.",
+            "The flight was delayed. However, we arrived on time.",
+            "However the flight was delayed, but we arrived on time.",
+            "The flight was however delayed we arrived on time."
           ],
-          "answer": "continued",
-          "explanation": "continue ന്റെ ഭൂതകാല രൂപം continued ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'However' പുതിയൊരു വാക്യമായി തുടങ്ങുമ്പോൾ അതിനു ശേഷം ഒരു കോമ (comma) നിർബന്ധമാണ് ('The flight was delayed. However, we arrived on time.')."
         },
         {
-          "id": "trap_d68_3",
-          "question": "What is the correct English word for 'വൈരുദ്ധ്യം'?",
+          "id": 3,
+          "question": "What is the meaning of 'nevertheless'?",
           "options": [
-            "station",
-            "airport",
-            "contrast",
-            "partner"
+            "In spite of that / All the same",
+            "Because of that reason",
+            "At that exact second",
+            "Never again in life"
           ],
-          "answer": "contrast",
-          "explanation": "വൈരുദ്ധ്യം എന്നാൽ ഇംഗ്ലീഷിൽ contrast."
+          "correctIndex": 0,
+          "explanationMl": "'Nevertheless' എന്നാൽ 'അങ്ങനെയാണെങ്കിൽ പോലും / എന്നിരുന്നാലും' (In spite of that) എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 68 Gate Exam (5 Qs)",

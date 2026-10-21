@@ -22,112 +22,109 @@
     "totalCoinsReward": 79
   },
   "grammarRule": {
-    "formula": "Future Simple Tense and 'Going to'",
+    "formula": "It is [sunny / rainy / humid / cloudy] / The forecast predicts...",
     "explanation": {
-      "ml": "കാലാവസ്ഥയും പ്രകൃതിയും എന്ന വിഷയത്തിൽ It is sunny / rainy / cloudy / humid എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use It is sunny / rainy / cloudy / humid correctly in spoken English."
+      "ml": "കാലാവസ്ഥയെക്കുറിച്ച് സംസാരിക്കുമ്പോൾ 'It is...' ഉപയോഗിക്കുന്നു: 'It is sunny today' (ഇന്ന് നല്ല വെയിലുണ്ട്), 'It is raining heavily' (കനത്ത മഴ പെയ്യുന്നു), 'It is humid' (നല്ല ഈർപ്പമുണ്ട്).",
+      "en": "Master Weather, Climate & Nature with clear formula: It is [sunny / rainy / humid / cloudy] / The forecast predicts..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: It is raining outside.",
-      "en": "Golden Rule: Practice 'It is raining outside.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 മഴ പെയ്യുമ്പോൾ 'Rain is falling' എന്ന് പറയുന്നതിന് പകരം സ്വാഭാവികമായി 'It is raining' എന്ന് പറയുക. ചെറിയ മഴയ്ക്ക് 'It is drizzling' എന്ന് ഉപയോഗിക്കാം.",
+      "en": "Golden Tip: 💡 മഴ പെയ്യുമ്പോൾ 'Rain is falling' എന്ന് പറയുന്നതിന് പകരം സ്വാഭാവികമായി 'It is raining' എന്ന് പറയുക. ചെറിയ മഴയ്ക്ക് 'It is drizzling' എന്ന് ഉപയോഗിക്കാം."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "rain",
-        "v2": "rained",
-        "v3": "rained",
+        "v1": "drizzle",
+        "v2": "drizzleed",
+        "v3": "drizzleed",
         "meaning": {
-          "ml": "പെയ്യുക",
-          "hi": "बारिश होना",
-          "ta": "மழை பெய்"
+          "ml": "ചാറ്റൽമഴ പെയ്യുക",
+          "hi": "बूंदाबांदी होना",
+          "ta": "தூறல் போடு"
         },
-        "example": "It is raining outside.",
-        "exampleMl": "പെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "blow",
-        "v2": "blew",
-        "v3": "blown",
-        "meaning": {
-          "ml": "വീശുക",
-          "hi": "हवा चलना",
-          "ta": "வீசு"
-        },
-        "example": "Cool wind is blowing.",
-        "exampleMl": "വീശുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "freeze",
-        "v2": "froze",
-        "v3": "frozen",
-        "meaning": {
-          "ml": "തണുത്തുറയുക",
-          "hi": "जमना",
-          "ta": "உறை"
-        },
-        "example": "It is freezing cold.",
-        "exampleMl": "തണുത്തുറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "change",
-        "v2": "changed",
-        "v3": "changed",
-        "meaning": {
-          "ml": "മാറുക",
-          "hi": "बदलना",
-          "ta": "மாறு"
-        },
-        "example": "Weather changes fast.",
-        "exampleMl": "മാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "It started to drizzle gently just as we reached the hilltop.",
+        "exampleMl": "Rain lightly with very fine, mist-like drops."
       }
     ],
     "nouns": [
       {
-        "word": "weather",
+        "word": "Forecast",
+        "partOfSpeech": "noun",
+        "definition": "A prediction or estimate of future events, especially coming weather.",
         "meaning": {
-          "ml": "കാലാവസ്ഥ",
-          "hi": "കാലാവസ്ഥ",
-          "ta": "കാലാവസ്ഥ"
+          "ml": "കാലാവസ്ഥാ പ്രവചനം",
+          "hi": "मौसम का पूर्वानुमान",
+          "ta": "வானிலை முன்னறிவிப்பு",
+          "te": "వాతావరణ సూచన",
+          "kn": "ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ"
         },
-        "example": "We learned about weather in today's lesson."
+        "example": "The evening weather forecast warns of impending heavy thunderstorms."
       },
       {
-        "word": "rain",
+        "word": "Humid",
+        "partOfSpeech": "adjective",
+        "definition": "Marked by a relatively high level of water vapor in the atmosphere.",
         "meaning": {
-          "ml": "മഴ",
-          "hi": "മഴ",
-          "ta": "മഴ"
+          "ml": "ഈർപ്പമുള്ള / വിയർക്കുന്ന കാലാവസ്ഥ",
+          "hi": "उमस भरा",
+          "ta": "ஈரப்பதமான",
+          "te": "తేమతో కూడిన",
+          "kn": "ತೇವಯುಕ್ತ"
         },
-        "example": "We learned about rain in today's lesson."
+        "example": "The coastal breeze feels exceptionally humid during monsoon afternoons."
       },
       {
-        "word": "sun",
+        "word": "Drizzle",
+        "partOfSpeech": "verb",
+        "definition": "Rain lightly with very fine, mist-like drops.",
         "meaning": {
-          "ml": "വെയിൽ",
-          "hi": "വെയിൽ",
-          "ta": "വെയിൽ"
+          "ml": "ചാറ്റൽമഴ പെയ്യുക",
+          "hi": "बूंदाबांदी होना",
+          "ta": "தூறல் போடு",
+          "te": "చినుకులు పడు",
+          "kn": "ತುಂತುರು ಮಳೆ ಬೀಳು"
         },
-        "example": "We learned about sun in today's lesson."
+        "example": "It started to drizzle gently just as we reached the hilltop."
       },
       {
-        "word": "wind",
+        "word": "Breeze",
+        "partOfSpeech": "noun",
+        "definition": "A gentle, refreshing wind.",
         "meaning": {
-          "ml": "കാറ്റ്",
-          "hi": "കാറ്റ്",
-          "ta": "കാറ്റ്"
+          "ml": "ഇളംകാറ്റ്",
+          "hi": "मंद हवा / समीर",
+          "ta": "தென்றல் காற்று",
+          "te": "చల్లని గాలి",
+          "kn": "ತಂಗಾಳಿ"
         },
-        "example": "We learned about wind in today's lesson."
+        "example": "A cool sea breeze rustled through the palm trees along the shore."
       },
       {
-        "word": "cloud",
+        "word": "Thunderstorm",
+        "partOfSpeech": "noun",
+        "definition": "A storm with thunder and lightning and typically also heavy rain or hail.",
         "meaning": {
-          "ml": "മേഘം",
-          "hi": "മേഘം",
-          "ta": "മേഘം"
+          "ml": "ഇടിമിന്നലോടുകൂടിയ കനത്ത മഴ",
+          "hi": "गरज के साथ तूफ़ान",
+          "ta": "இடி மின்னலுடன் கூடிய மழை",
+          "te": "ఉరుములతో కూడిన వర్షం",
+          "kn": "ಗುಡುಗು ಸಹಿತ ಮಳೆ"
         },
-        "example": "We learned about cloud in today's lesson."
+        "example": "We stayed safely indoors during the ferocious evening thunderstorm."
+      },
+      {
+        "word": "Pleasant",
+        "partOfSpeech": "adjective",
+        "definition": "Giving a sense of happy satisfaction or enjoyment; agreeable.",
+        "meaning": {
+          "ml": "മനോഹരമായ / സുഖകരമായ",
+          "hi": "सुहावना",
+          "ta": "இதமான",
+          "te": "ఆహ్లాదకరమైన",
+          "kn": "ಆಹ್ಲಾದಕರ"
+        },
+        "example": "Autumn mornings in the valleys are remarkably pleasant and calm."
       }
     ]
   },
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "It is [sunny / rainy / humid / cloudy] / The forecast predicts...",
+        "ml": "കാലാവസ്ഥയെക്കുറിച്ച് സംസാരിക്കുമ്പോൾ 'It is...' ഉപയോഗിക്കുന്നു: 'It is sunny today' (ഇന്ന് നല്ല വെയിലുണ്ട്), 'It is raining heavily' (കനത്ത മഴ പെയ്യുന്നു), 'It is humid' (നല്ല ഈർപ്പമുണ്ട്)."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "It is raining outside.",
-        "Cool wind is blowing.",
-        "It is freezing cold."
+        "It is raining heavily outside, so remember to take your raincoat .",
+        "The climate here is delightfully pleasant throughout the winter months .",
+        "Dark thunder clouds are gathering rapidly over the northern horizon .",
+        "Is it humid and warm near the beach this afternoon ?",
+        "The meteorological department predicted a sunny weekend ahead for tourists ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "It is raining outside.",
-          "meaningMl": "പെയ്യുക - It is raining outside.",
-          "audioPrompt": "It is raining outside."
+          "text": "For three long summer weeks, the dry red soil baked under a scorching sun.",
+          "meaningMl": "വേനൽക്കാലത്തെ മൂന്ന് നീണ്ട ആഴ്ചകളിൽ വരണ്ട ചുവന്ന മണ്ണ് കത്തുന്ന വെയിലിൽ ചുട്ടുപൊള്ളി.",
+          "meaningHi": "तीन लंबी गर्मियों के हफ्तों तक, सूखी लाल मिट्टी चिलचिलाती धूप में तपती रही।",
+          "meaningTa": "மூன்று வாரங்களாக காய்ந்த சிவப்பு மண் சுட்டெரிக்கும் வெயிலில் வெந்தது.",
+          "audioPrompt": "For three long summer weeks, the dry red soil baked under a scorching sun."
         },
         {
-          "text": "Cool wind is blowing.",
-          "meaningMl": "വീശുക - Cool wind is blowing.",
-          "audioPrompt": "Cool wind is blowing."
+          "text": "Suddenly, a cool and humid southern breeze swept across the swaying coconut palms.",
+          "meaningMl": "പെട്ടെന്ന് തെക്കുനിന്നുള്ള തണുത്ത കാറ്റ് തെങ്ങോലകളെ തലോടിക്കൊണ്ട് വീശിയടിച്ചു.",
+          "meaningHi": "अचानक, दक्षिण से आने वाली ठंडी और नम हवा नारियल के पेड़ों से होकर गुजरी।",
+          "meaningTa": "திடீரென தெற்கிலிருந்து குளிர்ந்த காற்று தென்னை மரங்களின் ஊடே வீசியது.",
+          "audioPrompt": "Suddenly, a cool and humid southern breeze swept across the swaying coconut palms."
         },
         {
-          "text": "Daily practice of Weather, Climate & Nature gives you great confidence in English.",
-          "meaningMl": "കാലാവസ്ഥയും പ്രകൃതിയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Weather, Climate & Nature gives you great confidence in English."
+          "text": "Huge charcoal-black clouds rolled across the sky, turning the afternoon into dusk.",
+          "meaningMl": "ആകാശത്തിലൂടെ കരിമഷി മേഘങ്ങൾ ഉരുണ്ടുകൂടി, ഉച്ചനേരത്തെ സന്ധ്യ പോലെ ഇരുണ്ടതാക്കി.",
+          "meaningHi": "विशाल काले बादल आसमान में छा गए, जिससे दोपहर शाम जैसी लगने लगी।",
+          "meaningTa": "பெரிய கரிய மேகங்கள் வானில் திரண்டு மதியத்தை அந்தி போல் ஆக்கின.",
+          "audioPrompt": "Huge charcoal-black clouds rolled across the sky, turning the afternoon into dusk."
+        },
+        {
+          "text": "First came a gentle sweet-smelling drizzle that kissed the thirsty flower petals.",
+          "meaningMl": "ദാഹിച്ചുനിന്ന പൂവിതളുകളെ ചുംബിച്ചുകൊണ്ട് സുഗന്ധമുള്ള ചെറിയ ചാറ്റൽമഴ ആദ്യം പെയ്തു.",
+          "meaningHi": "पहले हल्की सुगंधित बूंदाबांदी आई जिसने प्यासी पंखुड़ियों को चूमा।",
+          "meaningTa": "தாகமடைந்த பூவிதழ்களை முத்தமிட்டு முதலில் ஒரு மென்மையான தூறல் வந்தது.",
+          "audioPrompt": "First came a gentle sweet-smelling drizzle that kissed the thirsty flower petals."
+        },
+        {
+          "text": "Then a magnificent downpour roared over the tiled roofs with joyful music.",
+          "meaningMl": "തുടർന്ന് ഓടുമേഞ്ഞ മേൽക്കൂരകൾക്ക് മീതെ ആനന്ദത്തിന്റെ സംഗീതവുമായി പെരുമഴ ആർത്തലച്ചു പെയ്തു.",
+          "meaningHi": "फिर खपरैल की छतों पर आनंदमयी संगीत के साथ मूसलाधार बारिश हुई।",
+          "meaningTa": "பின்னர் ஓட்டு கூரைகளின் மீது மகிழ்ச்சியான இசையுடன் பெருமழை கொட்டியது.",
+          "audioPrompt": "Then a magnificent downpour roared over the tiled roofs with joyful music."
+        },
+        {
+          "text": "Children danced barefoot in the fresh puddles, welcoming the magical season.",
+          "meaningMl": "കുട്ടികൾ ആഹ്ലാദത്തോടെ മഴവെള്ളക്കെട്ടുകളിൽ നഗ്നപാദരായി നൃത്തം ചെയ്തുകൊണ്ട് ആ സുന്ദര കാലത്തെ വരവേറ്റു.",
+          "meaningHi": "बच्चों ने नए बने पोखरों में नंगे पैर नाचकर इस जादुई मौसम का स्वागत किया।",
+          "meaningTa": "குழந்தைகள் குட்டைகளில் வெறும் கால்களுடன் ஆடி அந்த பருவத்தை வரவேற்றனர்.",
+          "audioPrompt": "Children danced barefoot in the fresh puddles, welcoming the magical season."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What kind of breeze swept across the coconut palms first?",
+            "ml": "ആദ്യം തെങ്ങോലകളിലൂടെ വീശിയടിച്ച കാറ്റ് എങ്ങനെയുള്ളതായിരുന്നു?",
+            "hi": "पहले नारियल के पेड़ों से कैसी हवा गुजरी?",
+            "ta": "முதலில் தென்னை மரங்களின் ஊடே எப்படிப்பட்ட காற்று வீசியது?"
+          },
+          "options": [
+            "A dry dusty storm",
+            "A cool and humid southern breeze",
+            "A hot desert wind",
+            "A freezing snow wind"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A cool and humid southern breeze swept across.",
+            "ml": "തണുത്തതും ഈർപ്പമുള്ളതുമായ തെക്കൻ കാറ്റ് (cool and humid southern breeze)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What came first before the heavy downpour?",
+            "ml": "കനത്ത മഴയ്ക്ക് മുൻപ് ആദ്യം എന്താണ് പെയ്തത്?",
+            "hi": "भारी बारिश से पहले क्या आया?",
+            "ta": "பெருமழைக்கு முன் முதலில் என்ன வந்தது?"
+          },
+          "options": [
+            "Hailstones",
+            "A gentle sweet-smelling drizzle",
+            "A sandstorm",
+            "A tornado"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "First came a gentle sweet-smelling drizzle.",
+            "ml": "സുഗന്ധമുള്ള ചെറിയ ചാറ്റൽമഴയാണ് (gentle drizzle) ആദ്യം പെയ്തത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did the children do in the puddles?",
+            "ml": "കുട്ടികൾ വെള്ളക്കെട്ടുകളിൽ എന്താണ് ചെയ്തത്?",
+            "hi": "बच्चों ने पोखरों में क्या किया?",
+            "ta": "குழந்தைகள் குட்டைகளில் என்ன செய்தனர்?"
+          },
+          "options": [
+            "Slept on mats",
+            "Danced barefoot",
+            "Built stone walls",
+            "Cried loudly"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Children danced barefoot in the fresh puddles.",
+            "ml": "നഗ്നപാദരായി നൃത്തം ചെയ്തു (danced barefoot)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d29_1",
-          "question": "Which word represents: 'പെയ്യുക'?",
+          "question": "Select the natural native sentence to describe raining outside right now:",
           "options": [
-            "borrow",
-            "finish",
-            "arrive",
-            "rain"
+            "Rain is falling outside.",
+            "It is raining outside.",
+            "Outside is doing rain.",
+            "Rain happens now outside."
           ],
-          "answer": "rain",
-          "explanation": "rain എന്നാൽ പെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'It is raining outside' is the standard English construction using the dummy pronoun 'it'.",
+          "ruleHint": "Weather Rule: Use 'It is raining / snowing / windy'."
         },
         {
-          "id": "trap_d29_2",
-          "question": "What is the past form (V2) of 'blow'?",
+          "question": "How do you correctly describe a light rain with very small drops?",
           "options": [
-            "has blow",
-            "blowing",
-            "blew",
-            "blows"
+            "It is storming.",
+            "It is drizzling.",
+            "It is showering heavily.",
+            "It is clouding."
           ],
-          "answer": "blew",
-          "explanation": "blow ന്റെ ഭൂതകാല രൂപം blew ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Drizzling' specifically means raining lightly with very fine drops.",
+          "ruleHint": "Weather Vocabulary: Drizzle = very light fine rain."
         },
         {
-          "id": "trap_d29_3",
-          "question": "What is the correct English word for 'കാലാവസ്ഥ'?",
+          "question": "Choose the correct question to ask about the day's temperature:",
           "options": [
-            "weather",
-            "station",
-            "airport",
-            "journey"
+            "What is the temperature today?",
+            "How many temperature today?",
+            "How much degree is today?",
+            "What degree temperature today?"
           ],
-          "answer": "weather",
-          "explanation": "കാലാവസ്ഥ എന്നാൽ ഇംഗ്ലീഷിൽ weather."
+          "correctIndex": 0,
+          "explanation": "'What is the temperature today?' is clean and grammatically accurate.",
+          "ruleHint": "Rule: 'What is the temperature today?'"
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 29 Gate Exam (5 Qs)",

@@ -22,112 +22,96 @@
     "totalCoinsReward": 109
   },
   "grammarRule": {
-    "formula": "Zero and First Conditionals",
+    "formula": "Pleasant day today, isn't it? / Are you traveling far?",
     "explanation": {
-      "ml": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Weather, Commute, Compliments & Safe Topics എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Weather, Commute, Compliments & Safe Topics correctly in spoken English."
+      "ml": "യാത്രകളിലോ കാത്തിരിപ്പ് കേന്ദ്രങ്ങളിലോ അപരിചിതരുമായി സൗഹൃദം സ്ഥാപിക്കാൻ ലളിതമായ സ്മോൾ ടോക്ക് (Small Talk): 'Pleasant weather today, isn't it?' (നല്ല കാലാവസ്ഥയാണല്ലേ?), 'Is this your first time in this city?' (ഇവിടെ ആദ്യമായാണോ വരുന്നത്?) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Social Small Talk with Strangers with clear formula: Pleasant day today, isn't it? / Are you traveling far?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Compliment their watch.",
-      "en": "Golden Rule: Practice 'Compliment their watch.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 അപരിചിതരോട് വ്യക്തിപരമായ സ്വകാര്യ വിവരങ്ങൾ ചോദിക്കരുത്. എപ്പോഴും കാലാവസ്ഥ, യാത്ര, പുസ്തകങ്ങൾ, ചുറ്റുപാടുകൾ എന്നിവയെക്കുറിച്ച് സംസാരിക്കുക.",
+      "en": "Golden Tip: 💡 അപരിചിതരോട് വ്യക്തിപരമായ സ്വകാര്യ വിവരങ്ങൾ ചോദിക്കരുത്. എപ്പോഴും കാലാവസ്ഥ, യാത്ര, പുസ്തകങ്ങൾ, ചുറ്റുപാടുകൾ എന്നിവയെക്കുറിച്ച് സംസാരിക്കുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "compliment",
-        "v2": "complimented",
-        "v3": "complimented",
-        "meaning": {
-          "ml": "പ്രശംസിക്കുക",
-          "hi": "പ്രശംസിക്കുക",
-          "ta": "പ്രശംസിക്കുക"
-        },
-        "example": "Compliment their watch.",
-        "exampleMl": "പ്രശംസിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "chat",
-        "v2": "chatted",
-        "v3": "chatted",
-        "meaning": {
-          "ml": "സൊറ പറയുക",
-          "hi": "സൊറ പറയുക",
-          "ta": "സൊറ പറയുക"
-        },
-        "example": "Chat during the train ride.",
-        "exampleMl": "സൊറ പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "smile",
-        "v2": "smiled",
-        "v3": "smiled",
-        "meaning": {
-          "ml": "പുഞ്ചിരിക്കുക",
-          "hi": "പുഞ്ചിരിക്കുക",
-          "ta": "പുഞ്ചിരിക്കുക"
-        },
-        "example": "Smile and greet.",
-        "exampleMl": "പുഞ്ചിരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "introduce",
-        "v2": "introduced",
-        "v3": "introduced",
-        "meaning": {
-          "ml": "പരിചയപ്പെടുത്തുക",
-          "hi": "പരിചയപ്പെടുത്തുക",
-          "ta": "പരിചയപ്പെടുത്തുക"
-        },
-        "example": "Introduce casually.",
-        "exampleMl": "പരിചയപ്പെടുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "stranger",
+        "word": "Commute",
+        "partOfSpeech": "noun",
+        "definition": "A regular journey of some distance to and from one's place of work.",
         "meaning": {
-          "ml": "അപരിചിതൻ",
-          "hi": "അപരിചിതൻ",
-          "ta": "അപരിചിതൻ"
+          "ml": "സ്ഥിരം യാത്രാ വഴി / യാത്ര",
+          "hi": "दैनिक यात्रा",
+          "ta": "தினசரி பயணம்",
+          "te": "ప్రయాణం",
+          "kn": "ದೈನಂದಿನ ಪ್ರಯಾಣ"
         },
-        "example": "We learned about stranger in today's lesson."
+        "example": "How long is your daily morning train commute to the tech park?"
       },
       {
-        "word": "weather",
+        "word": "Pleasantry",
+        "partOfSpeech": "noun",
+        "definition": "An inconsequential remark made as part of a polite conversation.",
         "meaning": {
-          "ml": "കാലാവസ്ഥ",
-          "hi": "കാലാവസ്ഥ",
-          "ta": "കാലാവസ്ഥ"
+          "ml": "കുശലാന്വേഷണം / സൗഹൃദ സംസാരം",
+          "hi": "कुशलक्षेम की बातें / शिष्टाचार",
+          "ta": "நல விசாரிப்பு",
+          "te": "మర్యాదపూర్వక సంభాషణ",
+          "kn": "ಯೋಗಕ್ಷೇಮ ವಿಚಾರಣೆ"
         },
-        "example": "We learned about weather in today's lesson."
+        "example": "They exchanged brief cheerful pleasantries while waiting for the elevator."
       },
       {
-        "word": "journey",
+        "word": "Stranger",
+        "partOfSpeech": "noun",
+        "definition": "A person whom one does not know or with whom one is not familiar.",
         "meaning": {
-          "ml": "യാത്ര",
-          "hi": "യാത്ര",
-          "ta": "യാത്ര"
+          "ml": "അപരിചിതൻ / പരിചയമില്ലാത്ത ആൾ",
+          "hi": "अपरिचित / अजनबी",
+          "ta": "அறிமுகமில்லாதவர்",
+          "te": "అపరిచితుడు",
+          "kn": "ಅಪರಿಚಿತ"
         },
-        "example": "We learned about journey in today's lesson."
+        "example": "A friendly stranger helped carry the heavy stroller down the platform steps."
       },
       {
-        "word": "topic",
+        "word": "Bustling",
+        "partOfSpeech": "adjective",
+        "definition": "Full of energetic and noisy activity.",
         "meaning": {
-          "ml": "വിഷയം",
-          "hi": "വിഷയം",
-          "ta": "വിഷയം"
+          "ml": "തിരക്കും ബഹളവും നിറഞ്ഞ",
+          "hi": "हलचल भरा",
+          "ta": "பரபரப்பான",
+          "te": "రద్దీగా ఉండే",
+          "kn": "ಗಿಜಿಗುಡುವ"
         },
-        "example": "We learned about topic in today's lesson."
+        "example": "The historic spice market was bustling with merchants and travelers."
       },
       {
-        "word": "smile",
+        "word": "Acquaintance",
+        "partOfSpeech": "noun",
+        "definition": "A person's knowledge or experience of something, or a person one knows slightly.",
         "meaning": {
-          "ml": "ചിരി",
-          "hi": "ചിരി",
-          "ta": "ചിരി"
+          "ml": "പരിചിതൻ / അറിയാവുന്ന ഒരാൾ",
+          "hi": "परिचित व्यक्ति",
+          "ta": "அறிமுகம் உள்ளவர்",
+          "te": "పరిచితుడు",
+          "kn": "ಪರಿಚಿತ ವ್ಯಕ್ತಿ"
         },
-        "example": "We learned about smile in today's lesson."
+        "example": "A chance conversation in the park turned an acquaintance into a lifelong friend."
+      },
+      {
+        "word": "Atmosphere",
+        "partOfSpeech": "noun",
+        "definition": "The pervading tone or mood of a place, situation, or work of art.",
+        "meaning": {
+          "ml": "അന്തരീക്ഷം / ചുറ്റുപാട്",
+          "hi": "माहौल / वातावरण",
+          "ta": "சூழ்நிலை",
+          "te": "వాతావరణం",
+          "kn": "ವಾತಾವರಣ"
+        },
+        "example": "This garden café has a remarkably tranquil and leafy atmosphere."
       }
     ]
   },
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Pleasant day today, isn't it? / Are you traveling far?",
+        "ml": "യാത്രകളിലോ കാത്തിരിപ്പ് കേന്ദ്രങ്ങളിലോ അപരിചിതരുമായി സൗഹൃദം സ്ഥാപിക്കാൻ ലളിതമായ സ്മോൾ ടോക്ക് (Small Talk): 'Pleasant weather today, isn't it?' (നല്ല കാലാവസ്ഥയാണല്ലേ?), 'Is this your first time in this city?' (ഇവിടെ ആദ്യമായാണോ വരുന്നത്?) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Compliment their watch.",
-        "Chat during the train ride.",
-        "Smile and greet."
+        "Lovely morning breeze today, isn't it ?",
+        "Excuse me, do you happen to know if this suburban train stops at North Bridge ?",
+        "I noticed the historical novel you are reading; is it as captivating as people say ?",
+        "It gets surprisingly crowded around five in the evening at this metro station .",
+        "Have a wonderful onward journey and enjoy your weekend exploring the city !"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Compliment their watch.",
-          "meaningMl": "പ്രശംസിക്കുക - Compliment their watch.",
-          "audioPrompt": "Compliment their watch."
+          "text": "Every morning at sunrise, an weathered teak bench overlooked the shimmering blue Arabian Sea in Kochi.",
+          "meaningMl": "എല്ലാ പ്രഭാതത്തിലും കൊച്ചിയിലെ നീലക്കടലിന് അഭിമുഖമായി പഴയൊരു തടിബെഞ്ച് ഉണ്ടായിരുന്നു.",
+          "meaningHi": "कोच्चि में हर सुबह एक पुरानी लकड़ी की बेंच से अरब सागर दिखाई देता था।",
+          "meaningTa": "கொச்சியில் ஒவ்வொரு காலையிலும் அரபிக் கடலைப் பார்த்தபடி ஒரு மர பெஞ்ச் இருந்தது.",
+          "audioPrompt": "Every morning at sunrise, an weathered teak bench overlooked the shimmering blue Arabian Sea in Kochi."
         },
         {
-          "text": "Chat during the train ride.",
-          "meaningMl": "സൊറ പറയുക - Chat during the train ride.",
-          "audioPrompt": "Chat during the train ride."
+          "text": "Retired sea captain Madhavan sat there with his brass binoculars, watching merchant cargo ships glide past.",
+          "meaningMl": "വിരമിച്ച നാവികനായ മാധവൻ തന്റെ ബൈനോക്കുലറുമായി കപ്പലുകൾ പോകുന്നത് നോക്കി അവിടെ ഇരിക്കാറുണ്ടായിരുന്നു.",
+          "meaningHi": "सेवानिवृत्त कप्तान माधवन दूरबीन से मालवाहक जहाजों को गुजरते हुए देखते थे।",
+          "meaningTa": "ஓய்வுபெற்ற மாலுமி மாதவன் கப்பல்கள் செல்வதைப் பார்த்துக் கொண்டிருப்பார்.",
+          "audioPrompt": "Retired sea captain Madhavan sat there with his brass binoculars, watching merchant cargo ships glide past."
         },
         {
-          "text": "Daily practice of Social Small Talk with Strangers gives you great confidence in English.",
-          "meaningMl": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Social Small Talk with Strangers gives you great confidence in English."
+          "text": "One breezy dawn, a young software engineer named Nikhil sat down beside him to tie his running sneakers.",
+          "meaningMl": "കാറ്റുള്ള ഒരു പ്രഭാതത്തിൽ, ഓട്ടത്തിനിടെ ഷൂലേസ് കെട്ടാനായി നിഖിൽ എന്ന ഐടി യുവാവ് അദ്ദേഹത്തിന്റെ അടുത്തിരുന്നു.",
+          "meaningHi": "एक हवादार सुबह, निखिल नाम का एक युवा इंजीनियर जूते बांधने के लिए उनके पास बैठा।",
+          "meaningTa": "ஒரு காலை வேளையில் நிகில் என்ற இளைஞன் காலணி கயிறு கட்ட அருகில் அமர்ந்தான்.",
+          "audioPrompt": "One breezy dawn, a young software engineer named Nikhil sat down beside him to tie his running sneakers."
+        },
+        {
+          "text": "Madhavan nodded politely: 'Crisp morning sea breeze today, isn't it young man?'",
+          "meaningMl": "മാധവൻ സ്നേഹത്തോടെ ചോദിച്ചു: 'ഇന്ന് നല്ല തണുത്ത കടൽക്കാറ്റുണ്ടല്ലേ മകനേ?'",
+          "meaningHi": "माधवन ने सिर हिलाया: 'आज सुबह की ठंडी समुद्री हवा है, है ना?'",
+          "meaningTa": "மாதவன் புன்னகையுடன்: 'இன்று நல்ல குளிர்ந்த கடல் காற்று வீசுகிறது, அல்லவா?' என்றார்.",
+          "audioPrompt": "Madhavan nodded politely: 'Crisp morning sea breeze today, isn't it young man?'"
+        },
+        {
+          "text": "That simple pleasantry blossomed into an hour of captivating stories about Pacific typhoons and distant lighthouses.",
+          "meaningMl": "ആ ചെറിയ കുശലാന്വേഷണം പസഫിക് കൊടുങ്കാറ്റുകളെക്കുറിച്ചുള്ള ഒരു മണിക്കൂർ നീണ്ട കഥകളായി വളർന്നു.",
+          "meaningHi": "वह साधारण शिष्टाचार तूफानों और लाइटहाउसों की दिलचस्प कहानियों में बदल गया।",
+          "meaningTa": "அந்த எளிய நலம் விசாரிப்பு கடலின் சாகசக் கதைகளாக வளர்ந்தது.",
+          "audioPrompt": "That simple pleasantry blossomed into an hour of captivating stories about Pacific typhoons and distant lighthouses."
+        },
+        {
+          "text": "Small talk is the gentle key that unlocks human hearts, turning strangers into cherished kindred spirits.",
+          "meaningMl": "അപരിചിതരെപ്പോലും ഉറ്റ ചങ്ങാതിമാരാക്കി മാറ്റാൻ മനുഷ്യഹൃദയങ്ങൾ തുറക്കുന്ന മാന്ത്രിക താക്കോലാണ് സൗഹൃദ സംഭാഷണം.",
+          "meaningHi": "हल्की-फुल्की बातचीत वह चाबी है जो दिलों को खोलती है और अजनबियों को दोस्त बनाती है।",
+          "meaningTa": "சிறு பேச்சே மனித இதயங்களைத் திறந்து அறிமுகமில்லாதவர்களை நண்பர்களாக்கும் திறவுகோலாகும்.",
+          "audioPrompt": "Small talk is the gentle key that unlocks human hearts, turning strangers into cherished kindred spirits."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where did retired sea captain Madhavan sit every morning?",
+            "ml": "എല്ലാ പ്രഭാതത്തിലും മാധവൻ എവിടെയാണ് ഇരുന്നിരുന്നത്?",
+            "hi": "माधवन हर सुबह कहाँ बैठते थे?",
+            "ta": "மாதவன் தினமும் காலையில் எங்கு அமர்வார்?"
+          },
+          "options": [
+            "Inside a dark cellar",
+            "On a weathered teak bench overlooking the sea in Kochi",
+            "On an airplane",
+            "Inside a library"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "On a weathered teak bench overlooking the Arabian Sea.",
+            "ml": "കടലിന് അഭിമുഖമായുള്ള തടിബെഞ്ചിൽ (teak bench overlooking the sea)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Why did young Nikhil sit down beside him initially?",
+            "ml": "ആദ്യം നിഖിൽ അദ്ദേഹത്തിന്റെ അടുത്തിരുന്നത് എന്തിനായിരുന്നു?",
+            "hi": "निखिल शुरुआत में उनके पास क्यों बैठा?",
+            "ta": "நிகில் முதலில் ஏன் அருகில் அமர்ந்தான்?"
+          },
+          "options": [
+            "To sell books",
+            "To tie his running sneakers",
+            "To sleep",
+            "To eat lunch"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To tie his running sneakers.",
+            "ml": "ഷൂലേസ് കെട്ടാനാണ് (tie his running sneakers) അവൻ ഇരുന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What opening pleasantry did Captain Madhavan use to start small talk?",
+            "ml": "സംഭാഷണം തുടങ്ങാൻ മാധവൻ ഉപയോഗിച്ച വാചകം എന്തായിരുന്നു?",
+            "hi": "बातचीत शुरू करने के लिए माधवन ने क्या कहा?",
+            "ta": "பேச்சைத் தொடங்க மாதவன் என்ன கூறினார்?"
+          },
+          "options": [
+            "Give me money!",
+            "Crisp morning sea breeze today, isn't it young man?",
+            "Who are you?",
+            "Go away!"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "'Crisp morning sea breeze today, isn't it young man?'",
+            "ml": "'നല്ല തണുത്ത കടൽക്കാറ്റുണ്ടല്ലേ മകനേ?' എന്നാണ് ചോദിച്ചത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d59_1",
-          "question": "Which word represents: 'പ്രശംസിക്കുക'?",
+          "question": "Select the most natural small talk starter about the weather:",
           "options": [
-            "compliment",
-            "arrive",
-            "finish",
-            "borrow"
+            "Lovely day today, isn't it?",
+            "Weather is present today yes?",
+            "How much is the cloud count now?",
+            "Do you accept today weather?"
           ],
-          "answer": "compliment",
-          "explanation": "compliment എന്നാൽ പ്രശംസിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Lovely day today, isn't it?' uses a natural question tag to invite friendly conversational agreement.",
+          "ruleHint": "Small Talk Tag: 'Lovely day, isn't it?'"
         },
         {
-          "id": "trap_d59_2",
-          "question": "What is the past form (V2) of 'chat'?",
+          "question": "What is appropriate small talk topic with an unfamiliar stranger on a train?",
           "options": [
-            "chats",
-            "chating",
-            "has chat",
-            "chatted"
+            "Their private personal salary and bank details",
+            "The pleasant weather, commute route, or a book they are reading",
+            "Their family disputes and arguments",
+            "Their political voting secrets"
           ],
-          "answer": "chatted",
-          "explanation": "chat ന്റെ ഭൂതകാല രൂപം chatted ആണ്."
+          "correctIndex": 1,
+          "explanation": "Small talk focuses on safe, pleasant, non-intrusive shared topics like weather, travel, or books.",
+          "ruleHint": "Small Talk Etiquette: Keep topics light, pleasant, and neutral."
         },
         {
-          "id": "trap_d59_3",
-          "question": "What is the correct English word for 'അപരിചിതൻ'?",
+          "question": "What does the phrase 'It made the journey fly by' mean?",
           "options": [
-            "stranger",
-            "station",
-            "airport",
-            "journey"
+            "The train sprouted wings and flew in the air",
+            "The pleasant conversation made the time pass very quickly",
+            "You took an airplane flight instead",
+            "You were running very fast"
           ],
-          "answer": "stranger",
-          "explanation": "അപരിചിതൻ എന്നാൽ ഇംഗ്ലീഷിൽ stranger."
+          "correctIndex": 1,
+          "explanation": "When time 'flies by', it means it passed quickly and enjoyably.",
+          "ruleHint": "Native Idiom: 'Time flies by' = passes quickly."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 59 Gate Exam (5 Qs)",

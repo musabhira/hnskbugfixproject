@@ -5074,9 +5074,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepConditionals => _stepActiveGrammar;
   int get _stepQuestionTags => _stepActiveGrammar;
   int get _stepSentenceStructure => _stepActiveGrammar;
-  int get _stepEnglishHub => _stepActiveGrammar + 1;
-  int get _stepVerbTimelineGame => _stepEnglishHub + 1;
-  int get _stepKaraokeChant => _stepVerbTimelineGame + 1;
+  int get _stepVerbTimelineGame => _stepActiveGrammar + 1;
+  int get _stepEnglishHub => _stepVerbTimelineGame + 1;
+  int get _stepKaraokeChant => _stepEnglishHub + 1;
   int get _stepPrepositionsVisual => _stepKaraokeChant + 1;
   int get _stepPeerCall => _stepPrepositionsVisual + 1;
   int get _stepGame1 => _stepPeerCall + 1;

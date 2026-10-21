@@ -22,112 +22,133 @@
     "totalCoinsReward": 115
   },
   "grammarRule": {
-    "formula": "Relative Clauses – Defining and Non-Defining",
+    "formula": "Subject + have/has been + verb-ing + Object (for/since)",
     "explanation": {
-      "ml": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Have/Has been + V-ing (Action started in past and still continuing) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Have/Has been + V-ing (Action started in past and still continuing) correctly in spoken English."
+      "ml": "ഭൂതകാലത്തിൽ ആരംഭിച്ച് ഇപ്പോഴും തുടർന്നുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ പറയാൻ Present Perfect Continuous (have/has been + V-ing) ഉപയോഗിക്കുന്നു. പ്രത്യേകിച്ച് ആ പ്രവൃത്തി എത്ര സമയമായി നടക്കുന്നു എന്ന് വ്യക്തമാക്കുമ്പോൾ ഇത് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Present Perfect Continuous: Have/Has been + V-ing with clear formula: Subject + have/has been + verb-ing + Object (for/since)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I have been learning English for months.",
-      "en": "Golden Rule: Practice 'I have been learning English for months.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: I am working = ഇപ്പോൾ ചെയ്തുകൊണ്ടിരിക്കുന്നു. I have been working for 3 hours = 3 മണിക്കൂറായി തുടർച്ചയായി ചെയ്തുകൊണ്ടിരിക്കുന്നു.",
+      "en": "Golden Tip: I am working = ഇപ്പോൾ ചെയ്തുകൊണ്ടിരിക്കുന്നു. I have been working for 3 hours = 3 മണിക്കൂറായി തുടർച്ചയായി ചെയ്തുകൊണ്ടിരിക്കുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "learn",
-        "v2": "learned",
-        "v3": "learned",
+        "v1": "striving",
+        "v2": "strivinged",
+        "v3": "strivinged",
         "meaning": {
-          "ml": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു",
-          "hi": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു",
-          "ta": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു"
+          "ml": "കഠിനമായി പ്രയത്നിക്കുന്നു",
+          "hi": "प्रयास कर रहा है",
+          "ta": "முயல்கிறது"
         },
-        "example": "I have been learning English for months.",
-        "exampleMl": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Our environmental research group has been striving to reduce plastic waste.",
+        "exampleMl": "Making great efforts to achieve or obtain something."
       },
       {
-        "v1": "practice",
-        "v2": "practiced",
-        "v3": "practiced",
+        "v1": "progressing",
+        "v2": "progressinged",
+        "v3": "progressinged",
         "meaning": {
-          "ml": "പരിശീലിച്ചുവരുന്നു",
-          "hi": "പരിശീലിച്ചുവരുന്നു",
-          "ta": "പരിശീലിച്ചുവരുന്നു"
+          "ml": "പുരോഗമിക്കുന്നു / മുന്നേറുന്നു",
+          "hi": "प्रगति कर रहा है",
+          "ta": "முன்னேறுகிறது"
         },
-        "example": "He has been practicing speaking.",
-        "exampleMl": "പരിശീലിച്ചുവരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The construction work on the metro railway has been progressing smoothly.",
+        "exampleMl": "Developing gradually towards a more advanced state."
       },
       {
-        "v1": "rain",
-        "v2": "rained",
-        "v3": "rained",
+        "v1": "investigating",
+        "v2": "investigatinged",
+        "v3": "investigatinged",
         "meaning": {
-          "ml": "പെയ്യുക",
-          "hi": "बारिश होना",
-          "ta": "மழை பெய்"
+          "ml": "അന്വേഷിച്ചുകൊണ്ടിരിക്കുന്നു / പരിശോധിക്കുന്നു",
+          "hi": "जांच कर रहा है",
+          "ta": "விசாரிக்கிறது"
         },
-        "example": "It has been raining since morning.",
-        "exampleMl": "പെയ്തുകൊണ്ടേയിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "work",
-        "v2": "worked",
-        "v3": "worked",
-        "meaning": {
-          "ml": "ജോലി ചെയ്യുക",
-          "hi": "काम करना",
-          "ta": "வேலை செய்"
-        },
-        "example": "I have been working on this code.",
-        "exampleMl": "ജോലി ചെയ്തുകൊണ്ടിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Cybersecurity analysts have been investigating the origin of the phishing emails.",
+        "exampleMl": "Carrying out a formal inquiry or systematic study to discover truth."
       }
     ],
     "nouns": [
       {
-        "word": "progress",
+        "word": "Continuous",
+        "partOfSpeech": "adjective",
+        "definition": "Forming an unbroken whole; without interruption.",
         "meaning": {
-          "ml": "പുരോഗതി",
-          "hi": "പുരോഗതി",
-          "ta": "പുരോഗതി"
+          "ml": "തുടർച്ചയായ / മുറിവില്ലാത്ത",
+          "hi": "निरंतर",
+          "ta": "தொடர்ச்சியான",
+          "te": "నిరంతర",
+          "kn": "ನಿರಂತರವಾದ"
         },
-        "example": "We learned about progress in today's lesson."
+        "example": "The heavy rainfall caused continuous flooding in low-lying riverside towns."
       },
       {
-        "word": "continuity",
+        "word": "Tenacious",
+        "partOfSpeech": "adjective",
+        "definition": "Tending to keep a firm hold of something; clinging or adhering closely; persistent.",
         "meaning": {
-          "ml": "തുടർച്ച",
-          "hi": "തുടർച്ച",
-          "ta": "തുടർച്ച"
+          "ml": "ഉറച്ചുനിൽക്കുന്ന / പിടിവിടാത്ത",
+          "hi": "दृढ़ / लगनशील",
+          "ta": "பிடிவாதமான / உறுதியான",
+          "te": "పట్టుదలగల",
+          "kn": "ಛಲವುಳ್ಳ"
         },
-        "example": "We learned about continuity in today's lesson."
+        "example": "Her tenacious work ethic propelled her from laboratory apprentice to chief scientist."
       },
       {
-        "word": "habit",
+        "word": "Perpetual",
+        "partOfSpeech": "adjective",
+        "definition": "Never ending or changing; occurring repeatedly.",
         "meaning": {
-          "ml": "ശീലം",
-          "hi": "ശീലം",
-          "ta": "ശീലം"
+          "ml": "ശാശ്വതമായ / അവസാനമില്ലാത്ത",
+          "hi": "सतत / निरंतर",
+          "ta": "நிலையான / தொடர்ச்சியான",
+          "te": "శాశ్వతమైన",
+          "kn": "ಶಾಶ್ವತವಾದ"
         },
-        "example": "We learned about habit in today's lesson."
+        "example": "The waterfall creates a perpetual mist that nourishes hillside rainforest orchids."
       },
       {
-        "word": "effort",
+        "word": "Striving",
+        "partOfSpeech": "verb",
+        "definition": "Making great efforts to achieve or obtain something.",
         "meaning": {
-          "ml": "ശ്രമം",
-          "hi": "ശ്രമം",
-          "ta": "ശ്രമം"
+          "ml": "കഠിനമായി പ്രയത്നിക്കുന്നു",
+          "hi": "प्रयास कर रहा है",
+          "ta": "முயல்கிறது",
+          "te": "కృషి చేస్తోంది",
+          "kn": "ಶ್ರಮಿಸುತ್ತಿದೆ"
         },
-        "example": "We learned about effort in today's lesson."
+        "example": "Our environmental research group has been striving to reduce plastic waste."
       },
       {
-        "word": "streak",
+        "word": "Progressing",
+        "partOfSpeech": "verb",
+        "definition": "Developing gradually towards a more advanced state.",
         "meaning": {
-          "ml": "സ്ട്രോക്ക്",
-          "hi": "സ്ട്രോക്ക്",
-          "ta": "സ്ട്രോക്ക്"
+          "ml": "പുരോഗമിക്കുന്നു / മുന്നേറുന്നു",
+          "hi": "प्रगति कर रहा है",
+          "ta": "முன்னேறுகிறது",
+          "te": "పురోగమిస్తోంది",
+          "kn": "ಪ್ರಗತಿ ಹೊಂದುತ್ತಿದೆ"
         },
-        "example": "We learned about streak in today's lesson."
+        "example": "The construction work on the metro railway has been progressing smoothly."
+      },
+      {
+        "word": "Investigating",
+        "partOfSpeech": "verb",
+        "definition": "Carrying out a formal inquiry or systematic study to discover truth.",
+        "meaning": {
+          "ml": "അന്വേഷിച്ചുകൊണ്ടിരിക്കുന്നു / പരിശോധിക്കുന്നു",
+          "hi": "जांच कर रहा है",
+          "ta": "விசாரிக்கிறது",
+          "te": "విచారిస్తోంది",
+          "kn": "ತನಿಖೆ ನಡೆಸುತ್ತಿದೆ"
+        },
+        "example": "Cybersecurity analysts have been investigating the origin of the phishing emails."
       }
     ]
   },
@@ -136,8 +157,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Present Perfect Continuous: Have been doing",
-        "ml": "പാഠം: തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ"
+        "en": "Concept Room: Present Perfect Continuous: Have/Has been + V-ing",
+        "ml": "പാഠം: തുടർന്നുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ (Have/Has been + V-ing)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + have/has been + verb-ing + Object (for/since)",
+        "ml": "ഭൂതകാലത്തിൽ ആരംഭിച്ച് ഇപ്പോഴും തുടർന്നുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ പറയാൻ Present Perfect Continuous (have/has been + V-ing) ഉപയോഗിക്കുന്നു. പ്രത്യേകിച്ച് ആ പ്രവൃത്തി എത്ര സമയമായി നടക്കുന്നു എന്ന് വ്യക്തമാക്കുമ്പോൾ ഇത് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I have been learning English for months.",
-        "He has been practicing speaking.",
-        "It has been raining since morning."
+        "I have been writing this software algorithm code since seven o'clock this morning .",
+        "She has been studying civil engineering at this university for three semesters .",
+        "Our team has been developing this mobile platform feature for two consecutive months .",
+        "How long have you been practicing the classical violin for the recital ?",
+        "They have been waiting patiently for the doctor's consultation since lunchtime ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +239,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Present Perfect Continuous: Have been doing",
-        "ml": "റീഡിങ് റൂം: തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ"
+        "en": "Reading Room: The Botanical Conservationist",
+        "ml": "റീഡിങ് റൂം: തുടർന്നുകൊണ്ടിരിക്കുന്ന കാര്യങ്ങൾ (Have/Has been + V-ing)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I have been learning English for months.",
-          "meaningMl": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു - I have been learning English for months.",
-          "audioPrompt": "I have been learning English for months."
+          "text": "Botanist Dr. Leela has been researching endangered medicinal orchids in the Western Ghats for over fifteen years.",
+          "meaningMl": "സസ്യശാസ്ത്രജ്ഞ ഡോ. ലീല പതിനഞ്ച് വർഷത്തിലേറെയായി പശ്ചിമഘട്ടത്തിലെ വംശനാശഭീഷണി നേരിടുന്ന ഔഷധ ഓർക്കിഡുകളെ കുറിച്ച് ഗവേഷണം നടത്തിവരികയാണ്.",
+          "meaningHi": "वनस्पतिशास्त्री डॉ. लीला पंद्रह वर्षों से पश्चिमी घाट में दुर्लभ ऑर्किड पर शोध कर रही हैं।",
+          "meaningTa": "தாவரவியலாளர் டாக்டர் லீலா பதினைந்து ஆண்டுகளுக்கும் மேலாக மேற்குத் தொடர்ச்சி மலையில் அரிய ஆர்க்கிட்களை ஆய்வு செய்து வருகிறார்.",
+          "audioPrompt": "Botanist Dr. Leela has been researching endangered medicinal orchids in the Western Ghats for over fifteen years."
         },
         {
-          "text": "He has been practicing speaking.",
-          "meaningMl": "പരിശീലിച്ചുവരുന്നു - He has been practicing speaking.",
-          "audioPrompt": "He has been practicing speaking."
+          "text": "Her field team has been documenting the flowering cycles of rare mountain flora through every monsoon season.",
+          "meaningMl": "അവരുടെ ഫീൽഡ് ടീം ഓരോ മഴക്കാലത്തും അപൂർവ പർവത സസ്യങ്ങളുടെ പൂവിടൽ ചക്രങ്ങൾ രേഖപ്പെടുത്തിക്കൊണ്ടിരിക്കുകയാണ്.",
+          "meaningHi": "उनकी टीम हर मानसून में दुर्लभ पहाड़ी वनस्पतियों के चक्र का दस्तावेजीकरण कर रही है।",
+          "meaningTa": "அவரது குழுவினர் ஒவ்வொரு மழைக்காலத்திலும் அரிய தாவரங்களின் பூக்கும் காலத்தை ஆவணப்படுத்தி வருகின்றனர்.",
+          "audioPrompt": "Her field team has been documenting the flowering cycles of rare mountain flora through every monsoon season."
         },
         {
-          "text": "Daily practice of Present Perfect Continuous: Have been doing gives you great confidence in English.",
-          "meaningMl": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Present Perfect Continuous: Have been doing gives you great confidence in English."
+          "text": "Rising global temperatures have been altering delicate forest microclimates since the beginning of this century.",
+          "meaningMl": "ആഗോള താപനിലയിലെ വർദ്ധനവ് ഈ നൂറ്റാണ്ടിന്റെ തുടക്കം മുതൽ കാടുകളിലെ സൂക്ഷ്മ കാലാവസ്ഥയിൽ മാറ്റം വരുത്തിക്കൊണ്ടിരിക്കുകയാണ്.",
+          "meaningHi": "बढ़ते वैश्विक तापमान इस सदी की शुरुआत से जंगलों की जलवायु को बदल रहे हैं।",
+          "meaningTa": "புவி வெப்பமயமாதல் இந்த நூற்றாண்டின் தொடக்கம் முதல் காடுகளின் காலநிலையை மாற்றி வருகிறது.",
+          "audioPrompt": "Rising global temperatures have been altering delicate forest microclimates since the beginning of this century."
+        },
+        {
+          "text": "Local indigenous tribes have been collaborating with Leela's research lab by sharing ancient ecological knowledge.",
+          "meaningMl": "തദ്ദേശീയ ആദിവാസി വിഭാഗങ്ങൾ പുരാതന പാരിസ്ഥിതിക അറിവുകൾ പങ്കുവെച്ചുകൊണ്ട് ലീലയുടെ റിസർച്ച് ലാബുമായി സഹകരിച്ചുകൊണ്ടിരിക്കുകയാണ്.",
+          "meaningHi": "स्थानीय जनजातियाँ पारंपरिक ज्ञान साझा करके लीला की लैब के साथ सहयोग कर रही हैं।",
+          "meaningTa": "பழங்குடியினர் தங்களின் பாரம்பரிய அறிவைப் பகிர்ந்து லீலாவின் ஆய்வுக்கூடத்திற்கு உதவி வருகின்றனர்.",
+          "audioPrompt": "Local indigenous tribes have been collaborating with Leela's research lab by sharing ancient ecological knowledge."
+        },
+        {
+          "text": "Together, they have been cultivating delicate orchid seedlings in community-managed highland nurseries.",
+          "meaningMl": "ഒരുമിച്ച്, അവർ കമ്മ്യൂണിറ്റി നഴ്സറികളിൽ സൂക്ഷ്മമായ ഓർക്കിഡ് തൈകൾ വളർത്തിക്കൊണ്ടിരിക്കുകയാണ്.",
+          "meaningHi": "वे मिलकर नर्सरियों में नाजुक ऑर्किड के पौधों की खेती कर रहे हैं।",
+          "meaningTa": "ஒன்றாக இணைந்து அவர்கள் நாற்றங்கால்களில் ஆர்க்கிட் செடிகளை வளர்த்து வருகின்றனர்.",
+          "audioPrompt": "Together, they have been cultivating delicate orchid seedlings in community-managed highland nurseries."
+        },
+        {
+          "text": "International environmental foundations have been funding her conservation initiatives for six consecutive years.",
+          "meaningMl": "അന്താരാഷ്ട്ര പരിസ്ഥിതി ഫൗണ്ടേഷനുകൾ തുടർച്ചയായി ആറ് വർഷമായി അവരുടെ സംരക്ഷണ പ്രവർത്തനങ്ങൾക്ക് സാമ്പത്തിക സഹായം നൽകിവരുന്നു.",
+          "meaningHi": "अंतर्राष्ट्रीय पर्यावरण फाउंडेशन छह वर्षों से उनकी पहलों का वित्तपोषण कर रहे हैं।",
+          "meaningTa": "சர்வதேச சுற்றுச்சூழல் அமைப்புகள் ஆறு ஆண்டுகளாக அவரது முயற்சிகளுக்கு நிதியுதவி அளித்து வருகின்றன.",
+          "audioPrompt": "International environmental foundations have been funding her conservation initiatives for six consecutive years."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "For how long has Dr. Leela been researching orchids in the Western Ghats?",
+            "ml": "ഡോ. ലീല എത്ര കാലമായി പശ്ചിമഘട്ടത്തിൽ ഓർക്കിഡുകളെ കുറിച്ച് ഗവേഷണം നടത്തുന്നു?",
+            "hi": "डॉ. लीला कितने समय से पश्चिमी घाट में शोध कर रही हैं?",
+            "ta": "டாக்டர் லீலா எவ்வளவு காலமாக ஆய்வு செய்து வருகிறார்?"
+          },
+          "options": [
+            "Two months",
+            "Over fifteen years",
+            "One single year",
+            "Five years"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She has been researching orchids for over fifteen years.",
+            "ml": "15 വർഷത്തിലേറെയായി (Over fifteen years)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Who has been collaborating with Leela by sharing ecological wisdom?",
+            "ml": "പാരിസ്ഥിതിക അറിവുകൾ പങ്കുവെച്ച് ലീലയെ സഹായിക്കുന്നത് ആരാണ്?",
+            "hi": "लीला के साथ कौन सहयोग कर रहा है?",
+            "ta": "லீலாவுடன் இணைந்து செயல்படுவது யார்?"
+          },
+          "options": [
+            "Commercial logging corporations",
+            "Local indigenous tribes",
+            "Tourist backpackers",
+            "Factory workers"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Local indigenous tribes have been collaborating.",
+            "ml": "തദ്ദേശീയ ആദിവാസി വിഭാഗങ്ങൾ (Local indigenous tribes)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "For how many consecutive years have foundations been funding her initiatives?",
+            "ml": "എത്ര വർഷമായി ഫൗണ്ടേഷനുകൾ അവരുടെ പ്രവർത്തനങ്ങൾക്ക് ഫണ്ട് നൽകുന്നു?",
+            "hi": "फाउंडेशन कितने वर्षों से उनकी पहलों का वित्तपोषण कर रहे हैं?",
+            "ta": "எத்தனை ஆண்டுகளாக அமைப்புகள் நிதியுதவி அளித்து வருகின்றன?"
+          },
+          "options": [
+            "One year",
+            "Six consecutive years",
+            "Twenty years",
+            "None"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "For six consecutive years.",
+            "ml": "തുടർച്ചയായി 6 വർഷമായി (Six consecutive years)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d65_1",
-          "question": "Which word represents: 'പഠിച്ചുകൊണ്ടിരിക്കുന്നു'?",
+          "id": 1,
+          "question": "Select the sentence correctly formed in Present Perfect Continuous:",
           "options": [
-            "discover",
-            "learn",
-            "decide",
-            "remember"
+            "He has been working on this design for hours.",
+            "He have been working on this design for hours.",
+            "He has working on this design for hours.",
+            "He is been working on this design for hours."
           ],
-          "answer": "learn",
-          "explanation": "learn എന്നാൽ പഠിച്ചുകൊണ്ടിരിക്കുന്നു എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "'He' ന്റെ കൂടെ 'has been + V-ing' വരണം ('He has been working')."
         },
         {
-          "id": "trap_d65_2",
-          "question": "What is the past form (V2) of 'practice'?",
+          "id": 2,
+          "question": "What is the key difference between 'I work here' and 'I have been working here for 5 years'?",
           "options": [
-            "practices",
-            "practiceing",
-            "has practice",
-            "practiced"
+            "There is no difference in meaning.",
+            "'I have been working...' emphasizes the continuous duration starting from the past to the present.",
+            "'I work here' refers to the future only.",
+            "'I have been working...' means the action is already finished and terminated."
           ],
-          "answer": "practiced",
-          "explanation": "practice ന്റെ ഭൂതകാല രൂപം practiced ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "ഭൂതകാലത്തിൽ തുടങ്ങി ഇപ്പോഴും തുടരുന്ന കാലയളവിനെ എടുത്തുപറയാനാണ് 'have been working... for 5 years' ഉപയോഗിക്കുന്നത്."
         },
         {
-          "id": "trap_d65_3",
-          "question": "What is the correct English word for 'പുരോഗതി'?",
+          "id": 3,
+          "question": "Which of the following sentences has a grammatical error?",
           "options": [
-            "progress",
-            "routine",
-            "progress",
-            "schedule"
+            "She has been living in Madrid since 2019.",
+            "We have been waiting here for two hours.",
+            "They has been discussing the budget all morning.",
+            "I have been learning Spanish recently."
           ],
-          "answer": "progress",
-          "explanation": "പുരോഗതി എന്നാൽ ഇംഗ്ലീഷിൽ progress."
+          "correctIndex": 2,
+          "explanationMl": "'They' എന്ന പ്ലൂരൽ സബ്ജക്റ്റിനൊപ്പം 'has' അല്ല, 'have' ആണ് വരേണ്ടത് ('They have been discussing')."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 65 Gate Exam (5 Qs)",

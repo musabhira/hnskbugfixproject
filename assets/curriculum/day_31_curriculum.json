@@ -22,112 +22,96 @@
     "totalCoinsReward": 81
   },
   "grammarRule": {
-    "formula": "Future Perfect Continuous Tense",
+    "formula": "I / He / She / It + was | You / We / They + were",
     "explanation": {
-      "ml": "കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were എന്ന വിഷയത്തിൽ Was (I/He/She/It) vs Were (You/We/They) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Was (I/He/She/It) vs Were (You/We/They) correctly in spoken English."
+      "ml": "കഴിഞ്ഞകാലത്തെ അവസ്ഥകളെയും സന്ദർഭങ്ങളെയും സൂചിപ്പിക്കാൻ ഏകവചനത്തിൽ 'was' (ആയിരുന്നു) എന്നും, ബഹുവചനത്തിലും 'You' എന്നതിനൊപ്പവും 'were' (ആയിരുന്നു) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Past State: Was vs Were with clear formula: I / He / She / It + was | You / We / They + were"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I was at home.",
-      "en": "Golden Rule: Practice 'I was at home.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'I was at home yesterday' (ഞാൻ ഇന്നലെ വീട്ടിലായിരുന്നു). 'They were very happy' (അവർ വളരെ സന്തോഷത്തിലായിരുന്നു). 'You' എപ്പോഴും 'were' മാത്രമേ എടുക്കൂ ('You were right').",
+      "en": "Golden Tip: 💡 'I was at home yesterday' (ഞാൻ ഇന്നലെ വീട്ടിലായിരുന്നു). 'They were very happy' (അവർ വളരെ സന്തോഷത്തിലായിരുന്നു). 'You' എപ്പോഴും 'were' മാത്രമേ എടുക്കൂ ('You were right')."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "be",
-        "v2": "was",
-        "v3": "been",
-        "meaning": {
-          "ml": "ആയിരിക്കുക",
-          "hi": "होना",
-          "ta": "இரு"
-        },
-        "example": "I was at home.",
-        "exampleMl": "ആയിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "feel",
-        "v2": "felt",
-        "v3": "felt",
-        "meaning": {
-          "ml": "തോന്നുക",
-          "hi": "महसूस करना",
-          "ta": "உணர்"
-        },
-        "example": "She felt tired.",
-        "exampleMl": "തോന്നിയിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "become",
-        "v2": "became",
-        "v3": "become",
-        "meaning": {
-          "ml": "ആയിത്തീരുക",
-          "hi": "ആയിത്തീരുക",
-          "ta": "ആയിത്തീരുക"
-        },
-        "example": "They became happy.",
-        "exampleMl": "ആയിത്തീരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "remain",
-        "v2": "remained",
-        "v3": "remained",
-        "meaning": {
-          "ml": "തുടരുക",
-          "hi": "തുടരുക",
-          "ta": "തുടരുക"
-        },
-        "example": "He remained silent.",
-        "exampleMl": "തുടരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "past",
+        "word": "Exhausted",
+        "partOfSpeech": "adjective",
+        "definition": "Completely depleted of physical or mental energy.",
         "meaning": {
-          "ml": "ഭൂതകാലം",
-          "hi": "ഭൂതകാലം",
-          "ta": "ഭൂതകാലം"
+          "ml": "തീർത്തും തളർന്ന / അവശനായ",
+          "hi": "पूरी तरह थका हुआ",
+          "ta": "மிகவும் சோர்வடைந்த",
+          "te": "అలసిపోయిన",
+          "kn": "ಬಹಳ ದಣಿದ"
         },
-        "example": "We learned about past in today's lesson."
+        "example": "I was completely exhausted after the ten-kilometer trek."
       },
       {
-        "word": "state",
+        "word": "Delighted",
+        "partOfSpeech": "adjective",
+        "definition": "Feeling or showing great pleasure and happiness.",
         "meaning": {
-          "ml": "അവസ്ഥ",
-          "hi": "അവസ്ഥ",
-          "ta": "അവസ്ഥ"
+          "ml": "വളരെ സന്തോഷവാനായ",
+          "hi": "प्रसन्न / खुश",
+          "ta": "மகிழ்ச்சியடைந்த",
+          "te": "ఆనందించిన",
+          "kn": "ಸಂತೋಷಗೊಂಡ"
         },
-        "example": "We learned about state in today's lesson."
+        "example": "We were delighted to meet our school childhood friends."
       },
       {
-        "word": "mood",
+        "word": "Absent",
+        "partOfSpeech": "adjective",
+        "definition": "Not present in a place, at an occasion, or as part of something.",
         "meaning": {
-          "ml": "മനോഭാവം",
-          "hi": "മനോഭാവം",
-          "ta": "മനോഭാവം"
+          "ml": "ഹാജരില്ലാത്ത / ഇല്ലാതിരുന്ന",
+          "hi": "अनुपस्थित",
+          "ta": "வராத / இல்லாத",
+          "te": "హాజరుకాని",
+          "kn": "ಗೈರುಹಾಜರಾದ"
         },
-        "example": "We learned about mood in today's lesson."
+        "example": "Why were you absent from the morning team meeting?"
       },
       {
-        "word": "feeling",
+        "word": "Crowded",
+        "partOfSpeech": "adjective",
+        "definition": "Full of people, leaving little or no room for movement.",
         "meaning": {
-          "ml": "വികാരം",
-          "hi": "വികാരം",
-          "ta": "വികാരം"
+          "ml": "ജനക്കൂട്ടം നിറഞ്ഞ / തിരക്കേറിയ",
+          "hi": "भीड़भाड़ वाला",
+          "ta": "கூட்டம் நிறைந்த",
+          "te": "రద్దీగా ఉన్న",
+          "kn": "ಕಿಕ್ಕಿರಿದ"
         },
-        "example": "We learned about feeling in today's lesson."
+        "example": "The central bus terminal was extremely crowded yesterday evening."
       },
       {
-        "word": "memory",
+        "word": "Curious",
+        "partOfSpeech": "adjective",
+        "definition": "Eager to know or learn something.",
         "meaning": {
-          "ml": "ഓർമ്മ",
-          "hi": "ഓർമ്മ",
-          "ta": "ഓർമ്മ"
+          "ml": "കൗതുകമുള്ള / അറിയാൻ ആഗ്രഹമുള്ള",
+          "hi": "जिज्ञासु",
+          "ta": "ஆர்வமுள்ள",
+          "te": "కుతూహలం గల",
+          "kn": "ಕುತೂಹಲವುಳ್ಳ"
         },
-        "example": "We learned about memory in today's lesson."
+        "example": "The students were curious to see the science laboratory exhibits."
+      },
+      {
+        "word": "Punctual",
+        "partOfSpeech": "adjective",
+        "definition": "Happening or doing something at the agreed or proper time.",
+        "meaning": {
+          "ml": "കൃത്യനിഷ്ഠയുള്ള / സമയപാലനം നടത്തുന്ന",
+          "hi": "समयनिष्ठ",
+          "ta": "நேரம் தவறாத",
+          "te": "సమయపాలన పాటించే",
+          "kn": "ಸಮಯಪಾಲನೆ ಮಾಡುವ"
+        },
+        "example": "He was remarkably punctual throughout his thirty-year career."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Past State: Was vs Were",
-        "ml": "പാഠം: കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were"
+        "ml": "പാഠം: കഴിഞ്ഞകാല അവസ്ഥ: Was & Were"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I / He / She / It + was | You / We / They + were",
+        "ml": "കഴിഞ്ഞകാലത്തെ അവസ്ഥകളെയും സന്ദർഭങ്ങളെയും സൂചിപ്പിക്കാൻ ഏകവചനത്തിൽ 'was' (ആയിരുന്നു) എന്നും, ബഹുവചനത്തിലും 'You' എന്നതിനൊപ്പവും 'were' (ആയിരുന്നു) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I was at home.",
-        "She felt tired.",
-        "They became happy."
+        "I was extremely tired after returning from the long interstate train journey .",
+        "They were in the conference room discussing the quarterly project deliverables .",
+        "Where were you when the sudden earthquake tremors shook the building ?",
+        "She was delightfully surprised by the thoughtful birthday gifts from colleagues .",
+        "We were confident about our speech presentation because we practiced every day ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Past State: Was vs Were",
-        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were"
+        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞകാല അവസ്ഥ: Was & Were"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I was at home.",
-          "meaningMl": "ആയിരുന്നു - I was at home.",
-          "audioPrompt": "I was at home."
+          "text": "Fifty years ago, Captain David was the trusted keeper of the rocky island lighthouse.",
+          "meaningMl": "അമ്പത് വർഷങ്ങൾക്ക് മുൻപ്, പാറക്കെട്ടുകൾ നിറഞ്ഞ ദ്വീപിലെ വിളക്കുമാടത്തിന്റെ വിശ്വസ്തനായ സൂക്ഷിപ്പുകാരനായിരുന്നു ക്യാപ്റ്റൻ ഡേവിഡ്.",
+          "meaningHi": "पचास साल पहले, कैप्टन डेविड चट्टानी द्वीप के लाइटहाउस के भरोसेमंद रक्षक थे।",
+          "meaningTa": "ஐம்பது ஆண்டுகளுக்கு முன்பு, கேப்டன் டேவிட் பாறைத் தீவின் கலங்கரை விளக்கக் காப்பாளராக இருந்தார்.",
+          "audioPrompt": "Fifty years ago, Captain David was the trusted keeper of the rocky island lighthouse."
         },
         {
-          "text": "She felt tired.",
-          "meaningMl": "തോന്നിയിരുന്നു - She felt tired.",
-          "audioPrompt": "She felt tired."
+          "text": "The stormy sea waves were ferocious and unpredictable during winter nights.",
+          "meaningMl": "ശീതകാല രാത്രികളിൽ കൊടുങ്കാറ്റു നിറഞ്ഞ കടൽത്തിരകൾ രൗദ്രവും പ്രവചനാതീതവുമായിരുന്നു.",
+          "meaningHi": "सर्दियों की रातों में तूफानी समुद्री लहरें भयंकर और अप्रत्याशित थीं।",
+          "meaningTa": "குளிர்கால இரவுகளில் சீற்றமடைந்த அலைகள் கொடூரமாக இருந்தன.",
+          "audioPrompt": "The stormy sea waves were ferocious and unpredictable during winter nights."
         },
         {
-          "text": "Daily practice of Past State: Was vs Were gives you great confidence in English.",
-          "meaningMl": "കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Past State: Was vs Were gives you great confidence in English."
+          "text": "Whenever thick fog was across the harbor, David was alert at the revolving brass beacon.",
+          "meaningMl": "തുറമുഖത്ത് കനത്ത മൂടൽമഞ്ഞ് ഉണ്ടാകുമ്പോഴെല്ലാം ഡേവിഡ് തിരിയുന്ന പിച്ചള വിളക്കിനടുത്ത് ജാഗരൂകനായിരുന്നു.",
+          "meaningHi": "जब भी बंदरगाह पर घना कोहरा होता था, डेविड घूमते हुए पीतल के प्रकाशस्तंभ पर सतर्क रहता था।",
+          "meaningTa": "துறைமுகத்தில் பனிமூட்டம் இருக்கும்போதெல்லாம் டேவிட் சுழலும் விளக்குடன் விழிப்பாக இருந்தார்.",
+          "audioPrompt": "Whenever thick fog was across the harbor, David was alert at the revolving brass beacon."
+        },
+        {
+          "text": "Fishermen on wooden trawlers were deeply grateful for his shining yellow guide beam.",
+          "meaningMl": "മരവള്ളങ്ങളിലെ മത്സ്യത്തൊഴിലാളികൾ അദ്ദേഹത്തിന്റെ തിളങ്ങുന്ന മഞ്ഞ വെളിച്ചത്തോട് അഗാധമായ നന്ദിയുള്ളവരായിരുന്നു.",
+          "meaningHi": "लकड़ी की नावों पर मछुआरे उसकी चमकती पीली किरण के लिए बहुत आभारी थे।",
+          "meaningTa": "மரப் படகு மீனவர்கள் அவரது ஒளிரும் மஞ்சள் ஒளிக்கற்றைக்கு மிகவும் நன்றியுடன் இருந்தனர்.",
+          "audioPrompt": "Fishermen on wooden trawlers were deeply grateful for his shining yellow guide beam."
+        },
+        {
+          "text": "Though life on the remote island was solitary, David was always cheerful and peaceful.",
+          "meaningMl": "ഒറ്റപ്പെട്ട ദ്വീപിലെ ജീവിതം ഏകാന്തമായിരുന്നെങ്കിലും ഡേവിഡ് എപ്പോഴും സന്തോഷവാനും ശാന്തനുമായിരുന്നു.",
+          "meaningHi": "हालाँकि सुनसान द्वीप पर जीवन एकाकी था, लेकिन डेविड हमेशा हंसमुख और शांत रहता था।",
+          "meaningTa": "தீவு வாழ்க்கை தனிமையாக இருந்தபோதிலும் டேவிட் எப்போதும் மகிழ்ச்சியாக இருந்தார்.",
+          "audioPrompt": "Though life on the remote island was solitary, David was always cheerful and peaceful."
+        },
+        {
+          "text": "He knew his noble vigilance was the guardian angel for every sailor in the dark.",
+          "meaningMl": "ഇരുട്ടിൽ ഓരോ നാവികന്റെയും കാവൽ മാലാഖയാണ് തന്റെ അർപ്പണബോധമുള്ള ജാഗ്രതയെന്ന് അദ്ദേഹം മനസ്സിലാക്കി.",
+          "meaningHi": "वह जानता था कि उसकी सतर्कता अंधेरे में हर नाविक के लिए एक सुरक्षा कवच थी।",
+          "meaningTa": "தன் விழிப்புணர்வே இருளில் ஒவ்வொரு மாலுமிக்கும் பாதுகாப்பு என்பதை அவர் அறிந்தார்.",
+          "audioPrompt": "He knew his noble vigilance was the guardian angel for every sailor in the dark."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who was Captain David fifty years ago?",
+            "ml": "അമ്പത് വർഷങ്ങൾക്ക് മുൻപ് ക്യാപ്റ്റൻ ഡേവിഡ് ആരായിരുന്നു?",
+            "hi": "पचास साल पहले कैप्टन डेविड कौन थे?",
+            "ta": "ஐம்பது ஆண்டுகளுக்கு முன்பு கேப்டன் டேவிட் யார்?"
+          },
+          "options": [
+            "A pirate king",
+            "The keeper of the island lighthouse",
+            "A fish merchant",
+            "A ship builder"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He was the trusted keeper of the rocky island lighthouse.",
+            "ml": "ദ്വീപിലെ വിളക്കുമാട സൂക്ഷിപ്പുകാരനായിരുന്നു."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How were the sea waves during winter nights?",
+            "ml": "ശീതകാല രാത്രികളിൽ കടൽത്തിരകൾ എങ്ങനെയായിരുന്നു?",
+            "hi": "सर्दियों की रातों में समुद्री लहरें कैसी थीं?",
+            "ta": "குளிர்கால இரவுகளில் அலைகள் எப்படி இருந்தன?"
+          },
+          "options": [
+            "Completely calm",
+            "Ferocious and unpredictable",
+            "Dry and sandy",
+            "Warm and still"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The waves were ferocious and unpredictable.",
+            "ml": "രൗദ്രവും പ്രവചനാതീതവുമായിരുന്നു (ferocious and unpredictable)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Who was grateful for David's guide beam?",
+            "ml": "ഡേവിഡിന്റെ വഴികാട്ടി വെളിച്ചത്തോട് നന്ദിയുള്ളവരായിരുന്നത് ആരാണ്?",
+            "hi": "डेविड के प्रकाशस्तंभ के लिए कौन आभारी था?",
+            "ta": "டேவிட்டின் ஒளிக்கற்றைக்கு யார் நன்றியுடன் இருந்தனர்?"
+          },
+          "options": [
+            "Fishermen on wooden trawlers",
+            "City tourists",
+            "Mountain climbers",
+            "Forest rangers"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "Fishermen on wooden trawlers were deeply grateful.",
+            "ml": "മരവള്ളങ്ങളിലെ മത്സ്യത്തൊഴിലാളികളാണ് (Fishermen on wooden trawlers) നന്ദിയുള്ളവരായിരുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d31_1",
-          "question": "Which word represents: 'ആയിരിക്കുക'?",
+          "question": "Select the sentence with correct subject-verb agreement for 'You':",
           "options": [
-            "listen",
-            "be",
-            "borrow",
-            "forget"
+            "You was right about the venue location.",
+            "You were right about the venue location.",
+            "You was being right about location.",
+            "You is right yesterday."
           ],
-          "answer": "be",
-          "explanation": "be എന്നാൽ ആയിരിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'You' in English ALWAYS takes 'were' in the past, whether singular or plural: 'You were right'.",
+          "ruleHint": "Subject-Verb Agreement: You always takes 'were', never 'was'."
         },
         {
-          "id": "trap_d31_2",
-          "question": "What is the past form (V2) of 'feel'?",
+          "question": "Choose the correct past state sentence for plural people:",
           "options": [
-            "feels",
-            "has feel",
-            "felt",
-            "feeling"
+            "My parents was at the railway station.",
+            "My parents were at the railway station.",
+            "My parents is at the station yesterday.",
+            "My parents was were at station."
           ],
-          "answer": "felt",
-          "explanation": "feel ന്റെ ഭൂതകാല രൂപം felt ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Parents' is a plural noun, requiring 'were': 'My parents were at the railway station.'",
+          "ruleHint": "Rule: Plural subject + were."
         },
         {
-          "id": "trap_d31_3",
-          "question": "What is the correct English word for 'ഭൂതകാലം'?",
+          "question": "How do you ask if someone was busy yesterday?",
           "options": [
-            "courage",
-            "past",
-            "journey",
-            "success"
+            "Were you busy yesterday?",
+            "Was you busy yesterday?",
+            "Did you busy yesterday?",
+            "Are you busy yesterday?"
           ],
-          "answer": "past",
-          "explanation": "ഭൂതകാലം എന്നാൽ ഇംഗ്ലീഷിൽ past."
+          "correctIndex": 0,
+          "explanation": "'Were you busy yesterday?' correctly inverts 'were' with 'you' for a past adjective question.",
+          "ruleHint": "Question Inversion: Were + you + adjective?"
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 31 Gate Exam (5 Qs)",

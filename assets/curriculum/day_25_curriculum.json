@@ -22,30 +22,18 @@
     "totalCoinsReward": 75
   },
   "grammarRule": {
-    "formula": "Past Simple Tense",
+    "formula": "Can I have + quantity + of [Item]? / How much per kilo?",
     "explanation": {
-      "ml": "കടയും പച്ചക്കറി വാങ്ങലും എന്ന വിഷയത്തിൽ Quantity Words: Kilo, Packet, Bottle, Dozen എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Quantity Words: Kilo, Packet, Bottle, Dozen correctly in spoken English."
+      "ml": "കടകളിൽ സാധനങ്ങൾ ചോദിച്ചുവാങ്ങുമ്പോൾ 'Can I have half a kilo of onions?' എന്നും വില ചോദിക്കുമ്പോൾ 'How much per kilo?' എന്നും മാന്യമായി ഉപയോഗിക്കുന്നു.",
+      "en": "Master Buying Groceries & Market Talk with clear formula: Can I have + quantity + of [Item]? / How much per kilo?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: He sells fresh fruits.",
-      "en": "Golden Rule: Practice 'He sells fresh fruits.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 അളവുകൾ കൃത്യമായി പറയാൻ: Kilo (കിലോ), Half a kilo (അര കിലോ), Packet (പാക്കറ്റ്), Bunch (കെട്ട് - ചീര, മല്ലിയില), Dozen (ഡസൻ - പഴങ്ങൾ, മുട്ട).",
+      "en": "Golden Tip: 💡 അളവുകൾ കൃത്യമായി പറയാൻ: Kilo (കിലോ), Half a kilo (അര കിലോ), Packet (പാക്കറ്റ്), Bunch (കെട്ട് - ചീര, മല്ലിയില), Dozen (ഡസൻ - പഴങ്ങൾ, മുട്ട)."
     }
   },
   "vocabulary": {
     "verbs": [
-      {
-        "v1": "sell",
-        "v2": "sold",
-        "v3": "sold",
-        "meaning": {
-          "ml": "വിൽക്കുക",
-          "hi": "बेचना",
-          "ta": "விற்பனை செய்"
-        },
-        "example": "He sells fresh fruits.",
-        "exampleMl": "വിൽക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
       {
         "v1": "bargain",
         "v2": "bargained",
@@ -55,79 +43,100 @@
           "hi": "मोलभाव करना",
           "ta": "பேரம் பேசு"
         },
-        "example": "Don't bargain here.",
-        "exampleMl": "വിലപേശുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Shoppers often bargain for fair prices at open-air farmer markets.",
+        "exampleMl": "Negotiate the terms and conditions of a transaction, especially the price."
       },
       {
-        "v1": "carry",
-        "v2": "carried",
-        "v3": "carried",
+        "v1": "weigh",
+        "v2": "weighed",
+        "v3": "weighed",
         "meaning": {
-          "ml": "ചുമക്കുക",
-          "hi": "ले जाना",
-          "ta": "சும"
+          "ml": "തൂക്കം നോക്കുക",
+          "hi": "तौलना",
+          "ta": "எடை போடு"
         },
-        "example": "Carry the grocery bag.",
-        "exampleMl": "ചുമക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "check",
-        "v2": "checked",
-        "v3": "checked",
-        "meaning": {
-          "ml": "പരിശോധിക്കുക",
-          "hi": "जाँच करना",
-          "ta": "சரிபார்"
-        },
-        "example": "Check the bill.",
-        "exampleMl": "പരിശോധിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Could you please weigh two kilograms of ripe tomatoes?",
+        "exampleMl": "Find out how heavy someone or something is using scales."
       }
     ],
     "nouns": [
       {
-        "word": "market",
+        "word": "Grocery",
+        "partOfSpeech": "noun",
+        "definition": "Items of food and other goods sold in a food store or supermarket.",
         "meaning": {
-          "ml": "ചന്ത",
-          "hi": "ചന്ത",
-          "ta": "ചന്ത"
+          "ml": "പലചരക്ക് സാധനങ്ങൾ",
+          "hi": "किराना सामान",
+          "ta": "மளிகை பொருட்கள்",
+          "te": "కిరాణా సరుకులు",
+          "kn": "ದಿನಸಿ ಸಾಮಾನುಗಳು"
         },
-        "example": "We learned about market in today's lesson."
+        "example": "We buy fresh grocery items from the local supermarket every Saturday."
       },
       {
-        "word": "shop",
+        "word": "Bargain",
+        "partOfSpeech": "verb",
+        "definition": "Negotiate the terms and conditions of a transaction, especially the price.",
         "meaning": {
-          "ml": "കട",
-          "hi": "കട",
-          "ta": "കട"
+          "ml": "വിലപേശുക",
+          "hi": "मोलभाव करना",
+          "ta": "பேரம் பேசு",
+          "te": "బేరమాడు",
+          "kn": "ಚೌಕಾಶಿ ಮಾಡು"
         },
-        "example": "We learned about shop in today's lesson."
+        "example": "Shoppers often bargain for fair prices at open-air farmer markets."
       },
       {
-        "word": "vegetable",
+        "word": "Receipt",
+        "partOfSpeech": "noun",
+        "definition": "A written or printed statement acknowledging that something has been paid for.",
         "meaning": {
-          "ml": "പച്ചക്കറി",
-          "hi": "പച്ചക്കറി",
-          "ta": "പച്ചക്കറി"
+          "ml": "രസീത് / പണമടച്ച ബിൽ",
+          "hi": "रसीद",
+          "ta": "ரசீது",
+          "te": "రసీదు",
+          "kn": "ರಶೀದಿ"
         },
-        "example": "We learned about vegetable in today's lesson."
+        "example": "Always check your purchase receipt before leaving the billing counter."
       },
       {
-        "word": "fruit",
+        "word": "Weigh",
+        "partOfSpeech": "verb",
+        "definition": "Find out how heavy someone or something is using scales.",
         "meaning": {
-          "ml": "പഴം",
-          "hi": "പഴം",
-          "ta": "പഴം"
+          "ml": "തൂക്കം നോക്കുക",
+          "hi": "तौलना",
+          "ta": "எடை போடு",
+          "te": "తూచు",
+          "kn": "ತೂಕ ಮಾಡು"
         },
-        "example": "We learned about fruit in today's lesson."
+        "example": "Could you please weigh two kilograms of ripe tomatoes?"
       },
       {
-        "word": "bill",
+        "word": "Discount",
+        "partOfSpeech": "noun",
+        "definition": "A deduction from the usual cost of something.",
         "meaning": {
-          "ml": "ബിൽ",
-          "hi": "ബിൽ",
-          "ta": "ബിൽ"
+          "ml": "വിലക്കിഴിവ്",
+          "hi": "छूट",
+          "ta": "தள்ளுபடி",
+          "te": "రాయితీ",
+          "kn": "ರಿಯಾಯಿತಿ"
         },
-        "example": "We learned about bill in today's lesson."
+        "example": "Do you offer any seasonal discount for bulk purchases?"
+      },
+      {
+        "word": "Organic",
+        "partOfSpeech": "adjective",
+        "definition": "Produced or involving production without the use of chemical fertilizers or pesticides.",
+        "meaning": {
+          "ml": "ജൈവരീതിയിലുള്ള / വിഷരഹിതമായ",
+          "hi": "जैविक",
+          "ta": "இயற்கை முறை",
+          "te": "సేంద్రీయ",
+          "kn": "ಸಾವಯವ"
+        },
+        "example": "These organic green vegetables are harvested directly from village farms."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Buying Groceries & Market Talk",
-        "ml": "പാഠം: കടയും പച്ചക്കറി വാങ്ങലും"
+        "ml": "പാഠം: പച്ചക്കറി വാങ്ങലും ചന്തയിലെ സംസാരവും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Can I have + quantity + of [Item]? / How much per kilo?",
+        "ml": "കടകളിൽ സാധനങ്ങൾ ചോദിച്ചുവാങ്ങുമ്പോൾ 'Can I have half a kilo of onions?' എന്നും വില ചോദിക്കുമ്പോൾ 'How much per kilo?' എന്നും മാന്യമായി ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "He sells fresh fruits.",
-        "Don't bargain here.",
-        "Carry the grocery bag."
+        "How much is one kilogram of crisp red apples today ?",
+        "Could you please give me two bunches of fresh coriander leaves ?",
+        "Are these yellow bananas naturally ripened without chemicals ?",
+        "Please weigh three large potatoes and add them to my basket .",
+        "Do you accept digital payments or only paper cash here ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Buying Groceries & Market Talk",
-        "ml": "റീഡിങ് റൂം: കടയും പച്ചക്കറി വാങ്ങലും"
+        "ml": "റീഡിങ് റൂം: പച്ചക്കറി വാങ്ങലും ചന്തയിലെ സംസാരവും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "He sells fresh fruits.",
-          "meaningMl": "വിൽക്കുക - He sells fresh fruits.",
-          "audioPrompt": "He sells fresh fruits."
+          "text": "Early on Saturday mornings, the town square transforms into a vibrant farmers' market.",
+          "meaningMl": "ശനിയാഴ്ച രാവിലെകളിൽ നഗര ചത്വരം വർണ്ണാഭമായ ഒരു കർഷക ചന്തയായി മാറുന്നു.",
+          "meaningHi": "शनिवार की सुबह, शहर का चौराहा एक जीवंत किसान बाज़ार में बदल जाता है।",
+          "meaningTa": "சனிக்கிழமை காலையில் நகர சதுக்கம் ஒரு துடிப்பான உழவர் சந்தையாக மாறுகிறது.",
+          "audioPrompt": "Early on Saturday mornings, the town square transforms into a vibrant farmers' market."
         },
         {
-          "text": "Don't bargain here.",
-          "meaningMl": "വിലപേശുക - Don't bargain here.",
-          "audioPrompt": "Don't bargain here."
+          "text": "Local farmers arrange colorful heaps of crisp bell peppers and sweet red strawberries.",
+          "meaningMl": "നാടൻ കർഷകർ നല്ല കാപ്സിക്കവും മധുരമുള്ള സ്ട്രോബെറികളും ഭംഗിയായി കൂട്ടിയിടുന്നു.",
+          "meaningHi": "स्थानीय किसान शिमला मिर्च और मीठी स्ट्रॉबेरी के रंग-बिरंगे ढेर लगाते हैं।",
+          "meaningTa": "உள்ளூர் விவசாயிகள் குடைமிளகாய் மற்றும் ஸ்ட்ராபெர்ரிகளை அடுக்கி வைக்கின்றனர்.",
+          "audioPrompt": "Local farmers arrange colorful heaps of crisp bell peppers and sweet red strawberries."
         },
         {
-          "text": "Daily practice of Buying Groceries & Market Talk gives you great confidence in English.",
-          "meaningMl": "കടയും പച്ചക്കറി വാങ്ങലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Buying Groceries & Market Talk gives you great confidence in English."
+          "text": "Meera brings her woven jute basket to buy organic honey and fresh goat cheese.",
+          "meaningMl": "ജൈവ തേനും നല്ല ചീസും വാങ്ങാനായി മീര തന്റെ ചണസഞ്ചി കൊണ്ടുവരുന്നു.",
+          "meaningHi": "मीरा जैविक शहद और ताज़ा पनीर खरीदने के लिए अपनी जूट की टोकरी लाती है।",
+          "meaningTa": "மீரா இயற்கை தேன் மற்றும் பாலாடைக்கட்டி வாங்க தனது சணல் கூடையைக் கொண்டு வருகிறாள்.",
+          "audioPrompt": "Meera brings her woven jute basket to buy organic honey and fresh goat cheese."
+        },
+        {
+          "text": "She asks the friendly honey merchant how much a small glass jar costs.",
+          "meaningMl": "ഒരു ചെറിയ കുപ്പി തേനിന് എത്ര വിലയുണ്ടെന്ന് അവൾ സ്നേഹമുള്ള വ്യാപാരിയോട് ചോദിക്കുന്നു.",
+          "meaningHi": "वह शहद व्यापारी से पूछती है कि एक छोटे कांच के जार की कीमत कितनी है।",
+          "meaningTa": "ஒரு சிறிய கண்ணாடி ஜாடியின் விலை என்ன என்று அவள் வியாபாரியிடம் கேட்கிறாள்.",
+          "audioPrompt": "She asks the friendly honey merchant how much a small glass jar costs."
+        },
+        {
+          "text": "The merchant offers her a small sample taste on a wooden stick with a cheerful smile.",
+          "meaningMl": "വ്യാപാരി ഒരു ചെറിയ തടികഷ്ണത്തിൽ തേൻ രുചിച്ചുനോക്കാൻ സന്തോഷത്തോടെ നൽകുന്നു.",
+          "meaningHi": "व्यापारी मुस्कुराते हुए उसे लकड़ी की छड़ी पर थोड़ा चखने के लिए देता है।",
+          "meaningTa": "வியாபாரி புன்னகையுடன் மரக் குச்சியில் கொஞ்சம் ருசி பார்க்கக் கொடுக்கிறார்.",
+          "audioPrompt": "The merchant offers her a small sample taste on a wooden stick with a cheerful smile."
+        },
+        {
+          "text": "Shopping directly from local growers builds trust and strengthens the community.",
+          "meaningMl": "കർഷകരിൽ നിന്ന് നേരിട്ട് സാധനങ്ങൾ വാങ്ങുന്നത് വിശ്വാസ്യതയും സമൂഹ ബന്ധവും വളർത്തുന്നു.",
+          "meaningHi": "सीधे किसानों से खरीदारी करने से विश्वास और समुदाय मजबूत होता है।",
+          "meaningTa": "விவசாயிகளிடமிருந்து நேரடியாக வாங்குவது நம்பிக்கையையும் சமூகத்தையும் பலப்படுத்துகிறது.",
+          "audioPrompt": "Shopping directly from local growers builds trust and strengthens the community."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "When does the town square transform into a farmers' market?",
+            "ml": "നഗര ചത്വരം കർഷക ചന്തയായി മാറുന്നത് എപ്പോഴാണ്?",
+            "hi": "चौराहा किसान बाज़ार में कब बदलता है?",
+            "ta": "சதுக்கம் உழவர் சந்தையாக மாறுவது எப்போது?"
+          },
+          "options": [
+            "Sunday evenings",
+            "Saturday mornings",
+            "Monday afternoons",
+            "Friday nights"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The story begins on Saturday mornings.",
+            "ml": "ശനിയാഴ്ച രാവിലെകളിലാണ് (Saturday mornings)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What kind of bag did Meera bring to carry her groceries?",
+            "ml": "സാധനങ്ങൾ വാങ്ങാൻ മീര ഏത് തരത്തിലുള്ള സഞ്ചിയാണ് കൊണ്ടുവന്നത്?",
+            "hi": "मीरा किस प्रकार की थैली लाई थी?",
+            "ta": "மீரா என்ன வகையான பையைக் கொண்டு வந்தாள்?"
+          },
+          "options": [
+            "A plastic bag",
+            "A woven jute basket",
+            "A leather briefcase",
+            "A paper envelope"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Meera brought her woven jute basket.",
+            "ml": "ചണസഞ്ചിയാണ് (woven jute basket) കൊണ്ടുവന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How did the merchant let Meera taste the honey?",
+            "ml": "തേൻ രുചിച്ചുനോക്കാൻ വ്യാപാരി എങ്ങനെയെയാണ് നൽകിയത്?",
+            "hi": "व्यापारी ने शहद चखने के लिए कैसे दिया?",
+            "ta": "வியாபாரி தேனை எப்படி ருசி பார்க்கக் கொடுத்தார்?"
+          },
+          "options": [
+            "In a silver cup",
+            "On a wooden stick",
+            "On a piece of bread",
+            "In her hand"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He offered a sample taste on a wooden stick.",
+            "ml": "ഒരു ചെറിയ തടികഷ്ണത്തിലാണ് (wooden stick) നൽകിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d25_1",
-          "question": "Which word represents: 'വിൽക്കുക'?",
+          "question": "Select the natural native way to ask for half a kilogram of tomatoes:",
           "options": [
-            "remember",
-            "discover",
-            "sell",
-            "decide"
+            "Give me tomatoes 500 grams.",
+            "Can I have half a kilo of tomatoes, please?",
+            "I want tomato half kilo now.",
+            "Weigh for me tomato half quantity."
           ],
-          "answer": "sell",
-          "explanation": "sell എന്നാൽ വിൽക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Can I have half a kilo of [item], please?' is polite, natural, and standard grocery English.",
+          "ruleHint": "Polite Request: 'Can I have + [quantity] + of + [noun], please?'"
         },
         {
-          "id": "trap_d25_2",
-          "question": "What is the past form (V2) of 'bargain'?",
+          "question": "Which expression is correct for eggs?",
           "options": [
-            "bargains",
-            "bargained",
-            "has bargain",
-            "bargaining"
+            "Two kilos of eggs",
+            "One dozen eggs",
+            "Three packets of loose eggs",
+            "A bunch of eggs"
           ],
-          "answer": "bargained",
-          "explanation": "bargain ന്റെ ഭൂതകാല രൂപം bargained ആണ്."
+          "correctIndex": 1,
+          "explanation": "Eggs are traditionally counted in dozens (12 units): 'One dozen eggs'.",
+          "ruleHint": "Collective Noun: Dozen = 12 items."
         },
         {
-          "id": "trap_d25_3",
-          "question": "What is the correct English word for 'ചന്ത'?",
+          "question": "How do you ask if fruits are fresh?",
           "options": [
-            "market",
-            "routine",
-            "schedule",
-            "progress"
+            "Are these fruits fresh today?",
+            "How much fresh is these fruit?",
+            "Does the fruits fresh now?",
+            "Is fruits today fresh?"
           ],
-          "answer": "market",
-          "explanation": "ചന്ത എന്നാൽ ഇംഗ്ലീഷിൽ market."
+          "correctIndex": 0,
+          "explanation": "'Fruits' is plural, requiring 'are': 'Are these fruits fresh today?'",
+          "ruleHint": "Subject-Verb Agreement: Plural 'fruits' requires 'Are these...'."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 25 Gate Exam (5 Qs)",

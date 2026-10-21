@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_verb_localization_service.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../curriculum_data/pocket_90day_verb_timeline_data.dart';
 
@@ -170,6 +171,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   String? _placedPresent;
   String? _placedFuture;
 
+  // 'present' | 'future' | 'past'
+  String _anchorTense = 'present';
+
   // Remaining available words at bottom
   final List<String> _remainingCards = [];
 
@@ -218,21 +222,35 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     final item = _items[_currentIndex];
 
     // User Audio Directive:
-    // "ഇപ്പൊ past സെലക്ട് ആയി കിടക്കുന്നുണ്ടെങ്കിൽ today യും tomorrow യും സെലക്ട് ചെയ്യുക.
-    // ഇപ്പൊ today സെലക്ട് ആയി കിടക്കുന്നുണ്ടെങ്കിൽ past ഉം ഇതും കണക്ട് ചെയ്യുക."
-    // On even rounds (0, 2): PRESENT (Today) is pre-selected and placed as anchor!
-    // On odd rounds (1, 3): PAST (Yesterday) is pre-selected and placed as anchor!
-    final bool isPresentPrePlaced = _currentIndex % 2 == 0;
-    final bool isPastPrePlaced = _currentIndex % 2 != 0;
+    // "Aa step-il vendath: Present, athe pole past, past present future. Athan concept, okay? Oru verb kodukkum.
+    // Aa verbinte past-um, present-um, future-um padikkuka.
+    // Athengane, chila samayath future kodukkum, apo athinte present-um past-um padikkuka.
+    // Present kodukkumbozhekk future-um past-um padikkuka.
+    // Angane oru saadhanam. Ee sentence builder ille, athe same concept, same saadhanam, ath angane avide kodutho."
+    //
+    // Rotate anchor types:
+    // Round 0: PRESENT given -> user finds Past & Future
+    // Round 1: FUTURE given -> user finds Present & Past
+    // Round 2: PAST given -> user finds Present & Future
+    // Round 3: PRESENT given -> user finds Past & Future
+    final int mode = _currentIndex % 3;
+    final bool isPresentPrePlaced = mode == 0;
+    final bool isFuturePrePlaced = mode == 1;
+    final bool isPastPrePlaced = mode == 2;
+
+    _anchorTense = isPresentPrePlaced
+        ? 'present'
+        : (isFuturePrePlaced ? 'future' : 'past');
 
     final placedPast = isPastPrePlaced ? item.past : null;
     final placedPresent = isPresentPrePlaced ? item.present : null;
+    final placedFuture = isFuturePrePlaced ? item.future : null;
 
     // Remaining words for user to find from Word Bank:
     final Set<String> targetWords = {};
     if (placedPast == null) targetWords.add(item.past);
     if (placedPresent == null) targetWords.add(item.present);
-    targetWords.add(item.future);
+    if (placedFuture == null) targetWords.add(item.future);
 
     // Add distractor action verbs from other items in Day 1:
     final Set<String> wordBankSet = Set.from(targetWords);
@@ -248,11 +266,45 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     setState(() {
       _placedPast = placedPast;
       _placedPresent = placedPresent;
-      _placedFuture = null;
+      _placedFuture = placedFuture;
       _remainingCards.clear();
       _remainingCards.addAll(words);
       _isRoundCompleted = false;
       _shakingCard = null;
+    });
+  }
+
+  void _onPlacedWordTapped(String tense) {
+    if (_isRoundCompleted) {
+      final item = _items[_currentIndex];
+      if (tense == 'past') _speak(item.pastSentence);
+      if (tense == 'present') _speak(item.presentSentence);
+      if (tense == 'future') _speak(item.futureSentence);
+      return;
+    }
+
+    if (tense == _anchorTense) {
+      // Anchor is fixed, tap plays audio
+      final item = _items[_currentIndex];
+      if (tense == 'past') _speak(item.pastSentence);
+      if (tense == 'present') _speak(item.presentSentence);
+      if (tense == 'future') _speak(item.futureSentence);
+      return;
+    }
+
+    // User-placed word: pop back to word bank
+    PocketGameSfx.instance.playTilePop();
+    setState(() {
+      if (tense == 'past' && _placedPast != null) {
+        _remainingCards.add(_placedPast!);
+        _placedPast = null;
+      } else if (tense == 'present' && _placedPresent != null) {
+        _remainingCards.add(_placedPresent!);
+        _placedPresent = null;
+      } else if (tense == 'future' && _placedFuture != null) {
+        _remainingCards.add(_placedFuture!);
+        _placedFuture = null;
+      }
     });
   }
 
@@ -428,10 +480,10 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '+35 Fluency XP • Step 8 Complete!\nEnglish Hub Chat unlocked!',
+                      '+35 Fluency XP • Step 8 Complete!\nStep 9: English Hub Community Chat Unlocked! 💬',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
                     ),
@@ -454,8 +506,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               Navigator.of(context).pop(true);
             },
             child: Text(
-              'Continue Roadmap 🚀',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              'CONTINUE TO STEP 9 (ENGLISH HUB) ➔',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ],
@@ -590,111 +642,164 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     );
   }
 
-  /// Minimal clean header: Action Verb + Malayalam translation
+  /// Minimal clean header: Action Verb + Dynamic Native Translation + Directive
   Widget _buildVerbPromptHeader(VerbTimelineItem item) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            item.baseVerb.toUpperCase(),
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            '•',
-            style: TextStyle(color: Colors.white38, fontSize: 16),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            item.meaningMl,
-            style: GoogleFonts.notoSansMalayalam(
-              color: const Color(0xFF00E5FF),
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    String anchorTitle;
+    String anchorWord;
+    Color anchorColor;
 
-  /// Minimal 3-Slot Timeline Runway
-  /// User Audio Directive:
-  /// "PAST, PRESENT, FUTURE ഇത്ര മാത്രം മതി. വേറെ ഒന്നും വേണ്ട.
-  /// എന്നിട്ട് ജസ്റ്റ് അടിയിൽ Yesterday, Today, Tomorrow... ഇത്ര എഴുതുക. അത്ര മതി."
-  Widget _buildTimelineRunway(VerbTimelineItem item) {
+    if (_anchorTense == 'present') {
+      anchorTitle = item.presentLabel;
+      anchorWord = item.present;
+      anchorColor = const Color(0xFF00E676);
+    } else if (_anchorTense == 'future') {
+      anchorTitle = item.futureLabel;
+      anchorWord = item.future;
+      anchorColor = const Color(0xFF00E5FF);
+    } else {
+      anchorTitle = item.pastLabel;
+      anchorWord = item.past;
+      anchorColor = const Color(0xFFE91E63);
+    }
+
+    final directive = PocketVerbLocalizationService.getDirective(
+      anchorTitle: anchorTitle,
+      anchorWord: anchorWord,
+    );
+    final localizedMeaning = item.getLocalizedMeaning();
+
     return Column(
       children: [
-        Row(
-          children: [
-            // 1. PAST / Yesterday
-            Expanded(
-              child: _buildTimelineSlot(
-                title: 'PAST',
-                sub: 'Yesterday',
-                color: const Color(0xFFE91E63), // Sentence Builder Magenta
-                placedWord: _placedPast,
-                sentence: item.pastSentence,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                item.baseVerb.toUpperCase(),
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-
-            // 2. PRESENT / Today
-            Expanded(
-              child: _buildTimelineSlot(
-                title: 'PRESENT',
-                sub: 'Today',
-                color: const Color(0xFF00E676), // Sentence Builder Green
-                placedWord: _placedPresent,
-                sentence: item.presentSentence,
+              const SizedBox(width: 10),
+              const Text(
+                '•',
+                style: TextStyle(color: Colors.white38, fontSize: 16),
               ),
-            ),
-            const SizedBox(width: 8),
-
-            // 3. FUTURE / Tomorrow
-            Expanded(
-              child: _buildTimelineSlot(
-                title: 'FUTURE',
-                sub: 'Tomorrow',
-                color: const Color(0xFF00E5FF), // Sentence Builder Cyan
-                placedWord: _placedFuture,
-                sentence: item.futureSentence,
+              const SizedBox(width: 10),
+              Text(
+                localizedMeaning,
+                style: PocketVerbLocalizationService.getNativeTextStyle(
+                  color: const Color(0xFF00E5FF),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        if (!_isRoundCompleted) _buildSentencePreviewBar(item),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: anchorColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: anchorColor.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('💡', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  directive,
+                  style: PocketVerbLocalizationService.getNativeTextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTimelineSlot({
+  /// Responsive Stacked 3-Tier Timeline Shelf (Past, Present, Future)
+  Widget _buildTimelineRunway(VerbTimelineItem item) {
+    return Column(
+      children: [
+        // 1. PAST Tier
+        _buildTimelineTierCard(
+          title: item.pastLabel,
+          sub: item.getLocalizedPastSubtitle(),
+          icon: Icons.history_rounded,
+          color: const Color(0xFFE91E63), // Sentence Builder Magenta
+          placedWord: _placedPast,
+          sentence: item.pastSentence,
+          isAnchor: _anchorTense == 'past',
+          tense: 'past',
+        ),
+        const SizedBox(height: 12),
+
+        // 2. PRESENT Tier
+        _buildTimelineTierCard(
+          title: item.presentLabel,
+          sub: item.getLocalizedPresentSubtitle(),
+          icon: Icons.wb_sunny_rounded,
+          color: const Color(0xFF00E676), // Sentence Builder Neon Green
+          placedWord: _placedPresent,
+          sentence: item.presentSentence,
+          isAnchor: _anchorTense == 'present',
+          tense: 'present',
+        ),
+        const SizedBox(height: 12),
+
+        // 3. FUTURE Tier
+        _buildTimelineTierCard(
+          title: item.futureLabel,
+          sub: item.getLocalizedFutureSubtitle(),
+          icon: Icons.rocket_launch_rounded,
+          color: const Color(0xFF00E5FF), // Sentence Builder Cyan
+          placedWord: _placedFuture,
+          sentence: item.futureSentence,
+          isAnchor: _anchorTense == 'future',
+          tense: 'future',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineTierCard({
     required String title,
     required String sub,
+    required IconData icon,
     required Color color,
     required String? placedWord,
     required String sentence,
+    required bool isAnchor,
+    required String tense,
   }) {
     final isFilled = placedWord != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: isFilled
             ? color.withValues(alpha: 0.12)
-            : Colors.white.withValues(alpha: 0.03),
+            : const Color(0xFF131722),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isFilled ? color : Colors.white12,
@@ -703,97 +808,199 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         boxShadow: isFilled
             ? [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  color: color.withValues(alpha: 0.20),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 )
               ]
             : null,
       ),
+      padding: const EdgeInsets.all(14),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: PAST / PRESENT / FUTURE
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              color: color,
-              fontWeight: FontWeight.w900,
-              fontSize: 13,
-              letterSpacing: 0.8,
-            ),
+          // Header row: Icon + Title + Native sub + Anchor/Status badge
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: color,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  sub,
+                  style: PocketVerbLocalizationService.getNativeTextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isAnchor)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        'GIVEN',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 2),
-          // Sub: Yesterday / Today / Tomorrow
-          Text(
-            sub,
-            style: GoogleFonts.outfit(
-              color: Colors.white70,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // Word Slot
+          // Content Box: Placed Word vs Drop/Tap Target
           if (isFilled)
             GestureDetector(
-              onTap: () => _speak(sentence),
+              onTap: () => _onPlacedWordTapped(tense),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      blurRadius: 8,
-                      offset: const Offset(2, 4),
-                    ),
-                  ],
+                  color: color.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isAnchor ? const Color(0xFFFFD700) : color,
+                    width: 1.5,
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        placedWord,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13.5,
+                    Row(
+                      children: [
+                        Text(
+                          placedWord,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 19,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
+                        const Spacer(),
+                        if (!isAnchor && !_isRoundCompleted)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.black38,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Tap to remove',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Icon(
+                            isAnchor ? Icons.lock_outline_rounded : Icons.check_circle_rounded,
+                            size: 16,
+                            color: isAnchor ? const Color(0xFFFFD700) : color,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Sentence bar with audio button
+                    GestureDetector(
+                      onTap: () => _speak(sentence),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.volume_up_rounded, size: 16, color: color),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                sentence,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 3),
-                    const Icon(Icons.volume_up, size: 13, color: Colors.white),
                   ],
                 ),
               ),
             )
           else
             Container(
-              height: 42,
               width: double.infinity,
-              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white.withValues(alpha: 0.02),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: color.withValues(alpha: 0.4),
+                  color: color.withValues(alpha: 0.35),
                   style: BorderStyle.solid,
+                  width: 1.2,
                 ),
               ),
-              child: Text(
-                '?',
-                style: GoogleFonts.outfit(
-                  color: color.withValues(alpha: 0.7),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.touch_app_outlined, size: 16, color: color.withValues(alpha: 0.8)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Select $title form from Word Bank',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white60,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -801,53 +1008,6 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     );
   }
 
-  Widget _buildSentencePreviewBar(VerbTimelineItem item) {
-    String? activeSentence;
-    Color activeColor = const Color(0xFF00E5FF);
-    if (_placedFuture != null) {
-      activeSentence = item.futureSentence;
-      activeColor = const Color(0xFF00E5FF);
-    } else if (_placedPast != null) {
-      activeSentence = item.pastSentence;
-      activeColor = const Color(0xFFE91E63);
-    } else if (_placedPresent != null) {
-      activeSentence = item.presentSentence;
-      activeColor = const Color(0xFF00E676);
-    }
-
-    if (activeSentence == null) return const SizedBox.shrink();
-
-    return GestureDetector(
-      onTap: () => _speak(activeSentence!),
-      child: Container(
-        margin: const EdgeInsets.only(top: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: activeColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: activeColor.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.volume_up, size: 15, color: Colors.white70),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                activeSentence,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /// 📚 Word Bank with direct downward Wrap (NO horizontal scroll)
   /// User Audio Directive:
@@ -990,6 +1150,32 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
           _buildSummarySentenceRow('☀️ Today', item.presentSentence, const Color(0xFF00E676)),
           const SizedBox(height: 6),
           _buildSummarySentenceRow('🚀 Tomorrow', item.futureSentence, const Color(0xFF00E5FF)),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    item.getLocalizedGrammarTrap(),
+                    style: PocketVerbLocalizationService.getNativeTextStyle(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(

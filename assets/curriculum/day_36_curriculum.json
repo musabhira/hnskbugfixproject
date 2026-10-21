@@ -22,112 +22,96 @@
     "totalCoinsReward": 86
   },
   "grammarRule": {
-    "formula": "Yes/No Questions and Short Answers",
+    "formula": "Subject + used to + Base Verb (V1) + (past time marker)",
     "explanation": {
-      "ml": "പഴയ ശീലങ്ങൾ (Used to) എന്ന വിഷയത്തിൽ Used to + V1 (Things you did in the past but not now) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Used to + V1 (Things you did in the past but not now) correctly in spoken English."
+      "ml": "മുൻപ് പതിവായി ചെയ്തിരുന്നതും എന്നാൽ ഇപ്പോൾ ചെയ്യാത്തതുമായ ശീലങ്ങളെയും അവസ്ഥകളെയും സൂചിപ്പിക്കാൻ 'used to + V1' (പതിവായിരുന്നു) ഉപയോഗിക്കുന്നു.",
+      "en": "Master Childhood Habits: Used to with clear formula: Subject + used to + Base Verb (V1) + (past time marker)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I used to play cricket.",
-      "en": "Golden Rule: Practice 'I used to play cricket.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'I used to play cricket every evening' (ഞാൻ പണ്ട് വൈകുന്നേരങ്ങളിൽ ക്രിക്കറ്റ് കളിക്കാറുണ്ടായിരുന്നു - ഇപ്പോൾ കളിക്കാറില്ല). 'used to' വിന് ശേഷം എപ്പോഴും ക്രിയയുടെ ആദ്യ രൂപം V1 ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: 💡 'I used to play cricket every evening' (ഞാൻ പണ്ട് വൈകുന്നേരങ്ങളിൽ ക്രിക്കറ്റ് കളിക്കാറുണ്ടായിരുന്നു - ഇപ്പോൾ കളിക്കാറില്ല). 'used to' വിന് ശേഷം എപ്പോഴും ക്രിയയുടെ ആദ്യ രൂപം V1 ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "play",
-        "v2": "played",
-        "v3": "played",
-        "meaning": {
-          "ml": "കളിക്കുക",
-          "hi": "खेलना",
-          "ta": "விளையாடு"
-        },
-        "example": "I used to play cricket.",
-        "exampleMl": "കളിച്ചിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "live",
-        "v2": "lived",
-        "v3": "lived",
-        "meaning": {
-          "ml": "താമസിക്കുക",
-          "hi": "रहना",
-          "ta": "வாழ் / வசி"
-        },
-        "example": "We used to live there.",
-        "exampleMl": "താമസിച്ചിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "read",
-        "v2": "read",
-        "v3": "read",
-        "meaning": {
-          "ml": "വായിക്കുക",
-          "hi": "पढ़ना",
-          "ta": "படி / வாசி"
-        },
-        "example": "I used to read comics.",
-        "exampleMl": "വായിച്ചിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "swim",
-        "v2": "swam",
-        "v3": "swum",
-        "meaning": {
-          "ml": "നീന്തുക",
-          "hi": "तैरना",
-          "ta": "நீந்து"
-        },
-        "example": "I used to swim in river.",
-        "exampleMl": "നീന്തിയിരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "childhood",
+        "word": "Nostalgic",
+        "partOfSpeech": "adjective",
+        "definition": "Feeling, evoking, or characterized by a sentimental longing or wistful affection for the past.",
         "meaning": {
-          "ml": "കുട്ടിക്കാലം",
-          "hi": "കുട്ടിക്കാലം",
-          "ta": "കുട്ടിക്കാലം"
+          "ml": "പഴയ ഓർമ്മകൾ ഉണർത്തുന്ന",
+          "hi": "यादगार / पुरानी यादें ताज़ा करने वाला",
+          "ta": "கடந்த கால நினைவுகளைத் தூண்டும்",
+          "te": "గతాన్ని గుర్తుచేసుకునే",
+          "kn": "ಹಳೆಯ ನೆನಪುಗಳನ್ನು ಕೆರಳಿಸುವ"
         },
-        "example": "We learned about childhood in today's lesson."
+        "example": "Looking through black-and-white family albums always makes me feel nostalgic."
       },
       {
-        "word": "school",
+        "word": "Childhood",
+        "partOfSpeech": "noun",
+        "definition": "The state or period of being a child.",
         "meaning": {
-          "ml": "സ്കൂൾ",
-          "hi": "സ്കൂൾ",
-          "ta": "സ്കൂൾ"
+          "ml": "കുട്ടിക്കാലം / ബാല്യം",
+          "hi": "बचपन",
+          "ta": "குழந்தைப் பருவம்",
+          "te": "బాల్యం",
+          "kn": "ಬಾಲ್ಯ"
         },
-        "example": "We learned about school in today's lesson."
+        "example": "We used to climb mango trees together during our carefree childhood."
       },
       {
-        "word": "village",
+        "word": "Tradition",
+        "partOfSpeech": "noun",
+        "definition": "The transmission of customs or beliefs from generation to generation.",
         "meaning": {
-          "ml": "ഗ്രാമം",
-          "hi": "गाँव",
-          "ta": "கிராமம்"
+          "ml": "പാരമ്പര്യം / പാരമ്പര്യ ശീലം",
+          "hi": "परंपरा",
+          "ta": "பாரம்பரியம்",
+          "te": "సంప్రదాయం",
+          "kn": "ಸಂಪ್ರದಾಯ"
         },
-        "example": "Birds sing in the quiet village."
+        "example": "Our grandparents used to preserve this sacred harvest tradition every year."
       },
       {
-        "word": "game",
+        "word": "Folk",
+        "partOfSpeech": "adjective",
+        "definition": "Originating in beliefs, customs, and stories of a community passed through generations.",
         "meaning": {
-          "ml": "കളി",
-          "hi": "കളി",
-          "ta": "കളി"
+          "ml": "നാടോടി / പരമ്പരാഗത",
+          "hi": "लोक",
+          "ta": "நாட்டார்",
+          "te": "జానపద",
+          "kn": "ಜಾನಪದ"
         },
-        "example": "We learned about game in today's lesson."
+        "example": "We used to listen to fascinating folk tales narrated by the village elders."
       },
       {
-        "word": "memory",
+        "word": "Innocent",
+        "partOfSpeech": "adjective",
+        "definition": "Not guilty of a crime or offense; simple and without guile.",
         "meaning": {
-          "ml": "ഓർമ്മ",
-          "hi": "ഓർമ്മ",
-          "ta": "ഓർമ്മ"
+          "ml": "നിഷ്കളങ്കമായ",
+          "hi": "मासूम / निर्दोष",
+          "ta": "அப்பாவித்தனமான",
+          "te": "నిష్కల్మషమైన",
+          "kn": "ಮುಗ್ಧ"
         },
-        "example": "We learned about memory in today's lesson."
+        "example": "Those innocent childhood games brought pure joy to our hearts."
+      },
+      {
+        "word": "Neighborhood",
+        "partOfSpeech": "noun",
+        "definition": "A district, especially one forming a community within a town or city.",
+        "meaning": {
+          "ml": "അയൽപക്കം / നാട്ടുപ്രദേശം",
+          "hi": "पड़ोस",
+          "ta": "அக்கம் பக்கம்",
+          "te": "పొరుగు ప్రాంతం",
+          "kn": "ನೆರೆಹೊರೆ"
+        },
+        "example": "We used to ride bicycles across the entire peaceful neighborhood."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Childhood Habits: Used to",
-        "ml": "പാഠം: പഴയ ശീലങ്ങൾ (Used to)"
+        "ml": "പാഠം: പഴയ ശീലങ്ങൾ: Used to"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + used to + Base Verb (V1) + (past time marker)",
+        "ml": "മുൻപ് പതിവായി ചെയ്തിരുന്നതും എന്നാൽ ഇപ്പോൾ ചെയ്യാത്തതുമായ ശീലങ്ങളെയും അവസ്ഥകളെയും സൂചിപ്പിക്കാൻ 'used to + V1' (പതിവായിരുന്നു) ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I used to play cricket.",
-        "We used to live there.",
-        "I used to read comics."
+        "When I was young, I used to ride my bicycle to school every morning .",
+        "My grandmother used to tell us enchanting bedtime fairy tales every evening .",
+        "We used to play hide and seek beneath the shady mango trees .",
+        "Did you use to live in that old brick heritage house near the river ?",
+        "People used to write long handwritten letters before smartphones were invented ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Childhood Habits: Used to",
-        "ml": "റീഡിങ് റൂം: പഴയ ശീലങ്ങൾ (Used to)"
+        "ml": "റീഡിങ് റൂം: പഴയ ശീലങ്ങൾ: Used to"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I used to play cricket.",
-          "meaningMl": "കളിച്ചിരുന്നു - I used to play cricket.",
-          "audioPrompt": "I used to play cricket."
+          "text": "Decades ago, a colossal banyan tree stood at the crossroads of our village.",
+          "meaningMl": "പതിറ്റാണ്ടുകൾക്ക് മുൻപ്, ഞങ്ങളുടെ ഗ്രാമത്തിലെ നാലുമുക്കിൽ ഒരു വലിയ ആൽമരം തലയുയർത്തി നിന്നിരുന്നു.",
+          "meaningHi": "दशकों पहले, हमारे गाँव के चौराहे पर एक विशाल बरगद का पेड़ खड़ा था।",
+          "meaningTa": "பல தசாப்தங்களுக்கு முன்பு, எங்கள் கிராமத்து சந்தியில் ஒரு பெரிய ஆலமரம் நின்றது.",
+          "audioPrompt": "Decades ago, a colossal banyan tree stood at the crossroads of our village."
         },
         {
-          "text": "We used to live there.",
-          "meaningMl": "താമസിച്ചിരുന്നു - We used to live there.",
-          "audioPrompt": "We used to live there."
+          "text": "Village children used to tie thick coir ropes to its hanging aerial roots to make swings.",
+          "meaningMl": "ഗ്രാമത്തിലെ കുട്ടികൾ അതിന്റെ താഴേക്ക് തൂങ്ങിനിൽക്കുന്ന വേരുകളിൽ കട്ടിയുള്ള കയറുകൾ കെട്ടി ഊഞ്ഞാൽ ഉണ്ടാക്കുമായിരുന്നു.",
+          "meaningHi": "गाँव के बच्चे झूले बनाने के लिए उसकी लटकती जड़ों पर मोटी रस्सी बाँधते थे।",
+          "meaningTa": "கிராமத்து குழந்தைகள் ஊஞ்சல் செய்ய அதன் விழுதுகளில் தடித்த கயிறுகளைக் கட்டுவார்கள்.",
+          "audioPrompt": "Village children used to tie thick coir ropes to its hanging aerial roots to make swings."
         },
         {
-          "text": "Daily practice of Childhood Habits: Used to gives you great confidence in English.",
-          "meaningMl": "പഴയ ശീലങ്ങൾ (Used to) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Childhood Habits: Used to gives you great confidence in English."
+          "text": "Grandmothers used to gather on the stone platform below to exchange stories and peel vegetables.",
+          "meaningMl": "മുത്തശ്ശിമാർ കഥകൾ പറയാനും പച്ചക്കറികൾ അരിയാനുമായി താഴത്തെ കൽത്തറയിൽ ഒത്തുകൂടുമായിരുന്നു.",
+          "meaningHi": "दादियाँ कहानियों का आदान-प्रदान करने और सब्जियां छीलने के लिए नीचे पत्थर के चबूतरे पर जमा होती थीं।",
+          "meaningTa": "பாட்டிகள் கதைகள் பேசவும் காய்கறி நறுக்கவும் கீழே உள்ள மேடையில் கூடுவார்கள்.",
+          "audioPrompt": "Grandmothers used to gather on the stone platform below to exchange stories and peel vegetables."
+        },
+        {
+          "text": "Weary travelers used to rest in its cool green shade before continuing their long foot journeys.",
+          "meaningMl": "യാത്രക്കാർ തങ്ങളുടെ ദീർഘദൂര കാൽനടയാത്ര തുടരുന്നതിന് മുൻപ് അതിന്റെ തണലിൽ വിശ്രമിക്കാറുണ്ടായിരുന്നു.",
+          "meaningHi": "थके हुए यात्री अपनी लंबी पैदल यात्रा जारी रखने से पहले उसकी ठंडी छाँव में आराम करते थे।",
+          "meaningTa": "களைப்படைந்த பயணிகள் தங்கள் பயணத்தைத் தொடர்வதற்கு முன் அதன் நிழலில் ஓய்வெடுப்பார்கள்.",
+          "audioPrompt": "Weary travelers used to rest in its cool green shade before continuing their long foot journeys."
+        },
+        {
+          "text": "Though paved concrete roads replaced the mud trails, the memory of that tree remains sacred.",
+          "meaningMl": "മൺപാതകൾക്ക് പകരം കോൺക്രീറ്റ് റോഡുകൾ വന്നെങ്കിലും ആ ആൽമരത്തിന്റെ ഓർമ്മ ഇന്നും പവിത്രമായി നിലനിൽക്കുന്നു.",
+          "meaningHi": "हालाँकि पक्की सड़कों ने कच्चे रास्तों की जगह ले ली, फिर भी उस पेड़ की स्मृति पवित्र बनी हुई है।",
+          "meaningTa": "தார் சாலைகள் மண் பாதைகளை மாற்றியமைத்தாலும் அந்த மரத்தின் நினைவு இன்னும் அழியவில்லை.",
+          "audioPrompt": "Though paved concrete roads replaced the mud trails, the memory of that tree remains sacred."
+        },
+        {
+          "text": "Treasured traditions remind us that simple community bonds bring the deepest lifelong joy.",
+          "meaningMl": "ലളിതമായ സൗഹൃദങ്ങളാണ് ജീവിതത്തിൽ ഏറ്റവും വലിയ ആനന്ദം നൽകുന്നതെന്ന് ഇത്തരം നല്ല പാരമ്പര്യങ്ങൾ നമ്മെ ഓർമ്മിപ്പിക്കുന്നു.",
+          "meaningHi": "अनमोल परंपराएँ हमें याद दिलाती हैं कि साधारण सामुदायिक बंधन सबसे गहरा आजीवन आनंद लाते हैं।",
+          "meaningTa": "எளிய சமூகப் பிணைப்புகளே ஆழமான மகிழ்ச்சியைத் தரும் என்பதைப் பாரம்பரியங்கள் நினைவூட்டுகின்றன.",
+          "audioPrompt": "Treasured traditions remind us that simple community bonds bring the deepest lifelong joy."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Where did the colossal banyan tree stand decades ago?",
+            "ml": "പതിറ്റാണ്ടുകൾക്ക് മുൻപ് ആ വലിയ ആൽമരം എവിടെയാണ് നിന്നിരുന്നത്?",
+            "hi": "विशाल बरगद का पेड़ कहाँ खड़ा था?",
+            "ta": "அந்த பெரிய ஆலமரம் எங்கே நின்றது?"
+          },
+          "options": [
+            "Inside a palace garden",
+            "At the crossroads of the village",
+            "On a high mountain peak",
+            "Beside the seaport"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It stood at the crossroads of our village.",
+            "ml": "ഗ്രാമത്തിലെ നാലുമുക്കിലാണ് (crossroads of our village) അത് നിന്നിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did children use to make swings with?",
+            "ml": "കുട്ടികൾ എന്തുകൊണ്ടാണ് ഊഞ്ഞാൽ ഉണ്ടാക്കിയിരുന്നത്?",
+            "hi": "बच्चे झूले किससे बनाते थे?",
+            "ta": "குழந்தைகள் ஊஞ்சல் செய்ய எதைப் பயன்படுத்தினர்?"
+          },
+          "options": [
+            "Steel chains",
+            "Thick coir ropes tied to aerial roots",
+            "Plastic strings",
+            "Silk ribbons"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They tied thick coir ropes to its hanging aerial roots.",
+            "ml": "ആകാശവേരുകളിൽ കട്ടിയുള്ള കയറുകൾ കെട്ടിയാണ് (thick coir ropes) ഊഞ്ഞാലുണ്ടാക്കിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did grandmothers use to do on the stone platform below?",
+            "ml": "താഴത്തെ കൽത്തറയിൽ മുത്തശ്ശിമാർ എന്താണ് ചെയ്യാറുണ്ടായിരുന്നത്?",
+            "hi": "दादियाँ नीचे पत्थर के चबूतरे पर क्या करती थीं?",
+            "ta": "பாட்டிகள் கீழே உள்ள மேடையில் என்ன செய்வார்கள்?"
+          },
+          "options": [
+            "Play chess",
+            "Exchange stories and peel vegetables",
+            "Sell clothes",
+            "Read English news"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They gathered to exchange stories and peel vegetables.",
+            "ml": "കഥകൾ പറയാനും പച്ചക്കറികൾ അരിയാനുമാണ് അവർ ഒത്തുകൂടിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d36_1",
-          "question": "Which word represents: 'കളിക്കുക'?",
+          "question": "Select the correct structure to express a discontinued past habit:",
           "options": [
-            "prepare",
-            "decide",
-            "play",
-            "remember"
+            "I used to playing cricket.",
+            "I used to play cricket.",
+            "I was used to play cricket.",
+            "I am used to played cricket."
           ],
-          "answer": "play",
-          "explanation": "play എന്നാൽ കളിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Used to' must be followed by the base verb V1 ('play'): 'I used to play cricket.'",
+          "ruleHint": "Past Habit Formula: used to + V1 (play)."
         },
         {
-          "id": "trap_d36_2",
-          "question": "What is the past form (V2) of 'live'?",
+          "question": "In past questions with 'did', how is 'used to' spelled?",
           "options": [
-            "lived",
-            "liveing",
-            "lives",
-            "has live"
+            "Did you used to live here?",
+            "Did you use to live here?",
+            "Did you were use to live here?",
+            "Did you using to live here?"
           ],
-          "answer": "lived",
-          "explanation": "live ന്റെ ഭൂതകാല രൂപം lived ആണ്."
+          "correctIndex": 1,
+          "explanation": "Because 'did' already carries the past tense, 'used' drops the 'd' to become 'use': 'Did you use to live here?'",
+          "ruleHint": "Question Rule: Did + Subject + use to + V1?"
         },
         {
-          "id": "trap_d36_3",
-          "question": "What is the correct English word for 'കുട്ടിക്കാലം'?",
+          "question": "How do you say in the negative that you did not have a habit of drinking tea?",
           "options": [
-            "progress",
-            "schedule",
-            "childhood",
-            "partner"
+            "I didn't use to drink tea.",
+            "I didn't used to drank tea.",
+            "I not used to drink tea.",
+            "I wasn't use to drink tea."
           ],
-          "answer": "childhood",
-          "explanation": "കുട്ടിക്കാലം എന്നാൽ ഇംഗ്ലീഷിൽ childhood."
+          "correctIndex": 0,
+          "explanation": "Negative past habit uses 'didn't use to + V1': 'I didn't use to drink tea.'",
+          "ruleHint": "Negative Rule: didn't use to + base verb."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 36 Gate Exam (5 Qs)",

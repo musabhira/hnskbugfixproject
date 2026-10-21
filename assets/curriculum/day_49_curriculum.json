@@ -22,112 +22,109 @@
     "totalCoinsReward": 99
   },
   "grammarRule": {
-    "formula": "Transitive and Intransitive Verbs",
+    "formula": "Subject + should / ought to + Base Verb (V1) | You shouldn't + V1",
     "explanation": {
-      "ml": "ഉപദേശങ്ങൾ നൽകൽ (Should) എന്ന വിഷയത്തിൽ You should + V1 (You should sleep early) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use You should + V1 (You should sleep early) correctly in spoken English."
+      "ml": "മറ്റുള്ളവർക്ക് നല്ല ഉപദേശങ്ങളോ ആരോഗ്യകരമായ നിർദ്ദേശങ്ങളോ നൽകുമ്പോൾ 'You should drink more water' (കൂടുതൽ വെള്ളം കുടിക്കണം), 'You ought to take some rest' (വിശ്രമിക്കേണ്ടതാണ്) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Giving Advice: Should & Ought to with clear formula: Subject + should / ought to + Base Verb (V1) | You shouldn't + V1"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Doctor advised rest.",
-      "en": "Golden Rule: Practice 'Doctor advised rest.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 'Should' സാധാരണ ഉപദേശങ്ങൾക്ക് ഉപയോഗിക്കുന്നു. 'Ought to' ധാർമ്മികമായ കടമകൾക്കോ ഉത്തരവാദിത്തങ്ങൾക്കോ (moral duty) കൂടുതൽ ഉപയോഗിക്കുന്നു. രണ്ടിനും ശേഷം ക്രിയയുടെ V1 രൂപം വരുന്നു.",
+      "en": "Golden Tip: 💡 'Should' സാധാരണ ഉപദേശങ്ങൾക്ക് ഉപയോഗിക്കുന്നു. 'Ought to' ധാർമ്മികമായ കടമകൾക്കോ ഉത്തരവാദിത്തങ്ങൾക്കോ (moral duty) കൂടുതൽ ഉപയോഗിക്കുന്നു. രണ്ടിനും ശേഷം ക്രിയയുടെ V1 രൂപം വരുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "advise",
-        "v2": "advised",
-        "v3": "advised",
-        "meaning": {
-          "ml": "ഉപദേശിക്കുക",
-          "hi": "ഉപദേശിക്കുക",
-          "ta": "ഉപദേശിക്കുക"
-        },
-        "example": "Doctor advised rest.",
-        "exampleMl": "ഉപദേശിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "exercise",
-        "v2": "exercised",
-        "v3": "exercised",
-        "meaning": {
-          "ml": "വ്യായാമം ചെയ്യുക",
-          "hi": "വ്യായാമം ചെയ്യുക",
-          "ta": "വ്യായാമം ചെയ്യുക"
-        },
-        "example": "You should exercise daily.",
-        "exampleMl": "വ്യായാമം ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "avoid",
-        "v2": "avoided",
-        "v3": "avoided",
-        "meaning": {
-          "ml": "ഒഴിവാക്കുക",
-          "hi": "ഒഴിവാക്കുക",
-          "ta": "ഒഴിവാക്കുക"
-        },
-        "example": "You should avoid sugar.",
-        "exampleMl": "ഒഴിവാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
         "v1": "consult",
         "v2": "consulted",
         "v3": "consulted",
         "meaning": {
-          "ml": "കാണുക",
-          "hi": "കാണുക",
-          "ta": "കാണുക"
+          "ml": "വിദഗ്ദ്ധോപദേശം തേടുക / കാണുക",
+          "hi": "परामर्श लेना",
+          "ta": "ஆலோசனை கேள்"
         },
-        "example": "You should consult doctor.",
-        "exampleMl": "കാണുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "You should consult a certified financial advisor before investing.",
+        "exampleMl": "Seek information or advice from an expert or a book."
       }
     ],
     "nouns": [
       {
-        "word": "advice",
+        "word": "Recommendation",
+        "partOfSpeech": "noun",
+        "definition": "A suggestion or proposal as to the best course of action.",
         "meaning": {
-          "ml": "ഉപദേശം",
-          "hi": "ഉപദേശം",
-          "ta": "ഉപദേശം"
+          "ml": "ശുപാർശ / നല്ല നിർദ്ദേശം",
+          "hi": "सिफारिश / सुझाव",
+          "ta": "பரிந்துரை",
+          "te": "సిఫార్సు",
+          "kn": "ಶಿಫಾರಸು"
         },
-        "example": "We learned about advice in today's lesson."
+        "example": "Following a balanced dietary recommendation keeps your immune system robust."
       },
       {
-        "word": "health",
+        "word": "Prudent",
+        "partOfSpeech": "adjective",
+        "definition": "Acting with or showing care and thought for the future.",
         "meaning": {
-          "ml": "ആരോഗ്യം",
-          "hi": "ആരോഗ്യം",
-          "ta": "ആരോഗ്യം"
+          "ml": "വിവേകപൂർണ്ണമായ / ചിന്താശേഷിയുള്ള",
+          "hi": "विवेकी / समझदार",
+          "ta": "விவேகமான",
+          "te": "వివేకవంతమైన",
+          "kn": "ವಿವೇಕಯುತ"
         },
-        "example": "We learned about health in today's lesson."
+        "example": "It is prudent to save a portion of your monthly salary for emergencies."
       },
       {
-        "word": "diet",
+        "word": "Well-being",
+        "partOfSpeech": "noun",
+        "definition": "The state of being comfortable, healthy, or happy.",
         "meaning": {
-          "ml": "ഭക്ഷണരീതി",
-          "hi": "ഭക്ഷണരീതി",
-          "ta": "ഭക്ഷണരീതി"
+          "ml": "ക്ഷേമം / ആരോഗ്യാവസ്ഥ",
+          "hi": "कल्याण / स्वास्थ्य",
+          "ta": "நல்வாழ்வு",
+          "te": "శ్రేయస్సు",
+          "kn": "ಯೋಗಕ್ಷೇಮ"
         },
-        "example": "We learned about diet in today's lesson."
+        "example": "Regular physical exercise and meditation enhance overall mental well-being."
       },
       {
-        "word": "habit",
+        "word": "Moderation",
+        "partOfSpeech": "noun",
+        "definition": "The avoidance of excess or extremes, especially in one's behavior or political opinions.",
         "meaning": {
-          "ml": "ശീലം",
-          "hi": "ശീലം",
-          "ta": "ശീലം"
+          "ml": "മിതത്വം / അതിരുകടക്കാതിരിക്കൽ",
+          "hi": "संयम / संतुलन",
+          "ta": "மிதமான நிலை",
+          "te": "మితము",
+          "kn": "ಮಿತತೆ"
         },
-        "example": "We learned about habit in today's lesson."
+        "example": "Consuming sweets and fried snacks in moderation prevents lifestyle diseases."
       },
       {
-        "word": "tip",
+        "word": "Consult",
+        "partOfSpeech": "verb",
+        "definition": "Seek information or advice from an expert or a book.",
         "meaning": {
-          "ml": "നുറുങ്ങുവിദ്യ",
-          "hi": "നുറുങ്ങുവിദ്യ",
-          "ta": "നുറുങ്ങുവിദ്യ"
+          "ml": "വിദഗ്ദ്ധോപദേശം തേടുക / കാണുക",
+          "hi": "परामर्श लेना",
+          "ta": "ஆலோசனை கேள்",
+          "te": "సంప్రదించు",
+          "kn": "ಸಮಾಲೋಚಿಸು"
         },
-        "example": "We learned about tip in today's lesson."
+        "example": "You should consult a certified financial advisor before investing."
+      },
+      {
+        "word": "Posture",
+        "partOfSpeech": "noun",
+        "definition": "The position in which someone holds their body when standing or sitting.",
+        "meaning": {
+          "ml": "ശരീരത്തിന്റെ ഇരിപ്പുരീതി / പോസ്ചർ",
+          "hi": "मुद्रा / बैठने का तरीका",
+          "ta": "உடல் தோரணை",
+          "te": "భంగిమ",
+          "kn": "ಭಂಗಿ"
+        },
+        "example": "Maintaining an upright ergonomic posture prevents chronic spine strain."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Giving Advice: Should & Ought to",
-        "ml": "പാഠം: ഉപദേശങ്ങൾ നൽകൽ (Should)"
+        "ml": "പാഠം: ഉപദേശങ്ങളും നിർദ്ദേശങ്ങളും: Should & Ought to"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + should / ought to + Base Verb (V1) | You shouldn't + V1",
+        "ml": "മറ്റുള്ളവർക്ക് നല്ല ഉപദേശങ്ങളോ ആരോഗ്യകരമായ നിർദ്ദേശങ്ങളോ നൽകുമ്പോൾ 'You should drink more water' (കൂടുതൽ വെള്ളം കുടിക്കണം), 'You ought to take some rest' (വിശ്രമിക്കേണ്ടതാണ്) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Doctor advised rest.",
-        "You should exercise daily.",
-        "You should avoid sugar."
+        "You should drink at least eight glasses of clean water every day .",
+        "You ought to apologize sincerely to your colleague for the misunderstanding .",
+        "You shouldn't skip breakfast because it provides essential morning energy .",
+        "We should review the agreement terms thoroughly before signing the contract .",
+        "Children ought to respect their teachers and value cultural traditions ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Giving Advice: Should & Ought to",
-        "ml": "റീഡിങ് റൂം: ഉപദേശങ്ങൾ നൽകൽ (Should)"
+        "ml": "റീഡിങ് റൂം: ഉപദേശങ്ങളും നിർദ്ദേശങ്ങളും: Should & Ought to"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Doctor advised rest.",
-          "meaningMl": "ഉപദേശിക്കുക - Doctor advised rest.",
-          "audioPrompt": "Doctor advised rest."
+          "text": "In a tranquil mountain hermitage, elderly physician Bodhi welcomed seekers seeking advice on longevity.",
+          "meaningMl": "ശാന്തമായ മലയോര ആശ്രമത്തിൽ ബോധി എന്ന വൃദ്ധ വൈദ്യൻ ദീർഘായുസ്സ് ആഗ്രഹിച്ചെത്തിയ ആളുകളെ സ്വീകരിച്ചു.",
+          "meaningHi": "एक शांत पहाड़ी आश्रम में, बुजुर्ग चिकित्सक बोधि ने दीर्घायु पर सलाह लेने वालों का स्वागत किया।",
+          "meaningTa": "ஒரு அமைதியான மலையடிவாரத்தில் முதிய மருத்துவர் போதி நீண்ட ஆயுளுக்கான ஆலோசனை கூறினார்.",
+          "audioPrompt": "In a tranquil mountain hermitage, elderly physician Bodhi welcomed seekers seeking advice on longevity."
         },
         {
-          "text": "You should exercise daily.",
-          "meaningMl": "വ്യായാമം ചെയ്യുക - You should exercise daily.",
-          "audioPrompt": "You should exercise daily."
+          "text": "A stressed city merchant complained of restless sleepless nights and constant anxious tension.",
+          "meaningMl": "നഗരത്തിലെ ഒരു വ്യാപാരി തനിക്ക് ഉറക്കമില്ലായ്മയും ഉത്കണ്ഠയും അനുഭവപ്പെടുന്നു എന്ന് പരാതിപ്പെട്ടു.",
+          "meaningHi": "शहर के एक तनावग्रस्त व्यापारी ने बेचैन रातों और चिंता की शिकायत की।",
+          "meaningTa": "ஒரு வணிகர் தனக்கு தூக்கமின்மையும் பதற்றமும் இருப்பதாக முறையிட்டார்.",
+          "audioPrompt": "A stressed city merchant complained of restless sleepless nights and constant anxious tension."
         },
         {
-          "text": "Daily practice of Giving Advice: Should & Ought to gives you great confidence in English.",
-          "meaningMl": "ഉപദേശങ്ങൾ നൽകൽ (Should) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Giving Advice: Should & Ought to gives you great confidence in English."
+          "text": "Bodhi advised: 'You should walk barefoot upon morning dewdrops and listen to bird songs.'",
+          "meaningMl": "ബോധി ഉപദേശിച്ചു: 'നിങ്ങൾ അതിരാവിലെ മഞ്ഞുതുള്ളികളിലൂടെ നഗ്നപാദനായി നടക്കുകയും കിളികളുടെ പാട്ട് കേൾക്കുകയും വേണം.'",
+          "meaningHi": "बोधि ने सलाह दी: 'आपको सुबह ओस की बूंदों पर नंगे पैर चलना चाहिए और पक्षियों के गीत सुनने चाहिए।'",
+          "meaningTa": "போதி அறிவுறுத்தினார்: 'நீங்கள் காலையில் பனித்துளிகளில் வெறும் கால்களால் நடக்க வேண்டும்.'",
+          "audioPrompt": "Bodhi advised: 'You should walk barefoot upon morning dewdrops and listen to bird songs.'"
+        },
+        {
+          "text": "'You ought to treat food as sacred medicine and avoid hurried meals consumed in anger.'",
+          "meaningMl": "'ഭക്ഷണത്തെ ഔഷധമായി കാണണം, ദേഷ്യത്തോടും തിടുക്കത്തോടും കൂടി ഭക്ഷണം കഴിക്കുന്നത് ഒഴിവാക്കണം.'",
+          "meaningHi": "'आपको भोजन को औषधि मानना चाहिए और गुस्से में खाना खाने से बचना चाहिए।'",
+          "meaningTa": "'உணவை மருந்தாகக் கருத வேண்டும், கோபத்தோடு சாப்பிடுவதைத் தவிர்க்க வேண்டும்.'",
+          "audioPrompt": "'You ought to treat food as sacred medicine and avoid hurried meals consumed in anger.'"
+        },
+        {
+          "text": "'You shouldn't measure life solely in accumulated coins; peace of mind is your true wealth.'",
+          "meaningMl": "'സമ്പാദിച്ച നാണയങ്ങൾ കൊണ്ട് മാത്രം ജീവിതത്തെ അളക്കരുത്; മനസ്മാധാനമാണ് യഥാർത്ഥ സമ്പത്ത്.'",
+          "meaningHi": "'आपको केवल सिक्कों से जीवन को नहीं मापना चाहिए; मन की शांति ही आपका सच्चा धन है।'",
+          "meaningTa": "'பணத்தால் மட்டுமே வாழ்க்கையை அளவிடக் கூடாது; மன அமைதியே உண்மையான செல்வம்.'",
+          "audioPrompt": "'You shouldn't measure life solely in accumulated coins; peace of mind is your true wealth.'"
+        },
+        {
+          "text": "Living in harmony with nature's timeless rhythms heals the tired body and restores the spirit.",
+          "meaningMl": "പ്രകൃതിയുടെ താളത്തിനൊപ്പം ജീവിക്കുന്നത് ക്ഷീണിതമായ ശരീരത്തെ സുഖപ്പെടുത്തുകയും ആത്മാവിനെ ഉണർത്തുകയും ചെയ്യുന്നു.",
+          "meaningHi": "प्रकृति की शाश्वत लय के साथ सद्भाव में रहना थके हुए शरीर को ठीक करता है।",
+          "meaningTa": "இயற்கையின் தாளத்தோடு வாழ்வது சோர்வடைந்த உடலைக் குணப்படுத்தி ஆன்மாவை புதுப்பிக்கிறது.",
+          "audioPrompt": "Living in harmony with nature's timeless rhythms heals the tired body and restores the spirit."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who was elderly physician Bodhi welcoming in his mountain hermitage?",
+            "ml": "തന്റെ ആശ്രമത്തിൽ ബോധി ആരെയാണ് സ്വീകരിച്ചത്?",
+            "hi": "बोधि ने किसका स्वागत किया?",
+            "ta": "போதி யாரை வரவேற்றார்?"
+          },
+          "options": [
+            "Royal soldiers",
+            "Seekers seeking advice on longevity and health",
+            "Gold traders",
+            "Ship builders"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Seekers seeking advice on longevity.",
+            "ml": "ആരോഗ്യവും ദീർഘായുസ്സും തേടിയെത്തിയ ആളുകളെയാണ്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did Bodhi advise the merchant to walk barefoot upon?",
+            "ml": "എന്തിലൂടെ നഗ്നപാദനായി നടക്കാനാണ് ബോധി വ്യാപാരിയെ ഉപദേശിച്ചത്?",
+            "hi": "व्यापारी को किस पर नंगे पैर चलने की सलाह दी?",
+            "ta": "வணிகரை எதன் மீது வெறும் காலால் நடக்கச் சொன்னார்?"
+          },
+          "options": [
+            "Hot desert sand",
+            "Morning dewdrops",
+            "Sharp river stones",
+            "Wooden floorboards"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Upon morning dewdrops.",
+            "ml": "രാവിലത്തെ മഞ്ഞുതുള്ളികളിലൂടെ (morning dewdrops)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "According to Bodhi, what is a person's true wealth?",
+            "ml": "ബോധി ആശാന്റെ അഭിപ്രായത്തിൽ ഒരാളുടെ യഥാർത്ഥ സമ്പത്ത് എന്താണ്?",
+            "hi": "बोधि के अनुसार सच्चा धन क्या है?",
+            "ta": "போதியின் படி உண்மையான செல்வம் எது?"
+          },
+          "options": [
+            "A vault of gold coins",
+            "Peace of mind",
+            "A big stone palace",
+            "Expensive silk robes"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Peace of mind is your true wealth.",
+            "ml": "മനസ്സമാധാനമാണ് (peace of mind) യഥാർത്ഥ സമ്പത്ത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d49_1",
-          "question": "Which word represents: 'ഉപദേശിക്കുക'?",
+          "question": "Select the correct advice sentence using 'should':",
           "options": [
-            "finish",
-            "arrive",
-            "advise",
-            "borrow"
+            "You should to drink more water.",
+            "You should drink more water.",
+            "You should drinking more water.",
+            "You should drank more water."
           ],
-          "answer": "advise",
-          "explanation": "advise എന്നാൽ ഉപദേശിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'Should' is a modal verb that takes a bare infinitive V1 without 'to': 'You should drink more water.'",
+          "ruleHint": "Modal Rule: should + Base Verb (V1)."
         },
         {
-          "id": "trap_d49_2",
-          "question": "What is the past form (V2) of 'exercise'?",
+          "question": "Which form correctly follows 'ought'?",
           "options": [
-            "exercises",
-            "exerciseing",
-            "exercised",
-            "has exercise"
+            "Ought to + Base Verb (V1)",
+            "Ought + Base Verb without to",
+            "Ought to + -ing",
+            "Ought for + V1"
           ],
-          "answer": "exercised",
-          "explanation": "exercise ന്റെ ഭൂതകാല രൂപം exercised ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Ought' is followed by 'to' + base verb: 'You ought to respect elders.'",
+          "ruleHint": "Rule: ought to + V1."
         },
         {
-          "id": "trap_d49_3",
-          "question": "What is the correct English word for 'ഉപദേശം'?",
+          "question": "How do you give negative advice against eating junk food?",
           "options": [
-            "journey",
-            "airport",
-            "station",
-            "advice"
+            "You shouldn't eat too much junk food.",
+            "You shouldn't to eat junk food.",
+            "You not should eat junk food.",
+            "You ought not eating junk food."
           ],
-          "answer": "advice",
-          "explanation": "ഉപദേശം എന്നാൽ ഇംഗ്ലീഷിൽ advice."
+          "correctIndex": 0,
+          "explanation": "'You shouldn't eat too much junk food' correctly pairs 'shouldn't' with base verb 'eat'.",
+          "ruleHint": "Negative Advice: shouldn't + base verb."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 49 Gate Exam (5 Qs)",

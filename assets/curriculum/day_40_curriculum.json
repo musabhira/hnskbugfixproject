@@ -22,112 +22,121 @@
     "totalCoinsReward": 90
   },
   "grammarRule": {
-    "formula": "Imperative Sentences – Commands, Requests and Suggestions",
+    "formula": "Subject + am / is / are + going to + Base Verb (V1)",
     "explanation": {
-      "ml": "ഉറച്ച പ്ലാനുകൾ: Going to എന്ന വിഷയത്തിൽ Am/Is/Are + Going to + V1 (I am going to buy a car) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Am/Is/Are + Going to + V1 (I am going to buy a car) correctly in spoken English."
+      "ml": "മുൻകൂട്ടി പ്ലാൻ ചെയ്തതും തീരുമാനിച്ചുറപ്പിച്ചതുമായ കാര്യങ്ങളെക്കുറിച്ച് സംസാരിക്കാൻ 'going to + V1' (ചെയ്യാൻ പോകുന്നു) ഉപയോഗിക്കുന്നു.",
+      "en": "Master Definite Future Plans: Going to with clear formula: Subject + am / is / are + going to + Base Verb (V1)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I am going to buy a car.",
-      "en": "Golden Rule: Practice 'I am going to buy a car.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വ്യത്യാസം മനസ്സിലാക്കുക: പെട്ടെന്നുള്ള തീരുമാനങ്ങൾക്ക് 'will' ഉപയോഗിക്കുക ('I will call you'). എന്നാൽ മുൻകൂട്ടി തയ്യാറാക്കിയ പ്ലാനുകൾക്ക് 'going to' ഉപയോഗിക്കുക ('I am going to start a new job next month').",
+      "en": "Golden Tip: 💡 വ്യത്യാസം മനസ്സിലാക്കുക: പെട്ടെന്നുള്ള തീരുമാനങ്ങൾക്ക് 'will' ഉപയോഗിക്കുക ('I will call you'). എന്നാൽ മുൻകൂട്ടി തയ്യാറാക്കിയ പ്ലാനുകൾക്ക് 'going to' ഉപയോഗിക്കുക ('I am going to start a new job next month')."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "plan",
-        "v2": "planned",
-        "v3": "planned",
+        "v1": "renovate",
+        "v2": "renovateed",
+        "v3": "renovateed",
         "meaning": {
-          "ml": "പ്ലാൻ ചെയ്യുക",
-          "hi": "പ്ലാൻ ചെയ്യുക",
-          "ta": "പ്ലാൻ ചെയ്യുക"
+          "ml": "നവീകരിക്കുക / പുതുക്കിപ്പണിയുക",
+          "hi": "नवीनीकरण करना",
+          "ta": "புதுப்பி"
         },
-        "example": "I am going to buy a car.",
-        "exampleMl": "പ്ലാൻ ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We are going to renovate our ancestral heritage home next summer.",
+        "exampleMl": "Restore something old, especially a building, to a good state of repair."
       },
       {
-        "v1": "start",
-        "v2": "started",
-        "v3": "started",
+        "v1": "enroll",
+        "v2": "enrolled",
+        "v3": "enrolled",
         "meaning": {
-          "ml": "ആരംഭിക്കുക",
-          "hi": "शुरू करना",
-          "ta": "தொடங்கு"
+          "ml": "പേര് ചേർക്കുക / എൻറോൾ ചെയ്യുക",
+          "hi": "दाखिला लेना",
+          "ta": "சேர்"
         },
-        "example": "She is going to start gym.",
-        "exampleMl": "തുടങ്ങാൻ പോകുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "shift",
-        "v2": "shifted",
-        "v3": "shifted",
-        "meaning": {
-          "ml": "താമസം മാറുക",
-          "hi": "താമസം മാറുക",
-          "ta": "താമസം മാറുക"
-        },
-        "example": "We are going to shift home.",
-        "exampleMl": "താമസം മാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "travel",
-        "v2": "traveled",
-        "v3": "traveled",
-        "meaning": {
-          "ml": "യാത്ര പോകാൻ പോകുന്നു",
-          "hi": "യാത്ര പോകാൻ പോകുന്നു",
-          "ta": "യാത്ര പോകാൻ പോകുന്നു"
-        },
-        "example": "He is going to travel.",
-        "exampleMl": "യാത്ര പോകാൻ പോകുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I am going to enroll in an advanced English communication workshop.",
+        "exampleMl": "Officially register as a member or student of an institution or course."
       }
     ],
     "nouns": [
       {
-        "word": "intention",
+        "word": "Intention",
+        "partOfSpeech": "noun",
+        "definition": "A thing intended; an aim or plan.",
         "meaning": {
-          "ml": "ഉദ്ദേശ്യം",
-          "hi": "ഉദ്ദേശ്യം",
-          "ta": "ഉദ്ദേശ്യം"
+          "ml": "ഉദ്ദേശ്യം / ലക്ഷ്യം",
+          "hi": "इरादा",
+          "ta": "நோக்கம்",
+          "te": "ఉద్దేశం",
+          "kn": "ಉದ್ದೇಶ"
         },
-        "example": "We learned about intention in today's lesson."
+        "example": "Our intention is to expand educational resources across rural schools."
       },
       {
-        "word": "preparation",
+        "word": "Roadmap",
+        "partOfSpeech": "noun",
+        "definition": "A plan or strategy intended to achieve a particular goal.",
         "meaning": {
-          "ml": "ഒരുക്കം",
-          "hi": "ഒരുക്കം",
-          "ta": "ഒരുക്കം"
+          "ml": "റോഡ്മാപ്പ് / ഘട്ടംഘട്ടമായുള്ള പദ്ധതി",
+          "hi": "कार्ययोजना",
+          "ta": "செயல்திட்டம்",
+          "te": "ప్రణాళిక",
+          "kn": "ಮಾರ್ಗಸೂಚಿ"
         },
-        "example": "We learned about preparation in today's lesson."
+        "example": "The tech startup revealed their product release roadmap for next year."
       },
       {
-        "word": "ticket",
+        "word": "Renovate",
+        "partOfSpeech": "verb",
+        "definition": "Restore something old, especially a building, to a good state of repair.",
         "meaning": {
-          "ml": "ടിക്കറ്റ്",
-          "hi": "ടിക്കറ്റ്",
-          "ta": "ടിക്കറ്റ്"
+          "ml": "നവീകരിക്കുക / പുതുക്കിപ്പണിയുക",
+          "hi": "नवीनीकरण करना",
+          "ta": "புதுப்பி",
+          "te": "పునరుద్ధరించు",
+          "kn": "ನವೀಕರಿಸು"
         },
-        "example": "We learned about ticket in today's lesson."
+        "example": "We are going to renovate our ancestral heritage home next summer."
       },
       {
-        "word": "goal",
+        "word": "Enroll",
+        "partOfSpeech": "verb",
+        "definition": "Officially register as a member or student of an institution or course.",
         "meaning": {
-          "ml": "ലക്ഷ്യം",
-          "hi": "ലക്ഷ്യം",
-          "ta": "ലക്ഷ്യം"
+          "ml": "പേര് ചേർക്കുക / എൻറോൾ ചെയ്യുക",
+          "hi": "दाखिला लेना",
+          "ta": "சேர்",
+          "te": "చేరు",
+          "kn": "ದಾಖಲಾಗು"
         },
-        "example": "We learned about goal in today's lesson."
+        "example": "I am going to enroll in an advanced English communication workshop."
       },
       {
-        "word": "target",
+        "word": "Upcoming",
+        "partOfSpeech": "adjective",
+        "definition": "Happening or appearing soon.",
         "meaning": {
-          "ml": "ടാർഗെറ്റ്",
-          "hi": "ടാർഗെറ്റ്",
-          "ta": "ടാർഗെറ്റ്"
+          "ml": "വരാനിരിക്കുന്ന / അടുത്ത",
+          "hi": "आगामी",
+          "ta": "வரவிருக்கும்",
+          "te": "రాబోయే",
+          "kn": "ಮುಂಬರುವ"
         },
-        "example": "We learned about target in today's lesson."
+        "example": "We have meticulously prepared for the upcoming science Olympiad."
+      },
+      {
+        "word": "Arrangement",
+        "partOfSpeech": "noun",
+        "definition": "A plan or preparation for a future event.",
+        "meaning": {
+          "ml": "ഒരുക്കങ്ങൾ / ക്രമീകരണങ്ങൾ",
+          "hi": "व्यवस्था / इंतज़ाम",
+          "ta": "ஏற்பாடுகள்",
+          "te": "ఏర్పాటు",
+          "kn": "ವ್ಯವಸ್ಥೆ"
+        },
+        "example": "All travel arrangements for the family pilgrimage are finalized."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Definite Future Plans: Going to",
-        "ml": "പാഠം: ഉറച്ച പ്ലാനുകൾ: Going to"
+        "ml": "പാഠം: മുൻകൂട്ടി തീരുമാനിച്ച ഭാവി പ്ലാനുകൾ: Going to"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + am / is / are + going to + Base Verb (V1)",
+        "ml": "മുൻകൂട്ടി പ്ലാൻ ചെയ്തതും തീരുമാനിച്ചുറപ്പിച്ചതുമായ കാര്യങ്ങളെക്കുറിച്ച് സംസാരിക്കാൻ 'going to + V1' (ചെയ്യാൻ പോകുന്നു) ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I am going to buy a car.",
-        "She is going to start gym.",
-        "We are going to shift home."
+        "I am going to start an intensive public speaking course next Monday morning .",
+        "Our engineering department is going to deploy the major server upgrades tonight .",
+        "Are you going to attend the cultural music festival this coming weekend ?",
+        "We are going to plant fifty coconut saplings along the western boundary wall .",
+        "She is going to celebrate her graduation with her university friends in Goa ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Definite Future Plans: Going to",
-        "ml": "റീഡിങ് റൂം: ഉറച്ച പ്ലാനുകൾ: Going to"
+        "ml": "റീഡിങ് റൂം: മുൻകൂട്ടി തീരുമാനിച്ച ഭാവി പ്ലാനുകൾ: Going to"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I am going to buy a car.",
-          "meaningMl": "പ്ലാൻ ചെയ്യുക - I am going to buy a car.",
-          "audioPrompt": "I am going to buy a car."
+          "text": "Architect Reena unrolled a giant sheet of drafting paper across the wooden table.",
+          "meaningMl": "ആർക്കിടെക്റ്റ് റീന മേശപ്പുറത്ത് വലിയൊരു ബ്ലൂപ്രിന്റ് പേപ്പർ നിവർത്തിവെച്ചു.",
+          "meaningHi": "वास्तुकार रीना ने लकड़ी की मेज पर ड्राफ्टिंग पेपर की एक विशाल शीट खोली।",
+          "meaningTa": "கட்டிடக் கலைஞர் ரீனா மேசையின் மீது ஒரு பெரிய வரைபடத் தாளை விரித்தார்.",
+          "audioPrompt": "Architect Reena unrolled a giant sheet of drafting paper across the wooden table."
         },
         {
-          "text": "She is going to start gym.",
-          "meaningMl": "തുടങ്ങാൻ പോകുന്നു - She is going to start gym.",
-          "audioPrompt": "She is going to start gym."
+          "text": "She explained to the village council: 'We are going to build an eco-friendly community center.'",
+          "meaningMl": "അവൾ ഗ്രാമപഞ്ചായത്തിനോട് വിശദീകരിച്ചു: 'നമ്മൾ പരിസ്ഥിതി സൗഹൃദപരമായ ഒരു കമ്മ്യൂണിറ്റി സെന്റർ നിർമ്മിക്കാൻ പോകുന്നു.'",
+          "meaningHi": "उसने ग्राम परिषद को समझाया: 'हम एक पर्यावरण-अनुकूल सामुदायिक केंद्र बनाने जा रहे हैं।'",
+          "meaningTa": "அவள் கிராம சபையிடம் விளக்கினாள்: 'நாம் ஒரு சுற்றுச்சூழல் நட்பு சமூக மையத்தை கட்டப் போகிறோம்.'",
+          "audioPrompt": "She explained to the village council: 'We are going to build an eco-friendly community center.'"
         },
         {
-          "text": "Daily practice of Definite Future Plans: Going to gives you great confidence in English.",
-          "meaningMl": "ഉറച്ച പ്ലാനുകൾ: Going to ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Definite Future Plans: Going to gives you great confidence in English."
+          "text": "The foundation is going to use reclaimed river stones and sustainable seasoned bamboo.",
+          "meaningMl": "അടിത്തറയ്ക്കായി പുഴയിലെ കല്ലുകളും നല്ല മുളയുമാണ് ഉപയോഗിക്കാൻ പോകുന്നത്.",
+          "meaningHi": "नींव में पुनर्नवीनीकरण किए गए नदी के पत्थरों और बांस का उपयोग किया जाने वाला है।",
+          "meaningTa": "அடித்தளத்திற்கு ஆற்று கற்களும் மூங்கில்களும் பயன்படுத்தப்பட உள்ளன.",
+          "audioPrompt": "The foundation is going to use reclaimed river stones and sustainable seasoned bamboo."
+        },
+        {
+          "text": "Rooftop solar panels are going to generate clean electrical energy for all lights and fans.",
+          "meaningMl": "മേൽക്കൂരയിലെ സോളാർ പാനലുകൾ ലൈറ്റുകൾക്കും ഫാനുകൾക്കുമായി ശുദ്ധമായ വൈദ്യുതി ഉത്പാദിപ്പിക്കാൻ പോകുന്നു.",
+          "meaningHi": "छत पर लगे सौर पैनल सभी रोशनी और पंखों के लिए स्वच्छ ऊर्जा पैदा करने जा रहे हैं।",
+          "meaningTa": "கூரை சூரிய ஒளி தகடுகள் அனைத்து மின்விளக்குகளுக்கும் மின்சாரம் தயாரிக்க உள்ளன.",
+          "audioPrompt": "Rooftop solar panels are going to generate clean electrical energy for all lights and fans."
+        },
+        {
+          "text": "Local carpenters and stonemasons are going to lead the construction starting next month.",
+          "meaningMl": "അടുത്ത മാസം മുതൽ നാട്ടിലെ ആശാരിമാരും കൽത്തൊഴിലാളികളുമാണ് നിർമ്മാണ പ്രവർത്തനങ്ങൾക്ക് നേതൃത്വം നൽകാൻ പോകുന്നത്.",
+          "meaningHi": "स्थानीय बढ़ई और राजमिस्त्री अगले महीने से निर्माण का नेतृत्व करने जा रहे हैं।",
+          "meaningTa": "உள்ளூர் தச்சர்களும் கொத்தனார்களும் அடுத்த மாதம் முதல் கட்டுமானத்தை முன்னெடுக்க உள்ளனர்.",
+          "audioPrompt": "Local carpenters and stonemasons are going to lead the construction starting next month."
+        },
+        {
+          "text": "When communities plan together with vision, they create monuments of lasting prosperity.",
+          "meaningMl": "ദീർഘവീക്ഷണത്തോടെ സമൂഹം ഒരുമിച്ച് പദ്ധതികൾ തയ്യാറാക്കുമ്പോൾ അവ ശാശ്വതമായ ഐശ്വര്യത്തിന്റെ സ്മാരകങ്ങളായി മാറുന്നു.",
+          "meaningHi": "जब समुदाय दूरदृष्टि के साथ मिलकर योजना बनाते हैं, तो वे स्थायी समृद्धि के स्मारक बनाते हैं।",
+          "meaningTa": "சமூகம் தொலைநோக்குப் பார்வையுடன் திட்டமிடும்போது நிலையான செழிப்பை உருவாக்குகிறது.",
+          "audioPrompt": "When communities plan together with vision, they create monuments of lasting prosperity."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What is Architect Reena's team going to build?",
+            "ml": "ആർക്കിടെക്റ്റ് റീനയുടെ സംഘം എന്താണ് നിർമ്മിക്കാൻ പോകുന്നത്?",
+            "hi": "रीना की टीम क्या बनाने जा रही है?",
+            "ta": "ரீனாவின் குழு எதைக் கட்டப் போகிறது?"
+          },
+          "options": [
+            "A tall shopping mall",
+            "An eco-friendly community center",
+            "A luxury hotel",
+            "A football stadium"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "They are going to build an eco-friendly community center.",
+            "ml": "പരിസ്ഥിതി സൗഹൃദ കമ്മ്യൂണിറ്റി സെന്ററാണ് നിർമ്മിക്കാൻ പോകുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What materials will the foundation use?",
+            "ml": "അടിത്തറയ്ക്കായി ഏത് വസ്തുക്കളാണ് ഉപയോഗിക്കാൻ പോകുന്നത്?",
+            "hi": "नींव में किस सामग्री का उपयोग किया जाएगा?",
+            "ta": "அடித்தளத்திற்கு என்ன பொருட்கள் பயன்படுத்தப்படும்?"
+          },
+          "options": [
+            "Imported marble",
+            "Reclaimed river stones and seasoned bamboo",
+            "Plastic bricks",
+            "Glass sheets"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It is going to use reclaimed river stones and seasoned bamboo.",
+            "ml": "പുഴയിലെ കല്ലുകളും മുളയുമാണ് ഉപയോഗിക്കുന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Who is going to lead the construction starting next month?",
+            "ml": "അടുത്ത മാസം മുതൽ നിർമ്മാണ പ്രവർത്തനങ്ങൾക്ക് നേതൃത്വം നൽകാൻ പോകുന്നത് ആരാണ്?",
+            "hi": "निर्माण का नेतृत्व कौन करने जा रहा है?",
+            "ta": "கட்டுமானத்தை யார் முன்னெடுக்க உள்ளனர்?"
+          },
+          "options": [
+            "Foreign contractors",
+            "Local carpenters and stonemasons",
+            "School students",
+            "City police"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Local carpenters and stonemasons are going to lead.",
+            "ml": "നാട്ടിലെ ആശാരിമാരും കൽത്തൊഴിലാളികളുമാണ് നേതൃത്വം നൽകുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d40_1",
-          "question": "Which word represents: 'പ്ലാൻ ചെയ്യുക'?",
+          "question": "Select the sentence indicating a planned intention for next month:",
           "options": [
-            "forget",
-            "borrow",
-            "finish",
-            "plan"
+            "I will to buy a car next month.",
+            "I am going to buy a new car next month.",
+            "I going to buy a new car next month.",
+            "I am go to buy a new car next month."
           ],
-          "answer": "plan",
-          "explanation": "plan എന്നാൽ പ്ലാൻ ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Planned future intention requires 'am/is/are + going to + base verb': 'I am going to buy a new car next month.'",
+          "ruleHint": "Going To Formula: Subject + be + going to + V1."
         },
         {
-          "id": "trap_d40_2",
-          "question": "What is the past form (V2) of 'start'?",
+          "question": "How do you ask about someone's plan for dinner tonight?",
           "options": [
-            "has start",
-            "starts",
-            "starting",
-            "started"
+            "What are you going to eat for dinner tonight?",
+            "What will you going to eat tonight?",
+            "What are you go to eat tonight?",
+            "What do you going to eat tonight?"
           ],
-          "answer": "started",
-          "explanation": "start ന്റെ ഭൂതകാല രൂപം started ആണ്."
+          "correctIndex": 0,
+          "explanation": "'What are you going to eat for dinner tonight?' correctly uses 'are you going to + V1'.",
+          "ruleHint": "Question Rule: What + are + you + going to + V1?"
         },
         {
-          "id": "trap_d40_3",
-          "question": "What is the correct English word for 'ഉദ്ദേശ്യം'?",
+          "question": "Choose the correct sentence for third-person singular plan:",
           "options": [
-            "intention",
-            "airport",
-            "journey",
-            "success"
+            "He are going to start his own business.",
+            "He is going to start his own business.",
+            "He going to start his business.",
+            "He is go to start his business."
           ],
-          "answer": "intention",
-          "explanation": "ഉദ്ദേശ്യം എന്നാൽ ഇംഗ്ലീഷിൽ intention."
+          "correctIndex": 1,
+          "explanation": "Third person singular 'He' takes 'is': 'He is going to start his own business.'",
+          "ruleHint": "Agreement: He/She/It + is going to + V1."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 40 Gate Exam (5 Qs)",

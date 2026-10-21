@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import '../pocket_pronunciation_evaluator.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🚗 Particle effect for road dust, checkpoint celebrations, and coin bursts
 class DriveParticle {
@@ -322,13 +323,15 @@ class _PocketVocabOpenWorldDrivePageState
       _checkpoints = dayItems.asMap().entries.map((entry) {
         final idx = entry.key;
         final v = entry.value;
+        final nativeMeaning = v.getMeaning(PocketLanguageService.currentLanguage);
         return {
           'word': v.word,
           'meaningEn': v.definition,
           'meaningMl': v.malayalamMeaning,
+          'meaningNative': nativeMeaning,
           'emoji': emojis[idx % emojis.length],
           'sentence': v.exampleSentence.isNotEmpty ? v.exampleSentence : 'This is ${v.word}.',
-          'sentenceMl': v.malayalamMeaning,
+          'sentenceMl': nativeMeaning,
         };
       }).toList();
     } else {
@@ -1022,10 +1025,13 @@ class _PocketVocabOpenWorldDrivePageState
   /// 🎙️ Minimal Centered Floating Action Button with Mic (Appears at stopped checkpoint)
   Widget _buildMinimalBottomMicSection(Map<String, dynamic> item) {
     final wrd = item['word'] ?? 'Book';
-    final ml = item['meaningMl'] ?? 'പുസ്തകം';
+    final isEn = PocketLanguageService.isEnglish;
+    final nativeMeaning = (item['meaningNative'] ?? (PocketLanguageService.isMalayalam ? item['meaningMl'] : '') ?? '').toString();
     final emoji = item['emoji'] ?? '🚗';
     final sentence = item['sentence'] ?? 'This is a $wrd.';
-    final sentenceMl = item['sentenceMl'] ?? ml;
+    final subText = isEn
+        ? ''
+        : (nativeMeaning.isNotEmpty && nativeMeaning != wrd && nativeMeaning != item['meaningEn'] ? nativeMeaning : '');
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1060,7 +1066,7 @@ class _PocketVocabOpenWorldDrivePageState
                   Text(emoji, style: const TextStyle(fontSize: 14)),
                   const SizedBox(width: 6),
                   Text(
-                    '$wrd • $ml',
+                    subText.isNotEmpty ? '$wrd • $subText' : wrd,
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 13,
@@ -1082,16 +1088,18 @@ class _PocketVocabOpenWorldDrivePageState
                   letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                sentenceMl,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              if (subText.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subText,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF38BDF8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
+              ],
 
               // Live Recording Feedback Row
               if (_isRecording) ...[

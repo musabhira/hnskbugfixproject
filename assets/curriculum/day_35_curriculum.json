@@ -22,112 +22,157 @@
     "totalCoinsReward": 85
   },
   "grammarRule": {
-    "formula": "Negative Sentences and Contractions",
+    "formula": "First + V2... Then + V2... After that + V2... Finally + V2...",
     "explanation": {
-      "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം എന്ന വിഷയത്തിൽ Time Sequencers: In the morning, Then, Later എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Time Sequencers: In the morning, Then, Later correctly in spoken English."
+      "ml": "കഴിഞ്ഞ ദിവസം നടന്ന മുഴുവൻ സംഭവങ്ങളും ക്രമമായി വിവരിക്കുമ്പോൾ കണക്റ്ററുകൾ (Connectors) ഉപയോഗിക്കുന്നു: 'First' (ആദ്യം), 'Then' (പിന്നെ), 'After that' (അതിനുശേഷം), 'Later' (പിന്നീട്), 'Finally' (ഒടുവിൽ).",
+      "en": "Master Yesterday's Full Story with clear formula: First + V2... Then + V2... After that + V2... Finally + V2..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Yesterday I woke at 7.",
-      "en": "Golden Rule: Practice 'Yesterday I woke at 7.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ഇംഗ്ലീഷിൽ കഥ പറയുമ്പോൾ വാക്യങ്ങളെ ബന്ധിപ്പിക്കാൻ 'First', 'Then', 'After that', 'Later', 'Finally' എന്നിവ ഉപയോഗിക്കുന്നത് സംസാരത്തിന് ഒഴുക്കും ഭംഗിയും നൽകും.",
+      "en": "Golden Tip: 💡 ഇംഗ്ലീഷിൽ കഥ പറയുമ്പോൾ വാക്യങ്ങളെ ബന്ധിപ്പിക്കാൻ 'First', 'Then', 'After that', 'Later', 'Finally' എന്നിവ ഉപയോഗിക്കുന്നത് സംസാരത്തിന് ഒഴുക്കും ഭംഗിയും നൽകും."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "wake",
-        "v2": "woke",
-        "v3": "woken",
+        "v1": "commence",
+        "v2": "commenceed",
+        "v3": "commenceed",
         "meaning": {
-          "ml": "ഉണരുക",
-          "hi": "जागना",
-          "ta": "விழி / எழுந்திரு"
+          "ml": "ആരംഭിക്കുക",
+          "hi": "प्रारंभ करना",
+          "ta": "தொடங்கு"
         },
-        "example": "Yesterday I woke at 7.",
-        "exampleMl": "ഉണർന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The morning keynote presentation commenced promptly at nine.",
+        "exampleMl": "Begin; start an action or ceremony."
       },
       {
-        "v1": "reach",
-        "v2": "reached",
-        "v3": "reached",
+        "v1": "encounter",
+        "v2": "encountered",
+        "v3": "encountered",
         "meaning": {
-          "ml": "എത്തിച്ചേരുക",
-          "hi": "पहुँचना",
-          "ta": "சேர் / வந்தடை"
+          "ml": "നേരിടുക / കണ്ടുമുട്ടുക",
+          "hi": "सामना करना",
+          "ta": "எதிர்கொள்"
         },
-        "example": "I reached office late.",
-        "exampleMl": "എത്തി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "We encountered minor traffic congestion near the river toll gate.",
+        "exampleMl": "Unexpectedly be faced with or experience something hostile or difficult."
       },
       {
-        "v1": "complete",
-        "v2": "completed",
-        "v3": "completed",
+        "v1": "eventually",
+        "v2": "eventuallyed",
+        "v3": "eventuallyed",
         "meaning": {
-          "ml": "പൂർത്തിയാക്കി",
-          "hi": "പൂർത്തിയാക്കി",
-          "ta": "പൂർത്തിയാക്കി"
+          "ml": "ഒടുവിൽ / ഒടുക്കത്തിൽ",
+          "hi": "अंततः",
+          "ta": "இறுதியில்"
         },
-        "example": "I completed the task.",
-        "exampleMl": "പൂർത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "After searching for an hour, we eventually found a peaceful quiet café.",
+        "exampleMl": "In the end, especially after a long delay, dispute, or series of problems."
       },
       {
-        "v1": "return",
-        "v2": "returned",
-        "v3": "returned",
+        "v1": "unwind",
+        "v2": "unwinded",
+        "v3": "unwinded",
         "meaning": {
-          "ml": "തിരികെ എത്തുക",
-          "hi": "लौटना",
-          "ta": "திரும்பி வா"
+          "ml": "വിശ്രമിക്കുക / ആശ്വാസം കൊള്ളുക",
+          "hi": "आराम करना",
+          "ta": "ஓய்வெடு"
         },
-        "example": "I returned at 8 PM.",
-        "exampleMl": "മടങ്ങി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "In the evening, I took a warm shower and unwound with a gripping novel.",
+        "exampleMl": "Relax after a period of work or tension."
+      },
+      {
+        "v1": "narrate",
+        "v2": "narrateed",
+        "v3": "narrateed",
+        "meaning": {
+          "ml": "വിവരിക്കുക / കഥ പറയുക",
+          "hi": "वर्णन करना",
+          "ta": "விவரி"
+        },
+        "example": "He narrated yesterday's adventures with animated gestures and humor.",
+        "exampleMl": "Give a spoken or written account of a story or event."
       }
     ],
     "nouns": [
       {
-        "word": "day",
+        "word": "Chrono",
+        "partOfSpeech": "noun",
+        "definition": "Arranged in the order of time occurrence; sequential.",
         "meaning": {
-          "ml": "ദിവസം",
-          "hi": "ദിവസം",
-          "ta": "ദിവസം"
+          "ml": "സമയക്രമം അനുസരിച്ചുള്ള",
+          "hi": "कालक्रम",
+          "ta": "காலவரிசை",
+          "te": "కాలక్రమము",
+          "kn": "ಕಾಲಾನುಕ್ರಮ"
         },
-        "example": "We learned about day in today's lesson."
+        "example": "She narrated yesterday's unexpected events in exact chronological order."
       },
       {
-        "word": "routine",
+        "word": "Commence",
+        "partOfSpeech": "verb",
+        "definition": "Begin; start an action or ceremony.",
         "meaning": {
-          "ml": "പതിവ്",
-          "hi": "പതിവ്",
-          "ta": "പതിവ്"
+          "ml": "ആരംഭിക്കുക",
+          "hi": "प्रारंभ करना",
+          "ta": "தொடங்கு",
+          "te": "ప్రారంభించు",
+          "kn": "ಪ್ರಾರಂಭಿಸು"
         },
-        "example": "We learned about routine in today's lesson."
+        "example": "The morning keynote presentation commenced promptly at nine."
       },
       {
-        "word": "work",
+        "word": "Encounter",
+        "partOfSpeech": "verb",
+        "definition": "Unexpectedly be faced with or experience something hostile or difficult.",
         "meaning": {
-          "ml": "ജോലി",
-          "hi": "ജോലി",
-          "ta": "ജോലി"
+          "ml": "നേരിടുക / കണ്ടുമുട്ടുക",
+          "hi": "सामना करना",
+          "ta": "எதிர்கொள்",
+          "te": "ఎదుర్కొను",
+          "kn": "ಎದುರಿಸು"
         },
-        "example": "We learned about work in today's lesson."
+        "example": "We encountered minor traffic congestion near the river toll gate."
       },
       {
-        "word": "traffic",
+        "word": "Eventually",
+        "partOfSpeech": "adverb",
+        "definition": "In the end, especially after a long delay, dispute, or series of problems.",
         "meaning": {
-          "ml": "ട്രാഫിക്",
-          "hi": "ട്രാഫിക്",
-          "ta": "ട്രാഫിക്"
+          "ml": "ഒടുവിൽ / ഒടുക്കത്തിൽ",
+          "hi": "अंततः",
+          "ta": "இறுதியில்",
+          "te": "చివరికి",
+          "kn": "ಅಂತಿಮವಾಗಿ"
         },
-        "example": "We learned about traffic in today's lesson."
+        "example": "After searching for an hour, we eventually found a peaceful quiet café."
       },
       {
-        "word": "dinner",
+        "word": "Unwind",
+        "partOfSpeech": "verb",
+        "definition": "Relax after a period of work or tension.",
         "meaning": {
-          "ml": "അത്താഴം",
-          "hi": "അത്താഴം",
-          "ta": "അത്താഴം"
+          "ml": "വിശ്രമിക്കുക / ആശ്വാസം കൊള്ളുക",
+          "hi": "आराम करना",
+          "ta": "ஓய்வெடு",
+          "te": "విశ్రాంతి తీసుకోండి",
+          "kn": "ವಿಶ್ರಾಂತಿ ಪಡೆಯಿರಿ"
         },
-        "example": "We learned about dinner in today's lesson."
+        "example": "In the evening, I took a warm shower and unwound with a gripping novel."
+      },
+      {
+        "word": "Narrate",
+        "partOfSpeech": "verb",
+        "definition": "Give a spoken or written account of a story or event.",
+        "meaning": {
+          "ml": "വിവരിക്കുക / കഥ പറയുക",
+          "hi": "वर्णन करना",
+          "ta": "விவரி",
+          "te": "వివరించు",
+          "kn": "ವಿವರಿಸು"
+        },
+        "example": "He narrated yesterday's adventures with animated gestures and humor."
       }
     ]
   },
@@ -137,7 +182,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Yesterday's Full Story",
-        "ml": "പാഠം: ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം"
+        "ml": "പാഠം: കഴിഞ്ഞ ദിവസത്തെ കഥ പറയൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +190,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "First + V2... Then + V2... After that + V2... Finally + V2...",
+        "ml": "കഴിഞ്ഞ ദിവസം നടന്ന മുഴുവൻ സംഭവങ്ങളും ക്രമമായി വിവരിക്കുമ്പോൾ കണക്റ്ററുകൾ (Connectors) ഉപയോഗിക്കുന്നു: 'First' (ആദ്യം), 'Then' (പിന്നെ), 'After that' (അതിനുശേഷം), 'Later' (പിന്നീട്), 'Finally' (ഒടുവിൽ)."
       }
     },
     {
@@ -203,9 +248,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Yesterday I woke at 7.",
-        "I reached office late.",
-        "I completed the task."
+        "First I woke up at dawn and went for a refreshing jog along the riverbank .",
+        "Then I prepared a healthy breakfast of oatmeal and fresh sliced fruits .",
+        "After that I attended three productive client meetings at the downtown branch .",
+        "Later in the afternoon I resolved the software deployment issues with my team .",
+        "Finally I returned home and spent quality time chatting with my family ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +264,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Yesterday's Full Story",
-        "ml": "റീഡിങ് റൂം: ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം"
+        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞ ദിവസത്തെ കഥ പറയൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +273,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Yesterday I woke at 7.",
-          "meaningMl": "ഉണർന്നു - Yesterday I woke at 7.",
-          "audioPrompt": "Yesterday I woke at 7."
+          "text": "First, Ranger Vijay laced up his sturdy boots as golden sunlight pierced the bamboo canopy.",
+          "meaningMl": "ആദ്യം, മുളങ്കാടുകൾക്കിടയിലൂടെ പൊൻവെയിൽ അരിച്ചെത്തിയപ്പോൾ റേഞ്ചർ വിജയ് തന്റെ ഉറപ്പുള്ള ബൂട്ടുകൾ ധരിച്ചു.",
+          "meaningHi": "सबसे पहले, रेंजर विजय ने अपने मजबूत जूते बांधे क्योंकि सुनहरी धूप बांस की छतरी को चीर रही थी।",
+          "meaningTa": "முதலில், மூங்கில் காட்டின் வழியே பொன்வெயில் பாய்ந்தபோது ரேஞ்சர் விஜய் தன் காலணிகளை அணிந்தார்.",
+          "audioPrompt": "First, Ranger Vijay laced up his sturdy boots as golden sunlight pierced the bamboo canopy."
         },
         {
-          "text": "I reached office late.",
-          "meaningMl": "എത്തി - I reached office late.",
-          "audioPrompt": "I reached office late."
+          "text": "Then, he inspected the waterholes along the southern border to check on wild elephant herds.",
+          "meaningMl": "പിന്നെ, കാട്ടാനക്കൂട്ടങ്ങളെ നിരീക്ഷിക്കാൻ തെക്കൻ അതിർത്തിയിലെ കുളങ്ങൾ അദ്ദേഹം പരിശോധിച്ചു.",
+          "meaningHi": "फिर, उसने जंगली हाथियों के झुंड को देखने के लिए दक्षिणी सीमा के जलस्रोतों का निरीक्षण किया।",
+          "meaningTa": "பின்னர் காட்டு யானைகளைக் கவனிக்க தெற்கு எல்லைக் குளங்களை ஆய்வு செய்தார்.",
+          "audioPrompt": "Then, he inspected the waterholes along the southern border to check on wild elephant herds."
         },
         {
-          "text": "Daily practice of Yesterday's Full Story gives you great confidence in English.",
-          "meaningMl": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Yesterday's Full Story gives you great confidence in English."
+          "text": "After that, he radioed headquarters to report that all border patrol cameras were functioning smoothly.",
+          "meaningMl": "അതിനുശേഷം, എല്ലാ നിരീക്ഷണ ക്യാമറകളും ശരിയായി പ്രവർത്തിക്കുന്നുണ്ടെന്ന് അദ്ദേഹം ആസ്ഥാനത്തേക്ക് സന്ദേശം അയച്ചു.",
+          "meaningHi": "उसके बाद, उसने मुख्यालय को रेडियो पर सूचना दी कि सभी गश्ती कैमरे सुचारू रूप से काम कर रहे हैं।",
+          "meaningTa": "அதன் பிறகு, அனைத்து கண்காணிப்பு கேமராக்களும் சரியாக இயங்குவதாக தலைமையகத்திற்கு தெரிவித்தார்.",
+          "audioPrompt": "After that, he radioed headquarters to report that all border patrol cameras were functioning smoothly."
+        },
+        {
+          "text": "Later at midday, he stopped beside a sparkling stream and ate his lunch of roasted groundnuts.",
+          "meaningMl": "പിന്നീട് ഉച്ചയ്ക്ക്, ഒരു തെളിഞ്ഞ കാട്ടരുവിക്ക് അരികിലിരുന്ന് അദ്ദേഹം നിലക്കടല കഴിച്ചു.",
+          "meaningHi": "बाद में दोपहर में, वह एक चमचमाती धारा के पास रुका और भुनी हुई मूंगफली खाई।",
+          "meaningTa": "மதிய வேளையில், நீரோடையின் அருகே அமர்ந்து வறுத்த வேர்க்கடலையை சாப்பிட்டார்.",
+          "audioPrompt": "Later at midday, he stopped beside a sparkling stream and ate his lunch of roasted groundnuts."
+        },
+        {
+          "text": "In the late afternoon, he guided a lost family of hikers back to the village trail safely.",
+          "meaningMl": "വൈകുന്നേരത്തോടെ, വഴിതെറ്റിയ വിനോദസഞ്ചാരികളുടെ കുടുംബത്തെ അദ്ദേഹം സുരക്ഷിതമായി ഗ്രാമത്തിലെ വഴിയിലെത്തിച്ചു.",
+          "meaningHi": "देर दोपहर में, उसने भटके हुए पदयात्रियों के एक परिवार को गाँव के रास्ते पर सुरक्षित पहुँचाया।",
+          "meaningTa": "மாலை நேரத்தில், வழிதவறிய குடும்பத்திற்கு கிராமத்து வழியைக் காட்டினார்.",
+          "audioPrompt": "In the late afternoon, he guided a lost family of hikers back to the village trail safely."
+        },
+        {
+          "text": "Finally, as nocturnal owls began their night songs, Vijay returned home with deep fulfillment.",
+          "meaningMl": "ഒടുവിൽ, മൂങ്ങകളുടെ നിശബ്ദ സംഗീതം ഉയർന്നപ്പോൾ നിറഞ്ഞ ചാരിതാർത്ഥ്യത്തോടെ വിജയ് വീട്ടിലേക്ക് മടങ്ങി.",
+          "meaningHi": "अंत में, उल्लुओं के रात के गीतों के साथ, विजय गहरी संतुष्टि के साथ घर लौटा।",
+          "meaningTa": "முடிவில், ஆந்தைகள் அலறத் தொடங்கியபோது விஜய் மனநிறைவுடன் வீடு திரும்பினார்.",
+          "audioPrompt": "Finally, as nocturnal owls began their night songs, Vijay returned home with deep fulfillment."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did Ranger Vijay do first at sunrise?",
+            "ml": "സൂര്യോദയത്തിൽ റേഞ്ചർ വിജയ് ആദ്യം എന്താണ് ചെയ്തത്?",
+            "hi": "सूर्योदय के समय रेंजर विजय ने सबसे पहले क्या किया?",
+            "ta": "சூரிய உதயத்தில் விஜய் முதலில் என்ன செய்தார்?"
+          },
+          "options": [
+            "He swam in the river",
+            "He laced up his sturdy boots",
+            "He slept in his tent",
+            "He called his friends"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "First, he laced up his sturdy boots.",
+            "ml": "തന്റെ ബൂട്ടുകൾ ധരിക്കുകയാണ് ചെയ്തത് (laced up his sturdy boots)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What did he eat for lunch beside the stream?",
+            "ml": "കാട്ടരുവിക്ക് അരികിലിരുന്ന് അദ്ദേഹം ഉച്ചഭക്ഷണമായി എന്താണ് കഴിച്ചത്?",
+            "hi": "उसने दोपहर में क्या खाया?",
+            "ta": "நீரோடையின் அருகே அவர் என்ன சாப்பிட்டார்?"
+          },
+          "options": [
+            "Cold fried chicken",
+            "Roasted groundnuts",
+            "Sweet cake",
+            "Fresh fish"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He ate his lunch of roasted groundnuts.",
+            "ml": "നിലക്കടലയാണ് (roasted groundnuts) കഴിച്ചത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Who did he guide back to the village trail in the late afternoon?",
+            "ml": "വൈകുന്നേരം അദ്ദേഹം ആർക്കാണ് ഗ്രാമത്തിലേക്ക് വഴികാണിച്ചു കൊടുത്തത്?",
+            "hi": "उसने किसे सुरक्षित पहुँचाया?",
+            "ta": "அவர் யாருக்கு வழிகாட்டினார்?"
+          },
+          "options": [
+            "A lost family of hikers",
+            "A group of poachers",
+            "Forest timber workers",
+            "School teachers"
+          ],
+          "correctIndex": 0,
+          "explanation": {
+            "en": "He guided a lost family of hikers safely.",
+            "ml": "വഴിതെറ്റിയ വിനോദസഞ്ചാരികളുടെ ഒരു കുടുംബത്തിനാണ് (lost family of hikers) വഴികാട്ടിയത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +427,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d35_1",
-          "question": "Which word represents: 'ഉണരുക'?",
+          "question": "Select the sentence that properly uses connectors to narrate past events:",
           "options": [
-            "remember",
-            "decide",
-            "discover",
-            "wake"
+            "First I ate, then I slept, finally I wake up.",
+            "First I ate breakfast, then I walked to work, and finally I attended the meeting.",
+            "First I was eat, then I was walk, finally I am meet.",
+            "First after then finally I did everything."
           ],
-          "answer": "wake",
-          "explanation": "wake എന്നാൽ ഉണരുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Consistent past tense V2 verbs with sequence connectors: 'First I ate... then I walked... finally I attended'.",
+          "ruleHint": "Narrative Sequence: First + V2... Then + V2... Finally + V2."
         },
         {
-          "id": "trap_d35_2",
-          "question": "What is the past form (V2) of 'reach'?",
+          "question": "Which connector is best to conclude a multi-step narrative?",
           "options": [
-            "has reach",
-            "reached",
-            "reaching",
-            "reachs"
+            "Beginning",
+            "Secondly",
+            "Finally",
+            "First of all"
           ],
-          "answer": "reached",
-          "explanation": "reach ന്റെ ഭൂതകാല രൂപം reached ആണ്."
+          "correctIndex": 2,
+          "explanation": "'Finally' or 'In the end' correctly indicates the concluding event of a story.",
+          "ruleHint": "Story Connectors: 'Finally' = the last step."
         },
         {
-          "id": "trap_d35_3",
-          "question": "What is the correct English word for 'ദിവസം'?",
+          "question": "Choose the correct past form for the verb 'spend':",
           "options": [
-            "schedule",
-            "routine",
-            "progress",
-            "day"
+            "Spended",
+            "Spent",
+            "Span",
+            "Spend"
           ],
-          "answer": "day",
-          "explanation": "ദിവസം എന്നാൽ ഇംഗ്ലീഷിൽ day."
+          "correctIndex": 1,
+          "explanation": "The V2 past tense of 'spend' is 'spent': 'I spent two hours reading.'",
+          "ruleHint": "Irregular Verbs: spend -> spent -> spent."
         }
       ],
       "description": {
@@ -334,6 +470,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +512,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +549,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 35 Gate Exam (5 Qs)",

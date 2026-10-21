@@ -22,112 +22,96 @@
     "totalCoinsReward": 128
   },
   "grammarRule": {
-    "formula": "Collocations – Essential Word Combinations",
+    "formula": "In my opinion / From my perspective / As far as I can tell, [Opinion]",
     "explanation": {
-      "ml": "അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ എന്ന വിഷയത്തിൽ In my opinion / From my perspective / As far as I can tell എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use In my opinion / From my perspective / As far as I can tell correctly in spoken English."
+      "ml": "ഓഫീസ് മീറ്റിംഗുകളിലും ബിസിനസ് ചർച്ചകളിലും സ്വന്തം അഭിപ്രായങ്ങൾ പരുക്കനാവാതെ, ബഹുമാനത്തോടും നയപരമായും അവതരിപ്പിക്കാൻ പഠിക്കാം.",
+      "en": "Master Sharing Opinions Diplomatically in Meetings with clear formula: In my opinion / From my perspective / As far as I can tell, [Opinion]"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I suggest we try this approach.",
-      "en": "Golden Rule: Practice 'I suggest we try this approach.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: നേരിട്ട് 'You are wrong' അല്ലെങ്കിൽ 'My idea is the best' എന്ന് പറയുന്നതിന് പകരം 'From my perspective, exploring this alternative might yield better results' എന്ന് പറയുക.",
+      "en": "Golden Tip: നേരിട്ട് 'You are wrong' അല്ലെങ്കിൽ 'My idea is the best' എന്ന് പറയുന്നതിന് പകരം 'From my perspective, exploring this alternative might yield better results' എന്ന് പറയുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "suggest",
-        "v2": "suggested",
-        "v3": "suggested",
-        "meaning": {
-          "ml": "നിർദ്ദേശിക്കുക",
-          "hi": "सुझाव देना",
-          "ta": "பரிந்துரை"
-        },
-        "example": "I suggest we try this approach.",
-        "exampleMl": "നിർദ്ദേശിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "recommend",
-        "v2": "recommended",
-        "v3": "recommended",
-        "meaning": {
-          "ml": "ശുപാർശ ചെയ്യുക",
-          "hi": "सिफारिश करना",
-          "ta": "பரிந்துரை செய்"
-        },
-        "example": "I highly recommend this tool.",
-        "exampleMl": "ശുപാർശ ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "view",
-        "v2": "viewed",
-        "v3": "viewed",
-        "meaning": {
-          "ml": "വീക്ഷിക്കുക",
-          "hi": "വീക്ഷിക്കുക",
-          "ta": "വീക്ഷിക്കുക"
-        },
-        "example": "From my point of view, it works.",
-        "exampleMl": "വീക്ഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "clarify",
-        "v2": "clarified",
-        "v3": "clarified",
-        "meaning": {
-          "ml": "വ്യക്തമാക്കുക",
-          "hi": "വ്യക്തമാക്കുക",
-          "ta": "വ്യക്തമാക്കുക"
-        },
-        "example": "Let me clarify my point.",
-        "exampleMl": "വ്യക്തമാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "opinion",
+        "word": "Perspective",
+        "partOfSpeech": "noun",
+        "definition": "A particular attitude toward or way of regarding something; a point of view.",
         "meaning": {
-          "ml": "അഭിപ്രായം",
-          "hi": "അഭിപ്രായം",
-          "ta": "അഭിപ്രായം"
+          "ml": "കാഴ്ചപ്പാട് / വീക്ഷണം",
+          "hi": "दृष्टिकोण / परिप्रेक्ष्य",
+          "ta": "பார்வை / கண்ணோட்டம்",
+          "te": "దృక్కోణం",
+          "kn": "ದೃಷ್ಟಿಕೋನ"
         },
-        "example": "We learned about opinion in today's lesson."
+        "example": "From a financial perspective, investing in automation reduces recurring labor costs."
       },
       {
-        "word": "perspective",
+        "word": "Feasibility",
+        "partOfSpeech": "noun",
+        "definition": "The state or degree of being easily or conveniently done.",
         "meaning": {
-          "ml": "കാഴ്ചപ്പാട്",
-          "hi": "കാഴ്ചപ്പാട്",
-          "ta": "കാഴ്ചപ്പാട്"
+          "ml": "പ്രായോഗിക സാധ്യത / പ്രാവർത്തികത",
+          "hi": "व्यवहार्यता / साध्यता",
+          "ta": "சாத்தியக்கூறு",
+          "te": "సాధ్యత",
+          "kn": "ಸಾಧ್ಯತೆ"
         },
-        "example": "We learned about perspective in today's lesson."
+        "example": "Our engineering department conducted a thorough technical feasibility study."
       },
       {
-        "word": "viewpoint",
+        "word": "Viable",
+        "partOfSpeech": "adjective",
+        "definition": "Capable of working successfully; feasible.",
         "meaning": {
-          "ml": "നിലപാട്",
-          "hi": "നിലപാട്",
-          "ta": "നിലപാട്"
+          "ml": "വിജയകരമായി നടപ്പിലാക്കാൻ കഴിയുന്ന / നിലനിൽപ്പുള്ള",
+          "hi": "व्यवहार्य / सक्षम",
+          "ta": "செயல்படக்கூடிய / சாத்தியமான",
+          "te": "ఆచరణీయమైన",
+          "kn": "ಪ್ರಾಯೋಗಿಕ"
         },
-        "example": "We learned about viewpoint in today's lesson."
+        "example": "Solar energy offers an economically viable solution for rural irrigation."
       },
       {
-        "word": "solution",
+        "word": "Viewpoint",
+        "partOfSpeech": "noun",
+        "definition": "Another term for point of view.",
         "meaning": {
-          "ml": "പരിഹാരം",
-          "hi": "समाधान",
-          "ta": "தீர்வு"
+          "ml": "അഭിപ്രായം / നിലപാട്",
+          "hi": "दृष्टिकोण / विचार",
+          "ta": "கருத்து / கண்ணோட்டம்",
+          "te": "అభిప్రాయం",
+          "kn": "ಅಭಿಪ್ರಾಯ"
         },
-        "example": "We found a simple solution to the problem."
+        "example": "The committee considered diverse viewpoints before adopting the architectural blueprint."
       },
       {
-        "word": "approach",
+        "word": "Proposition",
+        "partOfSpeech": "noun",
+        "definition": "A statement or assertion that expresses a judgment or opinion, or a suggested scheme or proposal.",
         "meaning": {
-          "ml": "സമീപനം",
-          "hi": "സമീപനം",
-          "ta": "സമീപനം"
+          "ml": "നിർദ്ദേശം / പ്രമേയം",
+          "hi": "प्रस्ताव / प्रतिज्ञाप्ति",
+          "ta": "திட்டம் / முன்மொழிவு",
+          "te": "ప్రతిపాదన",
+          "kn": "ಪ್ರಸ್ತಾಪ"
         },
-        "example": "We learned about approach in today's lesson."
+        "example": "Partnering with regional distributors is an attractive commercial proposition."
+      },
+      {
+        "word": "Nuance",
+        "partOfSpeech": "noun",
+        "definition": "A subtle difference in or shade of meaning, expression, or sound.",
+        "meaning": {
+          "ml": "സൂക്ഷ്മമായ വ്യത്യാസം",
+          "hi": "सूक्ष्म अंतर / बारीकी",
+          "ta": "நுட்பமான வேறுபாடு",
+          "te": "సూక్ష్మ భేదం",
+          "kn": "ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ"
+        },
+        "example": "A skilled cross-cultural negotiator understands every cultural nuance."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Giving Professional Opinions Politely",
-        "ml": "പാഠം: അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ"
+        "en": "Concept Room: Sharing Opinions Diplomatically in Meetings",
+        "ml": "പാഠം: അഭിപ്രായങ്ങൾ നയപരമായി പറയൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "In my opinion / From my perspective / As far as I can tell, [Opinion]",
+        "ml": "ഓഫീസ് മീറ്റിംഗുകളിലും ബിസിനസ് ചർച്ചകളിലും സ്വന്തം അഭിപ്രായങ്ങൾ പരുക്കനാവാതെ, ബഹുമാനത്തോടും നയപരമായും അവതരിപ്പിക്കാൻ പഠിക്കാം."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I suggest we try this approach.",
-        "I highly recommend this tool.",
-        "From my point of view, it works."
+        "From my perspective , prioritizing mobile application security will foster greater long term customer trust .",
+        "In my opinion , allocating additional resources to user research would be highly advantageous .",
+        "As far as I can tell , this proposed vendor agreement offers superior value for money .",
+        "It appears to me that simplifying our registration form will reduce user drop-off rates .",
+        "Would it be worthwhile to consider conducting a small pilot study before the full rollout ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Giving Professional Opinions Politely",
-        "ml": "റീഡിങ് റൂം: അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ"
+        "en": "Reading Room: The Art of the Boardroom Consensus",
+        "ml": "റീഡിങ് റൂം: അഭിപ്രായങ്ങൾ നയപരമായി പറയൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I suggest we try this approach.",
-          "meaningMl": "നിർദ്ദേശിക്കുക - I suggest we try this approach.",
-          "audioPrompt": "I suggest we try this approach."
+          "text": "Inside the corporate boardroom of an international medical device conglomerate, directors gathered to deliberate a crucial factory expansion.",
+          "meaningMl": "ഒരു അന്താരാഷ്ട്ര മെഡിക്കൽ കമ്പനിയുടെ ബോർഡ് റൂമിൽ, പുതിയ ഫാക്ടറി തുടങ്ങുന്നതിനെക്കുറിച്ച് ചർച്ച ചെയ്യാൻ ഡയറക്ടർമാർ ഒത്തുകൂടി.",
+          "meaningHi": "निदेशक एक महत्वपूर्ण फैक्ट्री विस्तार पर विचार-विमर्श करने के लिए एकत्र हुए।",
+          "meaningTa": "மருத்துவ உபகரண நிறுவனத்தின் இயக்குநர்கள் புதிய தொழிற்சாலை விரிவாக்கம் பற்றி விவாதிக்க கூடினர்.",
+          "audioPrompt": "Inside the corporate boardroom of an international medical device conglomerate, directors gathered to deliberate a crucial factory expansion."
         },
         {
-          "text": "I highly recommend this tool.",
-          "meaningMl": "ശുപാർശ ചെയ്യുക - I highly recommend this tool.",
-          "audioPrompt": "I highly recommend this tool."
+          "text": "Chief Operations Director Kavitha presented her viewpoint using measured, diplomatic phrases rather than rigid assertions.",
+          "meaningMl": "ചീഫ് ഓപ്പറേഷൻസ് ഡയറക്ടർ കവിത ശാഠ്യം പിടിക്കാതെ, നയപരമായ ഭാഷയിൽ തന്റെ നിലപാട് അവതരിപ്പിച്ചു.",
+          "meaningHi": "कविथा ने अपने दृष्टिकोण को कड़े बयानों के बजाय संतुलित भाषा में प्रस्तुत किया।",
+          "meaningTa": "கவிதா தனது கருத்துக்களை முரட்டுத்தனமாக இல்லாமல் பணிவான சொற்களால் முன்வைத்தார்.",
+          "audioPrompt": "Chief Operations Director Kavitha presented her viewpoint using measured, diplomatic phrases rather than rigid assertions."
         },
         {
-          "text": "Daily practice of Giving Professional Opinions Politely gives you great confidence in English.",
-          "meaningMl": "അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Giving Professional Opinions Politely gives you great confidence in English."
+          "text": "She framed proposals with phrases like 'From our operational perspective' and 'It might be prudent to consider regional tax incentives.'",
+          "meaningMl": "'ഞങ്ങളുടെ പ്രവർത്തന വീക്ഷണത്തിൽ', 'നികുതി ഇളവുകൾ പരിഗണിക്കുന്നത് ബുദ്ധിപരമായേക്കാം' തുടങ്ങിയ വാചകങ്ങളിലൂടെ അവൾ നിർദ്ദേശങ്ങൾ മുന്നോട്ടുവെച്ചു.",
+          "meaningHi": "उन्होंने 'हमारे दृष्टिकोण से' और 'यह विचार करना बुद्धिमानी हो सकती है' जैसे वाक्यांशों का उपयोग किया।",
+          "meaningTa": "'எங்கள் பார்வையில்', 'வரிச் சலுகைகளை பரிசீலிப்பது நல்லது' போன்ற வாக்கியங்களை அவர் பயன்படுத்தினார்.",
+          "audioPrompt": "She framed proposals with phrases like 'From our operational perspective' and 'It might be prudent to consider regional tax incentives.'"
+        },
+        {
+          "text": "By adopting a collaborative posture, she invited constructive counterarguments from finance leaders without triggering defensive confrontation.",
+          "meaningMl": "സഹകരണപരമായ സമീപനം സ്വീകരിച്ചതിലൂടെ, തർക്കങ്ങളില്ലാതെ ഫിനാൻസ് ലീഡർമാരുമായി ആരോഗ്യകരമായ ചർച്ച നടത്താൻ അവൾക്ക് കഴിഞ്ഞു.",
+          "meaningHi": "सहयोगात्मक रवैया अपनाकर उन्होंने बिना किसी टकराव के सुझावों को आमंत्रित किया।",
+          "meaningTa": "கூட்டுறவு அணுகுமுறையைக் கையாண்டதால் மோதலின்றி பயனுள்ள மாற்றுக்கருத்துகளைப் பெற முடிந்தது.",
+          "audioPrompt": "By adopting a collaborative posture, she invited constructive counterarguments from finance leaders without triggering defensive confrontation."
+        },
+        {
+          "text": "The board unanimously approved a phase-based construction strategy that balanced ambitious manufacturing goals with fiscal prudence.",
+          "meaningMl": "വലിയ നിർമ്മാണ ലക്ഷ്യങ്ങളും സാമ്പത്തിക സുരക്ഷിതത്വവും ഉറപ്പാക്കുന്ന ഒരു പദ്ധതി ബോർഡ് ഐകകണ്ഠ്യേന അംഗീകരിച്ചു.",
+          "meaningHi": "बोर्ड ने सर्वसम्मति से निर्माण रणनीति को मंजूरी दी।",
+          "meaningTa": "நிர்வாகக் குழு ஒருமனதாக புதிய கட்டுமானத் திட்டத்திற்கு ஒப்புதல் அளித்தது.",
+          "audioPrompt": "The board unanimously approved a phase-based construction strategy that balanced ambitious manufacturing goals with fiscal prudence."
+        },
+        {
+          "text": "True leadership communication convinces not through forceful loudness, but through reasoned perspective and diplomatic grace.",
+          "meaningMl": "യഥാർത്ഥ നേതൃത്വപരമായ ആശയവിനിമയം ഒച്ചപ്പാടിലൂടെയല്ല, മറിച്ച് യുക്തിസഹമായ കാഴ്ചപ്പാടിലൂടെയും മാന്യമായ പെരുമാറ്റത്തിലൂടെയുമാണ് മറ്റുള്ളവരെ ബോധ്യപ്പെടുത്തുന്നത്.",
+          "meaningHi": "सच्चा नेतृत्व जोर से बोलने से नहीं, बल्कि तर्कसंगत दृष्टिकोण और विनम्रता से दूसरों को आश्वस्त करता है।",
+          "meaningTa": "உண்மையான தலைமை உரத்த குரலில் அல்ல, நியாயமான கண்ணோட்டத்திலும் பணிவிலும் தான் உள்ளது.",
+          "audioPrompt": "True leadership communication convinces not through forceful loudness, but through reasoned perspective and diplomatic grace."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How did Chief Operations Director Kavitha present her viewpoint?",
+            "ml": "കവിത തന്റെ നിലപാട് എങ്ങനെയാണ് അവതരിപ്പിച്ചത്?",
+            "hi": "कविथा ने अपना दृष्टिकोण कैसे प्रस्तुत किया?",
+            "ta": "கவிதா தனது பார்வையை எவ்வாறு முன்வைத்தார்?"
+          },
+          "options": [
+            "By shouting loudly and slamming the table",
+            "Using measured, diplomatic phrases rather than rigid assertions",
+            "By refusing to speak to the board",
+            "By submitting an empty blank paper"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Using measured, diplomatic phrases.",
+            "ml": "നയപരമായ ഭാഷയിൽ (measured, diplomatic phrases)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What kind of phrases did she use to frame her proposals?",
+            "ml": "നിർദ്ദേശങ്ങൾ അവതരിപ്പിക്കാൻ അവൾ ഏത് തരം വാചകങ്ങളാണ് ഉപയോഗിച്ചത്?",
+            "hi": "उन्होंने अपने प्रस्तावों को कैसे प्रस्तुत किया?",
+            "ta": "அவர் என்ன மாதிரியான வாக்கியங்களைப் பயன்படுத்தினார்?"
+          },
+          "options": [
+            "Commands like 'You must obey me'",
+            "Phrases like 'From our operational perspective' and 'It might be prudent'",
+            "Slang words and jokes",
+            "Silent gestures only"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Phrases like 'From our operational perspective'.",
+            "ml": "'From our operational perspective', 'It might be prudent'."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How did the board ultimately vote on the phased expansion strategy?",
+            "ml": "പദ്ധതിയിൽ ബോർഡ് എങ്ങനെയാണ് വോട്ട് ചെയ്തത്?",
+            "hi": "बोर्ड ने अंततः कैसे मतदान किया?",
+            "ta": "நிர்வாகக் குழு எவ்வாறு வாக்களித்தது?"
+          },
+          "options": [
+            "They rejected it completely",
+            "The board unanimously approved it",
+            "Half the board walked out",
+            "They postponed it for fifty years"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The board unanimously approved the strategy.",
+            "ml": "ഐകകണ്ഠ്യേന അംഗീകരിച്ചു (unanimously approved)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d78_1",
-          "question": "Which word represents: 'നിർദ്ദേശിക്കുക'?",
+          "id": 1,
+          "question": "Which of the following phrases is the most diplomatic way to share an opinion in a business meeting?",
           "options": [
-            "suggest",
-            "prepare",
-            "arrive",
-            "finish"
+            "You are totally mistaken.",
+            "In my opinion, we might want to evaluate alternative vendor options.",
+            "My idea is the only right way.",
+            "Listen to me because I know best."
           ],
-          "answer": "suggest",
-          "explanation": "suggest എന്നാൽ നിർദ്ദേശിക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'In my opinion, we might want to evaluate...' എന്നത് വളരെ നയപരവും സ്വാഭാവികവുമായ അഭിപ്രായപ്രകടനമാണ്."
         },
         {
-          "id": "trap_d78_2",
-          "question": "What is the past form (V2) of 'recommend'?",
+          "id": 2,
+          "question": "Why do professionals use softening phrases like 'From my perspective' or 'It appears to me'?",
           "options": [
-            "recommended",
-            "recommending",
-            "recommends",
-            "has recommend"
+            "Because they do not know what they are talking about.",
+            "To invite collaboration and prevent aggressive confrontation.",
+            "Because grammar rules require them on Mondays.",
+            "To make the meeting last longer."
           ],
-          "answer": "recommended",
-          "explanation": "recommend ന്റെ ഭൂതകാല രൂപം recommended ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "തർക്കങ്ങളൊഴിവാക്കി ആരോഗ്യകരമായ ചർച്ചകൾക്ക് അവസരമൊരുക്കാനാണ് (invite collaboration) സോഫ്റ്റനിംഗ് ഫ്രെയ്സുകൾ ഉപയോഗിക്കുന്നത്."
         },
         {
-          "id": "trap_d78_3",
-          "question": "What is the correct English word for 'അഭിപ്രായം'?",
+          "id": 3,
+          "question": "Select the phrase that means 'As far as I understand the situation':",
           "options": [
-            "airport",
-            "station",
-            "partner",
-            "opinion"
+            "As far as I can tell",
+            "Without any sight",
+            "Far away in the distance",
+            "Telling from afar"
           ],
-          "answer": "opinion",
-          "explanation": "അഭിപ്രായം എന്നാൽ ഇംഗ്ലീഷിൽ opinion."
+          "correctIndex": 0,
+          "explanationMl": "'As far as I can tell' എന്നാൽ എനിക്ക് മനസ്സിലാക്കാൻ കഴിഞ്ഞിടത്തോളം (as far as I understand) എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 78 Gate Exam (5 Qs)",

@@ -22,112 +22,133 @@
     "totalCoinsReward": 88
   },
   "grammarRule": {
-    "formula": "Question Tags",
+    "formula": "Suddenly / Unexpectedly / As soon as + Past Simple (V2)",
     "explanation": {
-      "ml": "കഥ പറയൽ: First, Then, Suddenly എന്ന വിഷയത്തിൽ undefined എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use undefined correctly in spoken English."
+      "ml": "ജീവിതത്തിൽ സംഭവിച്ച രസകരമായതോ അവിചാരിതമായതോ ആയ സംഭവങ്ങൾ മറ്റുള്ളവരോട് പറയുമ്പോൾ 'Suddenly' (പെട്ടെന്ന്), 'Unexpectedly' (പ്രതീക്ഷിക്കാതെ), 'Luckily' (ഭാഗ്യവശാൽ), 'As soon as' (ഉടൻ തന്നെ) തുടങ്ങിയ വാക്കുകൾ ഉപയോഗിക്കുന്നു.",
+      "en": "Master Past Narrative & Incident Storytelling with clear formula: Suddenly / Unexpectedly / As soon as + Past Simple (V2)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: What happened suddenly?",
-      "en": "Golden Rule: Practice 'What happened suddenly?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ഒരു അപകടമോ അപ്രതീക്ഷിത സംഭവമോ പറയുമ്പോൾ: 'Suddenly a tyre punctured, but luckily nobody was hurt' (പെട്ടെന്ന് ടയർ പഞ്ചറായി, പക്ഷേ ഭാഗ്യവശാൽ ആർക്കും പരിക്കേറ്റില്ല).",
+      "en": "Golden Tip: 💡 ഒരു അപകടമോ അപ്രതീക്ഷിത സംഭവമോ പറയുമ്പോൾ: 'Suddenly a tyre punctured, but luckily nobody was hurt' (പെട്ടെന്ന് ടയർ പഞ്ചറായി, പക്ഷേ ഭാഗ്യവശാൽ ആർക്കും പരിക്കേറ്റില്ല)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "happen",
-        "v2": "happened",
-        "v3": "happened",
+        "v1": "suddenly",
+        "v2": "suddenlyed",
+        "v3": "suddenlyed",
         "meaning": {
-          "ml": "സംഭവിക്കുക",
-          "hi": "സംഭവിക്കുക",
-          "ta": "സംഭവിക്കുക"
+          "ml": "പെട്ടെന്ന് / അപ്രതീക്ഷിതമായി",
+          "hi": "अचानक",
+          "ta": "திடீரென"
         },
-        "example": "What happened suddenly?",
-        "exampleMl": "സംഭവിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Suddenly the storm sirens began blaring across the coastline.",
+        "exampleMl": "Quickly and unexpectedly."
       },
       {
-        "v1": "shout",
-        "v2": "shouted",
-        "v3": "shouted",
+        "v1": "luckily",
+        "v2": "luckilyed",
+        "v3": "luckilyed",
         "meaning": {
-          "ml": "നിലവിളിക്കുക",
-          "hi": "നിലവിളിക്കുക",
-          "ta": "നിലവിളിക്കുക"
+          "ml": "ഭാഗ്യവശാൽ",
+          "hi": "सौभाग्य से",
+          "ta": "அதிர்ஷ்டவசமாக"
         },
-        "example": "Someone shouted loudly.",
-        "exampleMl": "നിലവിളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Luckily, we carried extra torch batteries inside our backpacks.",
+        "exampleMl": "It is fortunate that; by good fortune."
       },
       {
-        "v1": "run",
-        "v2": "ran",
-        "v3": "run",
+        "v1": "witness",
+        "v2": "witnessed",
+        "v3": "witnessed",
         "meaning": {
-          "ml": "ഓടുക",
-          "hi": "ഓടുക",
-          "ta": "ഓടുക"
+          "ml": "നേരിൽ കാണുക / ദൃക്‌സാക്ഷിയാവുക",
+          "hi": "गवाह होना / देखना",
+          "ta": "சாட்சியாக இரு / நேரில் பார்"
         },
-        "example": "We ran outside.",
-        "exampleMl": "ഓടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "realize",
-        "v2": "realized",
-        "v3": "realized",
-        "meaning": {
-          "ml": "മനസ്സിലാക്കുക",
-          "hi": "മനസ്സിലാക്കുക",
-          "ta": "മനസ്സിലാക്കുക"
-        },
-        "example": "Then I realized the truth.",
-        "exampleMl": "മനസ്സിലാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Several pedestrians witnessed the dramatic rescue operation at the river.",
+        "exampleMl": "See an event, typically a crime or accident, take place."
       }
     ],
     "nouns": [
       {
-        "word": "incident",
+        "word": "Suddenly",
+        "partOfSpeech": "adverb",
+        "definition": "Quickly and unexpectedly.",
         "meaning": {
-          "ml": "സംഭവം",
-          "hi": "സംഭവം",
-          "ta": "സംഭവം"
+          "ml": "പെട്ടെന്ന് / അപ്രതീക്ഷിതമായി",
+          "hi": "अचानक",
+          "ta": "திடீரென",
+          "te": "అకస్మాత్తుగా",
+          "kn": "ಅನಿರೀಕ್ಷಿತವಾಗಿ"
         },
-        "example": "We learned about incident in today's lesson."
+        "example": "Suddenly the storm sirens began blaring across the coastline."
       },
       {
-        "word": "story",
+        "word": "Luckily",
+        "partOfSpeech": "adverb",
+        "definition": "It is fortunate that; by good fortune.",
         "meaning": {
-          "ml": "കഥ",
-          "hi": "കഥ",
-          "ta": "കഥ"
+          "ml": "ഭാഗ്യവശാൽ",
+          "hi": "सौभाग्य से",
+          "ta": "அதிர்ஷ்டவசமாக",
+          "te": "అదృష్టవశాత్తూ",
+          "kn": "ಅದೃಷ್ಟವಶಾತ್"
         },
-        "example": "We learned about story in today's lesson."
+        "example": "Luckily, we carried extra torch batteries inside our backpacks."
       },
       {
-        "word": "shock",
+        "word": "Astonished",
+        "partOfSpeech": "adjective",
+        "definition": "Greatly surprised or impressed; amazed.",
         "meaning": {
-          "ml": "ഞെട്ടൽ",
-          "hi": "ഞെട്ടൽ",
-          "ta": "ഞെട്ടൽ"
+          "ml": "അതിശയിച്ച / അത്ഭുതപ്പെട്ട",
+          "hi": "चकित / हैरान",
+          "ta": "ஆச்சரியமடைந்த",
+          "te": "ఆశ్చర్యపోయిన",
+          "kn": "ಆಶ್ಚರ್ಯಚಕಿತರಾದ"
         },
-        "example": "We learned about shock in today's lesson."
+        "example": "We were astonished when the lost puppy returned home on its own."
       },
       {
-        "word": "crowd",
+        "word": "Emergency",
+        "partOfSpeech": "noun",
+        "definition": "A serious, unexpected, and often dangerous situation requiring immediate action.",
         "meaning": {
-          "ml": "ആളുകൾ",
-          "hi": "ആളുകൾ",
-          "ta": "ആളുകൾ"
+          "ml": "അടിയന്തിര സാഹചര്യം",
+          "hi": "आपातकाल",
+          "ta": "அவசரநிலை",
+          "te": "అత్యవసర పరిస్థితి",
+          "kn": "ತುರ್ತು ಪರಿಸ್ಥಿತಿ"
         },
-        "example": "We learned about crowd in today's lesson."
+        "example": "The cabin crew handled the flight emergency with exemplary professionalism."
       },
       {
-        "word": "end",
+        "word": "Relief",
+        "partOfSpeech": "noun",
+        "definition": "A feeling of reassurance and relaxation following release from anxiety or distress.",
         "meaning": {
-          "ml": "അവസാനം",
-          "hi": "അവസാനം",
-          "ta": "അവസാനം"
+          "ml": "ആശ്വാസം",
+          "hi": "राहत",
+          "ta": "நிம்மதி",
+          "te": "ఉపశమనం",
+          "kn": "ನೆಮ್ಮದಿ"
         },
-        "example": "We learned about end in today's lesson."
+        "example": "It was a tremendous relief to know that everyone reached home safely."
+      },
+      {
+        "word": "Witness",
+        "partOfSpeech": "verb",
+        "definition": "See an event, typically a crime or accident, take place.",
+        "meaning": {
+          "ml": "നേരിൽ കാണുക / ദൃക്‌സാക്ഷിയാവുക",
+          "hi": "गवाह होना / देखना",
+          "ta": "சாட்சியாக இரு / நேரில் பார்",
+          "te": "సాక్షిగా ఉండు",
+          "kn": "ಪ್ರತ್ಯಕ್ಷದರ್ಶಿಯಾಗು"
+        },
+        "example": "Several pedestrians witnessed the dramatic rescue operation at the river."
       }
     ]
   },
@@ -137,7 +158,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Past Narrative & Incident Storytelling",
-        "ml": "പാഠം: കഥ പറയൽ: First, Then, Suddenly"
+        "ml": "പാഠം: സംഭവങ്ങളും കഥകളും മനോഹരമായി പറയൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Suddenly / Unexpectedly / As soon as + Past Simple (V2)",
+        "ml": "ജീവിതത്തിൽ സംഭവിച്ച രസകരമായതോ അവിചാരിതമായതോ ആയ സംഭവങ്ങൾ മറ്റുള്ളവരോട് പറയുമ്പോൾ 'Suddenly' (പെട്ടെന്ന്), 'Unexpectedly' (പ്രതീക്ഷിക്കാതെ), 'Luckily' (ഭാഗ്യവശാൽ), 'As soon as' (ഉടൻ തന്നെ) തുടങ്ങിയ വാക്കുകൾ ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "What happened suddenly?",
-        "Someone shouted loudly.",
-        "We ran outside."
+        "Suddenly a deafening thunderbolt struck the ancient pine tree on the hill .",
+        "Luckily everyone had moved indoors just minutes before the heavy branch snapped .",
+        "As soon as we heard the alarm, we calmly evacuated through the fire exits .",
+        "To our utter surprise, the friendly village elder offered us warm herbal soup .",
+        "It was a thrilling adventure that our travel group will never forget ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +240,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Past Narrative & Incident Storytelling",
-        "ml": "റീഡിങ് റൂം: കഥ പറയൽ: First, Then, Suddenly"
+        "ml": "റീഡിങ് റൂം: സംഭവങ്ങളും കഥകളും മനോഹരമായി പറയൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "What happened suddenly?",
-          "meaningMl": "സംഭവിക്കുക - What happened suddenly?",
-          "audioPrompt": "What happened suddenly?"
+          "text": "Last Sunday, young Rohit and his loyal shepherd dog Bruno were walking beside Whispering Creek.",
+          "meaningMl": "കഴിഞ്ഞ ഞായറാഴ്ച, കൊച്ചു രോഹിതും അവന്റെ വിശ്വസ്തനായ നായ ബ്രൂണോയും വിസ്പറിംഗ് അരുവിയുടെ തീരത്തൂടെ നടക്കുകയായിരുന്നു.",
+          "meaningHi": "पिछले रविवार, युवा रोहित और उसका वफादार कुत्ता ब्रूनो व्हिस्परिंग क्रीक के किनारे टहल रहे थे।",
+          "meaningTa": "கடந்த ஞாயிற்றுக்கிழமை, ரோஹித்தும் அவனது நாய் புரூனோவும் ஓடையின் ஓரமாக நடந்து சென்றனர்.",
+          "audioPrompt": "Last Sunday, young Rohit and his loyal shepherd dog Bruno were walking beside Whispering Creek."
         },
         {
-          "text": "Someone shouted loudly.",
-          "meaningMl": "നിലവിളിക്കുക - Someone shouted loudly.",
-          "audioPrompt": "Someone shouted loudly."
+          "text": "Suddenly, a tiny whimpering cry echoed from beneath a tangle of thorny wild blackberry bushes.",
+          "meaningMl": "പെട്ടെന്ന്, മുള്ളുകൾ നിറഞ്ഞ കാട്ടുപടർപ്പുകൾക്കടിയിൽ നിന്ന് ചെറിയൊരു കരച്ചിൽ ശബ്ദം കേട്ടു.",
+          "meaningHi": "अचानक, कटीली झाड़ियों के नीचे से एक छोटे से रोने की आवाज गूंजी।",
+          "meaningTa": "திடீரென, முள் புதர்களுக்கு அடியிலிருந்து ஒரு மெல்லிய அழுகை ஒலி கேட்டது.",
+          "audioPrompt": "Suddenly, a tiny whimpering cry echoed from beneath a tangle of thorny wild blackberry bushes."
         },
         {
-          "text": "Daily practice of Past Narrative & Incident Storytelling gives you great confidence in English.",
-          "meaningMl": "കഥ പറയൽ: First, Then, Suddenly ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Past Narrative & Incident Storytelling gives you great confidence in English."
+          "text": "Bruno barked urgently and guided Rohit toward a muddy crevice where a lost lamb was trapped.",
+          "meaningMl": "ബ്രൂണോ വേഗത്തിൽ കുരച്ചുകൊണ്ട് വഴിതെറ്റിയ ഒരു കുഞ്ഞാട് കുടുങ്ങിക്കിടന്ന ചെളി നിറഞ്ഞ കുഴിയിലേക്ക് രോഹിതിനെ നയിച്ചു.",
+          "meaningHi": "ब्रूनो ने भौंककर रोहित को एक कीचड़ भरी दरार की ओर निर्देशित किया जहाँ एक खोया हुआ मेमना फंसा था।",
+          "meaningTa": "புரூனோ குரைத்து, ஆட்டுக்குட்டி சிக்கியிருந்த சேற்றுக் குழிக்கு ரோஹித்தை அழைத்துச் சென்றது.",
+          "audioPrompt": "Bruno barked urgently and guided Rohit toward a muddy crevice where a lost lamb was trapped."
+        },
+        {
+          "text": "Rohit immediately knelt down, gently disentangled the lamb's fleece, and lifted it to safety.",
+          "meaningMl": "രോഹിത് ഉടൻ തന്നെ താഴെ മുട്ടുകുത്തി, കുഞ്ഞാടിന്റെ രോമം മുള്ളുകളിൽ നിന്ന് വിടുവിച്ച് അതിനെ സുരക്ഷിതമായി ഉയർത്തിയെടുത്തു.",
+          "meaningHi": "रोहित तुरंत नीचे झुका, धीरे से मेमने के ऊन को सुलझाया और उसे सुरक्षित बाहर निकाला।",
+          "meaningTa": "ரோஹித் உடனே கீழே அமர்ந்து ஆட்டுக்குட்டியை பத்திரமாக மீட்டெடுத்தான்.",
+          "audioPrompt": "Rohit immediately knelt down, gently disentangled the lamb's fleece, and lifted it to safety."
+        },
+        {
+          "text": "Luckily, the shepherd arrived moments later searching frantically for his missing little animal.",
+          "meaningMl": "ഭാഗ്യവശാൽ, കാണാതായ കുഞ്ഞാടിനെ വെപ്രാളത്തോടെ തിരഞ്ഞുകൊണ്ട് ആട്ടിടയൻ നിമിഷങ്ങൾക്കകം അവിടെയെത്തി.",
+          "meaningHi": "सौभाग्य से, चरवाहा अपने खोए हुए छोटे जानवर को पागलों की तरह खोजता हुआ कुछ ही क्षण बाद पहुँचा।",
+          "meaningTa": "அதிர்ஷ்டவசமாக, ஆடு மேய்ப்பவர் தன் ஆட்டைத் தேடி சில கணங்களில் அங்கு வந்தார்.",
+          "audioPrompt": "Luckily, the shepherd arrived moments later searching frantically for his missing little animal."
+        },
+        {
+          "text": "The shepherd hugged Rohit with tears of gratitude, praising the watchful bravery of dog and boy.",
+          "meaningMl": "ആട്ടിടയൻ നന്ദിയോടെ രോഹിതിനെ കെട്ടിപ്പിടിക്കുകയും കുട്ടിയുടെയും നായയുടെയും ജാഗ്രതയെ വാനോളം പ്രശംസിക്കുകയും ചെയ്തു.",
+          "meaningHi": "चरवाहे ने कृतज्ञता के आंसुओं के साथ रोहित को गले लगाया और दोनों की बहादुरी की प्रशंसा की।",
+          "meaningTa": "மேய்ப்பவர் நன்றியோடு ரோஹித்தை அணைத்து இருவரின் துணிச்சலையும் பாராட்டினார்.",
+          "audioPrompt": "The shepherd hugged Rohit with tears of gratitude, praising the watchful bravery of dog and boy."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Who was walking beside Whispering Creek with Rohit?",
+            "ml": "രോഹിതിനൊപ്പം വിസ്പറിംഗ് അരുവിക്ക് അരികിലൂടെ നടന്നത് ആരായിരുന്നു?",
+            "hi": "रोहित के साथ कौन टहल रहा था?",
+            "ta": "ரோஹித்துடன் ஓடையின் அருகே சென்றது யார்?"
+          },
+          "options": [
+            "His school teacher",
+            "His loyal shepherd dog Bruno",
+            "His cousin",
+            "A village guard"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "His loyal shepherd dog Bruno was walking with him.",
+            "ml": "അവന്റെ വിശ്വസ്തനായ നായ ബ്രൂണോയാണ് (shepherd dog Bruno) കൂടെയുണ്ടായിരുന്നത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What animal was trapped beneath the thorny bushes?",
+            "ml": "മുള്ളൻ പടർപ്പുകൾക്കടിയിൽ കുടുങ്ങിക്കിടന്ന മൃഗം ഏതാണ്?",
+            "hi": "झाड़ियों के नीचे कौन सा जानवर फंसा हुआ था?",
+            "ta": "புதர்களுக்கு அடியில் சிக்கியிருந்த விலங்கு எது?"
+          },
+          "options": [
+            "A wild rabbit",
+            "A lost lamb",
+            "A stray cat",
+            "A baby deer"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A lost lamb was trapped in the muddy crevice.",
+            "ml": "വഴിതെറ്റിയ ഒരു കുഞ്ഞാടാണ് (lost lamb) കുടുങ്ങിക്കിടന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How did the shepherd react when he saw his lamb safe?",
+            "ml": "തന്റെ കുഞ്ഞാട് സുരക്ഷിതമാണെന്ന് കണ്ടപ്പോൾ ആട്ടിടയൻ എങ്ങനെയാണ് പ്രതികരിച്ചത്?",
+            "hi": "मेमने को सुरक्षित देखकर चरवाहे की क्या प्रतिक्रिया थी?",
+            "ta": "ஆட்டுக்குட்டி பாதுகாப்பாக இருப்பதைப் பார்த்து மேய்ப்பவர் என்ன செய்தார்?"
+          },
+          "options": [
+            "He ran away angrily",
+            "He hugged Rohit with tears of gratitude",
+            "He sold the lamb to Rohit",
+            "He scolded the dog"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He hugged Rohit with tears of gratitude.",
+            "ml": "നന്ദിയോടെ അവൻ രോഹിതിനെ കെട്ടിപ്പിടിച്ചു (hugged Rohit with tears of gratitude)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d38_1",
-          "question": "Which word represents: 'സംഭവിക്കുക'?",
+          "question": "Select the sentence that creates an engaging dramatic narrative transition:",
           "options": [
-            "prepare",
-            "happen",
-            "arrive",
-            "finish"
+            "Suddenly a loud crash broke the midnight silence.",
+            "Suddenly a loud crash breaks midnight silence yesterday.",
+            "Sudden a loud crash did broke the silence.",
+            "Suddenly crash happening."
           ],
-          "answer": "happen",
-          "explanation": "happen എന്നാൽ സംഭവിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Suddenly + noun phrase + V2 (broke)' creates proper grammatical dramatic impact.",
+          "ruleHint": "Narrative Rule: Suddenly + Subject + V2 past verb."
         },
         {
-          "id": "trap_d38_2",
-          "question": "What is the past form (V2) of 'shout'?",
+          "question": "Which adverb correctly describes a fortunate escape?",
           "options": [
-            "shouts",
-            "shouting",
-            "has shout",
-            "shouted"
+            "Unluckily",
+            "Luckily",
+            "Sadnessly",
+            "Hardly"
           ],
-          "answer": "shouted",
-          "explanation": "shout ന്റെ ഭൂതകാല രൂപം shouted ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Luckily' means fortunately and introduces positive relief.",
+          "ruleHint": "Adverbs: Luckily = by good fortune."
         },
         {
-          "id": "trap_d38_3",
-          "question": "What is the correct English word for 'സംഭവം'?",
+          "question": "How do you correctly say that an action happened immediately after hearing a sound?",
           "options": [
-            "incident",
-            "station",
-            "airport",
-            "partner"
+            "As soon as we heard the siren, we stopped.",
+            "As soon we hear the siren, we stopped.",
+            "As soon as we was hear the siren, we stop.",
+            "As soon hear siren we stop."
           ],
-          "answer": "incident",
-          "explanation": "സംഭവം എന്നാൽ ഇംഗ്ലീഷിൽ incident."
+          "correctIndex": 0,
+          "explanation": "'As soon as + Subject + V2 (heard)... V2 (stopped)' is clean and standard.",
+          "ruleHint": "Time Conjunction: As soon as + past simple clause."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 38 Gate Exam (5 Qs)",

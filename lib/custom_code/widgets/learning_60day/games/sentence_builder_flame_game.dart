@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../curriculum_data/pocket_90day_sentence_builder_data.dart';
 
@@ -17,6 +18,10 @@ class SentenceChallengeRound {
   final int id;
   final String sentence; // Target full sentence
   final String translationMl; // Malayalam translation
+  final String? translationHi;
+  final String? translationTa;
+  final String? translationTe;
+  final String? translationKn;
   final List<SentenceTileData> tiles; // Words with assigned colors
   final String hint; // Helpful grammatical or contextual hint
 
@@ -24,9 +29,36 @@ class SentenceChallengeRound {
     required this.id,
     required this.sentence,
     required this.translationMl,
+    this.translationHi,
+    this.translationTa,
+    this.translationTe,
+    this.translationKn,
     required this.tiles,
     required this.hint,
   });
+
+  String getLocalizedTranslation() {
+    if (PocketLanguageService.isEnglish) {
+      return hint.isNotEmpty ? hint : 'Arrange words in the correct order';
+    }
+    if (PocketLanguageService.isMalayalam) {
+      return translationMl;
+    }
+    if (PocketLanguageService.isHindi && translationHi != null && translationHi!.isNotEmpty) {
+      return translationHi!;
+    }
+    if (PocketLanguageService.isTamil && translationTa != null && translationTa!.isNotEmpty) {
+      return translationTa!;
+    }
+    if (PocketLanguageService.isTelugu && translationTe != null && translationTe!.isNotEmpty) {
+      return translationTe!;
+    }
+    if (PocketLanguageService.isKannada && translationKn != null && translationKn!.isNotEmpty) {
+      return translationKn!;
+    }
+    // Never fall back to Malayalam for non-Malayalam users!
+    return hint.isNotEmpty ? hint : 'Arrange words to form the sentence';
+  }
 }
 
 /// 🎨 Tile color classifications matching screenshots 3 & 4
@@ -725,7 +757,7 @@ class _PocketSentenceBuilderGamePageState
                     const Text('🎯 ', style: TextStyle(fontSize: 16)),
                     Flexible(
                       child: Text(
-                        round.translationMl,
+                        round.getLocalizedTranslation(),
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontSize: 16,

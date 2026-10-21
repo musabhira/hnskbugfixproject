@@ -22,112 +22,109 @@
     "totalCoinsReward": 106
   },
   "grammarRule": {
-    "formula": "Direct and Indirect Speech – Statements",
+    "formula": "I lost my [Item]! / Please call an ambulance / Help me find my...",
     "explanation": {
-      "ml": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും എന്ന വിഷയത്തിൽ I lost my... / Please call an ambulance / Urgent എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use I lost my... / Please call an ambulance / Urgent correctly in spoken English."
+      "ml": "അടിയന്തിര ഘട്ടങ്ങളിൽ ആളുകളെ വിളിച്ച് സഹായം അഭ്യർത്ഥിക്കാൻ: 'Help! Please call an ambulance' (സഹായിക്കൂ, ആംബുലൻസ് വിളിക്കൂ!), 'I have misplaced my wallet' (എന്റെ പഴ്സ് കളഞ്ഞുപോയി), 'Can you report this to the police?' (പോലീസിൽ അറിയിക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Lost Items & Urgent Emergencies with clear formula: I lost my [Item]! / Please call an ambulance / Help me find my..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I lost my wallet.",
-      "en": "Golden Rule: Practice 'I lost my wallet.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 അത്യാഹിത ഘട്ടങ്ങളിൽ സംസാരം ലളിതവും ഉച്ചത്തിലുള്ളതുമായിരിക്കണം: 'Please call the emergency helpline right away! Someone is injured' (ഉടൻ ഹെൽപ്‌ലൈനിൽ വിളിക്കൂ, ഒരാൾക്ക് പരിക്കേറ്റിട്ടുണ്ട്).",
+      "en": "Golden Tip: 💡 അത്യാഹിത ഘട്ടങ്ങളിൽ സംസാരം ലളിതവും ഉച്ചത്തിലുള്ളതുമായിരിക്കണം: 'Please call the emergency helpline right away! Someone is injured' (ഉടൻ ഹെൽപ്‌ലൈനിൽ വിളിക്കൂ, ഒരാൾക്ക് പരിക്കേറ്റിട്ടുണ്ട്)."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "lose",
-        "v2": "lost",
-        "v3": "lost",
+        "v1": "misplace",
+        "v2": "misplaceed",
+        "v3": "misplaceed",
         "meaning": {
-          "ml": "നഷ്ടപ്പെടുക",
-          "hi": "खोना",
-          "ta": "இழ / தொலை"
+          "ml": "വെച്ച സ്ഥലം മറന്നുപോവുക / കളഞ്ഞുപോവുക",
+          "hi": "गलत जगह रख देना",
+          "ta": "இடம் மாற்றி வை / தொலை"
         },
-        "example": "I lost my wallet.",
-        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "search",
-        "v2": "searched",
-        "v3": "searched",
-        "meaning": {
-          "ml": "തിരയുക",
-          "hi": "खोजना",
-          "ta": "தேடு"
-        },
-        "example": "We searched everywhere.",
-        "exampleMl": "തിരയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "report",
-        "v2": "reported",
-        "v3": "reported",
-        "meaning": {
-          "ml": "പരാതി നൽകുക",
-          "hi": "പരാതി നൽകുക",
-          "ta": "പരാതി നൽകുക"
-        },
-        "example": "Report to local police.",
-        "exampleMl": "പരാതി നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "rescue",
-        "v2": "rescued",
-        "v3": "rescued",
-        "meaning": {
-          "ml": "രക്ഷിക്കുക",
-          "hi": "രക്ഷിക്കുക",
-          "ta": "രക്ഷിക്കുക"
-        },
-        "example": "Rescue team arrived.",
-        "exampleMl": "രക്ഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "I think I have misplaced my house keys inside the conference hall.",
+        "exampleMl": "Put in the wrong place and lose temporarily."
       }
     ],
     "nouns": [
       {
-        "word": "wallet",
+        "word": "Crisis",
+        "partOfSpeech": "noun",
+        "definition": "A time of intense difficulty, trouble, or danger requiring urgent intervention.",
         "meaning": {
-          "ml": "വാലറ്റ്",
-          "hi": "വാലറ്റ്",
-          "ta": "വാലറ്റ്"
+          "ml": "അടിയന്തിര സാഹചര്യം / അത്യാഹിതം",
+          "hi": "संकट काल",
+          "ta": "நெருக்கடி நிலை",
+          "te": "సంక్షోభం",
+          "kn": "ಬಿಕ್ಕಟ್ಟು"
         },
-        "example": "We learned about wallet in today's lesson."
+        "example": "Please call the nearest hospital emergency helpline immediately."
       },
       {
-        "word": "police",
+        "word": "Belongings",
+        "partOfSpeech": "noun",
+        "definition": "One's movable possessions.",
         "meaning": {
-          "ml": "പോലീസ്",
-          "hi": "പോലീസ്",
-          "ta": "പോലീസ്"
+          "ml": "സ്വന്തം സാധനങ്ങൾ / വസ്തുവകകൾ",
+          "hi": "निजी सामान",
+          "ta": "உடைமைகள்",
+          "te": "వస్తువులు",
+          "kn": "ವಸ್ತುಗಳು"
         },
-        "example": "We learned about police in today's lesson."
+        "example": "Always keep a watchful eye on your personal belongings at crowded stations."
       },
       {
-        "word": "emergency",
+        "word": "Misplace",
+        "partOfSpeech": "verb",
+        "definition": "Put in the wrong place and lose temporarily.",
         "meaning": {
-          "ml": "അടിയന്തരാവസ്ഥ",
-          "hi": "അടിയന്തരാവസ്ഥ",
-          "ta": "അടിയന്തരാവസ്ഥ"
+          "ml": "വെച്ച സ്ഥലം മറന്നുപോവുക / കളഞ്ഞുപോവുക",
+          "hi": "गलत जगह रख देना",
+          "ta": "இடம் மாற்றி வை / தொலை",
+          "te": "ఎక్కడో పెట్టి మర్చిపోవు",
+          "kn": "ತಪ್ಪಾದ ಸ್ಥಳದಲ್ಲಿ ಇಡು"
         },
-        "example": "We learned about emergency in today's lesson."
+        "example": "I think I have misplaced my house keys inside the conference hall."
       },
       {
-        "word": "help",
+        "word": "Ambulance",
+        "partOfSpeech": "noun",
+        "definition": "A vehicle equipped for taking sick or injured people to and from hospital, especially in emergencies.",
         "meaning": {
-          "ml": "സഹായം",
-          "hi": "സഹായം",
-          "ta": "സഹായം"
+          "ml": "ആംബുലൻസ്",
+          "hi": "एम्बुलेंस / रोगी वाहन",
+          "ta": "ஆம்புலன்ஸ் / அவசர ஊர்தி",
+          "te": "అంబులెన్స్",
+          "kn": "ಆಂಬ್ಯುಲೆನ್ಸ್"
         },
-        "example": "We learned about help in today's lesson."
+        "example": "The ambulance arrived within eight minutes with trained paramedics."
       },
       {
-        "word": "danger",
+        "word": "Stolen",
+        "partOfSpeech": "adjective",
+        "definition": "Taken without permission or legal right and without intending to return it.",
         "meaning": {
-          "ml": "അപകടം",
-          "hi": "അപകടം",
-          "ta": "അപകടം"
+          "ml": "മോഷ്ടിക്കപ്പെട്ട",
+          "hi": "चोरी हुआ",
+          "ta": "திருடப்பட்ட",
+          "te": "దొంగిలించబడిన",
+          "kn": "ಕಳವು ಮಾಡಲಾದ"
         },
-        "example": "We learned about danger in today's lesson."
+        "example": "He filed an official report after his bicycle was stolen from the porch."
+      },
+      {
+        "word": "Paramedic",
+        "partOfSpeech": "noun",
+        "definition": "A person trained to give emergency medical care to people who are seriously ill with the aim of stabilizing them.",
+        "meaning": {
+          "ml": "അടിയന്തിര ചികിത്സാ സഹായി / പാരാമെഡിക്",
+          "hi": "पैरामेडिक / आपातकालीन स्वास्थ्य कर्मी",
+          "ta": "அவசர மருத்துவ உதவியாளர்",
+          "te": "పారామెడిక్",
+          "kn": "ತುರ್ತು ವೈದ್ಯಕೀಯ ಸಿಬ್ಬಂದಿ"
+        },
+        "example": "The paramedic administered immediate first aid to stop the knee bleeding."
       }
     ]
   },
@@ -137,7 +134,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Lost Items & Urgent Emergencies",
-        "ml": "പാഠം: സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും"
+        "ml": "പാഠം: സാധനങ്ങൾ നഷ്ടപ്പെടലും അടിയന്തിര സാഹചര്യങ്ങളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "I lost my [Item]! / Please call an ambulance / Help me find my...",
+        "ml": "അടിയന്തിര ഘട്ടങ്ങളിൽ ആളുകളെ വിളിച്ച് സഹായം അഭ്യർത്ഥിക്കാൻ: 'Help! Please call an ambulance' (സഹായിക്കൂ, ആംബുലൻസ് വിളിക്കൂ!), 'I have misplaced my wallet' (എന്റെ പഴ്സ് കളഞ്ഞുപോയി), 'Can you report this to the police?' (പോലീസിൽ അറിയിക്കാമോ?) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I lost my wallet.",
-        "We searched everywhere.",
-        "Report to local police."
+        "Help! Please call an ambulance immediately; someone has fainted on the pavement !",
+        "I have misplaced my black leather wallet containing my driving license and credit cards .",
+        "Where is the lost and found property counter located in this airport terminal ?",
+        "Do not panic; keep calm and follow the marked green emergency exit signs .",
+        "We must report this stolen passport immediately to the embassy and local police ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +216,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Lost Items & Urgent Emergencies",
-        "ml": "റീഡിങ് റൂം: സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും"
+        "ml": "റീഡിങ് റൂം: സാധനങ്ങൾ നഷ്ടപ്പെടലും അടിയന്തിര സാഹചര്യങ്ങളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I lost my wallet.",
-          "meaningMl": "നഷ്ടപ്പെടുക - I lost my wallet.",
-          "audioPrompt": "I lost my wallet."
+          "text": "Twelve-year-old Ananya loved her handcrafted bamboo flute more than any other worldly possession.",
+          "meaningMl": "പന്ത്രണ്ട് വയസ്സുകാരിയായ അനന്യ തന്റെ മുളങ്കുഴലിനെ മറ്റെന്തിനേക്കാളും അധികമായി സ്നേഹിച്ചിരുന്നു.",
+          "meaningHi": "बारह वर्षीय अनन्या को अपनी बांसुरी किसी भी अन्य वस्तु से अधिक प्रिय थी।",
+          "meaningTa": "பன்னிரண்டு வயது அனன்யா தனது புல்லாங்குழலை எல்லாவற்றையும் விட நேசித்தாள்.",
+          "audioPrompt": "Twelve-year-old Ananya loved her handcrafted bamboo flute more than any other worldly possession."
         },
         {
-          "text": "We searched everywhere.",
-          "meaningMl": "തിരയുക - We searched everywhere.",
-          "audioPrompt": "We searched everywhere."
+          "text": "After performing at the district music competition, she boarded the crowded commuter ferry home.",
+          "meaningMl": "സംഗീത മത്സരത്തിലെ അവതരണത്തിന് ശേഷം അവൾ നാട്ടിലേക്ക് പോകാൻ തിരക്കുള്ള ഫെറി ബോട്ടിൽ കയറി.",
+          "meaningHi": "संगीत प्रतियोगिता में प्रस्तुति के बाद, वह नाव पर सवार हुई।",
+          "meaningTa": "போட்டிக்குப் பிறகு அவள் படகில் ஏறி வீடு திரும்பினாள்.",
+          "audioPrompt": "After performing at the district music competition, she boarded the crowded commuter ferry home."
         },
         {
-          "text": "Daily practice of Lost Items & Urgent Emergencies gives you great confidence in English.",
-          "meaningMl": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Lost Items & Urgent Emergencies gives you great confidence in English."
+          "text": "Upon reaching the harbor dock, she gasped in horror: her velvet flute case was completely missing!",
+          "meaningMl": "കടവിലിറങ്ങിയപ്പോൾ അവൾ ഞെട്ടിപ്പോയി: വെൽവെറ്റ് ഉറയിലിട്ട പുല്ലാങ്കുഴൽ കാണാനില്ലായിരുന്നു!",
+          "meaningHi": "बंदरगाह पर पहुँचकर उसने देखा कि उसका बांसुरी का डिब्बा गायब था!",
+          "meaningTa": "கரைக்கு வந்ததும் புல்லாங்குழல் காணாமல் போனதைக் கண்டு அதிர்ச்சியடைந்தாள்!",
+          "audioPrompt": "Upon reaching the harbor dock, she gasped in horror: her velvet flute case was completely missing!"
+        },
+        {
+          "text": "Tears welled up, but instead of panicking, she rushed to the harbor master's lost property booth.",
+          "meaningMl": "കണ്ണുകൾ നിറഞ്ഞെങ്കിലും ഭയപ്പെടാതെ അവൾ നേരെ ഹാർബർ മാസ്റ്ററുടെ ഓഫീസിലേക്ക് ഓടിച്ചെന്നു.",
+          "meaningHi": "घबराने के बजाय, वह खोए हुए सामान के बूथ की ओर भागी।",
+          "meaningTa": "பயப்படாமல் அவள் துறைமுக அலுவலகத்திற்கு விரைந்தாள்.",
+          "audioPrompt": "Tears welled up, but instead of panicking, she rushed to the harbor master's lost property booth."
+        },
+        {
+          "text": "Luckily, a kind ferry passenger had found the velvet case on a wooden bench and handed it over.",
+          "meaningMl": "ഭാഗ്യവശാൽ, ബെഞ്ചിൽ കിടന്ന ആ കുഴൽ ഒരു യാത്രക്കാരൻ കണ്ടെത്തി സുരക്ഷിതമായി അവിടെ ഏൽപ്പിച്ചിരുന്നു.",
+          "meaningHi": "सौभाग्य से, एक दयालु यात्री ने बेंच पर डिब्बा पाया और सौंप दिया था।",
+          "meaningTa": "அதிர்ஷ்டவசமாக, ஒரு பயணி அதைக் கண்டுபிடித்து ஒப்படைத்திருந்தார்.",
+          "audioPrompt": "Luckily, a kind ferry passenger had found the velvet case on a wooden bench and handed it over."
+        },
+        {
+          "text": "Prompt and calm action in the face of sudden distress always opens the door to happy reunions.",
+          "meaningMl": "പെട്ടെന്നുള്ള ആപത്തുകളിൽ വെപ്രാളപ്പെടാതെ ശാന്തത പാലിക്കുന്നത് എപ്പോഴും നല്ല പരിഹാരങ്ങളിലേക്ക് നയിക്കുന്നു.",
+          "meaningHi": "संकट के समय त्वरित और शांत कार्रवाई हमेशा सुखद समाधान का द्वार खोलती है।",
+          "meaningTa": "துன்பத்தின் போது அமைதியான நடவடிக்கையே மகிழ்ச்சியான முடிவைத் தரும்.",
+          "audioPrompt": "Prompt and calm action in the face of sudden distress always opens the door to happy reunions."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What precious musical instrument did Ananya lose?",
+            "ml": "അനന്യയ്ക്ക് കളഞ്ഞുപോയ സംഗീതോപകരണം ഏതായിരുന്നു?",
+            "hi": "अनन्या का कौन सा वाद्य यंत्र खो गया था?",
+            "ta": "அனன்யா என்ன இசைக்கருவியைத் தொலைத்தாள்?"
+          },
+          "options": [
+            "A silver violin",
+            "Her handcrafted bamboo flute",
+            "A brass trumpet",
+            "A wooden guitar"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Her handcrafted bamboo flute.",
+            "ml": "അവളുടെ മുളങ്കുഴലായിരുന്നു (handcrafted bamboo flute)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Where did she rush instead of panicking?",
+            "ml": "ഭയപ്പെടാതെ അവൾ എങ്ങോട്ടാണ് ഓടിയെത്തിയത്?",
+            "hi": "घबराने के बजाय वह कहाँ गई?",
+            "ta": "அவள் எங்கே ஓடினாள்?"
+          },
+          "options": [
+            "To the cinema hall",
+            "To the harbor master's lost property booth",
+            "Home to cry in bed",
+            "To a sweet shop"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To the harbor master's lost property booth.",
+            "ml": "ഹാർബർ മാസ്റ്ററുടെ ഓഫീസിലേക്ക് (lost property booth)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "Who had handed over the flute case?",
+            "ml": "പുല്ലാങ്കുഴൽ അവിടെ ഏൽപ്പിച്ചത് ആരായിരുന്നു?",
+            "hi": "बांसुरी किसने सौंपी थी?",
+            "ta": "புல்லாங்குழலை யார் ஒப்படைத்தார்கள்?"
+          },
+          "options": [
+            "The boat captain",
+            "A kind ferry passenger who found it on a bench",
+            "A fisherman",
+            "A diver"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A kind ferry passenger.",
+            "ml": "ബെഞ്ചിൽ നിന്ന് കണ്ടെത്തിയ ഒരു യാത്രക്കാരനാണ് (kind ferry passenger) ഏൽപ്പിച്ചത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d56_1",
-          "question": "Which word represents: 'നഷ്ടപ്പെടുക'?",
+          "question": "Select the correct urgent phrase to request medical emergency response:",
           "options": [
-            "remember",
-            "lose",
-            "decide",
-            "prepare"
+            "Please call an ambulance immediately!",
+            "Make an ambulance coming fastly.",
+            "Do call to the hospital vehicle.",
+            "Ambulance is requested now please."
           ],
-          "answer": "lose",
-          "explanation": "lose എന്നാൽ നഷ്ടപ്പെടുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'Please call an ambulance immediately!' is the standard, clear emergency distress command.",
+          "ruleHint": "Emergency Command: 'Please call an ambulance immediately!'"
         },
         {
-          "id": "trap_d56_2",
-          "question": "What is the past form (V2) of 'search'?",
+          "question": "What is the difference between 'lose' and 'loose'?",
           "options": [
-            "has search",
-            "searchs",
-            "searching",
-            "searched"
+            "'Lose' is a verb meaning misplace; 'loose' is an adjective meaning not tight.",
+            "'Loose' is a verb; 'lose' is an adjective.",
+            "Both words mean the exact same thing.",
+            "'Lose' is a noun; 'loose' is a preposition."
           ],
-          "answer": "searched",
-          "explanation": "search ന്റെ ഭൂതകാല രൂപം searched ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Lose' (one 'o') is the verb (to lose a wallet). 'Loose' (two 'o's) means not tight (loose clothes).",
+          "ruleHint": "Spelling Trap: Lose (verb) vs Loose (not tight)."
         },
         {
-          "id": "trap_d56_3",
-          "question": "What is the correct English word for 'വാലറ്റ്'?",
+          "question": "How do you ask for the department that handles found personal items?",
           "options": [
-            "schedule",
-            "progress",
-            "partner",
-            "wallet"
+            "Where is the Lost and Found counter?",
+            "Where is the Misplaced and Searching room?",
+            "Where are lost items kept store?",
+            "Where is the finding department?"
           ],
-          "answer": "wallet",
-          "explanation": "വാലറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ wallet."
+          "correctIndex": 0,
+          "explanation": "'Lost and Found' is the universal English term for property recovery counters.",
+          "ruleHint": "Universal Term: 'Lost and Found'."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 56 Gate Exam (5 Qs)",

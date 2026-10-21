@@ -22,112 +22,96 @@
     "totalCoinsReward": 140
   },
   "grammarRule": {
-    "formula": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
+    "formula": "Mastery of all 4 Houses: Everyday Foundation + Situational Fluency + Professional Polish + Elite Leadership",
     "explanation": {
-      "ml": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി എന്ന വിഷയത്തിൽ 90-Day Spoken English Master Badge & Lifetime Fluency എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use 90-Day Spoken English Master Badge & Lifetime Fluency correctly in spoken English."
+      "ml": "90 ദിവസത്തെ സമ്പൂർണ്ണ സ്പോക്കൺ ഇംഗ്ലീഷ് യാത്രയുടെ വിജയകരമായ പൂർത്തീകരണം! 4 പ്രധാന ഹൗസുകളിലൂടെ നേടിയ പ്രാവീണ്യം, ആത്മവിശ്വാസം, ആജീവനാന്ത ഇംഗ്ലീഷ് സംസാര ശൈലി എന്നിവയുടെ മഹത്തായ വിജയാഘോഷം.",
+      "en": "Master Grand Capstone Review & Spoken English Graduation with clear formula: Mastery of all 4 Houses: Everyday Foundation + Situational Fluency + Professional Polish + Elite Leadership"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I completed the 90-day journey!",
-      "en": "Golden Rule: Practice 'I completed the 90-day journey!' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഇംഗ്ലീഷ് പഠനം ഇവിടെ അവസാനിക്കുന്നില്ല; മറിച്ച് നിങ്ങളുടെ ജീവിതകാലം മുഴുവൻ ആത്മവിശ്വാസത്തോടെ സംസാരിക്കാനുള്ള പുതിയൊരു വാതിലാണ് ഇപ്പോൾ തുറന്നിരിക്കുന്നത്. Speak without fear, express with pride!",
+      "en": "Golden Tip: ഇംഗ്ലീഷ് പഠനം ഇവിടെ അവസാനിക്കുന്നില്ല; മറിച്ച് നിങ്ങളുടെ ജീവിതകാലം മുഴുവൻ ആത്മവിശ്വാസത്തോടെ സംസാരിക്കാനുള്ള പുതിയൊരു വാതിലാണ് ഇപ്പോൾ തുറന്നിരിക്കുന്നത്. Speak without fear, express with pride!"
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "graduate",
-        "v2": "graduated",
-        "v3": "graduated",
-        "meaning": {
-          "ml": "വിജയകരമായി പൂർത്തിയാക്കുക",
-          "hi": "स्नातक होना / पूरा करना",
-          "ta": "பட்டம் பெறு"
-        },
-        "example": "I completed the 90-day journey!",
-        "exampleMl": "വിജയകരമായി പൂർത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "master",
-        "v2": "mastered",
-        "v3": "mastered",
-        "meaning": {
-          "ml": "സ്വായത്തമാക്കുക",
-          "hi": "महारत हासिल करना",
-          "ta": "முழுமை பெறு"
-        },
-        "example": "I have achieved spoken English confidence.",
-        "exampleMl": "സ്വായത്തമാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "speak",
-        "v2": "spoke",
-        "v3": "spoken",
-        "meaning": {
-          "ml": "സംസാരിക്കുക",
-          "hi": "बोलना",
-          "ta": "பேசு"
-        },
-        "example": "I speak English boldly.",
-        "exampleMl": "സംസാരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "succeed",
-        "v2": "succeeded",
-        "v3": "succeeded",
-        "meaning": {
-          "ml": "വിജയം നേടി",
-          "hi": "വിജയം നേടി",
-          "ta": "വിജയം നേടി"
-        },
-        "example": "We succeeded together.",
-        "exampleMl": "വിജയം നേടി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "certificate",
+        "word": "Graduation",
+        "partOfSpeech": "noun",
+        "definition": "The receiving or conferring of an academic degree or diploma, or marking the successful completion of a comprehensive course.",
         "meaning": {
-          "ml": "സർട്ടിഫിക്കറ്റ്",
-          "hi": "प्रमाणपत्र",
-          "ta": "சான்றிதழ்"
+          "ml": "ബിരുദദാനം / വിജയകരമായ പൂർത്തീകരണം",
+          "hi": "स्नातक उपाधि / पाठ्यक्रम समाप्ति",
+          "ta": "பட்டம் பெறுதல் / நிறைவு விழா",
+          "te": "పట్టభద్రత",
+          "kn": "ಪದವಿ ಪ್ರದಾನ"
         },
-        "example": "Receive your 90-Day Fluency certificate."
+        "example": "Today we celebrate your proud graduation from the 90-Day Spoken English Masterclass."
       },
       {
-        "word": "trophy",
+        "word": "Mastery",
+        "partOfSpeech": "noun",
+        "definition": "Comprehensive knowledge or skill in a subject or accomplishment.",
         "meaning": {
-          "ml": "ട്രോഫി",
-          "hi": "ट्रॉफी",
-          "ta": "வெற்றிக் கோப்பை"
+          "ml": "പൂർണ്ണ പ്രാവീണ്യം / മേന്മ",
+          "hi": "महारत / निपुणता",
+          "ta": "முழுத் தேர்ச்சி",
+          "te": "నైపుణ్య సాధన",
+          "kn": "ಪಾಂಡಿತ್ಯ"
         },
-        "example": "Win the House Master trophy."
+        "example": "True linguistic mastery is reflected in effortless, confident spoken expression."
       },
       {
-        "word": "mastery",
+        "word": "Triumph",
+        "partOfSpeech": "noun",
+        "definition": "A great victory or achievement.",
         "meaning": {
-          "ml": "മാസ്റ്ററി",
-          "hi": "മാസ്റ്ററി",
-          "ta": "മാസ്റ്ററി"
+          "ml": "മഹത്തായ വിജയം / വിജയഘോഷം",
+          "hi": "महाविजय / सफलता",
+          "ta": "பெரும் வெற்றி",
+          "te": "విజయము",
+          "kn": "ವಿಜಯ"
         },
-        "example": "We learned about mastery in today's lesson."
+        "example": "Completing ninety dedicated days of linguistic practice is an extraordinary personal triumph."
       },
       {
-        "word": "journey",
+        "word": "Aptitude",
+        "partOfSpeech": "noun",
+        "definition": "A natural ability to do something or quickness in learning.",
         "meaning": {
-          "ml": "യാത്ര",
-          "hi": "യാത്ര",
-          "ta": "യാത്ര"
+          "ml": "സ്വാഭാവിക കഴിവ് / ഗ്രഹണശേഷി",
+          "hi": "स्वाभाविक योग्यता / अभिरुचि",
+          "ta": "இயற்கைத் திறன்",
+          "te": "సహజ సామర్థ్యం",
+          "kn": "ಸಹಜ ಸಾಮರ್ಥ್ಯ"
         },
-        "example": "We learned about journey in today's lesson."
+        "example": "His natural conversational aptitude blossomed through persistent daily speaking drills."
       },
       {
-        "word": "freedom",
+        "word": "Transformation",
+        "partOfSpeech": "noun",
+        "definition": "A thorough or dramatic change in form, appearance, or character.",
         "meaning": {
-          "ml": "സ്വാതന്ത്ര്യം",
-          "hi": "സ്വാതന്ത്ര്യം",
-          "ta": "സ്വാതന്ത്ര്യം"
+          "ml": "പരിവർത്തനം / സമഗ്ര മാറ്റം",
+          "hi": "कायापलट / रूपांतरण",
+          "ta": "மாற்றம் / உருமாற்றம்",
+          "te": "పరివర్తన",
+          "kn": "ರೂಪಾಂತರ"
         },
-        "example": "We learned about freedom in today's lesson."
+        "example": "The journey from hesitant speaker to confident presenter is a profound personal transformation."
+      },
+      {
+        "word": "Empowerment",
+        "partOfSpeech": "noun",
+        "definition": "The process of becoming stronger and more confident, especially in controlling one's life and claiming one's rights.",
+        "meaning": {
+          "ml": "ശാക്തീകരണം / കരുത്താർജ്ജിക്കൽ",
+          "hi": "सशक्तिकरण",
+          "ta": "அதிகாரமளித்தல் / வலிமை பெறுதல்",
+          "te": "సాధికారత",
+          "kn": "ಸಬಲೀಕರಣ"
+        },
+        "example": "Mastering spoken English unlocks global career opportunities and social empowerment."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Grand Graduation Day & Lifetime Mastery",
-        "ml": "പാഠം: 90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി"
+        "en": "Concept Room: Grand Capstone Review & Spoken English Graduation",
+        "ml": "പാഠം: 90 ദിന സ്പോക്കൺ ഇംഗ്ലീഷ് ബിരുദം (Mastery & Graduation)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Mastery of all 4 Houses: Everyday Foundation + Situational Fluency + Professional Polish + Elite Leadership",
+        "ml": "90 ദിവസത്തെ സമ്പൂർണ്ണ സ്പോക്കൺ ഇംഗ്ലീഷ് യാത്രയുടെ വിജയകരമായ പൂർത്തീകരണം! 4 പ്രധാന ഹൗസുകളിലൂടെ നേടിയ പ്രാവീണ്യം, ആത്മവിശ്വാസം, ആജീവനാന്ത ഇംഗ്ലീഷ് സംസാര ശൈലി എന്നിവയുടെ മഹത്തായ വിജയാഘോഷം."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I completed the 90-day journey!",
-        "I have achieved spoken English confidence.",
-        "I speak English boldly."
+        "Congratulations on completing ninety days of dedicated spoken English mastery and transformation !",
+        "You have progressed from foundational daily phrases to elite boardroom rhetoric and diplomacy .",
+        "Speak with unwavering self confidence , because your voice deserves to be heard across the world .",
+        "Every conversation is a golden opportunity to connect , inspire , and create enduring value .",
+        "You are now officially a certified 90-Day Spoken English Master ; walk forward proudly !"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Grand Graduation Day & Lifetime Mastery",
-        "ml": "റീഡിങ് റൂം: 90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി"
+        "en": "Reading Room: The Graduation of the Voice",
+        "ml": "റീഡിങ് റൂം: 90 ദിന സ്പോക്കൺ ഇംഗ്ലീഷ് ബിരുദം (Mastery & Graduation)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I completed the 90-day journey!",
-          "meaningMl": "വിജയകരമായി പൂർത്തിയാക്കുക - I completed the 90-day journey!",
-          "audioPrompt": "I completed the 90-day journey!"
+          "text": "Ninety days ago, thousands of enthusiastic language learners embarked on an ambitious journey to unlock their true spoken voice.",
+          "meaningMl": "തൊണ്ണൂറ് ദിവസങ്ങൾക്ക് മുമ്പ്, ആയിരക്കണക്കിന് പഠിതാക്കൾ തങ്ങളുടെ സ്വാഭാവിക സംസാര ശബ്ദം വീണ്ടെടുക്കാനുള്ള മഹത്തായ യാത്ര ആരംഭിച്ചു.",
+          "meaningHi": "नब्बे दिन पहले, हजारों शिक्षार्थियों ने अपने बोलने के कौशल को निखारने का सफर शुरू किया।",
+          "meaningTa": "தொண்ணூறு நாட்களுக்கு முன், ஆயிரக்கணக்கானோர் தங்கள் பேச்சுத் திறனை வளர்க்கும் பயணத்தைத் தொடங்கினர்.",
+          "audioPrompt": "Ninety days ago, thousands of enthusiastic language learners embarked on an ambitious journey to unlock their true spoken voice."
         },
         {
-          "text": "I have achieved spoken English confidence.",
-          "meaningMl": "ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ ഞാൻ കഴിവ് നേടി.",
-          "audioPrompt": "I have achieved spoken English confidence."
+          "text": "Through the four grand houses, they mastered everyday foundations, situational agility, professional workplace rhetoric, and elite leadership communication.",
+          "meaningMl": "നാല് പ്രധാന ഘട്ടങ്ങളിലൂടെ ദൈനംദിന അടിത്തറ, സന്ദർഭോചിത സംസാരം, ഔദ്യോഗിക ഭാഷ, നേതൃത്വപരമായ ആശയവിനിമയം എന്നിവ അവർ സ്വായത്തമാക്കി.",
+          "meaningHi": "चार चरणों के माध्यम से उन्होंने बुनियादी बातों से लेकर नेतृत्व संचार तक सब कुछ सीखा।",
+          "meaningTa": "நான்கு நிலைகளின் வழியே அன்றாடப் பேச்சு முதல் தலைமைத்துவ உரையாடல் வரை அனைத்தையும் கற்றறிந்தனர்.",
+          "audioPrompt": "Through the four grand houses, they mastered everyday foundations, situational agility, professional workplace rhetoric, and elite leadership communication."
         },
         {
-          "text": "Daily practice of Grand Graduation Day & Lifetime Mastery gives you great confidence in English.",
-          "meaningMl": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Grand Graduation Day & Lifetime Mastery gives you great confidence in English."
+          "text": "They unlearned hesitation, conquered fear of mistakes, and discovered that language is not a rigid exam, but a vibrant bridge between human hearts.",
+          "meaningMl": "അവർ സങ്കോചങ്ങൾ മറന്നു, തെറ്റുകളെക്കുറിച്ചുള്ള ഭയം ഉപേക്ഷിച്ചു; ഭാഷ ഒരു പരീക്ഷയല്ല, മറിച്ച് മനസ്സുകളെ ബന്ധിപ്പിക്കുന്ന പാലമാണെന്ന് തിരിച്ചറിഞ്ഞു.",
+          "meaningHi": "उन्होंने झिझक छोड़ी और जाना कि भाषा कोई परीक्षा नहीं, दिलों को जोड़ने वाला पुल है।",
+          "meaningTa": "தயக்கத்தை விடுத்து, மொழி என்பது தேர்வு அல்ல, மனித இதயங்களை இணைக்கும் பாலம் என்பதை உணர்ந்தனர்.",
+          "audioPrompt": "They unlearned hesitation, conquered fear of mistakes, and discovered that language is not a rigid exam, but a vibrant bridge between human hearts."
+        },
+        {
+          "text": "From simple street markets to prestigious corporate boardrooms and global keynote auditoriums, their English now flows with natural eloquence.",
+          "meaningMl": "സാധാരണ ചന്തകൾ മുതൽ വലിയ ബോർഡ് റൂമുകളിലും വേദികളിലും വരെ അവരുടെ ഇംഗ്ലീഷ് ഇപ്പോൾ സ്വാഭാവിക ഭംഗിയോടെ ഒഴുകുന്നു.",
+          "meaningHi": "साधारण बाजारों से लेकर कॉर्पोरेट बोर्डरूम तक, उनकी अंग्रेजी अब स्वाभाविक प्रवाह से बहती है।",
+          "meaningTa": "சாதாரண கடைகள் முதல் உயர் அரங்கங்கள் வரை அவர்களின் ஆங்கிலம் இப்போது இயல்பாக வெளிப்படுகிறது.",
+          "audioPrompt": "From simple street markets to prestigious corporate boardrooms and global keynote auditoriums, their English now flows with natural eloquence."
+        },
+        {
+          "text": "Today, each graduate stands tall, decorated with the prestigious 90-Day Spoken English Master Badge and equipped with lifelong confidence.",
+          "meaningMl": "ഇന്ന്, ഓരോ ബിരുദധാരിയും അഭിമാനത്തോടെ തലയുയർത്തി നിൽക്കുന്നു, 90-ഡേ മാസ്റ്റർ ബാഡ്ജും ആജീവനാന്ത ആത്മവിശ്വാസവും സ്വന്തമാക്കി.",
+          "meaningHi": "आज प्रत्येक स्नातक गर्व से खड़ा है, नब्बे-दिवसीय मास्टर बैज और आत्मविश्वास से सुसज्जित होकर।",
+          "meaningTa": "இன்று ஒவ்வொருவரும் 90-நாள் மாஸ்டர் பேட்ஜுடன் வாழ்நாள் நம்பிக்கையுடன் பெருமிதத்துடன் நிற்கின்றனர்.",
+          "audioPrompt": "Today, each graduate stands tall, decorated with the prestigious 90-Day Spoken English Master Badge and equipped with lifelong confidence."
+        },
+        {
+          "text": "Go forth boldly into the world; speak your dreams into existence, inspire those around you, and let your brilliance shine forever.",
+          "meaningMl": "ലോകത്തിലേക്ക് ധൈര്യത്തോടെ മുന്നേറുക; നിങ്ങളുടെ സ്വപ്നങ്ങളെ യാഥാർത്ഥ്യമാക്കുക, മറ്റുള്ളവർക്ക് പ്രചോദനമാവുക, നിങ്ങളുടെ തിളക്കം സദാ പ്രകാശിക്കട്ടെ.",
+          "meaningHi": "दुनिया में आगे बढ़ें, अपने सपनों को सच करें, दूसरों को प्रेरित करें और हमेशा चमकते रहें।",
+          "meaningTa": "தைரியமாக முன்னேறுங்கள்; உங்கள் கனவுகளை நனவாக்குங்கள், பிறருக்கு ஊக்கமளியுங்கள், உங்கள் ஒளி எப்போதும் பிரகாசிக்கட்டும்.",
+          "audioPrompt": "Go forth boldly into the world; speak your dreams into existence, inspire those around you, and let your brilliance shine forever."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did learners realize language truly represents instead of a rigid exam?",
+            "ml": "ഭാഷ വെറുമൊരു പരീക്ഷയല്ല, മറിച്ച് എന്താണെന്നാണ് പഠിതാക്കൾ തിരിച്ചറിഞ്ഞത്?",
+            "hi": "शिक्षार्थियों ने क्या समझा कि भाषा वास्तव में क्या है?",
+            "ta": "மொழி என்பது தேர்வு அல்ல, மாறாக என்ன என்பதை உணர்ந்தனர்?"
+          },
+          "options": [
+            "A heavy financial burden",
+            "A vibrant bridge between human hearts",
+            "A secret code for scientists only",
+            "A collection of boring rules"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A vibrant bridge between human hearts.",
+            "ml": "മനസ്സുകളെ ബന്ധിപ്പിക്കുന്ന ഊഷ്മളമായ പാലം (vibrant bridge)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What badge is conferred upon each learner graduating on Day 90?",
+            "ml": "തൊണ്ണൂറാം ദിവസം ബിരുദം നേടുന്ന ഓരോ പഠിതാവിനും ലഭിക്കുന്ന ബാഡ്ജ് ഏതാണ്?",
+            "hi": "नब्बेवें दिन कौन सा बैज मिलता है?",
+            "ta": "90-வது நாளில் என்ன பேட்ஜ் வழங்கப்படுகிறது?"
+          },
+          "options": [
+            "The 1-Day Trial Badge",
+            "The 90-Day Spoken English Master Badge",
+            "The Beginner License",
+            "The Silent Observer Ribbon"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "The 90-Day Spoken English Master Badge.",
+            "ml": "90-ഡേ സ്പോക്കൺ ഇംഗ്ലീഷ് മാസ്റ്റർ ബാഡ്ജ്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What is the final inspirational charge given to the graduates?",
+            "ml": "ബിരുദധാരികൾക്ക് നൽകുന്ന അവസാന സന്ദേശം എന്താണ്?",
+            "hi": "स्नातकों को अंतिम प्रेरणादायक संदेश क्या दिया गया है?",
+            "ta": "இறுதி ஊக்கச் செய்தி என்ன?"
+          },
+          "options": [
+            "'Stop speaking English forever.'",
+            "'Go forth boldly, speak your dreams into existence, and inspire those around you.'",
+            "'Go back to Day One immediately.'",
+            "'Never speak in public.'"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Go forth boldly, speak dreams into existence, and inspire.",
+            "ml": "ധൈര്യത്തോടെ മുന്നേറുക, സ്വപ്നങ്ങളെ യാഥാർത്ഥ്യമാക്കുക, മറ്റുള്ളവർക്ക് പ്രചോദനമാവുക."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -338,40 +413,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d90_1",
-          "question": "Which word represents: 'വിജയകരമായി പൂർത്തിയാക്കുക'?",
+          "id": 1,
+          "question": "What is the true secret to lifelong spoken English fluency after completing a 90-day curriculum?",
           "options": [
-            "borrow",
-            "finish",
-            "forget",
-            "graduate"
+            "Never speaking to anyone again to protect your grammar.",
+            "Continuing to practice spoken conversations regularly in real-world contexts without fear of mistakes.",
+            "Memorizing an entire English dictionary.",
+            "Only speaking English on Sunday mornings."
           ],
-          "answer": "graduate",
-          "explanation": "graduate എന്നാൽ വിജയകരമായി പൂർത്തിയാക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "തെറ്റുകളെ ഭയക്കാതെ നിത്യജീവിതത്തിൽ ധൈര്യത്തോടെ നിരന്തരം സംസാരിക്കുന്നതിലൂടെയാണ് ആജീവനാന്ത ഇംഗ്ലീഷ് നൈപുണ്യം നിലനിൽക്കുന്നത്."
         },
         {
-          "id": "trap_d90_2",
-          "question": "What is the past form (V2) of 'master'?",
+          "id": 2,
+          "question": "Which of the following mentalities most effectively accelerates conversational fluency?",
           "options": [
-            "mastered",
-            "mastering",
-            "has master",
-            "masters"
+            "'I must be 100% grammatically perfect before opening my mouth.'",
+            "'Communication and connection matter more than perfection; I learn and refine through speaking.'",
+            "'I will only speak if someone forces me.'",
+            "'Native speakers never make mistakes.'"
           ],
-          "answer": "mastered",
-          "explanation": "master ന്റെ ഭൂതകാല രൂപം mastered ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "പൂർണ്ണതയേക്കാൾ ആശയവിനിമയത്തിനും പരസ്പര ധാരണയ്ക്കുമാണ് പ്രാധാന്യം എന്ന ചിന്താഗതിയാണ് സംസാര ശേഷിയെ ഏറ്റവും വേഗത്തിൽ വളർത്തുന്നത്."
         },
         {
-          "id": "trap_d90_3",
-          "question": "What is the correct English word for 'സർട്ടിഫിക്കറ്റ്'?",
+          "id": 3,
+          "question": "What does completing this 90-Day Spoken English Journey represent?",
           "options": [
-            "certificate",
-            "airport",
-            "journey",
-            "success"
+            "The end of your learning forever.",
+            "A profound personal transformation that equips you with lifelong conversational confidence, charisma, and global readiness.",
+            "Just another completed test paper.",
+            "A certificate to hang in a dark closet."
           ],
-          "answer": "certificate",
-          "explanation": "സർട്ടിഫിക്കറ്റ് എന്നാൽ ഇംഗ്ലീഷിൽ certificate."
+          "correctIndex": 1,
+          "explanationMl": "ഇതൊരു അവസാനമല്ല, മറിച്ച് ആജീവനാന്ത ആത്മവിശ്വാസത്തോടെയും വ്യക്തിപ്രഭാവത്തോടെയും ലോകത്തോട് സംസാരിക്കാനുള്ള വലിയൊരു തുടക്കമാണ്."
         }
       ],
       "description": {
@@ -381,6 +456,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -402,7 +498,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -439,7 +535,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "90-Day Graduation Assessment",

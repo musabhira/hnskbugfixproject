@@ -22,112 +22,109 @@
     "totalCoinsReward": 134
   },
   "grammarRule": {
-    "formula": "Asking for Clarification and Checking Understanding",
+    "formula": "What does success look like in the first 90 days? / How does the team approach [Strategy]?",
     "explanation": {
-      "ml": "ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ എന്ന വിഷയത്തിൽ What does success look like in this role? / Team Culture എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use What does success look like in this role? / Team Culture correctly in spoken English."
+      "ml": "ഇന്റർവ്യൂവിന്റെ അവസാനത്തിൽ 'Do you have any questions for us?' എന്ന് ചോദിക്കുമ്പോൾ 'No, nothing' എന്ന് പറയാതെ, സ്ഥാപനത്തിന്റെ സംസ്കാരം, ഭാവി വെല്ലുവിളികൾ എന്നിവയെക്കുറിച്ച് നിലവാരമുള്ള ചോദ്യങ്ങൾ ചോദിക്കാൻ പഠിക്കുക.",
+      "en": "Master Asking Strategic Questions to Interview Panels with clear formula: What does success look like in the first 90 days? / How does the team approach [Strategy]?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: May I inquire about team culture?",
-      "en": "Golden Rule: Practice 'May I inquire about team culture?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ശമ്പളത്തെക്കുറിച്ചോ ലീവിനെക്കുറിച്ചോ തുടക്കത്തിൽ ചോദിക്കരുത്. 'What distinguishes top performers in this role?' പോലുള്ള ചോദ്യങ്ങൾ ചോദിക്കുക.",
+      "en": "Golden Tip: ശമ്പളത്തെക്കുറിച്ചോ ലീവിനെക്കുറിച്ചോ തുടക്കത്തിൽ ചോദിക്കരുത്. 'What distinguishes top performers in this role?' പോലുള്ള ചോദ്യങ്ങൾ ചോദിക്കുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "inquire",
-        "v2": "inquired",
-        "v3": "inquired",
+        "v1": "solicit",
+        "v2": "solicited",
+        "v3": "solicited",
         "meaning": {
-          "ml": "അന്വേഷിക്കുക",
-          "hi": "അന്വേഷിക്കുക",
-          "ta": "അന്വേഷിക്കുക"
+          "ml": "അഭ്യർത്ഥിക്കുക / ചോദിച്ചറിയുക",
+          "hi": "मांगना / निवेदन करना",
+          "ta": "கோரு / கேள்"
         },
-        "example": "May I inquire about team culture?",
-        "exampleMl": "അന്വേഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "clarify",
-        "v2": "clarified",
-        "v3": "clarified",
-        "meaning": {
-          "ml": "വ്യക്തത വരുത്തുക",
-          "hi": "വ്യക്തത വരുത്തുക",
-          "ta": "വ്യക്തത വരുത്തുക"
-        },
-        "example": "Could you clarify the expectations?",
-        "exampleMl": "വ്യക്തത വരുത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "understand",
-        "v2": "understood",
-        "v3": "understood",
-        "meaning": {
-          "ml": "മനസ്സിലാക്കുക",
-          "hi": "മനസ്സിലാക്കുക",
-          "ta": "മനസ്സിലാക്കുക"
-        },
-        "example": "I want to understand the roadmap.",
-        "exampleMl": "മനസ്സിലാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "value",
-        "v2": "valued",
-        "v3": "valued",
-        "meaning": {
-          "ml": "വിലമതിക്കുക",
-          "hi": "വിലമതിക്കുക",
-          "ta": "വിലമതിക്കുക"
-        },
-        "example": "I value long-term mentorship.",
-        "exampleMl": "വിലമതിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The CEO held a town hall to solicit employee perspectives on remote work.",
+        "exampleMl": "Ask for or try to obtain something from someone."
       }
     ],
     "nouns": [
       {
-        "word": "culture",
+        "word": "Benchmark",
+        "partOfSpeech": "noun",
+        "definition": "A standard or point of reference against which things may be compared or assessed.",
         "meaning": {
-          "ml": "സംസ്കാരം",
-          "hi": "സംസ്കാരം",
-          "ta": "സംസ്കാരം"
+          "ml": "മാനദണ്ഡം / അളവുകോൽ",
+          "hi": "मानदंड / मानक",
+          "ta": "அளவுகோல் / ஒப்பீட்டுத் தரம்",
+          "te": "ప్రమాణము",
+          "kn": "ಮಾನದಂಡ"
         },
-        "example": "We learned about culture in today's lesson."
+        "example": "Our software security protocols serve as an industry benchmark for enterprise clients."
       },
       {
-        "word": "growth",
+        "word": "Solicit",
+        "partOfSpeech": "verb",
+        "definition": "Ask for or try to obtain something from someone.",
         "meaning": {
-          "ml": "വളർച്ച",
-          "hi": "വളർച്ച",
-          "ta": "വളർച്ച"
+          "ml": "അഭ്യർത്ഥിക്കുക / ചോദിച്ചറിയുക",
+          "hi": "मांगना / निवेदन करना",
+          "ta": "கோரு / கேள்",
+          "te": "అభ్యర్థించు",
+          "kn": "ಕೋರು"
         },
-        "example": "We learned about growth in today's lesson."
+        "example": "The CEO held a town hall to solicit employee perspectives on remote work."
       },
       {
-        "word": "expectation",
+        "word": "Longevity",
+        "partOfSpeech": "noun",
+        "definition": "Long life or long existence or service.",
         "meaning": {
-          "ml": "പ്രതീക്ഷ",
-          "hi": "പ്രതീക്ഷ",
-          "ta": "പ്രതീക്ഷ"
+          "ml": "ദീർഘായുസ്സ് / നീണ്ട സേവനകാലം",
+          "hi": "दीर्घायु / स्थायित्व",
+          "ta": "நீண்ட ஆயுள் / நீண்ட கால சேவை",
+          "te": "దీర్ఘాయువు",
+          "kn": "ದೀರ್ಘಾಯುಷ್ಯ"
         },
-        "example": "We learned about expectation in today's lesson."
+        "example": "High employee retention and institutional longevity reflect a nurturing workplace culture."
       },
       {
-        "word": "team",
+        "word": "Cohesion",
+        "partOfSpeech": "noun",
+        "definition": "The action or fact of forming a united whole.",
         "meaning": {
-          "ml": "ടീം",
-          "hi": "ടീം",
-          "ta": "ടീം"
+          "ml": "ഐക്യം / കൂട്ടായ്മ",
+          "hi": "एकजुटता / सामंजस्य",
+          "ta": "ஒற்றுமை / பிணைப்பு",
+          "te": "ఐక్యత",
+          "kn": "ಒಗ್ಗಟ್ಟು"
         },
-        "example": "We learned about team in today's lesson."
+        "example": "Team cohesion flourished through collaborative weekly design critiques."
       },
       {
-        "word": "future",
+        "word": "Prospectus",
+        "partOfSpeech": "noun",
+        "definition": "A printed document advertising or describing a school, commercial enterprise, or forthcoming book, in order to attract clients or students.",
         "meaning": {
-          "ml": "ഭാവി",
-          "hi": "ഭാവി",
-          "ta": "ഭാവി"
+          "ml": "വിവരപത്രിക / പ്രോസ്പെക്ടസ്",
+          "hi": "विवरण-पत्रिका",
+          "ta": "தகவல் கையேடு",
+          "te": "వివరణ పత్రం",
+          "kn": "ವಿವರಣಾ ಪತ್ರಿಕೆ"
         },
-        "example": "We learned about future in today's lesson."
+        "example": "The investment prospectus detailed the company's planned five-year international expansion."
+      },
+      {
+        "word": "Equilibrium",
+        "partOfSpeech": "noun",
+        "definition": "A state in which opposing forces or influences are balanced.",
+        "meaning": {
+          "ml": "സന്തുലിതാവസ്ഥ / സമതുലിതാവസ്ഥ",
+          "hi": "संतुलन / सम्यावस्था",
+          "ta": "சமநிலை",
+          "te": "సమతుల్యత",
+          "kn": "ಸಮತೋಲನ"
+        },
+        "example": "Maintaining healthy emotional equilibrium prevents burnout in high-growth startups."
       }
     ]
   },
@@ -136,8 +133,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Job Interview Part 4: Asking Smart Questions",
-        "ml": "പാഠം: ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ"
+        "en": "Concept Room: Asking Strategic Questions to Interview Panels",
+        "ml": "പാഠം: ഇന്റർവ്യൂ ബോർഡിനോട് തന്ത്രപ്രധാനമായ ചോദ്യങ്ങൾ ചോദിക്കൽ"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "What does success look like in the first 90 days? / How does the team approach [Strategy]?",
+        "ml": "ഇന്റർവ്യൂവിന്റെ അവസാനത്തിൽ 'Do you have any questions for us?' എന്ന് ചോദിക്കുമ്പോൾ 'No, nothing' എന്ന് പറയാതെ, സ്ഥാപനത്തിന്റെ സംസ്കാരം, ഭാവി വെല്ലുവിളികൾ എന്നിവയെക്കുറിച്ച് നിലവാരമുള്ള ചോദ്യങ്ങൾ ചോദിക്കാൻ പഠിക്കുക."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "May I inquire about team culture?",
-        "Could you clarify the expectations?",
-        "I want to understand the roadmap."
+        "What does extraordinary success look like in this role over the first ninety days ?",
+        "How would you describe the collaborative engineering culture and decision making speed here ?",
+        "What is the single biggest technical hurdle currently facing this product development squad ?",
+        "How does leadership support ongoing professional development and technical mentorship for employees ?",
+        "What distinguishes the top performers within your organization from average team members ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +215,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Job Interview Part 4: Asking Smart Questions",
-        "ml": "റീഡിങ് റൂം: ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ"
+        "en": "Reading Room: The Interview Is a Two-Way Street",
+        "ml": "റീഡിങ് റൂം: ഇന്റർവ്യൂ ബോർഡിനോട് തന്ത്രപ്രധാനമായ ചോദ്യങ്ങൾ ചോദിക്കൽ"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "May I inquire about team culture?",
-          "meaningMl": "അന്വേഷിക്കുക - May I inquire about team culture?",
-          "audioPrompt": "May I inquire about team culture?"
+          "text": "Seasoned talent advisor Vikram frequently coached aspiring tech executives on the psychological dynamics of C-suite interviews.",
+          "meaningMl": "ഉയർന്ന പദവികളിലേക്കുള്ള ഇന്റർവ്യൂകളുടെ മനശാസ്ത്രത്തെക്കുറിച്ച് അനുഭവസമ്പന്നനായ കൺസൾട്ടന്റ് വിക്രം ഉദ്യോഗാർത്ഥികളെ പരിശീലിപ്പിച്ചിരുന്നു.",
+          "meaningHi": "विक्रम अक्सर उम्मीदवारों को बड़े पदों के साक्षात्कारों के लिए प्रशिक्षित करते थे।",
+          "meaningTa": "விக்ரம் உயர் பதவிகளுக்கான நேர்காணல்களுக்கு அதிகாரிகளுக்கு பயிற்சி அளித்தார்.",
+          "audioPrompt": "Seasoned talent advisor Vikram frequently coached aspiring tech executives on the psychological dynamics of C-suite interviews."
         },
         {
-          "text": "Could you clarify the expectations?",
-          "meaningMl": "വ്യക്തത വരുത്തുക - Could you clarify the expectations?",
-          "audioPrompt": "Could you clarify the expectations?"
+          "text": "He reminded them that an elite interview is fundamentally a two-way strategic evaluation, not a passive police interrogation.",
+          "meaningMl": "ഒരു മികച്ച ഇന്റർവ്യൂ എന്നത് ഇരുവിഭാഗവും പരസ്പരം നടത്തുന്ന തന്ത്രപരമായ വിലയിരുത്തലാണെന്നും വെറുമൊരു ചോദ്യം ചെയ്യലല്ലെന്നും അദ്ദേഹം ഓർമ്മിപ്പിച്ചു.",
+          "meaningHi": "उन्होंने याद दिलाया कि साक्षात्कार एकतरफा पूछताछ नहीं, बल्कि दोतरफा मूल्यांकन है।",
+          "meaningTa": "நேர்காணல் என்பது ஒருதலைப்பட்ச விசாரணை அல்ல, இருதரப்பு மதிப்பீடு என்பதை அவர் நினைவூட்டினார்.",
+          "audioPrompt": "He reminded them that an elite interview is fundamentally a two-way strategic evaluation, not a passive police interrogation."
         },
         {
-          "text": "Daily practice of Job Interview Part 4: Asking Smart Questions gives you great confidence in English.",
-          "meaningMl": "ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Job Interview Part 4: Asking Smart Questions gives you great confidence in English."
+          "text": "When candidates casually respond with 'No, you covered everything, I have no questions', interviewers perceive an absence of intellectual curiosity.",
+          "meaningMl": "'എനിക്ക് ചോദ്യങ്ങളൊന്നുമില്ല' എന്ന് പറയുമ്പോൾ, ഉദ്യോഗാർത്ഥിക്ക് കാര്യമായ അന്വേഷണ താല്പര്യമില്ലെന്നാണ് അഭിമുഖം നടത്തുന്നവർ കരുതുന്നത്.",
+          "meaningHi": "'मेरे कोई प्रश्न नहीं हैं' कहने से लगता है कि उम्मीदवार में रुचि की कमी है।",
+          "meaningTa": "'எனக்கு கேள்விகள் இல்லை' என்று கூறினால் ஆர்வமின்மையாகக் கருதப்படும்.",
+          "audioPrompt": "When candidates casually respond with 'No, you covered everything, I have no questions', interviewers perceive an absence of intellectual curiosity."
+        },
+        {
+          "text": "Conversely, posing profound questions about ninety-day success benchmarks demonstrates proactive strategic ownership.",
+          "meaningMl": "മറിച്ച്, ആദ്യ 90 ദിവസത്തെ വിജയ മാനദണ്ഡങ്ങളെക്കുറിച്ച് ചോദിക്കുന്നത് ഉത്തരവാദിത്തബോധത്തെയാണ് വ്യക്തമാക്കുന്നത്.",
+          "meaningHi": "इसके विपरीत, 90 दिनों के लक्ष्यों के बारे में पूछना दूरदर्शिता दिखाता है।",
+          "meaningTa": "மாறாக, 90 நாள் இலக்குகள் பற்றிக் கேட்பது பொறுப்புணர்வைக் காட்டுகிறது.",
+          "audioPrompt": "Conversely, posing profound questions about ninety-day success benchmarks demonstrates proactive strategic ownership."
+        },
+        {
+          "text": "Inquiring about institutional values and how teams resolve architectural disagreements reveals whether an organization is truly a cultural fit.",
+          "meaningMl": "സ്ഥാപനത്തിന്റെ മൂല്യങ്ങളെക്കുറിച്ചും തർക്കങ്ങൾ എങ്ങനെ പരിഹരിക്കുന്നു എന്നതിനെക്കുറിച്ചും ചോദിക്കുന്നത് ആ സ്ഥാപനം തനിക്ക് അനുയോജ്യമാണോ എന്ന് തിരിച്ചറിയാൻ സഹായിക്കും.",
+          "meaningHi": "कंपनी के मूल्यों के बारे में पूछने से पता चलता है कि क्या संस्कृति आपके अनुकूल है।",
+          "meaningTa": "நிறுவனத்தின் கொள்கைகளைப் பற்றிக் கேட்பது அந்த நிறுவனம் உங்களுக்குப் பொருந்துமா என்பதை அறிய உதவும்.",
+          "audioPrompt": "Inquiring about institutional values and how teams resolve architectural disagreements reveals whether an organization is truly a cultural fit."
+        },
+        {
+          "text": "Thoughtful questions transform candidates from humble job seekers into respected peer partners exploring mutually beneficial possibilities.",
+          "meaningMl": "ചിന്തനീയമായ ചോദ്യങ്ങൾ ഉദ്യോഗാർത്ഥിയെ വെറുമൊരു ജോലി യാചകനിൽ നിന്ന് തുല്യ ബഹുമാനമുള്ള ഒരു ബിസിനസ് പങ്കാളിയായി മാറ്റുന്നു.",
+          "meaningHi": "गंभीर प्रश्न उम्मीदवार को नौकरी खोजने वाले से एक सम्मानित साझेदार बना देते हैं।",
+          "meaningTa": "ஆழமான கேள்விகள் உங்களை ஒரு வேலை தேடுபவரிலிருந்து மதிக்கப்படும் தொழில் கூட்டாளியாக உயர்த்தும்.",
+          "audioPrompt": "Thoughtful questions transform candidates from humble job seekers into respected peer partners exploring mutually beneficial possibilities."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What kind of dynamic does Vikram say an elite interview fundamentally represents?",
+            "ml": "ഒരു മികച്ച ഇന്റർവ്യൂ അടിസ്ഥാനപരമായി എന്താണെന്നാണ് വിക്രം പറയുന്നത്?",
+            "hi": "विक्रम के अनुसार एक अच्छा साक्षात्कार क्या है?",
+            "ta": "விக்ரமின் கூற்றுப்படி நேர்காணல் என்பது என்ன?"
+          },
+          "options": [
+            "A passive police interrogation",
+            "A two-way strategic evaluation",
+            "A written grammar spelling test",
+            "An entertaining theatrical comedy"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "A two-way strategic evaluation.",
+            "ml": "ഇരുവിഭാഗവും പരസ്പരം നടത്തുന്ന തന്ത്രപരമായ വിലയിരുത്തൽ."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What do interviewers perceive when a candidate says 'I have no questions'?",
+            "ml": "'ചോദ്യങ്ങളൊന്നുമില്ല' എന്ന് പറയുമ്പോൾ അഭിമുഖം നടത്തുന്നവർ എന്താണ് ചിന്തിക്കുന്നത്?",
+            "hi": "'कोई प्रश्न नहीं' कहने पर साक्षात्कारकर्ता क्या सोचते हैं?",
+            "ta": "'கேள்விகள் இல்லை' என்றால் என்ன நினைப்பார்கள்?"
+          },
+          "options": [
+            "Great genius and intelligence",
+            "An absence of intellectual curiosity",
+            "Extreme physical exhaustion",
+            "Supreme confidence"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "An absence of intellectual curiosity.",
+            "ml": "അന്വേഷണ താല്പര്യത്തിന്റെ അഭാവം (absence of curiosity)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What does asking thoughtful questions transform candidates into?",
+            "ml": "നല്ല ചോദ്യങ്ങൾ ചോദിക്കുന്നത് ഉദ്യോഗാർത്ഥിയെ എന്തിലേക്ക് മാറ്റുന്നു?",
+            "hi": "अच्छे सवाल पूछने से उम्मीदवार किसमें बदल जाता है?",
+            "ta": "நல்ல கேள்விகள் கேட்பது உங்களை எவ்வாறு மாற்றும்?"
+          },
+          "options": [
+            "Humble job seekers",
+            "Respected peer partners exploring mutual possibilities",
+            "Company board chairmen immediately",
+            "Interview spectators"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Respected peer partners.",
+            "ml": "ബഹുമാനമുള്ള തുല്യ പങ്കാളികൾ (Respected peer partners)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d84_1",
-          "question": "Which word represents: 'അന്വേഷിക്കുക'?",
+          "id": 1,
+          "question": "When the interviewer asks 'Do you have any questions for us?', what is the WORST possible answer?",
           "options": [
-            "inquire",
-            "remember",
-            "discover",
-            "create"
+            "'No, you answered everything, I'm good.'",
+            "'What does success look like in the first 90 days?'",
+            "'How does the team approach technical debt?'",
+            "'What distinguishes top performers here?'"
           ],
-          "answer": "inquire",
-          "explanation": "inquire എന്നാൽ അന്വേഷിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "'No, you answered everything, I'm good' എന്ന് പറയുന്നത് താല്പര്യമില്ലായ്മയുടെ ലക്ഷണമാണ്. എപ്പോഴും 2-3 നല്ല ചോദ്യങ്ങൾ കരുതിവെക്കണം."
         },
         {
-          "id": "trap_d84_2",
-          "question": "What is the past form (V2) of 'clarify'?",
+          "id": 2,
+          "question": "Which of the following topics should you AVOID asking about in a first-round interview?",
           "options": [
-            "clarified",
-            "clarifying",
-            "clarifys",
-            "has clarify"
+            "Team culture and collaboration.",
+            "How many casual sick leaves and vacation days do I get right away?",
+            "The company's biggest product challenges.",
+            "Opportunities for technical mentoring."
           ],
-          "answer": "clarified",
-          "explanation": "clarify ന്റെ ഭൂതകാല രൂപം clarified ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "ആദ്യ റൗണ്ട് ഇന്റർവ്യൂവിൽ തന്നെ ലീവുകളെക്കുറിച്ചോ വ്യക്തിഗത ആനുകൂല്യങ്ങളെക്കുറിച്ചോ ചോദിക്കുന്നത് തെറ്റായ സന്ദേശം നൽകും."
         },
         {
-          "id": "trap_d84_3",
-          "question": "What is the correct English word for 'സംസ്കാരം'?",
+          "id": 3,
+          "question": "Why is asking 'What does success look like in the first 90 days?' so powerful?",
           "options": [
-            "culture",
-            "knowledge",
-            "routine",
-            "schedule"
+            "It forces the manager to do mental math.",
+            "It shows you are already mentally picturing how to deliver concrete value immediately upon joining.",
+            "It guarantees a salary increase.",
+            "It shortens the interview."
           ],
-          "answer": "culture",
-          "explanation": "സംസ്കാരം എന്നാൽ ഇംഗ്ലീഷിൽ culture."
+          "correctIndex": 1,
+          "explanationMl": "ജോലിയിൽ പ്രവേശിച്ചാലുടൻ സ്ഥാപനത്തിന് മികച്ച സംഭാവന നൽകാൻ നിങ്ങൾ തയ്യാറാണെന്ന് ഈ ചോദ്യം തെളിയിക്കുന്നു."
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 84 Gate Exam (5 Qs)",

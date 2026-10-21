@@ -19,6 +19,7 @@ import 'services/push_notification_service.dart';
 import 'custom_code/services/pocket_robot_service.dart';
 import 'custom_code/services/in_app_notification_service.dart';
 import 'custom_code/services/pocket_kids_service.dart';
+import 'custom_code/services/pocket_language_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -84,6 +85,14 @@ void main() {
       try {
         await PocketKidsService.initialize();
       } catch (_) {}
+
+      // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)
+      try {
+        await PocketLanguageService.init();
+        debugPrint('Main: PocketLanguageService initialized: ${PocketLanguageService.currentLanguage}');
+      } catch (e) {
+        debugPrint('Main: PocketLanguageService initialization error: $e');
+      }
 
       // Shorebird code push disabled per user requirement to prevent native startup crashes
       // await ShorebirdService().initialize();

@@ -12,6 +12,7 @@ import '../pocket_fortress_defense_service.dart';
 import '../pocket_pronunciation_evaluator.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🎙️ Pocket Spoken English Avatar Simulator Page
 ///
@@ -721,7 +722,9 @@ class _PocketSpokenAvatarSimulatorPageState extends State<PocketSpokenAvatarSimu
                           height: 1.3,
                         ),
                       ),
-                      if (msg.translationMl != null && msg.translationMl!.isNotEmpty) ...[
+                      if (PocketLanguageService.isMalayalam &&
+                          msg.translationMl != null &&
+                          msg.translationMl!.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
                           msg.translationMl!,

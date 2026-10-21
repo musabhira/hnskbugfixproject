@@ -22,112 +22,121 @@
     "totalCoinsReward": 105
   },
   "grammarRule": {
-    "formula": "Causative Structures – Have, Get, Make, Let, Help",
+    "formula": "My phone battery died / The Wi-Fi signal is weak / Let me restart the router.",
     "explanation": {
-      "ml": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ എന്ന വിഷയത്തിൽ My battery is low / Network is weak / Restart എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use My battery is low / Network is weak / Restart correctly in spoken English."
+      "ml": "സ്മാർട്ട്ഫോൺ, ഇന്റർനെറ്റ്, കമ്പ്യൂട്ടർ സാങ്കേതിക പ്രശ്നങ്ങൾ വരുമ്പോൾ സംസാരിക്കാൻ: 'The Wi-Fi signal is weak' (വൈഫൈ സിഗ്നൽ കുറവാണ്), 'My phone battery died' (ഫോണിലെ ചാർജ് തീർന്നു), 'Let me restart the device' (ഞാൻ ഉപകരണം റീസ്റ്റാർട്ട് ചെയ്യാം) എന്ന് ഉപയോഗിക്കുന്നു.",
+      "en": "Master Technology, Mobiles & Connectivity with clear formula: My phone battery died / The Wi-Fi signal is weak / Let me restart the router."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Charge your phone.",
-      "en": "Golden Rule: Practice 'Charge your phone.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ചാർജ് തീർന്നതിന് 'Charge is finished' എന്ന് പറയരുത് ❌. ശരിയായ ഇംഗ്ലീഷ് ശൈലി: ✅ 'My battery is low' അല്ലെങ്കിൽ 'My phone battery died'.",
+      "en": "Golden Tip: 💡 ചാർജ് തീർന്നതിന് 'Charge is finished' എന്ന് പറയരുത് ❌. ശരിയായ ഇംഗ്ലീഷ് ശൈലി: ✅ 'My battery is low' അല്ലെങ്കിൽ 'My phone battery died'."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "charge",
-        "v2": "charged",
-        "v3": "charged",
+        "v1": "reboot",
+        "v2": "rebooted",
+        "v3": "rebooted",
         "meaning": {
-          "ml": "ചാർജ് ചെയ്യുക",
-          "hi": "ചാർജ് ചെയ്യുക",
-          "ta": "ചാർജ് ചെയ്യുക"
+          "ml": "റീബൂട്ട് ചെയ്യുക / ഉപകരണം വീണ്ടും പ്രവർത്തിപ്പിക്കുക",
+          "hi": "रीबूट / पुनः आरंभ करना",
+          "ta": "மறுதொடக்கம் செய்"
         },
-        "example": "Charge your phone.",
-        "exampleMl": "ചാർജ് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Try to reboot your smartphone if the camera app continues to freeze.",
+        "exampleMl": "Restart a computer or device, usually by turning off and on."
       },
       {
-        "v1": "connect",
-        "v2": "connected",
-        "v3": "connected",
+        "v1": "sync",
+        "v2": "synced",
+        "v3": "synced",
         "meaning": {
-          "ml": "ബന്ധിപ്പിക്കുക",
-          "hi": "ബന്ധിപ്പിക്കുക",
-          "ta": "ബന്ധിപ്പിക്കുക"
+          "ml": "ഡാറ്റ ഒരേപോലെ ലഭ്യമാക്കുക / സമന്വയിപ്പിക്കുക",
+          "hi": "समक्रमित करना / सिंक करना",
+          "ta": "ஒத்திசை"
         },
-        "example": "Connect to WiFi.",
-        "exampleMl": "ബന്ധിപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "download",
-        "v2": "downloaded",
-        "v3": "downloaded",
-        "meaning": {
-          "ml": "ഡൗൺലോഡ് ചെയ്യുക",
-          "hi": "ഡൗൺലോഡ് ചെയ്യുക",
-          "ta": "ഡൗൺലോഡ് ചെയ്യുക"
-        },
-        "example": "Download the update.",
-        "exampleMl": "ഡൗൺലോഡ് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "restart",
-        "v2": "restarted",
-        "v3": "restarted",
-        "meaning": {
-          "ml": "റീസ്റ്റാർട്ട് ചെയ്യുക",
-          "hi": "റീസ്റ്റാർട്ട് ചെയ്യുക",
-          "ta": "റീസ്റ്റാർട്ട് ചെയ്യുക"
-        },
-        "example": "Restart the device.",
-        "exampleMl": "റീസ്റ്റാർട്ട് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Remember to sync your mobile contacts and photos with cloud storage.",
+        "exampleMl": "Operate at the same time or rate; harmonize data across devices."
       }
     ],
     "nouns": [
       {
-        "word": "mobile",
+        "word": "Connectivity",
+        "partOfSpeech": "noun",
+        "definition": "The capacity for the interconnection of platforms, systems, and devices.",
         "meaning": {
-          "ml": "മൊബൈൽ",
-          "hi": "മൊബൈൽ",
-          "ta": "മൊബൈൽ"
+          "ml": "കണക്റ്റിവിറ്റി / പരസ്പരം ബന്ധിപ്പിക്കാനുള്ള ശേഷി",
+          "hi": "कनेक्टिविटी / संपर्क क्षमता",
+          "ta": "இணைப்புத் திறன்",
+          "te": "కనెక్టివిటీ",
+          "kn": "ಸಂಪರ್ಕಸಾಧ್ಯತೆ"
         },
-        "example": "We learned about mobile in today's lesson."
+        "example": "Our remote village now enjoys high-speed optical fiber connectivity."
       },
       {
-        "word": "battery",
+        "word": "Reboot",
+        "partOfSpeech": "verb",
+        "definition": "Restart a computer or device, usually by turning off and on.",
         "meaning": {
-          "ml": "ബാറ്ററി",
-          "hi": "ബാറ്ററി",
-          "ta": "ബാറ്ററി"
+          "ml": "റീബൂട്ട് ചെയ്യുക / ഉപകരണം വീണ്ടും പ്രവർത്തിപ്പിക്കുക",
+          "hi": "रीबूट / पुनः आरंभ करना",
+          "ta": "மறுதொடக்கம் செய்",
+          "te": "రీబూట్ చేయు",
+          "kn": "ಮರುಪ್ರಾರಂಭಿಸು"
         },
-        "example": "We learned about battery in today's lesson."
+        "example": "Try to reboot your smartphone if the camera app continues to freeze."
       },
       {
-        "word": "network",
+        "word": "Bandwidth",
+        "partOfSpeech": "noun",
+        "definition": "The maximum amount of data transmitted over an internet connection in a given amount of time.",
         "meaning": {
-          "ml": "നെറ്റ്‌വർക്ക്",
-          "hi": "നെറ്റ്‌വർക്ക്",
-          "ta": "നെറ്റ്‌വർക്ക്"
+          "ml": "ഇന്റർനെറ്റ് ഡാറ്റാ വേഗതയും ശേഷിയും / ബാൻഡ്‌വിഡ്ത്ത്",
+          "hi": "बैंडविड्थ",
+          "ta": "அலைவரிசை திறன்",
+          "te": "బ్యాండ్‌విడ్త్",
+          "kn": "ಬ್ಯಾಂಡ್‌ವಿಡ್ತ್"
         },
-        "example": "We learned about network in today's lesson."
+        "example": "Video calls require consistent network bandwidth without packet drop."
       },
       {
-        "word": "wifi",
+        "word": "Glitch",
+        "partOfSpeech": "noun",
+        "definition": "A sudden, usually temporary malfunction or fault in equipment or software.",
         "meaning": {
-          "ml": "വൈഫൈ",
-          "hi": "വൈഫൈ",
-          "ta": "വൈഫൈ"
+          "ml": "ചെറിയ സാങ്കേതിക തകരാറ് / ഗ്ലിച്ച്",
+          "hi": "तकनीकी गड़बड़ी",
+          "ta": "தொழில்நுட்பக் குறைபாடு",
+          "te": "సాంకేతిక లోపం",
+          "kn": "ತಾಂತ್ರಿಕ ದೋಷ"
         },
-        "example": "We learned about wifi in today's lesson."
+        "example": "A minor software glitch caused the payment app to restart unexpectedly."
       },
       {
-        "word": "password",
+        "word": "Sync",
+        "partOfSpeech": "verb",
+        "definition": "Operate at the same time or rate; harmonize data across devices.",
         "meaning": {
-          "ml": "പാസ്‌വേഡ്",
-          "hi": "പാസ്‌വേഡ്",
-          "ta": "പാസ്‌വേഡ്"
+          "ml": "ഡാറ്റ ഒരേപോലെ ലഭ്യമാക്കുക / സമന്വയിപ്പിക്കുക",
+          "hi": "समक्रमित करना / सिंक करना",
+          "ta": "ஒத்திசை",
+          "te": "సింక్ చేయు",
+          "kn": "ಹೊಂದಿಸು"
         },
-        "example": "We learned about password in today's lesson."
+        "example": "Remember to sync your mobile contacts and photos with cloud storage."
+      },
+      {
+        "word": "Compatible",
+        "partOfSpeech": "adjective",
+        "definition": "Able to exist or occur together without conflict; work with another system.",
+        "meaning": {
+          "ml": "യോജിക്കുന്ന / ഒരുമിച്ച് പ്രവർത്തിക്കാവുന്ന",
+          "hi": "अनुकूल / संगत",
+          "ta": "பொருந்தக்கூடிய",
+          "te": "అనుకూలమైన",
+          "kn": "ಹೊಂದಾಣಿಕೆಯಾಗುವ"
+        },
+        "example": "Ensure your Bluetooth earphones are compatible with the new smart television."
       }
     ]
   },
@@ -137,7 +146,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Technology, Mobiles & Connectivity",
-        "ml": "പാഠം: മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ"
+        "ml": "പാഠം: സാങ്കേതികവിദ്യയും മൊബൈൽ കണക്റ്റിവിറ്റിയും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +154,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "My phone battery died / The Wi-Fi signal is weak / Let me restart the router.",
+        "ml": "സ്മാർട്ട്ഫോൺ, ഇന്റർനെറ്റ്, കമ്പ്യൂട്ടർ സാങ്കേതിക പ്രശ്നങ്ങൾ വരുമ്പോൾ സംസാരിക്കാൻ: 'The Wi-Fi signal is weak' (വൈഫൈ സിഗ്നൽ കുറവാണ്), 'My phone battery died' (ഫോണിലെ ചാർജ് തീർന്നു), 'Let me restart the device' (ഞാൻ ഉപകരണം റീസ്റ്റാർട്ട് ചെയ്യാം) എന്ന് ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +212,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Charge your phone.",
-        "Connect to WiFi.",
-        "Download the update."
+        "My mobile battery died while I was navigating the highway directions .",
+        "The Wi-Fi signal in this conference room is remarkably weak and keeps disconnecting .",
+        "Let me restart the internet broadband router to see if that resolves the network speed .",
+        "Could you please share your mobile portable hotspot connection for five quick minutes ?",
+        "Please back up all your important project documents before updating the operating system ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +228,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Technology, Mobiles & Connectivity",
-        "ml": "റീഡിങ് റൂം: മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ"
+        "ml": "റീഡിങ് റൂം: സാങ്കേതികവിദ്യയും മൊബൈൽ കണക്റ്റിവിറ്റിയും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +237,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Charge your phone.",
-          "meaningMl": "ചാർജ് ചെയ്യുക - Charge your phone.",
-          "audioPrompt": "Charge your phone."
+          "text": "Deep in the remote valley of Silent Glade, mobile phone network connectivity was virtually non-existent.",
+          "meaningMl": "സൈലന്റ് ഗ്ലേഡ് എന്ന ഉൾനാടൻ താഴ്‌വരയിൽ മൊബൈൽ നെറ്റ്‌വർക്ക് സിഗ്നൽ ഒട്ടും തന്നെ ലഭ്യമായിരുന്നില്ല.",
+          "meaningHi": "साइलेंट ग्लेड की दूरदराज की घाटी में मोबाइल नेटवर्क कनेक्टिविटी लगभग न के बराबर थी।",
+          "meaningTa": "ஒரு தொலைதூர கிராமத்தில் மொபைல் சிக்னல் சுத்தமாக இல்லை.",
+          "audioPrompt": "Deep in the remote valley of Silent Glade, mobile phone network connectivity was virtually non-existent."
         },
         {
-          "text": "Connect to WiFi.",
-          "meaningMl": "ബന്ധിപ്പിക്കുക - Connect to WiFi.",
-          "audioPrompt": "Connect to WiFi."
+          "text": "Young engineering student Anu needed to submit her national scholarship application before midnight.",
+          "meaningMl": "ദേശീയ സ്കോളർഷിപ്പ് അപേക്ഷ അർദ്ധരാത്രിക്ക് മുൻപായി സമർപ്പിക്കേണ്ട ബാധ്യത അനു എന്ന വിദ്യാർത്ഥിനിക്കുണ്ടായിരുന്നു.",
+          "meaningHi": "युवा इंजीनियरिंग छात्रा अनु को आधी रात से पहले अपना छात्रवृत्ति आवेदन जमा करना था।",
+          "meaningTa": "மாணவி அனு நள்ளிரவுக்குள் கல்வி உதவித்தொகை விண்ணப்பத்தை அனுப்ப வேண்டியிருந்தது.",
+          "audioPrompt": "Young engineering student Anu needed to submit her national scholarship application before midnight."
         },
         {
-          "text": "Daily practice of Technology, Mobiles & Connectivity gives you great confidence in English.",
-          "meaningMl": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Technology, Mobiles & Connectivity gives you great confidence in English."
+          "text": "Her grandfather pointed toward Pine Ridge summit: 'A reliable signal tower operates near the old watchtower.'",
+          "meaningMl": "അവളുടെ മുത്തശ്ശൻ പൈൻ കുന്നിലേക്ക് വിരൽ ചൂണ്ടി: 'പഴയ കാവൽ ഗോപുരത്തിനടുത്ത് നല്ലൊരു സിഗ്നൽ ടവർ ഉണ്ട്.'",
+          "meaningHi": "उसके दादा ने पाइन रिज की ओर इशारा किया: 'पुराने वॉचटावर के पास एक विश्वसनीय सिग्नल टावर है।'",
+          "meaningTa": "தாத்தா மலையைக் காட்டி: 'அங்கே நல்ல சிக்னல் டவர் உள்ளது' என்றார்.",
+          "audioPrompt": "Her grandfather pointed toward Pine Ridge summit: 'A reliable signal tower operates near the old watchtower.'"
+        },
+        {
+          "text": "Holding her solar-charged laptop, Anu climbed the rocky mountain trail beneath a canopy of twinkling stars.",
+          "meaningMl": "സോളാർ ചാർജ് ചെയ്ത ലാപ്‌ടോപ്പുമായി നക്ഷത്രങ്ങൾ തിളങ്ങുന്ന ആകാശത്തിന് താഴെ അനു പാറക്കെട്ടുകൾ നിറഞ്ഞ പാത കയറി.",
+          "meaningHi": "अपने लैपटॉप को पकड़कर, अनु सितारों से भरे आसमान के नीचे पथरीले रास्ते पर चढ़ी।",
+          "meaningTa": "லேப்டாப்பை பிடித்துக்கொண்டு பாறைப் பாதையில் அனு ஏறினாள்.",
+          "audioPrompt": "Holding her solar-charged laptop, Anu climbed the rocky mountain trail beneath a canopy of twinkling stars."
+        },
+        {
+          "text": "At the windy summit, four bars of four-G connectivity illuminated her screen with a welcoming glow.",
+          "meaningMl": "കാറ്റുള്ള ആ കുന്നിൻമുകളിൽ നാല് ബാർ 4G സിഗ്നൽ അവളുടെ ലാപ്‌ടോപ്പ് സ്ക്രീനിൽ തെളിഞ്ഞു.",
+          "meaningHi": "हवादार चोटी पर, चार बार 4G कनेक्टिविटी ने उसकी स्क्रीन को रोशन किया।",
+          "meaningTa": "மலையுச்சியில் முழு 4G சிக்னல் திரையில் ஒளிர்ந்தது.",
+          "audioPrompt": "At the windy summit, four bars of four-G connectivity illuminated her screen with a welcoming glow."
+        },
+        {
+          "text": "She hit submit with three minutes to spare, proving that relentless determination conquers every technological hurdle.",
+          "meaningMl": "മൂന്ന് മിനിറ്റ് ബാക്കി നിൽക്കെ അവൾ അപേക്ഷ സമർപ്പിച്ചു; ദൃഢനിശ്ചയത്തിന് ഏത് തടസ്സങ്ങളെയും മറികടക്കാനാകും എന്ന് തെളിയിച്ചുകൊണ്ട്.",
+          "meaningHi": "उसने तीन मिनट शेष रहते सबमिट किया, यह साबित करते हुए कि दृढ़ संकल्प हर बाधा पर विजय प्राप्त करता है।",
+          "meaningTa": "மூன்று நிமிடங்கள் இருக்கும்போதே அவள் விண்ணப்பத்தை அனுப்பினாள்; மன உறுதியே வெற்றியைத் தரும்.",
+          "audioPrompt": "She hit submit with three minutes to spare, proving that relentless determination conquers every technological hurdle."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Why did Anu need reliable internet urgently?",
+            "ml": "അനുവിന് എന്തിനാണ് അത്യാവശ്യമായി നല്ല ഇന്റർനെറ്റ് വേണ്ടിവന്നത്?",
+            "hi": "अनु को तत्काल इंटरनेट की आवश्यकता क्यों थी?",
+            "ta": "அனுவுக்கு ஏன் அவசரமாக இணையம் தேவைப்பட்டது?"
+          },
+          "options": [
+            "To play games",
+            "To submit her national scholarship application before midnight",
+            "To watch movies",
+            "To call friends"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "To submit her national scholarship application before midnight.",
+            "ml": "ദേശീയ സ്കോളർഷിപ്പ് അപേക്ഷ അർദ്ധരാത്രിക്ക് മുൻപ് സമർപ്പിക്കാൻ."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "Where did grandfather tell her a reliable signal tower was located?",
+            "ml": "നല്ല സിഗ്നൽ എവിടെയാണ് ഉള്ളതെന്ന് മുത്തശ്ശൻ പറഞ്ഞു കൊടുത്തത്?",
+            "hi": "दादाजी ने सिग्नल कहाँ बताया?",
+            "ta": "சிக்னல் எங்கே கிடைக்கும் என்று தாத்தா கூறினார்?"
+          },
+          "options": [
+            "Inside the kitchen",
+            "Near the old watchtower on Pine Ridge summit",
+            "Under the bridge",
+            "In the well"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Near the old watchtower on Pine Ridge summit.",
+            "ml": "പൈൻ കുന്നിൻമുകളിലെ പഴയ കാവൽ ഗോപുരത്തിനടുത്ത് (Pine Ridge summit)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How many minutes were to spare when she hit submit?",
+            "ml": "അപേക്ഷ സമർപ്പിച്ചപ്പോൾ എത്ര മിനിറ്റാണ് ബാക്കിയുണ്ടായിരുന്നത്?",
+            "hi": "सबमिट करते समय कितने मिनट बचे थे?",
+            "ta": "விண்ணப்பித்தபோது எத்தனை நிமிடங்கள் மீதமிருந்தன?"
+          },
+          "options": [
+            "One hour",
+            "Three minutes to spare",
+            "Forty minutes",
+            "Ten seconds"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Three minutes to spare.",
+            "ml": "മൂന്ന് മിനിറ്റ് (three minutes to spare)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +391,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d55_1",
-          "question": "Which word represents: 'ചാർജ് ചെയ്യുക'?",
+          "question": "Select the natural native way to say that your phone has no charge left:",
           "options": [
-            "decide",
-            "charge",
-            "discover",
-            "remember"
+            "My mobile battery died.",
+            "My mobile charge is finished.",
+            "My phone is deaded of charge.",
+            "Battery is gone to empty."
           ],
-          "answer": "charge",
-          "explanation": "charge എന്നാൽ ചാർജ് ചെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "'My battery died' or 'My phone battery is flat / dead' is natural spoken English.",
+          "ruleHint": "Native Idiom: 'My phone battery died'."
         },
         {
-          "id": "trap_d55_2",
-          "question": "What is the past form (V2) of 'connect'?",
+          "question": "How do you ask someone to restart their router?",
           "options": [
-            "connected",
-            "has connect",
-            "connecting",
-            "connects"
+            "Could you please restart your router?",
+            "Make off and on your internet box.",
+            "Close and open internet wire.",
+            "Do reboot for router immediately."
           ],
-          "answer": "connected",
-          "explanation": "connect ന്റെ ഭൂതകാല രൂപം connected ആണ്."
+          "correctIndex": 0,
+          "explanation": "'Could you please restart your router?' is clear, polite, and technically accurate.",
+          "ruleHint": "Technical Phrasing: 'restart / reboot your router'."
         },
         {
-          "id": "trap_d55_3",
-          "question": "What is the correct English word for 'മൊബൈൽ'?",
+          "question": "What does 'syncing data' mean?",
           "options": [
-            "progress",
-            "schedule",
-            "mobile",
-            "routine"
+            "Deleting files permanently",
+            "Harmonizing and matching data across multiple devices",
+            "Drowning a computer in water",
+            "Printing paper documents"
           ],
-          "answer": "mobile",
-          "explanation": "മൊബൈൽ എന്നാൽ ഇംഗ്ലീഷിൽ mobile."
+          "correctIndex": 1,
+          "explanation": "'Sync' (synchronize) means keeping data identical and updated across multiple connected devices.",
+          "ruleHint": "Vocabulary: Sync = synchronize data across devices."
         }
       ],
       "description": {
@@ -334,6 +434,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +476,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +513,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 55 Gate Exam (5 Qs)",

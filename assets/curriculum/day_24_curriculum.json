@@ -22,112 +22,109 @@
     "totalCoinsReward": 74
   },
   "grammarRule": {
-    "formula": "Present Perfect Continuous Tense",
+    "formula": "How + adjective / How much + uncountable noun + aux + Subject?",
     "explanation": {
-      "ml": "How & How Much ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ How are you? / How much does it cost? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use How are you? / How much does it cost? correctly in spoken English."
+      "ml": "ഒരു കാര്യത്തിന്റെ രീതിയോ അവസ്ഥയോ അറിയാൻ 'How' (എങ്ങനെ) എന്നും, എണ്ണാൻ പറ്റാത്ത വസ്തുക്കളുടെ അളവോ വിലയോ അറിയാൻ 'How much' (എത്രത്തോളം / എത്ര വില) എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Asking Questions: How & How Much with clear formula: How + adjective / How much + uncountable noun + aux + Subject?"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: How much does it cost?",
-      "en": "Golden Rule: Practice 'How much does it cost?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 വില ചോദിക്കാൻ 'How much does it cost?' അല്ലെങ്കിൽ 'How much is this?' എന്ന് ലളിതമായി ചോദിക്കാം. എണ്ണാൻ പറ്റുന്നവയ്ക്ക് 'How many' ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: 💡 വില ചോദിക്കാൻ 'How much does it cost?' അല്ലെങ്കിൽ 'How much is this?' എന്ന് ലളിതമായി ചോദിക്കാം. എണ്ണാൻ പറ്റുന്നവയ്ക്ക് 'How many' ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "cost",
-        "v2": "cost",
-        "v3": "cost",
+        "v1": "frequently",
+        "v2": "frequentlyed",
+        "v3": "frequentlyed",
         "meaning": {
-          "ml": "വിലയാകുക",
-          "hi": "कीमत होना",
-          "ta": "விலை ஆகு"
+          "ml": "പതിവായി / ഇടയ്ക്കിടെ",
+          "hi": "बार-बार",
+          "ta": "அடிக்கடி"
         },
-        "example": "How much does it cost?",
-        "exampleMl": "വിലയാകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "measure",
-        "v2": "measured",
-        "v3": "measured",
-        "meaning": {
-          "ml": "അളക്കുക",
-          "hi": "मापना",
-          "ta": "அள"
-        },
-        "example": "How far is the town?",
-        "exampleMl": "അളക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "feel",
-        "v2": "felt",
-        "v3": "felt",
-        "meaning": {
-          "ml": "തോന്നുക",
-          "hi": "महसूस करना",
-          "ta": "உணர்"
-        },
-        "example": "How do you feel?",
-        "exampleMl": "തോന്നുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "weigh",
-        "v2": "weighed",
-        "v3": "weighed",
-        "meaning": {
-          "ml": "ഭാരം തൂക്കുക",
-          "hi": "वजन करना",
-          "ta": "எடை போடு"
-        },
-        "example": "How much does it weigh?",
-        "exampleMl": "ഭാരം തൂക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "How frequently do you practice spoken English exercises?",
+        "exampleMl": "Regularly or habitually; often."
       }
     ],
     "nouns": [
       {
-        "word": "how",
+        "word": "Estimate",
+        "partOfSpeech": "noun",
+        "definition": "A rough calculation of the value, number, or quantity of something.",
         "meaning": {
-          "ml": "എങ്ങനെ",
-          "hi": "എങ്ങനെ",
-          "ta": "എങ്ങനെ"
+          "ml": "കണക്കുകൂട്ടൽ / മതിപ്പ് തുക",
+          "hi": "अनुमान",
+          "ta": "மதிப்பீடு",
+          "te": "అంచనా",
+          "kn": "ಅಂದಾಜು"
         },
-        "example": "We learned about how in today's lesson."
+        "example": "How much is the initial cost estimate for this repair?"
       },
       {
-        "word": "distance",
+        "word": "Method",
+        "partOfSpeech": "noun",
+        "definition": "A particular procedure for accomplishing or approaching something.",
         "meaning": {
-          "ml": "ദൂരം",
-          "hi": "ദൂരം",
-          "ta": "ദൂരം"
+          "ml": "രീതി / മാർഗ്ഗം",
+          "hi": "तरीका",
+          "ta": "முறை",
+          "te": "పద్ధతి",
+          "kn": "ವಿಧಾನ"
         },
-        "example": "We learned about distance in today's lesson."
+        "example": "How do you apply this new learning method in daily life?"
       },
       {
-        "word": "weight",
+        "word": "Capacity",
+        "partOfSpeech": "noun",
+        "definition": "The maximum amount that something can contain or produce.",
         "meaning": {
-          "ml": "ഭാരം",
-          "hi": "ഭാരം",
-          "ta": "ഭാരം"
+          "ml": "ശേഷി / ഉൾക്കൊള്ളാനുള്ള അളവ്",
+          "hi": "क्षमता",
+          "ta": "கொள்ளளவு",
+          "te": "సామర్థ్యము",
+          "kn": "ಸಾಮರ್ಥ್ಯ"
         },
-        "example": "We learned about weight in today's lesson."
+        "example": "How much storage capacity does your phone have left?"
       },
       {
-        "word": "speed",
+        "word": "Affordable",
+        "partOfSpeech": "adjective",
+        "definition": "Inexpensive; reasonably priced.",
         "meaning": {
-          "ml": "വേഗത",
-          "hi": "വേഗത",
-          "ta": "വേഗത"
+          "ml": "താങ്ങാവുന്ന വിലയുള്ള",
+          "hi": "किफायती",
+          "ta": "மலிவு விலை",
+          "te": "సరసమైన",
+          "kn": "ಕೈಗೆಟುಕುವ"
         },
-        "example": "We learned about speed in today's lesson."
+        "example": "How affordable is this public health insurance plan?"
       },
       {
-        "word": "cost",
+        "word": "Effort",
+        "partOfSpeech": "noun",
+        "definition": "A vigorous or determined attempt.",
         "meaning": {
-          "ml": "ചെലവ്",
-          "hi": "ചെലവ്",
-          "ta": "ചെലവ്"
+          "ml": "പരിശ്രമം / അധ്വാനം",
+          "hi": "प्रयास",
+          "ta": "முயற்சி",
+          "te": "ప్రయత్నము",
+          "kn": "ಪ್ರಯತ್ನ"
         },
-        "example": "We learned about cost in today's lesson."
+        "example": "How much effort does it take to master fluent pronunciation?"
+      },
+      {
+        "word": "Frequently",
+        "partOfSpeech": "adverb",
+        "definition": "Regularly or habitually; often.",
+        "meaning": {
+          "ml": "പതിവായി / ഇടയ്ക്കിടെ",
+          "hi": "बार-बार",
+          "ta": "அடிக்கடி",
+          "te": "తరచుగా",
+          "kn": "ಪದೇ ಪದೇ"
+        },
+        "example": "How frequently do you practice spoken English exercises?"
       }
     ]
   },
@@ -145,8 +142,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "How + adjective / How much + uncountable noun + aux + Subject?",
+        "ml": "ഒരു കാര്യത്തിന്റെ രീതിയോ അവസ്ഥയോ അറിയാൻ 'How' (എങ്ങനെ) എന്നും, എണ്ണാൻ പറ്റാത്ത വസ്തുക്കളുടെ അളവോ വിലയോ അറിയാൻ 'How much' (എത്രത്തോളം / എത്ര വില) എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +200,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "How much does it cost?",
-        "How far is the town?",
-        "How do you feel?"
+        "How much sugar do you prefer in your morning tea ?",
+        "How do you travel to your workplace during peak hours ?",
+        "How much does this handcrafted leather bag cost ?",
+        "How can we improve our conversational speaking rhythm ?",
+        "How much water should an adult drink throughout the day ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -226,25 +225,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "How much does it cost?",
-          "meaningMl": "വിലയാകുക - How much does it cost?",
-          "audioPrompt": "How much does it cost?"
+          "text": "Young Dev asked Aunt Clara how she baked such wonderfully fluffy bread.",
+          "meaningMl": "ഇത്രയധികം മൃദുവായ ബ്രെഡ് എങ്ങനെയാണ് ഉണ്ടാക്കുന്നതെന്ന് ദേവ് ക്ലാര ആന്റിയോട് ചോദിച്ചു.",
+          "meaningHi": "युवा देव ने आंटी क्लारा से पूछा कि वह इतनी नरम रोटी कैसे बनाती हैं।",
+          "meaningTa": "இவ்வளவு மென்மையான ரொட்டியை எப்படி சுடுகிறீர்கள் என்று தேவ் அத்தையிடம் கேட்டான்.",
+          "audioPrompt": "Young Dev asked Aunt Clara how she baked such wonderfully fluffy bread."
         },
         {
-          "text": "How far is the town?",
-          "meaningMl": "അളക്കുക - How far is the town?",
-          "audioPrompt": "How far is the town?"
+          "text": "She smiled warmly and showed him how much fresh yeast she dissolved in warm milk.",
+          "meaningMl": "അവർ സ്നേഹത്തോടെ പുഞ്ചിരിക്കുകയും ഇളംചൂടുള്ള പാലിൽ എത്രത്തോളം ഈസ്റ്റ് കലക്കണമെന്ന് കാണിച്ചുകൊടുക്കുകയും ചെയ്തു.",
+          "meaningHi": "वह मुस्कुराईं और दिखाया कि वह गर्म दूध में कितना खमीर घोलती हैं।",
+          "meaningTa": "அவர் வெதுவெதுப்பான பாலில் எவ்வளவு ஈஸ்ட் கரைக்க வேண்டும் என்று காட்டினார்.",
+          "audioPrompt": "She smiled warmly and showed him how much fresh yeast she dissolved in warm milk."
         },
         {
-          "text": "Daily practice of Asking Questions: How & How Much gives you great confidence in English.",
-          "meaningMl": "How & How Much ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Asking Questions: How & How Much gives you great confidence in English."
+          "text": "Dev wondered how long the dough needed to rest beneath the clean linen cloth.",
+          "meaningMl": "വൃത്തിയുള്ള തുണികൊണ്ട് മൂടിയ മാവ് എത്ര സമയം വിശ്രമിക്കാൻ വെക്കണമെന്ന് ദേവ് ചിന്തിച്ചു.",
+          "meaningHi": "देव ने सोचा कि आटे को साफ कपड़े के नीचे कितनी देर तक रखना होगा।",
+          "meaningTa": "மாவை எவ்வளவு நேரம் ஊற வைக்க வேண்டும் என்று தேவ் யோசித்தான்.",
+          "audioPrompt": "Dev wondered how long the dough needed to rest beneath the clean linen cloth."
+        },
+        {
+          "text": "Aunt Clara explained that patience determines how delicious the final crust becomes.",
+          "meaningMl": "നമ്മുടെ ക്ഷമയാണ് ബ്രെഡിന്റെ മൊരിവ് എത്രത്തോളം രുചികരമാകുമെന്ന് തീരുമാനിക്കുന്നതെന്ന് ആന്റി വിശദീകരിച്ചു.",
+          "meaningHi": "आंटी क्लारा ने समझाया कि धैर्य ही तय करता है कि रोटी कितनी स्वादिष्ट बनेगी।",
+          "meaningTa": "பொறுமையே ரொட்டி எவ்வளவு சுவையாக இருக்கும் என்பதைத் தீர்மானிக்கிறது என்று விளக்கினார்.",
+          "audioPrompt": "Aunt Clara explained that patience determines how delicious the final crust becomes."
+        },
+        {
+          "text": "How exciting it was when the golden loaves emerged hot from the brick oven!",
+          "meaningMl": "ഇഷ്ടിക അടുപ്പിൽ നിന്ന് ചൂടോടെ സുവർണ്ണ ബ്രെഡ് പുറത്തെടുത്തപ്പോൾ എന്തൊരു ആവേശമായിരുന്നു!",
+          "meaningHi": "ईंट के ओवन से जब सुनहरी रोटियाँ गर्म-गर्म निकलीं तो कितना रोमांचक था!",
+          "meaningTa": "அடுப்பிலிருந்து சுடச்சுட தங்க ரொட்டிகள் வெளிவந்தபோது எவ்வளவு உற்சாகமாக இருந்தது!",
+          "audioPrompt": "How exciting it was when the golden loaves emerged hot from the brick oven!"
+        },
+        {
+          "text": "Everyone in the village knew how much love went into every single slice.",
+          "meaningMl": "ഓരോ കഷ്ണത്തിലും എത്രത്തോളം സ്നേഹം നിറഞ്ഞിരിക്കുന്നുവെന്ന് ഗ്രാമത്തിലെ എല്ലാവർക്കും അറിയാമായിരുന്നു.",
+          "meaningHi": "गाँव के हर व्यक्ति को पता था कि हर टुकड़े में कितना प्यार भरा है।",
+          "meaningTa": "ஒவ்வொரு துண்டிலும் எவ்வளவு அன்பு கலந்திருக்கிறது என்று ஊருக்கே தெரியும்.",
+          "audioPrompt": "Everyone in the village knew how much love went into every single slice."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What did Dev ask Aunt Clara about?",
+            "ml": "ദേവ് ക്ലാര ആന്റിയോട് എന്താണ് ചോദിച്ചത്?",
+            "hi": "देव ने आंटी क्लारा से क्या पूछा?",
+            "ta": "தேவ் அத்தையிடம் என்ன கேட்டான்?"
+          },
+          "options": [
+            "How to make sweet candy",
+            "How she baked such fluffy bread",
+            "How to buy a brick oven",
+            "How to plant wheat"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Dev asked how she baked such wonderfully fluffy bread.",
+            "ml": "മൃദുവായ ബ്രെഡ് എങ്ങനെ ഉണ്ടാക്കുന്നു എന്നാണ് ദേവ് ചോദിച്ചത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "In what liquid was the yeast dissolved?",
+            "ml": "ഏത് ദ്രാവകത്തിലാണ് ഈസ്റ്റ് കലക്കിയത്?",
+            "hi": "खमीर किसमें घोला गया था?",
+            "ta": "ஈஸ்ட் எதில் கரைக்கப்பட்டது?"
+          },
+          "options": [
+            "Cold water",
+            "Warm milk",
+            "Fruit juice",
+            "Honey"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She dissolved the yeast in warm milk.",
+            "ml": "ഇളംചൂടുള്ള പാലിലാണ് (warm milk) കലക്കിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "According to Aunt Clara, what determines how delicious the bread is?",
+            "ml": "ബ്രെഡ് എത്ര രുചികരമാകുമെന്ന് തീരുമാനിക്കുന്നത് എന്താണ്?",
+            "hi": "रोटी कितनी स्वादिष्ट होगी यह क्या तय करता है?",
+            "ta": "ரொட்டி எவ்வளவு சுவையாக இருக்கும் என்பதை எது தீர்மானிக்கிறது?"
+          },
+          "options": [
+            "Extra salt",
+            "Patience",
+            "Expensive butter",
+            "Fast heating"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "She explained that patience determines how delicious it becomes.",
+            "ml": "ക്ഷമയാണ് (patience) രുചി തീരുമാനിക്കുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +379,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d24_1",
-          "question": "Which word represents: 'വിലയാകുക'?",
+          "question": "Select the correct question to ask the price of coffee:",
           "options": [
-            "cost",
-            "create",
-            "discover",
-            "remember"
+            "How many is this coffee?",
+            "How much is this coffee?",
+            "How price is this coffee?",
+            "How cost the coffee?"
           ],
-          "answer": "cost",
-          "explanation": "cost എന്നാൽ വിലയാകുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "Price is uncountable, so we always ask: 'How much is this coffee?' or 'How much does this coffee cost?'",
+          "ruleHint": "Price Rule: 'How much is...?'"
         },
         {
-          "id": "trap_d24_2",
-          "question": "What is the past form (V2) of 'measure'?",
+          "question": "Choose the correct sentence to ask about the number of siblings:",
           "options": [
-            "measured",
-            "measureing",
-            "measures",
-            "has measure"
+            "How much brothers do you have?",
+            "How many brothers do you have?",
+            "How brother you have?",
+            "How many brother do you have?"
           ],
-          "answer": "measured",
-          "explanation": "measure ന്റെ ഭൂതകാല രൂപം measured ആണ്."
+          "correctIndex": 1,
+          "explanation": "Brothers are countable, so use 'How many' + plural noun (brothers): 'How many brothers do you have?'",
+          "ruleHint": "Countable Rule: How many + plural noun + do you have?"
         },
         {
-          "id": "trap_d24_3",
-          "question": "What is the correct English word for 'എങ്ങനെ'?",
+          "question": "How do you ask about someone's recovery after an illness?",
           "options": [
-            "schedule",
-            "routine",
-            "knowledge",
-            "how"
+            "How are you feeling today?",
+            "How much you feeling today?",
+            "How do you feel today yourself?",
+            "How many health do you feel?"
           ],
-          "answer": "how",
-          "explanation": "എങ്ങനെ എന്നാൽ ഇംഗ്ലീഷിൽ how."
+          "correctIndex": 0,
+          "explanation": "'How are you feeling today?' is the natural spoken inquiry for physical health and well-being.",
+          "ruleHint": "Health Check: 'How are you feeling today?'"
         }
       ],
       "description": {
@@ -334,6 +422,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +464,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +501,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 24 Gate Exam (5 Qs)",

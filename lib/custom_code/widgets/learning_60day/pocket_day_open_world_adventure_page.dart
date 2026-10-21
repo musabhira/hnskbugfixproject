@@ -33,6 +33,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/verb_timeline_flame_game.dart';
@@ -219,7 +220,7 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => widget.day == 1 ? 12 : 11;
+  int get _totalSteps => 12;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -1139,13 +1140,17 @@ class _PocketDayOpenWorldAdventurePageState
     final rightGroundY = getGroundY(boardX + rightStiltOffset);
 
     final cached = PocketDayCurriculumService.getCachedDay(day);
+    final userLangCode = PocketLanguageService.languageCode;
+    final isEn = PocketLanguageService.isEnglish;
     final topicEn = PocketDayCurriculumService.getLocalizedText(
         cached?['course']?['topic'],
         lang: 'en',
         fallback: 'Day $day Mission');
-    final topicMl = PocketDayCurriculumService.getLocalizedText(
-        cached?['course']?['topic'],
-        lang: 'ml');
+    final topicNative = isEn
+        ? ''
+        : PocketDayCurriculumService.getLocalizedText(
+            cached?['course']?['topic'],
+            lang: userLangCode);
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
     final formula =
         grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
@@ -1161,7 +1166,7 @@ class _PocketDayOpenWorldAdventurePageState
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
-          _showTopicBoardDialog(day, topicEn, topicMl, formula, grammar);
+          _showTopicBoardDialog(day, topicEn, topicNative, formula, grammar);
         },
         child: SizedBox(
           width: boardWidth,
@@ -1359,10 +1364,10 @@ class _PocketDayOpenWorldAdventurePageState
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+                    if (topicNative.isNotEmpty && topicNative != topicEn) ...[
                       const SizedBox(height: 1),
                       Text(
-                        topicMl,
+                        topicNative,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
@@ -1442,11 +1447,17 @@ class _PocketDayOpenWorldAdventurePageState
     );
   }
 
-  void _showTopicBoardDialog(int day, String topicEn, String topicMl, String formula, Map<String, dynamic> grammar) {
+  void _showTopicBoardDialog(int day, String topicEn, String topicNative, String formula, Map<String, dynamic> grammar) {
+    final userLangCode = PocketLanguageService.languageCode;
+    final isEn = PocketLanguageService.isEnglish;
     final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en');
-    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml');
+    final expNative = isEn
+        ? ''
+        : PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: userLangCode);
     final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
-    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+    final goldenTipNative = isEn
+        ? ''
+        : PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: userLangCode);
 
     showModalBottomSheet(
       context: context,
@@ -1492,8 +1503,8 @@ class _PocketDayOpenWorldAdventurePageState
                             style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
                         Text(topicEn,
                             style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                        if (topicMl.isNotEmpty && topicMl != topicEn)
-                          Text(topicMl,
+                        if (topicNative.isNotEmpty && topicNative != topicEn)
+                          Text(topicNative,
                               style: GoogleFonts.inter(color: const Color(0xFF93C5FD), fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),
@@ -1515,18 +1526,18 @@ class _PocketDayOpenWorldAdventurePageState
                     Text('FORMULA / RULE:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text(formula, style: GoogleFonts.robotoMono(color: const Color(0xFFFFE066), fontSize: 15, fontWeight: FontWeight.bold)),
-                    if (expMl.isNotEmpty) ...[
+                    if (expNative.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(expMl, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
+                      Text(expNative, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
                     ],
-                    if (expEn.isNotEmpty && expEn != expMl) ...[
+                    if (expEn.isNotEmpty && expEn != expNative) ...[
                       const SizedBox(height: 4),
                       Text(expEn, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
                     ],
                   ],
                 ),
               ),
-              if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
+              if (goldenTipNative.isNotEmpty || goldenTipEn.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
@@ -1542,7 +1553,7 @@ class _PocketDayOpenWorldAdventurePageState
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
+                          goldenTipNative.isNotEmpty ? goldenTipNative : goldenTipEn,
                           style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12, fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -1921,8 +1932,10 @@ class _PocketDayOpenWorldAdventurePageState
             final qText = (q['question'] is Map)
                 ? (q['question']['en']?.toString() ?? '')
                 : (q['question']?.toString() ?? '');
-            final qTextMl = (q['question'] is Map)
-                ? (q['question']['ml']?.toString() ?? '')
+            final userLangCode = PocketLanguageService.languageCode;
+            final isEn = PocketLanguageService.isEnglish;
+            final qTextNative = (!isEn && q['question'] is Map)
+                ? (q['question'][userLangCode]?.toString() ?? '')
                 : '';
             final targetText = (q['targetText'] ?? '').toString();
             final voicePrompt = (q['voicePrompt'] ?? 'Say: $targetText').toString();
@@ -2040,10 +2053,10 @@ class _PocketDayOpenWorldAdventurePageState
                         fontSize: 14.5,
                       ),
                     ),
-                    if (qTextMl.isNotEmpty) ...[
+                    if (qTextNative.isNotEmpty && qTextNative != qText) ...[
                       const SizedBox(height: 3),
                       Text(
-                        qTextMl,
+                        qTextNative,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF93C5FD),
                           fontSize: 12,
@@ -2510,7 +2523,14 @@ class _PocketDayOpenWorldAdventurePageState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ! (Complete Step ${stepIndex - 1} first)',
+                            PocketLanguageService.localize(
+                              en: '🔒 Complete Step ${stepIndex - 1} first to unlock Step $stepIndex!',
+                              ml: '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ!',
+                              hi: '🔒 Step $stepIndex अनलॉक करने के लिए पहले Step ${stepIndex - 1} पूरा करें!',
+                              ta: '🔒 Step $stepIndex ஐ திறக்க முதலில் Step ${stepIndex - 1} ஐ முடிக்கவும்!',
+                              te: '🔒 Step $stepIndex అన్‌లాక్ చేయడానికి ముందుగా Step ${stepIndex - 1} పూర్తి చేయండి!',
+                              kn: '🔒 Step $stepIndex ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮೊದಲು Step ${stepIndex - 1} ಪೂರ್ಣಗೊಳಿಸಿ!',
+                            ),
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12,
@@ -2770,12 +2790,14 @@ class _PocketDayOpenWorldAdventurePageState
       case 7:
         return const _StepInfo('Open-World Vocab Quest', '🚗', Color(0xFFFF8906));
       case 8:
-        return const _StepInfo('English Hub Community Chat', '💬', Color(0xFFFFFC00));
+        return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
       case 9:
-        return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+        return const _StepInfo('English Hub Community Chat', '💬', Color(0xFFFFFC00));
       case 10:
-        return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+        return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
       case 11:
+        return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+      case 12:
         return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
       default:
         return const _StepInfo('Practice Ledge', '⭐', Colors.white);
@@ -2912,8 +2934,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Day 1 Step 8: Verb Timeline & Tenses Arcade (Past, Present & Future)
-    if (day == 1 && s == 8) {
+    // All Days (1 to 90) Step 8: Verb Timeline & Tenses Arcade (Past, Present & Future)
+    if (s == 8) {
       await PocketVerbTimelineGamePage.show(
         context,
         day: day,
@@ -2986,9 +3008,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // English Hub Community Chat: Step 9 on Day 1, Step 8 on Days 2+
-    if ((day == 1 && s == 9) || (day > 1 && s == 8)) {
-      final stepIdx = day == 1 ? 9 : 8;
+    // All Days (1 to 90) Step 9: English Hub Community Chat
+    if (s == 9) {
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -3002,48 +3023,45 @@ class _PocketDayOpenWorldAdventurePageState
           ),
         ),
       );
-      await _onStepCompleted(stepIdx);
-      await _syncStepCompletionIfDone(stepIdx);
+      await _onStepCompleted(9);
+      await _syncStepCompletionIfDone(9);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // House Defense Shield Command: Step 10 on Day 1, Step 9 on Days 2+
-    if ((day == 1 && s == 10) || (day > 1 && s == 9)) {
-      final stepIdx = day == 1 ? 10 : 9;
+    // All Days (1 to 90) Step 10: House Defense Shield Command
+    if (s == 10) {
       await PocketHouseDefenseChatPage.show(
         context,
         day: day,
-        stepIndex: stepIdx,
+        stepIndex: 10,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(stepIdx);
+      await _syncStepCompletionIfDone(10);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // Poketalk: 4-Day Spoken Pact: Step 11 on Day 1, Step 10 on Days 2+
-    if ((day == 1 && s == 11) || (day > 1 && s == 10)) {
-      final stepIdx = day == 1 ? 11 : 10;
+    // All Days (1 to 90) Step 11: Poketalk: 4-Day Spoken Pact
+    if (s == 11) {
       await PocketTalkCardSwiperDialog.show(context);
-      await _onStepCompleted(stepIdx);
-      await _syncStepCompletionIfDone(stepIdx);
+      await _onStepCompleted(11);
+      await _syncStepCompletionIfDone(11);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // House Attack Quest: Citadel Raid: Step 12 on Day 1, Step 11 on Days 2+
-    if ((day == 1 && s == 12) || (day > 1 && s == 11)) {
-      final stepIdx = day == 1 ? 12 : 11;
+    // All Days (1 to 90) Step 12: House Attack Quest: Citadel Raid
+    if (s == 12) {
       await PocketHouseAttackPage.show(
         context,
         day: day,
-        stepIndex: stepIdx,
+        stepIndex: 12,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(stepIdx);
+      await _syncStepCompletionIfDone(12);
       await _loadState(preserveCarPosition: true);
       return;
     }

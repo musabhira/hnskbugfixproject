@@ -28,6 +28,7 @@ class PocketLanguageService {
         savedLang = prefs.getString('pm_native_language_$currentUserId');
       }
       savedLang ??= prefs.getString(kPrefMissionLang);
+      savedLang ??= prefs.getString('preferred_language');
 
       if (savedLang != null && savedLang.isNotEmpty) {
         activeLanguageNotifier.value = _normalizeLanguage(savedLang);
@@ -40,6 +41,26 @@ class PocketLanguageService {
       debugPrint('PocketLanguageService init error: $e');
     }
     return activeLanguageNotifier.value;
+  }
+
+  /// Universal Multi-Language Text Resolver
+  /// Returns the text in the active user's chosen language.
+  /// Guarantees that Hindi, Tamil, Telugu, Kannada, and English users NEVER see Malayalam fallback!
+  static String localize({
+    required String en,
+    String? ml,
+    String? hi,
+    String? ta,
+    String? te,
+    String? kn,
+  }) {
+    if (isEnglish) return en;
+    if (isHindi) return (hi != null && hi.isNotEmpty) ? hi : en;
+    if (isTamil) return (ta != null && ta.isNotEmpty) ? ta : en;
+    if (isTelugu) return (te != null && te.isNotEmpty) ? te : en;
+    if (isKannada) return (kn != null && kn.isNotEmpty) ? kn : en;
+    if (isMalayalam) return (ml != null && ml.isNotEmpty) ? ml : en;
+    return en;
   }
 
   /// Get current active native language name (e.g. "Hindi", "Tamil", "Malayalam")
@@ -85,6 +106,8 @@ class PocketLanguageService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(kPrefNativeLang, normalized);
       await prefs.setString(kPrefMissionLang, normalized);
+      await prefs.setString('preferred_language', normalized);
+      await prefs.setString('selected_native_language', normalized);
       await prefs.setBool(kPrefHasSelected, true);
 
       final uid = userId ?? SupaFlow.client.auth.currentUser?.id;

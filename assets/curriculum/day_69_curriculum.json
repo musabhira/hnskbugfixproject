@@ -22,112 +22,96 @@
     "totalCoinsReward": 119
   },
   "grammarRule": {
-    "formula": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
+    "formula": "If + Subject + Present Simple (V1), Subject + will + V1 (Base verb)",
     "explanation": {
-      "ml": "സാധ്യമായ നിബന്ധനകൾ (First Conditional) എന്ന വിഷയത്തിൽ If + Present Simple, Will + V1 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use If + Present Simple, Will + V1 correctly in spoken English."
+      "ml": "ഭാവിയിൽ ഒരു കാര്യം സംഭവിച്ചാൽ മറ്റൊന്ന് സംഭവിക്കാൻ സാധ്യതയുണ്ട് എന്ന് പറയാൻ First Conditional ഉപയോഗിക്കുന്നു. If-ക്ലോസിൽ Present Simple ഉം മെയിൻ ക്ലോസിൽ Will + V1 ഉം വരും.",
+      "en": "Master First Conditional: Real Future Possibilities with clear formula: If + Subject + Present Simple (V1), Subject + will + V1 (Base verb)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: If it rains, we will stay home.",
-      "en": "Golden Rule: Practice 'If it rains, we will stay home.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: If-ക്ലോസിൽ ഒരിക്കലും 'will' ഉപയോഗിക്കരുത്. 'If it rains, I will stay' (NOT 'If it will rain, I will stay').",
+      "en": "Golden Tip: If-ക്ലോസിൽ ഒരിക്കലും 'will' ഉപയോഗിക്കരുത്. 'If it rains, I will stay' (NOT 'If it will rain, I will stay')."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "rain",
-        "v2": "rained",
-        "v3": "rained",
-        "meaning": {
-          "ml": "പെയ്യുക",
-          "hi": "बारिश होना",
-          "ta": "மழை பெய்"
-        },
-        "example": "If it rains, we will stay home.",
-        "exampleMl": "മഴ പെയ്താൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "call",
-        "v2": "called",
-        "v3": "called",
-        "meaning": {
-          "ml": "വിളിക്കുക",
-          "hi": "बुलाना / कॉल करना",
-          "ta": "அழை"
-        },
-        "example": "If you call, I will answer.",
-        "exampleMl": "വിളിച്ചാൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "practice",
-        "v2": "practiced",
-        "v3": "practiced",
-        "meaning": {
-          "ml": "പരിശീലിച്ചാൽ",
-          "hi": "പരിശീലിച്ചാൽ",
-          "ta": "പരിശീലിച്ചാൽ"
-        },
-        "example": "If you practice, you will speak.",
-        "exampleMl": "പരിശീലിച്ചാൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "come",
-        "v2": "came",
-        "v3": "come",
-        "meaning": {
-          "ml": "വരുക",
-          "hi": "आना",
-          "ta": "வா"
-        },
-        "example": "If you come, I will cook.",
-        "exampleMl": "വന്നാൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "condition",
+        "word": "Prerequisite",
+        "partOfSpeech": "noun",
+        "definition": "A thing that is required as a prior condition for something else to happen or exist.",
         "meaning": {
-          "ml": "നിബന്ധന",
-          "hi": "നിബന്ധന",
-          "ta": "നിബന്ധന"
+          "ml": "മുൻവ്യവസ്ഥ / പ്രാഥമിക യോഗ്യത",
+          "hi": "पूर्वापेक्षा / पूर्व शर्त",
+          "ta": "முன்நிபந்தனை",
+          "te": "ముందస్తు షరతు",
+          "kn": "ಪೂರ್ವಭಾವಿ ಷರತ್ತು"
         },
-        "example": "We learned about condition in today's lesson."
+        "example": "Passing advanced calculus is an essential prerequisite for quantum mechanics courses."
       },
       {
-        "word": "chance",
+        "word": "Prospective",
+        "partOfSpeech": "adjective",
+        "definition": "Expected or expecting to be something specified in the future.",
         "meaning": {
-          "ml": "സാധ്യത",
-          "hi": "സാധ്യത",
-          "ta": "സാധ്യത"
+          "ml": "ഭാവിയിലുണ്ടാകാൻ പോകുന്ന / വരാനിരിക്കുന്ന",
+          "hi": "भावी / संभावित",
+          "ta": "வருங்கால / எதிர்பார்க்கப்படும்",
+          "te": "భవిష్యత్",
+          "kn": "ಭಾವಿ"
         },
-        "example": "We learned about chance in today's lesson."
+        "example": "The university hosted an orientation tour for prospective international students."
       },
       {
-        "word": "plan",
+        "word": "Feasible",
+        "partOfSpeech": "adjective",
+        "definition": "Possible to do easily or conveniently.",
         "meaning": {
-          "ml": "തീരുമാനം",
-          "hi": "തീരുമാനം",
-          "ta": "തീരുമാനം"
+          "ml": "പ്രാവർത്തികമാക്കാൻ കഴിയുന്ന / പ്രായോഗികമായ",
+          "hi": "व्यवहार्य / संभव",
+          "ta": "சாத்தியமான",
+          "te": "సాధ్యమైన",
+          "kn": "ಸಾಧ್ಯವಾದ"
         },
-        "example": "We learned about plan in today's lesson."
+        "example": "Building an underwater tunnel between the islands is technically feasible."
       },
       {
-        "word": "future",
+        "word": "Opportunity",
+        "partOfSpeech": "noun",
+        "definition": "A set of circumstances that makes it possible to do something.",
         "meaning": {
-          "ml": "ഭാവി",
-          "hi": "ഭാവി",
-          "ta": "ഭാവി"
+          "ml": "അവസരം / സുവർണ്ണാവസരം",
+          "hi": "अवसर / मौका",
+          "ta": "வாய்ப்பு",
+          "te": "అవకాశము",
+          "kn": "ಅವಕಾಶ"
         },
-        "example": "We learned about future in today's lesson."
+        "example": "Working abroad gave her a rare opportunity to master foreign languages."
       },
       {
-        "word": "result",
+        "word": "Probability",
+        "partOfSpeech": "noun",
+        "definition": "The extent to which something is probable; the likelihood of something happening or being the case.",
         "meaning": {
-          "ml": "ഫലം",
-          "hi": "ഫലം",
-          "ta": "ഫലം"
+          "ml": "സാധ്യത / അനുപാതം",
+          "hi": "प्रायिकता / संभावना",
+          "ta": "நிகழ்தகவு / சாத்தியக்கூறு",
+          "te": "సంభావ్యత",
+          "kn": "ಸಂಭವನೀಯತೆ"
         },
-        "example": "We learned about result in today's lesson."
+        "example": "There is a strong probability that seasonal monsoon showers will arrive early."
+      },
+      {
+        "word": "Favorable",
+        "partOfSpeech": "adjective",
+        "definition": "Expressing approval; giving a result that is in one's favor or advantageous.",
+        "meaning": {
+          "ml": "അനുകൂലമായ / ഗുണകരമായ",
+          "hi": "अनुकूल",
+          "ta": "சாதகமான",
+          "te": "అనుకూలమైన",
+          "kn": "ಅನುಕೂಲಕರ"
+        },
+        "example": "Favorable currency exchange rates bolstered regional agricultural exports."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Real Conditions: If it rains, I will stay",
-        "ml": "പാഠം: സാധ്യമായ നിബന്ധനകൾ (First Conditional)"
+        "en": "Concept Room: First Conditional: Real Future Possibilities",
+        "ml": "പാഠം: ഭാവിയിലെ യാഥാർത്ഥ്യങ്ങൾ (If + Present, Will + V1)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "If + Subject + Present Simple (V1), Subject + will + V1 (Base verb)",
+        "ml": "ഭാവിയിൽ ഒരു കാര്യം സംഭവിച്ചാൽ മറ്റൊന്ന് സംഭവിക്കാൻ സാധ്യതയുണ്ട് എന്ന് പറയാൻ First Conditional ഉപയോഗിക്കുന്നു. If-ക്ലോസിൽ Present Simple ഉം മെയിൻ ക്ലോസിൽ Will + V1 ഉം വരും."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "If it rains, we will stay home.",
-        "If you call, I will answer.",
-        "If you practice, you will speak."
+        "If our client approves this revised budget proposal , we will commence development next Monday .",
+        "If you practice speaking English consistently every day , your conversational fluency will soar .",
+        "We will miss our international connecting flight if the taxi encounters heavy downtown traffic .",
+        "If the quarterly financial audit passes without discrepancies , the company will distribute bonuses .",
+        "What will happen if the shipment does not arrive at the regional warehouse tomorrow ?"
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Real Conditions: If it rains, I will stay",
-        "ml": "റീഡിങ് റൂം: സാധ്യമായ നിബന്ധനകൾ (First Conditional)"
+        "en": "Reading Room: The Agriculture Revolution",
+        "ml": "റീഡിങ് റൂം: ഭാവിയിലെ യാഥാർത്ഥ്യങ്ങൾ (If + Present, Will + V1)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "If it rains, we will stay home.",
-          "meaningMl": "മഴ പെയ്താൽ - If it rains, we will stay home.",
-          "audioPrompt": "If it rains, we will stay home."
+          "text": "Agronomist Dr. Harish is demonstrating intelligent precision irrigation technology to smallholder farmers across rural Punjab.",
+          "meaningMl": "കൃഷിശാസ്ത്രജ്ഞനായ ഡോ. ഹരീഷ് പഞ്ചാബിലെ ചെറുകിട കർഷകർക്ക് ഇന്റലിജന്റ് പ്രിസിഷൻ ഇറിഗേഷൻ സാങ്കേതികവിദ്യ കാണിച്ചു കൊടുക്കുന്നു.",
+          "meaningHi": "कृषि वैज्ञानिक डॉ. हरीश पंजाब के किसानों को सटीक सिंचाई तकनीक दिखा रहे हैं।",
+          "meaningTa": "வேளாண் விஞ்ஞானி டாக்டர் ஹரிஷ் பஞ்சாப் விவசாயிகளுக்கு நவீன பாசன தொழில்நுட்பத்தை விளக்குகிறார்.",
+          "audioPrompt": "Agronomist Dr. Harish is demonstrating intelligent precision irrigation technology to smallholder farmers across rural Punjab."
         },
         {
-          "text": "If you call, I will answer.",
-          "meaningMl": "വിളിച്ചാൽ - If you call, I will answer.",
-          "audioPrompt": "If you call, I will answer."
+          "text": "If farmers adopt automated soil moisture sensors, they will reduce groundwater wastage by up to fifty percent.",
+          "meaningMl": "കർഷകർ ഓട്ടോമേറ്റഡ് മണ്ണ് ഈർപ്പ സെൻസറുകൾ ഉപയോഗിച്ചാൽ, അവർ ഭൂഗർഭജല പാഴാക്കൽ അൻപത് ശതമാനം വരെ കുറയ്ക്കും.",
+          "meaningHi": "यदि किसान मिट्टी के सेंसर अपनाते हैं, तो वे पानी की बर्बादी पचास प्रतिशत तक कम करेंगे।",
+          "meaningTa": "மண் ஈரப்பத சென்சார்களைப் பயன்படுத்தினால், நிலத்தடி நீர் வீணாவதை ஐம்பது சதவீதம் குறைக்கலாம்.",
+          "audioPrompt": "If farmers adopt automated soil moisture sensors, they will reduce groundwater wastage by up to fifty percent."
         },
         {
-          "text": "Daily practice of Real Conditions: If it rains, I will stay gives you great confidence in English.",
-          "meaningMl": "സാധ്യമായ നിബന്ധനകൾ (First Conditional) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Real Conditions: If it rains, I will stay gives you great confidence in English."
+          "text": "If electricity tariffs rise unexpectedly during dry seasons, solar-powered water pumps will safeguard family farm budgets.",
+          "meaningMl": "വേനൽക്കാലത്ത് വൈദ്യുതി നിരക്ക് അപ്രതീക്ഷിതമായി ഉയർന്നാൽ, സൗരോർജ്ജ പമ്പുകൾ കുടുംബ ബജറ്റിനെ സംരക്ഷിക്കും.",
+          "meaningHi": "यदि बिजली दरें बढ़ती हैं, तो सौर ऊर्जा पंप किसानों के बजट की रक्षा करेंगे।",
+          "meaningTa": "மின் கட்டணம் உயர்ந்தால், சூரிய சக்தி பம்புகள் விவசாயிகளின் பட்ஜெட்டை பாதுகாக்கும்.",
+          "audioPrompt": "If electricity tariffs rise unexpectedly during dry seasons, solar-powered water pumps will safeguard family farm budgets."
+        },
+        {
+          "text": "Local agricultural cooperatives will provide subsidized equipment loans if farmers register before the upcoming planting season.",
+          "meaningMl": "വരുന്ന കൃഷി സീസണിന് മുമ്പ് രജിസ്റ്റർ ചെയ്താൽ കർഷക സഹകരണ സംഘങ്ങൾ സബ്‌സിഡി നിരക്കിൽ ഉപകരണ വായ്പകൾ നൽകും.",
+          "meaningHi": "यदि किसान बुवाई के मौसम से पहले पंजीकरण कराते हैं, तो सहकारी समितियां ऋण प्रदान करेंगी।",
+          "meaningTa": "பயிர் சீசனுக்கு முன் பதிவு செய்தால் கூட்டுறவு சங்கங்கள் மானியக் கடன் வழங்கும்.",
+          "audioPrompt": "Local agricultural cooperatives will provide subsidized equipment loans if farmers register before the upcoming planting season."
+        },
+        {
+          "text": "If crop yields increase consistently, rural villages will experience sustainable economic development and educational prosperity.",
+          "meaningMl": "വിളവ് ക്രമമായി വർദ്ധിച്ചാൽ, ഗ്രാമങ്ങളിൽ സുസ്ഥിരമായ സാമ്പത്തിക വളർച്ചയും വിദ്യാഭ്യാസ പുരോഗതിയും ഉണ്ടാകും.",
+          "meaningHi": "यदि पैदावार बढ़ेगी, तो ग्रामीण इलाकों में आर्थिक और शैक्षिक समृद्धि आएगी।",
+          "meaningTa": "விளைச்சல் தொடர்ந்து அதிகரித்தால், கிராமங்கள் பொருளாதார மற்றும் கல்வி செழிப்பைப் பெறும்.",
+          "audioPrompt": "If crop yields increase consistently, rural villages will experience sustainable economic development and educational prosperity."
+        },
+        {
+          "text": "Harish believes that if technology honors traditional farming wisdom, the future of food security will remain bright.",
+          "meaningMl": "സാങ്കേതികവിദ്യ പരമ്പരാഗത കൃഷി അറിവുകളെ മാനിച്ചാൽ, ഭക്ഷ്യസുരക്ഷയുടെ ഭാവി ശോഭനമായി തുടരുമെന്ന് ഹരീഷ് വിശ്വസിക്കുന്നു.",
+          "meaningHi": "हरीश का मानना है कि यदि तकनीक पारंपरिक ज्ञान का सम्मान करती है, तो खाद्य सुरक्षा उज्ज्वल रहेगी।",
+          "meaningTa": "தொழில்நுட்பம் பாரம்பரிய அறிவை மதித்தால், உணவுப் பாதுகாப்பின் எதிர்காலம் பிரகாசமாக இருக்கும்.",
+          "audioPrompt": "Harish believes that if technology honors traditional farming wisdom, the future of food security will remain bright."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "By what percentage will farmers reduce groundwater wastage if they adopt soil moisture sensors?",
+            "ml": "മണ്ണ് സെൻസറുകൾ ഉപയോഗിച്ചാൽ ജല പാഴാക്കൽ എത്ര ശതമാനം കുറയ്ക്കാൻ കഴിയും?",
+            "hi": "सेंसर अपनाने से पानी की बर्बादी कितने प्रतिशत कम होगी?",
+            "ta": "சென்சார்களைப் பயன்படுத்தினால் நீர் வீணாவதை எத்தனை சதவீதம் குறைக்கலாம்?"
+          },
+          "options": [
+            "Ten percent",
+            "Up to fifty percent",
+            "Five percent",
+            "Eighty percent"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "By up to fifty percent.",
+            "ml": "50 ശതമാനം വരെ (Up to fifty percent)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What alternative equipment will safeguard farmers if electricity tariffs rise?",
+            "ml": "വൈദ്യുതി നിരക്ക് കൂടിയാൽ കർഷകരെ സംരക്ഷിക്കുന്ന ഉപകരണം ഏതാണ്?",
+            "hi": "बिजली दरें बढ़ने पर क्या किसानों की रक्षा करेगा?",
+            "ta": "மின் கட்டணம் உயர்ந்தால் விவசாயிகளைப் பாதுகாப்பது எது?"
+          },
+          "options": [
+            "Diesel engines",
+            "Solar-powered water pumps",
+            "Handheld watering cans",
+            "Windmill blades"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Solar-powered water pumps.",
+            "ml": "സൗരോർജ്ജ വാട്ടർ പമ്പുകൾ (Solar-powered water pumps)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "When must farmers register to obtain subsidized equipment loans?",
+            "ml": "സബ്‌സിഡി വായ്പകൾ ലഭിക്കാൻ കർഷകർ എപ്പോഴാണ് രജിസ്റ്റർ ചെയ്യേണ്ടത്?",
+            "hi": "किसानों को कब पंजीकरण कराना होगा?",
+            "ta": "மானியம் பெற விவசாயிகள் எப்போது பதிவு செய்ய வேண்டும்?"
+          },
+          "options": [
+            "After harvesting in winter",
+            "Before the upcoming planting season",
+            "Next calendar year",
+            "Never"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Before the upcoming planting season.",
+            "ml": "കൃഷി സീസണിന് മുമ്പ് (Before the upcoming planting season)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d69_1",
-          "question": "Which word represents: 'പെയ്യുക'?",
+          "id": 1,
+          "question": "Find the error: 'If it will rain tomorrow, we will cancel the outdoor picnic.'",
           "options": [
-            "rain",
-            "arrive",
-            "finish",
-            "borrow"
+            "'will rain' should be 'rains' in the if-clause.",
+            "'cancel' should be 'cancelled'.",
+            "'outdoor' should be 'outside'.",
+            "There is no error."
           ],
-          "answer": "rain",
-          "explanation": "rain എന്നാൽ പെയ്യുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "First Conditional ലെ If-ക്ലോസിൽ 'will' ഉപയോഗിക്കരുത്, Present Simple രൂപമായ 'rains' ആണ് ഉപയോഗിക്കേണ്ടത് ('If it rains tomorrow')."
         },
         {
-          "id": "trap_d69_2",
-          "question": "What is the past form (V2) of 'call'?",
+          "id": 2,
+          "question": "Choose the grammatically correct First Conditional sentence:",
           "options": [
-            "called",
-            "calling",
-            "calls",
-            "has call"
+            "If you study diligently, you will clear the examination.",
+            "If you will study diligently, you clear the examination.",
+            "If you study diligently, you cleared the examination.",
+            "If you studied diligently, you will clear the examination."
           ],
-          "answer": "called",
-          "explanation": "call ന്റെ ഭൂതകാല രൂപം called ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "If + present simple (study), will + base verb (will clear) ആണ് കൃത്യമായ ഫോർമുല."
         },
         {
-          "id": "trap_d69_3",
-          "question": "What is the correct English word for 'നിബന്ധന'?",
+          "id": 3,
+          "question": "Which modal can replace 'will' in the main clause to express possibility instead of certainty?",
           "options": [
-            "station",
-            "condition",
-            "airport",
-            "journey"
+            "May / Might",
+            "Musted",
+            "Did",
+            "Had"
           ],
-          "answer": "condition",
-          "explanation": "നിബന്ധന എന്നാൽ ഇംഗ്ലീഷിൽ condition."
+          "correctIndex": 0,
+          "explanationMl": "ഉറപ്പില്ലാത്ത സാധ്യത പറയാൻ 'will' ന് പകരം 'may' അല്ലെങ്കിൽ 'might' ഉപയോഗിക്കാം ('If it rains, we may stay home')."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 69 Gate Exam (5 Qs)",

@@ -22,112 +22,157 @@
     "totalCoinsReward": 123
   },
   "grammarRule": {
-    "formula": "Fronting and Emphasis Techniques",
+    "formula": "Object + is/are/was/were/has been + V3 (Past Participle)",
     "explanation": {
-      "ml": "നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ് എന്ന വിഷയത്തിൽ The flight is delayed / I was told / It is made of... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use The flight is delayed / I was told / It is made of... correctly in spoken English."
+      "ml": "പ്രവൃത്തി ചെയ്ത ആളെക്കാൾ പ്രവൃത്തിക്ക് മുൻഗണന നൽകുന്ന ഔദ്യോഗിക റിപ്പോർട്ടുകളിലും വാർത്തകളിലും Passive Voice ഉപയോഗിക്കുന്നു. ഉദാഹരണത്തിന്: 'The report has been submitted' (റിപ്പോർട്ട് സമർപ്പിക്കപ്പെട്ടു).",
+      "en": "Master Passive Voice in Business & Reports with clear formula: Object + is/are/was/were/has been + V3 (Past Participle)"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: The flight was delayed.",
-      "en": "Golden Rule: Practice 'The flight was delayed.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: Active: John broke the glass. Passive: The glass was broken. ബിസിനസ്സ് ആശയവിനിമയത്തിൽ കൂടുതൽ മാന്യത നൽകാൻ Passive Voice ഉപയോഗിക്കുന്നു.",
+      "en": "Golden Tip: Active: John broke the glass. Passive: The glass was broken. ബിസിനസ്സ് ആശയവിനിമയത്തിൽ കൂടുതൽ മാന്യത നൽകാൻ Passive Voice ഉപയോഗിക്കുന്നു."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "delay",
-        "v2": "delayed",
-        "v3": "delayed",
+        "v1": "distributed",
+        "v2": "distributeded",
+        "v3": "distributeded",
         "meaning": {
-          "ml": "വൈകിക്കുക",
-          "hi": "देरी करना",
-          "ta": "தாமதப்படுத்து"
+          "ml": "വിതരണം ചെയ്യപ്പെട്ടു / പങ്കിട്ടു",
+          "hi": "वितरित किया गया",
+          "ta": "விநியோகிக்கப்பட்டது"
         },
-        "example": "The flight was delayed.",
-        "exampleMl": "വൈകിപ്പിക്കപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Relief supplies were distributed to families affected by the river floods.",
+        "exampleMl": "Supplied or divided among multiple recipients."
       },
       {
-        "v1": "inform",
-        "v2": "informed",
-        "v3": "informed",
+        "v1": "broadcast",
+        "v2": "broadcasted",
+        "v3": "broadcasted",
         "meaning": {
-          "ml": "അറിയിക്കപ്പെട്ടു",
-          "hi": "അറിയിക്കപ്പെട്ടു",
-          "ta": "അറിയിക്കപ്പെട്ടു"
+          "ml": "പ്രക്ഷേപണം ചെയ്യപ്പെട്ടു / സംപ്രേഷണം ചെയ്തു",
+          "hi": "प्रसारित किया गया",
+          "ta": "ஒளிபரப்பப்பட்டது"
         },
-        "example": "I was informed yesterday.",
-        "exampleMl": "അറിയിക്കപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The prime minister's independence day address was broadcast live across national networks.",
+        "exampleMl": "Transmitted by radio or television, or communicated widely."
       },
       {
-        "v1": "cancel",
-        "v2": "cancelled",
-        "v3": "cancelled",
+        "v1": "manufactured",
+        "v2": "manufactureded",
+        "v3": "manufactureded",
         "meaning": {
-          "ml": "റദ്ദാക്കപ്പെട്ടു",
-          "hi": "റദ്ദാക്കപ്പെട്ടു",
-          "ta": "റദ്ദാക്കപ്പെട്ടു"
+          "ml": "നിർമ്മിക്കപ്പെട്ടു / ഉൽപ്പാദിപ്പിച്ചു",
+          "hi": "निर्मित / उत्पादित",
+          "ta": "உற்பத்தி செய்யப்பட்டது"
         },
-        "example": "The match was cancelled.",
-        "exampleMl": "റദ്ദാക്കപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "These advanced surgical instruments are manufactured in Germany using surgical titanium.",
+        "exampleMl": "Produced something on a large scale using machinery."
       },
       {
-        "v1": "repair",
-        "v2": "repaired",
-        "v3": "repaired",
+        "v1": "documented",
+        "v2": "documenteded",
+        "v3": "documenteded",
         "meaning": {
-          "ml": "നന്നാക്കപ്പെട്ടു",
-          "hi": "നന്നാക്കപ്പെട്ടു",
-          "ta": "നന്നാക്കപ്പെട്ടു"
+          "ml": "രേഖപ്പെടുത്തപ്പെട്ടു / തെളിവായി സൂക്ഷിച്ചു",
+          "hi": "दस्तावेजीकृत किया गया",
+          "ta": "ஆவணப்படுத்தப்பட்டது"
         },
-        "example": "My phone is repaired.",
-        "exampleMl": "നന്നാക്കപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "Every engineering protocol change was thoroughly documented in the technical wiki.",
+        "exampleMl": "Recorded something in written, photographic, or other form."
+      },
+      {
+        "v1": "commissioned",
+        "v2": "commissioneded",
+        "v3": "commissioneded",
+        "meaning": {
+          "ml": "കമ്മീഷൻ ചെയ്യപ്പെട്ടു / ഔദ്യോഗികമായി പ്രവർത്തനക്ഷമമാക്കി",
+          "hi": "चालू किया गया / अधिकृत किया गया",
+          "ta": "பணியில் அமர்த்தப்பட்டது / தொடங்கப்பட்டது"
+        },
+        "example": "The state offshore wind turbine farm was officially commissioned this morning.",
+        "exampleMl": "Brought newly into working condition, or ordered the production of something."
       }
     ],
     "nouns": [
       {
-        "word": "announcement",
+        "word": "Distributed",
+        "partOfSpeech": "verb",
+        "definition": "Supplied or divided among multiple recipients.",
         "meaning": {
-          "ml": "അറിയിപ്പ്",
-          "hi": "അറിയിപ്പ്",
-          "ta": "അറിയിപ്പ്"
+          "ml": "വിതരണം ചെയ്യപ്പെട്ടു / പങ്കിട്ടു",
+          "hi": "वितरित किया गया",
+          "ta": "விநியோகிக்கப்பட்டது",
+          "te": "పంపిణీ చేయబడింది",
+          "kn": "ವಿತರಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about announcement in today's lesson."
+        "example": "Relief supplies were distributed to families affected by the river floods."
       },
       {
-        "word": "service",
+        "word": "Broadcast",
+        "partOfSpeech": "verb",
+        "definition": "Transmitted by radio or television, or communicated widely.",
         "meaning": {
-          "ml": "സേവനം",
-          "hi": "സേവനം",
-          "ta": "സേവനം"
+          "ml": "പ്രക്ഷേപണം ചെയ്യപ്പെട്ടു / സംപ്രേഷണം ചെയ്തു",
+          "hi": "प्रसारित किया गया",
+          "ta": "ஒளிபரப்பப்பட்டது",
+          "te": "ప్రసారం చేయబడింది",
+          "kn": "ಪ್ರಸಾರ ಮಾಡಲಾಗಿದೆ"
         },
-        "example": "We learned about service in today's lesson."
+        "example": "The prime minister's independence day address was broadcast live across national networks."
       },
       {
-        "word": "status",
+        "word": "Authorization",
+        "partOfSpeech": "noun",
+        "definition": "The action of authorizing or official permission.",
         "meaning": {
-          "ml": "നിലവിലെ അവസ്ഥ",
-          "hi": "നിലവിലെ അവസ്ഥ",
-          "ta": "നിലവിലെ അവസ്ഥ"
+          "ml": "ഔദ്യോഗിക അനുമതി / അംഗീകാരം",
+          "hi": "प्राधिकरण / आधिकारिक अनुमति",
+          "ta": "அங்கீகாரம் / அனுமதி",
+          "te": "అధికారపత్రం",
+          "kn": "ಅಧಿಕಾರ ಪತ್ರ"
         },
-        "example": "We learned about status in today's lesson."
+        "example": "Written authorization is strictly required prior to accessing executive data servers."
       },
       {
-        "word": "flight",
+        "word": "Manufactured",
+        "partOfSpeech": "verb",
+        "definition": "Produced something on a large scale using machinery.",
         "meaning": {
-          "ml": "ഫ്ലൈറ്റ്",
-          "hi": "ഫ്ലൈറ്റ്",
-          "ta": "ഫ്ലൈറ്റ്"
+          "ml": "നിർമ്മിക്കപ്പെട്ടു / ഉൽപ്പാദിപ്പിച്ചു",
+          "hi": "निर्मित / उत्पादित",
+          "ta": "உற்பத்தி செய்யப்பட்டது",
+          "te": "తయారు చేయబడింది",
+          "kn": "ಉತ್ಪಾದಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about flight in today's lesson."
+        "example": "These advanced surgical instruments are manufactured in Germany using surgical titanium."
       },
       {
-        "word": "notice",
+        "word": "Documented",
+        "partOfSpeech": "verb",
+        "definition": "Recorded something in written, photographic, or other form.",
         "meaning": {
-          "ml": "നോട്ടീസ്",
-          "hi": "നോട്ടീസ്",
-          "ta": "നോട്ടീസ്"
+          "ml": "രേഖപ്പെടുത്തപ്പെട്ടു / തെളിവായി സൂക്ഷിച്ചു",
+          "hi": "दस्तावेजीकृत किया गया",
+          "ta": "ஆவணப்படுத்தப்பட்டது",
+          "te": "పత్రబద్ధం చేయబడింది",
+          "kn": "ದಾಖಲಿಸಲಾಗಿದೆ"
         },
-        "example": "We learned about notice in today's lesson."
+        "example": "Every engineering protocol change was thoroughly documented in the technical wiki."
+      },
+      {
+        "word": "Commissioned",
+        "partOfSpeech": "verb",
+        "definition": "Brought newly into working condition, or ordered the production of something.",
+        "meaning": {
+          "ml": "കമ്മീഷൻ ചെയ്യപ്പെട്ടു / ഔദ്യോഗികമായി പ്രവർത്തനക്ഷമമാക്കി",
+          "hi": "चालू किया गया / अधिकृत किया गया",
+          "ta": "பணியில் அமர்த்தப்பட்டது / தொடங்கப்பட்டது",
+          "te": "ప్రారంభించబడింది",
+          "kn": "ಕಾರ್ಯಾರಂಭ ಮಾಡಲಾಯಿತು"
+        },
+        "example": "The state offshore wind turbine farm was officially commissioned this morning."
       }
     ]
   },
@@ -136,8 +181,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Passive Voice in Daily Spoken Speech",
-        "ml": "പാഠം: നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ്"
+        "en": "Concept Room: Passive Voice in Business & Reports",
+        "ml": "പാഠം: ഔദ്യോഗിക കാര്യങ്ങൾ പറയൽ (Passive Voice)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +190,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Object + is/are/was/were/has been + V3 (Past Participle)",
+        "ml": "പ്രവൃത്തി ചെയ്ത ആളെക്കാൾ പ്രവൃത്തിക്ക് മുൻഗണന നൽകുന്ന ഔദ്യോഗിക റിപ്പോർട്ടുകളിലും വാർത്തകളിലും Passive Voice ഉപയോഗിക്കുന്നു. ഉദാഹരണത്തിന്: 'The report has been submitted' (റിപ്പോർട്ട് സമർപ്പിക്കപ്പെട്ടു)."
       }
     },
     {
@@ -203,9 +248,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "The flight was delayed.",
-        "I was informed yesterday.",
-        "The match was cancelled."
+        "The annual audited balance sheet has been submitted to the ministry of corporate affairs .",
+        "Critical software security updates were deployed across all corporate workstations last midnight .",
+        "Fresh organic vegetables are harvested daily and transported to metropolitan supermarkets .",
+        "Formal written authorization must be obtained prior to accessing patient health records .",
+        "A new solar energy manufacturing plant will be constructed in the industrial zone ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +263,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Passive Voice in Daily Spoken Speech",
-        "ml": "റീഡിങ് റൂം: നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ്"
+        "en": "Reading Room: The Restoration of the Royal Palace",
+        "ml": "റീഡിങ് റൂം: ഔദ്യോഗിക കാര്യങ്ങൾ പറയൽ (Passive Voice)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +273,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "The flight was delayed.",
-          "meaningMl": "വൈകിപ്പിക്കപ്പെട്ടു - The flight was delayed.",
-          "audioPrompt": "The flight was delayed."
+          "text": "The five-hundred-year-old Padmanabhapuram wooden palace was meticulously restored by master architectural conservators.",
+          "meaningMl": "അഞ്ഞൂറ് വർഷം പഴക്കമുള്ള പത്മനാഭപുരം തടി കൊട്ടാരം വിദഗ്ദ്ധ വാസ്തു സംരക്ഷകരാൽ സൂക്ഷ്മമായി പുനരുദ്ധരിക്കപ്പെട്ടു.",
+          "meaningHi": "पांच सौ साल पुराने महल का कुशल वास्तुकारों द्वारा सावधानीपूर्वक जीर्णोद्धार किया गया।",
+          "meaningTa": "ஐந்நூறு ஆண்டுகள் பழமையான பத்மநாபபுரம் அரண்மனை நிபுணர்களால் புதுப்பிக்கப்பட்டது.",
+          "audioPrompt": "The five-hundred-year-old Padmanabhapuram wooden palace was meticulously restored by master architectural conservators."
         },
         {
-          "text": "I was informed yesterday.",
-          "meaningMl": "അറിയിക്കപ്പെട്ടു - I was informed yesterday.",
-          "audioPrompt": "I was informed yesterday."
+          "text": "Intricate teakwood ceiling carvings were treated with natural herbal resins to repel woodboring insects.",
+          "meaningMl": "ചിതലുകളെയും പ്രാണികളെയും അകറ്റാൻ തേക്ക് തടിയിലെ കൊത്തുപണികൾ പ്രകൃതിദത്ത ഔഷധക്കൂട്ടുകൾ കൊണ്ട് സംരക്ഷിക്കപ്പെട്ടു.",
+          "meaningHi": "नक्काशीदार सागौन की लकड़ी को कीड़ों से बचाने के लिए प्राकृतिक राल से उपचारित किया गया।",
+          "meaningTa": "தேக்கு மர வேலைப்பாடுகள் பூச்சிகளிடமிருந்து பாதுகாக்க இயற்கை மூலிகைகளால் பூசப்பட்டன.",
+          "audioPrompt": "Intricate teakwood ceiling carvings were treated with natural herbal resins to repel woodboring insects."
         },
         {
-          "text": "Daily practice of Passive Voice in Daily Spoken Speech gives you great confidence in English.",
-          "meaningMl": "നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ് ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Passive Voice in Daily Spoken Speech gives you great confidence in English."
+          "text": "Centuries-old lime and eggshell plaster recipes were recreated to revitalize faded mural paintings on bedchamber walls.",
+          "meaningMl": "ചുവരുകളിലെ മങ്ങിയ ചുവർചിത്രങ്ങൾ പുനരുജ്ജീവിപ്പിക്കുന്നതിനായി പുരാതനമായ കുമ്മായ-മുട്ടത്തോട് മിശ്രിതം വീണ്ടും നിർമ്മിക്കപ്പെട്ടു.",
+          "meaningHi": "भित्ति चित्रों को नया जीवन देने के लिए प्राचीन चूने के प्लास्टर का पुनर्गठन किया गया।",
+          "meaningTa": "சுவரோவியங்களை புதுப்பிக்க பல நூற்றாண்டு பழமையான கலவை மீண்டும் உருவாக்கப்பட்டது.",
+          "audioPrompt": "Centuries-old lime and eggshell plaster recipes were recreated to revitalize faded mural paintings on bedchamber walls."
+        },
+        {
+          "text": "Over twenty thousand historical weapons and brass oil lamps have been cataloged in a digital heritage archive.",
+          "meaningMl": "ഇരുപതിനായിരത്തിലധികം പുരാതന ആയുധങ്ങളും പിച്ചള വിളക്കുകളും ഡിജിറ്റൽ ആർക്കൈവിൽ രേഖപ്പെടുത്തപ്പെട്ടിട്ടുണ്ട്.",
+          "meaningHi": "बीस हजार से अधिक हथियारों और दीयों को डिजिटल संग्रह में सूचीबद्ध किया गया है।",
+          "meaningTa": "இருபதாயிரத்துக்கும் மேற்பட்ட வரலாற்று ஆயுதங்கள் டிஜிட்டல் முறையில் ஆவணப்படுத்தப்பட்டுள்ளன.",
+          "audioPrompt": "Over twenty thousand historical weapons and brass oil lamps have been cataloged in a digital heritage archive."
+        },
+        {
+          "text": "The historic complex was formally reopened to the public by the archaeological heritage minister yesterday.",
+          "meaningMl": "ചരിത്ര സമുച്ചയം ഇന്നലെ പുരാവസ്തു പൈതൃക മന്ത്രി ഔദ്യോഗികമായി പൊതുജനങ്ങൾക്കായി തുറന്നുകൊടുത്തു.",
+          "meaningHi": "ऐतिहासिक परिसर को कल पुरातत्व मंत्री द्वारा जनता के लिए फिर से खोल दिया गया।",
+          "meaningTa": "வரலாற்று சிறப்புமிக்க வளாகம் நேற்று அமைச்சரால் மீண்டும் பொதுமக்களுக்காக திறக்கப்பட்டது.",
+          "audioPrompt": "The historic complex was formally reopened to the public by the archaeological heritage minister yesterday."
+        },
+        {
+          "text": "When ancient craftsmanship is protected with care, cultural identity is safely preserved for future generations.",
+          "meaningMl": "പുരാതന ശില്പകല ശ്രദ്ധയോടെ സംരക്ഷിക്കപ്പെടുമ്പോൾ, സാംസ്കാരിക വ്യക്തിത്വം വരുംതലമുറകൾക്കായി സുരക്ഷിതമായി കാത്തുസൂക്ഷിക്കപ്പെടുന്നു.",
+          "meaningHi": "जब शिल्प कौशल की रक्षा की जाती है, तो सांस्कृतिक पहचान भविष्य के लिए सुरक्षित रहती है।",
+          "meaningTa": "பாரம்பரிய கலை பாதுகாக்கப்படும் போது, கலாச்சாரம் எதிர்கால சந்ததியினருக்காகப் பாதுகாக்கப்படுகிறது.",
+          "audioPrompt": "When ancient craftsmanship is protected with care, cultural identity is safely preserved for future generations."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How many years old is the historic wooden palace?",
+            "ml": "ചരിത്രപ്രസിദ്ധമായ കൊട്ടാരത്തിന് എത്ര വർഷത്തെ പഴക്കമുണ്ട്?",
+            "hi": "महल कितने वर्ष पुराना है?",
+            "ta": "அரண்மனை எத்தனை ஆண்டுகள் பழமையானது?"
+          },
+          "options": [
+            "Fifty years",
+            "Five hundred years",
+            "Ten years",
+            "One century"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "It is five hundred years old.",
+            "ml": "500 വർഷം പഴക്കമുള്ളത് (Five hundred years old)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What was used to treat the teakwood carvings against insects?",
+            "ml": "പ്രാണികളെ അകറ്റാൻ തേക്ക് കൊത്തുപണികളിൽ എന്താണ് ഉപയോഗിച്ചത്?",
+            "hi": "कीड़ों से बचाने के लिए किस चीज का उपयोग किया गया?",
+            "ta": "மரவேலைப்பாடுகளைப் பாதுகாக்க என்ன பயன்படுத்தப்பட்டது?"
+          },
+          "options": [
+            "Artificial spray paint",
+            "Natural herbal resins",
+            "Heavy engine grease",
+            "Salty sea water"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Natural herbal resins.",
+            "ml": "പ്രകൃതിദത്ത ഔഷധക്കൂട്ടുകൾ (Natural herbal resins)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "How many historical weapons and oil lamps have been cataloged?",
+            "ml": "എത്ര പുരാതന ആയുധങ്ങളും വിളക്കുകളുമാണ് രേഖപ്പെടുത്തപ്പെട്ടത്?",
+            "hi": "कितने हथियारों और दीयों को सूचीबद्ध किया गया है?",
+            "ta": "எத்தனை ஆயுதங்களும் விளக்குகளும் ஆவணப்படுத்தப்பட்டுள்ளன?"
+          },
+          "options": [
+            "One hundred",
+            "Over twenty thousand",
+            "Five hundred",
+            "Ten"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Over twenty thousand items.",
+            "ml": "ഇരുപതിനായിരത്തിലധികം (Over twenty thousand)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +427,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d73_1",
-          "question": "Which word represents: 'വൈകിക്കുക'?",
+          "id": 1,
+          "question": "Convert this active sentence to passive: 'The chef prepared a delectable meal.'",
           "options": [
-            "create",
-            "listen",
-            "discover",
-            "delay"
+            "A delectable meal was prepared by the chef.",
+            "A delectable meal is prepare by the chef.",
+            "A delectable meal prepared the chef.",
+            "A delectable meal was prepare by the chef."
           ],
-          "answer": "delay",
-          "explanation": "delay എന്നാൽ വൈകിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "Past Simple Active (prepared) Passive ആകുമ്പോൾ 'was/were + V3' ആകും ('was prepared by the chef')."
         },
         {
-          "id": "trap_d73_2",
-          "question": "What is the past form (V2) of 'inform'?",
+          "id": 2,
+          "question": "Which of the following sentences is in the Passive Voice?",
           "options": [
-            "has inform",
-            "informs",
-            "informing",
-            "informed"
+            "The committee published the recommendations.",
+            "The recommendations were published by the committee.",
+            "The committee is publishing the report.",
+            "The committee will publish tomorrow."
           ],
-          "answer": "informed",
-          "explanation": "inform ന്റെ ഭൂതകാല രൂപം informed ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'The recommendations were published...' എന്നതിൽ വിഷയം പ്രവൃത്തി സ്വീകരിക്കുന്നതിനാൽ ഇത് Passive Voice ആണ്."
         },
         {
-          "id": "trap_d73_3",
-          "question": "What is the correct English word for 'അറിയിപ്പ്'?",
+          "id": 3,
+          "question": "Find the error: 'The report has being submitted to the director.'",
           "options": [
-            "routine",
-            "knowledge",
-            "courage",
-            "announcement"
+            "'being' should be 'been' in Present Perfect passive.",
+            "'submitted' should be 'submit'.",
+            "'to' should be 'at'.",
+            "There is no error."
           ],
-          "answer": "announcement",
-          "explanation": "അറിയിപ്പ് എന്നാൽ ഇംഗ്ലീഷിൽ announcement."
+          "correctIndex": 0,
+          "explanationMl": "Present Perfect passive ൽ 'has been + V3' ആണ് വരുന്നത്, 'being' അല്ല ('The report has been submitted')."
         }
       ],
       "description": {
@@ -334,6 +470,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +512,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +549,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 73 Gate Exam (5 Qs)",

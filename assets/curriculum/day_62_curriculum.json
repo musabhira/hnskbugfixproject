@@ -22,112 +22,96 @@
     "totalCoinsReward": 112
   },
   "grammarRule": {
-    "formula": "Mixed Conditionals",
+    "formula": "Have you ever + V3...? / I have never + V3...",
     "explanation": {
-      "ml": "ജീവിതാനുഭവങ്ങൾ: Have you ever...? എന്ന വിഷയത്തിൽ Have you ever + V3? / I have never + V3 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Have you ever + V3? / I have never + V3 correctly in spoken English."
+      "ml": "ജീവിതത്തിൽ ഇന്നുവരെ ഏതെങ്കിലും കാര്യം അനുഭവിച്ചിട്ടുണ്ടോ എന്ന് ചോദിക്കാൻ 'Have you ever + V3' എന്നും, ഒരിക്കലും ചെയ്തിട്ടില്ലെന്ന് പറയാൻ 'I have never + V3' എന്നും ഉപയോഗിക്കുന്നു.",
+      "en": "Master Life Experiences: Have you ever...? / I have never... with clear formula: Have you ever + V3...? / I have never + V3..."
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Have you ever traveled abroad?",
-      "en": "Golden Rule: Practice 'Have you ever traveled abroad?' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 'Ever' ചോദ്യങ്ങളിൽ ചോദിക്കാൻ ഉപയോഗിക്കുന്നു. നെഗറ്റീവ് ആയി 'never' പറയുമ്പോൾ 'not' ചേർക്കേണ്ടതില്ല ('I have never seen', not 'I haven't never seen').",
+      "en": "Golden Tip: 'Ever' ചോദ്യങ്ങളിൽ ചോദിക്കാൻ ഉപയോഗിക്കുന്നു. നെഗറ്റീവ് ആയി 'never' പറയുമ്പോൾ 'not' ചേർക്കേണ്ടതില്ല ('I have never seen', not 'I haven't never seen')."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "travel",
-        "v2": "traveled",
-        "v3": "traveled",
-        "meaning": {
-          "ml": "യാത്ര ചെയ്തിട്ടുണ്ടോ",
-          "hi": "യാത്ര ചെയ്തിട്ടുണ്ടോ",
-          "ta": "യാത്ര ചെയ്തിട്ടുണ്ടോ"
-        },
-        "example": "Have you ever traveled abroad?",
-        "exampleMl": "യാത്ര ചെയ്തിട്ടുണ്ടോ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "taste",
-        "v2": "tasted",
-        "v3": "tasted",
-        "meaning": {
-          "ml": "രുചിക്കുക",
-          "hi": "चखना",
-          "ta": "சுவை"
-        },
-        "example": "Have you ever tasted sushi?",
-        "exampleMl": "രുചിച്ചിട്ടുണ്ടോ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "fly",
-        "v2": "flew",
-        "v3": "flown",
-        "meaning": {
-          "ml": "വിമാനത്തിൽ പറന്നിട്ടുണ്ടോ",
-          "hi": "വിമാനത്തിൽ പറന്നിട്ടുണ്ടോ",
-          "ta": "വിമാനത്തിൽ പറന്നിട്ടുണ്ടോ"
-        },
-        "example": "Have you ever flown in a plane?",
-        "exampleMl": "വിമാനത്തിൽ പറന്നിട്ടുണ്ടോ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "meet",
-        "v2": "met",
-        "v3": "met",
-        "meaning": {
-          "ml": "കണ്ടുമുട്ടുക",
-          "hi": "मिलना",
-          "ta": "சந்தி"
-        },
-        "example": "Have you ever met a celebrity?",
-        "exampleMl": "കണ്ടിട്ടുണ്ടോ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "experience",
+        "word": "Adventurous",
+        "partOfSpeech": "adjective",
+        "definition": "Willing to take risks or try out new experiences.",
         "meaning": {
-          "ml": "പരിചയം",
-          "hi": "अनुभव",
-          "ta": "அனுபவம்"
+          "ml": "സാഹസികമായ / പുതിയ അനുഭവങ്ങൾ തേടുന്ന",
+          "hi": "साहसी",
+          "ta": "துணிகரமான",
+          "te": "సాహసోపేతమైన",
+          "kn": "ಸಾಹಸಮಯ"
         },
-        "example": "Real experience builds true confidence."
+        "example": "His adventurous spirit led him to backpack across the Himalayan ranges alone."
       },
       {
-        "word": "life",
+        "word": "Expedition",
+        "partOfSpeech": "noun",
+        "definition": "A journey undertaken by a group of people with a particular purpose, especially that of exploration.",
         "meaning": {
-          "ml": "ജീവിതം",
-          "hi": "ജീവിതം",
-          "ta": "ജീവിതം"
+          "ml": "സാഹസിക പര്യവേഷണം",
+          "hi": "अन्वेषण अभियान",
+          "ta": "ஆராய்ச்சிப் பயணம்",
+          "te": "పరిశోధన యాత్ర",
+          "kn": "ಅನ್ವೇಷಣಾ ಯಾತ್ರೆ"
         },
-        "example": "We learned about life in today's lesson."
+        "example": "The wildlife photographers embarked on an Arctic expedition to film polar bears."
       },
       {
-        "word": "adventure",
+        "word": "Summit",
+        "partOfSpeech": "noun",
+        "definition": "The highest point of a hill or mountain.",
         "meaning": {
-          "ml": "സാഹസികത",
-          "hi": "സാഹസികത",
-          "ta": "സാഹസികത"
+          "ml": "മലമുകൾ / കൊടുമുടി",
+          "hi": "शिखर",
+          "ta": "சிகரம்",
+          "te": "శిఖరము",
+          "kn": "ಶಿಖರ"
         },
-        "example": "We learned about adventure in today's lesson."
+        "example": "The mountaineers reached the rocky summit just before the morning sunrise."
       },
       {
-        "word": "abroad",
+        "word": "Trekking",
+        "partOfSpeech": "noun",
+        "definition": "The activity of walking long distances on foot for pleasure, especially across hills or mountains.",
         "meaning": {
-          "ml": "വിദേശം",
-          "hi": "വിദേശം",
-          "ta": "വിദേശം"
+          "ml": "കാൽനടയായുള്ള മലകയറ്റം",
+          "hi": "पहाड़ी पैदल यात्रा",
+          "ta": "மலை நடைபயணம்",
+          "te": "కొండప్రాంత నడక",
+          "kn": "ಬೆಟ್ಟದ ಕಾಲ್ನಡಿಗೆ"
         },
-        "example": "We learned about abroad in today's lesson."
+        "example": "We went trekking through dense pine forests during our autumn vacation."
       },
       {
-        "word": "memory",
+        "word": "Unforgettable",
+        "partOfSpeech": "adjective",
+        "definition": "Impossible to forget; very memorable.",
         "meaning": {
-          "ml": "ഓർമ്മ",
-          "hi": "ഓർമ്മ",
-          "ta": "ഓർമ്മ"
+          "ml": "ഒരിക്കലും മറക്കാനാവാത്ത",
+          "hi": "अविस्मरणीय",
+          "ta": "மறக்க முடியாத",
+          "te": "మరువలేని",
+          "kn": "ಮರೆಯಲಾಗದ"
         },
-        "example": "We learned about memory in today's lesson."
+        "example": "Sailing through glacial Norwegian fjords was an unforgettable experience."
+      },
+      {
+        "word": "Continent",
+        "partOfSpeech": "noun",
+        "definition": "Any of the world's main continuous expanses of land.",
+        "meaning": {
+          "ml": "വൻകര / ഭൂഖണ്ഡം",
+          "hi": "महाद्वीप",
+          "ta": "கண்டம்",
+          "te": "ఖండము",
+          "kn": "ಖಂಡ"
+        },
+        "example": "She has traveled across five continents to research marine biodiversity."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Life Experiences: Have you ever...?",
-        "ml": "പാഠം: ജീവിതാനുഭവങ്ങൾ: Have you ever...?"
+        "en": "Concept Room: Life Experiences: Have you ever...? / I have never...",
+        "ml": "പാഠം: ജീവിതാനുഭവങ്ങൾ പങ്കുവെക്കൽ (Have you ever / I have never)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Have you ever + V3...? / I have never + V3...",
+        "ml": "ജീവിതത്തിൽ ഇന്നുവരെ ഏതെങ്കിലും കാര്യം അനുഭവിച്ചിട്ടുണ്ടോ എന്ന് ചോദിക്കാൻ 'Have you ever + V3' എന്നും, ഒരിക്കലും ചെയ്തിട്ടില്ലെന്ന് പറയാൻ 'I have never + V3' എന്നും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Have you ever traveled abroad?",
-        "Have you ever tasted sushi?",
-        "Have you ever flown in a plane?"
+        "Have you ever climbed a high mountain peak during snowy winter ?",
+        "I have never tasted traditional Japanese matcha green tea in my life .",
+        "She has visited seven different countries across two continents this year .",
+        "Have they ever witnessed a live orchestral performance in a theater ?",
+        "He has never driven an electric automobile on an express highway ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Life Experiences: Have you ever...?",
-        "ml": "റീഡിങ് റൂം: ജീവിതാനുഭവങ്ങൾ: Have you ever...?"
+        "en": "Reading Room: Voices Across the Globe",
+        "ml": "റീഡിങ് റൂം: ജീവിതാനുഭവങ്ങൾ പങ്കുവെക്കൽ (Have you ever / I have never)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Have you ever traveled abroad?",
-          "meaningMl": "യാത്ര ചെയ്തിട്ടുണ്ടോ - Have you ever traveled abroad?",
-          "audioPrompt": "Have you ever traveled abroad?"
+          "text": "Travel documentarian Arjun has journeyed across forty-two countries to capture indigenous folklore.",
+          "meaningMl": "തദ്ദേശീയ നാടോടിക്കഥകൾ പകർത്താനായി യാത്രാ ഡോക്യുമെന്ററി നിർമ്മാതാവ് അർജുൻ നാൽപ്പത്തിരണ്ട് രാജ്യങ്ങളിലൂടെ യാത്ര ചെയ്തിട്ടുണ്ട്.",
+          "meaningHi": "वृत्तचित्र निर्माता अर्जुन ने लोककथाओं को रिकॉर्ड करने के लिए बयालीस देशों की यात्रा की है।",
+          "meaningTa": "நாட்டுப்புறக் கதைகளை ஆவணப்படுத்த அர்ஜுன் நாற்பத்திரண்டு நாடுகளுக்குப் பயணம் செய்துள்ளார்.",
+          "audioPrompt": "Travel documentarian Arjun has journeyed across forty-two countries to capture indigenous folklore."
         },
         {
-          "text": "Have you ever tasted sushi?",
-          "meaningMl": "രുചിച്ചിട്ടുണ്ടോ - Have you ever tasted sushi?",
-          "audioPrompt": "Have you ever tasted sushi?"
+          "text": "He has interviewed remote village elders who have preserved ancient oral melodies for generations.",
+          "meaningMl": "തലമുറകളായി പുരാതന പാട്ടുകൾ കാത്തുസൂക്ഷിച്ച വിദൂര ഗ്രാമങ്ങളിലെ മുതിർന്നവരെ അദ്ദേഹം അഭിമുഖം ചെയ്തിട്ടുണ്ട്.",
+          "meaningHi": "उन्होंने दूरदराज के ग्रामीणों का साक्षात्कार लिया है जिन्होंने पीढ़ियों से प्राचीन धुनों को संजोया है।",
+          "meaningTa": "பழங்கால பாடல்களைப் பாதுகாத்து வரும் தொலைதூர கிராமப் பெரியவர்களை அவர் பேட்டி கண்டுள்ளார்.",
+          "audioPrompt": "He has interviewed remote village elders who have preserved ancient oral melodies for generations."
         },
         {
-          "text": "Daily practice of Life Experiences: Have you ever...? gives you great confidence in English.",
-          "meaningMl": "ജീവിതാനുഭവങ്ങൾ: Have you ever...? ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Life Experiences: Have you ever...? gives you great confidence in English."
+          "text": "Despite facing perilous blizzards in the Andes, Arjun has never lost his genuine passion for cultural discovery.",
+          "meaningMl": "ആൻഡീസ് പർവതനിരകളിൽ അതികഠിനമായ ഹിമപാതങ്ങൾ നേരിട്ടിട്ടും, സാംസ്കാരിക കണ്ടെത്തലുകളോടുള്ള തന്റെ ആത്മാർത്ഥമായ താല്പര്യം അർജുൻ ഒരിക്കലും കൈവിട്ടിട്ടില്ല.",
+          "meaningHi": "कठिन बर्फीले तूफानों का सामना करने के बावजूद, अर्जुन ने अपनी रुचि कभी नहीं खोई है।",
+          "meaningTa": "பனிப்புயல்களை எதிர்கொண்ட போதிலும், அர்ஜுன் தன் ஆர்வத்தை ஒருபோதும் இழந்ததில்லை.",
+          "audioPrompt": "Despite facing perilous blizzards in the Andes, Arjun has never lost his genuine passion for cultural discovery."
+        },
+        {
+          "text": "Millions of curious viewers have watched his cinematic documentaries on international streaming channels.",
+          "meaningMl": "ദശലക്ഷക്കണക്കിന് ആളുകൾ അന്താരാഷ്ട്ര സ്ട്രീമിംഗ് പ്ലാറ്റ്‌ഫോമുകളിൽ അദ്ദേഹത്തിന്റെ സിനിമാറ്റിക് ഡോക്യുമെന്ററികൾ കണ്ടിട്ടുണ്ട്.",
+          "meaningHi": "लाखों दर्शकों ने अंतरराष्ट्रीय स्ट्रीमिंग चैनलों पर उनके वृत्तचित्र देखे हैं।",
+          "meaningTa": "மில்லியன் கணக்கான மக்கள் அவரது ஆவணப்படங்களை ஸ்ட்ரீமிங் தளங்களில் பார்த்துள்ளனர்.",
+          "audioPrompt": "Millions of curious viewers have watched his cinematic documentaries on international streaming channels."
+        },
+        {
+          "text": "Have you ever wondered what lessons ancient cultures can teach our busy modern world?",
+          "meaningMl": "പുരാതന സംസ്കാരങ്ങൾക്ക് നമ്മുടെ തിരക്കുപിടിച്ച ആധുനിക ലോകത്തെ എന്ത് പഠിപ്പിക്കാൻ കഴിയും എന്ന് നിങ്ങൾ എപ്പോഴെങ്കിലും ചിന്തിച്ചിട്ടുണ്ടോ?",
+          "meaningHi": "क्या आपने कभी सोचा है कि प्राचीन संस्कृतियाँ हमारी व्यस्त दुनिया को क्या सिखा सकती हैं?",
+          "meaningTa": "பழங்கால கலாச்சாரங்கள் நமக்கு என்ன கற்றுக்கொடுக்க முடியும் என்று நீங்கள் யோசித்ததுண்டா?",
+          "audioPrompt": "Have you ever wondered what lessons ancient cultures can teach our busy modern world?"
+        },
+        {
+          "text": "Arjun believes that human empathy is the most powerful universal bridge we have ever discovered.",
+          "meaningMl": "മനുഷ്യ സഹാനുഭൂതിയാണ് നാം ഇതുവരെ കണ്ടെത്തിയിട്ടുള്ളതിൽ വച്ച് ഏറ്റവും ശക്തമായ സാർവത്രിക പാലം എന്ന് അർജുൻ വിശ്വസിക്കുന്നു.",
+          "meaningHi": "अर्जुन का मानना है कि सहानुभूति सबसे शक्तिशाली पुल है जिसे हमने कभी खोजा है।",
+          "meaningTa": "மனித பச்சாதாபமே நாம் கண்டறிந்த மிக வலிமையான பாலம் என்று அர்ஜுன் நம்புகிறார்.",
+          "audioPrompt": "Arjun believes that human empathy is the most powerful universal bridge we have ever discovered."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "Across how many countries has Arjun journeyed for his folklore project?",
+            "ml": "തന്റെ പ്രോജക്റ്റിനായി അർജുൻ എത്ര രാജ്യങ്ങളിലൂടെ യാത്ര ചെയ്തു?",
+            "hi": "अर्जुन ने कितने देशों की यात्रा की है?",
+            "ta": "அர்ஜுன் எத்தனை நாடுகளுக்குப் பயணம் செய்துள்ளார்?"
+          },
+          "options": [
+            "Five countries",
+            "Forty-two countries",
+            "Ten islands",
+            "One single city"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He has journeyed across forty-two countries.",
+            "ml": "42 രാജ്യങ്ങളിലൂടെ (forty-two countries)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What weather obstacle did Arjun encounter in the Andes mountains?",
+            "ml": "ആൻഡീസ് പർവതനിരകളിൽ അർജുൻ നേരിട്ട കാലാവസ്ഥാ തടസ്സം എന്തായിരുന്നു?",
+            "hi": "अर्जुन को किस मौसम का सामना करना पड़ा?",
+            "ta": "ஆண்டீஸ் மலையில் அர்ஜுன் என்ன வானிலை தடையை எதிர்கொண்டார்?"
+          },
+          "options": [
+            "Desert sandstorms",
+            "Perilous blizzards",
+            "Tropical monsoon heatwaves",
+            "Volcanic ash clouds"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He faced perilous blizzards in the Andes.",
+            "ml": "അപകടകരമായ ഹിമപാതങ്ങൾ (perilous blizzards)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What does Arjun regard as the most powerful universal bridge?",
+            "ml": "ഏറ്റവും ശക്തമായ സാർവത്രിക പാലമായി അർജുൻ കാണുന്നത് എന്തിനെയാണ്?",
+            "hi": "अर्जुन सबसे शक्तिशाली पुल किसे मानते हैं?",
+            "ta": "மிக வலிமையான பாலமாக அர்ஜுன் கருதுவது எதை?"
+          },
+          "options": [
+            "High-speed trains",
+            "Human empathy",
+            "Financial wealth",
+            "Satellite antennas"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Human empathy is the most powerful universal bridge.",
+            "ml": "മനുഷ്യ സഹാനുഭൂതി (Human empathy)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d62_1",
-          "question": "Which word represents: 'യാത്ര ചെയ്തിട്ടുണ്ടോ'?",
+          "id": 1,
+          "question": "Select the sentence with the correct placement of 'never':",
           "options": [
-            "listen",
-            "travel",
-            "forget",
-            "create"
+            "I have never visited Australia.",
+            "I never have visited Australia.",
+            "I have visited never Australia.",
+            "Never I have visited Australia."
           ],
-          "answer": "travel",
-          "explanation": "travel എന്നാൽ യാത്ര ചെയ്തിട്ടുണ്ടോ എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanationMl": "'Never' വരുന്നത് 'have' നും main verb നും ഇടയിലാണ് ('I have never visited')."
         },
         {
-          "id": "trap_d62_2",
-          "question": "What is the past form (V2) of 'taste'?",
+          "id": 2,
+          "question": "Is this sentence correct? 'Have you ever saw a shooting star?'",
           "options": [
-            "tasted",
-            "tasteing",
-            "tastes",
-            "has taste"
+            "No, 'saw' should be 'seen' (V3 form).",
+            "Yes, it is completely correct.",
+            "No, 'have' should be 'did'.",
+            "No, 'ever' should be removed."
           ],
-          "answer": "tasted",
-          "explanation": "taste ന്റെ ഭൂതകാല രൂപം tasted ആണ്."
+          "correctIndex": 0,
+          "explanationMl": "'Have you ever' ന് ശേഷം ക്രിയയുടെ Past Participle (V3) രൂപമായ 'seen' ഉപയോഗിക്കണം ('Have you ever seen...')."
         },
         {
-          "id": "trap_d62_3",
-          "question": "What is the correct English word for 'പരിചയം'?",
+          "id": 3,
+          "question": "Which of the following avoids a double negative error?",
           "options": [
-            "knowledge",
-            "courage",
-            "success",
-            "experience"
+            "I haven't never flown on an airplane.",
+            "I have never flown on an airplane.",
+            "I don't never fly on airplanes.",
+            "I haven't no experience flying."
           ],
-          "answer": "experience",
-          "explanation": "പരിചയം എന്നാൽ ഇംഗ്ലീഷിൽ experience."
+          "correctIndex": 1,
+          "explanationMl": "'Never' ഇതിനകം തന്നെ നെഗറ്റീവ് ആയതിനാൽ വീണ്ടും 'haven't' ഉപയോഗിക്കുന്നത് double negative തെറ്റാണ്. 'I have never flown' ആണ് ശരി."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 62 Gate Exam (5 Qs)",

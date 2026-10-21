@@ -22,112 +22,96 @@
     "totalCoinsReward": 136
   },
   "grammarRule": {
-    "formula": "Professional and Formal English – Meetings, Emails, Presentations",
+    "formula": "Bite the bullet / Break the ice / Call it a day / Burn the midnight oil / See eye to eye / Piece of cake",
     "explanation": {
-      "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1 എന്ന വിഷയത്തിൽ Bite the bullet, Break the ice, Piece of cake എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Bite the bullet, Break the ice, Piece of cake correctly in spoken English."
+      "ml": "നേറ്റീവ് സ്പീക്കർമാർ സംഭാഷണങ്ങളിൽ സാധാരണയായി ഉപയോഗിക്കുന്ന ഏറ്റവും പ്രധാനപ്പെട്ട ശൈലികൾ (Idioms). അക്ഷരാർത്ഥത്തിലല്ല, മറിച്ച് അവയുടെ ആന്തരിക അർത്ഥത്തിലാണ് ഇവ ഉപയോഗിക്കേണ്ടത്.",
+      "en": "Master Native Idioms in Context: Vol 1 with clear formula: Bite the bullet / Break the ice / Call it a day / Burn the midnight oil / See eye to eye / Piece of cake"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Break the ice with a smile.",
-      "en": "Golden Rule: Practice 'Break the ice with a smile.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: ഇംഗ്ലീഷ് കൂടുതൽ സ്വാഭാവികവും ഭംഗിയുള്ളതുമാക്കാൻ അനുയോജ്യമായ സന്ദർഭങ്ങളിൽ ഇത്തരം ശൈലികൾ ഉപയോഗിക്കുക.",
+      "en": "Golden Tip: ഇംഗ്ലീഷ് കൂടുതൽ സ്വാഭാവികവും ഭംഗിയുള്ളതുമാക്കാൻ അനുയോജ്യമായ സന്ദർഭങ്ങളിൽ ഇത്തരം ശൈലികൾ ഉപയോഗിക്കുക."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "break",
-        "v2": "broke",
-        "v3": "broken",
-        "meaning": {
-          "ml": "തകർക്കുക",
-          "hi": "തകർക്കുക",
-          "ta": "തകർക്കുക"
-        },
-        "example": "Break the ice with a smile.",
-        "exampleMl": "തകർക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "bite",
-        "v2": "bit",
-        "v3": "bitten",
-        "meaning": {
-          "ml": "നേരിടുക",
-          "hi": "നേരിടുക",
-          "ta": "നേരിടുക"
-        },
-        "example": "Bite the bullet and speak up.",
-        "exampleMl": "നേരിടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "sail",
-        "v2": "sailed",
-        "v3": "sailed",
-        "meaning": {
-          "ml": "സുഗമമായി മുന്നേറുക",
-          "hi": "സുഗമമായി മുന്നേറുക",
-          "ta": "സുഗമമായി മുന്നേറുക"
-        },
-        "example": "Sailed through the exam.",
-        "exampleMl": "സുഗമമായി മുന്നേറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "cost",
-        "v2": "cost",
-        "v3": "cost",
-        "meaning": {
-          "ml": "വിലയാകുക",
-          "hi": "कीमत होना",
-          "ta": "விலை ஆகு"
-        },
-        "example": "It didn't cost an arm and a leg.",
-        "exampleMl": "വിലയാകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "idiom",
+        "word": "Idiomatic",
+        "partOfSpeech": "adjective",
+        "definition": "Using, containing, or denoting expressions that are natural to a native speaker.",
         "meaning": {
-          "ml": "ശൈലി",
-          "hi": "ശൈലി",
-          "ta": "ശൈലി"
+          "ml": "സ്വാഭാവിക ശൈലിയുള്ള / ഇഡിയമാറ്റിക്",
+          "hi": "मुहावरेदार",
+          "ta": "மரபுத்தொடர் சார்ந்த",
+          "te": "జాతీయపరమైన",
+          "kn": "ರೂಢಿಪ್ರಯೋಗದ"
         },
-        "example": "We learned about idiom in today's lesson."
+        "example": "Her idiomatic English sounded just like a lifelong resident of London."
       },
       {
-        "word": "expression",
+        "word": "Metaphor",
+        "partOfSpeech": "noun",
+        "definition": "A figure of speech in which a word or phrase is applied to an object or action to which it is not literally applicable.",
         "meaning": {
-          "ml": "പ്രയോഗം",
-          "hi": "പ്രയോഗം",
-          "ta": "പ്രയോഗം"
+          "ml": "രൂപകം / ഉപമ",
+          "hi": "रूपक",
+          "ta": "உருவகம்",
+          "te": "రూపకం",
+          "kn": "ರೂಪಕ"
         },
-        "example": "We learned about expression in today's lesson."
+        "example": "The poet used the stormy sea as a dramatic metaphor for human struggle."
       },
       {
-        "word": "meaning",
+        "word": "Expression",
+        "partOfSpeech": "noun",
+        "definition": "A word or phrase, especially an idiomatic one, used to convey an idea.",
         "meaning": {
-          "ml": "അർത്ഥം",
-          "hi": "അർത്ഥം",
-          "ta": "അർത്ഥം"
+          "ml": "ശൈലി / പ്രയോഗം / ഭാവം",
+          "hi": "अभिव्यक्ति / मुहावरा",
+          "ta": "சொற்றொடர் / வெளிப்பாடு",
+          "te": "వ్యక్తీకరణ",
+          "kn": "ಅಭಿವ್ಯಕ್ತಿ"
         },
-        "example": "We learned about meaning in today's lesson."
+        "example": "'Break a leg' is an affectionate theatrical expression wishing performers good luck."
       },
       {
-        "word": "flow",
+        "word": "Vernacular",
+        "partOfSpeech": "noun",
+        "definition": "The language or dialect spoken by the ordinary people in a particular country or region.",
         "meaning": {
-          "ml": "ഒഴുക്ക്",
-          "hi": "ഒഴുക്ക്",
-          "ta": "ഒഴുക്ക്"
+          "ml": "തനതു ഭാഷാ ശൈലി / പ്രാദേശിക സംസാരശൈലി",
+          "hi": "देशी भाषा / बोलचाल की भाषा",
+          "ta": "வட்டார வழக்கு / பேச்சு மொழி",
+          "te": "మాండలిక భాష",
+          "kn": "ಸ್ಥಳೀಯ ಆಡುಭಾಷೆ"
         },
-        "example": "We learned about flow in today's lesson."
+        "example": "He effortlessly blended formal academic rhetoric with lively colloquial vernacular."
       },
       {
-        "word": "native",
+        "word": "Figurative",
+        "partOfSpeech": "adjective",
+        "definition": "Departing from a literal use of words; metaphorical.",
         "meaning": {
-          "ml": "നേറ്റീവ്",
-          "hi": "നേറ്റീവ്",
-          "ta": "നേറ്റീവ്"
+          "ml": "ആലങ്കാരികമായ / പരോക്ഷമായ",
+          "hi": "आलंकारिक / प्रतीकात्मक",
+          "ta": "உருவக / அலங்கார",
+          "te": "అలంకారిక",
+          "kn": "ಅಲಂಕಾರಿಕ"
         },
-        "example": "We learned about native in today's lesson."
+        "example": "When she said her heart melted, she was speaking in a figurative sense."
+      },
+      {
+        "word": "Eloquence",
+        "partOfSpeech": "noun",
+        "definition": "Fluent or persuasive speaking or writing.",
+        "meaning": {
+          "ml": "വാക്ചാതുര്യം / പ്രസംഗ വൈഭവം",
+          "hi": "वाकपटुता / सुवचन",
+          "ta": "நாவன்மை / சொல்வன்மை",
+          "te": "వాక్చాతుర్యం",
+          "kn": "ವಾಕ್ಚಾತುರ್ಯ"
+        },
+        "example": "The human rights advocate addressed the United Nations with moving eloquence."
       }
     ]
   },
@@ -136,8 +120,8 @@
       "stepNumber": 1,
       "id": "step_1_concept_room",
       "title": {
-        "en": "Concept Room: Native Everyday Idioms: Volume 1",
-        "ml": "പാഠം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1"
+        "en": "Concept Room: Native Idioms in Context: Vol 1",
+        "ml": "പാഠം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 1)"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Bite the bullet / Break the ice / Call it a day / Burn the midnight oil / See eye to eye / Piece of cake",
+        "ml": "നേറ്റീവ് സ്പീക്കർമാർ സംഭാഷണങ്ങളിൽ സാധാരണയായി ഉപയോഗിക്കുന്ന ഏറ്റവും പ്രധാനപ്പെട്ട ശൈലികൾ (Idioms). അക്ഷരാർത്ഥത്തിലല്ല, മറിച്ച് അവയുടെ ആന്തരിക അർത്ഥത്തിലാണ് ഇവ ഉപയോഗിക്കേണ്ടത്."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Break the ice with a smile.",
-        "Bite the bullet and speak up.",
-        "Sailed through the exam."
+        "We must bite the bullet and invest in modernizing our legacy server software infrastructure .",
+        "The workshop facilitator organized a fun group game to break the ice among delegates .",
+        "We have accomplished all major tasks on today ' s agenda , so let us call it a day .",
+        "Our engineering squad burned the midnight oil to submit the patent application before the deadline .",
+        "The two executive founders do not always see eye to eye on long term marketing strategy ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -216,8 +202,8 @@
       "stepNumber": 5,
       "id": "step_5_reading_room",
       "title": {
-        "en": "Reading Room: Native Everyday Idioms: Volume 1",
-        "ml": "റീഡിങ് റൂം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1"
+        "en": "Reading Room: The Midnight Breakthrough",
+        "ml": "റീഡിങ് റൂം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ (Idioms Vol 1)"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Break the ice with a smile.",
-          "meaningMl": "തകർക്കുക - Break the ice with a smile.",
-          "audioPrompt": "Break the ice with a smile."
+          "text": "At three o'clock in the morning, the robotics laboratory at Kochi Tech Park was illuminated by glowing computer screens.",
+          "meaningMl": "പുലർച്ചെ മൂന്ന് മണിക്ക് കൊച്ചി ടെക് പാർക്കിലെ റോബോട്ടിക്സ് ലാബിൽ കമ്പ്യൂട്ടർ സ്ക്രീനുകൾ തിളങ്ങിനിൽക്കുന്നുണ്ടായിരുന്നു.",
+          "meaningHi": "रात तीन बजे कोच्चि टेक पार्क की लैब कंप्यूटर स्क्रीनों से जगमगा रही थी।",
+          "meaningTa": "அதிகாலை மூன்று மணிக்கு கொச்சி டெக் பார்க் ரோபோட்டிக்ஸ் ஆய்வகம் ஒளிரும் திரைகளால் வெளிச்சமாக இருந்தது.",
+          "audioPrompt": "At three o'clock in the morning, the robotics laboratory at Kochi Tech Park was illuminated by glowing computer screens."
         },
         {
-          "text": "Bite the bullet and speak up.",
-          "meaningMl": "നേരിടുക - Bite the bullet and speak up.",
-          "audioPrompt": "Bite the bullet and speak up."
+          "text": "Lead software engineer Tarun and his teammates had been burning the midnight oil for three consecutive nights to debug autonomous rover navigation.",
+          "meaningMl": "റോവറിന്റെ നാവിഗേഷൻ തകരാർ പരിഹരിക്കാൻ ലീഡ് എൻജിനീയർ തരുണും സഹപ്രവർത്തകരും തുടർച്ചയായി മൂന്ന് രാത്രികളിൽ ഉറക്കമിളച്ച് ജോലി ചെയ്യുകയായിരുന്നു.",
+          "meaningHi": "तरुण और उनकी टीम ने रोवर के सॉफ्टवेयर को ठीक करने के लिए रात-दिन एक कर दिया था।",
+          "meaningTa": "தருணும் அவரது குழுவும் தொடர்ந்து மூன்று இரவுகள் கண்விழித்து உழைத்து வந்தனர்.",
+          "audioPrompt": "Lead software engineer Tarun and his teammates had been burning the midnight oil for three consecutive nights to debug autonomous rover navigation."
         },
         {
-          "text": "Daily practice of Native Everyday Idioms: Volume 1 gives you great confidence in English.",
-          "meaningMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1 ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Native Everyday Idioms: Volume 1 gives you great confidence in English."
+          "text": "The hardware and software divisions did not always see eye to eye regarding motor torque limits, causing persistent delays.",
+          "meaningMl": "മോട്ടോർ പരിധികളെക്കുറിച്ച് ഹാർഡ്‌വെയർ-സോഫ്റ്റ്‌വെയർ ടീമുകൾ എപ്പോഴും യോജിക്കാതിരുന്നത് കാലതാമസത്തിന് കാരണമായി.",
+          "meaningHi": "हार्डवेयर और सॉफ्टवेयर टीम मोटर सीमाओं पर हमेशा एकमत नहीं थीं।",
+          "meaningTa": "மோட்டார் வரம்புகள் குறித்து இரு குழுக்களும் எப்போதும் ஒத்துப் போகவில்லை.",
+          "audioPrompt": "The hardware and software divisions did not always see eye to eye regarding motor torque limits, causing persistent delays."
+        },
+        {
+          "text": "Realizing that postponing testing was no longer viable, Tarun decided to bite the bullet and rewrite the entire mathematical telemetry code himself.",
+          "meaningMl": "ഇനി നീട്ടിക്കൊണ്ടുപോകാൻ കഴിയില്ലെന്ന് മനസ്സിലാക്കി, ബുദ്ധിമുട്ടാണെങ്കിലും കോഡ് മുഴുവൻ സ്വയം മാറ്റിയെഴുതാൻ തരുൺ തീരുമാനിച്ചു.",
+          "meaningHi": "परीक्षण टालना संभव नहीं था, इसलिए तरुण ने खुद पूरा कोड दोबारा लिखने का कड़ा फैसला लिया।",
+          "meaningTa": "சோதனையை ஒத்திவைக்க முடியாது என்பதை உணர்ந்து, முழு குறியீட்டையும் தானே மாற்றியமைக்க துணிந்தார்.",
+          "audioPrompt": "Realizing that postponing testing was no longer viable, Tarun decided to bite the bullet and rewrite the entire mathematical telemetry code himself."
+        },
+        {
+          "text": "When the simulated Mars rover executed a flawless turn across artificial sandy boulders, the complex problem suddenly seemed like a piece of cake.",
+          "meaningMl": "റോവർ തടസ്സങ്ങളെ വിജയകരമായി മറികടന്നപ്പോൾ, ആ സങ്കീർണ്ണമായ പ്രശ്നം വളരെ ലളിതമായി തോന്നി.",
+          "meaningHi": "जब रोवर ने सफलतापूर्वक बाधाओं को पार किया, तो वह मुश्किल काम बहुत आसान लगा।",
+          "meaningTa": "ரோவர் மணல் பாறைகளைக் கடந்து சென்றபோது, கடினமான பிரச்சனை மிக எளிதாகத் தோன்றியது.",
+          "audioPrompt": "When the simulated Mars rover executed a flawless turn across artificial sandy boulders, the complex problem suddenly seemed like a piece of cake."
+        },
+        {
+          "text": "Exhausted yet triumphant, Tarun smiled warmly at his sleep-deprived comrades and said: 'Incredible work team, let us finally call it a day!'",
+          "meaningMl": "ക്ഷീണിതനെങ്കിലും സന്തുഷ്ടനായി തരുൺ തന്റെ കൂട്ടുകാരെ നോക്കി പുഞ്ചിരിച്ചു: 'അതിശയകരമായ ജോലി കൂട്ടുകാരെ, നമുക്കിനി ഇന്നത്തെ ജോലി അവസാനിപ്പിക്കാം!'",
+          "meaningHi": "थके हुए लेकिन विजयी, तरुण मुस्कुराए और बोले: 'शानदार काम दोस्तों, अब काम खत्म करते हैं!'",
+          "meaningTa": "வெற்றிப் புன்னகையுடன் தருண் தன் தோழர்களைப் பார்த்து கூறினார்: 'அற்புதமான பணி தோழர்களே, இன்றைய பணியை நிறைவு செய்வோம்!'",
+          "audioPrompt": "Exhausted yet triumphant, Tarun smiled warmly at his sleep-deprived comrades and said: 'Incredible work team, let us finally call it a day!'"
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What idiom describes Tarun and his teammates working late into the night for three days?",
+            "ml": "മൂന്ന് രാത്രികളിൽ ഉറക്കമിളച്ച് ജോലി ചെയ്തതിനെ സൂചിപ്പിക്കുന്ന ശൈലി ഏതാണ്?",
+            "hi": "देर रात तक काम करने के लिए किस मुहावरे का प्रयोग हुआ है?",
+            "ta": "இரவு முழுவதும் விழித்து வேலை செய்ததைக் குறிக்கும் பழமொழி எது?"
+          },
+          "options": [
+            "Bite the bullet",
+            "Burning the midnight oil",
+            "Piece of cake",
+            "Break the ice"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Burning the midnight oil.",
+            "ml": "ഉറക്കമിളച്ച് കഠിനാധ്വാനം ചെയ്യുക (Burning the midnight oil)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "On what topic did the hardware and software teams not see eye to eye?",
+            "ml": "ഏത് വിഷയത്തിലാണ് രണ്ട് ടീമുകളും പരസ്പരം യോജിക്കാതിരുന്നത്?",
+            "hi": "दोनों टीमें किस बात पर असहमत थीं?",
+            "ta": "இரு குழுக்களும் எந்த விஷயத்தில் ஒத்துப் போகவில்லை?"
+          },
+          "options": [
+            "Lunch menu preferences",
+            "Motor torque limits",
+            "Office wall paint colors",
+            "Keyboard models"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "Motor torque limits.",
+            "ml": "മോട്ടോർ ടോർക്ക് പരിധികൾ (Motor torque limits)."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did Tarun say to his team when the rover succeeded at dawn?",
+            "ml": "വിജയം കൈവരിച്ചപ്പോൾ തരുൺ തന്റെ ടീമിനോട് എന്താണ് പറഞ്ഞത്?",
+            "hi": "सफलता के बाद तरुण ने अपनी टीम से क्या कहा?",
+            "ta": "வெற்றிக்குப் பின் தருண் என்ன கூறினார்?"
+          },
+          "options": [
+            "'Keep working for twenty more hours!'",
+            "'Let us finally call it a day!'",
+            "'Delete all the software files!'",
+            "'Go away forever!'"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "'Let us finally call it a day!'",
+            "ml": "ഇന്നത്തെ ജോലി ഇവിടെ അവസാനിപ്പിക്കാം (call it a day)."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d86_1",
-          "question": "Which word represents: 'തകർക്കുക'?",
+          "id": 1,
+          "question": "What does the idiom 'bite the bullet' mean in modern English?",
           "options": [
-            "prepare",
-            "decide",
-            "remember",
-            "break"
+            "Literally chewing on ammunition.",
+            "Face a painful or unpleasant situation with courage and fortitude.",
+            "Shoot at a target in sports.",
+            "Go to the dentist immediately."
           ],
-          "answer": "break",
-          "explanation": "break എന്നാൽ തകർക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanationMl": "'Bite the bullet' എന്നാൽ ബുദ്ധിമുട്ടേറിയതോ അനിഷ്ടകരമായതോ ആയ ഒരു കാര്യത്തെ ധൈര്യത്തോടെ നേരിടുക എന്നാണ് അർത്ഥം."
         },
         {
-          "id": "trap_d86_2",
-          "question": "What is the past form (V2) of 'bite'?",
+          "id": 2,
+          "question": "If two managers 'do not see eye to eye', what does that signify?",
           "options": [
-            "bit",
-            "has bite",
-            "biteing",
-            "bites"
+            "They are blind.",
+            "They disagree with each other on that subject.",
+            "They are wearing dark sunglasses.",
+            "They refuse to look in mirrors."
           ],
-          "answer": "bit",
-          "explanation": "bite ന്റെ ഭൂതകാല രൂപം bit ആണ്."
+          "correctIndex": 1,
+          "explanationMl": "'Not see eye to eye' എന്നാൽ പരസ്പരം യോജിപ്പിലെത്താൻ കഴിയാതെ വിയോജിക്കുക (disagree with each other) എന്നാണ് അർത്ഥം."
         },
         {
-          "id": "trap_d86_3",
-          "question": "What is the correct English word for 'ശൈലി'?",
+          "id": 3,
+          "question": "Select the sentence where the idiom 'a piece of cake' is used correctly:",
           "options": [
-            "schedule",
-            "idiom",
-            "partner",
-            "progress"
+            "I ate an exam for dessert.",
+            "Don't worry about the driving test; with your practice, it will be a piece of cake.",
+            "Bake the computer into a piece of cake.",
+            "The weather was raining piece of cake."
           ],
-          "answer": "idiom",
-          "explanation": "ശൈലി എന്നാൽ ഇംഗ്ലീഷിൽ idiom."
+          "correctIndex": 1,
+          "explanationMl": "'A piece of cake' എന്നാൽ വളരെ എളുപ്പമുള്ള ഒരു കാര്യം (very easy task) എന്നാണ് അർത്ഥം."
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 86 Gate Exam (5 Qs)",

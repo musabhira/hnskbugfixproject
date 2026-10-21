@@ -22,112 +22,133 @@
     "totalCoinsReward": 82
   },
   "grammarRule": {
-    "formula": "Tense Consistency and Sequence of Tenses",
+    "formula": "Subject + Verb 2 (Past Form: went, visited, built, bought) + Object",
     "explanation": {
-      "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) എന്ന വിഷയത്തിൽ Subject + V2 past verb (I visited, I bought) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Subject + V2 past verb (I visited, I bought) correctly in spoken English."
+      "ml": "കഴിഞ്ഞുപോയ ഒരു നിശ്ചിത സമയത്ത് സംഭവിച്ച പ്രവൃത്തികളെക്കുറിച്ച് സംസാരിക്കാൻ ക്രിയയുടെ രണ്ടാം രൂപമായ V2 (Simple Past) ഉപയോഗിക്കുന്നു.",
+      "en": "Master Past Actions: Simple Past V2 with clear formula: Subject + Verb 2 (Past Form: went, visited, built, bought) + Object"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: I visited Munnar.",
-      "en": "Golden Rule: Practice 'I visited Munnar.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 ക്രമരഹിത ക്രിയകൾ (Irregular Verbs) ഓർക്കുക: Go -> Went, Buy -> Bought, See -> Saw, Write -> Wrote, Give -> Gave. V2 ക്രിയകൾക്കൊപ്പം 'did' ചേർക്കരുത്.",
+      "en": "Golden Tip: 💡 ക്രമരഹിത ക്രിയകൾ (Irregular Verbs) ഓർക്കുക: Go -> Went, Buy -> Bought, See -> Saw, Write -> Wrote, Give -> Gave. V2 ക്രിയകൾക്കൊപ്പം 'did' ചേർക്കരുത്."
     }
   },
   "vocabulary": {
     "verbs": [
       {
-        "v1": "visit",
-        "v2": "visited",
-        "v3": "visited",
+        "v1": "accomplish",
+        "v2": "accomplished",
+        "v3": "accomplished",
         "meaning": {
-          "ml": "സന്ദർശിക്കുക",
-          "hi": "സന്ദർശിക്കുക",
-          "ta": "സന്ദർശിക്കുക"
+          "ml": "വിജയകരമായി പൂർത്തിയാക്കുക",
+          "hi": "पूरा करना",
+          "ta": "வெற்றிகரமாக முடி"
         },
-        "example": "I visited Munnar.",
-        "exampleMl": "സന്ദർശിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "She accomplished all her designated quarterly targets yesterday.",
+        "exampleMl": "Achieve or complete successfully."
       },
       {
-        "v1": "cook",
-        "v2": "cooked",
-        "v3": "cooked",
+        "v1": "deliver",
+        "v2": "delivered",
+        "v3": "delivered",
         "meaning": {
-          "ml": "പാകം ചെയ്യുക",
-          "hi": "पकाना",
-          "ta": "சமை"
+          "ml": "എത്തിച്ചുകൊടുക്കുക / വിതരണം ചെയ്യുക",
+          "hi": "पहुँचाना / वितरित करना",
+          "ta": "வழங்கு"
         },
-        "example": "Mom cooked biryani.",
-        "exampleMl": "പാകം ചെയ്തു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "The courier delivered the important parcel before noon.",
+        "exampleMl": "Bring and hand over goods or information to the proper recipient."
       },
       {
-        "v1": "buy",
-        "v2": "bought",
-        "v3": "bought",
+        "v1": "recently",
+        "v2": "recentlyed",
+        "v3": "recentlyed",
         "meaning": {
-          "ml": "വാങ്ങുക",
-          "hi": "खरीदना",
-          "ta": "வாங்கு"
+          "ml": "അടുത്തകാലത്ത് / ഈയിടെ",
+          "hi": "हाल ही में",
+          "ta": "சமீபத்தில்"
         },
-        "example": "I bought a shirt.",
-        "exampleMl": "വാങ്ങി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "watch",
-        "v2": "watched",
-        "v3": "watched",
-        "meaning": {
-          "ml": "കാണുക",
-          "hi": "देखना",
-          "ta": "பார்"
-        },
-        "example": "We watched a movie.",
-        "exampleMl": "കണ്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+        "example": "They recently purchased a scenic cottage in the hills.",
+        "exampleMl": "At a recent time; not long ago."
       }
     ],
     "nouns": [
       {
-        "word": "yesterday",
+        "word": "Incident",
+        "partOfSpeech": "noun",
+        "definition": "An event or occurrence, typically one that is unusual or important.",
         "meaning": {
-          "ml": "ഇന്നലെ",
-          "hi": "ഇന്നലെ",
-          "ta": "ഇന്നലെ"
+          "ml": "സംഭവം",
+          "hi": "घटना",
+          "ta": "நிகழ்வு",
+          "te": "సంఘటన",
+          "kn": "ಘಟನೆ"
         },
-        "example": "We learned about yesterday in today's lesson."
+        "example": "We reported the traffic incident to the nearest police station."
       },
       {
-        "word": "trip",
+        "word": "Accomplish",
+        "partOfSpeech": "verb",
+        "definition": "Achieve or complete successfully.",
         "meaning": {
-          "ml": "യാത്ര",
-          "hi": "യാത്ര",
-          "ta": "യാത്ര"
+          "ml": "വിജയകരമായി പൂർത്തിയാക്കുക",
+          "hi": "पूरा करना",
+          "ta": "வெற்றிகரமாக முடி",
+          "te": "సాధించు",
+          "kn": "ಸಾಧಿಸು"
         },
-        "example": "We learned about trip in today's lesson."
+        "example": "She accomplished all her designated quarterly targets yesterday."
       },
       {
-        "word": "dinner",
+        "word": "Deliver",
+        "partOfSpeech": "verb",
+        "definition": "Bring and hand over goods or information to the proper recipient.",
         "meaning": {
-          "ml": "അത്താഴം",
-          "hi": "അത്താഴം",
-          "ta": "അത്താഴം"
+          "ml": "എത്തിച്ചുകൊടുക്കുക / വിതരണം ചെയ്യുക",
+          "hi": "पहुँचाना / वितरित करना",
+          "ta": "வழங்கு",
+          "te": "అందించు",
+          "kn": "ತಲುಪಿಸು"
         },
-        "example": "We learned about dinner in today's lesson."
+        "example": "The courier delivered the important parcel before noon."
       },
       {
-        "word": "show",
+        "word": "Previous",
+        "partOfSpeech": "adjective",
+        "definition": "Existing or occurring before in time or order.",
         "meaning": {
-          "ml": "ഷോ",
-          "hi": "ഷോ",
-          "ta": "ഷോ"
+          "ml": "കഴിഞ്ഞ / മുൻപത്തെ",
+          "hi": "पिछला",
+          "ta": "முந்தைய",
+          "te": "మునుపటి",
+          "kn": "ಹಿಂದಿನ"
         },
-        "example": "We learned about show in today's lesson."
+        "example": "Our previous company manager retired last month."
       },
       {
-        "word": "event",
+        "word": "Recently",
+        "partOfSpeech": "adverb",
+        "definition": "At a recent time; not long ago.",
         "meaning": {
-          "ml": "പരിപാടി",
-          "hi": "പരിപാടി",
-          "ta": "പരിപാടി"
+          "ml": "അടുത്തകാലത്ത് / ഈയിടെ",
+          "hi": "हाल ही में",
+          "ta": "சமீபத்தில்",
+          "te": "ఇటీవల",
+          "kn": "ಇತ್ತೀಚೆಗೆ"
         },
-        "example": "We learned about event in today's lesson."
+        "example": "They recently purchased a scenic cottage in the hills."
+      },
+      {
+        "word": "Memorable",
+        "partOfSpeech": "adjective",
+        "definition": "Worth remembering or easily remembered, especially because of being special.",
+        "meaning": {
+          "ml": "ഓർമ്മയിൽ തങ്ങിനിൽക്കുന്ന",
+          "hi": "यादगार",
+          "ta": "நினைவில் நிற்கக்கூடிய",
+          "te": "మరపురాని",
+          "kn": "ಸ್ಮರಣೀಯ"
+        },
+        "example": "Our family vacation to Munnar was a truly memorable journey."
       }
     ]
   },
@@ -137,7 +158,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: Past Actions: Simple Past V2",
-        "ml": "പാഠം: ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)"
+        "ml": "പാഠം: കഴിഞ്ഞകാല പ്രവൃത്തികൾ: Simple Past V2"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +166,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Subject + Verb 2 (Past Form: went, visited, built, bought) + Object",
+        "ml": "കഴിഞ്ഞുപോയ ഒരു നിശ്ചിത സമയത്ത് സംഭവിച്ച പ്രവൃത്തികളെക്കുറിച്ച് സംസാരിക്കാൻ ക്രിയയുടെ രണ്ടാം രൂപമായ V2 (Simple Past) ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +224,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "I visited Munnar.",
-        "Mom cooked biryani.",
-        "I bought a shirt."
+        "Yesterday I completed the backend database optimization and submitted my report .",
+        "Our engineering team launched the newly redesigned mobile software last Friday .",
+        "She met the visiting clients at the reception and escorted them inside .",
+        "We bought fresh organic vegetables directly from the village farmer market .",
+        "He spoke confidently during the entire panel interview session yesterday afternoon ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +240,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: Past Actions: Simple Past V2",
-        "ml": "റീഡിങ് റൂം: ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)"
+        "ml": "റീഡിങ് റൂം: കഴിഞ്ഞകാല പ്രവൃത്തികൾ: Simple Past V2"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +249,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "I visited Munnar.",
-          "meaningMl": "സന്ദർശിക്കുക - I visited Munnar.",
-          "audioPrompt": "I visited Munnar."
+          "text": "Yesterday, Master Somu woke up before dawn and swept his small carpenter workshop.",
+          "meaningMl": "ഇന്നലെ, പ്രഭാതത്തിന് മുൻപേ സോമു ആശാൻ ഉണർന്ന് തന്റെ ചെറിയ മരപ്പണിശാല അടിച്ചുവാരി വൃത്തിയാക്കി.",
+          "meaningHi": "कल मास्टर सोमु भोर से पहले उठे और अपनी छोटी बढ़ईगीरी की दुकान में झाड़ू लगाई।",
+          "meaningTa": "நேற்று மாஸ்டர் சோமு விடியற்காலையில் எழுந்து தனது மரப்பட்டறையைக் கூட்டினார்.",
+          "audioPrompt": "Yesterday, Master Somu woke up before dawn and swept his small carpenter workshop."
         },
         {
-          "text": "Mom cooked biryani.",
-          "meaningMl": "പാകം ചെയ്തു - Mom cooked biryani.",
-          "audioPrompt": "Mom cooked biryani."
+          "text": "He chose a smooth block of fragrant sandalwood and carved a graceful galloping horse.",
+          "meaningMl": "സുഗന്ധമുള്ള ചന്ദനത്തടിയുടെ മിനുസമുള്ള ഒരു കഷ്ണം തിരഞ്ഞെടുത്ത് അവൻ മനോഹരമായി കുതിച്ചുപായുന്ന ഒരു കുതിരയെ കൊത്തിയെടുത്തു.",
+          "meaningHi": "उन्होंने सुगंधित चंदन की लकड़ी का एक चिकना टुकड़ा चुना और एक सुंदर सरपट दौड़ता घोड़ा तराशा।",
+          "meaningTa": "அவர் சந்தன மரக்கட்டையைத் தேர்ந்தெடுத்து அழகான ஓடும் குதிரையைச் செதுக்கினார்.",
+          "audioPrompt": "He chose a smooth block of fragrant sandalwood and carved a graceful galloping horse."
         },
         {
-          "text": "Daily practice of Past Actions: Simple Past V2 gives you great confidence in English.",
-          "meaningMl": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of Past Actions: Simple Past V2 gives you great confidence in English."
+          "text": "His daughter painted the reins with natural ruby red lacquer from tree resin.",
+          "meaningMl": "അദ്ദേഹത്തിന്റെ മകൾ മരക്കറയിൽ നിന്നുള്ള ചുവന്ന പ്രകൃതിദത്ത ചായം കൊണ്ട് കുതിരയുടെ കടിഞ്ഞാൺ വരച്ചു.",
+          "meaningHi": "उनकी बेटी ने पेड़ के राल से बने प्राकृतिक लाल रंग से लगाम को रंगा।",
+          "meaningTa": "அவரது மகள் மரப் பிசினிலிருந்து எடுக்கப்பட்ட சிவப்பு நிறத்தால் கடிவாளத்தை வரைந்தாள்.",
+          "audioPrompt": "His daughter painted the reins with natural ruby red lacquer from tree resin."
+        },
+        {
+          "text": "In the afternoon, a little boy came to the shop clutching three shiny copper coins.",
+          "meaningMl": "ഉച്ചകഴിഞ്ഞ്, മൂന്ന് തിളങ്ങുന്ന ചെമ്പ് നാണയങ്ങളുമായി ഒരു ചെറിയ ആൺകുട്ടി കടയിലേക്ക് വന്നു.",
+          "meaningHi": "दोपहर में एक छोटा लड़का तीन चमकदार तांबे के सिक्के पकड़े दुकान पर आया।",
+          "meaningTa": "மதிய வேளையில் ஒரு சிறுவன் மூன்று செப்பு நாணயங்களுடன் கடைக்கு வந்தான்.",
+          "audioPrompt": "In the afternoon, a little boy came to the shop clutching three shiny copper coins."
+        },
+        {
+          "text": "Somu handed him the polished horse and smiled warmly at the child's shining eyes.",
+          "meaningMl": "സോമു മിനുസപ്പെടുത്തിയ കുതിരയെ അവന് നൽകുകയും കുട്ടിയുടെ തിളങ്ങുന്ന കണ്ണുകൾ കണ്ട് സ്നേഹത്തോടെ പുഞ്ചിരിക്കുകയും ചെയ്തു.",
+          "meaningHi": "सोमु ने उसे पॉलिश किया हुआ घोड़ा थमा दिया और बच्चे की चमकती आँखों को देखकर मुस्कुराए।",
+          "meaningTa": "சோமு பாலிஷ் செய்யப்பட்ட குதிரையை அவனிடம் கொடுத்து புன்னகைத்தார்.",
+          "audioPrompt": "Somu handed him the polished horse and smiled warmly at the child's shining eyes."
+        },
+        {
+          "text": "That joyful transaction filled the humble workshop with genuine warmth and happiness.",
+          "meaningMl": "ആ സന്തോഷകരമായ വിനിമയം ആ എളിയ പണിശാലയിൽ യഥാർത്ഥ സ്നേഹവും സന്തോഷവും നിറച്ചു.",
+          "meaningHi": "उस आनंदमय लेन-देन ने विनम्र कार्यशाला को वास्तविक गर्माहट और खुशी से भर दिया।",
+          "meaningTa": "அந்த மகிழ்ச்சியான தருணம் பட்டறையை உண்மையான அன்பால் நிரப்பியது.",
+          "audioPrompt": "That joyful transaction filled the humble workshop with genuine warmth and happiness."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "What kind of wood did Master Somu choose yesterday?",
+            "ml": "ഇന്നലെ സോമു ആശാൻ ഏത് തരം തടിയാണ് തിരഞ്ഞെടുത്തത്?",
+            "hi": "मास्टर सोमु ने किस प्रकार की लकड़ी चुनी?",
+            "ta": "மாஸ்டர் சோமு என்ன வகையான மரத்தைத் தேர்ந்தெடுத்தார்?"
+          },
+          "options": [
+            "Dark teak wood",
+            "Fragrant sandalwood",
+            "Soft pine wood",
+            "Rough oak wood"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He chose a block of fragrant sandalwood.",
+            "ml": "സുഗന്ധമുള്ള ചന്ദനത്തടിയാണ് (fragrant sandalwood) അദ്ദേഹം തിരഞ്ഞെടുത്തത്."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "What toy animal did he carve?",
+            "ml": "ഏത് മൃഗത്തിന്റെ രൂപമാണ് അദ്ദേഹം കൊത്തിയെടുത്തത്?",
+            "hi": "उन्होंने किस जानवर का खिलौना तराशा?",
+            "ta": "அவர் என்ன பொம்மை விலங்கைச் செதுக்கினார்?"
+          },
+          "options": [
+            "A roaring lion",
+            "A graceful galloping horse",
+            "A flying eagle",
+            "A playful puppy"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He carved a graceful galloping horse.",
+            "ml": "കുതിച്ചുപായുന്ന കുതിരയെയാണ് (graceful galloping horse) കൊത്തിയത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What did the little boy bring to the shop?",
+            "ml": "ചെറിയ ആൺകുട്ടി കടയിലേക്ക് കൊണ്ടുവന്നത് എന്തായിരുന്നു?",
+            "hi": "छोटा लड़का दुकान पर क्या लाया?",
+            "ta": "சிறுவன் கடைக்கு என்ன கொண்டு வந்தான்?"
+          },
+          "options": [
+            "A gold watch",
+            "Three shiny copper coins",
+            "A basket of fruits",
+            "A wooden whistle"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He clutched three shiny copper coins.",
+            "ml": "മൂന്ന് ചെമ്പ് നാണയങ്ങളാണ് (three shiny copper coins) കൊണ്ടുവന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +403,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d32_1",
-          "question": "Which word represents: 'സന്ദർശിക്കുക'?",
+          "question": "Select the correct simple past tense sentence:",
           "options": [
-            "visit",
-            "forget",
-            "listen",
-            "create"
+            "Yesterday I went to the store.",
+            "Yesterday I did went to the store.",
+            "Yesterday I was go to the store.",
+            "Yesterday I goed to the store."
           ],
-          "answer": "visit",
-          "explanation": "visit എന്നാൽ സന്ദർശിക്കുക എന്നർത്ഥം."
+          "correctIndex": 0,
+          "explanation": "Simple past uses the V2 form directly without 'did' in positive statements: 'I went to the store.'",
+          "ruleHint": "Positive Past: Subject + V2 (went), never 'did went'."
         },
         {
-          "id": "trap_d32_2",
-          "question": "What is the past form (V2) of 'cook'?",
+          "question": "What is the correct past tense of the verb 'buy'?",
           "options": [
-            "has cook",
-            "cooked",
-            "cooking",
-            "cooks"
+            "Buyed",
+            "Bought",
+            "Brought",
+            "Boated"
           ],
-          "answer": "cooked",
-          "explanation": "cook ന്റെ ഭൂതകാല രൂപം cooked ആണ്."
+          "correctIndex": 1,
+          "explanation": "'Buy' becomes 'bought' (V2). Note: 'Brought' is from 'bring'.",
+          "ruleHint": "Irregular Verbs: Buy -> Bought | Bring -> Brought."
         },
         {
-          "id": "trap_d32_3",
-          "question": "What is the correct English word for 'ഇന്നലെ'?",
+          "question": "Which sentence correctly describes an action completed last night?",
           "options": [
-            "knowledge",
-            "courage",
-            "success",
-            "yesterday"
+            "I written an email last night.",
+            "I wrote an email last night.",
+            "I did wrote an email last night.",
+            "I was wrote an email last night."
           ],
-          "answer": "yesterday",
-          "explanation": "ഇന്നലെ എന്നാൽ ഇംഗ്ലീഷിൽ yesterday."
+          "correctIndex": 1,
+          "explanation": "The V2 simple past of 'write' is 'wrote': 'I wrote an email last night.'",
+          "ruleHint": "Verb Forms: write (V1) -> wrote (V2) -> written (V3)."
         }
       ],
       "description": {
@@ -334,6 +446,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +525,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 32 Gate Exam (5 Qs)",

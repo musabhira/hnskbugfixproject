@@ -14,6 +14,7 @@ import 'pocket_day1_tutor_curriculum.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_level_milestone_vibe_card_dialog.dart';
 import '../subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🎓 Model for an End-of-Level Exam Question
 class LevelExamQuestion {
@@ -316,18 +317,44 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
       if (vocabIdx < vocab.length) {
         final item = vocab[vocabIdx];
         if (qNum == 6) {
+          final activeLang = PocketLanguageService.currentLanguage;
+          final isEn = PocketLanguageService.isEnglish;
+          final nativeMeaning = item.getMeaning(activeLang);
+          final questionTitle = isEn
+              ? 'What is the definition of "${item.word}"?'
+              : 'What is the meaning of "${item.word}" in $activeLang?';
+          final correctOpt = isEn ? item.definition : nativeMeaning;
+          final wrongOpts = isEn
+              ? [
+                  'Opposite grammatical meaning',
+                  'A completely different action or object',
+                  'An unrelated descriptive term',
+                ]
+              : PocketLanguageService.isHindi
+                  ? ['विपरीत अर्थ (Opposite)', 'दूसरा शब्द (Different)', 'असंगत शब्द (Irrelevant)']
+                  : PocketLanguageService.isTamil
+                      ? ['எதிர்ச்சொல் (Opposite)', 'வேறு சொல் (Different)', 'தொடர்பற்ற சொல் (Irrelevant)']
+                      : PocketLanguageService.isTelugu
+                          ? ['వ్యతిరేక అర్థం (Opposite)', 'మరో పదం (Different)', 'సంబంధం లేని పదం (Irrelevant)']
+                          : PocketLanguageService.isKannada
+                              ? ['ವಿರುದ್ಧಾರ್ಥ (Opposite)', 'ಬೇರೆ ಪದ (Different)', 'ಅಸಂಬದ್ಧ ಪದ (Irrelevant)']
+                              : [
+                                  'വിരുദ്ധമായ അർത്ഥം (Opposite)',
+                                  'മറ്റൊരു പദം (Different term)',
+                                  'അപ്രസക്തമായ വാക്ക് (Irrelevant)',
+                                ];
           result.add(
             LevelExamQuestion(
               id: 'q_gen_${level}_6',
-              question: 'What is the meaning of "${item.word}" in Malayalam?',
+              question: questionTitle,
               options: [
-                item.malayalamMeaning,
-                'വിരുദ്ധമായ അർത്ഥം (Opposite)',
-                'മറ്റൊരു പദം (Different term)',
-                'അപ്രസക്തമായ വാക്ക് (Irrelevant)',
+                correctOpt,
+                ...wrongOpts,
               ],
               correctIndex: 0,
-              explanation: '"${item.word}" translates to "${item.malayalamMeaning}".',
+              explanation: isEn
+                  ? '"${item.word}" means ${item.definition}.'
+                  : '"${item.word}" translates to "$nativeMeaning".',
               hint: item.definition,
               category: 'Vocab',
             ),
@@ -30043,7 +30070,7 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
           id: 'lvl_${level}_q1_vocab',
           question: 'Level $level Vocabulary: What is the meaning of "${v0.word}"?',
           options: [
-            v0.malayalamMeaning.isNotEmpty ? '${v0.definition} (${v0.malayalamMeaning})' : v0.definition,
+            (!PocketLanguageService.isEnglish && v0.localizedMeaning.isNotEmpty && v0.localizedMeaning != v0.definition) ? '${v0.definition} (${v0.localizedMeaning})' : v0.definition,
             ...wrongMeanings
           ]..shuffle(math.Random(level * 11)),
           correctIndex: 0, // will be resolved

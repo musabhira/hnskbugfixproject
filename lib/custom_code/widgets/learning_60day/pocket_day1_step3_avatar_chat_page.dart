@@ -15,6 +15,7 @@ import 'games/pocket_20days_40games_spec.dart';
 import 'games/pocket_universal_arcade_engine_page.dart';
 import 'games/english_realm/english_realm_manifest.dart';
 import 'pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 💬 Chat message model for Step 3 Word & Letter Hunt
 class Step3ChatMessage {
@@ -231,11 +232,23 @@ class _PocketDay1Step3AvatarChatPageState
       final distractor2 = vocab[(i + 4) % vocab.length].word;
       final distractor3 = vocab[(i + 6) % vocab.length].word;
 
+      final activeLang = PocketLanguageService.currentLanguage;
+      final nativeMeaning = item.getMeaning(activeLang);
+      final meaningPrompt = PocketLanguageService.localize(
+        en: 'Find the phrase for: ${item.word}',
+        ml: '${item.word} ($nativeMeaning) കണ്ടെത്തുക!',
+        hi: '${item.word} ($nativeMeaning) खोजें!',
+        ta: '${item.word} ($nativeMeaning) கண்டறியவும்!',
+        te: '${item.word} ($nativeMeaning) కనుగొనండి!',
+        kn: '${item.word} ($nativeMeaning) ಹುಡುಕಿ!',
+      );
+
       rounds.add({
         'target': item.word,
         'emoji': e,
         'promptEn': 'Find the phrase for: ${item.word} $e',
-        'promptMl': '${item.word} (${item.malayalamMeaning}) കണ്ടെത്തുക!',
+        'promptMl': PocketLanguageService.isEnglish ? '' : meaningPrompt,
+        'promptNative': PocketLanguageService.isEnglish ? '' : meaningPrompt,
         'options': [
           '${item.word} $e',
           '$distractor1 ${emojis[(i + 1) % emojis.length]}',
@@ -485,7 +498,6 @@ class _PocketDay1Step3AvatarChatPageState
     final target = roundData['target'] as String;
     final emoji = roundData['emoji'] as String;
     final promptEn = roundData['promptEn'] as String;
-    final promptMl = roundData['promptMl'] as String;
     final clue = roundData['clue'] as String;
     final options = (roundData['options'] as List).cast<String>();
     final correct = roundData['correct'] as String;
@@ -496,8 +508,27 @@ class _PocketDay1Step3AvatarChatPageState
     final totalRounds = activeRounds.length;
     final questionTextEn =
         '🎯 Round ${_currentHuntRound + 1} of $totalRounds:\n$promptEn\nClue: "$clue" $emoji';
-    final questionTextMl =
-        'റൗണ്ട് ${_currentHuntRound + 1} / $totalRounds:\n$promptMl\nസൂചന: $clue';
+    final promptNative = (roundData['promptNative'] ?? roundData['promptMl'])?.toString() ?? '';
+    final isEn = PocketLanguageService.isEnglish;
+    final roundLabel = PocketLanguageService.localize(
+      en: 'Round',
+      ml: 'റൗണ്ട്',
+      hi: 'राउंड',
+      ta: 'சுற்று',
+      te: 'రౌండ్',
+      kn: 'ಸುತ್ತು',
+    );
+    final clueLabel = PocketLanguageService.localize(
+      en: 'Clue',
+      ml: 'സൂചന',
+      hi: 'संकेत',
+      ta: 'குறிப்பு',
+      te: 'సూచన',
+      kn: 'ಸುಳಿವು',
+    );
+    final questionTextNative = isEn
+        ? ''
+        : '$roundLabel ${_currentHuntRound + 1} / $totalRounds:\n$promptNative\n$clueLabel: $clue';
 
     setState(() {
       _messages.add(
@@ -505,7 +536,7 @@ class _PocketDay1Step3AvatarChatPageState
           id: 'hunt_q_$_currentHuntRound',
           isAvatar: true,
           textEn: questionTextEn,
-          textNative: questionTextMl,
+          textNative: questionTextNative,
           audioText: promptEn,
           speakThisPrompt: isDay1
               ? 'Speak or Tap the Correct Item: "$target"'

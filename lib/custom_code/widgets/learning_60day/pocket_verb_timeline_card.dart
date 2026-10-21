@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'curriculum_data/pocket_90day_verb_timeline_data.dart';
 import 'games/verb_timeline_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_verb_localization_service.dart';
 
 /// ⏳ Minimal & Rich Interactive Verb Timeline Practice Card
 /// Can be rendered inside PocketMissionTopicDetailPage and Master Hub.
@@ -162,8 +163,8 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
           ),
           const SizedBox(height: 6),
           Text(
-            item.meaningMl,
-            style: GoogleFonts.notoSansMalayalam(
+            item.getLocalizedMeaning(),
+            style: PocketVerbLocalizationService.getNativeTextStyle(
               color: const Color(0xFF00E5FF),
               fontSize: 13,
             ),

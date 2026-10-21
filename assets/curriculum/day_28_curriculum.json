@@ -22,112 +22,96 @@
     "totalCoinsReward": 78
   },
   "grammarRule": {
-    "formula": "Past Perfect Continuous Tense",
+    "formula": "Take this + dosage + before / after food / twice a day",
     "explanation": {
-      "ml": "മരുന്നുകടയും കുറിപ്പടിയും എന്ന വിഷയത്തിൽ Dosage instructions: Before/After food, Twice daily എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
-      "en": "Learn how to use Dosage instructions: Before/After food, Twice daily correctly in spoken English."
+      "ml": "ഫാർമസിയിൽ മരുന്ന് ചോദിച്ചുവാങ്ങുമ്പോൾ കുറിപ്പടി (Prescription) നൽകാനും, കഴിക്കേണ്ട രീതികൾ: 'Take this tablet after food' (ഭക്ഷണത്തിന് ശേഷം കഴിക്കുക), 'Twice a day' (ദിവസത്തിൽ രണ്ടുനേരം) എന്ന് മനസ്സിലാക്കാനും ഉപയോഗിക്കുന്നു.",
+      "en": "Master At the Pharmacy & Medicine with clear formula: Take this + dosage + before / after food / twice a day"
     },
     "goldenTip": {
-      "ml": "💡 ടിപ്പ്: Take this after food.",
-      "en": "Golden Rule: Practice 'Take this after food.' with zero hesitation."
+      "ml": "💡 ടിപ്പ്: 💡 മരുന്നിന്റെ അളവുകൾ: Once daily (ഒരു നേരം), Twice a day (രണ്ടു നേരം), Before meals (ഭക്ഷണത്തിന് മുൻപ്), After meals (ഭക്ഷണത്തിന് ശേഷം).",
+      "en": "Golden Tip: 💡 മരുന്നിന്റെ അളവുകൾ: Once daily (ഒരു നേരം), Twice a day (രണ്ടു നേരം), Before meals (ഭക്ഷണത്തിന് മുൻപ്), After meals (ഭക്ഷണത്തിന് ശേഷം)."
     }
   },
   "vocabulary": {
-    "verbs": [
-      {
-        "v1": "take",
-        "v2": "took",
-        "v3": "taken",
-        "meaning": {
-          "ml": "എടുക്കുക",
-          "hi": "लेना",
-          "ta": "எடு"
-        },
-        "example": "Take this after food.",
-        "exampleMl": "കഴിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "prescribe",
-        "v2": "prescribed",
-        "v3": "prescribed",
-        "meaning": {
-          "ml": "കുറിച്ചു നൽകുക",
-          "hi": "दवा लिखना",
-          "ta": "பரிந்துரை"
-        },
-        "example": "Doctor prescribed pills.",
-        "exampleMl": "കുറിച്ചു നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "heal",
-        "v2": "healed",
-        "v3": "healed",
-        "meaning": {
-          "ml": "സുഖപ്പെടുക",
-          "hi": "ठीक होना",
-          "ta": "குணமாகு"
-        },
-        "example": "It will heal fast.",
-        "exampleMl": "സുഖപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      },
-      {
-        "v1": "swallow",
-        "v2": "swallowed",
-        "v3": "swallowed",
-        "meaning": {
-          "ml": "വിഴുങ്ങുക",
-          "hi": "निगलना",
-          "ta": "விழுங்கு"
-        },
-        "example": "Swallow with water.",
-        "exampleMl": "വിഴുങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
-      }
-    ],
+    "verbs": [],
     "nouns": [
       {
-        "word": "tablet",
+        "word": "Prescription",
+        "partOfSpeech": "noun",
+        "definition": "An instruction written by a medical practitioner that authorizes a patient to be provided a medicine or treatment.",
         "meaning": {
-          "ml": "ഗുളിക",
-          "hi": "ഗുളിക",
-          "ta": "ഗുളിക"
+          "ml": "ഡോക്ടറുടെ കുറിപ്പടി / പ്രിസ്ക്രിപ്ഷൻ",
+          "hi": "नुस्खा / परचा",
+          "ta": "மருத்துவச் சீட்டு",
+          "te": "వైద్యుని చీటీ",
+          "kn": "ವೈದ್ಯರ ಚೀಟಿ"
         },
-        "example": "We learned about tablet in today's lesson."
+        "example": "You need a doctor's prescription to purchase these strong antibiotics."
       },
       {
-        "word": "syrup",
+        "word": "Dosage",
+        "partOfSpeech": "noun",
+        "definition": "The size or frequency of a dose of a medicine or drug.",
         "meaning": {
-          "ml": "സിറപ്പ്",
-          "hi": "സിറപ്പ്",
-          "ta": "സിറപ്പ്"
+          "ml": "മരുന്നിന്റെ അളവും കഴിക്കേണ്ട രീതിയും",
+          "hi": "खुराक",
+          "ta": "மருந்தின் அளவு",
+          "te": "మోతాదు",
+          "kn": "ಔಷಧದ ಪ್ರಮಾಣ"
         },
-        "example": "We learned about syrup in today's lesson."
+        "example": "Carefully follow the recommended dosage prescribed on the medicine bottle."
       },
       {
-        "word": "pharmacy",
+        "word": "Antibiotic",
+        "partOfSpeech": "noun",
+        "definition": "A medicine that inhibits the growth of or destroys microorganisms.",
         "meaning": {
-          "ml": "മെഡിക്കൽ ഷോപ്പ്",
-          "hi": "മെഡിക്കൽ ഷോപ്പ്",
-          "ta": "മെഡിക്കൽ ഷോപ്പ്"
+          "ml": "ആന്റിബയോട്ടിക് / അണുബാധ തടയുന്ന മരുന്ന്",
+          "hi": "एंटीबायोटिक",
+          "ta": "நுண்ணுயிர் எதிர்ப்பி",
+          "te": "యాంటీబయాటిక్",
+          "kn": "ಪ್ರತಿಜೀವಕ"
         },
-        "example": "We learned about pharmacy in today's lesson."
+        "example": "Complete the full five-day course of this antibiotic without skipping."
       },
       {
-        "word": "dose",
+        "word": "Ointment",
+        "partOfSpeech": "noun",
+        "definition": "A smooth oily substance that is rubbed on the skin for medicinal purposes or as a cosmetic.",
         "meaning": {
-          "ml": "അളവ്",
-          "hi": "അളവ്",
-          "ta": "അളവ്"
+          "ml": "പുരട്ടുന്ന തൈലം / ഒയിന്റ്മെന്റ്",
+          "hi": "मरहम",
+          "ta": "பூசும் மருந்து",
+          "te": "మలము",
+          "kn": "ಲೇಪನ"
         },
-        "example": "We learned about dose in today's lesson."
+        "example": "Apply this antiseptic ointment gently over the cleaned wound twice daily."
       },
       {
-        "word": "prescription",
+        "word": "Capsule",
+        "partOfSpeech": "noun",
+        "definition": "A small gelatinous case enclosing a dose of medication.",
         "meaning": {
-          "ml": "കുറിപ്പടി",
-          "hi": "കുറിപ്പടി",
-          "ta": "കുറിപ്പടി"
+          "ml": "ഗുളിക / ക്യാപ്സ്യൂൾ",
+          "hi": "कैप्सूल",
+          "ta": "மருந்து உறை",
+          "te": "గుళిక",
+          "kn": "ಕ್ಯಾಪ್ಸುಲ್"
         },
-        "example": "We learned about prescription in today's lesson."
+        "example": "Swallow one multivitamin capsule with a glass of water after breakfast."
+      },
+      {
+        "word": "Symptom",
+        "partOfSpeech": "noun",
+        "definition": "A physical or mental feature which is regarded as indicating a condition of disease.",
+        "meaning": {
+          "ml": "രോഗലക്ഷണം",
+          "hi": "लक्षण",
+          "ta": "அறிகுறி",
+          "te": "లక్షణము",
+          "kn": "ರೋಗಲಕ್ಷಣ"
+        },
+        "example": "Fever and sore throat are common early symptoms of a viral infection."
       }
     ]
   },
@@ -137,7 +121,7 @@
       "id": "step_1_concept_room",
       "title": {
         "en": "Concept Room: At the Pharmacy & Medicine",
-        "ml": "പാഠം: മരുന്നുകടയും കുറിപ്പടിയും"
+        "ml": "പാഠം: മരുന്നുകടയിലെ സംസാരവും നിർദ്ദേശങ്ങളും"
       },
       "icon": "🏛️",
       "gameType": "tutor_concept",
@@ -145,8 +129,8 @@
       "xpReward": 25,
       "passScore": 100,
       "description": {
-        "en": "Interactive Tutor explains today's grammar & spoken formula.",
-        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+        "en": "Take this + dosage + before / after food / twice a day",
+        "ml": "ഫാർമസിയിൽ മരുന്ന് ചോദിച്ചുവാങ്ങുമ്പോൾ കുറിപ്പടി (Prescription) നൽകാനും, കഴിക്കേണ്ട രീതികൾ: 'Take this tablet after food' (ഭക്ഷണത്തിന് ശേഷം കഴിക്കുക), 'Twice a day' (ദിവസത്തിൽ രണ്ടുനേരം) എന്ന് മനസ്സിലാക്കാനും ഉപയോഗിക്കുന്നു."
       }
     },
     {
@@ -203,9 +187,11 @@
       "xpReward": 40,
       "passScore": 80,
       "challengePatterns": [
-        "Take this after food.",
-        "Doctor prescribed pills.",
-        "It will heal fast."
+        "Could you please dispense the medicines listed on this doctor prescription ?",
+        "Take one tablet twice daily strictly after having your meals .",
+        "Does this pain relief medication cause any drowsiness or dizziness ?",
+        "Keep these antibiotic syrups refrigerated between two and eight degrees .",
+        "You must complete the full course even if you feel completely better ."
       ],
       "description": {
         "en": "Assemble falling words into correct sentences.",
@@ -217,7 +203,7 @@
       "id": "step_5_reading_room",
       "title": {
         "en": "Reading Room: At the Pharmacy & Medicine",
-        "ml": "റീഡിങ് റൂം: മരുന്നുകടയും കുറിപ്പടിയും"
+        "ml": "റീഡിങ് റൂം: മരുന്നുകടയിലെ സംസാരവും നിർദ്ദേശങ്ങളും"
       },
       "icon": "📖",
       "gameType": "reading_listening",
@@ -226,25 +212,114 @@
       "passScore": 75,
       "sentences": [
         {
-          "text": "Take this after food.",
-          "meaningMl": "കഴിക്കുക - Take this after food.",
-          "audioPrompt": "Take this after food."
+          "text": "Old chemist Mohan has managed the village pharmacy for over thirty years.",
+          "meaningMl": "മുപ്പതിലധികം വർഷമായി മോഹൻ എന്ന വൃദ്ധൻ ഗ്രാമത്തിലെ മരുന്നുകട നടത്തിവരുന്നു.",
+          "meaningHi": "बूढ़े केमिस्ट मोहन तीस से अधिक वर्षों से गाँव की फार्मेसी चला रहे हैं।",
+          "meaningTa": "முப்பது வருடங்களுக்கும் மேலாக மோகன் கிராம மருந்தகத்தை நடத்தி வருகிறார்.",
+          "audioPrompt": "Old chemist Mohan has managed the village pharmacy for over thirty years."
         },
         {
-          "text": "Doctor prescribed pills.",
-          "meaningMl": "കുറിച്ചു നൽകുക - Doctor prescribed pills.",
-          "audioPrompt": "Doctor prescribed pills."
+          "text": "Every morning, he neatly organizes bottles of herbal tinctures and sterile cotton bandages.",
+          "meaningMl": "എല്ലാ ദിവസവും രാവിലെ അദ്ദേഹം പച്ചമരുന്ന് തൈലങ്ങളും കോട്ടൺ ബാൻഡേജുകളും വൃത്തിയായി അടുക്കിവെക്കുന്നു.",
+          "meaningHi": "हर सुबह, वह हर्बल टिंचर की बोतलों और कॉटन की पट्टियों को करीने से व्यवस्थित करते हैं।",
+          "meaningTa": "ஒவ்வொரு காலையிலும் அவர் மூலிகை மருந்துகள் மற்றும் பஞ்சுக் கட்டுகளை அடுக்கி வைக்கிறார்.",
+          "audioPrompt": "Every morning, he neatly organizes bottles of herbal tinctures and sterile cotton bandages."
         },
         {
-          "text": "Daily practice of At the Pharmacy & Medicine gives you great confidence in English.",
-          "meaningMl": "മരുന്നുകടയും കുറിപ്പടിയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
-          "audioPrompt": "Daily practice of At the Pharmacy & Medicine gives you great confidence in English."
+          "text": "When elderly residents bring their prescriptions, Mohan patiently reads each handwritten line.",
+          "meaningMl": "പ്രായമായ ആളുകൾ കുറിപ്പടിയുമായി വരുമ്പോൾ മോഹൻ ഓരോ വരിയും ക്ഷമയോടെ വായിച്ചു മനസ്സിലാക്കുന്നു.",
+          "meaningHi": "जब बुजुर्ग नुस्खे लेकर आते हैं, तो मोहन धैर्यपूर्वक प्रत्येक पंक्ति को पढ़ते हैं।",
+          "meaningTa": "முதியவர்கள் மருந்துக் குறிப்புடன் வரும்போது மோகன் பொறுமையாகப் படிக்கிறார்.",
+          "audioPrompt": "When elderly residents bring their prescriptions, Mohan patiently reads each handwritten line."
+        },
+        {
+          "text": "He writes the exact dosage in large, bold numbers on the cardboard packet.",
+          "meaningMl": "മരുന്ന് പാക്കറ്റിൽ അദ്ദേഹം വലിയ അക്ഷരങ്ങളിൽ കൃത്യമായ അളവുകൾ എഴുതിക്കൊടുക്കുന്നു.",
+          "meaningHi": "वह गत्ते के डिब्बे पर बड़े-बड़े अक्षरों में सटीक खुराक लिखते हैं।",
+          "meaningTa": "அட்டைப் பெட்டியில் பெரிய எண்களில் சரியான அளவை அவர் எழுதித் தருகிறார்.",
+          "audioPrompt": "He writes the exact dosage in large, bold numbers on the cardboard packet."
+        },
+        {
+          "text": "He always reminds patients to drink plenty of warm water while taking antibiotics.",
+          "meaningMl": "ആന്റിബയോട്ടിക്കുകൾ കഴിക്കുമ്പോൾ ധാരാളം ചൂടുവെള്ളം കുടിക്കാൻ അദ്ദേഹം രോഗികളെ ഓർമ്മിപ്പിക്കുന്നു.",
+          "meaningHi": "वह हमेशा मरीजों को एंटीबायोटिक लेते समय भरपूर गर्म पानी पीने की याद दिलाते हैं।",
+          "meaningTa": "மருந்து சாப்பிடும்போது வெதுவெதுப்பான தண்ணீர் குடிக்க அவர் நினைவூட்டுகிறார்.",
+          "audioPrompt": "He always reminds patients to drink plenty of warm water while taking antibiotics."
+        },
+        {
+          "text": "His caring guidance and genuine empathy bring immense comfort to the entire village.",
+          "meaningMl": "അദ്ദേഹത്തിന്റെ സ്നേഹപൂർവ്വമായ മാർഗ്ഗനിർദ്ദേശം ഗ്രാമത്തിന് മുഴുവൻ വലിയ ആശ്വാസം നൽകുന്നു.",
+          "meaningHi": "उनका देखभाल भरा मार्गदर्शन पूरे गाँव को अपार सुकून देता है।",
+          "meaningTa": "அவரது அன்பான வழிகாட்டுதல் கிராமத்திற்கே பெரும் ஆறுதலைத் தருகிறது.",
+          "audioPrompt": "His caring guidance and genuine empathy bring immense comfort to the entire village."
         }
       ],
       "description": {
         "en": "Listen to native audio, then tap microphone to read aloud.",
         "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
-      }
+      },
+      "comprehensionQuestions": [
+        {
+          "id": 1,
+          "question": {
+            "en": "How long has Mohan managed the village pharmacy?",
+            "ml": "മോഹൻ എത്ര വർഷമായി ഗ്രാമത്തിലെ മരുന്നുകട നടത്തുന്നു?",
+            "hi": "मोहन कितने समय से फार्मेसी चला रहे हैं?",
+            "ta": "மோகன் எத்தனை வருடங்களாக மருந்தகம் நடத்துகிறார்?"
+          },
+          "options": [
+            "Ten years",
+            "Over thirty years",
+            "Five years",
+            "One year"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He has managed it for over thirty years.",
+            "ml": "മുപ്പതിലധികം വർഷമായി (over thirty years)."
+          }
+        },
+        {
+          "id": 2,
+          "question": {
+            "en": "How does Mohan write the dosage for elderly patients?",
+            "ml": "പ്രായമായ രോഗികൾക്കായി മോഹൻ മരുന്നിന്റെ അളവ് എങ്ങനെയാണ് എഴുതിക്കൊടുക്കുന്നത്?",
+            "hi": "मोहन बुजुर्ग मरीजों के लिए खुराक कैसे लिखते हैं?",
+            "ta": "முதியவர்களுக்காக மோகன் மருந்து அளவை எப்படி எழுதுகிறார்?"
+          },
+          "options": [
+            "In tiny letters",
+            "In large, bold numbers",
+            "On a computer screen",
+            "In code words"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He writes the exact dosage in large, bold numbers.",
+            "ml": "വലിയ അക്ഷരങ്ങളിലാണ് (large, bold numbers) എഴുതി നൽകുന്നത്."
+          }
+        },
+        {
+          "id": 3,
+          "question": {
+            "en": "What does Mohan remind patients to drink while taking antibiotics?",
+            "ml": "ആന്റിബയോട്ടിക്കുകൾ കഴിക്കുമ്പോൾ എന്താണ് കുടിക്കാൻ അദ്ദേഹം ഓർമ്മിപ്പിക്കുന്നത്?",
+            "hi": "मरीजों को क्या पीने की याद दिलाते हैं?",
+            "ta": "நோயாளிக்கு என்ன குடிக்க நினைவூட்டுகிறார்?"
+          },
+          "options": [
+            "Cold soda",
+            "Plenty of warm water",
+            "Chilled milk",
+            "Fruit syrup"
+          ],
+          "correctIndex": 1,
+          "explanation": {
+            "en": "He reminds them to drink plenty of warm water.",
+            "ml": "ധാരാളം ചൂടുവെള്ളം (plenty of warm water) കുടിക്കാനാണ് പറയുന്നത്."
+          }
+        }
+      ]
     },
     {
       "stepNumber": 6,
@@ -291,40 +366,40 @@
       "passScore": 100,
       "traps": [
         {
-          "id": "trap_d28_1",
-          "question": "Which word represents: 'എടുക്കുക'?",
+          "question": "Select the correct phrase to instruct taking medicine after a meal:",
           "options": [
-            "arrive",
-            "prepare",
-            "finish",
-            "take"
+            "Take this tablet behind food.",
+            "Take this tablet after food.",
+            "Take this tablet back food.",
+            "Take this tablet late food."
           ],
-          "answer": "take",
-          "explanation": "take എന്നാൽ എടുക്കുക എന്നർത്ഥം."
+          "correctIndex": 1,
+          "explanation": "'After food' or 'after meals' is the standard correct medical phrasing.",
+          "ruleHint": "Timing Rule: 'before food' / 'after food'."
         },
         {
-          "id": "trap_d28_2",
-          "question": "What is the past form (V2) of 'prescribe'?",
+          "question": "What does 'twice daily' mean in medical prescription?",
           "options": [
-            "has prescribe",
-            "prescribed",
-            "prescribeing",
-            "prescribes"
+            "Two tablets at the same time once a week",
+            "One tablet every two days",
+            "Two times in a single day (morning and night)",
+            "Once every twelve weeks"
           ],
-          "answer": "prescribed",
-          "explanation": "prescribe ന്റെ ഭൂതകാല രൂപം prescribed ആണ്."
+          "correctIndex": 2,
+          "explanation": "'Twice daily' means two times every single day.",
+          "ruleHint": "Frequency: Twice daily = 2 times a day."
         },
         {
-          "id": "trap_d28_3",
-          "question": "What is the correct English word for 'ഗുളിക'?",
+          "question": "Choose the correct sentence to ask about medicine expiration:",
           "options": [
-            "station",
-            "partner",
-            "airport",
-            "tablet"
+            "When does this medicine expire?",
+            "When is this medicine expired itself?",
+            "When this medicine is expiring date?",
+            "Does this medicine has expired?"
           ],
-          "answer": "tablet",
-          "explanation": "ഗുളിക എന്നാൽ ഇംഗ്ലീഷിൽ tablet."
+          "correctIndex": 0,
+          "explanation": "'When does this medicine expire?' correctly uses 'does' + base verb 'expire'.",
+          "ruleHint": "Rule: When does + singular subject + expire (V1)?"
         }
       ],
       "description": {
@@ -334,6 +409,27 @@
     },
     {
       "stepNumber": 8,
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "Verb Timeline & Tenses Arcade",
+        "ml": "വെർബ് ടൈംലൈൻ ആർക്കേഡ് ⏳",
+        "hi": "क्रिया समयरेखा आर्केड ⏳",
+        "ta": "வினைச்சொல் காலவரிசை ஆர்கேட் ⏳"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 100,
+      "description": {
+        "en": "Master Past, Present & Future action verb tenses on the interactive timeline.",
+        "ml": "കഴിഞ്ഞത്, ഇപ്പോൾ, നാളെ — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠിക്കുക.",
+        "hi": "समयरेखा पर भूत, वर्तमान और भविष्य काल की क्रियाओं का अभ्यास करें।",
+        "ta": "காலவரிசையில் கடந்த, நிகழ்கால மற்றும் எதிர்கால வினைகளை பயிற்சி செய்யுங்கள்."
+      }
+    },
+    {
+      "stepNumber": 9,
       "id": "step_attack_raids",
       "title": {
         "en": "⚔️ Citadel Attack Raids (Active)",
@@ -355,7 +451,7 @@
       }
     },
     {
-      "stepNumber": 9,
+      "stepNumber": 10,
       "id": "step_social_arena",
       "title": {
         "en": "Community & Social Arena",
@@ -392,7 +488,7 @@
       }
     },
     {
-      "stepNumber": 10,
+      "stepNumber": 11,
       "id": "step_daily_exam",
       "title": {
         "en": "Day 28 Gate Exam (5 Qs)",

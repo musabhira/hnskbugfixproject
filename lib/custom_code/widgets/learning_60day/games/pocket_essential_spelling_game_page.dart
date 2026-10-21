@@ -10,13 +10,15 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 📖 Essential Word Item Model
 class EssentialWordModel {
   final String word;
   final String phonetic;
   final Color color;
-  final String meaningMl; // Clean Malayalam meaning ONLY (no English spoiler!)
+  final String meaningMl; // Clean Malayalam meaning ONLY
+  final String? nativeMeaning;
   final String exampleSentence;
 
   const EssentialWordModel({
@@ -24,8 +26,19 @@ class EssentialWordModel {
     required this.phonetic,
     required this.color,
     required this.meaningMl,
+    this.nativeMeaning,
     required this.exampleSentence,
   });
+
+  String get meaningText {
+    if (PocketLanguageService.isEnglish) {
+      return '';
+    }
+    if (nativeMeaning != null && nativeMeaning!.isNotEmpty) {
+      return nativeMeaning!;
+    }
+    return PocketLanguageService.isMalayalam ? meaningMl : '';
+  }
 }
 
 /// 🔤 Interactive Letter Tile for Gamified Spelling Board
@@ -229,11 +242,13 @@ class _PocketEssentialSpellingPageState
         final item = vocabItems[i];
         final cleanWord = item.word.trim().toLowerCase();
         if (cleanWord.length < 3) continue; // Filter short words
+        final nativeMeaning = item.getMeaning(PocketLanguageService.currentLanguage);
         loadedWords.add(EssentialWordModel(
           word: cleanWord,
           phonetic: item.phonetic,
           color: palette[loadedWords.length % palette.length],
           meaningMl: item.malayalamMeaning,
+          nativeMeaning: nativeMeaning,
           exampleSentence: item.exampleSentence,
         ));
       }
@@ -916,7 +931,14 @@ class _PocketEssentialSpellingPageState
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Tap any card to hear the native pronunciation & view Malayalam meaning.',
+                  PocketLanguageService.localize(
+                    en: 'Tap any card to hear the native pronunciation & explore its usage.',
+                    ml: 'Tap any card to hear the native pronunciation & view Malayalam meaning.',
+                    hi: 'उच्चारण सुनने और हिंदी अर्थ देखने के लिए किसी भी कार्ड पर टैप करें।',
+                    ta: 'உச்சரிப்பைக் கேட்கவும் தமிழ் அர்த்தத்தைப் பார்க்கவும் அட்டையைத் தட்டவும்.',
+                    te: 'ఉచ్చారణ వినడానికి మరియు అర్థం చూడటానికి ఏదైనా కార్డ్‌ని నొక్కండి.',
+                    kn: 'ಉಚ್ಚಾರಣೆಯನ್ನು ಕೇಳಲು ಮತ್ತು ಅರ್ಥವನ್ನು ನೋಡಲು ಯಾವುದೇ ಕಾರ್ಡ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.',
+                  ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -1016,22 +1038,24 @@ class _PocketEssentialSpellingPageState
                               ],
                             ),
                             const SizedBox(height: 4),
-                            // Clean Malayalam Meaning (No English spoiler!)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                item.meaningMl,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                            // Meaning badge (dynamically resolved)
+                            if (item.meaningText.isNotEmpty) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  item.meaningText,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -1242,7 +1266,14 @@ class _PocketEssentialSpellingPageState
                             const Icon(Icons.hearing_rounded, color: Colors.black, size: 24),
                             const SizedBox(width: 8),
                             Text(
-                              'കേൾക്കുക 👂',
+                              PocketLanguageService.localize(
+                                en: 'LISTEN 👂',
+                                ml: 'കേൾക്കുക 👂',
+                                hi: 'सुनें 👂',
+                                ta: 'கேட்கவும் 👂',
+                                te: 'వినండి 👂',
+                                kn: 'ಕೇಳಿ 👂',
+                              ),
                               style: GoogleFonts.outfit(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w900,
@@ -1257,8 +1288,7 @@ class _PocketEssentialSpellingPageState
                 ),
                 const SizedBox(height: 14),
 
-                // Pure Malayalam Clue ONLY (No English spoiler!)
-                // User Audio Directive: "സ്പെല്ലിംഗ് ഉള്ളതിൽ അടിയിൽ മീനിംഗ് ചെയ്യുന്നു... ഡസ് അവിടെ അടിച്ചാൽ പോരെ?"
+                // Clue (Dynamically localized, clean phonetic for English)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
@@ -1271,7 +1301,9 @@ class _PocketEssentialSpellingPageState
                     children: [
                       const Text('🎯 ', style: TextStyle(fontSize: 16)),
                       Text(
-                        'അർത്ഥം: ${currentWord.meaningMl}',
+                        currentWord.meaningText.isNotEmpty
+                            ? '${PocketLanguageService.localize(en: "Meaning", ml: "അർത്ഥം", hi: "अर्थ", ta: "பொருள்", te: "అర్థం", kn: "ಅರ್ಥ")}: ${currentWord.meaningText}'
+                            : 'Phonetic: [${currentWord.phonetic}]',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontSize: 16,

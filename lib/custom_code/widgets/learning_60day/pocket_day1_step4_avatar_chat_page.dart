@@ -11,6 +11,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_pronunciation_evaluator.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 💬 Chat Message Model for Step 4 Spoken English
 class Step4ChatMessage {
@@ -518,19 +519,19 @@ class _PocketDay1Step4AvatarChatPageState
           'icon': '🐱',
           'color': const Color(0xFF0284C7),
           'questionEn': 'Let\'s use our new word "${v0.word}" (${v0.definition}). Speak this sentence aloud: 💬',
-          'questionMl': '"${v0.word}" (${v0.malayalamMeaning}) ഉപയോഗിച്ചുള്ള വാചകം ഉറക്കെ പറയൂ:',
+          'questionMl': '"${v0.word}" (${v0.localizedMeaning}) ഉപയോഗിച്ചുള്ള വാചകം ഉറക്കെ പറയൂ:',
           'targetReply': v0.exampleSentence.isNotEmpty ? v0.exampleSentence : 'This is ${v0.word}.',
-          'targetReplyMl': v0.malayalamMeaning,
+          'targetReplyMl': v0.localizedMeaning,
         },
       if (v1 != null)
         {
           'avatar': 'CyberCat',
           'icon': '🐱',
           'color': const Color(0xFF0284C7),
-          'questionEn': 'Wonderful! How about our word "${v1.word}" (${v1.malayalamMeaning})? Try saying: ✨',
+          'questionEn': 'Wonderful! How about our word "${v1.word}" (${v1.definition})? Try saying: ✨',
           'questionMl': '"${v1.word}" ഉൾപ്പെടുത്തിയുള്ള അടുത്ത വാചകം പറയൂ:',
           'targetReply': v1.exampleSentence.isNotEmpty ? v1.exampleSentence : 'I understand ${v1.word}.',
-          'targetReplyMl': v1.malayalamMeaning,
+          'targetReplyMl': v1.localizedMeaning,
         },
       {
         'avatar': 'CyberCat',
@@ -1263,7 +1264,10 @@ class _PocketDay1Step4AvatarChatPageState
                             height: 1.35,
                           ),
                         ),
-                        if (msg.textNative != null && msg.textNative!.isNotEmpty) ...[
+                        if (!PocketLanguageService.isEnglish &&
+                            (PocketLanguageService.isMalayalam || msg.textNative != msg.textEn) &&
+                            msg.textNative != null &&
+                            msg.textNative!.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Text(
                             msg.textNative!,
@@ -1312,7 +1316,7 @@ class _PocketDay1Step4AvatarChatPageState
                                     height: 1.3,
                                   ),
                                 ),
-                                if (msg.targetSentenceHintMl != null) ...[
+                                if (PocketLanguageService.isMalayalam && msg.targetSentenceHintMl != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     msg.targetSentenceHintMl!,
