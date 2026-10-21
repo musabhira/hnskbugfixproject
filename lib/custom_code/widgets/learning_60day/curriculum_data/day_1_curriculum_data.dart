@@ -155,8 +155,15 @@ class Day1CurriculumJsonData {
           "word": "Apple",
           "emoji": "🍎",
           "voice": "This is A. A for Apple.",
-          "meaning": {"ml": "ആപ്പിൾ", "hi": "सेब", "ta": "ஆப்பிள்"},
-          "example": {"en": "An apple is sweet.", "ml": "ആപ്പിൾ മധുരമുള്ളതാണ്."}
+          "meaning": {
+            "ml": "ആപ്പിൾ",
+            "hi": "सेब",
+            "ta": "ஆப்பிள்"
+          },
+          "example": {
+            "en": "An apple is sweet.",
+            "ml": "ആപ്പിൾ മധുരമുള്ളതാണ്."
+          }
         },
         {
           "letter": "B",
@@ -164,8 +171,15 @@ class Day1CurriculumJsonData {
           "word": "Ball",
           "emoji": "⚽",
           "voice": "This is B. B for Ball.",
-          "meaning": {"ml": "പന്ത്", "hi": "गेंद", "ta": "பந்து"},
-          "example": {"en": "A red ball.", "ml": "ഒരു ചുവന്ന പന്ത്."}
+          "meaning": {
+            "ml": "പന്ത്",
+            "hi": "गेंद",
+            "ta": "பந்து"
+          },
+          "example": {
+            "en": "A red ball.",
+            "ml": "ഒരു ചുവന്ന പന്ത്."
+          }
         },
         {
           "letter": "C",
@@ -173,8 +187,15 @@ class Day1CurriculumJsonData {
           "word": "Cat",
           "emoji": "🐱",
           "voice": "This is C. C for Cat.",
-          "meaning": {"ml": "പൂച്ച", "hi": "बिल्ली", "ta": "பூனை"},
-          "example": {"en": "A cute cat.", "ml": "ഒരു ചെറിയ പൂച്ച."}
+          "meaning": {
+            "ml": "പൂച്ച",
+            "hi": "बिल्ली",
+            "ta": "பூனை"
+          },
+          "example": {
+            "en": "A cute cat.",
+            "ml": "ഒരു ചെറിയ പൂച്ച."
+          }
         },
         {
           "letter": "D",
@@ -182,8 +203,15 @@ class Day1CurriculumJsonData {
           "word": "Dog",
           "emoji": "🐶",
           "voice": "This is D. D for Dog.",
-          "meaning": {"ml": "നായ", "hi": "कुत्ता", "ta": "நாய்"},
-          "example": {"en": "A loyal dog.", "ml": "ഒരു നല്ല നായ."}
+          "meaning": {
+            "ml": "നായ",
+            "hi": "कुत्ता",
+            "ta": "நாய்"
+          },
+          "example": {
+            "en": "A loyal dog.",
+            "ml": "ഒരു നല്ല നായ."
+          }
         },
         {
           "letter": "E",
@@ -191,8 +219,15 @@ class Day1CurriculumJsonData {
           "word": "Egg",
           "emoji": "🥚",
           "voice": "This is E. E for Egg.",
-          "meaning": {"ml": "മുട്ട", "hi": "अंडा", "ta": "முட்டை"},
-          "example": {"en": "A white egg.", "ml": "ഒരു വെള്ള മുട്ട."}
+          "meaning": {
+            "ml": "മുട്ട",
+            "hi": "अंडा",
+            "ta": "முட்டை"
+          },
+          "example": {
+            "en": "A white egg.",
+            "ml": "ഒരു വെള്ള മുട്ട."
+          }
         },
         {
           "letter": "F",
@@ -200,8 +235,15 @@ class Day1CurriculumJsonData {
           "word": "Fish",
           "emoji": "🐟",
           "voice": "This is F. F for Fish.",
-          "meaning": {"ml": "മത്സ്യം", "hi": "मछली", "ta": "மீன்"},
-          "example": {"en": "Fish swims in water.", "ml": "മത്സ്യം വെള്ളത്തിൽ നീന്തുന്നു."}
+          "meaning": {
+            "ml": "മത്സ്യം",
+            "hi": "मछली",
+            "ta": "மீன்"
+          },
+          "example": {
+            "en": "Fish swims in water.",
+            "ml": "മത്സ്യം വെള്ളത്തിൽ നീന്തുന്നു."
+          }
         }
       ]
     },
@@ -262,61 +304,611 @@ class Day1CurriculumJsonData {
         "ta": "Apple, Book, திராட்சை, Bed, Crow, Water உள்ளிட்ட 50+ வார்த்தைகளைக் கற்றுக்கொள்ளுங்கள்."
       },
       "words": [
-        {"word": "Apple", "emoji": "🍎", "phonetic": "/ˈæp.əl/", "meaning": {"ml": "ആപ്പിൾ", "hi": "सेब", "ta": "ஆப்பிள்"}, "example": "I eat an apple."},
-        {"word": "Book", "emoji": "📖", "phonetic": "/bʊk/", "meaning": {"ml": "പുസ്തകം", "hi": "किताब", "ta": "புத்தகம்"}, "example": "This is my book."},
-        {"word": "Grapes", "emoji": "🍇", "phonetic": "/ɡreɪps/", "meaning": {"ml": "മുന്തിരി", "hi": "अंगूर", "ta": "திராட்சை"}, "example": "Sweet green grapes."},
-        {"word": "Bed", "emoji": "🛏️", "phonetic": "/bed/", "meaning": {"ml": "കിടക്ക / കട്ടിൽ", "hi": "बिस्तर", "ta": "படுக்கை"}, "example": "I sleep on the bed."},
-        {"word": "Crow", "emoji": "🐦‍⬛", "phonetic": "/krəʊ/", "meaning": {"ml": "കാക്ക", "hi": "कौआ", "ta": "காகம்"}, "example": "A black crow is singing."},
-        {"word": "Water", "emoji": "💧", "phonetic": "/ˈwɔː.tər/", "meaning": {"ml": "വെള്ളം", "hi": "पानी", "ta": "தண்ணீர்"}, "example": "Please give me water."},
-        {"word": "Cat", "emoji": "🐱", "phonetic": "/kæt/", "meaning": {"ml": "പൂച്ച", "hi": "बिल्ली", "ta": "பூனை"}, "example": "The cat is sleeping."},
-        {"word": "Dog", "emoji": "🐶", "phonetic": "/dɒɡ/", "meaning": {"ml": "നായ", "hi": "कुत्ता", "ta": "நாய்"}, "example": "My dog is friendly."},
-        {"word": "House", "emoji": "🏡", "phonetic": "/haʊs/", "meaning": {"ml": "വീട്", "hi": "घर", "ta": "வீடு"}, "example": "Welcome to my house."},
-        {"word": "Sun", "emoji": "☀️", "phonetic": "/sʌn/", "meaning": {"ml": "സൂര്യൻ", "hi": "सूरज", "ta": "சூரியன்"}, "example": "The sun is shining bright."},
-        {"word": "Tree", "emoji": "🌳", "phonetic": "/triː/", "meaning": {"ml": "മരം", "hi": "पेड़", "ta": "மரம்"}, "example": "A tall green tree."},
-        {"word": "Milk", "emoji": "🥛", "phonetic": "/mɪlk/", "meaning": {"ml": "പാൽ", "hi": "दूध", "ta": "பால்"}, "example": "I drink warm milk."},
-        {"word": "Car", "emoji": "🚗", "phonetic": "/kɑːr/", "meaning": {"ml": "കാർ / വണ്ടി", "hi": "गाड़ी", "ta": "கார்"}, "example": "The red car is fast."},
-        {"word": "Pen", "emoji": "🖊️", "phonetic": "/pen/", "meaning": {"ml": "പേന", "hi": "कलम", "ta": "பேனா"}, "example": "I write with a pen."},
-        {"word": "School", "emoji": "🏫", "phonetic": "/skuːl/", "meaning": {"ml": "സ്കൂൾ", "hi": "स्कूल", "ta": "பள்ளி"}, "example": "Children go to school."},
-        {"word": "Fish", "emoji": "🐟", "phonetic": "/fɪʃ/", "meaning": {"ml": "മത്സ്യം", "hi": "मछली", "ta": "மீன்"}, "example": "Fish in the clean water."},
-        {"word": "Bird", "emoji": "🐦", "phonetic": "/bɜːd/", "meaning": {"ml": "പക്ഷി", "hi": "पक्षी", "ta": "பறவை"}, "example": "A bird flies in the sky."},
-        {"word": "Cup", "emoji": "☕", "phonetic": "/kʌp/", "meaning": {"ml": "കപ്പ്", "hi": "कप", "ta": "கோப்பை"}, "example": "A hot cup of tea."},
-        {"word": "Bag", "emoji": "🎒", "phonetic": "/bæɡ/", "meaning": {"ml": "ബാഗ്", "hi": "बस्ता", "ta": "பை"}, "example": "My heavy school bag."},
-        {"word": "Door", "emoji": "🚪", "phonetic": "/dɔːr/", "meaning": {"ml": "വാതിൽ", "hi": "दरवाजा", "ta": "கதவு"}, "example": "Open the front door."},
-        {"word": "Chair", "emoji": "🪑", "phonetic": "/tʃeər/", "meaning": {"ml": "കസേര", "hi": "कुर्सी", "ta": "நாற்காலி"}, "example": "Sit on the chair."},
-        {"word": "Table", "emoji": "🪵", "phonetic": "/ˈteɪ.bəl/", "meaning": {"ml": "മേശ", "hi": "मेज़", "ta": "மேசை"}, "example": "Food is on the table."},
-        {"word": "Road", "emoji": "🛣️", "phonetic": "/rəʊd/", "meaning": {"ml": "വഴി / റോഡ്", "hi": "सड़क", "ta": "சாலை"}, "example": "Cross the quiet road."},
-        {"word": "Star", "emoji": "⭐", "phonetic": "/stɑːr/", "meaning": {"ml": "നക്ഷത്രം", "hi": "तारा", "ta": "நட்சத்திரம்"}, "example": "Twinkling star at night."},
-        {"word": "Moon", "emoji": "🌙", "phonetic": "/muːn/", "meaning": {"ml": "ചന്ദ്രൻ", "hi": "चाँद", "ta": "நிலா"}, "example": "Bright white moon."},
-        {"word": "Rain", "emoji": "🌧️", "phonetic": "/reɪn/", "meaning": {"ml": "മഴ", "hi": "बारिश", "ta": "மழை"}, "example": "I love the cool rain."},
-        {"word": "Hand", "emoji": "✋", "phonetic": "/hænd/", "meaning": {"ml": "കൈ", "hi": "हाथ", "ta": "கை"}, "example": "Wash your clean hand."},
-        {"word": "Eye", "emoji": "👁️", "phonetic": "/aɪ/", "meaning": {"ml": "കണ്ണ്", "hi": "आँख", "ta": "கண்"}, "example": "Open your happy eyes."},
-        {"word": "Food", "emoji": "🍲", "phonetic": "/fuːd/", "meaning": {"ml": "ഭക്ഷണം", "hi": "खाना", "ta": "உணவு"}, "example": "Healthy and tasty food."},
-        {"word": "Friend", "emoji": "🤝", "phonetic": "/frend/", "meaning": {"ml": "സുഹൃത്ത്", "hi": "दोस्त", "ta": "நண்பன்"}, "example": "Rahul is my good friend."},
-        {"word": "Time", "emoji": "⏳", "phonetic": "/taɪm/", "meaning": {"ml": "സമയം", "hi": "समय", "ta": "நேரம்"}, "example": "What is the time?"},
-        {"word": "Clock", "emoji": "⏰", "phonetic": "/klɒk/", "meaning": {"ml": "ക്ലോക്ക്", "hi": "घड़ी", "ta": "கடிகாரம்"}, "example": "The clock says 7 AM."},
-        {"word": "Night", "emoji": "🌃", "phonetic": "/naɪt/", "meaning": {"ml": "രാത്രി", "hi": "रात", "ta": "இரவு"}, "example": "Good night, sleep well."},
-        {"word": "Day", "emoji": "🌅", "phonetic": "/deɪ/", "meaning": {"ml": "പകൽ / ദിവസം", "hi": "दिन", "ta": "நாள்"}, "example": "Have a wonderful day."},
-        {"word": "Boy", "emoji": "👦", "phonetic": "/bɔɪ/", "meaning": {"ml": "ആൺകുട്ടി", "hi": "लड़का", "ta": "சிறுவன்"}, "example": "The cheerful young boy."},
-        {"word": "Girl", "emoji": "👧", "phonetic": "/ɡɜːl/", "meaning": {"ml": "പെൺകുട്ടി", "hi": "लड़की", "ta": "சிறுமி"}, "example": "The polite young girl."},
-        {"word": "Mother", "emoji": "👩", "phonetic": "/ˈmʌð.ər/", "meaning": {"ml": "അമ്മ", "hi": "माँ", "ta": "அம்மா"}, "example": "My loving mother."},
-        {"word": "Father", "emoji": "👨", "phonetic": "/ˈfɑː.ðər/", "meaning": {"ml": "അച്ഛൻ", "hi": "पिता", "ta": "அப்பா"}, "example": "My hardworking father."},
-        {"word": "Child", "emoji": "🧒", "phonetic": "/tʃaɪld/", "meaning": {"ml": "കുട്ടി", "hi": "बच्चा", "ta": "குழந்தை"}, "example": "The smiling little child."},
-        {"word": "Walk", "emoji": "🚶", "phonetic": "/wɔːk/", "meaning": {"ml": "നടക്കുക", "hi": "चलना", "ta": "நடப்பது"}, "example": "I walk in the morning park."},
-        {"word": "Run", "emoji": "🏃", "phonetic": "/rʌn/", "meaning": {"ml": "ഓടുക", "hi": "दौड़ना", "ta": "ஓடுவது"}, "example": "Run fast to the finish."},
-        {"word": "Eat", "emoji": "🍽️", "phonetic": "/iːt/", "meaning": {"ml": "കഴിക്കുക", "hi": "खाना", "ta": "சாப்பிடுவது"}, "example": "I eat breakfast early."},
-        {"word": "Drink", "emoji": "🥤", "phonetic": "/drɪŋk/", "meaning": {"ml": "കുടിക്കുക", "hi": "पीना", "ta": "குடிப்பது"}, "example": "Drink pure water."},
-        {"word": "Sleep", "emoji": "😴", "phonetic": "/sliːp/", "meaning": {"ml": "ഉറങ്ങുക", "hi": "सोना", "ta": "தூங்குவது"}, "example": "Sleep early tonight."},
-        {"word": "Read", "emoji": "📖", "phonetic": "/riːd/", "meaning": {"ml": "വായിക്കുക", "hi": "पढ़ना", "ta": "படிப்பது"}, "example": "Read this interesting book."},
-        {"word": "Write", "emoji": "✍️", "phonetic": "/raɪt/", "meaning": {"ml": "എഴുതുക", "hi": "लिखना", "ta": "எழுதுவது"}, "example": "Write your name here."},
-        {"word": "Speak", "emoji": "🗣️", "phonetic": "/spiːk/", "meaning": {"ml": "സംസാരിക്കുക", "hi": "बोलना", "ta": "பேசுவது"}, "example": "Speak English confidently."},
-        {"word": "Listen", "emoji": "👂", "phonetic": "/ˈlɪs.ən/", "meaning": {"ml": "കേൾക്കുക", "hi": "सुनना", "ta": "கேட்பது"}, "example": "Listen to the teacher."},
-        {"word": "See", "emoji": "👀", "phonetic": "/siː/", "meaning": {"ml": "കാണുക", "hi": "देखना", "ta": "பார்ப்பது"}, "example": "I see a blue bird."},
-        {"word": "Smile", "emoji": "😊", "phonetic": "/smaɪl/", "meaning": {"ml": "പുഞ്ചിരിക്കുക", "hi": "मुस्कुराना", "ta": "புன்னகை"}, "example": "Always smile with joy."},
-        {"word": "Happy", "emoji": "😃", "phonetic": "/ˈhæp.i/", "meaning": {"ml": "സന്തോഷം", "hi": "खुश", "ta": "மகிழ்ச்சி"}, "example": "I am very happy today."},
-        {"word": "Big", "emoji": "🐘", "phonetic": "/bɪɡ/", "meaning": {"ml": "വലിയ", "hi": "बड़ा", "ta": "பெரிய"}, "example": "A big green elephant."},
-        {"word": "Small", "emoji": "🐜", "phonetic": "/smɔːl/", "meaning": {"ml": "ചെറിയ", "hi": "छोटा", "ta": "சிறிய"}, "example": "A small busy ant."},
-        {"word": "Red", "emoji": "🔴", "phonetic": "/red/", "meaning": {"ml": "ചുവപ്പ്", "hi": "लाल", "ta": "சிவப்பு"}, "example": "A bright red apple."},
-        {"word": "Blue", "emoji": "🔵", "phonetic": "/bluː/", "meaning": {"ml": "നീല", "hi": "नीला", "ta": "நீலம்"}, "example": "The clear blue sky."}
+        {
+          "word": "Apple",
+          "emoji": "🍎",
+          "phonetic": "/ˈæp.əl/",
+          "meaning": {
+            "ml": "ആപ്പിൾ",
+            "hi": "सेब",
+            "ta": "ஆப்பிள்"
+          },
+          "example": "I eat an apple."
+        },
+        {
+          "word": "Book",
+          "emoji": "📖",
+          "phonetic": "/bʊk/",
+          "meaning": {
+            "ml": "പുസ്തകം",
+            "hi": "किताब",
+            "ta": "புத்தகம்"
+          },
+          "example": "This is my book."
+        },
+        {
+          "word": "Grapes",
+          "emoji": "🍇",
+          "phonetic": "/ɡreɪps/",
+          "meaning": {
+            "ml": "മുന്തിരി",
+            "hi": "अंगूर",
+            "ta": "திராட்சை"
+          },
+          "example": "Sweet green grapes."
+        },
+        {
+          "word": "Bed",
+          "emoji": "🛏️",
+          "phonetic": "/bed/",
+          "meaning": {
+            "ml": "കിടക്ക / കട്ടിൽ",
+            "hi": "बिस्तर",
+            "ta": "படுக்கை"
+          },
+          "example": "I sleep on the bed."
+        },
+        {
+          "word": "Crow",
+          "emoji": "🐦‍⬛",
+          "phonetic": "/krəʊ/",
+          "meaning": {
+            "ml": "കാക്ക",
+            "hi": "कौआ",
+            "ta": "காகம்"
+          },
+          "example": "A black crow is singing."
+        },
+        {
+          "word": "Water",
+          "emoji": "💧",
+          "phonetic": "/ˈwɔː.tər/",
+          "meaning": {
+            "ml": "വെള്ളം",
+            "hi": "पानी",
+            "ta": "தண்ணீர்"
+          },
+          "example": "Please give me water."
+        },
+        {
+          "word": "Cat",
+          "emoji": "🐱",
+          "phonetic": "/kæt/",
+          "meaning": {
+            "ml": "പൂച്ച",
+            "hi": "बिल्ली",
+            "ta": "பூனை"
+          },
+          "example": "The cat is sleeping."
+        },
+        {
+          "word": "Dog",
+          "emoji": "🐶",
+          "phonetic": "/dɒɡ/",
+          "meaning": {
+            "ml": "നായ",
+            "hi": "कुत्ता",
+            "ta": "நாய்"
+          },
+          "example": "My dog is friendly."
+        },
+        {
+          "word": "House",
+          "emoji": "🏡",
+          "phonetic": "/haʊs/",
+          "meaning": {
+            "ml": "വീട്",
+            "hi": "घर",
+            "ta": "வீடு"
+          },
+          "example": "Welcome to my house."
+        },
+        {
+          "word": "Sun",
+          "emoji": "☀️",
+          "phonetic": "/sʌn/",
+          "meaning": {
+            "ml": "സൂര്യൻ",
+            "hi": "सूरज",
+            "ta": "சூரியன்"
+          },
+          "example": "The sun is shining bright."
+        },
+        {
+          "word": "Tree",
+          "emoji": "🌳",
+          "phonetic": "/triː/",
+          "meaning": {
+            "ml": "മരം",
+            "hi": "पेड़",
+            "ta": "மரம்"
+          },
+          "example": "A tall green tree."
+        },
+        {
+          "word": "Milk",
+          "emoji": "🥛",
+          "phonetic": "/mɪlk/",
+          "meaning": {
+            "ml": "പാൽ",
+            "hi": "दूध",
+            "ta": "பால்"
+          },
+          "example": "I drink warm milk."
+        },
+        {
+          "word": "Car",
+          "emoji": "🚗",
+          "phonetic": "/kɑːr/",
+          "meaning": {
+            "ml": "കാർ / വണ്ടി",
+            "hi": "गाड़ी",
+            "ta": "கார்"
+          },
+          "example": "The red car is fast."
+        },
+        {
+          "word": "Pen",
+          "emoji": "🖊️",
+          "phonetic": "/pen/",
+          "meaning": {
+            "ml": "പേന",
+            "hi": "कलम",
+            "ta": "பேனா"
+          },
+          "example": "I write with a pen."
+        },
+        {
+          "word": "School",
+          "emoji": "🏫",
+          "phonetic": "/skuːl/",
+          "meaning": {
+            "ml": "സ്കൂൾ",
+            "hi": "स्कूल",
+            "ta": "பள்ளி"
+          },
+          "example": "Children go to school."
+        },
+        {
+          "word": "Fish",
+          "emoji": "🐟",
+          "phonetic": "/fɪʃ/",
+          "meaning": {
+            "ml": "മത്സ്യം",
+            "hi": "मछली",
+            "ta": "மீன்"
+          },
+          "example": "Fish in the clean water."
+        },
+        {
+          "word": "Bird",
+          "emoji": "🐦",
+          "phonetic": "/bɜːd/",
+          "meaning": {
+            "ml": "പക്ഷി",
+            "hi": "पक्षी",
+            "ta": "பறவை"
+          },
+          "example": "A bird flies in the sky."
+        },
+        {
+          "word": "Cup",
+          "emoji": "☕",
+          "phonetic": "/kʌp/",
+          "meaning": {
+            "ml": "കപ്പ്",
+            "hi": "कप",
+            "ta": "கோப்பை"
+          },
+          "example": "A hot cup of tea."
+        },
+        {
+          "word": "Bag",
+          "emoji": "🎒",
+          "phonetic": "/bæɡ/",
+          "meaning": {
+            "ml": "ബാഗ്",
+            "hi": "बस्ता",
+            "ta": "பை"
+          },
+          "example": "My heavy school bag."
+        },
+        {
+          "word": "Door",
+          "emoji": "🚪",
+          "phonetic": "/dɔːr/",
+          "meaning": {
+            "ml": "വാതിൽ",
+            "hi": "दरवाजा",
+            "ta": "கதவு"
+          },
+          "example": "Open the front door."
+        },
+        {
+          "word": "Chair",
+          "emoji": "🪑",
+          "phonetic": "/tʃeər/",
+          "meaning": {
+            "ml": "കസേര",
+            "hi": "कुर्सी",
+            "ta": "நாற்காலி"
+          },
+          "example": "Sit on the chair."
+        },
+        {
+          "word": "Table",
+          "emoji": "🪵",
+          "phonetic": "/ˈteɪ.bəl/",
+          "meaning": {
+            "ml": "മേശ",
+            "hi": "मेज़",
+            "ta": "மேசை"
+          },
+          "example": "Food is on the table."
+        },
+        {
+          "word": "Road",
+          "emoji": "🛣️",
+          "phonetic": "/rəʊd/",
+          "meaning": {
+            "ml": "വഴി / റോഡ്",
+            "hi": "सड़क",
+            "ta": "சாலை"
+          },
+          "example": "Cross the quiet road."
+        },
+        {
+          "word": "Star",
+          "emoji": "⭐",
+          "phonetic": "/stɑːr/",
+          "meaning": {
+            "ml": "നക്ഷത്രം",
+            "hi": "तारा",
+            "ta": "நட்சத்திரம்"
+          },
+          "example": "Twinkling star at night."
+        },
+        {
+          "word": "Moon",
+          "emoji": "🌙",
+          "phonetic": "/muːn/",
+          "meaning": {
+            "ml": "ചന്ദ്രൻ",
+            "hi": "चाँद",
+            "ta": "நிலா"
+          },
+          "example": "Bright white moon."
+        },
+        {
+          "word": "Rain",
+          "emoji": "🌧️",
+          "phonetic": "/reɪn/",
+          "meaning": {
+            "ml": "മഴ",
+            "hi": "बारिश",
+            "ta": "மழை"
+          },
+          "example": "I love the cool rain."
+        },
+        {
+          "word": "Hand",
+          "emoji": "✋",
+          "phonetic": "/hænd/",
+          "meaning": {
+            "ml": "കൈ",
+            "hi": "हाथ",
+            "ta": "கை"
+          },
+          "example": "Wash your clean hand."
+        },
+        {
+          "word": "Eye",
+          "emoji": "👁️",
+          "phonetic": "/aɪ/",
+          "meaning": {
+            "ml": "കണ്ണ്",
+            "hi": "आँख",
+            "ta": "கண்"
+          },
+          "example": "Open your happy eyes."
+        },
+        {
+          "word": "Food",
+          "emoji": "🍲",
+          "phonetic": "/fuːd/",
+          "meaning": {
+            "ml": "ഭക്ഷണം",
+            "hi": "खाना",
+            "ta": "உணவு"
+          },
+          "example": "Healthy and tasty food."
+        },
+        {
+          "word": "Friend",
+          "emoji": "🤝",
+          "phonetic": "/frend/",
+          "meaning": {
+            "ml": "സുഹൃത്ത്",
+            "hi": "दोस्त",
+            "ta": "நண்பன்"
+          },
+          "example": "Rahul is my good friend."
+        },
+        {
+          "word": "Time",
+          "emoji": "⏳",
+          "phonetic": "/taɪm/",
+          "meaning": {
+            "ml": "സമയം",
+            "hi": "समय",
+            "ta": "நேரம்"
+          },
+          "example": "What is the time?"
+        },
+        {
+          "word": "Clock",
+          "emoji": "⏰",
+          "phonetic": "/klɒk/",
+          "meaning": {
+            "ml": "ക്ലോക്ക്",
+            "hi": "घड़ी",
+            "ta": "கடிகாரம்"
+          },
+          "example": "The clock says 7 AM."
+        },
+        {
+          "word": "Night",
+          "emoji": "🌃",
+          "phonetic": "/naɪt/",
+          "meaning": {
+            "ml": "രാത്രി",
+            "hi": "रात",
+            "ta": "இரவு"
+          },
+          "example": "Good night, sleep well."
+        },
+        {
+          "word": "Day",
+          "emoji": "🌅",
+          "phonetic": "/deɪ/",
+          "meaning": {
+            "ml": "പകൽ / ദിവസം",
+            "hi": "दिन",
+            "ta": "நாள்"
+          },
+          "example": "Have a wonderful day."
+        },
+        {
+          "word": "Boy",
+          "emoji": "👦",
+          "phonetic": "/bɔɪ/",
+          "meaning": {
+            "ml": "ആൺകുട്ടി",
+            "hi": "लड़का",
+            "ta": "சிறுவன்"
+          },
+          "example": "The cheerful young boy."
+        },
+        {
+          "word": "Girl",
+          "emoji": "👧",
+          "phonetic": "/ɡɜːl/",
+          "meaning": {
+            "ml": "പെൺകുട്ടി",
+            "hi": "लड़की",
+            "ta": "சிறுமி"
+          },
+          "example": "The polite young girl."
+        },
+        {
+          "word": "Mother",
+          "emoji": "👩",
+          "phonetic": "/ˈmʌð.ər/",
+          "meaning": {
+            "ml": "അമ്മ",
+            "hi": "माँ",
+            "ta": "அம்மா"
+          },
+          "example": "My loving mother."
+        },
+        {
+          "word": "Father",
+          "emoji": "👨",
+          "phonetic": "/ˈfɑː.ðər/",
+          "meaning": {
+            "ml": "അച്ഛൻ",
+            "hi": "पिता",
+            "ta": "அப்பா"
+          },
+          "example": "My hardworking father."
+        },
+        {
+          "word": "Child",
+          "emoji": "🧒",
+          "phonetic": "/tʃaɪld/",
+          "meaning": {
+            "ml": "കുട്ടി",
+            "hi": "बच्चा",
+            "ta": "குழந்தை"
+          },
+          "example": "The smiling little child."
+        },
+        {
+          "word": "Walk",
+          "emoji": "🚶",
+          "phonetic": "/wɔːk/",
+          "meaning": {
+            "ml": "നടക്കുക",
+            "hi": "चलना",
+            "ta": "நடப்பது"
+          },
+          "example": "I walk in the morning park."
+        },
+        {
+          "word": "Run",
+          "emoji": "🏃",
+          "phonetic": "/rʌn/",
+          "meaning": {
+            "ml": "ഓടുക",
+            "hi": "दौड़ना",
+            "ta": "ஓடுவது"
+          },
+          "example": "Run fast to the finish."
+        },
+        {
+          "word": "Eat",
+          "emoji": "🍽️",
+          "phonetic": "/iːt/",
+          "meaning": {
+            "ml": "കഴിക്കുക",
+            "hi": "खाना",
+            "ta": "சாப்பிடுவது"
+          },
+          "example": "I eat breakfast early."
+        },
+        {
+          "word": "Drink",
+          "emoji": "🥤",
+          "phonetic": "/drɪŋk/",
+          "meaning": {
+            "ml": "കുടിക്കുക",
+            "hi": "पीना",
+            "ta": "குடிப்பது"
+          },
+          "example": "Drink pure water."
+        },
+        {
+          "word": "Sleep",
+          "emoji": "😴",
+          "phonetic": "/sliːp/",
+          "meaning": {
+            "ml": "ഉറങ്ങുക",
+            "hi": "सोना",
+            "ta": "தூங்குவது"
+          },
+          "example": "Sleep early tonight."
+        },
+        {
+          "word": "Read",
+          "emoji": "📖",
+          "phonetic": "/riːd/",
+          "meaning": {
+            "ml": "വായിക്കുക",
+            "hi": "पढ़ना",
+            "ta": "படிப்பது"
+          },
+          "example": "Read this interesting book."
+        },
+        {
+          "word": "Write",
+          "emoji": "✍️",
+          "phonetic": "/raɪt/",
+          "meaning": {
+            "ml": "എഴുതുക",
+            "hi": "लिखना",
+            "ta": "எழுதுவது"
+          },
+          "example": "Write your name here."
+        },
+        {
+          "word": "Speak",
+          "emoji": "🗣️",
+          "phonetic": "/spiːk/",
+          "meaning": {
+            "ml": "സംസാരിക്കുക",
+            "hi": "बोलना",
+            "ta": "பேசுவது"
+          },
+          "example": "Speak English confidently."
+        },
+        {
+          "word": "Listen",
+          "emoji": "👂",
+          "phonetic": "/ˈlɪs.ən/",
+          "meaning": {
+            "ml": "കേൾക്കുക",
+            "hi": "सुनना",
+            "ta": "கேட்பது"
+          },
+          "example": "Listen to the teacher."
+        },
+        {
+          "word": "See",
+          "emoji": "👀",
+          "phonetic": "/siː/",
+          "meaning": {
+            "ml": "കാണുക",
+            "hi": "देखना",
+            "ta": "பார்ப்பது"
+          },
+          "example": "I see a blue bird."
+        },
+        {
+          "word": "Smile",
+          "emoji": "😊",
+          "phonetic": "/smaɪl/",
+          "meaning": {
+            "ml": "പുഞ്ചിരിക്കുക",
+            "hi": "मुस्कुराना",
+            "ta": "புன்னகை"
+          },
+          "example": "Always smile with joy."
+        },
+        {
+          "word": "Happy",
+          "emoji": "😃",
+          "phonetic": "/ˈhæp.i/",
+          "meaning": {
+            "ml": "സന്തോഷം",
+            "hi": "खुश",
+            "ta": "மகிழ்ச்சி"
+          },
+          "example": "I am very happy today."
+        },
+        {
+          "word": "Big",
+          "emoji": "🐘",
+          "phonetic": "/bɪɡ/",
+          "meaning": {
+            "ml": "വലിയ",
+            "hi": "बड़ा",
+            "ta": "பெரிய"
+          },
+          "example": "A big green elephant."
+        },
+        {
+          "word": "Small",
+          "emoji": "🐜",
+          "phonetic": "/smɔːl/",
+          "meaning": {
+            "ml": "ചെറിയ",
+            "hi": "छोटा",
+            "ta": "சிறிய"
+          },
+          "example": "A small busy ant."
+        },
+        {
+          "word": "Red",
+          "emoji": "🔴",
+          "phonetic": "/red/",
+          "meaning": {
+            "ml": "ചുവപ്പ്",
+            "hi": "लाल",
+            "ta": "சிவப்பு"
+          },
+          "example": "A bright red apple."
+        },
+        {
+          "word": "Blue",
+          "emoji": "🔵",
+          "phonetic": "/bluː/",
+          "meaning": {
+            "ml": "നീല",
+            "hi": "नीला",
+            "ta": "நீலம்"
+          },
+          "example": "The clear blue sky."
+        }
       ]
     },
     {
@@ -337,74 +929,206 @@ class Day1CurriculumJsonData {
         "ta": "வரைபடத்தில் 6 இலக்கு வார்த்தைகளைக் கண்டறியவும்."
       },
       "rounds": [
-        {"round": 1, "target": "A", "prompt": {"en": "Find Letter A 🍎", "ml": "A കണ്ടെത്തുക"}, "options": ["B", "A", "C", "D"], "correct": "A"},
-        {"round": 2, "target": "Bed", "prompt": {"en": "Find the word: Bed 🛏️", "ml": "Bed കണ്ടെത്തുക"}, "options": ["Crow", "Grapes", "Bed", "Apple"], "correct": "Bed"},
-        {"round": 3, "target": "Crow", "prompt": {"en": "Find the word: Crow 🐦‍⬛", "ml": "Crow കണ്ടെത്തുക"}, "options": ["Water", "Crow", "Dog", "Cat"], "correct": "Crow"},
-        {"round": 4, "target": "Grapes", "prompt": {"en": "Find the word: Grapes 🍇", "ml": "Grapes (മുന്തിരി) കണ്ടെത്തുക"}, "options": ["Grapes", "Book", "House", "Sun"], "correct": "Grapes"},
-        {"round": 5, "target": "Water", "prompt": {"en": "Find the word: Water 💧", "ml": "Water കണ്ടെത്തുക"}, "options": ["Milk", "Bed", "Water", "Fish"], "correct": "Water"},
-        {"round": 6, "target": "Friend", "prompt": {"en": "Find the word: Friend 🤝", "ml": "Friend കണ്ടെത്തുക"}, "options": ["Enemy", "Friend", "Stranger", "Door"], "correct": "Friend"}
+        {
+          "round": 1,
+          "target": "A",
+          "prompt": {
+            "en": "Find Letter A 🍎",
+            "ml": "A കണ്ടെത്തുക"
+          },
+          "options": [
+            "B",
+            "A",
+            "C",
+            "D"
+          ],
+          "correct": "A"
+        },
+        {
+          "round": 2,
+          "target": "Bed",
+          "prompt": {
+            "en": "Find the word: Bed 🛏️",
+            "ml": "Bed കണ്ടെത്തുക"
+          },
+          "options": [
+            "Crow",
+            "Grapes",
+            "Bed",
+            "Apple"
+          ],
+          "correct": "Bed"
+        },
+        {
+          "round": 3,
+          "target": "Crow",
+          "prompt": {
+            "en": "Find the word: Crow 🐦‍⬛",
+            "ml": "Crow കണ്ടെത്തുക"
+          },
+          "options": [
+            "Water",
+            "Crow",
+            "Dog",
+            "Cat"
+          ],
+          "correct": "Crow"
+        },
+        {
+          "round": 4,
+          "target": "Grapes",
+          "prompt": {
+            "en": "Find the word: Grapes 🍇",
+            "ml": "Grapes (മുന്തിരി) കണ്ടെത്തുക"
+          },
+          "options": [
+            "Grapes",
+            "Book",
+            "House",
+            "Sun"
+          ],
+          "correct": "Grapes"
+        },
+        {
+          "round": 5,
+          "target": "Water",
+          "prompt": {
+            "en": "Find the word: Water 💧",
+            "ml": "Water കണ്ടെത്തുക"
+          },
+          "options": [
+            "Milk",
+            "Bed",
+            "Water",
+            "Fish"
+          ],
+          "correct": "Water"
+        },
+        {
+          "round": 6,
+          "target": "Friend",
+          "prompt": {
+            "en": "Find the word: Friend 🤝",
+            "ml": "Friend കണ്ടെത്തുക"
+          },
+          "options": [
+            "Enemy",
+            "Friend",
+            "Stranger",
+            "Door"
+          ],
+          "correct": "Friend"
+        }
       ]
     },
     {
       "stepNumber": 6,
       "id": "step_6_spoken_english",
       "title": {
-        "en": "🎙️ Spoken English Conversational Chat",
-        "ml": "🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം",
-        "hi": "🎙️ स्पोकन इंग्लिश बातचीत",
-        "ta": "🎙️ ஆங்கிலத்தில் பேசுதல் பயிற்சி"
+        "en": "GAME 2: Match & Sentence Builder",
+        "ml": "ഗെയിം 2: യോജിപ്പിക്കലും വാക്യം നിർമ്മാണവും",
+        "hi": "गेम 2: मिलान और वाक्य निर्माण",
+        "ta": "விளையாட்டு 2: வாக்கியம் உருவாக்குதல்"
       },
-      "icon": "🎙️",
-      "gameType": "spoken_chat",
+      "icon": "🧩",
+      "gameType": "game_match_build",
       "description": {
-        "en": "Voice-first 1-on-1 spoken conversation with CyberCat: speak into the microphone to build fluency.",
-        "ml": "സൈബർകാറ്റുമായി 1-on-1 സംഭാഷണം: മൈക്കിലൂടെ സംസാരിച്ച് ഇംഗ്ലീഷ് പ്രാവീണ്യം നേടുക.",
-        "hi": "साइबरकैट के साथ 1-on-1 बातचीत: आत्मविश्वास से अंग्रेजी बोलें।",
-        "ta": "சைபர்கேட்டுடன் உரையாடல்: ஆங்கிலத்தில் சரளமாக பேசுங்கள்."
+        "en": "6 Interactive puzzle challenges: Match objects to names and unscramble words to build real sentences.",
+        "ml": "6 പസിൽ വെല്ലുവിളികൾ: വാക്കുകൾ യോജിപ്പിക്കുക, അർത്ഥവത്തായ വാക്യങ്ങൾ നിർമ്മിക്കുക.",
+        "hi": "6 पहेलियां: शब्दों का मिलान करें और वाक्य बनाएं।",
+        "ta": "6 புதிர்கள்: வார்த்தைகளை பொருத்தி வாக்கியங்களை உருவாக்கவும்."
       },
       "rounds": [
         {
           "round": 1,
           "type": "match",
-          "prompt": {"en": "Match 'Bed' to its emoji", "ml": "'Bed' അനുയോജ്യമായ ചിത്രവുമായി യോജിപ്പിക്കുക"},
+          "prompt": {
+            "en": "Match 'Bed' to its emoji",
+            "ml": "'Bed' അനുയോജ്യമായ ചിത്രവുമായി യോജിപ്പിക്കുക"
+          },
           "left": "Bed",
-          "options": ["🛏️ Bed", "🍇 Grapes", "🐦‍⬛ Crow"],
+          "options": [
+            "🛏️ Bed",
+            "🍇 Grapes",
+            "🐦‍⬛ Crow"
+          ],
           "correct": "🛏️ Bed"
         },
         {
           "round": 2,
           "type": "match",
-          "prompt": {"en": "Match 'Crow' to its emoji", "ml": "'Crow' ചിത്രവുമായി യോജിപ്പിക്കുക"},
+          "prompt": {
+            "en": "Match 'Crow' to its emoji",
+            "ml": "'Crow' ചിത്രവുമായി യോജിപ്പിക്കുക"
+          },
           "left": "Crow",
-          "options": ["🐦‍⬛ Crow", "🍎 Apple", "💧 Water"],
+          "options": [
+            "🐦‍⬛ Crow",
+            "🍎 Apple",
+            "💧 Water"
+          ],
           "correct": "🐦‍⬛ Crow"
         },
         {
           "round": 3,
           "type": "build",
-          "prompt": {"en": "Build sentence: 'This is my bed'", "ml": "'ഇത് എന്റെ കട്ടിൽ/കിടക്കയാണ്' എന്ന് നിർമ്മിക്കുക"},
-          "scrambled": ["bed", "is", "This", "my"],
+          "prompt": {
+            "en": "Build sentence: 'This is my bed'",
+            "ml": "'ഇത് എന്റെ കട്ടിൽ/കിടക്കയാണ്' എന്ന് നിർമ്മിക്കുക"
+          },
+          "scrambled": [
+            "bed",
+            "is",
+            "This",
+            "my"
+          ],
           "expected": "This is my bed"
         },
         {
           "round": 4,
           "type": "build",
-          "prompt": {"en": "Build sentence: 'I see a black crow'", "ml": "'ഞാൻ ഒരു കറുത്ത കാക്കയെ കാണുന്നു' എന്ന് നിർമ്മിക്കുക"},
-          "scrambled": ["crow", "see", "black", "I", "a"],
+          "prompt": {
+            "en": "Build sentence: 'I see a black crow'",
+            "ml": "'ഞാൻ ഒരു കറുത്ത കാക്കയെ കാണുന്നു' എന്ന് നിർമ്മിക്കുക"
+          },
+          "scrambled": [
+            "crow",
+            "see",
+            "black",
+            "I",
+            "a"
+          ],
           "expected": "I see a black crow"
         },
         {
           "round": 5,
           "type": "build",
-          "prompt": {"en": "Build sentence: 'Sweet grapes on the table'", "ml": "'മേശപ്പുറത്ത് മധുരമുള്ള മുന്തിരി' എന്ന് നിർമ്മിക്കുക"},
-          "scrambled": ["grapes", "table", "Sweet", "on", "the"],
+          "prompt": {
+            "en": "Build sentence: 'Sweet grapes on the table'",
+            "ml": "'മേശപ്പുറത്ത് മധുരമുള്ള മുന്തിരി' എന്ന് നിർമ്മിക്കുക"
+          },
+          "scrambled": [
+            "grapes",
+            "table",
+            "Sweet",
+            "on",
+            "the"
+          ],
           "expected": "Sweet grapes on the table"
         },
         {
           "round": 6,
           "type": "build",
-          "prompt": {"en": "Build sentence: 'Water is very fresh'", "ml": "'വെള്ളം വളരെ ഫ്രഷ് ആണ്' എന്ന് നിർമ്മിക്കുക"},
-          "scrambled": ["fresh", "Water", "very", "is"],
+          "prompt": {
+            "en": "Build sentence: 'Water is very fresh'",
+            "ml": "'വെള്ളം വളരെ ഫ്രഷ് ആണ്' എന്ന് നിർമ്മിക്കുക"
+          },
+          "scrambled": [
+            "fresh",
+            "Water",
+            "very",
+            "is"
+          ],
           "expected": "Water is very fresh"
         }
       ]
@@ -486,7 +1210,12 @@ class Day1CurriculumJsonData {
               "hi": "कौए ने मेज पर क्या देखा?",
               "ta": "மேசையில் காகம் எதைப் பார்த்தது?"
             },
-            "options": ["A bowl of sweet grapes 🍇", "A red ball ⚽", "A book 📖", "An egg 🥚"],
+            "options": [
+              "A bowl of sweet grapes 🍇",
+              "A red ball ⚽",
+              "A book 📖",
+              "An egg 🥚"
+            ],
             "correctIndex": 0,
             "explanation": {
               "en": "The crow saw a bowl of sweet green grapes.",
@@ -501,7 +1230,12 @@ class Day1CurriculumJsonData {
               "hi": "बिल्ली कहाँ सो रही थी?",
               "ta": "பூனை எங்கே தூங்கிக்கொண்டிருந்தது?"
             },
-            "options": ["On the road", "On the soft bed 🛏️", "Under the tree", "In the car"],
+            "options": [
+              "On the road",
+              "On the soft bed 🛏️",
+              "Under the tree",
+              "In the car"
+            ],
             "correctIndex": 1,
             "explanation": {
               "en": "The cat was sleeping on the soft bed.",
@@ -516,7 +1250,12 @@ class Day1CurriculumJsonData {
               "hi": "कौए ने क्या पिया?",
               "ta": "காகம் என்ன குடித்தது?"
             },
-            "options": ["Warm milk", "Cool water 💧", "Hot tea", "Juice"],
+            "options": [
+              "Warm milk",
+              "Cool water 💧",
+              "Hot tea",
+              "Juice"
+            ],
             "correctIndex": 1,
             "explanation": {
               "en": "The crow drank cool water.",
@@ -546,25 +1285,7 @@ class Day1CurriculumJsonData {
     },
     {
       "stepNumber": 9,
-      "id": "step_9_karaoke_poem_song",
-      "title": {
-        "en": "Day 1 Sing-Along Poem & Rhythm Chant",
-        "ml": "ഡേ 1 പാട്ട് & റിഥം പോയം സ്റ്റുഡിയോ 🎵",
-        "hi": "दिन 1 कविता और लय गान स्टूडियो",
-        "ta": "நாள் 1 கவிதை & தாள பாடல் ஸ்டுடியோ"
-      },
-      "icon": "🎤",
-      "gameType": "karaoke_chant_game",
-      "description": {
-        "en": "Listen to the 4-line rhythmic song, sing along into your mic, record your singing voice, and share for XP!",
-        "ml": "4-വരി മനോഹരമായ പാട്ട് കേൾക്കുക, മൈക്കിലൂടെ ഉറക്കെ പാടി റെക്കോർഡ് ചെയ്ത് അയക്കുക!",
-        "hi": "दिन 1 की कविता को संगीत के साथ गाएं, रिकॉर्ड करें और सीखें!",
-        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி பதிவு செய்து கற்றுக்கொள்ளுங்கள்!"
-      }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_10_english_hub",
+      "id": "step_9_english_hub",
       "title": {
         "en": "English Hub Community Chat",
         "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ് 💬",
@@ -581,13 +1302,13 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 11,
-      "id": "step_11_house_defense",
+      "stepNumber": 10,
+      "id": "step_10_house_defense",
       "title": {
         "en": "House 1 Defense Shield Command",
         "ml": "ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ് 🛡️",
         "hi": "हाउस 1 डिफेंस शील्ड",
-        "ta": "ஹவுஸ் 1 டிஃபென்ஸ் ஷீல்டு"
+        "ta": "ஹவுஸ் 1 டிஃபென்ஸ் शील्ड"
       },
       "icon": "🛡️",
       "gameType": "house_defense_chat",
@@ -599,8 +1320,8 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 12,
-      "id": "step_12_pocket_talk",
+      "stepNumber": 11,
+      "id": "step_11_pocket_talk",
       "title": {
         "en": "Poketalk: 4-Day Spoken Pact",
         "ml": "പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് 📞",
@@ -617,8 +1338,8 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 13,
-      "id": "step_13_citadel_attack",
+      "stepNumber": 12,
+      "id": "step_12_citadel_attack",
       "title": {
         "en": "House Attack Quest: Raid Rival Citadel",
         "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം ⚔️",
@@ -660,9 +1381,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Apple",
         "voicePrompt": "Say: Apple",
-        "options": ["Apple", "Ball", "Cat", "Dog"],
+        "options": [
+          "Apple",
+          "Ball",
+          "Cat",
+          "Dog"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "A for Apple."}
+        "explanation": {
+          "ml": "A for Apple."
+        }
       },
       {
         "id": 2,
@@ -674,9 +1402,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Grapes",
         "voicePrompt": "Say: Grapes",
-        "options": ["Grapes", "Book", "Bed", "Water"],
+        "options": [
+          "Grapes",
+          "Book",
+          "Bed",
+          "Water"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "Grapes എന്നാൽ മുന്തിരി."}
+        "explanation": {
+          "ml": "Grapes എന്നാൽ മുന്തിരി."
+        }
       },
       {
         "id": 3,
@@ -688,9 +1423,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Crow",
         "voicePrompt": "Say: Crow",
-        "options": ["Crow", "Cat", "Fish", "Dog"],
+        "options": [
+          "Crow",
+          "Cat",
+          "Fish",
+          "Dog"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "Crow എന്നാൽ കാക്ക."}
+        "explanation": {
+          "ml": "Crow എന്നാൽ കാക്ക."
+        }
       },
       {
         "id": 4,
@@ -702,9 +1444,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "On the bed",
         "voicePrompt": "Say: On the bed",
-        "options": ["On the table", "On the bed", "In the water", "On the road"],
+        "options": [
+          "On the table",
+          "On the bed",
+          "In the water",
+          "On the road"
+        ],
         "correctIndex": 1,
-        "explanation": {"ml": "On the bed (കിടക്കയിൽ)."}
+        "explanation": {
+          "ml": "On the bed (കിടക്കയിൽ)."
+        }
       },
       {
         "id": 5,
@@ -716,9 +1465,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "This is my bed",
         "voicePrompt": "Say: This is my bed",
-        "options": ["This is my bed", "Bed my is this", "Is this bed my", "My bed this is"],
+        "options": [
+          "This is my bed",
+          "Bed my is this",
+          "Is this bed my",
+          "My bed this is"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "This is my bed (ഇത് എന്റെ കട്ടിലാണ്)."}
+        "explanation": {
+          "ml": "This is my bed (ഇത് എന്റെ കട്ടിലാണ്)."
+        }
       },
       {
         "id": 6,
@@ -730,9 +1486,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Sweet grapes",
         "voicePrompt": "Say: Sweet grapes",
-        "options": ["Sweet grapes", "Hot tea", "Sleeping dog", "A book"],
+        "options": [
+          "Sweet grapes",
+          "Hot tea",
+          "Sleeping dog",
+          "A book"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "Sweet grapes."}
+        "explanation": {
+          "ml": "Sweet grapes."
+        }
       },
       {
         "id": 7,
@@ -744,9 +1507,16 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Nice to meet you",
         "voicePrompt": "Say: Nice to meet you",
-        "options": ["Nice to meet you", "Go away", "Good night", "I am sleeping"],
+        "options": [
+          "Nice to meet you",
+          "Go away",
+          "Good night",
+          "I am sleeping"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "'Nice to meet you' എന്ന് പറയുന്നു."}
+        "explanation": {
+          "ml": "'Nice to meet you' എന്ന് പറയുന്നു."
+        }
       },
       {
         "id": 8,
@@ -758,12 +1528,18 @@ class Day1CurriculumJsonData {
         },
         "targetText": "Water",
         "voicePrompt": "Say: Water",
-        "options": ["Water", "Oil", "Ink", "Paint"],
+        "options": [
+          "Water",
+          "Oil",
+          "Ink",
+          "Paint"
+        ],
         "correctIndex": 0,
-        "explanation": {"ml": "Water (വെള്ളം)."}
+        "explanation": {
+          "ml": "Water (വെള്ളം)."
+        }
       }
     ]
   }
-}
-''';
+}''';
 }

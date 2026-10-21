@@ -43,7 +43,6 @@ import 'spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'games/sentence_builder_flame_game.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/verb_timeline_flame_game.dart';
-import 'games/karaoke_rhythm_chant_game.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -122,7 +121,7 @@ class _PocketDay1InteractiveFlowPageState
   bool _isSpeaking = false;
 
   late Day1Track _currentTrack;
-  late int _activeStep; // 1 to 13
+  late int _activeStep; // 1 to 12
   final Map<int, bool> _completedSteps = {};
 
   // Native language
@@ -172,7 +171,7 @@ class _PocketDay1InteractiveFlowPageState
   void initState() {
     super.initState();
     _currentTrack = widget.initialTrack ?? Day1Track.middle;
-    _activeStep = widget.initialStep.clamp(1, 13);
+    _activeStep = widget.initialStep.clamp(1, 12);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -318,7 +317,7 @@ class _PocketDay1InteractiveFlowPageState
     }
 
     final Map<int, bool> completed = {};
-    for (int s = 1; s <= 13; s++) {
+    for (int s = 1; s <= 12; s++) {
       final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_done';
       completed[s] = prefs.getBool(key) ?? false;
     }
@@ -423,7 +422,7 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
 
-    if (stepIndex >= 13) {
+    if (stepIndex >= 12) {
       await _onDay1FullyCompleted();
     } else {
       if (widget.singleStepOnly) {
@@ -467,7 +466,7 @@ class _PocketDay1InteractiveFlowPageState
         }
       } else {
         setState(() {
-          _activeStep = (stepIndex + 1).clamp(1, 13);
+          _activeStep = (stepIndex + 1).clamp(1, 12);
         });
       }
     }
@@ -676,47 +675,36 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 🎵 Day 1 Step 9: Day 1 Sing-Along Poem & Rhythm Chant Studio
+    // 💬 Day 1 Step 9: English Hub Community Chat
     if (widget.day == 1 && _activeStep == 9) {
-      return PocketKaraokeRhythmChantPage(
-        day: widget.day,
-        userId: widget.userId,
-        onStepFinished: (finishedStep) {
-          _markStepCompleted(9);
-        },
-      );
-    }
-
-    // 💬 Day 1 Step 10: English Hub Community Chat
-    if (widget.day == 1 && _activeStep == 10) {
       return Scaffold(
         backgroundColor: const Color(0xFF0A1118),
         body: SafeArea(
           child: EnglishLearningGroupChatWidget(
             onCancel: () {
-              _markStepCompleted(10);
+              _markStepCompleted(9);
             },
           ),
         ),
       );
     }
 
-    // 🛡️ Day 1 Step 11: House Defense Shield Command
-    if (widget.day == 1 && _activeStep == 11) {
+    // 🛡️ Day 1 Step 10: House Defense Shield Command
+    if (widget.day == 1 && _activeStep == 10) {
       return PocketHouseDefenseChatPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
-          _markStepCompleted(11);
+          _markStepCompleted(10);
         },
       );
     }
 
-    // 📞 Day 1 Step 12: Poketalk: 4-Day Spoken Pact
-    if (widget.day == 1 && _activeStep == 12) {
+    // 📞 Day 1 Step 11: Poketalk: 4-Day Spoken Pact
+    if (widget.day == 1 && _activeStep == 11) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await PocketTalkCardSwiperDialog.show(context);
-        _markStepCompleted(12);
+        _markStepCompleted(11);
       });
       return const Scaffold(
         backgroundColor: Color(0xFF0A1118),
@@ -726,13 +714,13 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // ⚔️ Day 1 Step 13: House Attack Quest: Raid Rival Citadel
-    if (widget.day == 1 && _activeStep == 13) {
+    // ⚔️ Day 1 Step 12: House Attack Quest: Raid Rival Citadel
+    if (widget.day == 1 && _activeStep == 12) {
       return PocketHouseAttackPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
-          _markStepCompleted(13);
+          _markStepCompleted(12);
         },
       );
     }
