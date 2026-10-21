@@ -906,108 +906,108 @@ class Pocket90DaySentenceBuilderData {
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 22
+    // DAY 22 (Present Continuous: am/is/are + verb-ing in Live Action)
     // -----------------------------------------------------------------------
     22: [
       _buildRound(
         id: 1,
-        sentence: 'When will the bus arrive ?',
-        translationMl: 'എത്തിച്ചേരുക - When will the bus arrive?',
-        hint: 'Pay attention to: When do you...? / Why are you...?',
+        sentence: 'I am monitoring the live system updates .',
+        translationMl: 'ഞാൻ സിസ്റ്റം അപ്‌ഡേറ്റുകൾ ലൈവായി നിരീക്ഷിക്കുകയാണ് .',
+        hint: 'Subject (I) + am + verb-ing (monitoring)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Why was it delayed ?',
-        translationMl: 'വൈകിക്കുക - Why was it delayed?',
-        hint: 'Pay attention to: When do you...? / Why are you...?',
+        sentence: 'She is coordinating with the engineering team .',
+        translationMl: 'അവൾ എഞ്ചിനീയറിംഗ് ടീമുമായി ഏകോപിപ്പിക്കുകയാണ് .',
+        hint: 'Subject (She) + is + verb-ing (coordinating)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Asking Questions: When & Why gives you great confidence in English .',
-        translationMl: 'When & Why ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: When do you...? / Why are you...?',
+        sentence: 'We are developing a fast audio module .',
+        translationMl: 'ഞങ്ങൾ വേഗതയേറിയ ഓഡിയോ മൊഡ്യൂൾ വികസിപ്പിക്കുകയാണ് .',
+        hint: 'Subject (We) + are + verb-ing (developing)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'When do you leave ?',
-        translationMl: 'When & Why ചോദ്യങ്ങൾ',
-        hint: 'Core sentence pattern: When do you...? / Why are you...?',
+        sentence: 'They are investigating the unexpected delay .',
+        translationMl: 'അപ്രതീക്ഷിത കാലതാമസത്തെക്കുറിച്ച് അവർ അന്വേഷിക്കുകയാണ് .',
+        hint: 'Subject (They) + are + verb-ing (investigating)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Why did you stop ?',
-        translationMl: 'നിർത്തുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'stop\'',
+        sentence: 'Our lead is streamlining the client deliverables .',
+        translationMl: 'ഞങ്ങളുടെ ലീഡ് ക്ലയന്റ് വർക്കുകൾ വേഗത്തിലാക്കുകയാണ് .',
+        hint: 'Singular Subject + is + verb-ing (streamlining)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 23
+    // DAY 23 (Past Interrupted Actions: was/were + verb-ing + when + V2)
     // -----------------------------------------------------------------------
     23: [
       _buildRound(
         id: 1,
-        sentence: 'Who did you meet ?',
-        translationMl: 'കണ്ടുമുട്ടുക - Who did you meet?',
-        hint: 'Pay attention to: Who is that? / Which one do you like?',
+        sentence: 'I was coding when the laptop battery died .',
+        translationMl: 'ലാപ്‌ടോപ്പ് ബാറ്ററി തീർന്നപ്പോൾ ഞാൻ കോഡ് ചെയ്യുകയായിരുന്നു .',
+        hint: 'I was + verb-ing (coding) + when + V2 (died)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Which color do you pick ?',
-        translationMl: 'തിരഞ്ഞെടുക്കുക - Which color do you pick?',
-        hint: 'Pay attention to: Who is that? / Which one do you like?',
+        sentence: 'She was presenting when the director walked in .',
+        translationMl: 'ഡയറക്ടർ അകത്തേക്ക് വന്നപ്പോൾ അവൾ പ്രസന്റേഷൻ നടത്തുകയായിരുന്നു .',
+        hint: 'She was + verb-ing (presenting) + when + V2 (walked in)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Asking Questions: Who & Which gives you great confidence in English .',
-        translationMl: 'Who & Which ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Who is that? / Which one do you like?',
+        sentence: 'They were discussing the roadmap when the call dropped .',
+        translationMl: 'കോൾ കട്ടായപ്പോൾ അവർ റോഡ്‌മാപ്പ് ചർച്ച ചെയ്യുകയായിരുന്നു .',
+        hint: 'They were + verb-ing (discussing) + when + V2 (dropped)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Who knows the answer ?',
-        translationMl: 'Who & Which ചോദ്യങ്ങൾ',
-        hint: 'Core sentence pattern: Who is that? / Which one do you like?',
+        sentence: 'We were testing the release when we noticed the bug .',
+        translationMl: 'റിലീസ് ടെസ്റ്റ് ചെയ്യുമ്പോഴാണ് ഞങ്ങൾ ബഗ്ഗ് ശ്രദ്ധിച്ചത് .',
+        hint: 'We were + verb-ing (testing) + when + V2 (noticed)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Who brought this ?',
-        translationMl: 'കൊണ്ടുവരിക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'bring\'',
+        sentence: 'While the speaker was explaining , the audience took notes .',
+        translationMl: 'സ്പീക്കർ വിശദീകരിച്ചുകൊണ്ടിരുന്നപ്പോൾ കേൾവിക്കാർ കുറിപ്പുകൾ എടുത്തു .',
+        hint: 'While + was explaining + V2 (took notes)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 24
+    // DAY 24 (Quantifiers & Resource Precision: Countable vs Uncountable)
     // -----------------------------------------------------------------------
     24: [
       _buildRound(
         id: 1,
-        sentence: 'How much does it cost ?',
-        translationMl: 'വിലയാകുക - How much does it cost?',
-        hint: 'Pay attention to: How are you? / How much does it cost?',
+        sentence: 'We do not have much time before our flight departs .',
+        translationMl: 'ഞങ്ങളുടെ ഫ്ലൈറ്റ് പുറപ്പെടുന്നതിന് മുൻപ് അധികം സമയമില്ല .',
+        hint: 'Uncountable noun (time) takes "much"',
       ),
       _buildRound(
         id: 2,
-        sentence: 'How far is the town ?',
-        translationMl: 'അളക്കുക - How far is the town?',
-        hint: 'Pay attention to: How are you? / How much does it cost?',
+        sentence: 'There are many talented developers in our community .',
+        translationMl: 'ഞങ്ങളുടെ കമ്മ്യൂണിറ്റിയിൽ കഴിവുള്ള നിരവധി ഡെവലപ്പർമാരുണ്ട് .',
+        hint: 'Countable plural noun (developers) takes "many"',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Asking Questions: How & How Much gives you great confidence in English .',
-        translationMl: 'How & How Much ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: How are you? / How much does it cost?',
+        sentence: 'Do you have any suggestions for improving our product ?',
+        translationMl: 'ഞങ്ങളുടെ പ്രൊഡക്റ്റ് മെച്ചപ്പെടുത്താൻ എന്തെങ്കിലും നിർദ്ദേശങ്ങളുണ്ടോ ?',
+        hint: 'Questions use quantifier "any" (any suggestions)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'How do you feel ?',
-        translationMl: 'How & How Much ചോദ്യങ്ങൾ',
-        hint: 'Core sentence pattern: How are you? / How much does it cost?',
+        sentence: 'She gave me some valuable advice about public speaking .',
+        translationMl: 'പബ്ലിക് സ്പീക്കിംഗിനെക്കുറിച്ച് അവൾ എനിക്ക് ചില വിലപ്പെട്ട ഉപദേശങ്ങൾ തന്നു .',
+        hint: 'Uncountable "advice" takes "some", never "an advice"',
       ),
       _buildRound(
         id: 5,
-        sentence: 'How much does it weigh ?',
-        translationMl: 'ഭാരം തൂക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'weigh\'',
+        sentence: 'Few companies achieve substantial growth without great teamwork .',
+        translationMl: 'മികച്ച ടീം വർക്കില്ലാതെ ചുരുക്കം ചില കമ്പനികൾ മാത്രമേ വലിയ വളർച്ച നേടുന്നുള്ളൂ .',
+        hint: 'Countable "companies" takes quantifier "few"',
       ),
     ],
     // -----------------------------------------------------------------------
