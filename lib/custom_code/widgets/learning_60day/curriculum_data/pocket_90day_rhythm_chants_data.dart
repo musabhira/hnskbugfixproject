@@ -30,18 +30,15 @@ class Pocket90DayRhythmChantsData {
   static final Map<int, DayRhythmChantItem> _chants = {
     1: const DayRhythmChantItem(
       day: 1,
-      title: 'Day 1 Identity & Action Poem',
+      title: 'Day 1 Rhythmic Sing-Along Song',
       lyrics: [
-        'I am big, I am small',
-        'I am short, I am tall!',
-        'Every day I sleep, yesterday I slept',
-        'Tomorrow I will sleep, a promise I kept!',
-        'Every day I go, yesterday I went',
-        'Tomorrow I will go, on an adventure sent!',
-        'Now I am speaking English loud and clear!',
+        'I am big, I am small,',
+        'Yesterday I slept, today I sleep,',
+        'Tomorrow I will sleep,',
+        'Now I sing and speak!',
       ],
       beatBpm: 92,
-      contextMl: 'ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങളുടെ മനോഹരമായ ഇംഗ്ലീഷ് പാട്ട്!',
+      contextMl: 'ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങളുടെ മനോഹരമായ 4-വരി ഇംഗ്ലീഷ് പാട്ട്!',
     ),
     2: const DayRhythmChantItem(
       day: 2,

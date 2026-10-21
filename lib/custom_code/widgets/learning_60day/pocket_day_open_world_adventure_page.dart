@@ -13,6 +13,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step1_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step2_avatar_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step3_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step4_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_step5_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step1_avatar_chat_page.dart';
@@ -33,6 +35,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/verb_timeline_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/karaoke_rhythm_chant_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_spoken_exam_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pronunciation_evaluator.dart';
 
@@ -100,6 +104,7 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   bool _isDriving = false;
   int _currentLedgeStep = 1;
+  // ignore: unused_field
   List<Map<String, dynamic>>? _runtimeSteps;
 
   // Collectibles / FX
@@ -212,9 +217,10 @@ class _PocketDayOpenWorldAdventurePageState
     return math.atan2(y2 - y1, delta * 2);
   }
 
+  // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 11;
+  int get _totalSteps => widget.day == 1 ? 13 : 11;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -2718,6 +2724,39 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
+    if (widget.day == 1) {
+      switch (s) {
+        case 1:
+          return const _StepInfo('Meet Letters & Phonics', '🔤', Color(0xFF00F0FF));
+        case 2:
+          return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
+        case 3:
+          return const _StepInfo('Essential Words & Spelling', '👂', Color(0xFF38BDF8));
+        case 4:
+          return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
+        case 5:
+          return const _StepInfo('Letter & Word Hunt', '🔍', Color(0xFFF59E0B));
+        case 6:
+          return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFFEC4899));
+        case 7:
+          return const _StepInfo('Reading Room: The Crow', '📖', Color(0xFF60A5FA));
+        case 8:
+          return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+        case 9:
+          return const _StepInfo('Sing-Along Song Studio', '🎤', Color(0xFFFF4081));
+        case 10:
+          return const _StepInfo('English Hub Community Chat', '💬', Color(0xFFFFFC00));
+        case 11:
+          return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+        case 12:
+          return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+        case 13:
+          return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+        default:
+          return const _StepInfo('Practice Ledge', '⭐', Colors.white);
+      }
+    }
+
     switch (s) {
       case 1:
         return const _StepInfo('Concept Room & Avatar Chat', '🏛️', Color(0xFF00F0FF));
@@ -2819,15 +2858,92 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 4 on ALL DAYS (1 to 90): Spoken English Conversational Chat (1-on-1 Voice Chat)
-    if (s == 4) {
-      if (day == 1) {
-        await PocketDay1Step4AvatarChatPage.show(
-          context,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
-        );
-      } else if (day == 2) {
+    // Day 1 Step 4: 50+ Essential Beginner Words
+    if (day == 1 && s == 4) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketDay1Step2AvatarChatPage(
+            userId: uid,
+            stepIndex: 4,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          ),
+        ),
+      );
+      await _syncStepCompletionIfDone(4);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 5: Letter & Word Hunt
+    if (day == 1 && s == 5) {
+      await PocketDay1Step3AvatarChatPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(5);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 6: Spoken English Conversational Chat (1-on-1 Voice Chat)
+    if (day == 1 && s == 6) {
+      await PocketDay1Step4AvatarChatPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(6);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 7: Reading Room (The Crow and the Grapes)
+    if (day == 1 && s == 7) {
+      await PocketDay1Step5AvatarChatPage.show(
+        context,
+        day: day,
+        stepIndex: 7,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(7);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 8: Verb Timeline & Tenses Arcade (Past, Present & Future)
+    if (day == 1 && s == 8) {
+      await PocketVerbTimelineGamePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(8);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 9: Day 1 Sing-Along Poem & Rhythm Chant Studio (Karaoke & Mic Recording)
+    if (day == 1 && s == 9) {
+      await PocketKaraokeRhythmChantPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(9);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Days > 1 Steps 4 to 7
+    if (day > 1 && s == 4) {
+      if (day == 2) {
         await PocketDay2Step4AvatarChatPage.show(
           context,
           userId: uid,
@@ -2846,8 +2962,7 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 5 on ALL DAYS (1 to 90): Reading Room (Illustrated Storybook + Audio + Mic)
-    if (s == 5) {
+    if (day > 1 && s == 5) {
       await PocketDay1Step5AvatarChatPage.show(
         context,
         day: day,
@@ -2860,8 +2975,7 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 6 on ALL DAYS (1 to 90): 20-Turn Spoken Conversational Simulator
-    if (s == 6) {
+    if (day > 1 && s == 6) {
       final res = await PocketSpokenAvatarSimulatorPage.launch(
         context,
         day: day,
@@ -2875,8 +2989,7 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 7 on ALL DAYS (1 to 90): Open-World Vocab Quest (5-Ride Vehicle Vocab Drive)
-    if (s == 7) {
+    if (day > 1 && s == 7) {
       await PocketVocabOpenWorldDrivePage.show(
         context,
         day: day,
@@ -2889,8 +3002,9 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 8 on ALL DAYS (1 to 90): English Hub Community Chat
-    if (s == 8) {
+    // English Hub Community Chat: Step 10 on Day 1, Step 8 on Days 2+
+    if ((day == 1 && s == 10) || (day > 1 && s == 8)) {
+      final stepIdx = day == 1 ? 10 : 8;
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -2904,45 +3018,48 @@ class _PocketDayOpenWorldAdventurePageState
           ),
         ),
       );
-      await _onStepCompleted(8);
-      await _syncStepCompletionIfDone(8);
+      await _onStepCompleted(stepIdx);
+      await _syncStepCompletionIfDone(stepIdx);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // Step 9 on ALL DAYS (1 to 90): House Defense Shield Command
-    if (s == 9) {
+    // House Defense Shield Command: Step 11 on Day 1, Step 9 on Days 2+
+    if ((day == 1 && s == 11) || (day > 1 && s == 9)) {
+      final stepIdx = day == 1 ? 11 : 9;
       await PocketHouseDefenseChatPage.show(
         context,
         day: day,
-        stepIndex: 9,
+        stepIndex: stepIdx,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(9);
+      await _syncStepCompletionIfDone(stepIdx);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // Step 10 on ALL DAYS (1 to 90): Poketalk: 4-Day Spoken Pact
-    if (s == 10) {
+    // Poketalk: 4-Day Spoken Pact: Step 12 on Day 1, Step 10 on Days 2+
+    if ((day == 1 && s == 12) || (day > 1 && s == 10)) {
+      final stepIdx = day == 1 ? 12 : 10;
       await PocketTalkCardSwiperDialog.show(context);
-      await _onStepCompleted(10);
-      await _syncStepCompletionIfDone(10);
+      await _onStepCompleted(stepIdx);
+      await _syncStepCompletionIfDone(stepIdx);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // Step 11 on ALL DAYS (1 to 90): House Attack Quest: Raid Rival Citadel
-    if (s == 11) {
+    // House Attack Quest: Citadel Raid: Step 13 on Day 1, Step 11 on Days 2+
+    if ((day == 1 && s == 13) || (day > 1 && s == 11)) {
+      final stepIdx = day == 1 ? 13 : 11;
       await PocketHouseAttackPage.show(
         context,
         day: day,
-        stepIndex: 11,
+        stepIndex: stepIdx,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(11);
+      await _syncStepCompletionIfDone(stepIdx);
       await _loadState(preserveCarPosition: true);
       return;
     }

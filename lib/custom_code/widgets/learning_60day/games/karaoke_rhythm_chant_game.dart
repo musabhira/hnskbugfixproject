@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flame/game.dart';
-import 'package:flame/components.dart';
+import 'package:flame/components.dart' hide Timer;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:record/record.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
@@ -118,10 +122,21 @@ class _PocketKaraokeRhythmChantPageState
   late final KaraokeChantFlameGame _flameGame;
   final FlutterTts _flutterTts = FlutterTts();
 
+  // Voice recording & playback controllers
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  AudioPlayer? _userAudioPlayer;
+  bool _isRecording = false;
+  Duration _recordDuration = Duration.zero;
+  Timer? _recordTimer;
+  String? _recordedFilePath;
+  bool _isPlayingUserAudio = false;
+  bool _hasRecorded = false;
+
   late final DayRhythmChantItem _chant;
   int _activeLyricIdx = -1;
-  bool _isPlaying = false;
-  bool _hasSungAlong = false;
+  bool _isPlayingAppSong = false;
+  // ignore: unused_field
+  bool _hasListenedSong = false;
 
   late AnimationController _pulseController;
 
@@ -142,6 +157,9 @@ class _PocketKaraokeRhythmChantPageState
   @override
   void dispose() {
     _pulseController.dispose();
+    _recordTimer?.cancel();
+    _audioRecorder.dispose();
+    _userAudioPlayer?.dispose();
     _flutterTts.stop();
     super.dispose();
   }
@@ -156,9 +174,9 @@ class _PocketKaraokeRhythmChantPageState
   }
 
   Future<void> _playKaraokeSong() async {
-    if (_isPlaying) return;
+    if (_isPlayingAppSong) return;
     setState(() {
-      _isPlaying = true;
+      _isPlayingAppSong = true;
       _activeLyricIdx = 0;
     });
 
@@ -178,12 +196,90 @@ class _PocketKaraokeRhythmChantPageState
 
     if (!mounted) return;
     setState(() {
-      _isPlaying = false;
+      _isPlayingAppSong = false;
       _activeLyricIdx = -1;
-      _hasSungAlong = true;
+      _hasListenedSong = true;
     });
 
     PocketGameSfx.instance.playVictory();
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _audioRecorder.hasPermission()) {
+        HapticFeedback.mediumImpact();
+        PocketGameSfx.instance.playClick();
+
+        final dir = await getTemporaryDirectory();
+        final fileName = 'karaoke_voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        _recordedFilePath = '${dir.path}/$fileName';
+
+        const config = RecordConfig(
+          encoder: AudioEncoder.aacLc,
+          bitRate: 128000,
+          sampleRate: 44100,
+        );
+
+        await _audioRecorder.start(config, path: _recordedFilePath!);
+
+        setState(() {
+          _isRecording = true;
+          _recordDuration = Duration.zero;
+        });
+
+        _recordTimer = Timer.periodic(const Duration(milliseconds: 100), (t) {
+          if (mounted) {
+            setState(() {
+              _recordDuration += const Duration(milliseconds: 100);
+            });
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error starting recording: $e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    if (!_isRecording) return;
+    try {
+      final path = await _audioRecorder.stop();
+      _recordTimer?.cancel();
+      HapticFeedback.mediumImpact();
+      PocketGameSfx.instance.playSnapCorrect();
+
+      setState(() {
+        _isRecording = false;
+        _recordedFilePath = path ?? _recordedFilePath;
+        _hasRecorded = true;
+      });
+    } catch (e) {
+      debugPrint('Error stopping recording: $e');
+      setState(() => _isRecording = false);
+    }
+  }
+
+  Future<void> _togglePlayUserRecording() async {
+    if (_recordedFilePath == null) return;
+    try {
+      _userAudioPlayer ??= AudioPlayer();
+      if (_isPlayingUserAudio) {
+        await _userAudioPlayer!.stop();
+        setState(() => _isPlayingUserAudio = false);
+      } else {
+        await _userAudioPlayer!.setFilePath(_recordedFilePath!);
+        setState(() => _isPlayingUserAudio = true);
+        _userAudioPlayer!.play();
+        _userAudioPlayer!.playerStateStream.listen((state) {
+          if (state.processingState == ProcessingState.completed) {
+            if (mounted) setState(() => _isPlayingUserAudio = false);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error playing recorded song: $e');
+      if (mounted) setState(() => _isPlayingUserAudio = false);
+    }
   }
 
   Future<void> _completeStep() async {
@@ -393,7 +489,8 @@ class _PocketKaraokeRhythmChantPageState
           AnimatedBuilder(
             animation: _pulseController,
             builder: (ctx, child) {
-              final scale = _isPlaying ? 1.0 + (_pulseController.value * 0.08) : 1.0;
+              final isAnimating = _isPlayingAppSong || _isRecording || _isPlayingUserAudio;
+              final scale = isAnimating ? 1.0 + (_pulseController.value * 0.08) : 1.0;
               return Transform.scale(
                 scale: scale,
                 child: Container(
@@ -401,19 +498,25 @@ class _PocketKaraokeRhythmChantPageState
                   height: 90,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const RadialGradient(
-                      colors: [Color(0xFFFF4081), Color(0xFF7B1FA2)],
+                    gradient: RadialGradient(
+                      colors: _isRecording
+                          ? [const Color(0xFFFF1744), const Color(0xFFD50000)]
+                          : [const Color(0xFFFF4081), const Color(0xFF7B1FA2)],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF4081).withValues(alpha: 0.5),
+                        color: (_isRecording ? const Color(0xFFFF1744) : const Color(0xFFFF4081))
+                            .withValues(alpha: 0.5),
                         blurRadius: 18,
                         spreadRadius: 2,
                       )
                     ],
                   ),
-                  child: const Center(
-                    child: Text('🎤', style: TextStyle(fontSize: 44)),
+                  child: Center(
+                    child: Text(
+                      _isRecording ? '🎙️' : (_isPlayingUserAudio ? '🎧' : '🎤'),
+                      style: const TextStyle(fontSize: 44),
+                    ),
                   ),
                 ),
               );
@@ -448,23 +551,34 @@ class _PocketKaraokeRhythmChantPageState
             children: [
               const Text('📜', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
-              Text(
-                'KARAOKE LYRICS (Sing Along)',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.1,
+              Expanded(
+                child: Text(
+                  'KARAOKE LYRICS (Sing Along)',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
                 ),
+              ),
+              IconButton(
+                tooltip: 'Listen to App Sing',
+                icon: Icon(
+                  _isPlayingAppSong ? Icons.volume_up : Icons.play_circle_fill,
+                  color: const Color(0xFFFF4081),
+                  size: 26,
+                ),
+                onPressed: _playKaraokeSong,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           ...List.generate(_chant.lyrics.length, (idx) {
             final isHighlight = _activeLyricIdx == idx;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: isHighlight
@@ -505,40 +619,217 @@ class _PocketKaraokeRhythmChantPageState
     );
   }
 
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final tenths = ((d.inMilliseconds % 1000) ~/ 100).toString();
+    return '$minutes:$seconds.$tenths';
+  }
+
   Widget _buildControls() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // 1. App Singing Section
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF4081),
+            backgroundColor: const Color(0xFF7B1FA2),
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            elevation: 8,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            elevation: 4,
           ),
-          icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill, size: 28),
+          icon: Icon(_isPlayingAppSong ? Icons.volume_up : Icons.play_arrow_rounded, size: 24),
           label: Text(
-            _isPlaying ? 'Singing Along...' : 'Sing Rhythm Chant 🎵',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16),
+            _isPlayingAppSong ? 'App Singing Along...' : 'Listen to Song Demo 🎵',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
           ),
-          onPressed: _playKaraokeSong,
+          onPressed: _isPlayingAppSong ? null : _playKaraokeSong,
         ),
-        if (_hasSungAlong) ...[
-          const SizedBox(height: 16),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00E676),
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+
+        const SizedBox(height: 18),
+
+        // 2. Studio Recording Booth Card
+        // User Audio Directive: "പാട്ടുകൾ പാടിയിട്ട് റെക്കോർഡ് ചെയ്തിട്ട് അങ്ങോട്ട് ഇടണം, പാട്ട് പാടി ഇടുക"
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                _isRecording
+                    ? const Color(0xFF4A0010).withValues(alpha: 0.9)
+                    : const Color(0xFF1E1035).withValues(alpha: 0.95),
+                const Color(0xFF120822).withValues(alpha: 0.95),
+              ],
             ),
-            onPressed: _completeStep,
-            child: Text(
-              'Complete Step 9 🏆',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _isRecording
+                  ? const Color(0xFFFF1744)
+                  : (_hasRecorded ? const Color(0xFF00E676) : const Color(0xFF00E5FF).withValues(alpha: 0.4)),
+              width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: (_isRecording ? const Color(0xFFFF1744) : const Color(0xFF00E5FF))
+                    .withValues(alpha: 0.15),
+                blurRadius: 16,
+              ),
+            ],
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    _isRecording ? '🔴' : (_hasRecorded ? '✅' : '🎙️'),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isRecording
+                              ? 'RECORDING YOUR SINGING...'
+                              : (_hasRecorded ? 'SONG RECORDED READY!' : 'SINGING STUDIO (Record Voice)'),
+                          style: GoogleFonts.outfit(
+                            color: _isRecording
+                                ? const Color(0xFFFF5252)
+                                : (_hasRecorded ? const Color(0xFF00E676) : const Color(0xFF00E5FF)),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        Text(
+                          _isRecording
+                              ? 'Sing clearly into mic now! 🎶'
+                              : 'പാട്ട് പാടി റെക്കോർഡ് ചെയ്യുക (Sing into mic)',
+                          style: GoogleFonts.notoSansMalayalam(
+                            color: Colors.white70,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_isRecording)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF1744).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFF1744)),
+                      ),
+                      child: Text(
+                        _formatDuration(_recordDuration),
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFF5252),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              if (!_isRecording && !_hasRecorded) ...[
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF4081),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 6,
+                  ),
+                  icon: const Icon(Icons.mic, size: 26),
+                  label: Text(
+                    'Record My Singing Voice 🎤',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16),
+                  ),
+                  onPressed: _startRecording,
+                ),
+              ] else if (_isRecording) ...[
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF1744),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 6,
+                  ),
+                  icon: const Icon(Icons.stop_circle, size: 28),
+                  label: Text(
+                    'Stop Recording ⏹️',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16),
+                  ),
+                  onPressed: _stopRecording,
+                ),
+              ] else if (_hasRecorded) ...[
+                // Playback and Re-record Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00E5FF),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                        ),
+                        icon: Icon(
+                          _isPlayingUserAudio ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                          size: 22,
+                        ),
+                        label: Text(
+                          _isPlayingUserAudio ? 'Pause' : 'Play My Song ▶️',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                        ),
+                        onPressed: _togglePlayUserRecording,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                      ),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: Text(
+                        'Re-record',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 12.5),
+                      ),
+                      onPressed: _startRecording,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00E676),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 6,
+                  ),
+                  icon: const Icon(Icons.check_circle, size: 24),
+                  label: Text(
+                    'Submit Song & Complete Step 9 🚀',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15.5),
+                  ),
+                  onPressed: _completeStep,
+                ),
+              ],
+            ],
+          ),
+        ),
       ],
     );
   }

@@ -556,10 +556,10 @@ class Day1CurriculumJsonData {
       "icon": "🎤",
       "gameType": "karaoke_chant_game",
       "description": {
-        "en": "Sing along to the Day 1 rhythmic poem: I am big, I am small, every day I sleep, yesterday I slept with bouncing musical beats!",
-        "ml": "ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങൾ മനോഹരമായ ഒരു പാട്ടിലൂടെയും കവിതയിലൂടെയും താളത്തിൽ പാടി പഠിക്കുക!",
-        "hi": "दिन 1 की कविता को संगीत के साथ गाएं और सीखें!",
-        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி கற்றுக்கொள்ளுங்கள்!"
+        "en": "Listen to the 4-line rhythmic song, sing along into your mic, record your singing voice, and share for XP!",
+        "ml": "4-വരി മനോഹരമായ പാട്ട് കേൾക്കുക, മൈക്കിലൂടെ ഉറക്കെ പാടി റെക്കോർഡ് ചെയ്ത് അയക്കുക!",
+        "hi": "दिन 1 की कविता को संगीत के साथ गाएं, रिकॉर्ड करें और सीखें!",
+        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி பதிவு செய்து கற்றுக்கொள்ளுங்கள்!"
       }
     },
     {

@@ -219,8 +219,16 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     }
 
     final item = _items[_currentIndex];
-    final words = [item.past, item.present, item.future];
-    words.shuffle(math.Random());
+    // Pool target words and distractors from other verbs in Day 1 so the vocabulary library is rich and scrollable
+    final Set<String> wordsSet = {item.past, item.present, item.future};
+    for (final other in _items) {
+      if (other.baseVerb != item.baseVerb) {
+        wordsSet.add(other.past);
+        wordsSet.add(other.present);
+        wordsSet.add(other.future);
+      }
+    }
+    final words = wordsSet.toList()..shuffle(math.Random());
 
     setState(() {
       _activeTier = 0;
@@ -249,7 +257,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     final screenW = MediaQuery.of(context).size.width;
 
     if (_activeTier == 0) {
-      // ⏪ Top Tier: PAST / Yesterday
+      // ⏪ Top Tier: PAST / Yesterday (Past is Yesterday)
       if (word == item.past) {
         PocketGameSfx.instance.playSnapCorrect();
         HapticFeedback.mediumImpact();
@@ -261,13 +269,13 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         _speak('${item.past}. ${item.pastSentence}');
         _flameGame.burstCelebration(
           Vector2(screenW * 0.5, 230),
-          const Color(0xFFFF9100),
+          const Color(0xFFE91E63),
         );
       } else {
-        _handleWrongCard(word, 'Top Shelf: Select the PAST (Yesterday) form for "${item.baseVerb}"!');
+        _handleWrongCard(word, 'Top Shelf: Past is Yesterday! Select PAST form for "${item.baseVerb}"!');
       }
     } else if (_activeTier == 1) {
-      // ☀️ Middle Tier: PRESENT / Today
+      // ☀️ Middle Tier: PRESENT / Today (Today is Present)
       if (word == item.present) {
         PocketGameSfx.instance.playSnapCorrect();
         HapticFeedback.mediumImpact();
@@ -282,10 +290,10 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
           const Color(0xFF00E676),
         );
       } else {
-        _handleWrongCard(word, 'Middle Shelf: Select the PRESENT (Today) form for "${item.baseVerb}"!');
+        _handleWrongCard(word, 'Middle Shelf: Today is Present! Select PRESENT form for "${item.baseVerb}"!');
       }
     } else if (_activeTier == 2) {
-      // 🚀 Bottom Tier: FUTURE / Tomorrow
+      // 🚀 Bottom Tier: FUTURE / Tomorrow (Tomorrow is Future)
       if (word == item.future) {
         PocketGameSfx.instance.playSnapCorrect();
         HapticFeedback.mediumImpact();
@@ -301,7 +309,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         );
         _onAllSlotsFilled();
       } else {
-        _handleWrongCard(word, 'Bottom Shelf: Select the FUTURE (Tomorrow) form for "${item.baseVerb}"!');
+        _handleWrongCard(word, 'Bottom Shelf: Tomorrow is Future! Select FUTURE form for "${item.baseVerb}"!');
       }
     }
   }
@@ -323,7 +331,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         ),
         backgroundColor: const Color(0xFFE11D48),
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1200),
+        duration: const Duration(milliseconds: 1400),
       ),
     );
   }
@@ -373,10 +381,10 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1035),
+        backgroundColor: const Color(0xFF250529),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFFFF9100), width: 2),
+          side: const BorderSide(color: Color(0xFF00E5FF), width: 2),
         ),
         title: Row(
           children: [
@@ -406,9 +414,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: const Color(0xFF38083E),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
               ),
               child: Row(
                 children: [
@@ -416,7 +424,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '+35 Fluency XP • Step 8 Complete!\nPeer Call practice unlocked!',
+                      '+35 Fluency XP • Step 8 Complete!\nReady for Step 9 Sing-Along Studio!',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontWeight: FontWeight.w600,
@@ -432,7 +440,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF9100),
+              backgroundColor: const Color(0xFF00E5FF),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
@@ -454,18 +462,40 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   @override
   Widget build(BuildContext context) {
     if (_currentIndex >= _items.length) {
-      return const Scaffold(backgroundColor: Color(0xFF0F081D));
+      return const Scaffold(backgroundColor: Color(0xFF250529));
     }
 
     final item = _items[_currentIndex];
     final progress = (_currentIndex + 1) / _items.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F081D),
+      backgroundColor: const Color(0xFF250529),
       body: Stack(
         children: [
-          // Background Flame particle canvas
-          Positioned.fill(child: GameWidget(game: _flameGame)),
+          // 1. Deep plum / magenta background gradient matching Sentence Builder
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF4A0E4E), // Top rich plum / magenta
+                    Color(0xFF3A083C),
+                    Color(0xFF250529), // Deep shadow plum
+                    Color(0xFF16031B), // Bottom dark
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Background Flame particle canvas
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GameWidget(game: _flameGame),
+            ),
+          ),
 
           SafeArea(
             child: Column(
@@ -480,9 +510,9 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                       children: [
                         const SizedBox(height: 8),
                         _buildVerbPromptHeader(item),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
                         _buildTimelineRunway(item),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         if (!_isRoundCompleted) _buildWordBank(),
                         if (_isRoundCompleted) _buildCelebrationChantCard(item),
                         const SizedBox(height: 24),
@@ -515,7 +545,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 Text(
                   'DAY ${widget.day} • VERB TIMELINE ARCADE',
                   style: GoogleFonts.outfit(
-                    color: const Color(0xFFFF9100),
+                    color: const Color(0xFF00E5FF),
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.1,
@@ -528,7 +558,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                     value: progress,
                     minHeight: 6,
                     backgroundColor: Colors.white12,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9100)),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00E5FF)),
                   ),
                 ),
               ],
@@ -558,23 +588,20 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
 
   Widget _buildVerbPromptHeader(VerbTimelineItem item) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF2C164D).withValues(alpha: 0.9),
-            const Color(0xFF1B0B33).withValues(alpha: 0.95),
-          ],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF38083E), Color(0xFF580C62)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFF9100).withValues(alpha: 0.35), width: 1.5),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF9100).withValues(alpha: 0.12),
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
             blurRadius: 18,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -584,7 +611,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '⚡ ACTION VERB',
+                '⚡ ACTION VERB TIMELINE',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
                   fontSize: 12,
@@ -594,17 +621,17 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             item.baseVerb.toUpperCase(),
             style: GoogleFonts.outfit(
               color: Colors.white,
-              fontSize: 32,
+              fontSize: 30,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             item.meaningMl,
             style: GoogleFonts.notoSansMalayalam(
@@ -617,20 +644,20 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: Colors.black26,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               _activeTier == 0
-                  ? 'Step 1: Select PAST (Yesterday) word from library below 👇'
+                  ? 'Step 1: Select PAST (Yesterday) from Word Library below 👇'
                   : (_activeTier == 1
-                      ? 'Step 2: Select PRESENT (Today) word from library below 👇'
+                      ? 'Step 2: Select PRESENT (Today) from Word Library below 👇'
                       : (_activeTier == 2
-                          ? 'Step 3: Select FUTURE (Tomorrow) word from library below 👇'
+                          ? 'Step 3: Select FUTURE (Tomorrow) from Word Library below 👇'
                           : '🎉 All 3 shelves assembled with precision!')),
               style: GoogleFonts.outfit(
                 color: _activeTier == 0
-                    ? const Color(0xFFFF9100)
+                    ? const Color(0xFFE91E63)
                     : (_activeTier == 1
                         ? const Color(0xFF00E676)
                         : const Color(0xFF00E5FF)),
@@ -649,42 +676,45 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Shelf 1 (Top / മേലെ): PAST / Yesterday
+        // Shelf 1 (Top / മേലെ): PAST (YESTERDAY) • Past is Yesterday
         _buildTimelineTierShelf(
           tierIndex: 0,
           shelfNumber: '1',
-          title: 'YESTERDAY',
-          sub: 'Past (കഴിഞ്ഞത്)',
+          tag: 'PAST (YESTERDAY)',
+          title: 'Past is Yesterday',
+          sub: 'കഴിഞ്ഞത് (Yesterday)',
           icon: '⏪',
-          color: const Color(0xFFFF9100),
+          color: const Color(0xFFE91E63), // Sentence Builder Magenta
           placedWord: _placedPast,
           exampleSentence: item.pastSentence,
           isActive: _activeTier == 0,
         ),
         const SizedBox(height: 10),
 
-        // Shelf 2 (Middle / ഇടയിൽ): PRESENT / Today
+        // Shelf 2 (Middle / ഇടയിൽ): PRESENT (TODAY) • Today is Present
         _buildTimelineTierShelf(
           tierIndex: 1,
           shelfNumber: '2',
-          title: 'TODAY',
-          sub: 'Present (ഇപ്പോൾ)',
+          tag: 'PRESENT (TODAY)',
+          title: 'Today is Present',
+          sub: 'ഇപ്പോൾ നടക്കുന്നത് (Today)',
           icon: '☀️',
-          color: const Color(0xFF00E676),
+          color: const Color(0xFF00E676), // Sentence Builder Green
           placedWord: _placedPresent,
           exampleSentence: item.presentSentence,
           isActive: _activeTier == 1,
         ),
         const SizedBox(height: 10),
 
-        // Shelf 3 (Bottom / താഴെ): FUTURE / Tomorrow
+        // Shelf 3 (Bottom / താഴെ): FUTURE (TOMORROW) • Tomorrow is Future
         _buildTimelineTierShelf(
           tierIndex: 2,
           shelfNumber: '3',
-          title: 'TOMORROW',
-          sub: 'Future (നാളെ)',
+          tag: 'FUTURE (TOMORROW)',
+          title: 'Tomorrow is Future',
+          sub: 'ഇനി നടക്കാൻ പോകുന്നത് (Tomorrow)',
           icon: '🚀',
-          color: const Color(0xFF00E5FF),
+          color: const Color(0xFF00E5FF), // Sentence Builder Cyan
           placedWord: _placedFuture,
           exampleSentence: item.futureSentence,
           isActive: _activeTier == 2,
@@ -696,6 +726,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   Widget _buildTimelineTierShelf({
     required int tierIndex,
     required String shelfNumber,
+    required String tag,
     required String title,
     required String sub,
     required String icon,
@@ -747,14 +778,14 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(icon, style: const TextStyle(fontSize: 14)),
+                    Text(icon, style: const TextStyle(fontSize: 13)),
                     const SizedBox(width: 5),
                     Text(
-                      title,
+                      tag,
                       style: GoogleFonts.outfit(
                         color: color,
                         fontWeight: FontWeight.w900,
-                        fontSize: 12,
+                        fontSize: 11,
                         letterSpacing: 0.8,
                       ),
                     ),
@@ -762,18 +793,32 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                sub,
-                style: GoogleFonts.notoSansMalayalam(
-                  color: Colors.white60,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      sub,
+                      style: GoogleFonts.notoSansMalayalam(
+                        color: Colors.white60,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
               if (isFilled)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(8),
@@ -785,21 +830,21 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                       SizedBox(width: 3),
                       Text(
                         'PLACED',
-                        style: TextStyle(color: Colors.black, fontSize: 9.5, fontWeight: FontWeight.w900),
+                        style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900),
                       ),
                     ],
                   ),
                 )
               else if (isActive)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFFFD700)),
                   ),
                   child: Text(
-                    '👉 TAP WORD BELOW',
+                    '👉 TAP BELOW',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 9.5,
@@ -818,19 +863,19 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
           if (isFilled) ...[
             Row(
               children: [
-                // Placed Word Badge
+                // Placed Word Badge styled like Sentence Builder Placed Tile
                 GestureDetector(
                   onTap: () => _speak(exampleSentence),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: color.withValues(alpha: 0.4),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 10,
+                          offset: const Offset(2, 4),
                         )
                       ],
                     ),
@@ -840,18 +885,18 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                         Text(
                           placedWord,
                           style: GoogleFonts.outfit(
-                            color: Colors.black,
+                            color: Colors.white,
                             fontWeight: FontWeight.w900,
                             fontSize: 15,
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(Icons.volume_up, size: 14, color: Colors.black87),
+                        const Icon(Icons.volume_up, size: 15, color: Colors.white),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 // Full Natural Sentence
                 Expanded(
                   child: GestureDetector(
@@ -860,7 +905,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                       exampleSentence,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1.25,
                       ),
@@ -871,7 +916,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             ),
           ] else ...[
             Container(
-              height: 40,
+              height: 42,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.03),
@@ -882,10 +927,10 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                 ),
               ),
               child: Text(
-                isActive ? 'Waiting for $title word from library...' : 'Locked slot',
+                isActive ? 'Waiting for $tag word from library below...' : 'Locked slot',
                 style: GoogleFonts.outfit(
                   color: isActive ? color : Colors.white30,
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontStyle: FontStyle.italic,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
@@ -897,94 +942,154 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     );
   }
 
+  /// 📚 Word Vocabulary Library (Scrollable Word Library)
+  /// User audio: "വേർഡ് ലൈബ്രറി ഉണ്ടാവും... word vocabulary, പക്ഷെ സ്ക്രോൾ ചെയ്യാൻ പറ്റണം ട്ടോ"
   Widget _buildWordBank() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1035),
+        color: const Color(0xFF1E0E38),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('🔤', style: TextStyle(fontSize: 16)),
+              const Text('📚', style: TextStyle(fontSize: 17)),
               const SizedBox(width: 8),
-              Text(
-                'WORD BANK (Tap to place)',
-                style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'WORD VOCABULARY LIBRARY',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF00E5FF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    Text(
+                      'സ്ക്രോൾ ചെയ്ത് ശരിയായ വാക്ക് ടാപ്പ് ചെയ്യുക',
+                      style: GoogleFonts.notoSansMalayalam(
+                        color: Colors.white60,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.swipe, size: 13, color: Colors.white70),
+                    SizedBox(width: 4),
+                    Text(
+                      'Scroll ➔',
+                      style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: _remainingCards.map((word) {
-              final isShaking = _shakingCard == word;
-              return AnimatedBuilder(
-                animation: _shakeAnimController,
-                builder: (ctx, child) {
-                  double offset = 0.0;
-                  if (isShaking) {
-                    offset = math.sin(_shakeAnimController.value * math.pi * 6) * 7.0;
-                  }
-                  return Transform.translate(
-                    offset: Offset(offset, 0),
-                    child: child,
-                  );
-                },
-                child: InkWell(
-                  onTap: () => _onCardTapped(word),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF381A5F), Color(0xFF261042)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isShaking
-                            ? const Color(0xFFE11D48)
-                            : const Color(0xFFFF9100).withValues(alpha: 0.6),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF9100).withValues(alpha: 0.18),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          word,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
+          const SizedBox(height: 12),
+
+          // Horizontal scrollable strip of Sentence Builder styled tiles
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: _remainingCards.map((word) {
+                final isShaking = _shakingCard == word;
+
+                // Color accent determined by word or cycling
+                Color tileBgColor;
+                final item = _items[_currentIndex];
+                if (word == item.past) {
+                  tileBgColor = const Color(0xFFE91E63);
+                } else if (word == item.present) {
+                  tileBgColor = const Color(0xFF00E676);
+                } else if (word == item.future) {
+                  tileBgColor = const Color(0xFF00E5FF);
+                } else {
+                  tileBgColor = const Color(0xFF7C4DFF);
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10, bottom: 4, top: 4),
+                  child: AnimatedBuilder(
+                    animation: _shakeAnimController,
+                    builder: (ctx, child) {
+                      double offset = 0.0;
+                      if (isShaking) {
+                        offset = math.sin(_shakeAnimController.value * math.pi * 6) * 8.0;
+                      }
+                      return Transform.translate(
+                        offset: Offset(offset, 0),
+                        child: child,
+                      );
+                    },
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _onCardTapped(word),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: tileBgColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: isShaking
+                                ? Border.all(color: Colors.redAccent, width: 2.5)
+                                : null,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                blurRadius: 10,
+                                offset: const Offset(3, 5),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                word,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.touch_app, size: 14, color: Colors.white70),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.touch_app, size: 16, color: Color(0xFFFF9100)),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),

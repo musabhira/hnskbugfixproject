@@ -1250,15 +1250,15 @@
       "icon": "🎤",
       "gameType": "karaoke_chant_game",
       "description": {
-        "en": "Sing along to the Day 1 rhythmic poem: I am big, I am small, every day I sleep, yesterday I slept with bouncing musical beats!",
-        "ml": "ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങൾ മനോഹരമായ ഒരു പാട്ടിലൂടെയും കവിതയിലൂടെയും താളത്തിൽ പാടി പഠിക്കുക!",
-        "hi": "दिन 1 की कविता को संगीत के साथ गाएं और सीखें!",
-        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி கற்றுக்கொள்ளுங்கள்!"
+        "en": "Listen to the 4-line rhythmic song, sing along into your mic, record your singing voice, and share for XP!",
+        "ml": "4-വരി മനോഹരമായ പാട്ട് കേൾക്കുക, മൈക്കിലൂടെ ഉറക്കെ പാടി റെക്കോർഡ് ചെയ്ത് അയക്കുക!",
+        "hi": "दिन 1 की कविता को संगीत के साथ गाएं, रिकॉर्ड करें और सीखें!",
+        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி பதிவு செய்து கற்றுக்கொள்ளுங்கள்!"
       }
     },
     {
       "stepNumber": 10,
-      "id": "step_8_english_hub",
+      "id": "step_10_english_hub",
       "title": {
         "en": "English Hub Community Chat",
         "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ് 💬",
@@ -1276,7 +1276,7 @@
     },
     {
       "stepNumber": 11,
-      "id": "step_9_house_defense",
+      "id": "step_11_house_defense",
       "title": {
         "en": "House 1 Defense Shield Command",
         "ml": "ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ് 🛡️",
@@ -1294,7 +1294,7 @@
     },
     {
       "stepNumber": 12,
-      "id": "step_10_pocket_talk",
+      "id": "step_12_pocket_talk",
       "title": {
         "en": "Poketalk: 4-Day Spoken Pact",
         "ml": "പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് 📞",
@@ -1312,7 +1312,7 @@
     },
     {
       "stepNumber": 13,
-      "id": "step_11_citadel_attack",
+      "id": "step_13_citadel_attack",
       "title": {
         "en": "House Attack Quest: Raid Rival Citadel",
         "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം ⚔️",

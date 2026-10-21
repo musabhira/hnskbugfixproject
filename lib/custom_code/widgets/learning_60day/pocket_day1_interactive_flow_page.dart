@@ -318,7 +318,7 @@ class _PocketDay1InteractiveFlowPageState
     }
 
     final Map<int, bool> completed = {};
-    for (int s = 1; s <= 11; s++) {
+    for (int s = 1; s <= 13; s++) {
       final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_done';
       completed[s] = prefs.getBool(key) ?? false;
     }
