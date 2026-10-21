@@ -816,8 +816,28 @@ class Day1Curriculum {
             gameType = 'spoken_chat';
           }
 
-          // Step 8 on ALL DAYS (1 to 90): English Hub Community Chat (User Audio Directive!)
-          if (stepNum == 8) {
+          // Step 8 on Day 1: 3-Tier Time Machine Builder (Past, Present & Future)
+          if (day == 1 && stepNum == 8) {
+            titleEn = '⏳ 3-Tier Time Machine Builder';
+            titleMl = '⏳ 3-തട്ട് ടൈം മെഷീൻ സെന്റൻസ് ബിൽഡർ';
+            descEn = 'Build Past (Yesterday), Present (Today) and Future (Tomorrow) sentences with 3-tier shelves and word library!';
+            descMl = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
+            icon = '⏳';
+            gameType = 'verb_timeline_game';
+          }
+
+          // Step 9 on Day 1: Sing-Along Day 1 Poem & Rhythm Chant Studio
+          if (day == 1 && stepNum == 9) {
+            titleEn = '🎵 Day 1 Sing-Along Poem & Rhythm Chant';
+            titleMl = '🎵 ഡേ 1 പാട്ട് & റിഥം പോയം സ്റ്റുഡിയോ';
+            descEn = 'Sing along to the Day 1 rhythmic poem with bouncing musical beats!';
+            descMl = 'ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങൾ മനോഹരമായ ഒരു പാട്ടിലൂടെയും കവിതയിലൂടെയും താളത്തിൽ പാടി പഠിക്കുക!';
+            icon = '🎤';
+            gameType = 'karaoke_chant_game';
+          }
+
+          // Step 8 on Days 2+ OR Step 10 on Day 1: English Hub Community Chat
+          if ((day > 1 && stepNum == 8) || (day == 1 && stepNum == 10)) {
             titleEn = '💬 English Hub Community Chat';
             titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
             descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
@@ -826,8 +846,8 @@ class Day1Curriculum {
             gameType = 'group_chat_action';
           }
 
-          // Step 9 on ALL DAYS (1 to 90): House Defense Shield Command (User Audio Directive!)
-          if (stepNum == 9) {
+          // Step 9 on Days 2+ OR Step 11 on Day 1: House Defense Shield Command
+          if ((day > 1 && stepNum == 9) || (day == 1 && stepNum == 11)) {
             titleEn = '🛡️ House Defense Shield Command';
             titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
             descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
@@ -836,8 +856,8 @@ class Day1Curriculum {
             gameType = 'house_defense_chat';
           }
 
-          // Step 10 on ALL DAYS (1 to 90): PocketTalk 4-Day Pact & Peer Practice
-          if (stepNum == 10) {
+          // Step 10 on Days 2+ OR Step 12 on Day 1: PocketTalk 4-Day Pact & Peer Practice
+          if ((day > 1 && stepNum == 10) || (day == 1 && stepNum == 12)) {
             titleEn = '📞 Poketalk: 4-Day Spoken Pact';
             titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
             descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
@@ -846,8 +866,8 @@ class Day1Curriculum {
             gameType = 'pocket_talk_action';
           }
 
-          // Step 11 on ALL DAYS (1 to 90): House Attack Quest: Raid Rival Citadel
-          if (stepNum == 11) {
+          // Step 11 on Days 2+ OR Step 13 on Day 1: House Attack Quest: Raid Rival Citadel
+          if ((day > 1 && stepNum == 11) || (day == 1 && stepNum == 13)) {
             titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
             titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
             descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';

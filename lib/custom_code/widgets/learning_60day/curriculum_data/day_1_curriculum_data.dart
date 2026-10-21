@@ -528,7 +528,43 @@ class Day1CurriculumJsonData {
     },
     {
       "stepNumber": 8,
-      "id": "step_8_english_hub",
+      "id": "step_8_verb_timeline",
+      "title": {
+        "en": "3-Tier Time Machine Builder (Past, Present & Future)",
+        "ml": "3-തട്ട് ടൈം മെഷീൻ സെന്റൻസ് ബിൽഡർ ⏳",
+        "hi": "3-स्तरीय टाइम मशीन सेंटेंस बिल्डर",
+        "ta": "3-அடுக்கு நேர இயந்திர வாக்கிய உருவாக்குநர்"
+      },
+      "icon": "⏳",
+      "gameType": "verb_timeline_game",
+      "description": {
+        "en": "Build Past (Yesterday), Present (Today) and Future (Tomorrow) sentences with 3-tier shelves and word library!",
+        "ml": "മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ അടുക്കി വാക്യങ്ങൾ നിർമ്മിക്കുക!",
+        "hi": "भूतकाल, वर्तमान और भविष्य काल के वाक्यों को 3 स्तरों में बनाएं!",
+        "ta": "கடந்த, நிகழ்கால மற்றும் எதிர்கால வாக்கியங்களை 3 அடுக்குகளில் உருவாக்குங்கள்!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_9_karaoke_poem_song",
+      "title": {
+        "en": "Day 1 Sing-Along Poem & Rhythm Chant",
+        "ml": "ഡേ 1 പാട്ട് & റിഥം പോയം സ്റ്റുഡിയോ 🎵",
+        "hi": "दिन 1 कविता और लय गान स्टूडियो",
+        "ta": "நாள் 1 கவிதை & தாள பாடல் ஸ்டுடியோ"
+      },
+      "icon": "🎤",
+      "gameType": "karaoke_chant_game",
+      "description": {
+        "en": "Sing along to the Day 1 rhythmic poem: I am big, I am small, every day I sleep, yesterday I slept with bouncing musical beats!",
+        "ml": "ഡേ 1-ൽ പഠിച്ച കാര്യങ്ങൾ മനോഹരമായ ഒരു പാട്ടിലൂടെയും കവിതയിലൂടെയും താളത്തിൽ പാടി പഠിക്കുക!",
+        "hi": "दिन 1 की कविता को संगीत के साथ गाएं और सीखें!",
+        "ta": "நாள் 1 கவிதையை இசையுடன் பாடி கற்றுக்கொள்ளுங்கள்!"
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_10_english_hub",
       "title": {
         "en": "English Hub Community Chat",
         "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ് 💬",
@@ -545,8 +581,8 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 9,
-      "id": "step_9_house_defense",
+      "stepNumber": 11,
+      "id": "step_11_house_defense",
       "title": {
         "en": "House 1 Defense Shield Command",
         "ml": "ഹൗസ് 1 ഡിഫൻസ് ഷീൽഡ് കമാൻഡ് 🛡️",
@@ -563,8 +599,8 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 10,
-      "id": "step_10_pocket_talk",
+      "stepNumber": 12,
+      "id": "step_12_pocket_talk",
       "title": {
         "en": "Poketalk: 4-Day Spoken Pact",
         "ml": "പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് 📞",
@@ -581,8 +617,8 @@ class Day1CurriculumJsonData {
       }
     },
     {
-      "stepNumber": 11,
-      "id": "step_11_citadel_attack",
+      "stepNumber": 13,
+      "id": "step_13_citadel_attack",
       "title": {
         "en": "House Attack Quest: Raid Rival Citadel",
         "ml": "ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം ⚔️",

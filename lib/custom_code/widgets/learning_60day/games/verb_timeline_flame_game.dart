@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flame/game.dart';
@@ -165,7 +166,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   late final List<VerbTimelineItem> _items;
   int _currentIndex = 0;
 
-  // 3 Target Slots
+  // 3 Target Slots & Active Tier (0: Past, 1: Present, 2: Future, 3: Completed)
+  int _activeTier = 0;
   String? _placedPast;
   String? _placedPresent;
   String? _placedFuture;
@@ -221,6 +223,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     words.shuffle(math.Random());
 
     setState(() {
+      _activeTier = 0;
       _placedPast = null;
       _placedPresent = null;
       _placedFuture = null;
@@ -243,71 +246,86 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     if (_isRoundCompleted) return;
 
     final item = _items[_currentIndex];
+    final screenW = MediaQuery.of(context).size.width;
 
-    // Determine which slot this word correctly belongs to
-    if (word == item.past && _placedPast == null) {
-      // ✅ Correct Past!
-      PocketGameSfx.instance.playSnapCorrect();
-      _speak(item.pastSentence);
-      setState(() {
-        _placedPast = word;
-        _remainingCards.remove(word);
-      });
-      _flameGame.burstCelebration(
-        Vector2(MediaQuery.of(context).size.width * 0.2, 280),
-        const Color(0xFFFF9100),
-      );
-    } else if (word == item.present && _placedPresent == null) {
-      // ✅ Correct Present!
-      PocketGameSfx.instance.playSnapCorrect();
-      _speak(item.presentSentence);
-      setState(() {
-        _placedPresent = word;
-        _remainingCards.remove(word);
-      });
-      _flameGame.burstCelebration(
-        Vector2(MediaQuery.of(context).size.width * 0.5, 280),
-        const Color(0xFF00E676),
-      );
-    } else if (word == item.future && _placedFuture == null) {
-      // ✅ Correct Future!
-      PocketGameSfx.instance.playSnapCorrect();
-      _speak(item.futureSentence);
-      setState(() {
-        _placedFuture = word;
-        _remainingCards.remove(word);
-      });
-      _flameGame.burstCelebration(
-        Vector2(MediaQuery.of(context).size.width * 0.8, 280),
-        const Color(0xFF00E5FF),
-      );
-    } else {
-      // ❌ Incorrect or slot already taken
-      PocketGameSfx.instance.playErrorBuzz();
-      setState(() => _shakingCard = word);
-      _shakeAnimController.forward(from: 0.0).then((_) {
-        if (mounted) setState(() => _shakingCard = null);
-      });
+    if (_activeTier == 0) {
+      // ⏪ Top Tier: PAST / Yesterday
+      if (word == item.past) {
+        PocketGameSfx.instance.playSnapCorrect();
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _placedPast = word;
+          _remainingCards.remove(word);
+          _activeTier = 1;
+        });
+        _speak('${item.past}. ${item.pastSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.5, 230),
+          const Color(0xFFFF9100),
+        );
+      } else {
+        _handleWrongCard(word, 'Top Shelf: Select the PAST (Yesterday) form for "${item.baseVerb}"!');
+      }
+    } else if (_activeTier == 1) {
+      // ☀️ Middle Tier: PRESENT / Today
+      if (word == item.present) {
+        PocketGameSfx.instance.playSnapCorrect();
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _placedPresent = word;
+          _remainingCards.remove(word);
+          _activeTier = 2;
+        });
+        _speak('${item.present}. ${item.presentSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.5, 330),
+          const Color(0xFF00E676),
+        );
+      } else {
+        _handleWrongCard(word, 'Middle Shelf: Select the PRESENT (Today) form for "${item.baseVerb}"!');
+      }
+    } else if (_activeTier == 2) {
+      // 🚀 Bottom Tier: FUTURE / Tomorrow
+      if (word == item.future) {
+        PocketGameSfx.instance.playSnapCorrect();
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _placedFuture = word;
+          _remainingCards.remove(word);
+          _activeTier = 3;
+        });
+        _speak('${item.future}. ${item.futureSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.5, 430),
+          const Color(0xFF00E5FF),
+        );
+        _onAllSlotsFilled();
+      } else {
+        _handleWrongCard(word, 'Bottom Shelf: Select the FUTURE (Tomorrow) form for "${item.baseVerb}"!');
+      }
+    }
+  }
 
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '⚠️ Match with Yesterday, Today or Tomorrow!',
-            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          backgroundColor: const Color(0xFFE11D48),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(milliseconds: 900),
+  void _handleWrongCard(String word, String message) {
+    PocketGameSfx.instance.playErrorBuzz();
+    HapticFeedback.heavyImpact();
+    setState(() => _shakingCard = word);
+    _shakeAnimController.forward(from: 0.0).then((_) {
+      if (mounted) setState(() => _shakingCard = null);
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '⚠️ $message',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-      );
-      return;
-    }
-
-    // Check if all 3 slots filled
-    if (_placedPast != null && _placedPresent != null && _placedFuture != null) {
-      _onAllSlotsFilled();
-    }
+        backgroundColor: const Color(0xFFE11D48),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(milliseconds: 1200),
+      ),
+    );
   }
 
   void _onAllSlotsFilled() {
@@ -596,13 +614,31 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Sort the verb forms into Yesterday, Today & Tomorrow 👇',
-            style: GoogleFonts.outfit(
-              color: Colors.white60,
-              fontSize: 12,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(10),
             ),
-            textAlign: TextAlign.center,
+            child: Text(
+              _activeTier == 0
+                  ? 'Step 1: Select PAST (Yesterday) word from library below 👇'
+                  : (_activeTier == 1
+                      ? 'Step 2: Select PRESENT (Today) word from library below 👇'
+                      : (_activeTier == 2
+                          ? 'Step 3: Select FUTURE (Tomorrow) word from library below 👇'
+                          : '🎉 All 3 shelves assembled with precision!')),
+              style: GoogleFonts.outfit(
+                color: _activeTier == 0
+                    ? const Color(0xFFFF9100)
+                    : (_activeTier == 1
+                        ? const Color(0xFF00E676)
+                        : const Color(0xFF00E5FF)),
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),
@@ -610,176 +646,250 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
   }
 
   Widget _buildTimelineRunway(VerbTimelineItem item) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Column 1: PAST / Yesterday
-        Expanded(
-          child: _buildTimelineSlot(
-            title: 'YESTERDAY',
-            sub: 'Past (കഴിഞ്ഞത്)',
-            icon: '⏪',
-            color: const Color(0xFFFF9100),
-            placedWord: _placedPast,
-            exampleSentence: item.pastSentence,
-          ),
+        // Shelf 1 (Top / മേലെ): PAST / Yesterday
+        _buildTimelineTierShelf(
+          tierIndex: 0,
+          shelfNumber: '1',
+          title: 'YESTERDAY',
+          sub: 'Past (കഴിഞ്ഞത്)',
+          icon: '⏪',
+          color: const Color(0xFFFF9100),
+          placedWord: _placedPast,
+          exampleSentence: item.pastSentence,
+          isActive: _activeTier == 0,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 10),
 
-        // Column 2: PRESENT / Today
-        Expanded(
-          child: _buildTimelineSlot(
-            title: 'TODAY',
-            sub: 'Present (ഇപ്പോൾ)',
-            icon: '☀️',
-            color: const Color(0xFF00E676),
-            placedWord: _placedPresent,
-            exampleSentence: item.presentSentence,
-          ),
+        // Shelf 2 (Middle / ഇടയിൽ): PRESENT / Today
+        _buildTimelineTierShelf(
+          tierIndex: 1,
+          shelfNumber: '2',
+          title: 'TODAY',
+          sub: 'Present (ഇപ്പോൾ)',
+          icon: '☀️',
+          color: const Color(0xFF00E676),
+          placedWord: _placedPresent,
+          exampleSentence: item.presentSentence,
+          isActive: _activeTier == 1,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(height: 10),
 
-        // Column 3: FUTURE / Tomorrow
-        Expanded(
-          child: _buildTimelineSlot(
-            title: 'TOMORROW',
-            sub: 'Future (നാളെ)',
-            icon: '🚀',
-            color: const Color(0xFF00E5FF),
-            placedWord: _placedFuture,
-            exampleSentence: item.futureSentence,
-          ),
+        // Shelf 3 (Bottom / താഴെ): FUTURE / Tomorrow
+        _buildTimelineTierShelf(
+          tierIndex: 2,
+          shelfNumber: '3',
+          title: 'TOMORROW',
+          sub: 'Future (നാളെ)',
+          icon: '🚀',
+          color: const Color(0xFF00E5FF),
+          placedWord: _placedFuture,
+          exampleSentence: item.futureSentence,
+          isActive: _activeTier == 2,
         ),
       ],
     );
   }
 
-  Widget _buildTimelineSlot({
+  Widget _buildTimelineTierShelf({
+    required int tierIndex,
+    required String shelfNumber,
     required String title,
     required String sub,
     required String icon,
     required Color color,
     required String? placedWord,
     required String exampleSentence,
+    required bool isActive,
   }) {
     final isFilled = placedWord != null;
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 185),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isFilled
-            ? color.withValues(alpha: 0.16)
-            : Colors.white.withValues(alpha: 0.03),
+            ? color.withValues(alpha: 0.15)
+            : (isActive
+                ? color.withValues(alpha: 0.08)
+                : Colors.white.withValues(alpha: 0.03)),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isFilled ? color : Colors.white24,
-          width: isFilled ? 2.0 : 1.2,
+          color: isFilled
+              ? color
+              : (isActive ? color : Colors.white12),
+          width: isActive || isFilled ? 2.0 : 1.0,
         ),
-        boxShadow: isFilled
+        boxShadow: isActive
             ? [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.25),
-                  blurRadius: 12,
+                  color: color.withValues(alpha: 0.35),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 )
               ]
             : null,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(icon, style: const TextStyle(fontSize: 22)),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              color: color,
-              fontWeight: FontWeight.w900,
-              fontSize: 12,
-              letterSpacing: 0.8,
-            ),
+          // Shelf Header Bar
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: color.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(icon, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(width: 5),
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        color: color,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                sub,
+                style: GoogleFonts.notoSansMalayalam(
+                  color: Colors.white60,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Spacer(),
+              if (isFilled)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.check, size: 13, color: Colors.black),
+                      SizedBox(width: 3),
+                      Text(
+                        'PLACED',
+                        style: TextStyle(color: Colors.black, fontSize: 9.5, fontWeight: FontWeight.w900),
+                      ),
+                    ],
+                  ),
+                )
+              else if (isActive)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFFD700)),
+                  ),
+                  child: Text(
+                    '👉 TAP WORD BELOW',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                )
+              else
+                const Icon(Icons.lock_outline, size: 15, color: Colors.white24),
+            ],
           ),
-          Text(
-            sub,
-            style: GoogleFonts.notoSansMalayalam(
-              color: Colors.white54,
-              fontSize: 9,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
 
-          // Drop Target Content
-          if (!isFilled) ...[
+          const SizedBox(height: 10),
+
+          // Shelf Body Content
+          if (isFilled) ...[
+            Row(
+              children: [
+                // Placed Word Badge
+                GestureDetector(
+                  onTap: () => _speak(exampleSentence),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          placedWord,
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.volume_up, size: 14, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Full Natural Sentence
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _speak(exampleSentence),
+                    child: Text(
+                      exampleSentence,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
             Container(
-              height: 52,
+              height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: Colors.white24,
+                  color: isActive ? color.withValues(alpha: 0.5) : Colors.white12,
                   style: BorderStyle.solid,
                 ),
               ),
               child: Text(
-                'Empty',
+                isActive ? 'Waiting for $title word from library...' : 'Locked slot',
                 style: GoogleFonts.outfit(
-                  color: Colors.white30,
-                  fontSize: 12,
+                  color: isActive ? color : Colors.white30,
+                  fontSize: 11.5,
                   fontStyle: FontStyle.italic,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
-            ),
-          ] else ...[
-            GestureDetector(
-              onTap: () => _speak(exampleSentence),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.4),
-                      blurRadius: 8,
-                    )
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      placedWord,
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.volume_up, size: 14, color: Colors.black87),
-                        SizedBox(width: 4),
-                        Icon(Icons.check_circle, size: 14, color: Colors.black),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              exampleSentence,
-              style: GoogleFonts.outfit(
-                color: Colors.white70,
-                fontSize: 10,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ],

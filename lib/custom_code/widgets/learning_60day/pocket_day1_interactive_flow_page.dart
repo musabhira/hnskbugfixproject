@@ -42,6 +42,8 @@ import 'pocket_day2_step4_avatar_chat_page.dart';
 import 'spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'games/sentence_builder_flame_game.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
+import 'games/verb_timeline_flame_game.dart';
+import 'games/karaoke_rhythm_chant_game.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -120,7 +122,7 @@ class _PocketDay1InteractiveFlowPageState
   bool _isSpeaking = false;
 
   late Day1Track _currentTrack;
-  late int _activeStep; // 1 to 10
+  late int _activeStep; // 1 to 13
   final Map<int, bool> _completedSteps = {};
 
   // Native language
@@ -170,7 +172,7 @@ class _PocketDay1InteractiveFlowPageState
   void initState() {
     super.initState();
     _currentTrack = widget.initialTrack ?? Day1Track.middle;
-    _activeStep = widget.initialStep.clamp(1, 10);
+    _activeStep = widget.initialStep.clamp(1, 13);
 
     _pulseController = AnimationController(
       vsync: this,
@@ -421,7 +423,7 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
 
-    if (stepIndex >= 11) {
+    if (stepIndex >= 13) {
       await _onDay1FullyCompleted();
     } else {
       if (widget.singleStepOnly) {
@@ -465,7 +467,7 @@ class _PocketDay1InteractiveFlowPageState
         }
       } else {
         setState(() {
-          _activeStep = (stepIndex + 1).clamp(1, 10);
+          _activeStep = (stepIndex + 1).clamp(1, 13);
         });
       }
     }
@@ -663,23 +665,20 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 💬 Day 1 Step 8: English Hub Community Chat (Previous Step 6)
+    // ⏳ Day 1 Step 8: 3-Tier Time Machine Builder (Past, Present & Future)
     if (widget.day == 1 && _activeStep == 8) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF0A1118),
-        body: SafeArea(
-          child: EnglishLearningGroupChatWidget(
-            onCancel: () {
-              _markStepCompleted(8);
-            },
-          ),
-        ),
+      return PocketVerbTimelineGamePage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(8);
+        },
       );
     }
 
-    // 🛡️ Day 1 Step 9: House Defense Shield Command (Previous Step 7)
+    // 🎵 Day 1 Step 9: Day 1 Sing-Along Poem & Rhythm Chant Studio
     if (widget.day == 1 && _activeStep == 9) {
-      return PocketHouseDefenseChatPage(
+      return PocketKaraokeRhythmChantPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
@@ -688,11 +687,36 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // 📞 Day 1 Step 10: Poketalk: 4-Day Spoken Pact (Previous Step 8)
+    // 💬 Day 1 Step 10: English Hub Community Chat
     if (widget.day == 1 && _activeStep == 10) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A1118),
+        body: SafeArea(
+          child: EnglishLearningGroupChatWidget(
+            onCancel: () {
+              _markStepCompleted(10);
+            },
+          ),
+        ),
+      );
+    }
+
+    // 🛡️ Day 1 Step 11: House Defense Shield Command
+    if (widget.day == 1 && _activeStep == 11) {
+      return PocketHouseDefenseChatPage(
+        day: widget.day,
+        userId: widget.userId,
+        onStepFinished: (finishedStep) {
+          _markStepCompleted(11);
+        },
+      );
+    }
+
+    // 📞 Day 1 Step 12: Poketalk: 4-Day Spoken Pact
+    if (widget.day == 1 && _activeStep == 12) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await PocketTalkCardSwiperDialog.show(context);
-        _markStepCompleted(10);
+        _markStepCompleted(12);
       });
       return const Scaffold(
         backgroundColor: Color(0xFF0A1118),
@@ -702,13 +726,13 @@ class _PocketDay1InteractiveFlowPageState
       );
     }
 
-    // ⚔️ Day 1 Step 11: House Attack Quest: Raid Rival Citadel (Previous Step 9)
-    if (widget.day == 1 && _activeStep == 11) {
+    // ⚔️ Day 1 Step 13: House Attack Quest: Raid Rival Citadel
+    if (widget.day == 1 && _activeStep == 13) {
       return PocketHouseAttackPage(
         day: widget.day,
         userId: widget.userId,
         onStepFinished: (finishedStep) {
-          _markStepCompleted(11);
+          _markStepCompleted(13);
         },
       );
     }
