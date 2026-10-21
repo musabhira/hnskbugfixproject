@@ -16,6 +16,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_formula_blueprint_builder_card.dart';
+import 'games/pocket_formula_master_game_page.dart';
 
 /// 💬 Chat Message Model for Days 3 to 16 Unified Avatar Conversational Engine
 class DayChatMessage {
@@ -2924,14 +2925,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     }).toList();
 
     final promptEn =
-        'Great speaking! 👏 Now let\'s master the ${_spec.blueprintTitle}!\n'
-        'Tap the words in the exact formula order to lock in your mastery! 🧩';
+        'Great speaking! 👏 Now let\'s master the professional formula!\n'
+        'Tap the button below to launch the interactive Formula Master Arena! 🧩';
     final promptMl =
-        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ${_spec.blueprintTitle} ഫോർമുല ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠനം ഉറപ്പിക്കാം! 🧩';
+        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഫോർമുല കൃത്യമായി ഉറപ്പിക്കാൻ താഴെയുള്ള ബട്ടൺ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ഗെയിമിലേക്ക് പ്രവേശിക്കാം! 🧩';
 
-    _currentExpectedVoicePhrase = _spec.blueprintRules.isNotEmpty
-        ? _spec.blueprintRules.first['en']!
-        : 'Formula Mastered';
+    _currentExpectedVoicePhrase = 'Master Formula';
 
     setState(() {
       _messages.add(
@@ -2940,24 +2939,36 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Now let\'s assemble the ${_spec.blueprintTitle}! Tap the words in the formula order.',
-          cardContent: PocketFormulaBlueprintBuilderCard(
-            title: _spec.blueprintTitle,
-            rules: rules,
-            onPronounceSentence: (sentence) {
-              _speak(sentence);
-            },
-            onCompleted: () {
-              _onFormulaBuilderCompleted();
-            },
-          ),
-          speakThisPrompt: 'Tap the words above in formula order 👆',
-          inBubbleOptions: null,
+          audioText: 'Great speaking! Now let\'s master the professional formula! Tap below to begin.',
+          speakThisPrompt: 'Tap below to enter Formula Master Arena:',
+          inBubbleOptions: [
+            DayInBubbleOption(
+              labelEn: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
+              labelNative: 'ഫോർമുല മാസ്റ്റർ ചലഞ്ച് തുടങ്ങാം! 🧩',
+              icon: '🧩',
+              isHighlightedAnswer: true,
+              backgroundColor: const Color(0xFF6366F1),
+              borderColor: const Color(0xFFA5B4FC),
+              textColor: Colors.white,
+              onTap: () => _handleTextSubmission(
+                text: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
+                action: () async {
+                  await PocketFormulaMasterGamePage.show(
+                    context,
+                    title: _spec.blueprintTitle,
+                    rules: rules,
+                    day: widget.day,
+                  );
+                  _onFormulaBuilderCompleted();
+                },
+              ),
+            ),
+          ],
         ),
       );
     });
 
-    _speak('Now let us assemble the ${_spec.blueprintTitle}! Tap the words in the formula order.');
+    _speak("Great speaking! Now let's master the professional formula!");
     _scrollToBottom();
   }
 

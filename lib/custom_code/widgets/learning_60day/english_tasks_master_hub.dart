@@ -44,6 +44,9 @@ import 'pocket_secret_code_grammar_card.dart';
 import 'pocket_sentence_builder_card.dart';
 import 'pocket_slang_smart_english_card.dart';
 import 'pocket_time_machine_practice_card.dart';
+import 'pocket_verb_timeline_card.dart';
+import 'pocket_karaoke_chant_card.dart';
+import 'pocket_prepositions_glass_card.dart';
 import 'pocket_code_english_decoder_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
@@ -1073,6 +1076,69 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     await _onSubStepFinished(day, 10);
   }
 
+  // 10B: Verb Timeline & Tenses Arcade
+  Future<void> _launchStepVerbTimeline(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Verb Timeline & Tenses Arcade',
+      stepTag: 'STEP 8',
+      accentColor: const Color(0xFFFF9100),
+      childBuilder: (ctx, markDone) => PocketVerbTimelineCard(
+        day: day,
+        isCompleted: _subStepFlags['step_verb_timeline'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 8);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10C: Karaoke Sing-Along Rhythm Chant
+  Future<void> _launchStepKaraokeChant(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Karaoke Sing-Along Rhythm Chant',
+      stepTag: 'STEP 9',
+      accentColor: const Color(0xFFFF4081),
+      childBuilder: (ctx, markDone) => PocketKaraokeChantCard(
+        day: day,
+        isCompleted: _subStepFlags['step_karaoke_chant'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 9);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10D: Prepositions 2D Spatial Lab
+  Future<void> _launchStepPrepositionsVisual(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Prepositions 2D Spatial Lab',
+      stepTag: 'STEP 10',
+      accentColor: const Color(0xFF00E5FF),
+      childBuilder: (ctx, markDone) => PocketPrepositionsGlassCard(
+        day: day,
+        isCompleted: _subStepFlags['step_prepositions_visual'] ?? false,
+        onSpeak: (text) {},
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 10);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
   // 11: AI Speech Practice Lab (Replaced broken phone call!)
   Future<void> _launchStep11_PeerCall(int day) async {
     HapticFeedback.lightImpact();
@@ -1326,6 +1392,36 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
       InPathSubStep(
         stepIndex: 11,
+        title: 'Verb Timeline & Tenses Arcade',
+        subtitle: '3-zone arcade sorting & rhythm chant',
+        icon: '⏳',
+        color: const Color(0xFFFF9100),
+        isCompleted: _subStepFlags['step_verb_timeline'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
+        onAction: () => _launchStepVerbTimeline(day),
+      ),
+      InPathSubStep(
+        stepIndex: 12,
+        title: 'Karaoke Sing-Along Rhythm Chant',
+        subtitle: 'Rhythmic chant recitation & earworm memory',
+        icon: '🎤',
+        color: const Color(0xFFFF4081),
+        isCompleted: _subStepFlags['step_karaoke_chant'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_verb_timeline'] ?? false),
+        onAction: () => _launchStepKaraokeChant(day),
+      ),
+      InPathSubStep(
+        stepIndex: 13,
+        title: 'Prepositions 2D Spatial Lab',
+        subtitle: 'Interactive Glass & Object 2D physics',
+        icon: '🥛',
+        color: const Color(0xFF00E5FF),
+        isCompleted: _subStepFlags['step_prepositions_visual'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_karaoke_chant'] ?? false),
+        onAction: () => _launchStepPrepositionsVisual(day),
+      ),
+      InPathSubStep(
+        stepIndex: 14,
         title: 'AI Speech Practice Lab',
         subtitle: 'Listen, repeat & AI pronunciation scoring',
         icon: '🗣️',

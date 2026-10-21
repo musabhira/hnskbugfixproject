@@ -701,178 +701,208 @@ class Pocket90DaySentenceBuilderData {
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 17
+    // DAY 17: Talking About Yesterday & Finished Time (The Simple Past V2)
     // -----------------------------------------------------------------------
     17: [
       _buildRound(
         id: 1,
-        sentence: 'I can speak English .',
-        translationMl: 'സംസാരിക്കുക - I can speak English.',
-        hint: 'Pay attention to: Can / Cannot + V1 (I can speak English)',
+        sentence: 'Yesterday I completed three key tasks on time .',
+        translationMl: 'ഇന്നലെ ഞാൻ മൂന്ന് പ്രധാന ജോലികൾ കൃത്യസമയത്ത് പൂർത്തിയാക്കി.',
+        hint: 'Simple Past: completed (regular V2 of complete)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'He can drive a car .',
-        translationMl: 'ഓടിക്കുക - He can drive a car.',
-        hint: 'Pay attention to: Can / Cannot + V1 (I can speak English)',
+        sentence: 'She went to the market and bought fresh vegetables .',
+        translationMl: 'അവൾ മാർക്കറ്റിൽ പോയി പുതിയ പച്ചക്കറികൾ വാങ്ങി.',
+        hint: 'Irregular Past: went (go) and bought (buy)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Expressing Abilities: Can & Can\'t gives you great confidence in English .',
-        translationMl: 'കഴിവുകൾ (Can & Can\'t) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Can / Cannot + V1 (I can speak English)',
+        sentence: 'We saw an interesting technical presentation yesterday afternoon .',
+        translationMl: 'ഇന്നലെ ഉച്ചകഴിഞ്ഞ് ഞങ്ങൾ ഒരു രസകരമായ സാങ്കേതിക പ്രസന്റേഷൻ കണ്ടു.',
+        hint: 'Irregular Past: saw (V2 of see)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Can you swim ?',
-        translationMl: 'കഴിവുകൾ (Can & Can\'t)',
-        hint: 'Core sentence pattern: Can / Cannot + V1 (I can speak English)',
+        sentence: 'He worked late and finished the client proposal last night .',
+        translationMl: 'അവൻ ഇന്നലെ രാത്രി വൈകുവോളം ജോലി ചെയ്ത് ക്ലയന്റ് പ്രൊപ്പോസൽ പൂർത്തിയാക്കി.',
+        hint: 'Completed Action: worked and finished',
       ),
       _buildRound(
         id: 5,
-        sentence: 'She can sing well .',
-        translationMl: 'പാടുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'sing\'',
+        sentence: 'Our engineering team resolved the critical server issue yesterday .',
+        translationMl: 'ഞങ്ങളുടെ എഞ്ചിനീയറിംഗ് ടീം ഇന്നലെ ആ ഗുരുതരമായ സെർവർ പ്രശ്നം പരിഹരിച്ചു.',
+        hint: 'Past Accomplishment: resolved (regular V2)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'They launched the new mobile application two days ago .',
+        translationMl: 'രണ്ട് ദിവസം മുൻപ് അവർ പുതിയ മൊബൈൽ ആപ്ലിക്കേഷൻ പുറത്തിറക്കി.',
+        hint: 'Past Time Anchor: launched ... two days ago',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 18
+    // DAY 18: Inquiring About the Past (Did you...? & The "Did" Reset Rule)
     // -----------------------------------------------------------------------
     18: [
       _buildRound(
         id: 1,
-        sentence: 'Could you pass the salt ?',
-        translationMl: 'കൈമാറുക - Could you pass the salt?',
-        hint: 'Pay attention to: Could you please + V1 (Polite Requests)',
+        sentence: 'Did you finish the project report yesterday afternoon ?',
+        translationMl: 'ഇന്നലെ ഉച്ചകഴിഞ്ഞ് നിങ്ങൾ പ്രോജക്ട് റിപ്പോർട്ട് പൂർത്തിയാക്കിയോ?',
+        hint: 'Past Question: Did + you + finish (V1 reset)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Could you repeat that ?',
-        translationMl: 'ആവർത്തിക്കുക - Could you repeat that?',
-        hint: 'Pay attention to: Could you please + V1 (Polite Requests)',
+        sentence: 'Where did you go for your family vacation last summer ?',
+        translationMl: 'കഴിഞ്ഞ വേനൽക്കാലത്ത് കുടുംബത്തോടൊപ്പം യാത്രയ്ക്കായി നിങ്ങൾ എവിടെയാണ് പോയത്?',
+        hint: 'Wh- Question: Where + did + you + go (V1 base form)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Polite Requests: Can you / Could you? gives you great confidence in English .',
-        translationMl: 'വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Could you please + V1 (Polite Requests)',
+        sentence: 'Did she receive the important email I sent last night ?',
+        translationMl: 'ഇന്നലെ രാത്രി ഞാൻ അയച്ച പ്രധാനപ്പെട്ട ഇമെയിൽ അവൾക്ക് ലഭിച്ചോ?',
+        hint: 'Auxiliary Did: Did + she + receive (not received)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Please explain this .',
-        translationMl: 'വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ',
-        hint: 'Core sentence pattern: Could you please + V1 (Polite Requests)',
+        sentence: 'What time did the train arrive at the station ?',
+        translationMl: 'ട്രെയിൻ ഏതു സമയത്താണ് സ്റ്റേഷനിൽ എത്തിച്ചേർന്നത്?',
+        hint: 'Wh- Past Question: What time + did + the train + arrive (V1)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Could you send the file ?',
-        translationMl: 'അയക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'send\'',
+        sentence: 'Why did they choose this specific software solution ?',
+        translationMl: 'എന്തുകൊണ്ടാണ് അവർ ഈ പ്രത്യേക സോഫ്റ്റ്‌വെയർ സൊല്യൂഷൻ തിരഞ്ഞെടുത്തത്?',
+        hint: 'Past Inquiry: Why + did + they + choose (V1 reset)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'Did you verify the bank account details before making the transfer ?',
+        translationMl: 'പണം അയക്കുന്നതിന് മുൻപ് നിങ്ങൾ ബാങ്ക് അക്കൗണ്ട് വിവരങ്ങൾ പരിശോധിച്ച് ഉറപ്പുവരുത്തിയോ?',
+        hint: 'Careful Inquiry: Did + you + verify (V1 base verb)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 19
+    // DAY 19 (Past Negatives: didn't + V1)
     // -----------------------------------------------------------------------
     19: [
       _buildRound(
         id: 1,
-        sentence: 'I need to buy medicine .',
-        translationMl: 'ആവശ്യമായി വരിക - I need to buy medicine.',
-        hint: 'Pay attention to: Need to + V1 vs Want to + V1',
+        sentence: 'I didn\'t finish the report yesterday because the server was down .',
+        translationMl: 'സെർവർ തകരാറിലായതിനാൽ എനിക്ക് ഇന്നലെ റിപ്പോർട്ട് പൂർത്തിയാക്കാൻ കഴിഞ്ഞില്ല.',
+        hint: 'Subject + didn\'t + Base Verb (V1 finish, NOT finished)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'I want to learn English .',
-        translationMl: 'ആഗ്രഹിക്കുക - I want to learn English.',
-        hint: 'Pay attention to: Need to + V1 vs Want to + V1',
+        sentence: 'She didn\'t receive the revised contract before leaving the office .',
+        translationMl: 'ഓഫീസ് വിടുന്നതിന് മുൻപ് അവൾക്ക് പുതുക്കിയ കരാർ ലഭിച്ചില്ല.',
+        hint: 'didn\'t + Base Verb (receive, NOT received)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Expressing Needs & Desires: Need vs Want gives you great confidence in English .',
-        translationMl: 'ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Need to + V1 vs Want to + V1',
+        sentence: 'We didn\'t anticipate the sudden delay in the payment system .',
+        translationMl: 'പേയ്‌മെന്റ് സിസ്റ്റത്തിലെ പെട്ടെന്നുള്ള കാലതാമസം ഞങ്ങൾ മുൻകൂട്ടി കണ്ടില്ല.',
+        hint: 'didn\'t + Base Verb (anticipate)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'I wish you success .',
-        translationMl: 'ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും',
-        hint: 'Core sentence pattern: Need to + V1 vs Want to + V1',
+        sentence: 'They didn\'t find any critical bugs during the security audit .',
+        translationMl: 'സെക്യൂരിറ്റി ഓഡിറ്റിൽ അവർക്ക് ഗുരുതരമായ പിഴവുകളൊന്നും കണ്ടെത്താനായില്ല.',
+        hint: 'didn\'t + Base Verb (find, NOT found)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'I hope it works .',
-        translationMl: 'പ്രതീക്ഷിക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'hope\'',
+        sentence: 'He didn\'t know about the rescheduled morning conference meeting .',
+        translationMl: 'രാവിലത്തെ കോൺഫറൻസ് മീറ്റിംഗ് മാറ്റിവെച്ച വിവരം അവൻ അറിഞ്ഞില്ല.',
+        hint: 'didn\'t + Base Verb (know, NOT knew)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'We didn\'t cancel the project despite the unexpected technical challenge .',
+        translationMl: 'പ്രതീക്ഷിക്കാത്ത സാങ്കേതിക വെല്ലുവിളിയുണ്ടായിട്ടും ഞങ്ങൾ പ്രോജക്റ്റ് റദ്ദാക്കിയില്ല.',
+        hint: 'didn\'t + Base Verb (cancel)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 20
+    // DAY 20 (Future Commitments & Decisions: Will + V1)
     // -----------------------------------------------------------------------
     20: [
       _buildRound(
         id: 1,
-        sentence: 'I enjoy cooking .',
-        translationMl: 'ആസ്വദിക്കുക - I enjoy cooking.',
-        hint: 'Pay attention to: Prefer X to Y / Enjoy + V-ing',
+        sentence: 'I will resolve the database latency issue before noon tomorrow .',
+        translationMl: 'നാളെ ഉച്ചയ്ക്ക് മുൻപ് ഞാൻ ഡാറ്റാബേസ് കാലതാമസ പ്രശ്നം പരിഹരിക്കും.',
+        hint: 'Subject + will + Base Verb (V1 resolve)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'I prefer tea to coffee .',
-        translationMl: 'കൂടുതൽ ഇഷ്ടപ്പെടുക - I prefer tea to coffee.',
-        hint: 'Pay attention to: Prefer X to Y / Enjoy + V-ing',
+        sentence: 'Our engineering team will launch the updated mobile application next week .',
+        translationMl: 'ഞങ്ങളുടെ എൻജിനീയറിങ് ടീം അടുത്ത ആഴ്ച പുതിയ മൊബൈൽ ആപ്പ് പുറത്തിറക്കും.',
+        hint: 'Subject + will + Base Verb (launch)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Likes, Preferences & Hobbies gives you great confidence in English .',
-        translationMl: 'ഇഷ്ടങ്ങളും വിനോദങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: Prefer X to Y / Enjoy + V-ing',
+        sentence: 'I will dedicate thirty minutes every evening to speaking English aloud .',
+        translationMl: 'എല്ലാ ദിവസവും വൈകുന്നേരം മുപ്പത് മിനിറ്റ് ഞാൻ ഉച്ചത്തിൽ ഇംഗ്ലീഷ് സംസാരിക്കാൻ നീക്കിവെക്കും.',
+        hint: 'Subject + will + Base Verb (dedicate)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Choose your favorite .',
-        translationMl: 'ഇഷ്ടങ്ങളും വിനോദങ്ങളും',
-        hint: 'Core sentence pattern: Prefer X to Y / Enjoy + V-ing',
+        sentence: 'We will assist you with the international client demonstration .',
+        translationMl: 'അന്താരാഷ്ട്ര ക്ലയന്റ് ഡെമോൺസ്ട്രേഷനിൽ ഞങ്ങൾ നിങ്ങളെ സഹായിക്കും.',
+        hint: 'Subject + will + Base Verb (assist)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Spend time wisely .',
-        translationMl: 'ചെലവഴിക്കുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'spend\'',
+        sentence: 'He will contact the project manager as soon as he arrives .',
+        translationMl: 'എത്തിച്ചേർന്ന ഉടൻ തന്നെ അവൻ പ്രോജക്റ്റ് മാനേജരെ ബന്ധപ്പെടും.',
+        hint: 'Subject + will + Base Verb (contact)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'I will never give up on achieving complete English spoken fluency .',
+        translationMl: 'പൂർണ്ണമായ ഇംഗ്ലീഷ് സംസാര പ്രാവീണ്യം നേടുന്നതിൽ ഞാൻ ഒരിക്കലും പിന്മാറില്ല.',
+        hint: 'Subject + will never + Base Verb (give up)',
       ),
     ],
     // -----------------------------------------------------------------------
-    // DAY 21
+    // DAY 21 (Planned Intentions & Roadmaps: Going to + V1)
     // -----------------------------------------------------------------------
     21: [
       _buildRound(
         id: 1,
-        sentence: 'Ask a question .',
-        translationMl: 'ചോദിക്കുക - Ask a question.',
-        hint: 'Pay attention to: What is...? / Where is...?',
+        sentence: 'I am going to build a modern portfolio website this weekend .',
+        translationMl: 'ഈ വാരാന്ത്യത്തിൽ ഞാൻ ഒരു പുതിയ പോർട്ട്‌ഫോളിയോ വെബ്‌സൈറ്റ് നിർമ്മിക്കാൻ പോകുന്നു.',
+        hint: 'Subject + am going to + Base Verb (build)',
       ),
       _buildRound(
         id: 2,
-        sentence: 'Search for the keys .',
-        translationMl: 'തിരയുക - Search for the keys.',
-        hint: 'Pay attention to: What is...? / Where is...?',
+        sentence: 'We are going to deploy the new features next Monday morning .',
+        translationMl: 'അടുത്ത തിങ്കളാഴ്ച രാവിലെ ഞങ്ങൾ പുതിയ ഫീച്ചറുകൾ വിന്യസിക്കാൻ പോകുന്നു.',
+        hint: 'Subject + are going to + Base Verb (deploy)',
       ),
       _buildRound(
         id: 3,
-        sentence: 'Daily practice of Asking Questions: What & Where gives you great confidence in English .',
-        translationMl: 'What & Where ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.',
-        hint: 'Pay attention to: What is...? / Where is...?',
+        sentence: 'She is going to present our quarterly roadmap to international stakeholders .',
+        translationMl: 'അന്താരാഷ്ട്ര ഓഹരി ഉടമകൾക്ക് അവൾ ഞങ്ങളുടെ ത്രൈമാസ റോഡ്‌മാപ്പ് അവതരിപ്പിക്കാൻ പോകുന്നു.',
+        hint: 'Subject + is going to + Base Verb (present)',
       ),
       _buildRound(
         id: 4,
-        sentence: 'Where did you lose it ?',
-        translationMl: 'What & Where ചോദ്യങ്ങൾ',
-        hint: 'Core sentence pattern: What is...? / Where is...?',
+        sentence: 'They are going to collaborate with our senior design team in London .',
+        translationMl: 'ലണ്ടനിലെ ഞങ്ങളുടെ സീനിയർ ഡിസൈൻ ടീമുമായി അവർ സഹകരിച്ച് പ്രവർത്തിക്കാൻ പോകുന്നു.',
+        hint: 'Subject + are going to + Base Verb (collaborate)',
       ),
       _buildRound(
         id: 5,
-        sentence: 'Locate the shop .',
-        translationMl: 'കണ്ടെത്തുക സംബന്ധിച്ച വാചകം.',
-        hint: 'Using the verb \'locate\'',
+        sentence: 'Our company is going to expand customer support into three new regions .',
+        translationMl: 'ഞങ്ങളുടെ കമ്പനി കസ്റ്റമർ സപ്പോർട്ട് മൂന്ന് പുതിയ മേഖലകളിലേക്ക് വ്യാപിപ്പിക്കാൻ പോകുന്നു.',
+        hint: 'Subject + is going to + Base Verb (expand)',
+      ),
+      _buildRound(
+        id: 6,
+        sentence: 'I am going to achieve my professional career goals this year .',
+        translationMl: 'ഈ വർഷം എന്റെ കരിയർ ലക്ഷ്യങ്ങൾ ഞാൻ നേടിയെടുക്കാൻ പോകുന്നു.',
+        hint: 'Subject + am going to + Base Verb (achieve)',
       ),
     ],
     // -----------------------------------------------------------------------

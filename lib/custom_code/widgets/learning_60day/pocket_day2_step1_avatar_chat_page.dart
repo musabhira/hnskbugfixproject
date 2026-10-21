@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
-import 'games/town_quest_dialogue_game_page.dart';
+import 'games/pocket_formula_master_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_formula_blueprint_builder_card.dart';
@@ -361,7 +361,7 @@ class _PocketDay2Step1AvatarChatPageState
               textColor: Colors.white,
               onTap: () => _handleTextSubmission(
                 text: '✅ YES, TEACH ME DAY 2!',
-                action: _onUserWantsToLearnDay2Preference,
+                action: _startSpeakingChatFlow,
               ),
             ),
             Day2InBubbleOption(
@@ -386,239 +386,7 @@ class _PocketDay2Step1AvatarChatPageState
     _scrollToBottom();
   }
 
-  /// Phase 1.5: Choice between Interactive Game & Speaking Chat (User Audio Directive!)
-  void _onUserWantsToLearnDay2Preference() {
-    final replyEn =
-        'Fantastic, $_userName! Would you like to play an interactive Day 2 Game or practice speaking in chat? 🎮🗣️';
-    final replyMl =
-        'ഗംഭീരം, $_userName! നമുക്ക് ഡേ 2 വേഡ് ഡ്രൈവ് ഗെയിം കളിച്ച് പഠിക്കണോ, അതോ ചാറ്റിലൂടെ സംസാരിച്ച് പഠിക്കണോ?';
 
-    _currentExpectedVoicePhrase = 'Game or Speaking';
-
-    setState(() {
-      _messages.add(
-        Day2ChatMessage(
-          id: 'day2_mode_choice',
-          isAvatar: true,
-          textEn: replyEn,
-          textNative: replyMl,
-          audioText:
-              'Fantastic, $_userName! Would you like to play an interactive Day 2 Game, or practice speaking in chat?',
-          speakThisPrompt: 'Choose your learning style:',
-          inBubbleOptions: [
-            Day2InBubbleOption(
-              labelEn: '🎮 PLAY DAY 2 GAME',
-              labelNative: 'ടൗൺ ക്വസ്റ്റ് കളിച്ച് പഠിക്കാം! 🏛️',
-              icon: '🎮',
-              isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF9333EA),
-              borderColor: const Color(0xFFC084FC),
-              textColor: Colors.white,
-              onTap: () => _handleTextSubmission(
-                text: '🎮 PLAY DAY 2 GAME',
-                action: _startDay2GameMode,
-              ),
-            ),
-            Day2InBubbleOption(
-              labelEn: '🗣️ SPEAKING CHAT',
-              labelNative: 'സംസാരിച്ചു പഠിക്കാം! 🎙️',
-              icon: '🗣️',
-              isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF0284C7),
-              borderColor: const Color(0xFF38BDF8),
-              textColor: Colors.white,
-              onTap: () => _handleTextSubmission(
-                text: '🗣️ SPEAKING CHAT',
-                action: _startSpeakingChatFlow,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    _speak('Would you like to play an interactive Day 2 Game, or practice speaking in chat?');
-    _scrollToBottom();
-  }
-
-  // =========================================================================
-  // 🎮 DAY 2 GAME MODE (Town Quest: Where I Am From & Locations)
-  // =========================================================================
-
-  void _startDay2GameMode() {
-    _currentExpectedVoicePhrase = 'Town Quest';
-
-    final replyEn =
-        '🏛️ Ready for the Day 2 Town Quest, $_userName?\n\n'
-        'Explore the town, meet friendly villagers, and practice using "am", "is", "are", "in", and "at" in real interactive conversations! 🌟';
-    final replyMl =
-        '$_userName, ഡേ 2 ടൗൺ ക്വസ്റ്റ് ഗെയിമിലേക്ക് സ്വാഗതം!\n\n'
-        'നഗരം ചുറ്റിക്കണ്ട് ആളുകളുമായി സംസാരിച്ച് am, is, are, in, at എന്നിവ നേരിട്ട് ഉപയോഗിച്ചു പഠിക്കാം! 🏛️✨';
-
-    setState(() {
-      _messages.add(
-        Day2ChatMessage(
-          id: 'day2_game_launch_prompt',
-          isAvatar: true,
-          textEn: replyEn,
-          textNative: replyMl,
-          audioText:
-              'Ready for the Day 2 Town Quest, $_userName? Tap below to explore the town and practice!',
-          cardContent: _buildTownQuestLaunchCard(),
-          speakThisPrompt: 'Tap below to launch Day 2 Quest 🏛️',
-          inBubbleOptions: [
-            Day2InBubbleOption(
-              labelEn: '🏛️ LAUNCH DAY 2 TOWN QUEST ➔',
-              labelNative: 'ടൗൺ ക്വസ്റ്റ് ആരംഭിക്കുക ➔',
-              icon: '🏛️',
-              isHighlightedAnswer: true,
-              backgroundColor: const Color(0xFF047857),
-              borderColor: const Color(0xFFFFD700),
-              textColor: Colors.white,
-              onTap: _launchTownQuestGame,
-            ),
-            Day2InBubbleOption(
-              labelEn: '🗣️ SWITCH TO SPEAKING CHAT',
-              labelNative: 'സംസാരിച്ചു പഠിക്കുന്നതിലേക്ക് മാറ്റുക',
-              icon: '💬',
-              isHighlightedAnswer: false,
-              backgroundColor: const Color(0xFF1E293B),
-              borderColor: const Color(0xFF38BDF8),
-              textColor: const Color(0xFF7DD3FC),
-              onTap: () => _handleTextSubmission(
-                text: '🗣️ SWITCH TO SPEAKING CHAT',
-                action: _startSpeakingChatFlow,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-
-    _speak('Ready for the Day 2 Town Quest, $_userName? Tap below to explore the town and practice!');
-    _scrollToBottom();
-  }
-
-  Future<void> _launchTownQuestGame() async {
-    HapticFeedback.heavyImpact();
-    await _tts.stop();
-    if (!mounted) return;
-    setState(() => _isSpeaking = false);
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TownQuestDialogueGamePage(
-          day: 2,
-          nativeLanguage: 'Malayalam',
-          onGameFinished: () {
-            if (!mounted) return;
-            _completeStep1Day2();
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTownQuestLaunchCard() {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                ),
-                child: const Text('🏛️', style: TextStyle(fontSize: 26)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'DAY 2: TOWN QUEST RPG',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    Text(
-                      'Where I Am From & Locations',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Explore the open-world village, interact with friendly townspeople, and solve real conversations using am, is, are, in, and at! 🌟',
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 12.5,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black26,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 16),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    '+50 XP & Shield Defense points upon completion',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // =========================================================================
   // 🗣️ SPEAKING CHAT FLOW (User Audio Directive!)
@@ -923,12 +691,12 @@ class _PocketDay2Step1AvatarChatPageState
     ];
 
     final promptEn =
-        'Great speech work! 👏 Now let\'s master the Day 2 Spoken Blueprint!\n'
-        'Tap the words in the exact formula order to lock in your mastery! 🧩';
+        'Great speaking! 👏 Now let\'s master the professional formula!\n'
+        'Tap the button below to launch the interactive Formula Master Arena! 🧩';
     final promptMl =
-        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഡേ 2 ബ്ലൂപ്രിന്റ് ഫോർമുല ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിച്ച് പഠനം ഉറപ്പിക്കാം! 🧩';
+        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഫോർമുല കൃത്യമായി ഉറപ്പിക്കാൻ താഴെയുള്ള ബട്ടൺ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ഗെയിമിലേക്ക് പ്രവേശിക്കാം! 🧩';
 
-    _currentExpectedVoicePhrase = 'I am from Kerala';
+    _currentExpectedVoicePhrase = 'Master Formula';
 
     setState(() {
       _messages.add(
@@ -937,24 +705,36 @@ class _PocketDay2Step1AvatarChatPageState
           isAvatar: true,
           textEn: promptEn,
           textNative: promptMl,
-          audioText: 'Now let\'s assemble the Day 2 Spoken Blueprint! Tap the words in the formula order.',
-          cardContent: PocketFormulaBlueprintBuilderCard(
-            title: 'DAY 2 SPOKEN BLUEPRINT',
-            rules: rules,
-            onPronounceSentence: (sentence) {
-              _speak(sentence);
-            },
-            onCompleted: () {
-              _onFormulaBuilderCompleted();
-            },
-          ),
-          speakThisPrompt: 'Tap the words above in formula order 👆',
-          inBubbleOptions: null,
+          audioText: 'Great speaking! Now let\'s master the professional formula! Tap below to begin.',
+          speakThisPrompt: 'Tap below to enter Formula Master Arena:',
+          inBubbleOptions: [
+            Day2InBubbleOption(
+              labelEn: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
+              labelNative: 'ഫോർമുല മാസ്റ്റർ ചലഞ്ച് തുടങ്ങാം! 🧩',
+              icon: '🧩',
+              isHighlightedAnswer: true,
+              backgroundColor: const Color(0xFF6366F1),
+              borderColor: const Color(0xFFA5B4FC),
+              textColor: Colors.white,
+              onTap: () => _handleTextSubmission(
+                text: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
+                action: () async {
+                  await PocketFormulaMasterGamePage.show(
+                    context,
+                    title: 'DAY 2 SPOKEN BLUEPRINT',
+                    rules: rules,
+                    day: 2,
+                  );
+                  _onFormulaBuilderCompleted();
+                },
+              ),
+            ),
+          ],
         ),
       );
     });
 
-    _speak('Now let us assemble the Day 2 Spoken Blueprint! Tap the words in the formula order.');
+    _speak("Great speaking! Now let's master the professional formula!");
     _scrollToBottom();
   }
 

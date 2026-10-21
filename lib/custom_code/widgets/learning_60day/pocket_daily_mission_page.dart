@@ -54,6 +54,9 @@ import 'pocket_conditionals_practice_card.dart';
 import 'pocket_question_tags_practice_card.dart';
 import 'pocket_sentence_structure_practice_card.dart';
 import 'pocket_time_machine_practice_card.dart';
+import 'pocket_verb_timeline_card.dart';
+import 'pocket_karaoke_chant_card.dart';
+import 'pocket_prepositions_glass_card.dart';
 import 'pocket_day_detail_overview_page.dart';
 import 'pocket_fluency_gym_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
@@ -206,6 +209,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _timeMachinePracticeCompleted = false;
   bool _fluencyGymCompleted = false;
   bool _spokenSimulatorCompleted = false;
+  bool _verbTimelineGameCompleted = false;
+  bool _karaokeChantCompleted = false;
+  bool _prepositionsVisualCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -4348,6 +4354,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_fluency_gym') ?? false;
       _spokenSimulatorCompleted =
           prefs.getBool('${dayKey}_spoken_simulator') ?? false;
+      _verbTimelineGameCompleted =
+          prefs.getBool('${dayKey}_verb_timeline_game') ?? false;
+      _karaokeChantCompleted =
+          prefs.getBool('${dayKey}_karaoke_chant') ?? false;
+      _prepositionsVisualCompleted =
+          prefs.getBool('${dayKey}_prepositions_visual') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
@@ -4378,6 +4390,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         break;
       case 'practice_speaking':
         _practiceSpeakingCompleted = value;
+        break;
+      case 'verb_timeline_game':
+        _verbTimelineGameCompleted = value;
+        break;
+      case 'karaoke_chant':
+        _karaokeChantCompleted = value;
+        break;
+      case 'prepositions_visual':
+        _prepositionsVisualCompleted = value;
         break;
       case 'tenses_speaking':
         _tensesSpeakingCompleted = value;
@@ -4959,6 +4980,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_showActiveConditionals) count++;
     if (_showActiveDirectIndirect) count++;
 
+    // ⏳ Step 8: Verb Timeline & Tenses Arcade (Active for all 90 days)
+    count++;
+
+    // 🎵 Step 9: Karaoke Sing-Along Rhythm Chant (Active for all 90 days)
+    count++;
+
+    // 🥛 Step 10: Prepositions 2D Spatial Lab (Active for all 90 days)
+    count++;
+
     return count;
   }
 
@@ -4983,6 +5013,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_showActiveActivePassive && _activePassivePracticeCompleted) count++;
     if (_showActiveConditionals && _conditionalsPracticeCompleted) count++;
     if (_showActiveDirectIndirect && _directIndirectPracticeCompleted) count++;
+    if (_verbTimelineGameCompleted) count++;
+    if (_karaokeChantCompleted) count++;
+    if (_prepositionsVisualCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
@@ -5042,7 +5075,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepQuestionTags => _stepActiveGrammar;
   int get _stepSentenceStructure => _stepActiveGrammar;
   int get _stepEnglishHub => _stepActiveGrammar + 1;
-  int get _stepPeerCall => _stepEnglishHub + 1;
+  int get _stepVerbTimelineGame => _stepEnglishHub + 1;
+  int get _stepKaraokeChant => _stepVerbTimelineGame + 1;
+  int get _stepPrepositionsVisual => _stepKaraokeChant + 1;
+  int get _stepPeerCall => _stepPrepositionsVisual + 1;
   int get _stepGame1 => _stepPeerCall + 1;
   int get _stepGame2 => _stepGame1 + 1;
   int get _stepAdventureGame => _stepGame1;
@@ -5651,6 +5687,90 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           },
                           onVerify: () {
                             _verifyEnglishHubChatWithBackend();
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Subtask: ⏳ Verb Timeline & Tenses Arcade (Step 8)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepVerbTimelineGame',
+                          icon: '⏳',
+                          title: 'Verb Timeline & Tenses Arcade',
+                          subtitle:
+                              'Master Yesterday (Past), Today (Present) & Tomorrow (Future) verb forms with 3-zone arcade sorting & rhythm chant.',
+                          isVerified: _verbTimelineGameCompleted,
+                          actionColor: const Color(0xFFFF9100),
+                          actionLabel: 'VERB TIMELINE ARCADE ⏳',
+                          subtaskKey: 'verb_timeline_game',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketVerbTimelineCard(
+                              day: widget.day,
+                              isCompleted: _verbTimelineGameCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('verb_timeline_game', val);
+                                if (mounted) setState(() => _verbTimelineGameCompleted = val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepVerbTimelineGame',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Subtask: 🎵 Karaoke Sing-Along Rhythm Chant (Step 9)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepKaraokeChant',
+                          icon: '🎤',
+                          title: 'Karaoke Sing-Along Rhythm Chant',
+                          subtitle:
+                              'Build unconscious musical memory and speaking speed through rhythmic chant recitation.',
+                          isVerified: _karaokeChantCompleted,
+                          actionColor: const Color(0xFFFF4081),
+                          actionLabel: 'KARAOKE STUDIO 🎵',
+                          subtaskKey: 'karaoke_chant',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketKaraokeChantCard(
+                              day: widget.day,
+                              isCompleted: _karaokeChantCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('karaoke_chant', val);
+                                if (mounted) setState(() => _karaokeChantCompleted = val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepKaraokeChant',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Subtask: 🥛 Prepositions 2D Spatial Lab (Step 10)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepPrepositionsVisual',
+                          icon: '🥛',
+                          title: 'Prepositions 2D Spatial Lab',
+                          subtitle:
+                              'Master In, On, Under, Between, Beside & Behind with interactive Glass & Object 2D physics.',
+                          isVerified: _prepositionsVisualCompleted,
+                          actionColor: const Color(0xFF00E5FF),
+                          actionLabel: 'SPATIAL GLASS LAB 🥛',
+                          subtaskKey: 'prepositions_visual',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketPrepositionsGlassCard(
+                              day: widget.day,
+                              isCompleted: _prepositionsVisualCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('prepositions_visual', val);
+                                if (mounted) setState(() => _prepositionsVisualCompleted = val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepPrepositionsVisual',
+                            );
                           },
                         ),
 
@@ -6653,7 +6773,160 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
 
-    // Step 11: Peer Call / 1-on-1 English Talk
+    // Step 8: Verb Timeline & Tenses Arcade (Interactive 3-Zone Timeline)
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepVerbTimelineGame,
+        icon: '⏳',
+        title: 'Verb Timeline & Tenses Arcade',
+        category: 'Grammar',
+        subtitle: 'Master Yesterday (Past), Today (Present) & Tomorrow (Future) verb forms with 3-zone arcade sorting & rhythm chant',
+        accentColor: const Color(0xFFFF9100),
+        isCompleted: _verbTimelineGameCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepVerbTimelineGame',
+                icon: '⏳',
+                title: 'Verb Timeline & Tenses Arcade',
+                subtitle: 'Master Yesterday (Past), Today (Present) & Tomorrow (Future) verb forms with 3-zone arcade sorting & rhythm chant.',
+                accentColor: const Color(0xFFFF9100),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _verbTimelineGameCompleted,
+                builder: (ctx, lang, markCompleted) => PocketVerbTimelineCard(
+                  day: widget.day,
+                  isCompleted: _verbTimelineGameCompleted,
+                  onCompleted: (val) {
+                    markCompleted(val);
+                    _saveSubtask('verb_timeline_game', val);
+                    if (mounted) setState(() => _verbTimelineGameCompleted = val);
+                  },
+                  onSpeak: _speakWord,
+                  stepNumber: '$_stepVerbTimelineGame',
+                ),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _verbTimelineGameCompleted = true);
+            _saveSubtask('verb_timeline_game', true);
+            _notifyStepUnlocked(_stepVerbTimelineGame, _stepPeerCall);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_verbTimelineGameCompleted;
+          setState(() => _verbTimelineGameCompleted = next);
+          _saveSubtask('verb_timeline_game', next);
+          if (next) _notifyStepUnlocked(_stepVerbTimelineGame, _stepKaraokeChant);
+        },
+      ),
+    );
+
+    // Step 9: Karaoke Sing-Along Rhythm Chant
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepKaraokeChant,
+        icon: '🎤',
+        title: 'Karaoke Sing-Along Rhythm Chant',
+        category: 'Speaking',
+        subtitle: 'Build unconscious musical memory and speaking speed through rhythmic chant recitation',
+        accentColor: const Color(0xFFFF4081),
+        isCompleted: _karaokeChantCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepKaraokeChant',
+                icon: '🎤',
+                title: 'Karaoke Sing-Along Rhythm Chant',
+                subtitle: 'Build unconscious musical memory and speaking speed through rhythmic chant recitation.',
+                accentColor: const Color(0xFFFF4081),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _karaokeChantCompleted,
+                builder: (ctx, lang, markCompleted) => PocketKaraokeChantCard(
+                  day: widget.day,
+                  isCompleted: _karaokeChantCompleted,
+                  onCompleted: (val) {
+                    markCompleted(val);
+                    _saveSubtask('karaoke_chant', val);
+                    if (mounted) setState(() => _karaokeChantCompleted = val);
+                  },
+                  onSpeak: _speakWord,
+                  stepNumber: '$_stepKaraokeChant',
+                ),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _karaokeChantCompleted = true);
+            _saveSubtask('karaoke_chant', true);
+            _notifyStepUnlocked(_stepKaraokeChant, _stepPrepositionsVisual);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_karaokeChantCompleted;
+          setState(() => _karaokeChantCompleted = next);
+          _saveSubtask('karaoke_chant', next);
+          if (next) _notifyStepUnlocked(_stepKaraokeChant, _stepPrepositionsVisual);
+        },
+      ),
+    );
+
+    // Step 10: Prepositions 2D Spatial Lab (Glass & Object Physics)
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepPrepositionsVisual,
+        icon: '🥛',
+        title: 'Prepositions 2D Spatial Lab',
+        category: 'Grammar',
+        subtitle: 'Master In, On, Under, Between, Beside & Behind with interactive Glass & Object 2D physics',
+        accentColor: const Color(0xFF00E5FF),
+        isCompleted: _prepositionsVisualCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepPrepositionsVisual',
+                icon: '🥛',
+                title: 'Prepositions 2D Spatial Lab',
+                subtitle: 'Master In, On, Under, Between, Beside & Behind with interactive Glass & Object 2D physics.',
+                accentColor: const Color(0xFF00E5FF),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _prepositionsVisualCompleted,
+                builder: (ctx, lang, markCompleted) => PocketPrepositionsGlassCard(
+                  day: widget.day,
+                  isCompleted: _prepositionsVisualCompleted,
+                  onCompleted: (val) {
+                    markCompleted(val);
+                    _saveSubtask('prepositions_visual', val);
+                    if (mounted) setState(() => _prepositionsVisualCompleted = val);
+                  },
+                  onSpeak: _speakWord,
+                  stepNumber: '$_stepPrepositionsVisual',
+                ),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _prepositionsVisualCompleted = true);
+            _saveSubtask('prepositions_visual', true);
+            _notifyStepUnlocked(_stepPrepositionsVisual, _stepPeerCall);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_prepositionsVisualCompleted;
+          setState(() => _prepositionsVisualCompleted = next);
+          _saveSubtask('prepositions_visual', next);
+          if (next) _notifyStepUnlocked(_stepPrepositionsVisual, _stepPeerCall);
+        },
+      ),
+    );
+
+    // Step: Peer Call / 1-on-1 English Talk
     rawSteps.add(
       _RawRoadmapStep(
         stepNumber: _stepPeerCall,

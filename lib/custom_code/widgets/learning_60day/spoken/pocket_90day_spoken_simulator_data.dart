@@ -2769,14 +2769,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     17: DaySpokenSimulatorPlan(
       day: 17,
-      topicTitle: "Food Delivery & Online Orders",
-      topicTitleMl: "ഫുഡ് ഡെലിവറി ആപ്പും ഓർഡറുകളും",
-      scenarioContext: "Customizing spices, delivery address landmarks, tracking riders, and tipping.",
+      topicTitle: "Yesterday's Accomplishments & Work Standup (The Simple Past V2)",
+      topicTitleMl: "ഇന്നലത്തെ നേട്ടങ്ങളും ജോലി വിശേഷങ്ങളും (Simple Past V2)",
+      scenarioContext: "Reporting completed tasks, yesterday's standup updates, solving bugs, and weekend achievements.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 17! Today our focus is Food Delivery & Online Orders. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 17-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 17! Today our focus is Recounting Yesterday's Achievements using the Simple Past (V2). Are you ready to begin?",
+          avatarPromptMl: "ഡേ 17-ലേക്ക് സ്വാഗതം! ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ Simple Past (V2) ഉപയോഗിച്ച് സംസാരിക്കാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
@@ -2937,14 +2937,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     18: DaySpokenSimulatorPlan(
       day: 18,
-      topicTitle: "Movies, Series & Pop Culture",
-      topicTitleMl: "സിനിമകളും ഒ.ടി.ടി സീരീസുകളും ചർച്ച ചെയ്യൽ",
-      scenarioContext: "Reviewing recent movie releases, suspense plots, actors, and cinema popcorn.",
+      topicTitle: "Inquiring About the Past & Trips (Did you...?)",
+      topicTitleMl: "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിച്ചറിയൽ (Did you...?)",
+      scenarioContext: "Asking friends about yesterday's plans, weekend getaways, conference attendance, and travel experiences.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 18! Today our focus is Movies, Series & Pop Culture. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 18-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 18! Today our focus is Inquiring About the Past using Did you...? and the V1 base verb reset rule. Are you ready to begin?",
+          avatarPromptMl: "ഡേ 18-ലേക്ക് സ്വാഗതം! കഴിഞ്ഞുപോയ കാര്യങ്ങൾ സംശയമില്ലാതെ ചോദിച്ചറിയാൻ Did you...? പരിശീലിക്കാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
@@ -3105,14 +3105,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     19: DaySpokenSimulatorPlan(
       day: 19,
-      topicTitle: "Smartphones, Apps & Digital Life",
-      topicTitleMl: "സ്മാർട്ട്ഫോണും ആപ്പുകളും സോഷ്യൽ മീഡിയയും",
-      scenarioContext: "Discussing battery life, favorite productive apps, camera features, and notifications.",
+      topicTitle: "Past Negatives: Explaining Obstacles & Delays (didn't + V1)",
+      topicTitleMl: "കഴിഞ്ഞ കാര്യങ്ങൾ ചെയ്തില്ല എന്ന് പറയൽ (didn't + V1)",
+      scenarioContext: "Explaining project delays, clarifying missed tasks, clearing misunderstandings, and reporting blockers without V2 grammatical errors.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 19! Today our focus is Smartphones, Apps & Digital Life. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 19-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 19! Today our focus is Past Negatives using Subject + didn't + Base Verb (V1) to explain obstacles, delays, and past blockers. Are you ready to begin?",
+          avatarPromptMl: "ഡേ 19-ലേക്ക് സ്വാഗതം! കഴിഞ്ഞുപോയ തടസ്സങ്ങളും കാരണങ്ങളും didn't + V1 ഉപയോഗിച്ച് കൃത്യമായി പറയാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
@@ -3273,14 +3273,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     20: DaySpokenSimulatorPlan(
       day: 20,
-      topicTitle: "Giving Compliments & Gracious Thanks",
-      topicTitleMl: "അഭിനന്ദനങ്ങളും നന്ദി പറയലും",
-      scenarioContext: "Praising cooking skills, neat presentations, genuine smiles, and heartfelt gratitude.",
+      topicTitle: "Future Commitments, Promises & Rapid Decisions (Will + V1)",
+      topicTitleMl: "ഭാവി തീരുമാനങ്ങളും ഉറപ്പുകളും (Will + V1)",
+      scenarioContext: "Volunteering for tasks, making firm promises to teammates, rapid spontaneous decision-making, and celebrating the Phase 1 20-Day Mastery Milestone.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 20! Today our focus is Giving Compliments & Gracious Thanks. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 20-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 20 — our Grand Phase 1 Mastery Milestone! Today we master Future Commitments, Rapid Decisions, and Promises using Will + Base Verb. Are you ready to speak with authority?",
+          avatarPromptMl: "ഫേസ് 1-ന്റെ ഇരുപതാം ദിവസത്തെ ഗ്രാൻഡ് നാഴികക്കല്ലിലേക്ക് സ്വാഗതം! ഭാവി തീരുമാനങ്ങളും ഉറപ്പുകളും Will ഉപയോഗിച്ച് സംസാരിക്കാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
@@ -3441,14 +3441,14 @@ class Pocket90DaySpokenSimulatorData {
     ),
     21: DaySpokenSimulatorPlan(
       day: 21,
-      topicTitle: "Polite Apologies & Clearing Doubts",
-      topicTitleMl: "മാന്യമായ ക്ഷമാപണവും സംശയനിവാരണവും",
-      scenarioContext: "Apologizing for late arrivals, minor misunderstandings, and reassuring colleagues.",
+      topicTitle: "Planned Intentions & Roadmaps (Going to + V1)",
+      topicTitleMl: "മുൻകൂട്ടി പ്ലാൻ ചെയ്ത കാര്യങ്ങൾ (Going to + V1)",
+      scenarioContext: "Discussing project roadmaps, pre-arranged team plans, quarterly goals, personal ambitions, and unlocking the 21-Day Habit Anchor Medal.",
       exchanges: const [
         SpokenDialogueExchange(
           stepIndex: 1,
-          avatarPrompt: "Welcome to Day 21! Today our focus is Polite Apologies & Clearing Doubts. Are you ready to begin?",
-          avatarPromptMl: "ഡേ 21-ലേക്ക് സ്വാഗതം! ഇന്നത്തെ സംഭാഷണം തുടങ്ങാൻ തയ്യാറാണോ?",
+          avatarPrompt: "Welcome to Day 21 and the 21-Day Habit Anchor Milestone! Today we step into Tier 2 Fluency by mastering Planned Intentions and Roadmaps using am/is/are + going to + Base Verb. Ready to outline your future?",
+          avatarPromptMl: "ഡേ 21-ലേക്കും 21-ഡേ ഹാബിറ്റ് ആങ്കർ മെഡലിലേക്കും സ്വാഗതം! മുൻകൂട്ടി പ്ലാൻ ചെയ്ത കാര്യങ്ങളും റോഡ്‌മാപ്പുകളും going to ഉപയോഗിച്ച് പറയാൻ തയ്യാറാണോ?",
           responseOptions: ["Yes, absolutely! Let us start speaking.", "Yes! I am ready for today dialogue."],
           bestResponseIndex: 0,
           speechTip: "Project your voice clearly and take a deep, relaxed breath.",
