@@ -15,6 +15,7 @@ import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_citadel_challenge_generator.dart';
+import 'pocket_world_game_rules_modal.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -4272,6 +4273,34 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 8),
 
+                // 📜 Game Rules & Regulations Button
+                InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    PocketWorldGameRulesPage.show(context);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.70),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text('📜', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
                 // 5. ✨ Share to Vibes Icon Button
                 InkWell(
                   onTap: _shareCitadelToVibes,
@@ -5255,7 +5284,33 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 'Presidential Guard',
                 '👮‍♂️ ${_protectionHoursLeft.toStringAsFixed(1)}h remaining',
               ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  PocketWorldGameRulesPage.show(context);
+                },
+                icon: const Text('📜', style: TextStyle(fontSize: 16)),
+                label: Text(
+                  'View Citadel Attack & Defense Rules',
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

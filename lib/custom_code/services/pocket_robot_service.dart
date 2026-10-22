@@ -14,6 +14,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_spoken_dialogue_catalog.dart';
+
 
 /// 🎭 Archetypes for Pocket Robot Personalities
 enum RobotArchetype {
@@ -368,6 +370,11 @@ class PocketRobotService {
       return robot.level;
     }
     return ((robot.baseLevel - 1 + daysElapsed) % 90) + 1;
+  }
+
+  /// 💬 Retrieve curated level-tailored Spoken English dialogue items and preposition rules
+  static List<PocketSpokenDialogueItem> getSpokenDialogueVibesForLevel(int userLevel) {
+    return PocketSpokenDialogueCatalog.getItemsForLevel(userLevel);
   }
 
   /// Calculate prestige trophies earned when a robot completes the level 90 loop
@@ -945,7 +952,7 @@ class PocketRobotService {
 
   /// 🎨 Educational English Text Canvas Vibe Templates for Pocket Robots
   /// Tailored across Student, Professional & Daily Conversational English
-  static final List<Map<String, dynamic>> _robotCanvasPrompts = [
+  static final List<Map<String, dynamic>> robotCanvasPrompts = [
     // --- 🎓 Student & Academic English ---
     {
       'tag': '🎓 Student Focus',
@@ -1067,30 +1074,84 @@ class PocketRobotService {
 
   /// Generate and post a new Vibe (story) for a specific robot:
   /// Alternates naturally between:
-  /// 1. Educational Text Canvas Statuses (Persona-tailored: Student / Professional / General)
-  /// 2. Photo Snaps
-  /// 3. Citadel Home Showcases & English Mini-Game Challenges
+  /// 1. Spoken English Dialogues & Preposition Rules (70% dominant frequency per Audio Directive)
+  /// 2. Level-matched Spoken Q&A chat bubbles
+  /// 3. Vocabulary Learning Snap & Study Hacks
+  /// 4. Citadel Home Showcases & English Mini-Game Challenges
   static Future<Map<String, dynamic>> generateRobotVibe({
     required String robotId,
     String? preferredCaption,
     String? userPersona, // 'student' | 'professional' | 'work' | 'general'
+    int? userLevel,
   }) async {
     final robot = getRobotById(robotId) ?? getRobotByLevel(1);
-    final dynLvl = getDynamicLevel(robot);
+    final dynLvl = (userLevel != null && userLevel > 0)
+        ? userLevel
+        : getDynamicLevel(robot);
     final now = DateTime.now();
 
     final rand = math.Random();
-    // 0: Educational Text Canvas
-    // 1,2: Vocabulary Learning Snap (from 90-day progressive curriculum)
-    // 3,4: English Learning Tool & Study Hack
-    // 5,6: Thought / Daily Reflection
-    // 7,8: Citadel Home Showcase or Mini-Game Challenge
-    // 9: Photo Snap
-    final choice = preferredCaption != null ? 9 : rand.nextInt(10);
+    // 0..6 (70%): Spoken English Dialogues (Q&A Chat Bubbles) & Preposition Rules
+    // 7: Vocabulary Word of the Day (from 90-day progressive curriculum)
+    // 8: English Learning Tool & Study Hack
+    // 9: Citadel Home Showcase or Mini-Game Challenge
+    final choice = preferredCaption != null ? 0 : rand.nextInt(10);
     Map<String, dynamic> vibeItem;
 
-    if (choice >= 1 && choice <= 2) {
-      // --- 1. Vocabulary Learning Snap (from 90-day progressive curriculum) ---
+    if (choice <= 6) {
+      // --- 1. Spoken English Dialogue Pair or Preposition Rule (Audio Directive Priority) ---
+      final spokenItem = PocketSpokenDialogueCatalog.getRandomItemForLevel(dynLvl, random: rand);
+
+      final caption = preferredCaption ??
+          (spokenItem.isPrepositionRule
+              ? '${spokenItem.ruleTitle ?? "Rule: Words with ${spokenItem.preposition}"}\n'
+                  '${spokenItem.collocations.take(4).join(" • ")}\n\n'
+                  '${robot.name}: "${spokenItem.question}"\n'
+                  'You: "${spokenItem.answer}"'
+              : '💬 Spoken English (Day $dynLvl):\n'
+                  '${robot.name}: "${spokenItem.question}"\n'
+                  'You: "${spokenItem.answer}"');
+
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'spoken_dialogue',
+        'media_url': '',
+        'caption': caption,
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'metadata': {
+          'source': 'robot_spoken_dialogue',
+          'is_shared_vibe': true,
+          'item_type': spokenItem.type, // 'spoken_dialogue' or 'preposition_rule'
+          'tag': spokenItem.tag,
+          'level': dynLvl,
+          'gradient_colors': spokenItem.gradientColors,
+          'dialogue_question': spokenItem.question,
+          'dialogue_answer': spokenItem.answer,
+          'dialogue_alternatives': spokenItem.alternativeReplies,
+          'preposition': spokenItem.preposition,
+          'rule_title': spokenItem.ruleTitle,
+          'collocations': spokenItem.collocations,
+          'malayalam_note': spokenItem.malayalamNote,
+          'speaker_a_name': robot.name,
+          'speaker_b_name': 'You 👤',
+          'hide_caption': true, // Audio directive: Don't show duplicate text caption underneath!
+        },
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    } else if (choice == 7) {
+      // --- 2. Vocabulary Learning Snap (from 90-day progressive curriculum) ---
       final vocabWords = Pocket90DayVocabCurriculum.getVocabForDay(dynLvl);
       final word = vocabWords.isNotEmpty
           ? vocabWords[rand.nextInt(vocabWords.length)]
@@ -1118,6 +1179,7 @@ class PocketRobotService {
           'category': 'Daily Vocabulary',
           'item_type': 'vocab_snap',
           'gradient_colors': [0xFF10B981, 0xFF059669],
+          'hide_caption': true,
         },
         'profile': {
           'id': robot.id,
@@ -1129,8 +1191,8 @@ class PocketRobotService {
           'stage': dynLvl,
         },
       };
-    } else if (choice >= 3 && choice <= 4) {
-      // --- 2. English Learning Tool & Study Hack ---
+    } else if (choice == 8) {
+      // --- 3. English Learning Tool & Study Hack ---
       final toolHacks = [
         '🛠️ Fluency Tool Tip:\nUse the Voice Transcriber in English Hub to test your pronunciation clarity! 🎤 Speak in complete sentences.',
         '🛠️ Speed Hack:\nListen to English speech notes at 0.5x speed to catch subtle vowel lengths! 🎧',
@@ -1154,6 +1216,7 @@ class PocketRobotService {
           'category': 'Study Hacks',
           'item_type': 'tool_share',
           'gradient_colors': [0xFF6366F1, 0xFF8B5CF6],
+          'hide_caption': true,
         },
         'profile': {
           'id': robot.id,
@@ -1165,124 +1228,8 @@ class PocketRobotService {
           'stage': dynLvl,
         },
       };
-    } else if (choice >= 5 && choice <= 6) {
-      // --- 3. Thought / Daily Reflection ---
-      final thoughts = [
-        'Fluency is not about never making mistakes. It is about speaking with confidence and rhythm without stopping yourself. ✨',
-        'Don\'t translate in your head. Train your mouth to speak simple 3-word thoughts directly in English. 🧠',
-        'Every 10 minutes of speaking English today builds neural speech pathways for tomorrow. 🚀',
-        'Consistency beats talent every single time. 1 mission a day equals mastery in 90 days. 🏆',
-      ];
-      final thoughtText = thoughts[rand.nextInt(thoughts.length)];
-      final thoughtId = 'thread_${robot.id}_${now.millisecondsSinceEpoch}';
-      final thoughtMap = {
-        'id': thoughtId,
-        'content': thoughtText,
-        'user_id': robot.id,
-        'created_at': now.toIso8601String(),
-        'like_count': 16 + (dynLvl * 2),
-        'comment_count': 2,
-        'profile': {
-          'id': robot.id,
-          'name': robot.name,
-          'profile_image_url': robot.avatarUrl,
-          'level': dynLvl,
-        },
-        'user': {
-          'id': robot.id,
-          'profile': [
-            {
-              'name': robot.name,
-              'profile_image_url': robot.avatarUrl,
-            }
-          ]
-        }
-      };
-
-      vibeItem = {
-        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
-        'thought_id': thoughtId,
-        'media_type': 'thought',
-        'media_url': '',
-        'caption': thoughtText,
-        'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
-        'profile_id': robot.id,
-        'user_id': robot.id,
-        'user_name': robot.name,
-        'user_avatar': robot.avatarUrl,
-        'is_active': true,
-        'is_robot': true,
-        'thought': thoughtMap,
-        'metadata': {
-          'tag': '💭 Daily Thought',
-          'category': 'Mindset',
-          'item_type': 'thought_share',
-          'thought_id': thoughtId,
-          'gradient_colors': [0xFF8B5CF6, 0xFFEC4899],
-        },
-        'profile': {
-          'id': robot.id,
-          'name': robot.name,
-          'profile_image_url': robot.avatarUrl,
-          'level': dynLvl,
-          'learning_day': dynLvl,
-          'learning_stage': dynLvl,
-          'stage': dynLvl,
-        },
-      };
-    } else if (choice == 0) {
-      // --- 4. Educational English Text Canvas Vibe ---
-      List<Map<String, dynamic>> filteredPrompts = _robotCanvasPrompts;
-      if (userPersona != null) {
-        final p = userPersona.toLowerCase();
-        final matches = _robotCanvasPrompts.where((item) {
-          final target = (item['persona'] ?? '').toString();
-          if (p.contains('student') ||
-              p.contains('school') ||
-              p.contains('college')) {
-            return target == 'student' || target == 'general';
-          }
-          if (p.contains('work') ||
-              p.contains('job') ||
-              p.contains('pro') ||
-              p.contains('office')) {
-            return target == 'professional' || target == 'general';
-          }
-          return true;
-        }).toList();
-        if (matches.isNotEmpty) filteredPrompts = matches;
-      }
-
-      final canvasPrompt =
-          filteredPrompts[rand.nextInt(filteredPrompts.length)];
-      vibeItem = {
-        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
-        'media_type': 'text',
-        'media_url': '',
-        'caption': canvasPrompt['text'],
-        'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
-        'profile_id': robot.id,
-        'is_active': true,
-        'is_robot': true,
-        'metadata': {
-          'tag': canvasPrompt['tag'],
-          'category': canvasPrompt['category'],
-          'gradient_colors': canvasPrompt['colors'],
-        },
-        'profile': {
-          'id': robot.id,
-          'name': robot.name,
-          'profile_image_url': robot.avatarUrl,
-          'level': dynLvl,
-          'learning_day': dynLvl,
-          'learning_stage': dynLvl,
-          'stage': dynLvl,
-        },
-      };
-    } else if (choice >= 7 && choice <= 8) {
-      // --- 5. Citadel Home Showcase or Mini-Game Challenge Share ---
+    } else {
+      // --- 4. Citadel Home Showcase or Mini-Game Challenge Share ---
       final bool shareHome = rand.nextBool();
       if (shareHome) {
         final streak = dynLvl * 3 + rand.nextInt(7);
@@ -1314,6 +1261,7 @@ class PocketRobotService {
             'palette_id': robot.housePalette,
             'is_damaged': false,
             'status_message': statusMsg,
+            'hide_caption': true,
           },
           'profile': {
             'id': robot.id,
@@ -1343,9 +1291,9 @@ class PocketRobotService {
             ],
           },
           {
-            'category': 'TENSE SHIFT ⏳',
-            'prompt': 'She ______ to the airport before the storm started.',
-            'options': ['had driven', 'has driven', 'was drove'],
+            'category': 'PREPOSITION DRILL 🎯',
+            'prompt': 'She is brilliant ______ speaking English with confidence.',
+            'options': ['at', 'in', 'on'],
           },
         ];
         final ch = challenges[rand.nextInt(challenges.length)];
@@ -1368,6 +1316,7 @@ class PocketRobotService {
             'category': ch['category'],
             'prompt': ch['prompt'],
             'options': ch['options'],
+            'hide_caption': true,
           },
           'profile': {
             'id': robot.id,
@@ -1380,57 +1329,6 @@ class PocketRobotService {
           },
         };
       }
-    } else {
-      // --- 6. Spoken English Text Status Vibe (Audio Directive: Robots only send text vibes/status cards, never photo snaps) ---
-      final vocabWords = Pocket90DayVocabCurriculum.getVocabForDay(dynLvl);
-      final word = vocabWords.isNotEmpty ? vocabWords[rand.nextInt(vocabWords.length)] : null;
-      final spokenTips = [
-        if (word != null)
-          '📚 Word of the Day (Day $dynLvl):\n\n'
-              '✨ ${word.word.toUpperCase()} [${word.phonetic}]\n'
-              '💡 Malayalam: ${word.malayalamMeaning}\n'
-              '📖 Meaning: ${word.definition}\n'
-              '🗣️ Practice: "${word.exampleSentence}"',
-        '🗣️ Spoken English Fluency Tip:\n\n'
-            'Never translate directly from Malayalam! Think in natural English action chunks like "Could you please help me with this?" or "I am heading out now." Speak it aloud boldly right now! 🎙️✨',
-        '⚡ Essential Spoken Phrasal Verb:\n\n'
-            '• Figure out = മനസ്സിലാക്കുക / പരിഹാരം കണ്ടെത്തുക\n'
-            '• Hang on = അല്പം കാത്തിരിക്കുക\n'
-            'Example: "Hang on a second, I will figure it out!" 🤝',
-        '💡 Spoken English Vocabulary Upgrade:\n\n'
-            '• Replace "Very good" with "Outstanding!"\n'
-            '• Replace "Very tired" with "Exhausted!"\n'
-            '• Replace "Very happy" with "Thrilled!"\n'
-            'Elevate your daily English expression step by step! 🚀',
-      ];
-      final captionText = preferredCaption ?? spokenTips[rand.nextInt(spokenTips.length)];
-
-      vibeItem = {
-        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
-        'media_type': 'thought',
-        'media_url': '',
-        'caption': captionText,
-        'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
-        'profile_id': robot.id,
-        'is_active': true,
-        'is_robot': true,
-        'metadata': {
-          'source': 'robot_text_vibe',
-          'is_shared_vibe': true,
-          'item_type': 'spoken_vibe',
-          'level': dynLvl,
-        },
-        'profile': {
-          'id': robot.id,
-          'name': robot.name,
-          'profile_image_url': robot.avatarUrl,
-          'level': dynLvl,
-          'learning_day': dynLvl,
-          'learning_stage': dynLvl,
-          'stage': dynLvl,
-        },
-      };
     }
 
     // 🎵 Attach a rich ambient/vibe soundtrack matching user persona and robot

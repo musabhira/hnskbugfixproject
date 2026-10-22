@@ -33,6 +33,8 @@ import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
@@ -2416,12 +2418,36 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   bool _isAuthorMate = true;
   bool _isMateRequestSent = false;
   int _currentUserLevel = 1;
+  FlutterTts? _vibeTts;
+
+  Future<void> _speakVibeText(String text) async {
+    try {
+      _vibeTts ??= FlutterTts();
+      await _vibeTts!.setLanguage("en-US");
+      await _vibeTts!.setSpeechRate(0.48);
+      await _vibeTts!.setPitch(1.0);
+      await _vibeTts!.speak(text);
+    } catch (e) {
+      debugPrint('Vibe TTS Error: $e');
+    }
+  }
+
+  Future<void> _speakFullDialogue(String q, String a) async {
+    try {
+      _vibeTts ??= FlutterTts();
+      await _vibeTts!.setLanguage("en-US");
+      await _vibeTts!.setSpeechRate(0.46);
+      await _vibeTts!.setPitch(1.0);
+      await _vibeTts!.speak('$q. ... $a');
+    } catch (e) {
+      debugPrint('Vibe TTS Dialogue Error: $e');
+    }
+  }
 
   Widget _buildViewerAvatar(Map<String, dynamic>? profile, {double size = 36.0}) {
     final profileId = profile != null
         ? (profile['id']?.toString() ?? profile['user_id']?.toString() ?? '')
         : '';
-    final name = profile?['name']?.toString() ?? 'User';
 
     final isPresAvatar = PocketPresidentService.isPresidentId(profileId) ||
         profile?['is_president'] == true;
@@ -2698,6 +2724,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _replyController.dispose();
     _replyFocusNode.dispose();
     PocketGameAudioService.instance.stop();
+    _vibeTts?.stop();
     super.dispose();
 
   }
@@ -4349,12 +4376,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             ..._reactionBursts.map(
                 (b) => _AnimatedFloatingReactionItem(key: ValueKey(b.id), burst: b)),
 
-            // Caption
+            // Caption (Audio directive: never duplicate/clash captions over rich cards or spoken dialogues)
             if (currentStatus['caption'] != null &&
                 currentStatus['caption'].toString().isNotEmpty &&
                 currentStatus['media_type'] != 'text' &&
                 currentStatus['media_type'] != 'thought' &&
-                currentStatus['media_type'] != 'tool')
+                currentStatus['media_type'] != 'tool' &&
+                currentStatus['media_type'] != 'spoken_dialogue' &&
+                currentStatus['media_type'] != 'preposition_rule' &&
+                currentStatus['media_type'] != 'citadel_fortress' &&
+                currentStatus['metadata']?['item_type'] != 'spoken_dialogue' &&
+                currentStatus['metadata']?['item_type'] != 'preposition_rule' &&
+                currentStatus['metadata']?['item_type'] != 'home_showcase' &&
+                currentStatus['metadata']?['item_type'] != 'game_challenge' &&
+                currentStatus['metadata']?['item_type'] != 'vocab_snap' &&
+                currentStatus['metadata']?['item_type'] != 'tool_share' &&
+                currentStatus['metadata']?['hide_caption'] != true)
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom +
                     (!isOwnStatus ? 116 : 72),
@@ -4661,6 +4698,23 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
   Widget _buildMediaContent(Map<String, dynamic> status) {
     Widget content;
+
+    final rawMetadata = status['metadata'];
+    final Map<String, dynamic>? meta = rawMetadata is Map<String, dynamic>
+        ? rawMetadata
+        : (rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null);
+    final itemType = meta?['item_type']?.toString();
+
+    // 💬 Check if this is a Spoken Dialogue or Preposition Rule Chat Bubble Vibe
+    final bool isSpokenDialogue = status['media_type'] == 'spoken_dialogue' ||
+        status['media_type'] == 'preposition_rule' ||
+        itemType == 'spoken_dialogue' ||
+        itemType == 'preposition_rule' ||
+        meta?['dialogue_question'] != null;
+
+    if (isSpokenDialogue) {
+      return _buildSpokenDialogueVibeCard(status, meta);
+    }
 
     if (status['media_type'] == 'thought') {
       final thoughtData = status['thought'];
@@ -5930,7 +5984,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     child: FlameEnglishHouseWidget(
                       currentDay: isPresident ? 90 : level,
                       streak: isPresident ? 90 : level,
-                      paletteId: isPresident ? (paletteId ?? 'royal_gold') : paletteId,
+                      paletteId: isPresident ? 'royal_gold' : paletteId,
                       isPresident: isPresident,
                     ),
                   ),
@@ -6191,6 +6245,622 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
 
     return content;
+  }
+
+  /// 💬 WhatsApp/iMessage Style Chat Bubble Card for Spoken English Dialogues & Preposition Rules
+  /// Audio Directive:
+  /// "ഇതിൽ ഇങ്ങനെ ചാറ്റിന്റെ ബബിൾ ആക്കി കൊടുക്കുക! ഇവിടെ ഇങ്ങനെ ചോദിക്കുന്നു, ഇതിന് ഉത്തരം കൊടുക്കുന്നു...
+  /// ആൾക്കാർക്ക് കുറച്ചും കൂടി സ്പോക്കൺ ഇംഗ്ലീഷ് ബേസ് ചെയ്തിട്ടുള്ള കാര്യങ്ങൾ പഠിക്കാൻ പറ്റും.
+  /// സ്പോക്കൺ ഇംഗ്ലീഷിനാണ് ആൾക്കാർ വരുന്നത്! മിനിമൽ ആയിട്ട് അയക്കുക, ടെക്സ്റ്റ് കൊളാഷ് ആവരുത്."
+  Widget _buildSpokenDialogueVibeCard(Map<String, dynamic> status, Map<String, dynamic>? meta) {
+    final rawColors = meta?['gradient_colors'];
+    List<Color> bgColors = const [Color(0xFF4F46E5), Color(0xFF7C3AED)];
+    if (rawColors is List && rawColors.length >= 2) {
+      try {
+        bgColors = rawColors
+            .map((c) => Color(int.tryParse(c.toString()) ?? 0xFF4F46E5))
+            .toList();
+      } catch (_) {}
+    }
+
+    final tag = meta?['tag']?.toString() ?? '💬 Daily Spoken English';
+    final question = meta?['dialogue_question']?.toString() ??
+        status['caption']?.toString() ??
+        'How are you doing today?';
+    final answer = meta?['dialogue_answer']?.toString() ??
+        'I am doing great, thank you!';
+    final rawAlts = meta?['dialogue_alternatives'];
+    final List<String> alternatives = (rawAlts is List)
+        ? rawAlts.map((e) => e.toString()).toList()
+        : [];
+    final preposition = meta?['preposition']?.toString();
+    final ruleTitle = meta?['rule_title']?.toString();
+    final rawCollocations = meta?['collocations'];
+    final List<String> collocations = (rawCollocations is List)
+        ? rawCollocations.map((e) => e.toString()).toList()
+        : [];
+    final malayalamNote = meta?['malayalam_note']?.toString() ?? '';
+
+    final String? profileId = (status['profile_id'] ?? status['user_id'])?.toString();
+    final isRobot = status['is_robot'] == true ||
+        (profileId != null && PocketRobotService.isRobotId(profileId));
+
+    String robotName = meta?['speaker_a_name']?.toString() ??
+        status['profile']?['name']?.toString() ??
+        status['user_name']?.toString() ??
+        'Pocket Mate 🤖';
+    if (isRobot && profileId != null) {
+      final r = PocketRobotService.getRobotById(profileId);
+      if (r != null) robotName = r.name;
+    }
+
+    final int level = (meta?['level'] as num?)?.toInt() ??
+        (status['profile']?['level'] as num?)?.toInt() ??
+        1;
+
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            bgColors.first,
+            bgColors.length > 1 ? bgColors[1] : bgColors.first,
+            const Color(0xFF070B14),
+          ],
+          stops: const [0.0, 0.45, 1.0],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background ambient radial glowing circles
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 80,
+            left: -50,
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: bgColors.first.withValues(alpha: 0.25),
+              ),
+            ),
+          ),
+
+          // Main Scrollable Interactive Chat Conversation Card
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. Top Capsule Tag & Robot Level
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.40),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🤖', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$robotName • Day $level',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: const BoxDecoration(
+                              color: Colors.white60,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            tag,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.95),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 2. Preposition Rule Banner (If Preposition Rule)
+                  if (preposition != null && preposition.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'RULE',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  ruleTitle ?? 'Words that ALWAYS pair with "$preposition":',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (collocations.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: collocations.map((coll) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    coll,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // 3. Chat Dialogue Bubbles Card (WhatsApp / iMessage layout)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // --- Speaker A (Robot Question Bubble - Left Aligned) ---
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.76,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Robot Avatar
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  margin: const EdgeInsets.only(right: 8, top: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFF06B6D4), width: 1.2),
+                                  ),
+                                  child: const Center(
+                                    child: Text('🤖', style: TextStyle(fontSize: 16)),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E293B).withValues(alpha: 0.95),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(4),
+                                        topRight: Radius.circular(18),
+                                        bottomLeft: Radius.circular(18),
+                                        bottomRight: Radius.circular(18),
+                                      ),
+                                      border: Border.all(
+                                        color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          robotName,
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF38BDF8),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          question,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15.5,
+                                            fontWeight: FontWeight.w600,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        GestureDetector(
+                                          onTap: () => _speakVibeText(question),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 14),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Tap to listen',
+                                                style: GoogleFonts.inter(
+                                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                                                  fontSize: 10.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // --- Speaker B (User Answer Bubble - Right Aligned) ---
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.76,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF059669), Color(0xFF10B981)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(18),
+                                        topRight: Radius.circular(4),
+                                        bottomLeft: Radius.circular(18),
+                                        bottomRight: Radius.circular(18),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'You (Natural Reply) 👤',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white.withValues(alpha: 0.85),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          answer,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15.5,
+                                            fontWeight: FontWeight.bold,
+                                            height: 1.35,
+                                          ),
+                                          textAlign: TextAlign.right,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        GestureDetector(
+                                          onTap: () => _speakVibeText(answer),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.volume_up_rounded, color: Colors.white, size: 14),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Tap to pronounce',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white.withValues(alpha: 0.9),
+                                                  fontSize: 10.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  margin: const EdgeInsets.only(left: 8, top: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                                  ),
+                                  child: const Center(
+                                    child: Text('👤', style: TextStyle(fontSize: 16)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Optional alternative replies chips
+                        if (alternatives.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 42),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '💡 Or reply naturally with:',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: alternatives.take(3).map((alt) {
+                                    return GestureDetector(
+                                      onTap: () => _speakVibeText(alt),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: Colors.white.withValues(alpha: 0.15),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.volume_up, color: Color(0xFF38BDF8), size: 11),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              alt,
+                                              style: GoogleFonts.inter(
+                                                color: Colors.white.withValues(alpha: 0.95),
+                                                fontSize: 11.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  // 4. Malayalam Learning Insight Pill
+                  if (malayalamNote.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(Icons.lightbulb_rounded, color: Color(0xFFFFD700), size: 16),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              malayalamNote,
+                              style: GoogleFonts.inter(
+                                color: Colors.white.withValues(alpha: 0.95),
+                                fontSize: 12.5,
+                                height: 1.45,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 18),
+
+                  // 5. Audio Action Bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _speakFullDialogue(question, answer);
+                        },
+                        icon: const Icon(Icons.volume_up_rounded, color: Colors.black, size: 18),
+                        label: Text(
+                          'Listen Dialogue',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 6,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '🗣️ Speak out loud: "$answer"!',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                              ),
+                              backgroundColor: const Color(0xFF10B981),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.mic_rounded, color: Colors.white, size: 18),
+                        label: Text(
+                          'Practice Aloud',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white38, width: 1.2),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _navigateToToolFromStatus(String title) async {
