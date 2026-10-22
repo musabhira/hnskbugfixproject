@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_day1_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_tasks_master_hub.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -768,13 +769,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final kidName = PocketKidsService.kidName;
-    final kidAvatar = PocketKidsService.kidAvatar;
-    final kidStars = PocketKidsService.kidStars;
-    final currentHouse = PocketKidsService.currentHouse;
     final unlockedDay = PocketKidsService.currentUnlockedDay;
-    final completedDays = PocketKidsService.completedDays;
 
     return ScaffoldMessenger(
       child: Material(
@@ -790,15 +785,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     userLevel: unlockedDay,
                   ),
                   const PocketStudentChatHubWidget(),
-                  _buildTrailSectionWithSubTabs(
-                    screenWidth: screenWidth,
-                    kidName: kidName,
-                    kidAvatar: kidAvatar,
-                    kidStars: kidStars,
-                    currentHouse: currentHouse,
-                    unlockedDay: unlockedDay,
-                    completedDays: completedDays,
-                  ),
+                  const PocketKidsTasksMasterHubPage(),
                   const PocketKidsStudyToolsPage(),
                   const PocketKidsProfilePage(),
                 ],
@@ -811,6 +798,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     );
   }
 
+  // ignore: unused_element
   Widget _buildTrailSectionWithSubTabs({
     required double screenWidth,
     required String kidName,
