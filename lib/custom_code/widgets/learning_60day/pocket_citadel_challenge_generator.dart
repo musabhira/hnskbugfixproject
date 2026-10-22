@@ -40,13 +40,33 @@ class PocketCitadelChallengeGenerator {
       result.addAll(_generatePresidentialSentryTasks(10, random));
     }
 
-    // 🛡️ 2. Defender's personal level tasks (e.g. Level 1 = 1 task, Level 10 = 10 tasks, Level 40 = 40 tasks)
-    final baseCount = defenderLevel > 0 ? defenderLevel.clamp(1, 90) : 1;
+    // 🛡️ 2. Defender's personal custom defense questions come FIRST!
+    // User Audio Directive: "Attack cheyyaan nokkuna samayathu ee defense aanu aadyam varandathu."
     final armedPool = (customArmedQuestions != null && customArmedQuestions.isNotEmpty)
         ? List<HouseShieldQuestion>.from(customArmedQuestions)
         : <HouseShieldQuestion>[];
 
-    for (int i = 0; i < baseCount; i++) {
+    final baseCount = defenderLevel > 0 ? defenderLevel.clamp(1, 90) : 1;
+    final customCount = math.min(armedPool.length, baseCount);
+    for (int i = 0; i < customCount; i++) {
+      final taskIndex = result.length + 1;
+      final customQ = armedPool[i];
+      result.add(
+        HouseShieldQuestion(
+          id: 'raid_gate_${taskIndex}_custom_${customQ.id}',
+          question: customQ.question,
+          options: customQ.options,
+          correctIndex: customQ.correctIndex,
+          explanation: customQ.explanation,
+          category: customQ.category,
+          trapType: customQ.trapType,
+          gameFormat: customQ.gameFormat,
+        ),
+      );
+    }
+
+    // 🕹️ 3. Fill remaining tasks up to defenderLevel with alternating interactive game formats
+    for (int i = customCount; i < baseCount; i++) {
       final taskIndex = result.length + 1;
       final cycle = i % 4;
       final dayOffset = (i ~/ 4);
@@ -68,23 +88,7 @@ class PocketCitadelChallengeGenerator {
         case 3:
         default:
           // 🛡️ 4. Tactical Defense Gate Question
-          if (armedPool.isNotEmpty) {
-            final customQ = armedPool.removeAt(0);
-            result.add(
-              HouseShieldQuestion(
-                id: 'raid_gate_${taskIndex}_custom_${customQ.id}',
-                question: customQ.question,
-                options: customQ.options,
-                correctIndex: customQ.correctIndex,
-                explanation: customQ.explanation,
-                category: customQ.category,
-                trapType: customQ.trapType,
-                gameFormat: 'mcq',
-              ),
-            );
-          } else {
-            result.add(_buildTacticalMcqChallenge(taskIndex, sourceDay, random));
-          }
+          result.add(_buildTacticalMcqChallenge(taskIndex, sourceDay, random));
           break;
       }
     }

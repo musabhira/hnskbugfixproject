@@ -570,6 +570,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
       widget.neighbor.day,
       isNeighbor: true,
+      targetUserId: widget.neighbor.id,
     );
     // User Audio Directive: Question count strictly matches defender level (e.g. Level 40 = 40 tasks, Level 10 = 10 tasks, Level 1 = 1 task)
     // Rotating across 4 interactive formats: Sentence Builder, Spelling Challenge, Verb Timeline, Tactical MCQ.

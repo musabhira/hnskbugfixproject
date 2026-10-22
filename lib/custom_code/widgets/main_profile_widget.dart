@@ -334,7 +334,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
         PocketFortressDefenseService.syncMyHouseToSupabase(day: day, streak: streak);
       }
-      final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: !isMe);
+      final questions = await PocketFortressDefenseService.loadShieldQuestions(
+        day,
+        isNeighbor: !isMe,
+        targetUserId: !isMe ? widget.userId : null,
+      );
       List<CitadelRaidLogEntry> raids = await PocketFortressDefenseService.getRecentRaids();
       if (raids.isEmpty && day >= 4) {
         final mockRaid = CitadelRaidLogEntry(

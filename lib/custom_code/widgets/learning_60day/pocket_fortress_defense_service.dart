@@ -2200,7 +2200,11 @@ class PocketFortressDefenseService {
   /// Note: As per user specification, we DO NOT pre-fill fake questions for the player.
   /// The player is solely responsible for crafting their own defense questions!
   /// For neighbor raids, curated questions are provided as fallback if empty.
-  static Future<List<HouseShieldQuestion>> loadShieldQuestions(int stage, {bool isNeighbor = false}) async {
+  static Future<List<HouseShieldQuestion>> loadShieldQuestions(
+    int stage, {
+    bool isNeighbor = false,
+    String? targetUserId,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_trapsKey);
 
@@ -2216,7 +2220,7 @@ class PocketFortressDefenseService {
     }
     final maxAllowed = getMaxQuestionsForStage(effectiveStage);
 
-    if (raw != null) {
+    if (!isNeighbor && raw != null) {
       try {
         final list = (jsonDecode(raw) as List).map((e) => HouseShieldQuestion.fromJson(e)).toList();
         if (list.isNotEmpty) {
@@ -2225,29 +2229,35 @@ class PocketFortressDefenseService {
       } catch (_) {}
     }
 
-    if (!isNeighbor) {
-      // If local cache is empty, attempt to restore from Supabase profile
-      try {
-        final myId = SupaFlow.client.auth.currentUser?.id;
-        if (myId != null) {
-          final profileData = await SupaFlow.client
-              .from('profile')
-              .select('house_shield_questions')
-              .eq('user_id', myId)
-              .maybeSingle();
-          if (profileData != null && profileData['house_shield_questions'] != null) {
-            final listRaw = profileData['house_shield_questions'] as List;
-            final sbList = listRaw
-                .map((e) => HouseShieldQuestion.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-            if (sbList.isNotEmpty) {
+    // Attempt to load from Supabase profile for either targetUserId or current user
+    try {
+      final queryId = targetUserId ?? (isNeighbor ? null : SupaFlow.client.auth.currentUser?.id);
+      if (queryId != null &&
+          !queryId.startsWith('pocket_robo') &&
+          !queryId.startsWith('kid_bot_') &&
+          queryId != 'pocket_president') {
+        final profileData = await SupaFlow.client
+            .from('profile')
+            .select('house_shield_questions')
+            .eq('user_id', queryId)
+            .maybeSingle();
+        if (profileData != null && profileData['house_shield_questions'] != null) {
+          final listRaw = profileData['house_shield_questions'] as List;
+          final sbList = listRaw
+              .map((e) => HouseShieldQuestion.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
+          if (sbList.isNotEmpty) {
+            if (!isNeighbor) {
               await prefs.setString(_trapsKey, jsonEncode(sbList.map((q) => q.toJson()).toList()));
-              return sbList.take(maxAllowed).toList();
             }
+            return sbList.take(maxAllowed).toList();
           }
         }
-      } catch (_) {}
-      // User house has no custom defense yet: Auto-plan 4 curriculum questions for this house!
+      }
+    } catch (_) {}
+
+    if (!isNeighbor) {
+      // User house has no custom defense yet: Auto-plan curriculum questions for this house!
       return getComputerPlannedDefenseForDay(stage).take(maxAllowed).toList();
     }
 

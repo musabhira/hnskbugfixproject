@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_house_evolution_dialog.dart';
 import 'pocket_defense_question_bank.dart';
@@ -68,6 +69,15 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   late TabController _tabController;
   List<HouseShieldQuestion> _questions = [];
   bool _isLoading = true;
+  bool _isVip = false;
+
+  /// 📐 Maximum question slots: 1 per Day + 10 Extra for VIP (Audio Directive)
+  int get _maxAllowed {
+    final baseSlots = widget.userDay.clamp(1, 90);
+    final vipBonus = _isVip ? 10 : 0;
+    final standard = baseSlots + vipBonus;
+    return math.max(standard, _questions.length);
+  }
 
   // Selected Gate
   int _selectedGateIdx = 0;
@@ -160,6 +170,10 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         _populateForEdit(widget.editingQuestion!);
       }
     });
+
+    PocketAdService().isUserSubscribed().then((sub) {
+      if (mounted) setState(() => _isVip = sub);
+    });
   }
 
   void _clearInlineError() {
@@ -204,7 +218,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
       // If user has already filled capacity and is not completing a level or editing,
       // default to My Shields list so they can view and edit.
-      final maxAllowed = math.max(10, widget.userDay * 3);
+      final maxAllowed = _maxAllowed;
       if (widget.editingQuestion == null &&
           !widget.isLevelComplete &&
           _questions.length >= maxAllowed &&
@@ -452,7 +466,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
     // Defense Slot Capacity Check (User Audio Directive: Up to 10 questions for Day 1 and beyond)
     if (!_isEditMode) {
-      final maxAllowed = math.max(10, widget.userDay * 3);
+      final maxAllowed = _maxAllowed;
       if (_questions.length >= maxAllowed && !widget.isLevelComplete) {
         final msg = '⚠️ Defense Armory Capacity: All $maxAllowed slots are armed for Level ${widget.userDay}. Complete more days or edit existing questions!';
         setState(() => _inlineError = msg);
@@ -635,7 +649,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
   @override
   Widget build(BuildContext context) {
-    final maxAllowed = math.max(10, widget.userDay * 3);
+    final maxAllowed = _maxAllowed;
     final selectedGate = _gateDefinitions[_selectedGateIdx];
     final canAddNewSlot = widget.isLevelComplete || _questions.length < maxAllowed;
 
@@ -1371,6 +1385,134 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
             ),
           ),
           const SizedBox(height: 20),
+
+          // 📜 Active Defense Questions List at the bottom of Crafter (Direct Audio Directive:
+          // "Day 10-inte defense add cheyyaan nokkumbol adiyil kaanam, nerathethekku defense add cheythathu athu eppo venengilum edit cheyyaan pattum")
+          if (_questions.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Row(
+                children: [
+                  const Text('🛡️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Active House Defenses (${_questions.length} / $_maxAllowed)',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                  if (_isVip) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                      ),
+                      child: Text(
+                        'VIP +10 SLOTS',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'നേരത്തെ ആഡ് ചെയ്ത ചോദ്യങ്ങൾ ഇവിടെ കാണാം. എഡിറ്റ് ഐക്കണിൽ ടാപ്പ് ചെയ്ത് എപ്പോൾ വേണമെങ്കിലും മാറ്റം വരുത്താം:',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ...List.generate(_questions.length, (index) {
+              final q = _questions[index];
+              final gateIdx = _gateDefinitions.indexWhere((g) => g['id'] == q.category || g['id'] == q.trapType);
+              final gateInfo = gateIdx != -1 ? _gateDefinitions[gateIdx] : _gateDefinitions[0];
+              final gateColor = gateInfo['color'] as Color;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: gateColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '#${index + 1} • ${gateInfo['title']}',
+                            style: TextStyle(
+                              color: gateColor,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 20),
+                          tooltip: 'Edit Question',
+                          onPressed: () {
+                            _populateForEdit(q);
+                            HapticFeedback.selectionClick();
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.white38, size: 18),
+                          tooltip: 'Remove',
+                          onPressed: () => _deleteQuestion(index),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      q.question,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (q.options.isNotEmpty && q.correctIndex < q.options.length)
+                      Text(
+                        '✓ Answer: ${q.options[q.correctIndex]}',
+                        style: const TextStyle(
+                          color: Color(0xFF34D399),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 20),
+          ],
         ],
       ),
     );
