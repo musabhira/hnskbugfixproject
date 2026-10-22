@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -259,10 +260,43 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   List<HouseShieldQuestion> _defenseQuestions = [];
   int _currentQIdx = 0;
 
-  // ⏱️ 25s Blitz Combat & Anti-Cheat System
+  // 🎮 Interactive Game States for Citadel Raid Challenges (Sentence Builder, Word Bank, Verb Timeline)
+  List<String> _assembledWords = [];
+  List<String> _availableWords = [];
+  int _lastPreparedQIdx = -1;
+  final FlutterTts _combatTts = FlutterTts();
+
+  Future<void> _speakIndianEnglish(String text) async {
+    try {
+      await _combatTts.setLanguage('en-IN');
+      await _combatTts.setSpeechRate(0.42);
+      await _combatTts.speak(text);
+    } catch (_) {}
+  }
+
+  void _prepareQuestionState(HouseShieldQuestion? q) {
+    if (q == null || _lastPreparedQIdx == _currentQIdx) return;
+    _lastPreparedQIdx = _currentQIdx;
+    _selectedOption = -1;
+    final isWordBankMode = q.gameFormat == 'sentence_builder' ||
+        q.gameFormat == 'syntax_jigsaw' ||
+        q.gameFormat == 'negative_sentence' ||
+        q.gameFormat == 'chat_reply' ||
+        q.gameFormat == 'spoken_whisper';
+
+    if (isWordBankMode) {
+      _assembledWords = [];
+      _availableWords = List<String>.from(q.options);
+    } else {
+      _assembledWords = [];
+      _availableWords = [];
+    }
+  }
+
+  // ⏱️ 45s Comfortable Combat Timer
   Timer? _combatTimer;
-  int _secondsLeft = 25;
-  static const int kMaxCombatSeconds = 25;
+  int _secondsLeft = 45;
+  static const int kMaxCombatSeconds = 45;
   bool _isAntiCheatTriggered = false;
   bool _isTimeoutTriggered = false;
 
@@ -4595,7 +4629,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
             const SizedBox(height: 3),
             // Minimal Red Attack Button or President Level 90 Gate / Challenge Button or Arm Defense
-            if (widget.neighbor.isMe || widget.isDefenseMode)
+            if (widget.neighbor.isMe || widget.isDefenseMode) ...[
               GestureDetector(
                 onTap: () async {
                   HapticFeedback.heavyImpact();
@@ -4633,10 +4667,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       const Text('🛡️', style: TextStyle(fontSize: 13)),
                       const SizedBox(width: 6),
                       Text(
-                        'ADD DEFENSE',
+                        'ADD / CONFIGURE DEFENSE',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.8,
                         ),
@@ -4644,7 +4678,61 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ],
                   ),
                 ),
-              )
+              ),
+              if (_defenseQuestions.isNotEmpty) ...[
+                const SizedBox(height: 5),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(_defenseQuestions.length, (idx) {
+                      final q = _defenseQuestions[idx];
+                      final info = PocketCitadelChallengeGenerator.getGameInfo(q.gameFormat);
+                      final diffColor = q.difficulty == 'easy'
+                          ? const Color(0xFF10B981)
+                          : (q.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
+                      return GestureDetector(
+                        onTap: () async {
+                          HapticFeedback.selectionClick();
+                          await PocketDefenseTrapModal.show(
+                            context,
+                            widget.neighbor.day,
+                            editingQuestion: q,
+                            targetDay: idx + 1,
+                          );
+                          await _loadBattleState();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: diffColor.withValues(alpha: 0.7), width: 1),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(info.icon, style: const TextStyle(fontSize: 11)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Day ${idx + 1}: ${info.title}',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ]
             else if (widget.neighbor.isPresident)
               GestureDetector(
                 onTap: _onTapBottomAttack,
@@ -5671,11 +5759,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         ? _defenseQuestions[_currentQIdx % _defenseQuestions.length]
         : null;
 
+    if (currentQ != null) {
+      _prepareQuestionState(currentQ);
+    }
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.74,
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A).withValues(alpha: 0.96),
@@ -5865,224 +5957,518 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  currentQ.question,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...List.generate(currentQ.options.length, (optIdx) {
-                  final letter = String.fromCharCode(65 + optIdx);
-                  final isSelected = _selectedOption == optIdx;
+                const SizedBox(height: 8),
+                // 🎮 Interactive Game Header Badge
+                Builder(
+                  builder: (_) {
+                    final info = PocketCitadelChallengeGenerator.getGameInfo(currentQ.gameFormat);
+                    final diffColor = currentQ.difficulty == 'easy'
+                        ? const Color(0xFF10B981)
+                        : (currentQ.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
 
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _selectedOption = optIdx);
-                      HapticFeedback.selectionClick();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF0284C7).withValues(alpha: 0.25)
-                            : const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isSelected ? const Color(0xFF38BDF8) : Colors.white10,
-                            ),
-                            child: Center(
-                              child: Text(
-                                letter,
+                    return Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(info.icon, style: const TextStyle(fontSize: 13)),
+                              const SizedBox(width: 5),
+                              Text(
+                                '${info.title.toUpperCase()} (${info.titleMl})',
                                 style: GoogleFonts.outfit(
-                                  color: isSelected ? Colors.white : Colors.white70,
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: diffColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: diffColor, width: 0.8),
+                          ),
+                          child: Text(
+                            currentQ.difficulty.toUpperCase(),
+                            style: GoogleFonts.outfit(
+                              color: diffColor,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              currentQ.options[optIdx],
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                        const Spacer(),
+                        if (currentQ.gameFormat == 'spoken_whisper')
+                          GestureDetector(
+                            onTap: () => _speakIndianEnglish(currentQ.explanation),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFF818CF8), width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.volume_up_rounded, color: Color(0xFF818CF8), size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Listen',
+                                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedOption == -1 ? Colors.white12 : const Color(0xFF0284C7),
-                      foregroundColor: _selectedOption == -1 ? Colors.white38 : Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: _selectedOption == -1
-                        ? null
-                        : () async {
-                            HapticFeedback.mediumImpact();
-                            _combatTimer?.cancel();
-                            if (_selectedOption == currentQ.correctIndex) {
-                              if (_currentQIdx + 1 < _defenseQuestions.length) {
-                                final curGate = (_currentQIdx ~/ 10) + 1;
-                                final nextGate = ((_currentQIdx + 1) ~/ 10) + 1;
-                                final isGateClear = nextGate > curGate;
-                                final totalGates = ((_defenseQuestions.length - 1) ~/ 10) + 1;
-                                setState(() {
-                                  _currentQIdx++;
-                                  _selectedOption = -1;
-                                });
-                                HapticFeedback.heavyImpact();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(isGateClear
-                                        ? '🎉 GAME $curGate CLEARED! Advancing to Game $nextGate of $totalGates...'
-                                        : '🛡️ Question ${(_currentQIdx % 10)}/10 Cleared! Next challenge...'),
-                                    backgroundColor: const Color(0xFF10B981),
-                                    duration: const Duration(seconds: 2),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                                _startCombatTimer();
-                              } else {
-                                setState(() => _raidStep = 2);
-                              }
-                            } else {
-                              if (_retriesRemaining > 0) {
-                                setState(() {
-                                  _retriesRemaining--;
-                                  _selectedOption = -1;
-                                });
-                                HapticFeedback.heavyImpact();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('⚠️ Incorrect! You have 1 Second Chance remaining. Think carefully!'),
-                                    backgroundColor: Colors.amber,
-                                    duration: Duration(seconds: 3),
-                                  ),
-                                );
-                                _startCombatTimer();
-                              } else {
-                                if (_attackerDay <= 20) {
-                                  // User Audio Directive: Beginners up to level 20 pass on attempt and receive 24h presidential protection on target!
-                                  await PocketFortressDefenseService.placeUnderPresidentialProtection(
-                                    widget.neighbor.id,
-                                    hours: 24,
-                                  );
-                                  try {
-                                    final myId = SupaFlow.client.auth.currentUser?.id;
-                                    if (myId != null) {
-                                      await PocketFortressDefenseService.recordTrainingPoints(50, myId);
-                                      final prefs = await SharedPreferences.getInstance();
-                                      await prefs.setBool('pocket_day_${myId}_${_attackerDay}_step_attack_done', true);
-                                    }
-                                  } catch (_) {}
-                                }
-                                // User Audio Directive: 3-4 hour cooldown upon failed raid before raiding again
-                                await PocketFortressDefenseService.recordFailedAttackCooldown(
-                                  widget.neighbor.id,
-                                  hours: 4,
-                                );
-                                if (mounted) {
-                                  setState(() => _raidStep = -1);
-                                }
-                              }
-                            }
-                          },
-                    child: Text(
-                      _currentQIdx + 1 < _defenseQuestions.length
-                          ? 'VERIFY GATE CODE 🛡️'
-                          : 'BREACH DEFENSE PERIMETER ⚡',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
-                    ),
-                  ),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 12),
-                // 🏛️ PRESIDENT REPORT BUTTON (PROMINENT BOLD LETTERS - വെണ്ടക്ക അക്ഷരത്തിൽ)
+                const SizedBox(height: 10),
+
+                // Question Prompt / Target Malayalam Clue
                 Container(
                   width: double.infinity,
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(14),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF7F1D1D),
-                        Color(0xFF31102A),
-                        Color(0xFF0F172A),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700),
-                      width: 1.8,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                    border: Border.all(color: Colors.white12),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () => _showReportDialog(currentQ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('🏛️', style: TextStyle(fontSize: 20)),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                'PRESIDENT REPORT (ഫേക്ക് ക്വസ്റ്റ്യൻ റിപ്പോർട്ട്)',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFD700),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 13.5,
-                                  letterSpacing: 1.0,
-                                ),
-                                textAlign: TextAlign.center,
+                  child: Text(
+                    currentQ.question,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 🕹️ INTERACTIVE GAME PLAYFIELD
+                Builder(
+                  builder: (context) {
+                    final isWordBankMode = currentQ.gameFormat == 'sentence_builder' ||
+                        currentQ.gameFormat == 'syntax_jigsaw' ||
+                        currentQ.gameFormat == 'negative_sentence' ||
+                        currentQ.gameFormat == 'chat_reply' ||
+                        currentQ.gameFormat == 'spoken_whisper';
+
+                    final isVerbTimelineMode = currentQ.gameFormat == 'verb_timeline' ||
+                        currentQ.gameFormat == 'tense_fortress';
+
+                    // 1. WORD BANK MODE (Sentence Builder, Chat Reply, Negative Sentence)
+                    if (isWordBankMode) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Assembled Sentence Drop Box
+                          Container(
+                            width: double.infinity,
+                            constraints: const BoxConstraints(minHeight: 56),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _assembledWords.isNotEmpty
+                                    ? const Color(0xFF38BDF8)
+                                    : Colors.white24,
+                                width: 1.5,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Icon(
-                              Icons.flag_rounded,
-                              color: Color(0xFFEF4444),
-                              size: 18,
+                            child: _assembledWords.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'വാക്കുകൾ താഴെ നിന്നും ക്രമത്തിൽ ടാപ്പ് ചെയ്യുക...',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white38,
+                                        fontSize: 12,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  )
+                                : Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: _assembledWords.map((w) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          setState(() {
+                                            _assembledWords.remove(w);
+                                            _availableWords.add(w);
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0284C7),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                w,
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Word Bank Row Header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'WORD BANK • ലഭ്യമായ വാക്കുകൾ',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white60,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              if (_assembledWords.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    setState(() {
+                                      _availableWords.addAll(_assembledWords);
+                                      _assembledWords.clear();
+                                    });
+                                  },
+                                  child: Text(
+                                    '🔄 Reset / വീണ്ടും',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Word Bank Chips
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _availableWords.map((w) {
+                              return GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _availableWords.remove(w);
+                                    _assembledWords.add(w);
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    w,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // 2. VERB TIMELINE ARENA MODE
+                    if (isVerbTimelineMode) {
+                      return Row(
+                        children: List.generate(currentQ.options.length, (optIdx) {
+                          final isSelected = _selectedOption == optIdx;
+                          final opt = currentQ.options[optIdx];
+                          final label = optIdx == 0
+                              ? 'PAST\nകഴിഞ്ഞത്'
+                              : (optIdx == 1 ? 'PRESENT\nഇപ്പോൾ' : 'FUTURE\nഇനി');
+                          final cleanWord = opt.split(' (').first;
+
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => _selectedOption = optIdx);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(
+                                  right: optIdx < currentQ.options.length - 1 ? 6 : 0,
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                      : const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                                    width: isSelected ? 2.0 : 1.0,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      label,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.outfit(
+                                        color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      cleanWord,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ],
+                          );
+                        }),
+                      );
+                    }
+
+                    // 3. STANDARD MCQ / SPELLING / DEFUSAL CARDS
+                    return Column(
+                      children: List.generate(currentQ.options.length, (optIdx) {
+                        final letter = String.fromCharCode(65 + optIdx);
+                        final isSelected = _selectedOption == optIdx;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() => _selectedOption = optIdx);
+                            HapticFeedback.selectionClick();
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                                  : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                                width: isSelected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isSelected ? const Color(0xFF38BDF8) : Colors.white10,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      letter,
+                                      style: GoogleFonts.outfit(
+                                        color: isSelected ? Colors.white : Colors.white70,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    currentQ.options[optIdx],
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 🚀 VERIFY / SUBMIT BUTTON
+                Builder(
+                  builder: (context) {
+                    final isWordBankMode = currentQ.gameFormat == 'sentence_builder' ||
+                        currentQ.gameFormat == 'syntax_jigsaw' ||
+                        currentQ.gameFormat == 'negative_sentence' ||
+                        currentQ.gameFormat == 'chat_reply' ||
+                        currentQ.gameFormat == 'spoken_whisper';
+
+                    final isReady = isWordBankMode
+                        ? _assembledWords.isNotEmpty
+                        : _selectedOption != -1;
+
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: !isReady ? Colors.white12 : const Color(0xFF0284C7),
+                          foregroundColor: !isReady ? Colors.white38 : Colors.white,
+                          elevation: isReady ? 4 : 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        onPressed: !isReady
+                            ? null
+                            : () async {
+                                HapticFeedback.mediumImpact();
+                                _combatTimer?.cancel();
+
+                                bool isCorrect = false;
+                                if (isWordBankMode) {
+                                  String normalize(String s) => s
+                                      .replaceAll(RegExp(r'[^\w\s]'), '')
+                                      .replaceAll(RegExp(r'\s+'), ' ')
+                                      .trim()
+                                      .toLowerCase();
+                                  final assembled = normalize(_assembledWords.join(' '));
+                                  final expected = normalize(currentQ.explanation);
+                                  isCorrect = (assembled == expected);
+                                } else {
+                                  isCorrect = (_selectedOption == currentQ.correctIndex);
+                                }
+
+                                if (isCorrect) {
+                                  if (_currentQIdx + 1 < _defenseQuestions.length) {
+                                    final curGate = _currentQIdx + 1;
+                                    final nextGate = _currentQIdx + 2;
+                                    final totalGates = _defenseQuestions.length;
+                                    setState(() {
+                                      _currentQIdx++;
+                                      _lastPreparedQIdx = -1; // triggers prep for next
+                                      _selectedOption = -1;
+                                    });
+                                    HapticFeedback.heavyImpact();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          '🎉 Day $curGate Defense Cleared! Advancing to Day $nextGate of $totalGates...',
+                                        ),
+                                        backgroundColor: const Color(0xFF10B981),
+                                        duration: const Duration(seconds: 2),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    _startCombatTimer();
+                                  } else {
+                                    setState(() => _raidStep = 2);
+                                  }
+                                } else {
+                                  if (_retriesRemaining > 0) {
+                                    setState(() {
+                                      _retriesRemaining--;
+                                      if (!isWordBankMode) {
+                                        _selectedOption = -1;
+                                      }
+                                    });
+                                    HapticFeedback.heavyImpact();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          '⚠️ Incorrect! You have $_retriesRemaining Second Chance remaining. Check the Malayalam meaning and try again!',
+                                        ),
+                                        backgroundColor: Colors.amber,
+                                        duration: const Duration(seconds: 3),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    _startCombatTimer();
+                                  } else {
+                                    if (_attackerDay <= 20) {
+                                      await PocketFortressDefenseService.placeUnderPresidentialProtection(
+                                        widget.neighbor.id,
+                                        hours: 24,
+                                      );
+                                      try {
+                                        final myId = SupaFlow.client.auth.currentUser?.id;
+                                        if (myId != null) {
+                                          await PocketFortressDefenseService.recordTrainingPoints(50, myId);
+                                          final prefs = await SharedPreferences.getInstance();
+                                          await prefs.setBool('pocket_day_${myId}_${_attackerDay}_step_attack_done', true);
+                                        }
+                                      } catch (_) {}
+                                    }
+                                    await PocketFortressDefenseService.recordFailedAttackCooldown(
+                                      widget.neighbor.id,
+                                      hours: 4,
+                                    );
+                                    if (mounted) {
+                                      setState(() => _raidStep = -1);
+                                    }
+                                  }
+                                }
+                              },
+                        child: Text(
+                          _currentQIdx + 1 < _defenseQuestions.length
+                              ? 'VERIFY & BREACH DAY ${_currentQIdx + 1} 🛡️'
+                              : 'BREACH CITADEL DEFENSE PERIMETER ⚡',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13.5,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ]
 

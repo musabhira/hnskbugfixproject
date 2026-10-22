@@ -117,10 +117,11 @@ class HouseShieldQuestion {
   final List<String> options;
   final int correctIndex;
   final String explanation;
-  final String category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax'
-  final String trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall'
-  final String gameFormat; // 'mcq', 'word_scramble', 'sentence_jigsaw', 'spot_error', 'listening_whisper'
+  final String category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax', 'chat', 'negative'
+  final String trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall', etc.
+  final String gameFormat; // 'sentence_builder', 'spelling_challenge', 'verb_timeline', 'chat_reply', 'negative_sentence', 'spoken_whisper', etc.
   final bool isPresidentApproved;
+  final String difficulty; // 'easy', 'normal', 'hard'
 
   const HouseShieldQuestion({
     required this.id,
@@ -132,6 +133,7 @@ class HouseShieldQuestion {
     this.trapType = 'vocab_gate',
     this.gameFormat = 'mcq',
     this.isPresidentApproved = true,
+    this.difficulty = 'normal',
   });
 
   Map<String, dynamic> toJson() => {
@@ -144,6 +146,7 @@ class HouseShieldQuestion {
         'trapType': trapType,
         'gameFormat': gameFormat,
         'isPresidentApproved': isPresidentApproved,
+        'difficulty': difficulty,
       };
 
   factory HouseShieldQuestion.fromJson(Map<String, dynamic> json) => HouseShieldQuestion(
@@ -163,6 +166,7 @@ class HouseShieldQuestion {
                         : (json['category'] == 'syntax' ? 'syntax_wall' : 'vocab_gate')))),
         gameFormat: json['gameFormat'] ?? 'mcq',
         isPresidentApproved: json['isPresidentApproved'] ?? true,
+        difficulty: json['difficulty'] ?? 'normal',
       );
 }
 
@@ -581,8 +585,8 @@ class PocketFortressDefenseService {
   /// - Level 80–90: 3 Lifelines
   static int getAttackerLifelinesForNeighborDay(int neighborDay) {
     if (neighborDay >= 80) return 3;
-    if (neighborDay >= 50) return 2;
-    // User Audio Directive: "ഒരു വൺ ടൈം ചാൻസും കൊടുക്കും, വൺ മോർ ചാൻസും കൊടുക്കും"
+    // User Audio Directive: "ഒരു പത്താമത്തെ ലെവലിന് ശേഷം കേറിക്കഴിഞ്ഞുകഴിഞ്ഞാൽ യൂസർ ബിക്ക് ഒരു ചാൻസും കൂടി കൊടുക്കാം. തെറ്റിച്ചു കഴിഞ്ഞാൽ ഒരു ചാൻസും കൂടി കൊടുത്തിട്ട് കറക്റ്റ് ചെയ്യാം."
+    if (neighborDay >= 10) return 2;
     return 1;
   }
 

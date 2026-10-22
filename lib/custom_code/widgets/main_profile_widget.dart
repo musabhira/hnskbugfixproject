@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defen
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
@@ -2320,48 +2321,79 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                        Builder(
+                          builder: (context) {
+                            final info = PocketCitadelChallengeGenerator.getGameInfo(q.gameFormat);
+                            final diffColor = q.difficulty == 'easy'
+                                ? const Color(0xFF10B981)
+                                : (q.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        'Day ${index + 1}: ${info.icon} ${info.title}',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: diffColor.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(color: diffColor, width: 0.8),
+                                      ),
+                                      child: Text(
+                                        q.difficulty.toUpperCase(),
+                                        style: GoogleFonts.outfit(
+                                          color: diffColor,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                'Day ${index + 1} Defense Question',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            if (isMe)
-                              IconButton(
-                                icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 18),
-                                tooltip: 'Edit Question',
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () async {
-                                  final day = _getEffectiveDay();
-                                  await PocketDefenseTrapModal.show(
-                                    context,
-                                    day,
-                                    editingQuestion: q,
-                                  );
-                                  _loadFortressDefenseData();
-                                },
-                              )
-                            else
-                              const Text(
-                                '🛡️ Armed',
-                                style: TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.bold),
-                              ),
-                          ],
+                                if (isMe)
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 18),
+                                    tooltip: 'Configure Defense',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () async {
+                                      final day = _getEffectiveDay();
+                                      await PocketDefenseTrapModal.show(
+                                        context,
+                                        day,
+                                        editingQuestion: q,
+                                        targetDay: index + 1,
+                                      );
+                                      _loadFortressDefenseData();
+                                    },
+                                  )
+                                else
+                                  const Text(
+                                    '🛡️ Armed',
+                                    style: TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.bold),
+                                  ),
+                              ],
+                            );
+                          },
                         ),
                         const SizedBox(height: 6),
                         Text(
