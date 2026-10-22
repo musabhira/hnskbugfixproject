@@ -1847,6 +1847,22 @@ class PocketFortressDefenseService {
         'iron_dome_blocked': entry.ironDomeBlocked,
         'created_at': entry.timestamp.toIso8601String(),
       });
+
+      // 🔔 Dispatch Notification to Defender's Notification Center
+      // (User Audio Directive: "ആപ്പിൽ എന്ത് നടന്നാലും attack, Pocket Talk എല്ലാം നോട്ടിഫിക്കേഷൻ പേജിൽ വരണം. ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ ഡീറ്റെയിൽ പേജിലേക്ക് പോകണം.")
+      if (defId != atkId && RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(defId)) {
+        final raidMsg = entry.breached
+            ? '🚨 CITADEL ALERT: ${entry.attackerName} raided your fortress and stole ${entry.coinsLooted} Pocket Score! Tap to launch Revenge Attack!'
+            : '🛡️ CITADEL DEFENSE: ${entry.attackerName} attacked your fortress, but your English Defense Shields held firm (0 score lost)!';
+        await SupaFlow.client.from('notifications').insert({
+          'user_id': defId,
+          'source_id': defId,
+          'sender_id': RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(atkId) ? atkId : null,
+          'type': 'citadel_raid',
+          'message': raidMsg,
+          'status': 'unread',
+        });
+      }
     } catch (e) {
       debugPrint('Supabase raid log sync: $e');
     }

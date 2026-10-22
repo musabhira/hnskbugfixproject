@@ -190,7 +190,7 @@ class PocketTrophyService {
       if (str != null && str.isNotEmpty) {
         final decoded = Map<String, dynamic>.from(
             Map<String, dynamic>.from(Uri.splitQueryString(str)));
-        return PocketTalkPact(
+        final localPact = PocketTalkPact(
           pactId: pactId,
           user1Id: decoded['user1Id'] ?? myId,
           user2Id: decoded['user2Id'] ?? otherUserId,
@@ -210,6 +210,43 @@ class PocketTrophyService {
           user1Days: int.tryParse(decoded['user1Days'] ?? '0') ?? 0,
           user2Days: int.tryParse(decoded['user2Days'] ?? '0') ?? 0,
         );
+
+        // If local pact is already accepted, return it immediately for instant responsiveness
+        if (localPact.isAccepted) {
+          return localPact;
+        }
+      }
+    } catch (_) {}
+
+    // 🌐 Query Supabase pocket_talk_pacts table if not found locally or if checking acceptance
+    try {
+      final res = await _supabase
+          .from('pocket_talk_pacts')
+          .select('*')
+          .eq('pact_id', pactId)
+          .maybeSingle();
+
+      if (res != null) {
+        final remotePact = PocketTalkPact(
+          pactId: pactId,
+          user1Id: res['user1_id']?.toString() ?? myId,
+          user2Id: res['user2_id']?.toString() ?? otherUserId,
+          initiatorId: res['initiator_id']?.toString() ?? '',
+          startedAt: DateTime.tryParse(res['started_at']?.toString() ?? '') ?? DateTime.now(),
+          streakDays: (res['streak_days'] as num?)?.toInt() ?? 1,
+          lastSpokenDate: res['last_spoken_date']?.toString() ?? '',
+          dailyMinutesToday: (res['daily_minutes_today'] as num?)?.toInt() ?? 0,
+          isAccepted: res['is_accepted'] == true,
+          isCompleted: res['is_completed'] == true,
+          isMatesNow: res['is_mates_now'] == true,
+          trophiesEarned: (res['trophies_earned'] as num?)?.toInt() ?? 0,
+          isForfeited: res['is_forfeited'] == true,
+          hasBothSpoken: res['has_both_spoken'] == true,
+          user1Days: (res['user1_days'] as num?)?.toInt() ?? 0,
+          user2Days: (res['user2_days'] as num?)?.toInt() ?? 0,
+        );
+        await _saveLocalPact(remotePact);
+        return remotePact;
       }
     } catch (_) {}
 
@@ -272,6 +309,19 @@ class PocketTrophyService {
     );
 
     await _savePact(newPact);
+
+    // 📩 Send Supabase notification to recipient
+    try {
+      await _supabase.from('notifications').insert({
+        'user_id': otherUserId,
+        'source_id': otherUserId,
+        'sender_id': myId,
+        'type': 'pocket_talk',
+        'message': '⚡ Pocket Talk Challenge: Invited you to a 4-Day Spoken English Pact! Tap to accept and start Day 1.',
+        'status': 'pending',
+      });
+    } catch (_) {}
+
     return newPact;
   }
 
@@ -326,6 +376,23 @@ class PocketTrophyService {
       isForfeited: false,
     );
     await _savePact(accepted);
+
+    // 🤝 Notify initiator that pact was accepted via Supabase notifications
+    try {
+      final initiator = accepted.initiatorId.isNotEmpty
+          ? accepted.initiatorId
+          : (accepted.user1Id == myId ? accepted.user2Id : accepted.user1Id);
+      if (initiator.isNotEmpty && initiator != myId) {
+        await _supabase.from('notifications').insert({
+          'user_id': initiator,
+          'source_id': initiator,
+          'sender_id': myId,
+          'type': 'pocket_talk_accepted',
+          'message': '🤝 Pocket Talk Accepted! 4-Day Spoken English Pact is now active. Day 1 starts today!',
+          'status': 'unread',
+        });
+      }
+    } catch (_) {}
 
     // 🔒 SMART ACTIVE-CAP:
     // Only cancel extra pending pacts once user has reached the 3-pact target cap!
@@ -961,7 +1028,7 @@ class PocketTrophyService {
     }
   }
 
-  static Future<void> _savePact(PocketTalkPact pact) async {
+  static Future<void> _saveLocalPact(PocketTalkPact pact) async {
     final prefs = await SharedPreferences.getInstance();
     final map = {
       'pactId': pact.pactId,
@@ -985,6 +1052,33 @@ class PocketTrophyService {
     await prefs.setString('$kPrefsPactPrefix${pact.pactId}', encoded);
   }
 
+  static Future<void> _savePact(PocketTalkPact pact) async {
+    await _saveLocalPact(pact);
+
+    // 🌐 Sync to Supabase pocket_talk_pacts table (User Audio Directive: "സൂപ്പർബേസ് കറക്റ്റ് ചെയ്തിരിക്കണം ട്ടോ, അക്സെപ്റ്റ് ചെയ്താൽ മാത്രമായിരിക്കണം ഇവരുടെ അവതാറിന് ചുറ്റും പച്ച കളർ കാണിക്കുന്നത്")
+    try {
+      await _supabase.from('pocket_talk_pacts').upsert({
+        'pact_id': pact.pactId,
+        'user1_id': pact.user1Id,
+        'user2_id': pact.user2Id,
+        'initiator_id': pact.initiatorId,
+        'started_at': pact.startedAt.toIso8601String(),
+        'streak_days': pact.streakDays,
+        'last_spoken_date': pact.lastSpokenDate,
+        'daily_minutes_today': pact.dailyMinutesToday,
+        'is_accepted': pact.isAccepted,
+        'is_completed': pact.isCompleted,
+        'is_mates_now': pact.isMatesNow,
+        'trophies_earned': pact.trophiesEarned,
+        'is_forfeited': pact.isForfeited,
+        'has_both_spoken': pact.hasBothSpoken,
+        'user1_days': pact.user1Days,
+        'user2_days': pact.user2Days,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+  }
+
   static Future<void> _incrementTrophyCount(String userId) async {
     if (userId.isEmpty) return;
     try {
@@ -998,6 +1092,18 @@ class PocketTrophyService {
         await _supabase
             .from('profile')
             .update({'trophies_count': newCount}).eq('user_id', userId);
+      } catch (_) {}
+
+      // 🏆 Dispatch achievement notification to Supabase notifications table
+      try {
+        await _supabase.from('notifications').insert({
+          'user_id': userId,
+          'source_id': userId,
+          'sender_id': null,
+          'type': 'trophy_awarded',
+          'message': '🏆 POCKET TALK TROPHY UNLOCKED! You completed 4 days of English conversation! +1 Gold Trophy added to your profile (Total: $newCount 🏆).',
+          'status': 'unread',
+        });
       } catch (_) {}
     } catch (_) {}
   }

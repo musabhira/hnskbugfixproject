@@ -1,10 +1,12 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 /// 🛡️ PocketLanguageGuardService
-/// Enforces English-only conversations in Pocket Talk (and 4-Day Spoken Pacts).
-/// Detects non-Latin scripts (Malayalam, Hindi, Arabic, Tamil, etc.)
-/// and common Manglish / Hinglish / Romanized regional words without costly AI calls,
-/// with progressive friendly warnings (Warning 1, 2, 3+).
+/// Enforces English-only conversations in Pocket Talk, Group Chats, and direct chats.
+/// Detects non-Latin scripts (Malayalam, Tamil, Telugu, Kannada, Hindi, Arabic, etc.)
+/// and common Manglish / Hinglish / Romanized regional words without costly AI calls.
+/// Dispatches async Presidential Notifications so chat is smooth without abrupt blocking.
 class PocketLanguageGuardService {
   static const String _kWarningPrefix = 'pocket_talk_lang_warning_';
 
@@ -38,7 +40,7 @@ class PocketLanguageGuardService {
     'thoda', 'sab', 'kripya', 'shukriya', 'alvida', 'milte', 'namaste',
   };
 
-  /// Result of language inspection
+  /// Result of language inspection with specific script/dialect identification
   static LanguageCheckResult checkMessage(String text) {
     if (text.trim().isEmpty) {
       return const LanguageCheckResult(isValid: true);
@@ -46,9 +48,50 @@ class PocketLanguageGuardService {
 
     final trimmed = text.trim();
 
-    // 1. Script Check: Look for non-Latin script characters (Malayalam: \u0D00-\u0D7F, Devanagari: \u0900-\u097F, etc.)
-    final nonLatinRegex = RegExp(r'[\u0D00-\u0D7F\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0600-\u06FF\u4E00-\u9FFF]');
-    if (nonLatinRegex.hasMatch(trimmed)) {
+    // 1. Script Check: Distinguish Malayalam, Tamil, Telugu, Kannada, Hindi, Arabic, etc.
+    if (RegExp(r'[\u0D00-\u0D7F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'മലയാളം (Malayalam)',
+      );
+    }
+    if (RegExp(r'[\u0B80-\u0BFF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'தமிழ் (Tamil)',
+      );
+    }
+    if (RegExp(r'[\u0C00-\u0C7F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'తెలుగు (Telugu)',
+      );
+    }
+    if (RegExp(r'[\u0C80-\u0CFF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'ಕನ್ನಡ (Kannada)',
+      );
+    }
+    if (RegExp(r'[\u0900-\u097F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'हिन्दी (Hindi)',
+      );
+    }
+    if (RegExp(r'[\u0600-\u06FF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Arabic / Urdu',
+      );
+    }
+    if (RegExp(r'[\u0980-\u09FF\u0A80-\u0AFF\u4E00-\u9FFF]').hasMatch(trimmed)) {
       return const LanguageCheckResult(
         isValid: false,
         reason: LanguageViolationType.nonLatinScript,
@@ -157,6 +200,61 @@ class PocketLanguageGuardService {
         title: '🚨 Warning #$newCount: English Only Required',
         message: 'Continuous use of non-English will pause your 4-Day Spoken Pact progress. Please translate your thought into English to keep your streak alive!',
       );
+    }
+  }
+
+  /// 🏛️ Asynchronously dispatch a Presidential Warning when a non-English message is sent in chat.
+  /// (User Audio Directive: "മെല്ലെ സമാധാനത്തിൽ കണ്ടുപിടിച്ചാൽ മതി. കണ്ടുപിടിച്ചിട്ട് തന്നെ പറയും നിങ്ങൾ സംസാരിച്ചു,
+  /// നോട്ടിഫിക്കേഷൻ പോകും. പ്രസിഡൻഷ്യൽ നോട്ടിഫിക്കേഷൻ പോകാം. പ്രസിഡന്റ് നോട്ടിഫിക്കേഷൻ അയക്കും.")
+  static Future<bool> dispatchPresidentialWarning({
+    required String userId,
+    required String detectedLanguage,
+    required String messageSnippet,
+    String? contextId,
+  }) async {
+    if (userId.isEmpty) return false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final throttleKey = 'pres_lang_warn_ts_${userId}_${contextId ?? "global"}';
+      final lastSent = prefs.getInt(throttleKey) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      // Throttle warning to at most once every 5 minutes per user per conversation to avoid spamming
+      if (now - lastSent < 5 * 60 * 1000) {
+        return false;
+      }
+      await prefs.setInt(throttleKey, now);
+
+      final snippetClean = messageSnippet.length > 35
+          ? '${messageSnippet.substring(0, 35)}...'
+          : messageSnippet;
+
+      final warningText = '🏛️ Presidential English Notice:\n'
+          'Non-English communication detected ($detectedLanguage): "$snippetClean".\n\n'
+          'Pocket Mates is designed to build English fluency! Converse in English to maintain your streak and earn Gold Trophies 🏆';
+
+      // 1. Post to user's chat with The President
+      try {
+        await PocketPresidentService.sendPresidentReplyToUser(
+          targetUserId: userId,
+          replyText: warningText,
+        );
+      } catch (_) {}
+
+      // 2. Insert into Supabase notifications table for instant sync with Notifications Page
+      try {
+        await SupaFlow.client.from('notifications').insert({
+          'user_id': userId,
+          'source_id': userId,
+          'sender_id': null,
+          'type': 'language_warning',
+          'message': warningText,
+          'status': 'unread',
+        });
+      } catch (_) {}
+
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

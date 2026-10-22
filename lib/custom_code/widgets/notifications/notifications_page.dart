@@ -9,6 +9,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -92,7 +95,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final type = n['type']?.toString().toLowerCase() ?? 'alert';
           String icon = '🔔';
           String defaultTitle = 'Notification';
-          if (type.contains('mate_accepted')) {
+          if (type.contains('citadel') || type.contains('raid') || type.contains('attack') || type.contains('fortress')) {
+            icon = '⚔️';
+            defaultTitle = 'Citadel Raid Alert';
+          } else if (type.contains('pocket_talk_accepted')) {
+            icon = '🤝';
+            defaultTitle = 'Pocket Talk Accepted';
+          } else if (type.contains('pocket_talk') || type.contains('pact') || type.contains('talk')) {
+            icon = '⚡';
+            defaultTitle = 'Pocket Talk 4-Day Pact';
+          } else if (type.contains('language_warning') || type.contains('presidential')) {
+            icon = '🏛️';
+            defaultTitle = '🏛️ Presidential Notice';
+          } else if (type.contains('trophy')) {
+            icon = '🏆';
+            defaultTitle = '🏆 Pocket Trophy Awarded';
+          } else if (type.contains('mate_accepted')) {
             icon = '✨';
             defaultTitle = 'Mate Connected';
           } else if (type.contains('mate_request')) {
@@ -110,12 +128,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
           } else if (type.contains('thought') || type.contains('thread')) {
             icon = '💭';
             defaultTitle = 'Thought Activity';
-          } else if (type.contains('fortress') || type.contains('raid') || type.contains('citadel') || type.contains('attack')) {
-            icon = '⚔️';
-            defaultTitle = 'Citadel Raid';
-          } else if (type.contains('pact') || type.contains('talk')) {
-            icon = '⚡';
-            defaultTitle = 'Poket Talk';
           } else if (type.contains('score') || type.contains('streak') || type.contains('level')) {
             icon = '🔥';
             defaultTitle = 'Streak & Level';
@@ -126,6 +138,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
           alerts.add({
             'id': n['id']?.toString() ?? '',
+            'type': type,
+            'sourceId': n['source_id']?.toString() ?? '',
+            'senderId': n['sender_id']?.toString() ?? '',
+            'status': n['status']?.toString() ?? '',
             'icon': icon,
             'title': n['title'] ?? defaultTitle,
             'body': n['message'] ?? n['body'] ?? n['content'] ?? 'New notification received.',
@@ -250,6 +266,80 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   int _selectedFilter = 0; // 0: All, 1: Requests, 2: Activity, 3: President
+
+  /// 🚀 Interactive detail routing for every notification event
+  /// (User Audio Directive: "നോട്ടിഫിക്കേഷൻ പേജിൽ ആപ്പിൽ എന്ത് നടന്നാലും attack, Pocket Talk എല്ലാം നോട്ടിഫിക്കേഷൻ പേജിൽ വരണം.
+  /// ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ ഡീറ്റെയിൽ പേജിലേക്ക് പോകണം.")
+  void _handleAlertTap(Map<String, dynamic> alert) {
+    HapticFeedback.mediumImpact();
+    final type = alert['type']?.toString().toLowerCase() ?? '';
+    final senderId = alert['senderId']?.toString() ?? '';
+    final sourceId = alert['sourceId']?.toString() ?? '';
+    final targetUid = senderId.isNotEmpty ? senderId : sourceId;
+
+    if (type.contains('citadel') || type.contains('raid') || type.contains('attack') || type.contains('fortress')) {
+      if (targetUid.isNotEmpty) {
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: targetUid,
+          targetName: alert['title'] ?? 'Fortress',
+          attackerDay: 1,
+        );
+      }
+    } else if (type.contains('pocket_talk') || type.contains('pact') || type.contains('talk')) {
+      if (targetUid.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => WhatsAppGroupChat(
+              groupId: 'p:$targetUid',
+              groupName: alert['title'] ?? 'Pocket Talk',
+            ),
+          ),
+        );
+      }
+    } else if (type.contains('presidential') || type.contains('language_warning') || type.contains('decree') || type.contains('announcement')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const WhatsAppGroupChat(
+            groupId: 'pocket_president',
+            groupName: 'The President',
+          ),
+        ),
+      );
+    } else if (type.contains('trophy') || type.contains('score') || type.contains('streak') || type.contains('level')) {
+      final myId = _supabase.auth.currentUser?.id ?? '';
+      if (myId.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MainProfileWidget(userId: myId),
+          ),
+        );
+      }
+    } else if (type.contains('mate') || type.contains('friend')) {
+      if (targetUid.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MainProfileWidget(userId: targetUid),
+          ),
+        );
+      } else {
+        setState(() => _selectedFilter = 1);
+      }
+    } else {
+      if (targetUid.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MainProfileWidget(userId: targetUid),
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _acceptRequest(Map<String, dynamic> req) async {
     final myId = _supabase.auth.currentUser?.id;
@@ -722,133 +812,148 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ...regularAlerts.map((alert) {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: const Color(0xFF111420),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.white10),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Avatar or Styled Badge Icon
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            if (alert['avatarConfig'] is VectorAvatarConfig)
-                              ClipOval(
-                                child: VectorAvatarWidget(
-                                  config: alert['avatarConfig'] as VectorAvatarConfig,
-                                  size: 40,
-                                ),
-                              )
-                            else if (alert['avatarUrl'] != null &&
-                                alert['avatarUrl'].toString().isNotEmpty)
-                              ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl: alert['avatarUrl'].toString(),
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  placeholder: (_, __) => Container(
-                                    width: 40,
-                                    height: 40,
-                                    color: Colors.white10,
-                                    alignment: Alignment.center,
-                                    child: Text(alert['icon'] ?? '🔔',
-                                        style: const TextStyle(fontSize: 18)),
-                                  ),
-                                  errorWidget: (_, __, ___) => Container(
-                                    width: 40,
-                                    height: 40,
-                                    color: Colors.white10,
-                                    alignment: Alignment.center,
-                                    child: Text(alert['icon'] ?? '🔔',
-                                        style: const TextStyle(fontSize: 18)),
-                                  ),
-                                ),
-                              )
-                            else
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white12),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(alert['icon'] ?? '🔔',
-                                    style: const TextStyle(fontSize: 20)),
-                              ),
-                            Positioned(
-                              right: -2,
-                              bottom: -2,
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF111420),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(alert['badge'] ?? alert['icon'] ?? '✨',
-                                    style: const TextStyle(fontSize: 11)),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => _handleAlertTap(alert),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
+                              // Avatar or Styled Badge Icon
+                              Stack(
+                                clipBehavior: Clip.none,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      alert['title'] ?? '',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                  if (alert['avatarConfig'] is VectorAvatarConfig)
+                                    ClipOval(
+                                      child: VectorAvatarWidget(
+                                        config: alert['avatarConfig'] as VectorAvatarConfig,
+                                        size: 40,
                                       ),
+                                    )
+                                  else if (alert['avatarUrl'] != null &&
+                                      alert['avatarUrl'].toString().isNotEmpty)
+                                    ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: alert['avatarUrl'].toString(),
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => Container(
+                                          width: 40,
+                                          height: 40,
+                                          color: Colors.white10,
+                                          alignment: Alignment.center,
+                                          child: Text(alert['icon'] ?? '🔔',
+                                              style: const TextStyle(fontSize: 18)),
+                                        ),
+                                        errorWidget: (_, __, ___) => Container(
+                                          width: 40,
+                                          height: 40,
+                                          color: Colors.white10,
+                                          alignment: Alignment.center,
+                                          child: Text(alert['icon'] ?? '🔔',
+                                              style: const TextStyle(fontSize: 18)),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                                        ),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white12),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(alert['icon'] ?? '🔔',
+                                          style: const TextStyle(fontSize: 20)),
                                     ),
-                                  ),
-                                  Text(
-                                    alert['time'] ?? '',
-                                    style: GoogleFonts.inter(
-                                        color: Colors.white38, fontSize: 10),
+                                  Positioned(
+                                    right: -2,
+                                    bottom: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF111420),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(alert['badge'] ?? alert['icon'] ?? '✨',
+                                          style: const TextStyle(fontSize: 11)),
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                alert['body'] ?? '',
-                                style: GoogleFonts.inter(
-                                    color: Colors.white70,
-                                    fontSize: 11.5,
-                                    height: 1.3),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            alert['title'] ?? '',
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          alert['time'] ?? '',
+                                          style: GoogleFonts.inter(
+                                              color: Colors.white38, fontSize: 10),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      alert['body'] ?? '',
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white70,
+                                          fontSize: 11.5,
+                                          height: 1.3),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (alert['thumbnail'] != null &&
+                                  alert['thumbnail'].toString().isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: CachedNetworkImage(
+                                    imageUrl: alert['thumbnail'],
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) =>
+                                        const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Colors.white24,
+                                size: 18,
                               ),
                             ],
                           ),
                         ),
-                        if (alert['thumbnail'] != null &&
-                            alert['thumbnail'].toString().isNotEmpty) ...[
-                          const SizedBox(width: 10),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: alert['thumbnail'],
-                              width: 44,
-                              height: 44,
-                              fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) =>
-                                  const SizedBox.shrink(),
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
                   );
                 }),
