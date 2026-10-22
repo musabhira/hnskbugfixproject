@@ -258,13 +258,35 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                       ],
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(
-                                      'Day ${mate.dayLevel} • ${house.title} ${house.emoji}',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.black54,
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Day ${mate.dayLevel} • ${house.title} ${house.emoji}',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.black54,
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        if (isMate) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFCE7F3),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              '💖 ${mate.friendshipScore}%',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFBE185D),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),

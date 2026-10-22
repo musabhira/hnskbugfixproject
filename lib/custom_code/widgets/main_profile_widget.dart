@@ -34,6 +34,8 @@ import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_score_dialog.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -277,13 +279,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   // 🪙 Unified Pocket Score state (highest priority on user profile)
   int _pocketScore = 0;
+  // 🎓 Student Score state (strictly separated from PS for student/kid profiles)
+  int _studentScore = 0;
   // 🏆 PocketTalk Spoken Trophies (Earned through 4-Day Spoken Pacts)
   int _pocketTrophyCount = 0;
+
+  bool get _isStudentProfile {
+    if (PocketKidsService.isKidAccount) return true;
+    final accType = _profileData?['account_type']?.toString().toLowerCase().trim();
+    if (accType == 'kid' || accType == 'pure_kid' || accType == 'student') return true;
+    if (PocketKidsService.isAllowedKidMateId(userId)) return true;
+    return false;
+  }
 
   Future<void> _loadPocketScore() async {
     try {
       final trophies = await PocketTrophyService.getTrophyCount(userId);
       if (mounted) setState(() => _pocketTrophyCount = trophies);
+
+      // Load isolated Student Score
+      final sScore = await PocketKidsService.getStudentScore(userId);
+      if (mounted) setState(() => _studentScore = sScore);
 
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
       final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
@@ -3095,17 +3111,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
     final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
     final isPresident = _profileData?['is_president'] == true || _profileData?['role'] == 'president';
+    final isStudent = _isStudentProfile;
 
     final int rank;
     final String label;
     final Color badgeColor;
     final Color borderColor;
+    final Color textColor;
 
-    if (isRobot) {
+    if (isStudent) {
+      // 🎓 Strictly Student Rank (Ages up to 17) - isolated from adult leaderboard
+      rank = PocketKidsService.getStudentGlobalRank(_studentScore, activeStage.day, targetId);
+      label = rank > 0 ? '🎓 Student Rank #$rank' : '🌱 Student Challenger';
+      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
+      borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
+      textColor = const Color(0xFF6EE7B7);
+    } else if (isRobot) {
       rank = activeStage.day.clamp(1, 90);
       label = '🤖 Robot Rank #$rank';
       badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
       borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
+      textColor = const Color(0xFF6EE7B7);
     } else {
       final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
       if (isPresident) {
@@ -3125,33 +3151,68 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       borderColor = isTop3
           ? const Color(0xFFFFD700).withValues(alpha: 0.70)
           : const Color(0xFF38BDF8).withValues(alpha: 0.55);
+      textColor = isTop3 ? const Color(0xFFFFD700) : const Color(0xFF7DD3FC);
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-      decoration: BoxDecoration(
-        color: badgeColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: borderColor, width: 0.9),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
+    final fScore = (!isMe && isStudent) ? PocketKidsService.getFriendshipScore(targetId) : null;
+    final fBadge = fScore != null ? PocketKidsService.getFriendshipBadge(fScore) : null;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+          decoration: BoxDecoration(
+            color: badgeColor,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: borderColor, width: 0.9),
+          ),
+          child: Text(
             label,
             style: GoogleFonts.outfit(
-              color: isRobot
-                  ? const Color(0xFF6EE7B7)
-                  : ((label.contains('👑') || label.contains('#1') || label.contains('#2') || label.contains('#3'))
-                      ? const Color(0xFFFFD700)
-                      : const Color(0xFF7DD3FC)),
+              color: textColor,
               fontWeight: FontWeight.w800,
               fontSize: 10.5,
               letterSpacing: 0.3,
             ),
           ),
+        ),
+        if (fScore != null) ...[
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              PocketFriendshipScoreDialog.show(
+                context,
+                mateId: targetId,
+                mateName: _profileData?['username'] ?? _profileData?['display_name'] ?? 'Mate',
+                mateAvatar: _profileData?['kid_avatar'] ?? _profileData?['avatar_emoji'] ?? '🦁',
+                dayLevel: activeStage.day,
+              );
+            },
+            child: Tooltip(
+              message: fBadge ?? 'Friendship Score',
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEC4899).withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFF472B6).withValues(alpha: 0.65), width: 0.9),
+                ),
+                child: Text(
+                  '💖 $fScore% Friendship',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFF9A8D4),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10.5,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -5028,15 +5089,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: 'PS',
-            count: _pocketScore,
-            textColor: const Color(0xFFFFD700),
+            label: _isStudentProfile ? 'SS' : 'PS',
+            count: _isStudentProfile ? _studentScore : _pocketScore,
+            textColor: _isStudentProfile ? const Color(0xFF10B981) : const Color(0xFFFFD700),
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    '🪙 Pocket Score: $_pocketScore PTS • Level ${activeStage.stageNumber}',
+                    _isStudentProfile
+                        ? '🎓 Student Score: $_studentScore SS • Level ${activeStage.stageNumber}'
+                        : '🪙 Pocket Score: $_pocketScore PTS • Level ${activeStage.stageNumber}',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: const Color(0xFF0F172A),

@@ -59,6 +59,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class KidsInPathSubStep {
@@ -202,7 +203,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 7,
     houseStage: 'Wooden Cabin',
     houseEmoji: '🌱',
-    rewardSummary: '+50 Coins • Beginner Pass',
+    rewardSummary: '+50 SS • Classroom English & Greetings',
     defenseSummary: '2 Shield Trap Qs',
     themeColor: Color(0xFF10B981),
   ),
@@ -213,7 +214,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 20,
     houseStage: 'Brick Villa',
     houseEmoji: '🏡',
-    rewardSummary: '+150 Coins • Habit Anchor',
+    rewardSummary: '+150 SS • School English & Teacher Questions',
     defenseSummary: 'Army Knight Guard',
     themeColor: Color(0xFF38BDF8),
   ),
@@ -224,7 +225,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 45,
     houseStage: 'Stone Fortress',
     houseEmoji: '🏰',
-    rewardSummary: '+300 Coins • Silver Knight',
+    rewardSummary: '+300 SS • Assembly Speeches & Class Presentations',
     defenseSummary: 'Iron Dome Shield Core',
     themeColor: Color(0xFFA855F7),
   ),
@@ -235,7 +236,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 70,
     houseStage: 'Imperial Manor',
     houseEmoji: '🏛️',
-    rewardSummary: '+600 Coins • Gold Sovereign',
+    rewardSummary: '+600 SS • Debates & Group Discussions',
     defenseSummary: '15 Question Shield Traps',
     themeColor: Color(0xFFF59E0B),
   ),
@@ -246,7 +247,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 89,
     houseStage: 'Cyber Citadel',
     houseEmoji: '💎',
-    rewardSummary: '+1000 Coins • Royal Platoon',
+    rewardSummary: '+1000 SS • College / Career English & Confidence',
     defenseSummary: 'Titanium Dome + 22 Qs',
     themeColor: Color(0xFFEC4899),
   ),
@@ -257,7 +258,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 90,
     houseStage: 'Supreme Empire',
     houseEmoji: '👑',
-    rewardSummary: 'VIP Limousine + 2 Armed Escorts + NFT Card',
+    rewardSummary: 'Student Sovereign • Fluency Diploma & NFT Card',
     defenseSummary: 'Max 25 Q Shield + Citadel',
     themeColor: Color(0xFFFFD700),
   ),
@@ -268,7 +269,7 @@ final List<KidsTargetMilestoneItem> kKidsTargetMilestones = [
     targetDay: 91,
     houseStage: 'Sovereign Citadel Raid',
     houseEmoji: '⚔️',
-    rewardSummary: 'Official Fluency Diploma + Presidential Honors',
+    rewardSummary: 'Official Student Master Diploma + Presidential Honors',
     defenseSummary: '250 Boss Trials • Sovereign Citadel Raid',
     themeColor: Color(0xFFFFD700),
   ),
@@ -295,7 +296,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
 
   bool _isLoading = true;
   bool _isRefreshing = false;
-  int _unifiedPocketScore = 0;
+  int _studentScore = 0;
   int _unifiedTrophies = 0;
   UserLearningProgress? _progress;
   String? _equippedTalismanId;
@@ -410,9 +411,9 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
     if (day == 1) return _hasAcceptedRules;
     // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
-    // Pocket Score threshold check (Audio Directive: pocket score base cheythu level unlock)
+    // Student Score (SS) threshold check (Audio Directive: SS base cheythu level unlock)
     final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
-    if (_unifiedPocketScore < reqScore) return false;
+    if (_studentScore < reqScore) return false;
     // Audio Directive: "Trophy restriction illa tto. Trophy restriction illa."
     // If waiting for midnight countdown (waits until 12:00 AM next day unless subscribed)
     if (_isDayWaitingForMidnight(day)) return false;
@@ -427,7 +428,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
     }
 
     final progRaw = await Learning60DayService().fetchProgress(uid);
-    final score = await PocketFortressDefenseService.getUnifiedScore(uid);
+    final studentScore = await PocketKidsService.getStudentScore(uid);
     final trophies = await PocketTrophyService.getTrophyCount(uid);
 
     final prefs = await SharedPreferences.getInstance();
@@ -498,7 +499,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
         _hasConqueredCitadel = isCitadelConquered;
         _currentLearnerLevel = savedLevel;
         _progress = prog;
-        _unifiedPocketScore = score;
+        _studentScore = studentScore;
         _unifiedTrophies = trophies;
         _completedDays
           ..clear()
@@ -1818,7 +1819,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                         border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
                       ),
                       child: Text(
-                        'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
+                        'SS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.w900,
@@ -3176,11 +3177,11 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700),
+                          color: const Color(0xFF10B981),
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          'PS',
+                          'SS',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontWeight: FontWeight.w900,
@@ -3190,7 +3191,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        '🪙 $_unifiedPocketScore',
+                        '🎓 $_studentScore SS',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.w900,
@@ -3231,7 +3232,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS • 🏆 $_unifiedTrophies',
+                            'Roadmap Refreshed! Day ${prog.currentDay} • 🎓 $_studentScore SS • 🏆 $_unifiedTrophies',
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                           backgroundColor: const Color(0xFF10B981),
@@ -3527,7 +3528,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                   Text(
                     (isRule || isNegativeFoundation)
                         ? item.title
-                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " & 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)} Trophy" : ""})',
+                        : '${item.title} (SS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)})',
                     style: GoogleFonts.outfit(
                       color: isCurrentTarget
                           ? item.themeColor
@@ -3875,8 +3876,8 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                         Expanded(
                           child: Text(
                             isUnlocked
-                                ? 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (Achieved ✓)'
-                                : 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (${math.max(0, PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay) - _unifiedPocketScore)} PS needed)',
+                                ? 'Student Score Target: SS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (Achieved ✓)'
+                                : 'Student Score Target: SS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (${math.max(0, PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay) - _studentScore)} SS needed)',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFD700),
                               fontWeight: FontWeight.bold,
@@ -3905,7 +3906,7 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Required Pocket Talk Trophies: 🏆 ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}',
+                                  'Required Challenge Trophies: 🏆 ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}',
                                   style: GoogleFonts.outfit(
                                     color: const Color(0xFF00E5FF),
                                     fontWeight: FontWeight.bold,
@@ -3982,9 +3983,11 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
       builder: (ctx) => _KidsSyllabusExamDialog(
         track: track,
         currentDay: _progress?.currentDay ?? 1,
-        onExamCompleted: (score) {
+        onExamCompleted: (score) async {
+          final bonus = (score * 30);
+          await PocketKidsService.addStudentScore(bonus, widget.userId);
           setState(() {
-            _unifiedPocketScore += (score * 30);
+            _studentScore += bonus;
           });
           _loadData();
         },
@@ -5810,9 +5813,9 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
     if (day > 1 && !_isDayCompleted(day - 1)) {
       message = '🔒 House $day is locked! You must pass the Gate ${day - 1} Exam (Pass Mark: 60%) to unlock House $day!';
       canTakeGateExam = true;
-    } else if (_unifiedPocketScore < reqScore) {
-      final missing = reqScore - _unifiedPocketScore;
-      message = '🪙 Requires $reqScore Pocket Score (Need $missing more PS). Complete previous missions to earn PS!';
+    } else if (_studentScore < reqScore) {
+      final missing = reqScore - _studentScore;
+      message = '🎓 Requires $reqScore Student Score (Need $missing more SS). Complete previous missions to earn SS!';
     }
 
     ScaffoldMessenger.of(context).clearSnackBars();

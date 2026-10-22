@@ -1307,36 +1307,39 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
                   const SizedBox(width: 8),
 
-                  // 🎯 Pocket Score Capsule
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFEF08A), Color(0xFFFBBF24)],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  // 🎓 Student Score (SS) Capsule
+                  ValueListenableBuilder<int>(
+                    valueListenable: PocketKidsService.studentScoreNotifier,
+                    builder: (context, ss, _) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFA7F3D0), Color(0xFF34D399)],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🎯', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${PocketKidsService.pocketScore}',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF78350F),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🎓', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$ss SS',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF064E3B),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 

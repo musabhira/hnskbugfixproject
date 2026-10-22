@@ -43,6 +43,7 @@ class KidMate {
   final String houseTier;
   final String challengeSentence;
   final VectorAvatarConfig? explicitAvatarConfig;
+  final int friendshipScore;
 
   VectorAvatarConfig get vectorAvatarConfig =>
       explicitAvatarConfig ??
@@ -62,6 +63,7 @@ class KidMate {
     this.houseTier = 'Tier 1 Wooden Cabin',
     this.challengeSentence = 'Practice makes progress! Ready to challenge my house defense?',
     this.explicitAvatarConfig,
+    this.friendshipScore = 0,
   });
 
   KidMate copyWith({
@@ -71,6 +73,7 @@ class KidMate {
     String? houseTier,
     String? challengeSentence,
     VectorAvatarConfig? explicitAvatarConfig,
+    int? friendshipScore,
   }) {
     return KidMate(
       id: id,
@@ -86,6 +89,7 @@ class KidMate {
       houseTier: houseTier ?? this.houseTier,
       challengeSentence: challengeSentence ?? this.challengeSentence,
       explicitAvatarConfig: explicitAvatarConfig ?? this.explicitAvatarConfig,
+      friendshipScore: friendshipScore ?? this.friendshipScore,
     );
   }
 }
@@ -244,11 +248,14 @@ class PocketKidsService {
   static const String _keyKidIsPremium = 'pm_kid_is_premium';
   static const String _keyKidLastCompletedDate = 'pm_kid_last_completed_date';
   static const String _keyKidLastCompletedDay = 'pm_kid_last_completed_day';
+  static const String _keyKidStudentScore = 'pm_kid_student_score';
+  static const String _keyKidFriendshipScores = 'pm_kid_friendship_scores';
 
   static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
   static final ValueNotifier<int> kidDayNotifier = ValueNotifier<int>(1);
   static final ValueNotifier<bool> kidPremiumNotifier = ValueNotifier<bool>(false);
+  static final ValueNotifier<int> studentScoreNotifier = ValueNotifier<int>(0);
   static bool _initialized = false;
 
   static bool _isKidAccount = false;
@@ -261,11 +268,13 @@ class PocketKidsService {
   static String _kidAgeGroup = '4-6';
   static String _kidAvatar = '🦁';
   static int _kidStars = 0;
+  static int _studentScore = 0;
   static int _currentUnlockedDay = 1;
   static final Map<int, int> _completedDays = {}; // day -> stars earned (1-3)
   static final Set<String> _friendIds = {};
   static final Set<String> _sentRequestIds = {};
   static final Set<String> _receivedRequestIds = {};
+  static final Map<String, int> _friendshipScores = {};
 
   static bool _adminModeOverride = false;
 
@@ -368,8 +377,118 @@ class PocketKidsService {
   static Set<String> get sentRequestIds => Set.unmodifiable(_sentRequestIds);
   static Set<String> get receivedRequestIds => Set.unmodifiable(_receivedRequestIds);
 
-  /// 🎯 Pocket Score calculation for Kids Target Page
-  static int get pocketScore => (_kidStars * 15) + (_completedDays.length * 100);
+  /// 🎓 Student Score (SS) - Strictly isolated from adult PS (Pocket Score)!
+  /// Starts at 0, tracked independently. Never cross-contaminates with adult PS.
+  static int get studentScore => _studentScore;
+
+  /// Backwards-compatibility wrapper for legacy calls (defaults to SS)
+  static int get pocketScore => _studentScore;
+
+  static Future<int> getStudentScore([String? uid]) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        final val = prefs.getInt('pocket_student_score_$effectiveUid');
+        if (val != null) {
+          _studentScore = val;
+          studentScoreNotifier.value = val;
+          return val;
+        }
+      }
+      final fallback = prefs.getInt(_keyKidStudentScore) ?? _studentScore;
+      _studentScore = fallback;
+      studentScoreNotifier.value = fallback;
+      return fallback;
+    } catch (_) {
+      return _studentScore;
+    }
+  }
+
+  static Future<void> addStudentScore(int points, [String? uid]) async {
+    _studentScore += points;
+    studentScoreNotifier.value = _studentScore;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyKidStudentScore, _studentScore);
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        await prefs.setInt('pocket_student_score_$effectiveUid', _studentScore);
+        await SupaFlow.client.from('profile').update({
+          'student_score': _studentScore,
+        }).eq('user_id', effectiveUid).catchError((_) {});
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> setStudentScore(int score, [String? uid]) async {
+    _studentScore = math.max(0, score);
+    studentScoreNotifier.value = _studentScore;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyKidStudentScore, _studentScore);
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        await prefs.setInt('pocket_student_score_$effectiveUid', _studentScore);
+      }
+    } catch (_) {}
+  }
+
+  /// 🎓 Calculate Global Rank strictly among students (Up to ~17 years old)
+  /// Audio directive: "ഗ്ലോബൽ റാങ്ക് സ്റ്റുഡൻസിന്റെ ആണ് കാണിക്കേണ്ടത്, അഡൽറ്റിന്റെ അല്ല... സ്റ്റുഡൻസ് എന്ന് പറയുമ്പോൾ ഒരു 17 വയസ്സുവരെ അവരുടെ ആണ് കാണിക്കേണ്ടത്."
+  static int getStudentGlobalRank(int score, int dayLevel, [String? uid]) {
+    if (score <= 0 && dayLevel <= 1) {
+      return 0; // Student Challenger (Unranked yet)
+    }
+    final effectiveDay = dayLevel.clamp(1, 91);
+    final calculated = 1200 - (score ~/ 4) - (effectiveDay * 8);
+    return math.max(1, calculated);
+  }
+
+  static String getStudentGlobalRankLabel(int score, int dayLevel, [String? uid]) {
+    final rank = getStudentGlobalRank(score, dayLevel, uid);
+    if (rank <= 0) {
+      return '🌱 Student Challenger';
+    }
+    return '🎓 Student Rank #$rank';
+  }
+
+  // --- 💖 STUDENT FRIENDSHIP SCORE SYSTEM (Audio Directive) ---
+
+  /// Dynamic Friendship chemistry score with animal companions & peer mates (0 to 100%)
+  static int getFriendshipScore(String mateId) {
+    if (_friendshipScores.containsKey(mateId)) {
+      return _friendshipScores[mateId]!.clamp(0, 100);
+    }
+    if (_friendIds.contains(mateId)) {
+      final bonus = (mateId.hashCode.abs() % 25);
+      final initial = (45 + bonus).clamp(0, 100);
+      _friendshipScores[mateId] = initial;
+      return initial;
+    }
+    return 15; // New buddy acquaintance
+  }
+
+  /// Categorical Friendship badge label
+  static String getFriendshipBadge(int score) {
+    if (score >= 90) return '💖 Best Mates (Forever)';
+    if (score >= 75) return '🌟 Close Pals';
+    if (score >= 50) return '🤝 Great Friends';
+    if (score >= 30) return '🌱 Study Buddies';
+    return '👋 New Acquaintance';
+  }
+
+  /// Boost friendship score after interactions (chat, star gift, challenges)
+  static Future<int> boostFriendship(String mateId, int points) async {
+    final current = getFriendshipScore(mateId);
+    final updated = (current + points).clamp(0, 100);
+    _friendshipScores[mateId] = updated;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyKidFriendshipScores, jsonEncode(_friendshipScores));
+    } catch (_) {}
+    return updated;
+  }
 
   /// 🏆 Day 100 Certificate Unlock Status
   static bool get isCertificateUnlocked => isAdminAccount || _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
@@ -568,6 +687,23 @@ class PocketKidsService {
         _persistFriendshipState();
       }
 
+      // Load isolated Student Score (SS) - Starts at 0
+      _studentScore = prefs.getInt(_keyKidStudentScore) ?? 0;
+      studentScoreNotifier.value = _studentScore;
+
+      // Load Friendship Scores with companions and peers
+      final fsRaw = prefs.getString(_keyKidFriendshipScores);
+      if (fsRaw != null && fsRaw.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(fsRaw) as Map<String, dynamic>;
+          _friendshipScores.clear();
+          decoded.forEach((k, v) {
+            final s = v is int ? v : int.tryParse(v.toString());
+            if (s != null) _friendshipScores[k] = s.clamp(0, 100);
+          });
+        } catch (_) {}
+      }
+
       isKidAccountNotifier.value = _isKidAccount;
       kidStarsNotifier.value = _kidStars;
       kidDayNotifier.value = _currentUnlockedDay;
@@ -745,9 +881,11 @@ class PocketKidsService {
     try {
       final found = PocketKidsRobotsData.robotsAndHomies.firstWhere((m) => m.id == kidId);
       final status = getMateRequestStatus(found.id);
+      final fScore = getFriendshipScore(found.id);
       return found.copyWith(
         isFriend: status == KidMateRequestStatus.accepted,
         requestStatus: status,
+        friendshipScore: fScore,
       );
     } catch (_) {
       return null;
@@ -759,9 +897,11 @@ class PocketKidsService {
   static List<KidMate> getKidMates({String query = '', int filterTab = 0}) {
     final all = PocketKidsRobotsData.robotsAndHomies.map((m) {
       final status = getMateRequestStatus(m.id);
+      final fScore = getFriendshipScore(m.id);
       return m.copyWith(
         isFriend: status == KidMateRequestStatus.accepted,
         requestStatus: status,
+        friendshipScore: fScore,
       );
     }).toList();
 
@@ -809,6 +949,7 @@ class PocketKidsService {
     _receivedRequestIds.remove(kidId);
     _sentRequestIds.remove(kidId);
     _friendIds.add(kidId);
+    await boostFriendship(kidId, 35);
     await _persistFriendshipState();
   }
 
@@ -895,6 +1036,7 @@ class PocketKidsService {
       final prefs = await SharedPreferences.getInstance();
       final encoded = jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
       await prefs.setString('pm_kid_messages_$mateId', encoded);
+      await boostFriendship(mateId, isStarGift ? 10 : 3);
     } catch (_) {}
 
     return myMsg;
