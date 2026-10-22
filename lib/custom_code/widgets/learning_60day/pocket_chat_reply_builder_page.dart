@@ -10,6 +10,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
 
+import 'curriculum_data/pocket_90day_chat_reply_data.dart';
+
 /// 💬 Conversational Chat Reply Scenario Model
 class ChatReplyScenario {
   final int id;
@@ -89,58 +91,12 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
   bool _isSpeaking = false;
   bool _isCompleted = false;
   String? _shakingWord;
-
-  static const List<ChatReplyScenario> _scenarios = [
-    ChatReplyScenario(
-      id: 1,
-      avatarPrompt: 'Hey buddy! What are you doing now? 👀',
-      avatarPromptMl: 'എടാ ചങ്ങാതീ! ഇപ്പോൾ എന്തെടുക്കുകയാണ്?',
-      expectedReply: 'I am just chilling at home.',
-      expectedReplyMl: 'ഞാൻ വീട്ടിൽ വെറുതെ ഇരിക്കുകയാണ്.',
-      wordBank: ['I', 'am', 'just', 'chilling', 'at', 'home.', 'they', 'was', 'sleeping', 'car'],
-      topicTag: '👋 Friend Catch-up',
-    ),
-    ChatReplyScenario(
-      id: 2,
-      avatarPrompt: 'Shall we go get a tea together? ☕',
-      avatarPromptMl: 'നമുക്ക് ഒരുമിച്ച് ചായ കുടിച്ചാലോ?',
-      expectedReply: 'Yes, let us go now!',
-      expectedReplyMl: 'അതെ, നമുക്ക് ഇപ്പോൾ പോകാം!',
-      wordBank: ['Yes,', 'let', 'us', 'go', 'now!', 'No,', 'water', 'sleep', 'yesterday'],
-      topicTag: '☕ Evening Chai',
-    ),
-    ChatReplyScenario(
-      id: 3,
-      avatarPrompt: "Did you finish today's English practice? 🎯",
-      avatarPromptMl: 'ഇന്നത്തെ ഇംഗ്ലീഷ് പ്രാക്ടീസ് കഴിഞ്ഞോ?',
-      expectedReply: 'Yes, I finished it right now!',
-      expectedReplyMl: 'അതെ, ഞാൻ ഇപ്പോൾ തീർത്തതേയുള്ളൂ!',
-      wordBank: ['Yes,', 'I', 'finished', 'it', 'right', 'now!', 'No,', 'not', 'tomorrow', 'run'],
-      topicTag: '🎯 Practice Habits',
-    ),
-    ChatReplyScenario(
-      id: 4,
-      avatarPrompt: 'Haha you speak so smoothly now! 😎',
-      avatarPromptMl: 'ഹാഹാ നീ ഇപ്പോൾ നല്ല അടിപൊളിയായി സംസാരിക്കുന്നുണ്ടല്ലോ!',
-      expectedReply: 'Thank you so much, my mate!',
-      expectedReplyMl: 'വളരെ നന്ദി, എന്റെ ചങ്ങാതീ!',
-      wordBank: ['Thank', 'you', 'so', 'much,', 'my', 'mate!', 'why', 'sad', 'angry', 'cry'],
-      topicTag: '😎 Cheerful Banter',
-    ),
-    ChatReplyScenario(
-      id: 5,
-      avatarPrompt: 'Catch you later! Have a great day! 🚀',
-      avatarPromptMl: 'പിന്നെ കാണാം! അടിപൊളി ദിവസമായിരിക്കട്ടെ!',
-      expectedReply: 'See you soon, take care!',
-      expectedReplyMl: 'പിന്നെ കാണാം, ശ്രദ്ധിക്കണേ!',
-      wordBank: ['See', 'you', 'soon,', 'take', 'care!', 'never', 'go', 'stop', 'yesterday'],
-      topicTag: '🚀 Friendly Goodbye',
-    ),
-  ];
+  late final List<ChatReplyScenario> _scenarios;
 
   @override
   void initState() {
     super.initState();
+    _scenarios = Pocket90DayChatReplyData.getScenariosForDay(widget.day);
     _initTts();
 
     _shakeAnimController = AnimationController(

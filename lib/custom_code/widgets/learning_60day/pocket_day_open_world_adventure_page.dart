@@ -224,12 +224,12 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => widget.day == 1 ? 16 : 12;
+  int get _totalSteps => 16;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 16}) {
     if (totalSteps == 16 && stepIndex == 16) {
-      // Step 16 on Day 1 is the Summit Review Milestone right past Gate 1!
+      // Step 16 is the Summit Review Milestone right past the Gate!
       const x = 4350.0;
       return Offset(x, getGroundY(x));
     }
@@ -297,14 +297,12 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    final preGateMax = widget.day == 1 ? 15 : _totalSteps;
+    const preGateMax = 15;
     for (int s = 1; s <= preGateMax; s++) {
       if (!(flags['step_$s'] ?? false)) return s;
     }
-    if (widget.day == 1) {
-      if (!_isGateExamPassed) return 15;
-      if (!(flags['step_16'] ?? false)) return 16;
-    }
+    if (!_isGateExamPassed) return 15;
+    if (!(flags['step_16'] ?? false)) return 16;
     return _totalSteps;
   }
 
@@ -510,7 +508,7 @@ class _PocketDayOpenWorldAdventurePageState
       );
 
       // Auto-drive forward to next step from current location
-      if (widget.day == 1 && stepIndex == 15 && !_isGateExamPassed) {
+      if (stepIndex == 15 && !_isGateExamPassed) {
         _driveToGate(openExamOnArrival: true);
       } else if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
@@ -1923,18 +1921,16 @@ class _PocketDayOpenWorldAdventurePageState
                           onPressed: () async {
                             if (isPassed) {
                               Navigator.pop(dlgCtx);
-                              if (widget.day == 1) {
-                                await PocketDay1ReviewCardPage.show(
-                                  context,
-                                  day: 1,
-                                  userId: widget.userId ?? _supabase.auth.currentUser?.id,
-                                  onProceedToNextDay: () {
-                                    widget.onCompleted?.call();
-                                  },
-                                );
-                                await _syncStepCompletionIfDone(16);
-                                await _loadState(preserveCarPosition: true);
-                              }
+                              await PocketDay1ReviewCardPage.show(
+                                context,
+                                day: widget.day,
+                                userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                                onProceedToNextDay: () {
+                                  widget.onCompleted?.call();
+                                },
+                              );
+                              await _syncStepCompletionIfDone(16);
+                              await _loadState(preserveCarPosition: true);
                             } else {
                               setModalState(() {
                                 currentIdx = 0;
@@ -1947,9 +1943,7 @@ class _PocketDayOpenWorldAdventurePageState
                           },
                           child: Text(
                             isPassed
-                                ? (widget.day == 1
-                                    ? 'VIEW DAY 1 REVIEW & PERFORMANCE CARD 🏆'
-                                    : 'CONTINUE TO ROAD ➔')
+                                ? 'VIEW DAY ${widget.day} REVIEW & PERFORMANCE CARD 🏆'
                                 : 'RETRY EXAM 🔄',
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
                           ),
@@ -2433,7 +2427,7 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildMountainStepNode(int stepIndex) {
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
-    final isPrevDone = (widget.day == 1 && stepIndex == 16)
+    final isPrevDone = (stepIndex == 16)
         ? _isGateExamPassed
         : (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
     // Strict sequential unlocking:
@@ -2557,8 +2551,8 @@ class _PocketDayOpenWorldAdventurePageState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            (widget.day == 1 && stepIndex == 16)
-                                ? '🔒 Pass the Gate 1 Spoken Exam on the summit to unlock the Day 1 Performance Review!'
+                            (stepIndex == 16)
+                                ? '🔒 Pass the Gate ${widget.day} Spoken Exam on the summit to unlock the Day ${widget.day} Performance Review!'
                                 : PocketLanguageService.localize(
                                     en: '🔒 Complete Step ${stepIndex - 1} first to unlock Step $stepIndex!',
                                     ml: '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ!',
@@ -2812,7 +2806,7 @@ class _PocketDayOpenWorldAdventurePageState
         case 15:
           return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
         case 16:
-          return const _StepInfo('Day 1 Review & Performance Card', '🏆', Color(0xFFFFD700));
+          return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
         default:
           return const _StepInfo('Practice Ledge', '⭐', Colors.white);
       }
@@ -2836,13 +2830,21 @@ class _PocketDayOpenWorldAdventurePageState
       case 8:
         return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
       case 9:
-        return const _StepInfo('English Hub Community Chat', '💬', Color(0xFFFFFC00));
+        return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
       case 10:
-        return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+        return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
       case 11:
-        return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+        return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
       case 12:
+        return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
+      case 13:
+        return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+      case 14:
+        return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+      case 15:
         return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+      case 16:
+        return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
       default:
         return const _StepInfo('Practice Ledge', '⭐', Colors.white);
     }
@@ -3052,8 +3054,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Day 1 Step 9: Chat Reply Builder
-    if (day == 1 && s == 9) {
+    // Step 9: Chat Reply Builder (All Days 1 to 90)
+    if (s == 9) {
       await PocketChatReplyBuilderPage.show(
         context,
         day: day,
@@ -3065,8 +3067,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Day 1 Step 10: Negative Sentence Builder
-    if (day == 1 && s == 10) {
+    // Step 10: Negative Sentence Builder (All Days 1 to 90)
+    if (s == 10) {
       await PocketNegativeSentenceBuilderPage.show(
         context,
         day: day,
@@ -3078,8 +3080,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Day 1 Step 11: Mini Speech Practice
-    if (day == 1 && s == 11) {
+    // Step 11: Mini Speech Practice (All Days 1 to 90)
+    if (s == 11) {
       await PocketMiniSpeechPracticePage.show(
         context,
         day: day,
@@ -3091,8 +3093,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // English Hub Community Chat (Day 1 Step 12, or Day > 1 Step 9)
-    if ((day == 1 && s == 12) || (day > 1 && s == 9)) {
+    // English Hub Community Chat (Step 12 on All Days 1 to 90)
+    if (s == 12) {
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -3112,8 +3114,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // House Defense Shield Command (Day 1 Step 13, or Day > 1 Step 10)
-    if ((day == 1 && s == 13) || (day > 1 && s == 10)) {
+    // House Defense Shield Command (Step 13 on All Days 1 to 90)
+    if (s == 13) {
       await PocketHouseDefenseChatPage.show(
         context,
         day: day,
@@ -3126,8 +3128,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Poketalk: 4-Day Spoken Pact (Day 1 Step 14, or Day > 1 Step 11)
-    if ((day == 1 && s == 14) || (day > 1 && s == 11)) {
+    // Poketalk: 4-Day Spoken Pact (Step 14 on All Days 1 to 90)
+    if (s == 14) {
       await PocketTalkCardSwiperDialog.show(context);
       await _onStepCompleted(s);
       await _syncStepCompletionIfDone(s);
@@ -3135,8 +3137,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // House Attack Quest: Citadel Raid (Day 1 Step 15, or Day > 1 Step 12)
-    if ((day == 1 && s == 15) || (day > 1 && s == 12)) {
+    // House Attack Quest: Citadel Raid (Step 15 on All Days 1 to 90)
+    if (s == 15) {
       await PocketHouseAttackPage.show(
         context,
         day: day,
@@ -3149,8 +3151,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Day 1 Step 16: Day 1 Grand Review & Performance Card
-    if (day == 1 && s == 16) {
+    // Step 16: Grand Review & Performance Card (Step 16 on All Days 1 to 90)
+    if (s == 16) {
       await PocketDay1ReviewCardPage.show(
         context,
         day: day,

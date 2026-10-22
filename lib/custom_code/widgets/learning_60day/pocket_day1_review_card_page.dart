@@ -108,7 +108,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
                 const Text('🏆', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
                 Text(
-                  'Day 1 Performance Review',
+                  'Day ${widget.day} Performance Review',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 16,
@@ -225,7 +225,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
                 ),
                 child: ClipOval(
                   child: VectorAvatarWidget(
-                    config: VectorAvatarConfig.getEvolutionAvatarForStage(1),
+                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.day),
                     size: 60,
                   ),
                 ),
@@ -238,7 +238,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
                     Row(
                       children: [
                         Text(
-                          'DAY 1 PERFORMANCE CARD',
+                          'DAY ${widget.day} PERFORMANCE CARD',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
                             fontSize: 12,
@@ -556,7 +556,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
               const Text('🎯', style: TextStyle(fontSize: 20)),
               const SizedBox(width: 8),
               Text(
-                'YOUR ROADMAP FOR DAY 2',
+                'YOUR ROADMAP FOR DAY ${widget.day + 1}',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
                   fontSize: 13,
@@ -640,7 +640,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
                 const Text('🏰', style: TextStyle(fontSize: 18)),
                 const SizedBox(width: 8),
                 Text(
-                  'PROCEED TO HOUSE 2 (DAY 2) ➔',
+                  'PROCEED TO DAY ${widget.day + 1} ➔',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w900,
                     fontSize: 14.5,

@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_pronunciation_evaluator.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 
 /// 📢 Model for Mini Speech Exercise
 class MiniSpeechTopic {
@@ -87,46 +88,12 @@ class _PocketMiniSpeechPracticePageState
   String _liveTranscript = '';
   PronunciationEvaluationResult? _evalResult;
   bool _isPassed = false;
-
-  static const List<MiniSpeechTopic> _topics = [
-    MiniSpeechTopic(
-      id: 1,
-      title: 'Self-Introduction Speech',
-      emoji: '👋',
-      passageEn:
-          'Hello everyone! My name is Rahul. I am from Kerala. I am learning to speak English with confidence. Nice to meet you all!',
-      passageMl:
-          'എല്ലാവർക്കും നമസ്കാരം! എന്റെ പേര് രാഹുൽ. ഞാൻ കേരളത്തിൽ നിന്നാണ്. ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ ഞാൻ പരിശീലിക്കുന്നു. എല്ലാവരെയും കണ്ടതിൽ സന്തോഷം!',
-      speechTipEn: 'Take a gentle breath after "Hello everyone!" and speak with a warm smile.',
-      speechTipMl: '"Hello everyone!" ന് ശേഷം ചെറിയൊരു ഇടവേള നൽകി പുഞ്ചിരിയോടെ സംസാരിക്കുക.',
-    ),
-    MiniSpeechTopic(
-      id: 2,
-      title: 'My Daily Routine',
-      emoji: '🌅',
-      passageEn:
-          'Every morning, I practice English with my friends. I learn new words and speak aloud every day. It makes me happy!',
-      passageMl:
-          'എല്ലാ ദിവസവും രാവിലെ ഞാൻ കൂട്ടുകാരോടൊപ്പം ഇംഗ്ലീഷ് പരിശീലിക്കുന്നു. പുതിയ വാക്കുകൾ പഠിക്കുകയും ഉറക്കെ സംസാരിക്കുകയും ചെയ്യുന്നു. ഇത് എന്നെ സന്തോഷിപ്പിക്കുന്നു!',
-      speechTipEn: 'Emphasize the action words: "practice", "learn", and "speak".',
-      speechTipMl: '"practice", "learn", "speak" എന്നീ പ്രധാന വാക്കുകൾ വ്യക്തമായി ഉച്ചരിക്കുക.',
-    ),
-    MiniSpeechTopic(
-      id: 3,
-      title: 'My Dream and Goal',
-      emoji: '🌟',
-      passageEn:
-          'My goal is to speak English fluently and fearlessly. Practice makes me better every single day. I believe in myself!',
-      passageMl:
-          'ഭയമില്ലാതെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കുകയാണ് എന്റെ ലക്ഷ്യം. പരിശീലനം എന്നെ ദിവസവും മെച്ചപ്പെടുത്തുന്നു. എനിക്ക് എന്നിൽ വിശ്വാസമുണ്ട്!',
-      speechTipEn: 'Deliver the final sentence with high energy and confidence!',
-      speechTipMl: 'അവസാന വാചകം പൂർണ്ണ ആത്മവിശ്വാസത്തോടെ പറയുക!',
-    ),
-  ];
+  late final List<MiniSpeechTopic> _topics;
 
   @override
   void initState() {
     super.initState();
+    _topics = Pocket90DaySpeechPracticeData.getTopicsForDay(widget.day);
     _initTts();
     _initStt();
   }

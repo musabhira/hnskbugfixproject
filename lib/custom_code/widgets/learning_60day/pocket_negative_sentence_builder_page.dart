@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'curriculum_data/pocket_90day_negative_sentence_data.dart';
 
 /// 🔄 Model for Negative Sentence Transformation Challenge
 class NegativeSentenceRound {
@@ -91,72 +92,12 @@ class _PocketNegativeSentenceBuilderPageState
   bool _isRoundPassed = false;
   bool _isFinishedAll = false;
 
-  static const List<NegativeSentenceRound> _rounds = [
-    NegativeSentenceRound(
-      id: 1,
-      positiveSentence: 'I am ready.',
-      positiveSentenceMl: 'ഞാൻ തയ്യാറാണ്.',
-      negativeSentence: 'I am not ready.',
-      negativeSentenceMl: 'ഞാൻ തയ്യാറല്ല.',
-      ruleTipEn: 'Add "not" right after "am / is / are"',
-      ruleTipMl: '"am / is / are" ന് ശേഷം "not" ചേർക്കുക',
-      wordBank: ['I', 'am', 'not', 'ready.', 'We', 'are', 'do', 'never'],
-    ),
-    NegativeSentenceRound(
-      id: 2,
-      positiveSentence: 'She likes tea.',
-      positiveSentenceMl: 'അവൾക്ക് ചായ ഇഷ്ടമാണ്.',
-      negativeSentence: 'She does not like tea.',
-      negativeSentenceMl: 'അവൾക്ക് ചായ ഇഷ്ടമല്ല.',
-      ruleTipEn: 'Singular (He/She) takes "does not + base verb"',
-      ruleTipMl: 'He / She വരുമ്പോൾ "does not + base verb" ഉപയോഗിക്കുക',
-      wordBank: ['She', 'does', 'not', 'like', 'tea.', 'do', 'likes', 'is', 'did'],
-    ),
-    NegativeSentenceRound(
-      id: 3,
-      positiveSentence: 'They play football.',
-      positiveSentenceMl: 'അവർ ഫുട്ബോൾ കളിക്കുന്നു.',
-      negativeSentence: 'They do not play football.',
-      negativeSentenceMl: 'അവർ ഫുട്ബോൾ കളിക്കുന്നില്ല.',
-      ruleTipEn: 'Plural (They/We/I/You) takes "do not + verb"',
-      ruleTipMl: 'They / We വരുമ്പോൾ "do not + verb" ഉപയോഗിക്കുക',
-      wordBank: ['They', 'do', 'not', 'play', 'football.', 'does', 'are', 'played', 'can'],
-    ),
-    NegativeSentenceRound(
-      id: 4,
-      positiveSentence: 'He can drive a car.',
-      positiveSentenceMl: 'അവന് കാർ ഓടിക്കാൻ കഴിയും.',
-      negativeSentence: 'He cannot drive a car.',
-      negativeSentenceMl: 'അവന് കാർ ഓടിക്കാൻ കഴിയില്ല.',
-      ruleTipEn: 'Modal verb "can" becomes "cannot"',
-      ruleTipMl: '"can" മാറ്റി "cannot" ചേർക്കുക',
-      wordBank: ['He', 'cannot', 'drive', 'a', 'car.', 'can', 'not', 'does', 'did'],
-    ),
-    NegativeSentenceRound(
-      id: 5,
-      positiveSentence: 'We went to the market yesterday.',
-      positiveSentenceMl: 'ഞങ്ങൾ ഇന്നലെ മാർക്കറ്റിൽ പോയി.',
-      negativeSentence: 'We did not go to the market yesterday.',
-      negativeSentenceMl: 'ഞങ്ങൾ ഇന്നലെ മാർക്കറ്റിൽ പോയില്ല.',
-      ruleTipEn: 'Past tense negative uses "did not + base verb (go)"',
-      ruleTipMl: 'കഴിഞ്ഞ കാര്യങ്ങൾക്ക് "did not + base verb (go)" ഉപയോഗിക്കുക',
-      wordBank: ['We', 'did', 'not', 'go', 'to', 'the', 'market', 'yesterday.', 'went', 'do', 'does'],
-    ),
-    NegativeSentenceRound(
-      id: 6,
-      positiveSentence: 'It is raining outside.',
-      positiveSentenceMl: 'പുറത്ത് മഴ പെയ്യുന്നുണ്ട്.',
-      negativeSentence: 'It is not raining outside.',
-      negativeSentenceMl: 'പുറത്ത് മഴ പെയ്യുന്നില്ല.',
-      ruleTipEn: 'Continuous tense adds "not" after "is"',
-      ruleTipMl: '"is" ന് ശേഷം "not" ചേർക്കുക',
-      wordBank: ['It', 'is', 'not', 'raining', 'outside.', 'does', 'was', 'no', 'are'],
-    ),
-  ];
+  late final List<NegativeSentenceRound> _rounds;
 
   @override
   void initState() {
     super.initState();
+    _rounds = Pocket90DayNegativeSentenceData.getRoundsForDay(widget.day);
     _initTts();
 
     _shakeAnimController = AnimationController(
