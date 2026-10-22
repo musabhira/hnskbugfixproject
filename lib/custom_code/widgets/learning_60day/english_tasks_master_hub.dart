@@ -2748,14 +2748,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
           ),
 
-          // 2. 🏔️ Mountain Canyon Dirt Bike Game (World Ranking Trail)
+          // 2. 🌐 Open World Vocabulary Hill-Climb Adventure (User Audio Directive)
           Padding(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 76,
             ),
-            child: PocketWorldRankingTrailWidget(
-              mode: RankingTrailMode.world,
-              currentUserId: widget.userId,
+            child: PocketOpenWorldGamePage(
+              currentDay: prog.currentDay,
+              streak: prog.streakDays,
             ),
           ),
 
@@ -3259,6 +3259,47 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
+                // 🏔️ Canyon Game Fullscreen Launcher (User Audio Directive: "Canon Game-ന്റെ ചെറിയൊരു ഐക്കൺ കൊടുക്കുക. അതിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ Canon Game വന്നോട്ടെ, ഫുൾ സ്ക്രീൻ ആയിട്ട്")
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => Scaffold(
+                          backgroundColor: const Color(0xFF070B0E),
+                          appBar: AppBar(
+                            backgroundColor: const Color(0xFF0F1524),
+                            elevation: 0,
+                            leading: IconButton(
+                              icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            title: Text(
+                              'CANYON DIRT BIKE 🏔️',
+                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ),
+                          body: PocketWorldRankingTrailWidget(
+                            mode: RankingTrailMode.world,
+                            currentUserId: widget.userId,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF9100).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFF9100).withValues(alpha: 0.5), width: 0.8),
+                    ),
+                    child: const Text('🏔️', style: TextStyle(fontSize: 14)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
                 // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
                 ValueListenableBuilder<bool>(
                   valueListenable: PocketGameAudioService.instance.isMutedNotifier,
@@ -3292,7 +3333,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
             const SizedBox(height: 6),
 
-            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🏔️ Canyon Game vs 🏅 Global Rank (Audio Directive)
+            // 🏆 Segmented Tabs: 🗺️ Roadmap vs 🌐 Open World vs 🏅 Global Rank (Audio Directive)
             Container(
               height: 32,
               decoration: BoxDecoration(
@@ -3343,7 +3384,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
 
-                  // Tab 1: Canyon Game
+                  // Tab 1: 🌐 Open World (User Audio Directive: "Open World Game അവിടെ പ്ലേസ് ചെയ്തോ")
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -3366,10 +3407,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('🏔️', style: TextStyle(fontSize: 10.5)),
+                            const Text('🌐', style: TextStyle(fontSize: 10.5)),
                             const SizedBox(width: 3),
                             Text(
-                              'Canyon Game',
+                              'Open World',
                               style: GoogleFonts.outfit(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w800,

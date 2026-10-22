@@ -9,12 +9,9 @@ import '../../services/pocket_robot_service.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_painter.dart';
 import '../chat/whatsapp_group_chat.dart';
-import '../english_learning_hub_page.dart';
 import '../main_profile_widget.dart';
-import '../voice_accent_coach_page.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_citadel_attack_page.dart';
-import 'pocket_daily_mission_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_world_vocabulary_bank.dart';
@@ -65,9 +62,8 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   OpenWorldVocabItem? _activeVocabCard;
   Timer? _vocabCardTimer;
 
-  // Locomotion & Environment
-  LocomotionMode _locomotion = LocomotionMode.buggy;
-  bool _isNightMode = false;
+  // Environment & Audio
+  final bool _isNightMode = false;
   bool _isAudioMuted = false;
 
   // Driving pedal states (Hill Climb style Gas & Brake/Reverse)
@@ -88,10 +84,15 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
   Future<void> _initTts() async {
     try {
-      await _tts.setLanguage('en-US');
+      // 🇮🇳 Indian English Accent (User Audio Directive: "പിന്നെ അതിന്റെ Indian English Voice ആയിരിക്കണം വരുന്നത്")
+      await _tts.setLanguage('en-IN');
       await _tts.setSpeechRate(0.48);
       await _tts.setVolume(1.0);
-    } catch (_) {}
+    } catch (_) {
+      try {
+        await _tts.setLanguage('en-GB');
+      } catch (_) {}
+    }
   }
 
   Future<void> _speakEnglish(String text) async {
@@ -341,14 +342,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     _game.setZoom(_currentZoom);
   }
 
-  void _toggleDayNight() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      _isNightMode = !_isNightMode;
-    });
-    _game.setDayNight(_isNightMode);
-  }
-
   void _toggleAudio() {
     HapticFeedback.selectionClick();
     setState(() {
@@ -357,14 +350,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     if (_isAudioMuted) {
       _tts.stop();
     }
-  }
-
-  void _setLocomotion(LocomotionMode mode) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _locomotion = mode;
-    });
-    _game.setLocomotionMode(mode);
   }
 
   /// 📇 Interactive Neighbor Profile Card Modal Bottom Sheet
@@ -698,193 +683,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     });
   }
 
-  /// 📚 Opens English Learning Tools modal (Stories, Poems, Vocabulary)
-  void _openEnglishToolsModal() {
-    HapticFeedback.selectionClick();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: Color(0xFF0F172A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 2)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '📚 English Highway Studio',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Tool Shortcuts
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildToolShortcut(
-                      icon: '🎙️',
-                      label: 'Accent Coach',
-                      color: const Color(0xFF6366F1),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const VoiceAccentCoachPage()));
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildToolShortcut(
-                      icon: '🏛️',
-                      label: 'Learning Hub',
-                      color: const Color(0xFF0284C7),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()));
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildToolShortcut(
-                      icon: '🎯',
-                      label: 'Day Mission',
-                      color: const Color(0xFF10B981),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PocketDailyMissionPage(
-                              day: widget.currentDay,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-              Text(
-                '📜 Micro-Poems & Stories on Road',
-                style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              Expanded(
-                child: ListView(
-                  children: [
-                    _buildPoemCard(
-                      title: 'The Road Not Taken',
-                      poet: 'Robert Frost',
-                      snippet: 'Two roads diverged in a yellow wood, and I took the one less traveled by.',
-                    ),
-                    _buildPoemCard(
-                      title: 'Hope is the Thing with Feathers',
-                      poet: 'Emily Dickinson',
-                      snippet: 'Hope is the thing with feathers that perches in the soul, and sings the tune without words.',
-                    ),
-                    _buildPoemCard(
-                      title: 'The Secret of Speed',
-                      poet: 'English Wisdom',
-                      snippet: 'Step by step, hill by hill, fluency is born through daily will.',
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildToolShortcut({
-    required String icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color, width: 1.2),
-        ),
-        child: Column(
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 4),
-            Text(label, style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPoemCard({
-    required String title,
-    required String poet,
-    required String snippet,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 22),
-            onPressed: () => _speakEnglish('$title by $poet. $snippet'),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                Text(poet, style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 10.5)),
-                const SizedBox(height: 4),
-                Text('"$snippet"', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontStyle: FontStyle.italic)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _updateDrivingInput() {
     double dx = 0.0;
@@ -976,43 +774,44 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 ),
               ),
 
-              // 2. Ultra-Minimal Top Navigation Bar
+              // 2. Minimal, Responsive Top Navigation Bar (User Audio Directive: "നമുക്ക് ഒന്നുകൂടി മിനിമൽ ആക്കാം മേലത്തെ സൈഡ്")
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   child: Row(
                     children: [
-                      // Exit Button
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.65),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white24, width: 1),
+                      // Minimal Exit Button (only if can pop)
+                      if (Navigator.of(context).canPop()) ...[
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white24, width: 0.8),
+                            ),
+                            child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 13),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 14),
                         ),
-                      ),
-
-                      const SizedBox(width: 8),
+                        const SizedBox(width: 6),
+                      ],
 
                       // Street Location Pill
                       Expanded(
                         child: Container(
-                          height: 36,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 9),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3), width: 1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3), width: 0.8),
                           ),
                           child: Row(
                             children: [
-                              const Text('🛣️', style: TextStyle(fontSize: 13)),
-                              const SizedBox(width: 5),
+                              const Text('🛣️', style: TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
                               Expanded(
                                 child: ValueListenableBuilder<String>(
                                   valueListenable: _game.districtNotifier,
@@ -1021,7 +820,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                                       district,
                                       style: GoogleFonts.outfit(
                                         color: const Color(0xFFFFFC00),
-                                        fontSize: 11.5,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -1030,11 +829,11 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                                 ),
                               ),
                               if (_isLoadingNeighbors) ...[
-                                const SizedBox(width: 5),
+                                const SizedBox(width: 4),
                                 const SizedBox(
-                                  width: 9,
-                                  height: 9,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFC00)),
+                                  width: 8,
+                                  height: 8,
+                                  child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFFFFC00)),
                                 ),
                               ],
                             ],
@@ -1044,20 +843,20 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                       const SizedBox(width: 6),
 
-                      // 🟡 Coins Collected Pill
+                      // 🟡 Coins Pill
                       Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 9),
+                        height: 32,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4), width: 0.8),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('🟡', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
+                            const Text('🟡', style: TextStyle(fontSize: 11)),
+                            const SizedBox(width: 3),
                             ValueListenableBuilder<int>(
                               valueListenable: _game.coinsCollectedNotifier,
                               builder: (context, coins, _) {
@@ -1065,7 +864,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                                   '$coins',
                                   style: GoogleFonts.outfit(
                                     color: const Color(0xFFFFFC00),
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 );
@@ -1077,79 +876,27 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                       const SizedBox(width: 6),
 
-                      // ⚡ Speedometer Pill
-                      Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), width: 1),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🏎️', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 3),
-                            ValueListenableBuilder<double>(
-                              valueListenable: _game.speedNotifier,
-                              builder: (context, speed, _) {
-                                return Text(
-                                  '${speed.toStringAsFixed(0)}m',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF38BDF8),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // 📚 English Studio Button
-                      GestureDetector(
-                        onTap: _openEnglishToolsModal,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A).withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
-                          ),
-                          child: const Center(
-                            child: Text('📚', style: TextStyle(fontSize: 14)),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // 🌐 Language Filter Pill [ 🌴 ML ]
+                      // 🌐 Language Pill [ 🌴 ML ]
                       GestureDetector(
                         onTap: _showLanguageFilterDialog,
                         child: Container(
-                          height: 36,
+                          height: 32,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0F172A).withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.0),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(OpenWorldVocabItem.getLanguageFlag(_selectedLanguage), style: const TextStyle(fontSize: 12)),
+                              Text(OpenWorldVocabItem.getLanguageFlag(_selectedLanguage), style: const TextStyle(fontSize: 11)),
                               const SizedBox(width: 3),
                               Text(
                                 OpenWorldVocabItem.getLanguageShortCode(_selectedLanguage),
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -1161,82 +908,47 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                       const SizedBox(width: 6),
 
-                      // 🔊 Audio TTS Mute / Unmute Toggle
+                      // 🔊 Audio TTS Indian Voice Toggle
                       GestureDetector(
                         onTap: _toggleAudio,
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 32,
+                          height: 32,
                           decoration: BoxDecoration(
                             color: _isAudioMuted ? Colors.red.withValues(alpha: 0.7) : const Color(0xFF0F172A),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white24, width: 1),
+                            border: Border.all(color: Colors.white24, width: 0.8),
                           ),
                           child: Center(
-                            child: Text(_isAudioMuted ? '🔇' : '🔊', style: const TextStyle(fontSize: 13)),
+                            child: Text(_isAudioMuted ? '🔇' : '🔊', style: const TextStyle(fontSize: 12)),
                           ),
                         ),
                       ),
 
                       const SizedBox(width: 6),
 
-                      // Day / Night Mini Toggle
-                      GestureDetector(
-                        onTap: _toggleDayNight,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: _isNightMode ? const Color(0xFF1E1B4B) : const Color(0xFFFEF08A),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: _isNightMode ? const Color(0xFF818CF8) : const Color(0xFFF59E0B),
-                              width: 1,
+                      // 🏎️ Car Vehicle Indicator (User Audio Directive: "കാർ മാത്രം മതി, ബൈക്ക് വണ്ടി കാർ മാത്രം മതി")
+                      Container(
+                        height: 32,
+                        padding: const EdgeInsets.symmetric(horizontal: 7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6), width: 0.8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🏎️', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 3),
+                            Text(
+                              'CAR',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF34D399),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Text(_isNightMode ? '🌙' : '☀️', style: const TextStyle(fontSize: 14)),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // Minimal Locomotion Selector [ 🚶 | 🚲 | 🏎️ ]
-                      Container(
-                        height: 36,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: Colors.white24, width: 1),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildMiniVehicleButton('🚶', _locomotion == LocomotionMode.walk, () => _setLocomotion(LocomotionMode.walk)),
-                            _buildMiniVehicleButton('🚲', _locomotion == LocomotionMode.bike, () => _setLocomotion(LocomotionMode.bike)),
-                            _buildMiniVehicleButton('🏎️', _locomotion == LocomotionMode.buggy, () => _setLocomotion(LocomotionMode.buggy)),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // Minimal Zoom Toggle [ 🔍 | 🌍 ]
-                      Container(
-                        height: 36,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4), width: 1),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildMiniZoomButton('🔍', _currentZoom >= 0.50, () => _setZoom(0.82)),
-                            _buildMiniZoomButton('🌍', _currentZoom < 0.50, () => _setZoom(0.22)),
                           ],
                         ),
                       ),
@@ -1671,39 +1383,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     );
   }
 
-  Widget _buildMiniVehicleButton(String icon, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFFC00) : Colors.transparent,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Center(
-          child: Text(icon, style: const TextStyle(fontSize: 14)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMiniZoomButton(String label, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF00F0FF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Center(
-          child: Text(label, style: const TextStyle(fontSize: 13)),
-        ),
-      ),
-    );
-  }
 
   Widget _buildActionIcon({
     IconData? icon,

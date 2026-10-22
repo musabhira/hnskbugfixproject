@@ -91,6 +91,7 @@ class _PocketNegativeSentenceBuilderPageState
   bool _isSpeaking = false;
   bool _isRoundPassed = false;
   bool _isFinishedAll = false;
+  bool _showConceptGuide = true;
 
   late final List<NegativeSentenceRound> _rounds;
 
@@ -351,6 +352,34 @@ class _PocketNegativeSentenceBuilderPageState
           ],
         ),
         actions: [
+          // 💡 Class Guide Toggle Button
+          GestureDetector(
+            onTap: () => setState(() => _showConceptGuide = !_showConceptGuide),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFA855F7).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('💡', style: TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Class',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFE9D5FF),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Container(
             margin: const EdgeInsets.only(right: 14),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -394,20 +423,29 @@ class _PocketNegativeSentenceBuilderPageState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 💡 Negative Sentence Concept Class Banner (Audio Directive)
+                    if (_showConceptGuide)
+                      _buildConceptGuideBanner(),
+
                     // Target Card: Positive sentence to transform
                     _buildPositivePromptCard(round),
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
 
                     // Transformation Goal & Rule Capsule
                     _buildRulePill(round),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+
+                    // 🎯 Target Negative Sentence Meaning in Malayalam (User Audio Directive: "വേർഡ് ബാങ്കിന്റെ അവിടെ എഴുതി വെക്കണം ഇവർ എന്താണ് ടാപ്പ് ചെയ്യേണ്ടത് എന്നുള്ളത്... അപ്പൊ നെഗറ്റീവ് എന്താണ് മലയാളത്തിൽ എഴുതി വെക്കണം")
+                    _buildTargetNegativeGoalCard(round),
+
+                    const SizedBox(height: 16),
 
                     // Assembled Negative Sentence Bar
                     _buildAssembledSentenceBar(round),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // Word Bank Chips Header
                     Row(
@@ -558,6 +596,115 @@ class _PocketNegativeSentenceBuilderPageState
                   style: GoogleFonts.inter(
                     color: Colors.white60,
                     fontSize: 10.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConceptGuideBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1035),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('💡', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'എന്താണ് NEGATIVE SENTENCE? (CLASS)',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _showConceptGuide = false),
+                child: const Icon(Icons.close_rounded, color: Colors.white60, size: 18),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'ഒരു കാര്യത്തെ "അല്ല / ചെയ്യുന്നില്ല / സാധിക്കില്ല" എന്ന് നിഷേധിച്ചു പറയുന്നതിനാണ് Negative Sentence എന്ന് പറയുന്നത്.',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.3),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'ഉദാ: "I am happy" (എനിക്ക് സന്തോഷമാണ്) ➔ "I am NOT happy" (എനിക്ക് സന്തോഷമില്ല)',
+                    style: GoogleFonts.outfit(color: const Color(0xFFE9D5FF), fontSize: 11.5, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetNegativeGoalCard(NegativeSentenceRound round) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F2B20),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.7), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Text('🎯', style: TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'നിങ്ങൾ നിർമ്മിക്കേണ്ട നെഗറ്റീവ് വാചകം (Target):',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF34D399),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  round.negativeSentenceMl,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ],

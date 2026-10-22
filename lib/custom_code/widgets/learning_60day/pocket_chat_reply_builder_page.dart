@@ -482,7 +482,7 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                 ),
               ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isUser
@@ -490,21 +490,21 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                       : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
                 ),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 18),
                 ),
                 border: Border.all(
                   color: isUser
                       ? const Color(0xFF34D399)
                       : const Color(0xFF334155),
-                  width: 1.0,
+                  width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 6,
+                    blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
                 ],
@@ -520,13 +520,13 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                           text,
                           style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                       if (!isUser) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () => _speak(text),
                           child: Icon(
@@ -534,19 +534,20 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                                 ? Icons.volume_up_rounded
                                 : Icons.volume_down_rounded,
                             color: const Color(0xFF00E676),
-                            size: 18,
+                            size: 20,
                           ),
                         ),
                       ],
                     ],
                   ),
                   if (ml.isNotEmpty) ...[
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 5),
                     Text(
                       ml,
-                      style: GoogleFonts.inter(
-                        color: isUser ? Colors.white70 : const Color(0xFF94A3B8),
-                        fontSize: 11,
+                      style: GoogleFonts.outfit(
+                        color: isUser ? const Color(0xFFD1FAE5) : const Color(0xFFFDE047),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -582,7 +583,7 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                 'YOUR REPLY • TAP WORDS IN ORDER:',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF00E676),
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
                 ),
@@ -603,12 +604,53 @@ class _PocketChatReplyBuilderPageState extends State<PocketChatReplyBuilderPage>
                       const SizedBox(width: 3),
                       Text(
                         'Undo',
-                        style: GoogleFonts.inter(color: Colors.white60, fontSize: 10),
+                        style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
             ],
+          ),
+
+          // 🎯 Target Reply Meaning in Malayalam / Native (User Audio Directive: "ഒരു ക്വസ്റ്റ്യൻ ചോദിച്ചിട്ടുണ്ടെങ്കിൽ അതിന് എന്ത് റിപ്ലൈ കൊടുക്കും എന്നുള്ളതും കൂടി മലയാളത്തിൽ ഇവിടെ കൊടുത്തു വെക്കണം. എന്നാലേ ആൾക്കാർക്ക് അതിനനുസരിച്ച് സെലക്ട് ചെയ്തു കൊടുക്കാൻ പറ്റുള്ളൂ")
+          Container(
+            margin: const EdgeInsets.only(top: 6, bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.0),
+            ),
+            child: Row(
+              children: [
+                const Text('🎯', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'നിങ്ങൾ നൽകേണ്ട മറുപടി: ',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF34D399),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text: scenario.expectedReplyMl,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFDE047),
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
 
