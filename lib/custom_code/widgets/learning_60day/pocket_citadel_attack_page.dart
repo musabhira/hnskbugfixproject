@@ -14,6 +14,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_defense_trap_modal.dart';
+import 'pocket_citadel_challenge_generator.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -473,7 +474,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       if (_raidStep == 1 && mounted) {
         _combatTimer?.cancel();
-        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 6);
+        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 4);
         setState(() {
           _isAntiCheatTriggered = true;
           _raidStep = -1; // Raid Failed!
@@ -526,7 +527,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       );
       _startCombatTimer();
     } else {
-      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 6);
+      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 4);
       setState(() {
         _secondsLeft = 0;
         _isTimeoutTriggered = true;
@@ -566,32 +567,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
     final bool isTargetVip = widget.neighbor.isVip;
-    final rawQuestions = widget.neighbor.isPresident
-        ? await PocketFortressDefenseService.loadPresidentialGauntletQuestions()
-        : isTargetVip
-            ? [
-                ...(await PocketFortressDefenseService.loadPresidentialEscortGuardQuestions()),
-                ...(await PocketFortressDefenseService.loadGauntletQuestionsForStage(
-                  widget.neighbor.day,
-                  isNeighbor: true,
-                )),
-              ]
-            : await PocketFortressDefenseService.loadGauntletQuestionsForStage(
-                widget.neighbor.day,
-                isNeighbor: true,
-              );
-
-    // AI Robot Question Rule (User Directive):
-    // When attacking a robot (fallback when no human is available),
-    // questions count must strictly match robot level (day) (e.g. Lvl 15 = 15 questions, Lvl 10 = 10 questions).
-    final questions = (widget.neighbor.isPocketRobo && widget.neighbor.day > 0)
-        ? (rawQuestions.length >= widget.neighbor.day
-            ? rawQuestions.take(widget.neighbor.day).toList()
-            : List.generate(
-                widget.neighbor.day,
-                (i) => rawQuestions[i % rawQuestions.length],
-              ))
-        : rawQuestions;
+    final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
+      widget.neighbor.day,
+      isNeighbor: true,
+    );
+    // User Audio Directive: Question count strictly matches defender level (e.g. Level 40 = 40 tasks, Level 10 = 10 tasks, Level 1 = 1 task)
+    // Rotating across 4 interactive formats: Sentence Builder, Spelling Challenge, Verb Timeline, Tactical MCQ.
+    final questions = PocketCitadelChallengeGenerator.generateChallengesForDefender(
+      defenderLevel: widget.neighbor.day,
+      isPresident: widget.neighbor.isPresident,
+      isVip: isTargetVip,
+      customArmedQuestions: customArmed,
+    );
 
     // Randomize option order dynamically across A, B, C, D
     final randomizedQuestions = questions.map((q) {
@@ -4687,6 +4674,112 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                 ),
               )
+            else if (widget.neighbor.isVip)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: _onTapBottomAttack,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7C3AED), Color(0xFFB45309), Color(0xFFD97706)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🏛️', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'PRESIDENTIAL ATTACK',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.6,
+                                ),
+                              ),
+                              Text(
+                                '10 Sentries + ${widget.neighbor.day} Personal Defenses',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (!PocketRobotService.isRobotId(widget.neighbor.id) &&
+                      _canInitiatePocketTalk) ...[
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _onSendPocketTalkFromCitadel,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD600),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD600).withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 5),
+                            Text(
+                              'TALK PACT',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD600),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              )
             else
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -5579,10 +5672,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   Text(
                     widget.neighbor.isPresident
                         ? '🏛️ Presidential Trial (${_currentQIdx + 1}/200)'
-                        : 'Gate Defense Challenge',
+                        : (widget.neighbor.isVip && _currentQIdx < 10)
+                            ? '🏛️ Presidential Sentry (${_currentQIdx + 1}/10)'
+                            : (widget.neighbor.isVip)
+                                ? '🛡️ VIP Estate Defense (${_currentQIdx - 9}/${_defenseQuestions.length - 10})'
+                                : 'Gate Defense Challenge (${_currentQIdx + 1}/${_defenseQuestions.length})',
                     style: GoogleFonts.outfit(
-                      color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : Colors.white,
-                      fontSize: 16,
+                      color: (widget.neighbor.isPresident || (widget.neighbor.isVip && _currentQIdx < 10))
+                          ? const Color(0xFFFFD700)
+                          : Colors.white,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -5641,16 +5740,28 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                        color: (widget.neighbor.isVip && _currentQIdx < 10)
+                            ? const Color(0xFF7C3AED).withValues(alpha: 0.35)
+                            : const Color(0xFF0284C7).withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: (widget.neighbor.isVip && _currentQIdx < 10)
+                              ? const Color(0xFFFFD700)
+                              : const Color(0xFF38BDF8),
+                          width: 1,
+                        ),
                       ),
                       child: Text(
-                        _defenseQuestions.length > 10
-                            ? '🛡️ GAME ${(_currentQIdx ~/ 10) + 1} OF ${((_defenseQuestions.length - 1) ~/ 10) + 1} • Q${(_currentQIdx % 10) + 1}/10 (TOTAL ${_currentQIdx + 1}/${_defenseQuestions.length})'
-                            : '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}',
-                        style: const TextStyle(
-                          color: Color(0xFF38BDF8),
-                          fontSize: 10.5,
+                        (widget.neighbor.isVip && _currentQIdx < 10)
+                            ? '👑 PRESIDENTIAL PROTECTION SENTRY ${_currentQIdx + 1}/10'
+                            : (_defenseQuestions.length > 10
+                                ? '🛡️ TASK ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'
+                                : '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'),
+                        style: TextStyle(
+                          color: (widget.neighbor.isVip && _currentQIdx < 10)
+                              ? const Color(0xFFFFD700)
+                              : const Color(0xFF38BDF8),
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -5836,12 +5947,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       await prefs.setBool('pocket_day_${myId}_${_attackerDay}_step_attack_done', true);
                                     }
                                   } catch (_) {}
-                                } else {
-                                  await PocketFortressDefenseService.recordFailedAttackCooldown(
-                                    widget.neighbor.id,
-                                    hours: 6,
-                                  );
                                 }
+                                // User Audio Directive: 3-4 hour cooldown upon failed raid before raiding again
+                                await PocketFortressDefenseService.recordFailedAttackCooldown(
+                                  widget.neighbor.id,
+                                  hours: 4,
+                                );
                                 if (mounted) {
                                   setState(() => _raidStep = -1);
                                 }

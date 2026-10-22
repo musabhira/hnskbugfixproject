@@ -14,6 +14,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_citadel_attack_page.dart';
 
 import 'pocket_defense_question_bank.dart';
+import 'pocket_citadel_challenge_generator.dart';
 
 /// 🛡️ Dedicated House Defense Shield Command Page (Days 1 to 16+)
 /// Overhauled based on User Audio Directives:
@@ -215,10 +216,9 @@ class _PocketHouseDefenseChatPageState
     _checkExistingDefense();
   }
 
-  /// 🛡️ User Audio Directive: Each completed day adds 1 defense!
-  /// When playing Day 3, 2 completed days = 2 defense questions!
-  /// Day 3 defense can only be added once Day 3 is fully completed.
-  int get targetShieldCount => math.max(1, widget.day - 1).clamp(1, 90);
+  /// 🛡️ User Audio Directive: Day 1 arms 1 defense, Day 40 has 40 defenses!
+  /// Each completed day adds that day's defense challenge into the stacked fortress wall.
+  int get targetShieldCount => widget.day.clamp(1, 90);
 
   Future<void> _checkExistingDefense() async {
     final prefs = await SharedPreferences.getInstance();
@@ -285,7 +285,13 @@ class _PocketHouseDefenseChatPageState
     HapticFeedback.heavyImpact();
     await _tts.stop();
 
-    final questions = _curatedBank.take(targetShieldCount).toList();
+    // Auto-generates a balanced arcade mix (Sentence Builder, 4-Word Spelling, Verb Timeline, MCQ)
+    final questions = PocketCitadelChallengeGenerator.generateChallengesForDefender(
+      defenderLevel: targetShieldCount,
+      isPresident: false,
+      isVip: false,
+    ).take(targetShieldCount).toList();
+
     setState(() {
       _activeQuestions = questions;
       _isChoosingMode = false;
@@ -296,7 +302,51 @@ class _PocketHouseDefenseChatPageState
     await _saveDefenseQuestions(questions);
 
     _speak(
-      "Excellent choice! House number ${widget.day} defense shield is fully activated with $targetShieldCount defense ${targetShieldCount == 1 ? 'question' : 'questions'}. Shield health is 100 percent.",
+      "Excellent choice! House number ${widget.day} defense shield is fully activated with $targetShieldCount smart defense ${targetShieldCount == 1 ? 'task' : 'tasks'}. Shield health is 100 percent.",
+    );
+  }
+
+  Future<void> _handleEquipSpecificFormat(String formatId) async {
+    HapticFeedback.heavyImpact();
+    await _tts.stop();
+
+    final List<HouseShieldQuestion> questions = [];
+    final random = math.Random(widget.day * 43);
+
+    for (int i = 0; i < targetShieldCount; i++) {
+      final taskDay = ((widget.day - 1 + i) % 90) + 1;
+      questions.add(
+        PocketCitadelChallengeGenerator.buildChallengeForFormat(
+          format: formatId,
+          day: taskDay,
+          taskIndex: i + 1,
+          random: random,
+        ),
+      );
+    }
+
+    setState(() {
+      _activeQuestions = questions;
+      _isChoosingMode = false;
+      _isShieldArmed = true;
+    });
+
+    _shieldAnimController.forward(from: 0.0);
+    await _saveDefenseQuestions(questions);
+
+    String formatName = 'Defense';
+    if (formatId == 'sentence_builder') {
+      formatName = 'Sentence Builder';
+    } else if (formatId == 'spelling_challenge') {
+      formatName = '4-Word Spelling Challenge';
+    } else if (formatId == 'verb_timeline') {
+      formatName = 'Verb Timeline';
+    } else if (formatId == 'mcq') {
+      formatName = 'Tactical MCQ';
+    }
+
+    _speak(
+      "House number ${widget.day} defense shield is armed with $formatName! $targetShieldCount ${targetShieldCount == 1 ? 'task' : 'tasks'} installed.",
     );
   }
 
@@ -794,150 +844,198 @@ class _PocketHouseDefenseChatPageState
     );
   }
 
-  /// 🛡️ Step B: 2 Clean Options (AI vs Manual)
+  /// 🛡️ Step B: Full Arcade Defense Trap Selector (User Audio Directive: Sentence Builder, 4-Word Spelling, Verb Timeline, Tactical MCQ, AI Auto-Arm, Manual)
   Widget _buildChoiceOptions() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Option 1: AI Auto-Equip (5 questions, curated bank)
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF10B981), width: 1.6),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: _handleAutoEquip,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.auto_awesome_rounded, color: Colors.black, size: 24),
-                      ),
+        // Section Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('🛡️', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'CHOOSE DAY ${widget.day} DEFENSE TRAP',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12.5,
+                      letterSpacing: 0.5,
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                '✨ Auto-Add with AI',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14.5,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFD700),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'POPULAR',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Instantly arms $targetShieldCount high-yield Spoken English ${targetShieldCount == 1 ? 'question' : 'questions'} (100 HP Shield).',
-                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF10B981), size: 16),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'ഒരു ഡേ കംപ്ലീറ്റ് ചെയ്യുമ്പോൾ 1 ഡിഫൻസ് ആഡ് ചെയ്യാം. നിങ്ങളുടെ വീടിന്റെ മതിലിൽ സ്ഥാപിക്കേണ്ട രൂപം തിരഞ്ഞെടുക്കുക:',
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  height: 1.3,
                 ),
               ),
-            ),
+            ],
           ),
         ),
 
-        const SizedBox(height: 12),
+        // 1. ✨ AI Auto-Arm
+        _buildTrapOptionCard(
+          icon: '✨',
+          title: 'Auto-Add with AI (Recommended)',
+          subtitle: 'Curriculum-backed balanced arcade mix ($targetShieldCount tasks).',
+          tag: 'POPULAR',
+          accentColor: const Color(0xFF10B981),
+          onTap: _handleAutoEquip,
+        ),
 
-        // Option 2: Manual Pick
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFF131D2D),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white24, width: 1.0),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: _handleManualMode,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F2937),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.edit_note_rounded, color: Colors.white70, size: 24),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '✍️ Add Manually',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.5,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Inspect and pick questions from our Spoken English database.',
-                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 16),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        // 2. 🧩 Sentence Builder Trap
+        _buildTrapOptionCard(
+          icon: '🧩',
+          title: 'Sentence Builder Trap',
+          subtitle: 'ശരിയായ ക്രമത്തിൽ വാക്കുകൾ അടുക്കിവെച്ച് വാക്യം നിർമ്മിക്കണം.',
+          tag: 'SYNTAX',
+          accentColor: const Color(0xFF38BDF8),
+          onTap: () => _handleEquipSpecificFormat('sentence_builder'),
+        ),
+
+        // 3. 🔤 4-Word Spelling Challenge Trap
+        _buildTrapOptionCard(
+          icon: '🔤',
+          title: '4-Word Spelling Challenge Trap',
+          subtitle: 'ഒരു ടാസ്കിൽ തന്നെ 4 വാക്കുകളുടെ സ്പെല്ലിംഗ് ശരിയാക്കണം!',
+          tag: '4 WORDS',
+          accentColor: const Color(0xFFF59E0B),
+          onTap: () => _handleEquipSpecificFormat('spelling_challenge'),
+        ),
+
+        // 4. ⏳ Verb Timeline Trap
+        _buildTrapOptionCard(
+          icon: '⏳',
+          title: 'Verb Timeline Trap',
+          subtitle: 'Past, Present, Future ക്രിയാ രൂപങ്ങൾ കണ്ടെത്തുന്ന ടാസ്ക്.',
+          tag: 'TENSES',
+          accentColor: const Color(0xFFA855F7),
+          onTap: () => _handleEquipSpecificFormat('verb_timeline'),
+        ),
+
+        // 5. 🛡️ Tactical Defense MCQ Trap
+        _buildTrapOptionCard(
+          icon: '🎯',
+          title: 'Tactical Defense MCQ Trap',
+          subtitle: 'സ്പോക്കൺ ഇംഗ്ലീഷ് മൾട്ടിപ്പിൾ ചോയ്സ് സാഹചര്യ ചോദ്യങ്ങൾ.',
+          tag: 'SITUATIONAL',
+          accentColor: const Color(0xFFEC4899),
+          onTap: () => _handleEquipSpecificFormat('mcq'),
+        ),
+
+        // 6. ✍️ Add Manually from Bank
+        _buildTrapOptionCard(
+          icon: '✍️',
+          title: 'Pick from Bank Manually',
+          subtitle: 'ലൈബ്രറിയിൽ നിന്ന് ചോദ്യങ്ങൾ നേരിട്ട് കണ്ട് തിരഞ്ഞെടുക്കാം.',
+          tag: 'CUSTOM',
+          accentColor: Colors.white60,
+          onTap: _handleManualMode,
         ),
       ],
+    );
+  }
+
+  Widget _buildTrapOptionCard({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required String tag,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131D2D),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentColor.withValues(alpha: 0.5), width: 1.2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1),
+                  ),
+                  child: Center(
+                    child: Text(icon, style: const TextStyle(fontSize: 20)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              title,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (tag.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: accentColor,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                tag,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: 14),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1677,9 +1775,9 @@ class _PocketHouseDefenseChatPageState
                             : null,
                         icon: const Icon(Icons.shield_rounded, size: 20),
                         label: Text(
-                          selectedIds.length == 5
-                              ? 'EQUIP 5 SELECTED QUESTIONS 🛡️'
-                              : 'SELECT ${5 - selectedIds.length} MORE QUESTIONS',
+                          selectedIds.length == targetShieldCount
+                              ? 'EQUIP $targetShieldCount SELECTED ${targetShieldCount == 1 ? "QUESTION" : "QUESTIONS"} 🛡️'
+                              : 'SELECT ${targetShieldCount - selectedIds.length} MORE ${targetShieldCount - selectedIds.length == 1 ? "QUESTION" : "QUESTIONS"}',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                       ),

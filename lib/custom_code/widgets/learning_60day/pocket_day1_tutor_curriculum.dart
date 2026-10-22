@@ -826,44 +826,95 @@ class Day1Curriculum {
             gameType = 'verb_timeline_game';
           }
 
-          // Step 9 on ALL DAYS (1 to 90): English Hub Community Chat
-          if (stepNum == 9) {
-            titleEn = '💬 English Hub Community Chat';
-            titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-            descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-            descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-            icon = '💬';
-            gameType = 'group_chat_action';
-          }
-
-          // Step 10 on ALL DAYS (1 to 90): House Defense Shield Command
-          if (stepNum == 10) {
-            titleEn = '🛡️ House Defense Shield Command';
-            titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-            descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
-            descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
-            icon = '🛡️';
-            gameType = 'house_defense_chat';
-          }
-
-          // Step 11 on ALL DAYS (1 to 90): PocketTalk 4-Day Pact & Peer Practice
-          if (stepNum == 11) {
-            titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-            titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-            descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
-            descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-            icon = '📞';
-            gameType = 'pocket_talk_action';
-          }
-
-          // Step 12 on ALL DAYS (1 to 90): House Attack Quest: Raid Rival Citadel
-          if (stepNum == 12) {
-            titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-            titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-            descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
-            descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
-            icon = '⚔️';
-            gameType = 'house_attack_quest';
+          if (day == 1) {
+            if (stepNum == 9) {
+              titleEn = '💬 Chat Reply Builder';
+              titleMl = '💬 ചാറ്റ് റിപ്ലൈ ബിൽഡർ';
+              descEn = 'Formulate quick, natural English chat replies using sequential word-bank tap mechanics!';
+              descMl = 'വേർഡ് ബാങ്ക് ഉപയോഗിച്ച് ചാറ്റിംഗിൽ കൃത്യമായ ഇംഗ്ലീഷ് മറുപടികൾ നൽകാൻ പഠിക്കുക!';
+              icon = '💬';
+              gameType = 'chat_reply_builder';
+            } else if (stepNum == 10) {
+              titleEn = '🔄 Negative Sentence Builder';
+              titleMl = '🔄 നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ';
+              descEn = 'Transform positive statements into flawless negative sentences with "not", "do not", and "does not"!';
+              descMl = 'വാക്യങ്ങളെ നെഗറ്റീവ് വാക്യങ്ങളാക്കി മാറ്റാൻ പഠിക്കുക!';
+              icon = '🔄';
+              gameType = 'negative_sentence_builder';
+            } else if (stepNum == 11) {
+              titleEn = '📢 Mini Speech Practice';
+              titleMl = '📢 മിനി സ്പീച്ച് പ്രാക്ടീസ്';
+              descEn = 'Overcome speaking hesitation by listening to native cadence and delivering short spoken speeches!';
+              descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് സ്പീക്കിംഗ് ആത്മവിശ്വാസം വളർത്തുക!';
+              icon = '📢';
+              gameType = 'mini_speech_practice';
+            } else if (stepNum == 12) {
+              titleEn = '💬 English Hub Community Chat';
+              titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+              descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+              descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+              icon = '💬';
+              gameType = 'group_chat_action';
+            } else if (stepNum == 13) {
+              titleEn = '🛡️ House Defense Shield Command';
+              titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+              descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
+              descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+              icon = '🛡️';
+              gameType = 'house_defense_chat';
+            } else if (stepNum == 14) {
+              titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+              titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+              descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
+              descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+              icon = '📞';
+              gameType = 'pocket_talk_action';
+            } else if (stepNum == 15) {
+              titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+              titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+              descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
+              descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
+              icon = '⚔️';
+              gameType = 'house_attack_quest';
+            } else if (stepNum == 16) {
+              titleEn = '🏆 Day 1 Review & Performance Card';
+              titleMl = '🏆 ഡേ 1 പെർഫോമൻസ് അവലോകനം';
+              descEn = 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and Day 2 roadmap!';
+              descMl = 'ഡേ 1 ലെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും വീക്ക് പോയിന്റുകൾ തിരുത്തുകയും ചെയ്യുക!';
+              icon = '🏆';
+              gameType = 'day_review_card';
+            }
+          } else {
+            // Days > 1
+            if (stepNum == 9) {
+              titleEn = '💬 English Hub Community Chat';
+              titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+              descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+              descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+              icon = '💬';
+              gameType = 'group_chat_action';
+            } else if (stepNum == 10) {
+              titleEn = '🛡️ House Defense Shield Command';
+              titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+              descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
+              descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+              icon = '🛡️';
+              gameType = 'house_defense_chat';
+            } else if (stepNum == 11) {
+              titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+              titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+              descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
+              descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+              icon = '📞';
+              gameType = 'pocket_talk_action';
+            } else if (stepNum == 12) {
+              titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+              titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+              descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
+              descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
+              icon = '⚔️';
+              gameType = 'house_attack_quest';
+            }
           }
 
           return Day1StepModel(
@@ -962,6 +1013,64 @@ class Day1Curriculum {
         descMl = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ അടുക്കി വാക്യങ്ങൾ നിർമ്മിക്കുക!';
         icon = '⏳';
         gameType = 'verb_timeline_game';
+      } else if (day == 1) {
+        if (stepNum == 9) {
+          titleEn = '💬 Chat Reply Builder';
+          titleMl = '💬 ചാറ്റ് റിപ്ലൈ ബിൽഡർ';
+          descEn = 'Formulate quick, natural English chat replies using sequential word-bank tap mechanics!';
+          descMl = 'വേർഡ് ബാങ്ക് ഉപയോഗിച്ച് ചാറ്റിംഗിൽ കൃത്യമായ ഇംഗ്ലീഷ് മറുപടികൾ നൽകാൻ പഠിക്കുക!';
+          icon = '💬';
+          gameType = 'chat_reply_builder';
+        } else if (stepNum == 10) {
+          titleEn = '🔄 Negative Sentence Builder';
+          titleMl = '🔄 നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ';
+          descEn = 'Transform positive statements into flawless negative sentences with "not", "do not", and "does not"!';
+          descMl = 'വാക്യങ്ങളെ നെഗറ്റീവ് വാക്യങ്ങളാക്കി മാറ്റാൻ പഠിക്കുക!';
+          icon = '🔄';
+          gameType = 'negative_sentence_builder';
+        } else if (stepNum == 11) {
+          titleEn = '📢 Mini Speech Practice';
+          titleMl = '📢 മിനി സ്പീച്ച് പ്രാക്ടീസ്';
+          descEn = 'Overcome speaking hesitation by listening to native cadence and delivering short spoken speeches!';
+          descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് സ്പീക്കിംഗ് ആത്മവിശ്വാസം വളർത്തുക!';
+          icon = '📢';
+          gameType = 'mini_speech_practice';
+        } else if (stepNum == 12) {
+          titleEn = '💬 English Hub Community Chat';
+          titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
+          descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
+          descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
+          icon = '💬';
+          gameType = 'group_chat_action';
+        } else if (stepNum == 13) {
+          titleEn = '🛡️ House Defense Shield Command';
+          titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
+          descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
+          descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
+          icon = '🛡️';
+          gameType = 'house_defense_chat';
+        } else if (stepNum == 14) {
+          titleEn = '📞 Poketalk: 4-Day Spoken Pact';
+          titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
+          descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
+          descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
+          icon = '📞';
+          gameType = 'pocket_talk_action';
+        } else if (stepNum == 15) {
+          titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
+          titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
+          descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
+          descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
+          icon = '⚔️';
+          gameType = 'house_attack_quest';
+        } else if (stepNum == 16) {
+          titleEn = '🏆 Day 1 Review & Performance Card';
+          titleMl = '🏆 ഡേ 1 പെർഫോമൻസ് അവലോകനം';
+          descEn = 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and Day 2 roadmap!';
+          descMl = 'ഡേ 1 ലെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും വീക്ക് പോയിന്റുകൾ തിരുത്തുകയും ചെയ്യുക!';
+          icon = '🏆';
+          gameType = 'day_review_card';
+        }
       } else if (stepNum == 9) {
         titleEn = '💬 English Hub Community Chat';
         titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';

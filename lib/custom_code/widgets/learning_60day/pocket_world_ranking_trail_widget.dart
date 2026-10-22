@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dar
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_world_ranking_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'pocket_global_rank_list_view.dart';
 
 enum RankingTrailMode {
   world,
@@ -48,7 +49,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
     this.isUnder17Only,
   });
 
-  /// 👥 Open Mates Ranking in a premium bottom sheet modal
+  /// 👥 Open Mates Ranking in a premium bottom sheet modal with Global Ranking UI
   static Future<void> showMatesRankingModal(BuildContext context, {String? userId}) {
     return showModalBottomSheet(
       context: context,
@@ -57,7 +58,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
       builder: (ctx) => Container(
         height: MediaQuery.of(ctx).size.height * 0.94,
         decoration: const BoxDecoration(
-          color: Color(0xFF071209),
+          color: Color(0xFF0F172A),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -81,7 +82,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mates Ranking Canyon',
+                        'Mates Global Rankings',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 18,
@@ -89,7 +90,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
                         ),
                       ),
                       Text(
-                        'Flame-powered open canyon rankings with your followed friends',
+                        'Real-time leaderboards & citadel rankings for your mates',
                         style: GoogleFonts.inter(
                           color: Colors.white54,
                           fontSize: 11,
@@ -107,8 +108,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
             ),
             const Divider(color: Colors.white12, height: 1),
             Expanded(
-              child: PocketWorldRankingTrailWidget(
-                mode: RankingTrailMode.mates,
+              child: PocketGlobalRankListView(
                 currentUserId: userId,
               ),
             ),

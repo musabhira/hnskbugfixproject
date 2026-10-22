@@ -39,6 +39,10 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/verb_timeline_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_spoken_exam_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pronunciation_evaluator.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_chat_reply_builder_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negative_sentence_builder_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -220,11 +224,17 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 12;
+  int get _totalSteps => widget.day == 1 ? 16 : 12;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
-    final denominator = (totalSteps > 1) ? (totalSteps - 1).toDouble() : 1.0;
+    if (totalSteps == 16 && stepIndex == 16) {
+      // Step 16 on Day 1 is the Summit Review Milestone right past Gate 1!
+      const x = 4350.0;
+      return Offset(x, getGroundY(x));
+    }
+    final stepsForSlope = (totalSteps == 16) ? 15 : totalSteps;
+    final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
     const startX = 1040.0;
     const endX = 3960.0;
@@ -287,8 +297,13 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    for (int s = 1; s <= _totalSteps; s++) {
+    final preGateMax = widget.day == 1 ? 15 : _totalSteps;
+    for (int s = 1; s <= preGateMax; s++) {
       if (!(flags['step_$s'] ?? false)) return s;
+    }
+    if (widget.day == 1) {
+      if (!_isGateExamPassed) return 15;
+      if (!(flags['step_16'] ?? false)) return 16;
     }
     return _totalSteps;
   }
@@ -495,7 +510,9 @@ class _PocketDayOpenWorldAdventurePageState
       );
 
       // Auto-drive forward to next step from current location
-      if (stepIndex < _totalSteps) {
+      if (widget.day == 1 && stepIndex == 15 && !_isGateExamPassed) {
+        _driveToGate(openExamOnArrival: true);
+      } else if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
         if (!_isGateExamPassed) {
@@ -1903,9 +1920,21 @@ class _PocketDayOpenWorldAdventurePageState
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (isPassed) {
                               Navigator.pop(dlgCtx);
+                              if (widget.day == 1) {
+                                await PocketDay1ReviewCardPage.show(
+                                  context,
+                                  day: 1,
+                                  userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                                  onProceedToNextDay: () {
+                                    widget.onCompleted?.call();
+                                  },
+                                );
+                                await _syncStepCompletionIfDone(16);
+                                await _loadState(preserveCarPosition: true);
+                              }
                             } else {
                               setModalState(() {
                                 currentIdx = 0;
@@ -1917,7 +1946,11 @@ class _PocketDayOpenWorldAdventurePageState
                             }
                           },
                           child: Text(
-                            isPassed ? 'CONTINUE TO ROAD ➔' : 'RETRY EXAM 🔄',
+                            isPassed
+                                ? (widget.day == 1
+                                    ? 'VIEW DAY 1 REVIEW & PERFORMANCE CARD 🏆'
+                                    : 'CONTINUE TO ROAD ➔')
+                                : 'RETRY EXAM 🔄',
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
                           ),
                         ),
@@ -2400,8 +2433,9 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildMountainStepNode(int stepIndex) {
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
-    final isPrevDone =
-        stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false);
+    final isPrevDone = (widget.day == 1 && stepIndex == 16)
+        ? _isGateExamPassed
+        : (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
     // Strict sequential unlocking:
     // A step is ONLY visually unlocked if the immediate previous step is done.
     final isUnlocked = isPrevDone;
@@ -2523,14 +2557,16 @@ class _PocketDayOpenWorldAdventurePageState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            PocketLanguageService.localize(
-                              en: '🔒 Complete Step ${stepIndex - 1} first to unlock Step $stepIndex!',
-                              ml: '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ!',
-                              hi: '🔒 Step $stepIndex अनलॉक करने के लिए पहले Step ${stepIndex - 1} पूरा करें!',
-                              ta: '🔒 Step $stepIndex ஐ திறக்க முதலில் Step ${stepIndex - 1} ஐ முடிக்கவும்!',
-                              te: '🔒 Step $stepIndex అన్‌లాక్ చేయడానికి ముందుగా Step ${stepIndex - 1} పూర్తి చేయండి!',
-                              kn: '🔒 Step $stepIndex ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮೊದಲು Step ${stepIndex - 1} ಪೂರ್ಣಗೊಳಿಸಿ!',
-                            ),
+                            (widget.day == 1 && stepIndex == 16)
+                                ? '🔒 Pass the Gate 1 Spoken Exam on the summit to unlock the Day 1 Performance Review!'
+                                : PocketLanguageService.localize(
+                                    en: '🔒 Complete Step ${stepIndex - 1} first to unlock Step $stepIndex!',
+                                    ml: '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ!',
+                                    hi: '🔒 Step $stepIndex अनलॉक करने के लिए पहले Step ${stepIndex - 1} पूरा करें!',
+                                    ta: '🔒 Step $stepIndex ஐ திறக்க முதலில் Step ${stepIndex - 1} ஐ முடிக்கவும்!',
+                                    te: '🔒 Step $stepIndex అన్‌లాక్ చేయడానికి ముందుగా Step ${stepIndex - 1} పూర్తి చేయండి!',
+                                    kn: '🔒 Step $stepIndex ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಮೊದಲು Step ${stepIndex - 1} ಪೂರ್ಣಗೊಳಿಸಿ!',
+                                  ),
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12,
@@ -2762,13 +2798,21 @@ class _PocketDayOpenWorldAdventurePageState
         case 8:
           return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
         case 9:
-          return const _StepInfo('English Hub Community Chat', '💬', Color(0xFFFFFC00));
+          return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
         case 10:
-          return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+          return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
         case 11:
-          return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+          return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
         case 12:
+          return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
+        case 13:
+          return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+        case 14:
+          return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
+        case 15:
           return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+        case 16:
+          return const _StepInfo('Day 1 Review & Performance Card', '🏆', Color(0xFFFFD700));
         default:
           return const _StepInfo('Practice Ledge', '⭐', Colors.white);
       }
@@ -3008,8 +3052,47 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // All Days (1 to 90) Step 9: English Hub Community Chat
-    if (s == 9) {
+    // Day 1 Step 9: Chat Reply Builder
+    if (day == 1 && s == 9) {
+      await PocketChatReplyBuilderPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(9);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 10: Negative Sentence Builder
+    if (day == 1 && s == 10) {
+      await PocketNegativeSentenceBuilderPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(10);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 11: Mini Speech Practice
+    if (day == 1 && s == 11) {
+      await PocketMiniSpeechPracticePage.show(
+        context,
+        day: day,
+        userId: uid,
+        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+      );
+      await _syncStepCompletionIfDone(11);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // English Hub Community Chat (Day 1 Step 12, or Day > 1 Step 9)
+    if ((day == 1 && s == 12) || (day > 1 && s == 9)) {
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -3023,45 +3106,60 @@ class _PocketDayOpenWorldAdventurePageState
           ),
         ),
       );
-      await _onStepCompleted(9);
-      await _syncStepCompletionIfDone(9);
+      await _onStepCompleted(s);
+      await _syncStepCompletionIfDone(s);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // All Days (1 to 90) Step 10: House Defense Shield Command
-    if (s == 10) {
+    // House Defense Shield Command (Day 1 Step 13, or Day > 1 Step 10)
+    if ((day == 1 && s == 13) || (day > 1 && s == 10)) {
       await PocketHouseDefenseChatPage.show(
         context,
         day: day,
-        stepIndex: 10,
+        stepIndex: s,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(10);
+      await _syncStepCompletionIfDone(s);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // All Days (1 to 90) Step 11: Poketalk: 4-Day Spoken Pact
-    if (s == 11) {
+    // Poketalk: 4-Day Spoken Pact (Day 1 Step 14, or Day > 1 Step 11)
+    if ((day == 1 && s == 14) || (day > 1 && s == 11)) {
       await PocketTalkCardSwiperDialog.show(context);
-      await _onStepCompleted(11);
-      await _syncStepCompletionIfDone(11);
+      await _onStepCompleted(s);
+      await _syncStepCompletionIfDone(s);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    // All Days (1 to 90) Step 12: House Attack Quest: Citadel Raid
-    if (s == 12) {
+    // House Attack Quest: Citadel Raid (Day 1 Step 15, or Day > 1 Step 12)
+    if ((day == 1 && s == 15) || (day > 1 && s == 12)) {
       await PocketHouseAttackPage.show(
         context,
         day: day,
-        stepIndex: 12,
+        stepIndex: s,
         userId: uid,
         onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
       );
-      await _syncStepCompletionIfDone(12);
+      await _syncStepCompletionIfDone(s);
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
+
+    // Day 1 Step 16: Day 1 Grand Review & Performance Card
+    if (day == 1 && s == 16) {
+      await PocketDay1ReviewCardPage.show(
+        context,
+        day: day,
+        userId: uid,
+        onProceedToNextDay: () {
+          widget.onCompleted?.call();
+        },
+      );
+      await _syncStepCompletionIfDone(16);
       await _loadState(preserveCarPosition: true);
       return;
     }

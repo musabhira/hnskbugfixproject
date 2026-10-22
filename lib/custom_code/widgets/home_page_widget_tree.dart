@@ -1172,20 +1172,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           userId: _currentUserId,
                         );
                       },
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: material.Colors.black,
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: const Color(0xFFFFD700),
                       elevation: 4,
                       highlightElevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                          width: 1.2,
+                        ),
                       ),
-                      icon: const Text('🏆', style: TextStyle(fontSize: 14)),
                       label: Text(
                         'Mates Rank',
                         style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                          color: material.Colors.black,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12.5,
+                          color: const Color(0xFFFFD700),
+                          letterSpacing: 0.4,
                         ),
                       ),
                     )

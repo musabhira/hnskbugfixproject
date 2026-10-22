@@ -2749,57 +2749,167 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            if (entry.ironDomeBlocked)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
-                                ),
-                                child: Text(
-                                  '🛡️ DOME BLOCKED (0 Lost)',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF00F0FF),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (entry.ironDomeBlocked)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '🛡️ DOME BLOCKED (0 Lost)',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF00F0FF),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  )
+                                else if (entry.breached)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '💥 BREACHED (-${entry.coinsLooted} Coins)',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFF87171),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '🛡️ DEFENSE HELD',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF34D399),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(height: 5),
+                                // ⚔️ REVENGE (പ്രതികാരം) Button (User Audio Directive)
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(6),
+                                    onTap: () async {
+                                      HapticFeedback.heavyImpact();
+                                      final targetId = entry.attackerId;
+                                      if (targetId.isEmpty || targetId == userId || targetId == 'me') {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Cannot retaliate against unknown or self raider.'),
+                                            backgroundColor: Color(0xFF1E293B),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
+                                      if (isProtected) {
+                                        final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId);
+                                        final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  const Text('👮‍♂️', style: TextStyle(fontSize: 16)),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Attacker is under 24h Presidential Protection ($hours hrs left). Revenge temporarily blocked!',
+                                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: const Color(0xFF1E3A8A),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+                                      final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
+                                      if (inCooldown) {
+                                        final cdMins = await PocketFortressDefenseService.getCooldownMinutesRemaining(targetId);
+                                        final hours = (cdMins / 60.0).toStringAsFixed(1);
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Revenge cooldown active on this house ($hours hrs remaining).'),
+                                              backgroundColor: Colors.amber.shade900,
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+
+                                      if (mounted) {
+                                        PocketCitadelAttackPage.openForUser(
+                                          context,
+                                          userId: targetId,
+                                          targetName: entry.attackerName,
+                                          attackerDay: _getEffectiveDay(),
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFFF87171), width: 1.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('⚔️', style: TextStyle(fontSize: 9.5)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'REVENGE',
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              )
-                            else if (entry.breached)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
-                                ),
-                                child: Text(
-                                  '💥 BREACHED (-${entry.coinsLooted} Coins)',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFF87171),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              )
-                            else
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                                ),
-                                child: Text(
-                                  '🛡️ DEFENSE HELD',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF34D399),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
+                              ],
+                            ),
                           ],
                         ),
                       );

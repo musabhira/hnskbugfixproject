@@ -582,8 +582,8 @@ class PocketFortressDefenseService {
   static int getAttackerLifelinesForNeighborDay(int neighborDay) {
     if (neighborDay >= 80) return 3;
     if (neighborDay >= 50) return 2;
-    if (neighborDay >= 28) return 1;
-    return 0;
+    // User Audio Directive: "ഒരു വൺ ടൈം ചാൻസും കൊടുക്കും, വൺ മോർ ചാൻസും കൊടുക്കും"
+    return 1;
   }
 
   /// ⚔️ Raid Opponent Target Level Matchmaking Rule (User Audio Directive):
@@ -1773,7 +1773,7 @@ class PocketFortressDefenseService {
     return 0;
   }
 
-  static Future<void> recordFailedAttackCooldown(String targetId, {int hours = 6}) async {
+  static Future<void> recordFailedAttackCooldown(String targetId, {int hours = 4}) async {
     final prefs = await SharedPreferences.getInstance();
     final expiry = DateTime.now().add(Duration(hours: hours)).millisecondsSinceEpoch;
     await prefs.setInt('failed_attack_cooldown_$targetId', expiry);
@@ -2072,8 +2072,11 @@ class PocketFortressDefenseService {
     String houseId, {
     int hours = kPresidentialProtectionHours,
   }) async {
-    // Robots NEVER get Presidential Protection (User Audio Directive)
-    if (houseId.startsWith('pocket_robo') || houseId.startsWith('kid_bot_') || houseId.startsWith('rival_citadel')) {
+    // Robots NEVER get Presidential Protection (User Audio Directive: "പക്ഷെ റോബോട്ടുകൾക്ക് പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ഇല്ല")
+    if (houseId.startsWith('pocket_robo') ||
+        houseId.startsWith('kid_bot_') ||
+        houseId.startsWith('rival_citadel') ||
+        PocketRobotService.isRobotId(houseId)) {
       return;
     }
     final prefs = await SharedPreferences.getInstance();
@@ -2091,7 +2094,10 @@ class PocketFortressDefenseService {
   /// Check if house is actively guarded by Presidential Police
   static Future<bool> isUnderPresidentialProtection(String houseId) async {
     // Robots NEVER have Presidential Protection (User Audio Directive: "പക്ഷെ റോബോട്ടുകൾക്ക് പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ ഇല്ല")
-    if (houseId.startsWith('pocket_robo') || houseId.startsWith('kid_bot_') || houseId.startsWith('rival_citadel')) {
+    if (houseId.startsWith('pocket_robo') ||
+        houseId.startsWith('kid_bot_') ||
+        houseId.startsWith('rival_citadel') ||
+        PocketRobotService.isRobotId(houseId)) {
       return false;
     }
 
