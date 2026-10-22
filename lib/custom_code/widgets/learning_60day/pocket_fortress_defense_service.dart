@@ -1777,9 +1777,10 @@ class PocketFortressDefenseService {
     return 0;
   }
 
-  static Future<void> recordFailedAttackCooldown(String targetId, {int hours = 4}) async {
+  static Future<void> recordFailedAttackCooldown(String targetId, {int minutes = 30, int? hours}) async {
     final prefs = await SharedPreferences.getInstance();
-    final expiry = DateTime.now().add(Duration(hours: hours)).millisecondsSinceEpoch;
+    final duration = hours != null ? Duration(hours: hours) : Duration(minutes: minutes);
+    final expiry = DateTime.now().add(duration).millisecondsSinceEpoch;
     await prefs.setInt('failed_attack_cooldown_$targetId', expiry);
   }
 

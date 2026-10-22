@@ -509,7 +509,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       if (_raidStep == 1 && mounted) {
         _combatTimer?.cancel();
-        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 4);
+        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, minutes: 30);
         setState(() {
           _isAntiCheatTriggered = true;
           _raidStep = -1; // Raid Failed!
@@ -562,7 +562,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       );
       _startCombatTimer();
     } else {
-      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 4);
+      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, minutes: 30);
       setState(() {
         _secondsLeft = 0;
         _isTimeoutTriggered = true;
@@ -1813,17 +1813,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: _buildPoliceOfficerSprite(isLeft: false),
               ),
 
-              // 3. Presidential Military Defense Soldiers
-              Positioned(
-                left: 114,
-                top: 24,
-                child: _buildMilitarySoldierSprite(hasShield: true),
-              ),
-              Positioned(
-                right: 114,
-                top: 24,
-                child: _buildMilitarySoldierSprite(hasShield: false),
-              ),
+              // 3. Presidential Military Escort Soldiers (VIP Houses Only)
+              if (widget.neighbor.isVip) ...[
+                Positioned(
+                  left: 114,
+                  top: 24,
+                  child: _buildMilitarySoldierSprite(hasShield: true),
+                ),
+                Positioned(
+                  right: 114,
+                  top: 24,
+                  child: _buildMilitarySoldierSprite(hasShield: false),
+                ),
+              ],
 
               // 4. Yellow & Black Hazard Barricade with Official Presidential Protection Notice Board
               Positioned(
@@ -6278,7 +6280,130 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     }
 
-                    // 3. STANDARD MCQ / SPELLING / DEFUSAL CARDS
+                    // 2B. 🔤 4-WORD SPELLING GAUNTLET (User Audio Directive: "ഒറ്റ ടാസ്കിൽ തന്നെ നാല് വേർഡിന്റെ സ്പെല്ലിംഗ് സെറ്റ് ചെയ്യണം... കുറച്ച് ഹാർഡ് ആയിട്ട് പോകട്ടെ.")
+                    if (currentQ.gameFormat == 'spelling_challenge') {
+                      return Column(
+                        children: List.generate(currentQ.options.length, (optIdx) {
+                          final letter = String.fromCharCode(65 + optIdx);
+                          final isSelected = _selectedOption == optIdx;
+                          final optionStr = currentQ.options[optIdx];
+                          final words = optionStr.split('•').map((w) => w.trim()).toList();
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() => _selectedOption = optIdx);
+                              HapticFeedback.selectionClick();
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF0284C7).withValues(alpha: 0.32)
+                                    : const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                                  width: isSelected ? 2.0 : 1.0,
+                                ),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isSelected ? const Color(0xFFFFD700) : Colors.white10,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            letter,
+                                            style: GoogleFonts.outfit(
+                                              color: isSelected ? Colors.black : Colors.white70,
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Set $letter: 4 Words Spelling',
+                                        style: GoogleFonts.outfit(
+                                          color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      if (isSelected)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                                          ),
+                                          child: Text(
+                                            'SELECTED',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFFD700),
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: words.map((w) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF0F172A),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white24,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          w,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      );
+                    }
+
+                    // 3. STANDARD MCQ / DEFUSAL CARDS
                     return Column(
                       children: List.generate(currentQ.options.length, (optIdx) {
                         final letter = String.fromCharCode(65 + optIdx);
@@ -6448,7 +6573,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     }
                                     await PocketFortressDefenseService.recordFailedAttackCooldown(
                                       widget.neighbor.id,
-                                      hours: 4,
+                                      minutes: 30,
                                     );
                                     if (mounted) {
                                       setState(() => _raidStep = -1);

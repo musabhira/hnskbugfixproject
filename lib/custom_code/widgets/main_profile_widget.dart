@@ -1727,8 +1727,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         const SizedBox(height: 16),
                       ],
                       _buildMinimalDefenseSection(textColor, btnColor),
-                      const SizedBox(height: 16),
-                      _buildMinimalAttackersSection(),
+                      if (isMe) ...[
+                        const SizedBox(height: 16),
+                        _buildMinimalAttackersSection(),
+                      ],
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -2631,7 +2633,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  // ⚔️ Recent Citadel Attackers (Audio directive: "ആരെങ്കിലും അറ്റാക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ അറ്റാക്ക് ചെയ്ത ആൾക്കാരുടെ ലിസ്റ്റ് കാണിക്കണം... സുപ്പർബേസ് ആയിട്ടുള്ള ഇന്റഗ്രേഷൻ ചെയ്തു വെക്കണം")
+  // 🚨 POLICE CRIME REPORT: FIND THE THIEF (കള്ളനെ കണ്ടെത്തി!) & REVENGE ATTACK
+  // (User Audio Directive: "ആരെങ്കിലും അറ്റാക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ ആരാ അറ്റാക്ക് ചെയ്തത് എന്നുള്ളത് നമ്മുടെ മെയിൻ പ്രൊഫൈൽ വിജറ്റിൽ അടിയിൽ ഇങ്ങനെ കാണിക്കണം. അദ്ദേഹത്തിന് മാത്രം കണ്ടാൽ മതി (isMe). ഈ കേസ് പോലീസ് കണ്ടെത്തി എന്ന് പറയുമല്ലോ, 'Find the Thief' / 'കള്ളൻ ആരാണെന്ന് കണ്ടെത്തി'... ആ കള്ളൻ ആരാണെന്നുള്ളത് പോലീസ് കണ്ടുപിടിച്ച ഡീറ്റെയിൽസ് ലിസ്റ്റ് വ്യൂ ആയിട്ട് മെയിൻ പ്രൊഫൈൽ വിജറ്റിൽ കൊടുക്കുക. അവർക്ക് റിവഞ്ച് അറ്റാക്ക് ചെയ്യാൻ പറ്റും, ആ സ്പോട്ടിൽ തന്നെ!")
   Widget _buildMinimalAttackersSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -2639,27 +2642,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.35),
-          width: 1.2,
+          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+          width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 18,
+            offset: const Offset(0, 5),
+          ),
+          BoxShadow(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.12),
+            blurRadius: 14,
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Attackers Header
+          // 🚨 Police Crime Header Banner
           Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFFEF4444).withValues(alpha: 0.15),
+                  const Color(0xFFDC2626).withValues(alpha: 0.22),
+                  const Color(0xFF1E3A8A).withValues(alpha: 0.20),
                   const Color(0xFF0F172A),
                 ],
                 begin: Alignment.topLeft,
@@ -2677,34 +2685,58 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
                     ),
                   ),
-                  child: const Text('⚔️', style: TextStyle(fontSize: 20)),
+                  child: const Text('🚨', style: TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'RECENT CITADEL ATTACKERS (RAID LOG)',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'POLICE CRIME DESK: FIND THE THIEF',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent.withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.redAccent, width: 0.8),
+                            ),
+                            child: Text(
+                              'കള്ളനെ കണ്ടെത്തി!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFCA5A5),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Supabase Sync • ${_recentRaids.length} Sieges Recorded',
+                        'പോലീസ് അന്വേഷണ റിപ്പോർട്ട് • Identified Attackers & Stolen Score',
                         style: GoogleFonts.inter(
                           color: Colors.white70,
-                          fontSize: 11,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -2719,12 +2751,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             padding: const EdgeInsets.all(14),
             child: _recentRaids.isEmpty
                 ? Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(18),
                     alignment: Alignment.center,
-                    child: Text(
-                      '🛡️ No recent attacks on your citadel! Your defense questions stand firm.',
-                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🛡️', style: TextStyle(fontSize: 28)),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No intrusions recorded! Your citadel defense holds firm.',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'ഇതുവരെ ആരും വീട് ആക്രമിച്ചിട്ടില്ല • കള്ളന്മാരുടെ വിവരങ്ങൾ ഇവിടെ കാണാം',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   )
                 : Column(
@@ -2737,131 +2786,204 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               : '${timeDiff.inDays}d ago');
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: entry.ironDomeBlocked
-                                ? const Color(0xFF00F0FF).withValues(alpha: 0.3)
-                                : (entry.breached
-                                    ? Colors.redAccent.withValues(alpha: 0.3)
-                                    : const Color(0xFF10B981).withValues(alpha: 0.3)),
+                            color: entry.breached
+                                ? Colors.redAccent.withValues(alpha: 0.45)
+                                : (entry.ironDomeBlocked
+                                    ? const Color(0xFF00F0FF).withValues(alpha: 0.35)
+                                    : const Color(0xFF10B981).withValues(alpha: 0.35)),
+                            width: 1.2,
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(entry.attackerAvatar, style: const TextStyle(fontSize: 16)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.attackerName,
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Attacker Avatar with Detective Badge
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: entry.breached
+                                          ? const Color(0xFFEF4444)
+                                          : const Color(0xFF38BDF8),
+                                      width: 1.2,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: entry.attackerWeapon,
-                                          style: const TextStyle(
-                                            color: Colors.amber,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
+                                  child: Center(
+                                    child: Text(
+                                      entry.attackerAvatar.isNotEmpty ? entry.attackerAvatar : '⚔️',
+                                      style: const TextStyle(fontSize: 22),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              entry.attackerName,
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
-                                        ),
-                                        TextSpan(
-                                          text: ' • $timeText',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white54,
-                                            fontSize: 10,
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(5),
+                                              border: Border.all(color: const Color(0xFF60A5FA), width: 0.8),
+                                            ),
+                                            child: Text(
+                                              '🕵️‍♂️ കള്ളൻ',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFF93C5FD),
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.flash_on_rounded, size: 12, color: Colors.amber),
+                                          const SizedBox(width: 3),
+                                          Flexible(
+                                            child: Text(
+                                              'Weapon: ${entry.attackerWeapon}',
+                                              style: GoogleFonts.inter(
+                                                color: Colors.amber.shade300,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            '• $timeText',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white54,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Loot & Revenge Action Bar
+                            Row(
+                              children: [
+                                // Stolen / Defended Score pill
+                                if (entry.breached)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('📉', style: TextStyle(fontSize: 11)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Stole -${entry.coinsLooted} Pocket Score',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFF87171),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (entry.ironDomeBlocked)
+                                  )
+                                else if (entry.ironDomeBlocked)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.5)),
                                     ),
-                                    child: Text(
-                                      '🛡️ DOME BLOCKED (0 Lost)',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFF00F0FF),
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  )
-                                else if (entry.breached)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
-                                    ),
-                                    child: Text(
-                                      '💥 BREACHED (-${entry.coinsLooted} Coins)',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFFF87171),
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w900,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('🛡️', style: TextStyle(fontSize: 11)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Iron Dome Blocked (0 Lost)',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF00F0FF),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   )
                                 else
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
                                     ),
-                                    child: Text(
-                                      '🛡️ DEFENSE HELD',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFF34D399),
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w900,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('🛡️', style: TextStyle(fontSize: 11)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Defense Held (0 Lost)',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF34D399),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                const SizedBox(height: 5),
-                                // ⚔️ REVENGE (പ്രതികാരം) Button (User Audio Directive)
+                                const Spacer(),
+                                // ⚡ REVENGE ATTACK (പകരം വീട്ടുക) Button
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     onTap: () async {
                                       HapticFeedback.heavyImpact();
                                       final targetId = entry.attackerId;
@@ -2903,11 +3025,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
                                       if (inCooldown) {
                                         final cdMins = await PocketFortressDefenseService.getCooldownMinutesRemaining(targetId);
-                                        final hours = (cdMins / 60.0).toStringAsFixed(1);
+                                        final timeStr = cdMins < 60 ? '$cdMins mins' : '${(cdMins / 60.0).toStringAsFixed(1)} hrs';
                                         if (mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text('Revenge cooldown active on this house ($hours hrs remaining).'),
+                                              content: Text('Revenge cooldown active on this house ($timeStr remaining).'),
                                               backgroundColor: Colors.amber.shade900,
                                               behavior: SnackBarBehavior.floating,
                                             ),
@@ -2926,31 +3048,31 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       }
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+                                          colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
                                         ),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: const Color(0xFFF87171), width: 1.0),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFFCA5A5), width: 1.2),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFFDC2626).withValues(alpha: 0.35),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 1),
+                                            color: const Color(0xFFDC2626).withValues(alpha: 0.45),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
                                           ),
                                         ],
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Text('⚔️', style: TextStyle(fontSize: 9.5)),
-                                          const SizedBox(width: 4),
+                                          const Text('⚔️', style: TextStyle(fontSize: 12)),
+                                          const SizedBox(width: 5),
                                           Text(
-                                            'REVENGE',
+                                            'REVENGE ATTACK',
                                             style: GoogleFonts.outfit(
                                               color: Colors.white,
-                                              fontSize: 9.5,
+                                              fontSize: 10.5,
                                               fontWeight: FontWeight.w900,
                                               letterSpacing: 0.5,
                                             ),
