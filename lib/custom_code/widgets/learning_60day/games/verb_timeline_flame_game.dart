@@ -989,15 +989,19 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.touch_app_outlined, size: 16, color: color.withValues(alpha: 0.8)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Select $title form from Word Bank',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white60,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                  Icon(Icons.touch_app_outlined, size: 14, color: color.withValues(alpha: 0.8)),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Tap $title',
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white60,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -1050,18 +1054,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
             children: _remainingCards.map((word) {
               final isShaking = _shakingCard == word;
 
-              // Sentence Builder style colors
-              Color tileColor;
-              final item = _items[_currentIndex];
-              if (word == item.past) {
-                tileColor = const Color(0xFFE91E63);
-              } else if (word == item.present) {
-                tileColor = const Color(0xFF00E676);
-              } else if (word == item.future) {
-                tileColor = const Color(0xFF00E5FF);
-              } else {
-                tileColor = const Color(0xFF7C4DFF);
-              }
+              // Uniform styling for all cards (avoids giving away answers)
+              const tileColor = Color(0xFF2A1647);
 
               return AnimatedBuilder(
                 animation: _shakeAnimController,
@@ -1083,8 +1077,8 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
                       color: tileColor,
                       borderRadius: BorderRadius.circular(10),
                       border: isShaking
-                          ? Border.all(color: Colors.redAccent, width: 2.5)
-                          : null,
+                          ? Border.all(color: Colors.redAccent, width: 2.2)
+                          : Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5), width: 1.2),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.6),

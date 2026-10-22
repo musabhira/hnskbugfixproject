@@ -47,6 +47,36 @@ class PocketRankedUser {
     final micro = (userId.hashCode.abs() % 10);
     return '$pocketScore.$micro PTS';
   }
+
+  PocketRankedUser copyWith({
+    String? userId,
+    String? name,
+    String? profileImageUrl,
+    int? pocketScore,
+    int? level,
+    int? globalRank,
+    int? matesRank,
+    VectorAvatarConfig? avatarConfig,
+    bool? isCurrentUser,
+    bool? isRobot,
+    bool? isPrestigeSovereign,
+    int? prestigeStars,
+  }) {
+    return PocketRankedUser(
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      pocketScore: pocketScore ?? this.pocketScore,
+      level: level ?? this.level,
+      globalRank: globalRank ?? this.globalRank,
+      matesRank: matesRank ?? this.matesRank,
+      avatarConfig: avatarConfig ?? this.avatarConfig,
+      isCurrentUser: isCurrentUser ?? this.isCurrentUser,
+      isRobot: isRobot ?? this.isRobot,
+      isPrestigeSovereign: isPrestigeSovereign ?? this.isPrestigeSovereign,
+      prestigeStars: prestigeStars ?? this.prestigeStars,
+    );
+  }
 }
 
 /// 🌟 Central Service for Global App-Wide Rankings & Mates Leaderboard

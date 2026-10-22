@@ -394,7 +394,7 @@ class _PocketNegativeSentenceBuilderPageState
                 const Text('🔄', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
                 Text(
-                  'Negative Sentence Builder',
+                  'Negative Sentence',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 16,

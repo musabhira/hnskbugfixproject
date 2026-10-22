@@ -19,11 +19,13 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 class PocketGlobalRankListView extends StatefulWidget {
   final String? currentUserId;
   final bool? isUnder17Only;
+  final bool isMatesOnly;
 
   const PocketGlobalRankListView({
     super.key,
     this.currentUserId,
     this.isUnder17Only,
+    this.isMatesOnly = false,
   });
 
   @override
@@ -94,6 +96,42 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
 
     try {
       final isKid = widget.isUnder17Only ?? PocketKidsService.isKidAccount;
+
+      // 👥 If in Mates Only mode, strictly fetch connected mates and exclude all bots
+      if (widget.isMatesOnly) {
+        final mates = await PocketRankingService.fetchMatesLeaderboard(
+          _effectiveUserId,
+          isUnder17: isKid,
+        );
+
+        // Normalize ranks 1..N for Mates leaderboard
+        for (int i = 0; i < mates.length; i++) {
+          mates[i] = mates[i].copyWith(
+            globalRank: i + 1,
+            matesRank: i + 1,
+          );
+        }
+
+        int? myRank;
+        final myId = _effectiveUserId;
+        for (final u in mates) {
+          if (u.userId == myId) {
+            myRank = u.globalRank;
+            break;
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _humansList = mates;
+            _robotsList = [];
+            _hiddenUserIds = {};
+            _myHumanRank = myRank;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
 
       // 1. Fetch ALL Real Human Users from Supabase profile table
       final humans = await PocketRankingService.fetchHumansOnlyLeaderboard(
@@ -232,8 +270,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         children: [
           Column(
             children: [
-              // 1. Two-Tab Segmented Switcher (Humans vs Robots)
-              _buildTabsHeader(),
+              // 1. Two-Tab Segmented Switcher (Humans vs Robots) - only in Global mode
+              if (!widget.isMatesOnly)
+                _buildTabsHeader(),
 
               // 2. Admin Hidden Alert Ribbon (if any hidden)
               if (_isAdmin && _hiddenUserIds.isNotEmpty)
@@ -523,9 +562,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 fontWeight: FontWeight.w600,
               ),
               decoration: InputDecoration(
-                hintText: isHumanTab
-                    ? 'Search real players by name or #rank...'
-                    : 'Search AI robots by name or #rank...',
+                hintText: widget.isMatesOnly
+                    ? 'Search mates by name or #rank...'
+                    : (isHumanTab
+                        ? 'Search real players by name or #rank...'
+                        : 'Search AI robots by name or #rank...'),
                 hintStyle: GoogleFonts.outfit(
                   color: Colors.white38,
                   fontSize: 12,
@@ -568,12 +609,16 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       ),
       child: Row(
         children: [
-          Text(isHumanTab ? '👤' : '🤖', style: const TextStyle(fontSize: 13)),
+          Text(widget.isMatesOnly ? '👥' : (isHumanTab ? '👤' : '🤖'), style: const TextStyle(fontSize: 13)),
           const SizedBox(width: 6),
           Text(
-            isHumanTab ? 'HUMAN GLOBAL RANKINGS' : 'AI ROBOT LEAGUE',
+            widget.isMatesOnly
+                ? 'MATES LEADERBOARD'
+                : (isHumanTab ? 'HUMAN GLOBAL RANKINGS' : 'AI ROBOT LEAGUE'),
             style: GoogleFonts.outfit(
-              color: isHumanTab ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
+              color: widget.isMatesOnly
+                  ? const Color(0xFFFFD700)
+                  : (isHumanTab ? const Color(0xFF34D399) : const Color(0xFFA5B4FC)),
               fontWeight: FontWeight.w900,
               fontSize: 11,
               letterSpacing: 0.5,
@@ -581,7 +626,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
           ),
           const Spacer(),
           Text(
-            'Sorted by PocketScore 🪙',
+            widget.isMatesOnly
+                ? '${_humansList.length} Connected Mates'
+                : 'Sorted by PocketScore 🪙',
             style: GoogleFonts.outfit(
               color: Colors.white38,
               fontSize: 10,
@@ -870,7 +917,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
             ),
             const SizedBox(width: 8),
             Text(
-              'Human Rank #$_myHumanRank',
+              widget.isMatesOnly
+                  ? 'Mate Rank #$_myHumanRank'
+                  : 'Human Rank #$_myHumanRank',
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -910,7 +959,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
           const Text('🔍', style: TextStyle(fontSize: 36)),
           const SizedBox(height: 10),
           Text(
-            'No matching ${_currentTabIndex == 0 ? "players" : "robots"} found',
+            widget.isMatesOnly
+                ? 'No mates found'
+                : 'No matching ${_currentTabIndex == 0 ? "players" : "robots"} found',
             style: GoogleFonts.outfit(
               color: Colors.white70,
               fontSize: 15,

@@ -94,33 +94,33 @@ class _PocketMiniSpeechPracticePageState
       title: 'Self-Introduction Speech',
       emoji: '👋',
       passageEn:
-          'Hello everyone! My name is a learner. I am from India. I am excited to speak fluent English every single day. Thank you so much!',
+          'Hello everyone! My name is Rahul. I am from Kerala. I am learning to speak English with confidence. Nice to meet you all!',
       passageMl:
-          'എല്ലാവർക്കും നമസ്കാരം! എന്റെ പേര്... ഞാൻ ഇന്ത്യയിൽ നിന്നാണ്. ദിവസവും നല്ല ഇംഗ്ലീഷ് സംസാരിക്കാൻ എനിക്ക് അതിയായ ആഗ്രഹമുണ്ട്. നന്ദി!',
+          'എല്ലാവർക്കും നമസ്കാരം! എന്റെ പേര് രാഹുൽ. ഞാൻ കേരളത്തിൽ നിന്നാണ്. ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ ഞാൻ പരിശീലിക്കുന്നു. എല്ലാവരെയും കണ്ടതിൽ സന്തോഷം!',
       speechTipEn: 'Take a gentle breath after "Hello everyone!" and speak with a warm smile.',
       speechTipMl: '"Hello everyone!" ന് ശേഷം ചെറിയൊരു ഇടവേള നൽകി പുഞ്ചിരിയോടെ സംസാരിക്കുക.',
     ),
     MiniSpeechTopic(
       id: 2,
-      title: 'Daily Practice Routine',
+      title: 'My Daily Routine',
       emoji: '🌅',
       passageEn:
-          'Every morning, I practice English. I learn new words, build sentences, and speak with confidence. Learning helps me grow.',
+          'Every morning, I practice English with my friends. I learn new words and speak aloud every day. It makes me happy!',
       passageMl:
-          'എല്ലാ ദിവസവും രാവിലെ ഞാൻ ഇംഗ്ലീഷ് പരിശീലിക്കുന്നു. പുതിയ വാക്കുകൾ പഠിക്കുകയും വാക്യങ്ങൾ നിർമ്മിച്ച് ആത്മവിശ്വാസത്തോടെ സംസാരിക്കുകയും ചെയ്യുന്നു.',
-      speechTipEn: 'Emphasize the action words: "learn", "build", and "grow".',
-      speechTipMl: '"learn", "build", "grow" എന്നീ പ്രധാന വാക്കുകൾ വ്യക്തമായി ഉച്ചരിക്കുക.',
+          'എല്ലാ ദിവസവും രാവിലെ ഞാൻ കൂട്ടുകാരോടൊപ്പം ഇംഗ്ലീഷ് പരിശീലിക്കുന്നു. പുതിയ വാക്കുകൾ പഠിക്കുകയും ഉറക്കെ സംസാരിക്കുകയും ചെയ്യുന്നു. ഇത് എന്നെ സന്തോഷിപ്പിക്കുന്നു!',
+      speechTipEn: 'Emphasize the action words: "practice", "learn", and "speak".',
+      speechTipMl: '"practice", "learn", "speak" എന്നീ പ്രധാന വാക്കുകൾ വ്യക്തമായി ഉച്ചരിക്കുക.',
     ),
     MiniSpeechTopic(
       id: 3,
-      title: 'Overcoming Speaking Hesitation',
-      emoji: '🦁',
+      title: 'My Dream and Goal',
+      emoji: '🌟',
       passageEn:
-          'I used to hesitate when speaking English. Now I practice speaking aloud every day. Mistakes are proof that I am improving!',
+          'My goal is to speak English fluently and fearlessly. Practice makes me better every single day. I believe in myself!',
       passageMl:
-          'മുമ്പ് എനിക്ക് ഇംഗ്ലീഷ് സംസാരിക്കാൻ മടിയായിരുന്നു. എന്നാൽ ഇപ്പോൾ ഞാൻ ദിവസവും ഉറക്കെ സംസാരിക്കുന്നു. തെറ്റുകൾ ഞാൻ മുന്നോട്ട് പോകുന്നു എന്നതിന്റെ തെളിവാണ്!',
-      speechTipEn: 'Deliver the final sentence with high energy and unshakeable confidence!',
-      speechTipMl: 'അവസാന വാചകം പൂർണ്ണ ആത്മവിശ്വാസത്തോടെയും ഊർജ്ജത്തോടെയും പറയുക!',
+          'ഭയമില്ലാതെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കുകയാണ് എന്റെ ലക്ഷ്യം. പരിശീലനം എന്നെ ദിവസവും മെച്ചപ്പെടുത്തുന്നു. എനിക്ക് എന്നിൽ വിശ്വാസമുണ്ട്!',
+      speechTipEn: 'Deliver the final sentence with high energy and confidence!',
+      speechTipMl: 'അവസാന വാചകം പൂർണ്ണ ആത്മവിശ്വാസത്തോടെ പറയുക!',
     ),
   ];
 
@@ -371,7 +371,7 @@ class _PocketMiniSpeechPracticePageState
                 const Text('📢', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
                 Text(
-                  'Mini Speech Practice',
+                  'Speech Practice',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 16,
@@ -669,76 +669,71 @@ class _PocketMiniSpeechPracticePageState
 
   Widget _buildEvaluationCard() {
     final eval = _evalResult;
-    final accuracy = eval?.accuracyPercentage ?? 0;
+    final topic = _topics[_currentTopicIndex];
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-          width: 1.4,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'YOUR SPEECH PERFORMANCE',
-                style: GoogleFonts.outfit(
-                  color: Colors.white60,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Sent speech bubble (User's spoken voice transcript)
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 320),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: (_isPassed ? const Color(0xFF10B981) : const Color(0xFFEF4444))
-                      .withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(4),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-                child: Text(
-                  'Fluency: $accuracy%',
-                  style: GoogleFonts.robotoMono(
-                    color: _isPassed ? const Color(0xFF34D399) : const Color(0xFFF87171),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 2, right: 8),
+                  child: Icon(Icons.mic_rounded, size: 16, color: Colors.white70),
+                ),
+                Flexible(
+                  child: Text(
+                    _liveTranscript,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Recognized Words
-          Text(
-            '"$_liveTranscript"',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 13.5,
-              fontStyle: FontStyle.italic,
+              ],
             ),
           ),
+        ),
 
-          if (eval != null && eval.feedbackTip.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Feedback: ${eval.feedbackTip}',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFFDE047),
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ],
-      ),
+        const SizedBox(height: 12),
+
+        // Full Pronunciation & Fluency Evaluation Breakdown Card (Same style as Day 1 Step 1)
+        if (eval != null)
+          PocketPronunciationResultCard(
+            result: eval,
+            onRetry: () => _toggleListening(topic.passageEn),
+            onListenNative: () => _playModelSpeech(topic.passageEn),
+          ),
+      ],
     );
   }
 }

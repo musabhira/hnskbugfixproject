@@ -78,27 +78,30 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
                 children: [
                   const Text('👥', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Mates Global Rankings',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mates Rank',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Real-time leaderboards & citadel rankings for your mates',
-                        style: GoogleFonts.inter(
-                          color: Colors.white54,
-                          fontSize: 11,
+                        Text(
+                          'Rankings of your connected mates',
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, color: Colors.white70),
                     onPressed: () => Navigator.pop(ctx),
@@ -110,6 +113,7 @@ class PocketWorldRankingTrailWidget extends StatefulWidget {
             Expanded(
               child: PocketGlobalRankListView(
                 currentUserId: userId,
+                isMatesOnly: true,
               ),
             ),
           ],
