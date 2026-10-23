@@ -27,6 +27,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_day1_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_tasks_master_hub.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_open_world_adventure_page.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -415,12 +416,21 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       return;
     }
 
-    // For Day 1, launch dedicated 6-step game flow & House Defense arming page!
+    // For Day 1, launch dedicated 14-step Open World Adventure page!
     if (day == 1) {
       HapticFeedback.heavyImpact();
-      PocketKidsDay1DetailPage.open(context, onCompleted: () {
-        if (mounted) setState(() {});
-      }).then((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketDayOpenWorldAdventurePage(
+            day: 1,
+            userId: PocketKidsService.currentKidUserId ?? _supabase.auth.currentUser?.id,
+            onCompleted: () {
+              if (mounted) setState(() {});
+            },
+          ),
+        ),
+      ).then((_) {
         if (mounted) setState(() {});
       });
       return;

@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'curriculum_data/pocket_90day_negative_sentence_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 /// 🔄 Model for Negative Sentence Transformation Challenge
 class NegativeSentenceRound {
@@ -318,11 +319,12 @@ class _PocketNegativeSentenceBuilderPageState
   @override
   Widget build(BuildContext context) {
     final round = (_currentIndex < _rounds.length) ? _rounds[_currentIndex] : _rounds.last;
+    final isKid = PocketKidsService.isKidAccount;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF090D16),
+      backgroundColor: isKid ? const Color(0xFF1E1035) : const Color(0xFF090D16),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
@@ -406,8 +408,26 @@ class _PocketNegativeSentenceBuilderPageState
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
+      body: Stack(
+        children: [
+          if (isKid)
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFF2E1065),
+                      Color(0xFF1E1B4B),
+                      Color(0xFF0F172A),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
+          SafeArea(
+            child: Column(
           children: [
             // Top Progress bar
             LinearProgressIndicator(
@@ -492,6 +512,8 @@ class _PocketNegativeSentenceBuilderPageState
             ),
           ],
         ),
+      ),
+        ],
       ),
     );
   }

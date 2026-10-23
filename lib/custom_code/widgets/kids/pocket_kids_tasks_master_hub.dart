@@ -1237,7 +1237,143 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
   /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<KidsInPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
-    if (day >= 1 && day <= 90) {
+    if (day == 1) {
+      final kidsDay1Meta = [
+        {
+          'step': 1,
+          'title': 'Meet Letters & Phonics',
+          'sub': 'Acoustic letter sounds & pronunciations',
+          'icon': '🔤',
+          'color': const Color(0xFF00F0FF),
+        },
+        {
+          'step': 2,
+          'title': 'Sentence Builder Game',
+          'sub': 'Interactive word blocks & sentence assembly',
+          'icon': '🧩',
+          'color': const Color(0xFF00E5FF),
+        },
+        {
+          'step': 3,
+          'title': 'Essential Words & Spelling',
+          'sub': 'Spell check listening & vocabulary quiz',
+          'icon': '👂',
+          'color': const Color(0xFF38BDF8),
+        },
+        {
+          'step': 4,
+          'title': '50+ Essential Beginner Words',
+          'sub': 'Foundational word vault with native audio',
+          'icon': '📚',
+          'color': const Color(0xFF10B981),
+        },
+        {
+          'step': 5,
+          'title': 'Letter & Word Hunt',
+          'sub': 'Search and match word puzzle challenge',
+          'icon': '🔍',
+          'color': const Color(0xFFF59E0B),
+        },
+        {
+          'step': 6,
+          'title': 'Spoken English Chat',
+          'sub': '1-on-1 spoken conversation with Animal Companion',
+          'icon': '🎙️',
+          'color': const Color(0xFFEC4899),
+        },
+        {
+          'step': 7,
+          'title': 'Reading Room: The Crow',
+          'sub': 'Listen, read aloud & comprehension questions',
+          'icon': '📖',
+          'color': const Color(0xFF60A5FA),
+        },
+        {
+          'step': 8,
+          'title': 'Verb Timeline Arcade',
+          'sub': 'Past, Present & Future action tenses shelves',
+          'icon': '⏳',
+          'color': const Color(0xFFFF9100),
+        },
+        {
+          'step': 9,
+          'title': 'Chat Reply Builder',
+          'sub': 'Quick response word blocks for instant chats',
+          'icon': '💬',
+          'color': const Color(0xFF00E676),
+        },
+        {
+          'step': 10,
+          'title': 'Negative Sentence Builder',
+          'sub': 'Transform statements using not & does not',
+          'icon': '🔄',
+          'color': const Color(0xFFA855F7),
+        },
+        {
+          'step': 11,
+          'title': 'Mini Speech Practice',
+          'sub': 'Short spoken delivery & pronunciation scoring',
+          'icon': '📢',
+          'color': const Color(0xFFE11D48),
+        },
+        {
+          'step': 12,
+          'title': 'House Defense Shield Command',
+          'sub': 'Equip 5 Spoken English defense shields',
+          'icon': '🛡️',
+          'color': const Color(0xFF8B5CF6),
+        },
+        {
+          'step': 13,
+          'title': 'House Attack Quest: Citadel Raid',
+          'sub': 'Raid Kid Animal robot fortress & breach shields',
+          'icon': '⚔️',
+          'color': const Color(0xFFEF4444),
+        },
+        {
+          'step': 14,
+          'title': 'Day 1 Review & Performance Card',
+          'sub': 'Full score evaluation & House 2 unlocking',
+          'icon': '🏆',
+          'color': const Color(0xFFFFD700),
+        },
+      ];
+
+      return kidsDay1Meta.map((s) {
+        final stepNum = s['step'] as int;
+        final flagKey = 'step_$stepNum';
+        final isComp = _subStepFlags[flagKey] ?? false;
+        final isUnlocked = admin ||
+            stepNum == 1 ||
+            (_subStepFlags['step_${stepNum - 1}'] ?? false);
+
+        return KidsInPathSubStep(
+          stepIndex: stepNum,
+          title: s['title'] as String,
+          subtitle: s['sub'] as String,
+          icon: s['icon'] as String,
+          color: s['color'] as Color,
+          isCompleted: isComp,
+          isUnlocked: isUnlocked,
+          onAction: () async {
+            if (!mounted) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketDayOpenWorldAdventurePage(
+                  day: 1,
+                  userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                  onCompleted: () => _loadData(),
+                ),
+              ),
+            );
+            await _loadData();
+          },
+        );
+      }).toList();
+    }
+
+    if (day > 1 && day <= 90) {
       final track = Day1Track.fromLearnerLevel(level);
       return Day1Curriculum.getSteps(track, day).map((step) {
         final flagKey = 'step_${step.stepNumber}';
@@ -1254,37 +1390,14 @@ class _PocketKidsTasksMasterHubPageState extends State<PocketKidsTasksMasterHubP
           isCompleted: isComp,
           isUnlocked: isUnlocked,
           onAction: () async {
-            int targetStepNumber = step.stepNumber;
-            if (day == 1 && step.stepNumber == 1 && !isComp) {
-              final prefs = await SharedPreferences.getInstance();
-              final uid = widget.userId ?? 'guest';
-              final diagDone = prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false;
-              if (!diagDone && mounted) {
-                final diag = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
-                if (diag != null) {
-                  final skip1 = diag['skipStep1'] ?? false;
-                  final skip2 = diag['skipStep2'] ?? false;
-                  if (skip1 && skip2) {
-                    await _onSubStepFinished(1, 1);
-                    await _onSubStepFinished(1, 2);
-                    targetStepNumber = 3;
-                  } else if (skip1) {
-                    await _onSubStepFinished(1, 1);
-                    targetStepNumber = 2;
-                  }
-                }
-              }
-            }
             if (!mounted) return;
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => PocketDay1InteractiveFlowPage(
-                  initialTrack: track,
-                  initialStep: targetStepNumber,
+                builder: (_) => PocketDayOpenWorldAdventurePage(
                   day: day,
-                  onStepFinished: (s) => _onSubStepFinished(day, s),
-                  onCompleted: () => _completeTodayTasks(),
+                  userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                  onCompleted: () => _loadData(),
                 ),
               ),
             );

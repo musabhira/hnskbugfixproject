@@ -679,7 +679,7 @@ class PocketKidsService {
         _receivedRequestIds.addAll(savedReceived.where(isAllowedKidMateId));
       } else if (_receivedRequestIds.isEmpty && _friendIds.isEmpty) {
         // Friendly welcome requests from AI kid peers so children can experience accepting requests!
-        _receivedRequestIds.addAll(['kid_bot_1', 'kid_bot_2']);
+        _receivedRequestIds.addAll(['kid_bot_1', 'kid_bot_2', 'kid_bot_3']);
       }
 
       // Automatically persist cleansed list if adult IDs were purged

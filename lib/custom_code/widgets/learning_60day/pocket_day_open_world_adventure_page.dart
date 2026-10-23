@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_chat_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negative_sentence_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (Light Mode Hill-Climb Adventure!)
 ///
@@ -224,7 +225,12 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 16;
+  int get _totalSteps {
+    if (PocketKidsService.isKidAccount && widget.day == 1) {
+      return 14;
+    }
+    return 16;
+  }
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
   static Offset getStepPosition(int stepIndex, {int totalSteps = 16}) {
@@ -233,7 +239,12 @@ class _PocketDayOpenWorldAdventurePageState
       const x = 4350.0;
       return Offset(x, getGroundY(x));
     }
-    final stepsForSlope = (totalSteps == 16) ? 15 : totalSteps;
+    if (totalSteps == 14 && stepIndex == 14) {
+      // Step 14 is the Summit Review Milestone right past the Gate for Kids!
+      const x = 4350.0;
+      return Offset(x, getGroundY(x));
+    }
+    final stepsForSlope = (totalSteps == 16 || totalSteps == 14) ? (totalSteps - 1) : totalSteps;
     final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
     const startX = 1040.0;
@@ -297,12 +308,12 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    const preGateMax = 15;
+    final preGateMax = _totalSteps - 1;
     for (int s = 1; s <= preGateMax; s++) {
       if (!(flags['step_$s'] ?? false)) return s;
     }
-    if (!_isGateExamPassed) return 15;
-    if (!(flags['step_16'] ?? false)) return 16;
+    if (!_isGateExamPassed) return preGateMax;
+    if (!(flags['step_$_totalSteps'] ?? false)) return _totalSteps;
     return _totalSteps;
   }
 
@@ -508,7 +519,7 @@ class _PocketDayOpenWorldAdventurePageState
       );
 
       // Auto-drive forward to next step from current location
-      if (stepIndex == 15 && !_isGateExamPassed) {
+      if (stepIndex == (_totalSteps - 1) && !_isGateExamPassed) {
         _driveToGate(openExamOnArrival: true);
       } else if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
@@ -2774,6 +2785,41 @@ class _PocketDayOpenWorldAdventurePageState
 
   _StepInfo _getStepDetails(int s) {
     if (widget.day == 1) {
+      if (PocketKidsService.isKidAccount) {
+        switch (s) {
+          case 1:
+            return const _StepInfo('Meet Letters & Phonics', '🔤', Color(0xFF00F0FF));
+          case 2:
+            return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
+          case 3:
+            return const _StepInfo('Essential Words & Spelling', '👂', Color(0xFF38BDF8));
+          case 4:
+            return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
+          case 5:
+            return const _StepInfo('Letter & Word Hunt', '🔍', Color(0xFFF59E0B));
+          case 6:
+            return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFFEC4899));
+          case 7:
+            return const _StepInfo('Reading Room: The Crow', '📖', Color(0xFF60A5FA));
+          case 8:
+            return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+          case 9:
+            return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
+          case 10:
+            return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
+          case 11:
+            return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
+          case 12:
+            return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
+          case 13:
+            return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+          case 14:
+            return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
+          default:
+            return const _StepInfo('Practice Ledge', '⭐', Colors.white);
+        }
+      }
+
       switch (s) {
         case 1:
           return const _StepInfo('Meet Letters & Phonics', '🔤', Color(0xFF00F0FF));
@@ -2869,6 +2915,48 @@ class _PocketDayOpenWorldAdventurePageState
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+
+    // Kids Day 1 specific step mappings (English Hub & Poketalk removed, so 12=Defense, 13=Attack, 14=Review)
+    final isKid = PocketKidsService.isKidAccount;
+    if (isKid && day == 1) {
+      if (s == 12) {
+        await PocketHouseDefenseChatPage.show(
+          context,
+          day: day,
+          stepIndex: 12,
+          userId: uid,
+          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        );
+        await _syncStepCompletionIfDone(12);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 13) {
+        await PocketHouseAttackPage.show(
+          context,
+          day: day,
+          stepIndex: 13,
+          userId: uid,
+          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        );
+        await _syncStepCompletionIfDone(13);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 14) {
+        await PocketDay1ReviewCardPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onProceedToNextDay: () {
+            widget.onCompleted?.call();
+          },
+        );
+        await _syncStepCompletionIfDone(14);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+    }
 
     // Step 1 on ALL DAYS (1 to 90): Concept Room & Avatar Chat
     if (s == 1) {

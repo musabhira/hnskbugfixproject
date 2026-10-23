@@ -11,6 +11,9 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'pocket_citadel_attack_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'flame_english_house_game.dart';
 
 /// ⚔️ Dedicated House Attack Page (Step 8/9 across Days 1 to 90)
 ///
@@ -147,6 +150,51 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
   Future<void> _fetchTargetOpponent() async {
     setState(() => _isLoadingTarget = true);
     try {
+      if (PocketKidsService.isKidAccount) {
+        final robots = PocketKidsRobotsData.robotsAndHomies;
+        final targetIdx = math.Random().nextInt(math.min(25, robots.length));
+        final bot = robots[targetIdx];
+        final targetLvl = math.max(1, bot.dayLevel);
+        final palList = HousePalette.presets;
+        final neighbor = PocketNeighbor(
+          id: bot.id,
+          name: '${bot.name} Fortress',
+          day: targetLvl,
+          streak: targetLvl,
+          rank: 'Animal Companion Citadel',
+          paletteId: palList[(targetLvl - 1) % palList.length].id,
+          isMe: false,
+          hasActiveShield: true,
+          statusMessage: bot.bio,
+          isPocketRobo: true,
+          hp: 100,
+          maxHp: 100,
+        );
+
+        final questions = await PocketFortressDefenseService.loadGauntletQuestionsForStage(
+          1,
+          isNeighbor: true,
+        );
+        final count = math.min(3, questions.length);
+        final selectedQuestions = questions.take(count).toList();
+
+        if (mounted) {
+          setState(() {
+            _target = neighbor;
+            _isTargetProtected = false;
+            _protectionMinutesLeft = 0;
+            _battleQuestions = selectedQuestions;
+            _isLoadingTarget = false;
+          });
+          if (_soundEnabled) {
+            _speak(
+              'Target matched! Animal Fortress: ${bot.name}. Are you ready to attack with English power?',
+            );
+          }
+        }
+        return;
+      }
+
       final neighbor = await PocketFortressDefenseService.getRecommendedRivalTarget(
         userDay: widget.day,
       );
