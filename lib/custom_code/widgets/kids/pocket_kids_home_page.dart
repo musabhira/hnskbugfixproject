@@ -424,7 +424,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
         MaterialPageRoute(
           builder: (_) => PocketDayOpenWorldAdventurePage(
             day: 1,
-            userId: PocketKidsService.currentKidUserId ?? _supabase.auth.currentUser?.id,
+            userId: Supabase.instance.client.auth.currentUser?.id,
             onCompleted: () {
               if (mounted) setState(() {});
             },
