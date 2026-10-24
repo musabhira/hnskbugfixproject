@@ -18,6 +18,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame_letter_tracing_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame_junior_sentence_builder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 
 /// 👶 Pure Kids World Platform (Ages 4–8)
 ///
@@ -1431,7 +1433,9 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
           itemCount: 91, // Days 1 to 90 + Day 91 King Lion Golden Castle
           itemBuilder: (context, idx) {
             final day = idx + 1;
-            final isUnlocked = day <= unlockedDay;
+            final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(day);
+            final isUnlocked = PocketKidsService.isDayUnlocked(day);
+            final isCompleted = PocketKidsService.completedDays.containsKey(day) || day < unlockedDay;
             final isCurrent = day == unlockedDay;
             final isBossNode = day == 91;
 
@@ -1448,6 +1452,12 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                 alignment: Alignment(alignX, 0),
                 child: GestureDetector(
                   onTap: () {
+                    if (isMidnightLocked) {
+                      HapticFeedback.mediumImpact();
+                      _showMidnightCooldownDialog(day);
+                      return;
+                    }
+
                     if (!isUnlocked) {
                       HapticFeedback.lightImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1486,7 +1496,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Active Bouncing Mascot Indicator
-                      if (isCurrent) ...[
+                      if (isCurrent && !isMidnightLocked) ...[
                         AnimatedBuilder(
                           animation: _bounceController,
                           builder: (context, child) {
@@ -1533,10 +1543,39 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                         const SizedBox(height: 4),
                       ],
 
-                      // Stepping Stone Node
+                      // Midnight Timer Pill for Cooldown Day
+                      if (isMidnightLocked) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E1B4B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF818CF8), width: 1.2),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🌙', style: TextStyle(fontSize: 11)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'UNLOCKS AT 12:00 AM',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFDE047),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+
+                      // Stepping Stone Node & Living House Row
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Stepping Stone Circle
                           Container(
                             width: isBossNode ? 96 : (isCurrent ? 76 : 64),
                             height: isBossNode ? 96 : (isCurrent ? 76 : 64),
@@ -1544,22 +1583,28 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                               gradient: LinearGradient(
                                 colors: isBossNode
                                     ? const [Color(0xFFFFD700), Color(0xFFEA580C)]
-                                    : isCurrent
-                                        ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
-                                        : isUnlocked
-                                            ? atmosphere.nodeGradient
-                                            : const [Color(0xFF64748B), Color(0xFF334155)],
+                                    : (isMidnightLocked
+                                        ? const [Color(0xFF312E81), Color(0xFF1E1B4B)]
+                                        : (isCurrent
+                                            ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
+                                            : (isUnlocked
+                                                ? atmosphere.nodeGradient
+                                                : const [Color(0xFF64748B), Color(0xFF334155)]))),
                               ),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: isBossNode
                                     ? const Color(0xFFFFD700)
-                                    : (isCurrent ? Colors.white : Colors.white70),
+                                    : (isCurrent
+                                        ? Colors.white
+                                        : (isMidnightLocked ? const Color(0xFF818CF8) : Colors.white70)),
                                 width: isBossNode || isCurrent ? 3.5 : 2.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: (isCurrent || isBossNode ? const Color(0xFFFFD700) : Colors.black)
+                                  color: (isCurrent || isBossNode
+                                          ? const Color(0xFFFFD700)
+                                          : (isMidnightLocked ? const Color(0xFF6366F1) : Colors.black))
                                       .withValues(alpha: 0.35),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
@@ -1570,7 +1615,9 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                             child: Text(
                               isBossNode
                                   ? '👑'
-                                  : (isUnlocked ? '$day' : '🔒'),
+                                  : (isMidnightLocked
+                                      ? '🌙'
+                                      : (isUnlocked ? '$day' : '🔒')),
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: isBossNode ? 36 : (isCurrent ? 22 : 18),
@@ -1579,27 +1626,55 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                             ),
                           ),
 
-                          // Milestone House Display beside node at every 10 days
-                          if (day % 10 == 0 && day <= 90) ...[
-                            const SizedBox(width: 8),
-                            Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    width: 58,
-                                    height: 48,
-                                    color: Colors.black.withValues(alpha: 0.15),
-                                    child: PocketAvatarHouseWidget(day: day, width: 55, height: 46),
+                          const SizedBox(width: 8),
+
+                          // Living Cartoon House for this Day Milestone
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isCompleted
+                                      ? const Color(0xFF10B981)
+                                      : (isMidnightLocked
+                                          ? const Color(0xFF6366F1)
+                                          : (isCurrent ? const Color(0xFFFFD700) : const Color(0xFF0F172A).withValues(alpha: 0.65))),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: (isCompleted || isCurrent) ? const Color(0xFFFFD700) : Colors.white24,
+                                    width: 1,
                                   ),
                                 ),
-                                Text(
-                                  'Tier ${day ~/ 10} 🏡',
-                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold),
+                                child: Text(
+                                  isCompleted
+                                      ? '🏡 DAY $day • WON'
+                                      : (isMidnightLocked
+                                          ? '⏰ 12:00 AM'
+                                          : (isCurrent ? '🏡 DAY $day • PLAY' : '🏡 HOUSE $day')),
+                                  style: GoogleFonts.outfit(
+                                    color: isCurrent && !isCompleted ? const Color(0xFF78350F) : Colors.white,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(height: 3),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.16),
+                                  padding: const EdgeInsets.all(2),
+                                  child: PocketAvatarHouseWidget(
+                                    day: day,
+                                    width: isBossNode ? 88 : 72,
+                                    height: isBossNode ? 68 : 54,
+                                    lightsOn: isCompleted || isUnlocked,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
 
@@ -1769,6 +1844,150 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
           ),
         ],
       ),
+    );
+  }
+
+  void _showMidnightCooldownDialog(int day) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Timer? ticker;
+            ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+              if (ctx.mounted) {
+                setDialogState(() {});
+              } else {
+                ticker?.cancel();
+              }
+            });
+
+            return AlertDialog(
+              backgroundColor: const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+                side: const BorderSide(color: Color(0xFF38BDF8), width: 2),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(22, 20, 22, 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🌙 💤 ⏰', style: TextStyle(fontSize: 40)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Day $day Unlocks at 12:00 AM!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Great job completing today\'s English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight. Unlock now with Adventure Pass (Premium)!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0369A1),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'TIME UNTIL 12:00 AM MIDNIGHT',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFBAE6FD),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          PocketKidsService.getFormattedMidnightCountdown(),
+                          style: GoogleFonts.jetBrainsMono(
+                            color: const Color(0xFFFDE047),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: const Color(0xFF78350F),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      elevation: 4,
+                    ),
+                    onPressed: () async {
+                      ticker?.cancel();
+                      Navigator.pop(ctx);
+                      await PocketKidsService.setKidPremium(true);
+                      if (mounted) {
+                        setState(() {});
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Adventure Pass Activated! Day $day Unlocked! 🌟',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: const Color(0xFF10B981),
+                          ),
+                        );
+                      }
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('⚡ ', style: TextStyle(fontSize: 15)),
+                        Text(
+                          'UNLOCK WITH VIP PASS',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextButton(
+                    onPressed: () {
+                      ticker?.cancel();
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(
+                      'I\'ll Wait Until Midnight 🌙',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF94A3B8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -2372,6 +2591,226 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 18),
+
+          // 🌟 MY HERO DEFENSE CARDS (1–90) COLLECTION 🃏
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFFFD700), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('🌟', style: TextStyle(fontSize: 18)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'HERO DEFENSE CARDS 🃏',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Earn 1 PopArt Card every day you conquer! (${math.min(PocketKidsService.completedDaysCount, 90)}/90)',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        PopArtAvatarCardsViewerPage.open(context, initialIndex: 0);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'VIEW ALL 🚀',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Horizontal Cards Carousel
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 90,
+                    itemBuilder: (context, idx) {
+                      final day = idx + 1;
+                      final isUnlocked = PocketKidsService.isDayCompleted(day) || day <= PocketKidsService.currentUnlockedDay;
+                      final isMale = day % 2 == 0;
+                      final card = PopArtCardHelper.getCardForDay(day, isMale: isMale);
+
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          if (isUnlocked) {
+                            PocketGameAudioService.instance.playCoinSound();
+                            _speakText('${card.title}! ${card.subtitle}');
+                            PopArtAvatarCardsViewerPage.open(context, initialIndex: idx);
+                          } else {
+                            _speakText('Day $day is locked! Complete daily games to unlock this hero card!');
+                          }
+                        },
+                        child: Container(
+                          width: 130,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: isUnlocked ? card.bgColor : const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isUnlocked ? const Color(0xFFFFD700) : Colors.white24,
+                              width: isUnlocked ? 2.2 : 1.2,
+                            ),
+                            boxShadow: isUnlocked
+                                ? [
+                                    BoxShadow(
+                                      color: card.bgColor.withValues(alpha: 0.4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Stack(
+                              children: [
+                                if (isUnlocked) ...[
+                                  // Live PopArt Hero Graphic
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: PopArtCardCustomPainter(data: card),
+                                    ),
+                                  ),
+                                  // Day Badge at top
+                                  Positioned(
+                                    top: 6,
+                                    left: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.7),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'DAY $day',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFFFFD700),
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Bottom Title Label
+                                  Positioned(
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.8),
+                                      ),
+                                      child: Text(
+                                        card.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  // Locked State
+                                  Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.lock_rounded, color: Colors.white38, size: 28),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'DAY $day',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white60,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'LOCKED',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white38,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),

@@ -71,26 +71,24 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
   bool _isStepSolved = false;
 
   // Mini-game specific local state
-  // Game 0: Balloon Pop
-  int? _poppedBalloonIdx;
-  // Game 1: Letter Train
+  // Game 0: Junior Sentence Builder
+  List<String> _builderTargetWords = [];
+  List<String> _builderPlacedWords = [];
+  List<String> _builderAvailableWords = [];
+  // Game 1: Letter Train Spelling Bee
   List<String> _targetLetters = [];
   List<String> _placedLetters = [];
   List<String> _availableLetters = [];
-  // Game 2: Vocab Speed Catcher
+  // Game 2: Highway Vocab Catcher
   int? _speedCatcherSelectedIdx;
   bool _speedCatcherRacing = false;
-  // Game 3: Safari Memory Flip
-  List<String> _memoryCards = [];
-  List<int> _flippedCardIndices = [];
-  Set<int> _matchedCardIndices = {};
-  // Game 4: Rainbow Sentence Builder
-  List<String> _sentenceParts = [];
-  List<String> _placedSentenceParts = [];
-  List<String> _availableSentenceParts = [];
-  // Game 5: Spoken Voice Echo
+  // Game 3: Safe Bubble Chat
+  int? _chatSelectedReplyIdx;
+  // Game 4: Little Assembly Speech
+  bool _assemblyDelivered = false;
+  // Game 5: Daily Spoken English
   bool _isSpeakingMic = false;
-  // Game 6: Summit Guardian Boss Duel
+  // Game 6: Summit Exam & House Duel
   int? _chosenShieldIdx;
 
   // 7 Well-Planned Interactive Daily Games for Kids (100% Game-Only)
@@ -98,52 +96,52 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
   static const List<Map<String, dynamic>> _stepDefinitions = [
     {
       'index': 0,
-      'title': 'Balloon Pop Phonics',
-      'icon': '🎈',
+      'title': 'Junior Sentence Builder 🧩',
+      'icon': '🧩',
       'color': Color(0xFFEF4444),
-      'desc': 'Listen to phonics sound and pop the matching floating letter balloon!',
+      'desc': 'Snap words together in correct order to construct today\'s sentence!',
     },
     {
       'index': 1,
-      'title': 'Letter Train Jigsaw',
+      'title': 'Kids Spelling Bee 🔤',
       'icon': '🚂',
       'color': Color(0xFF3B82F6),
-      'desc': 'Assemble letter wagons in spelling order to build today\'s word!',
+      'desc': 'Assemble letter wagons in spelling order to spell today\'s word!',
     },
     {
       'index': 2,
-      'title': 'Vocab Speed Catcher',
+      'title': 'Highway Vocab Catcher 🏎️',
       'icon': '🏎️',
       'color': Color(0xFF10B981),
       'desc': 'Drive the racer and catch target vocabulary words on the highway!',
     },
     {
       'index': 3,
-      'title': 'Safari Memory Flip',
-      'icon': '🃏',
+      'title': 'Safe Bubble Chat 💬',
+      'icon': '💬',
       'color': Color(0xFFF59E0B),
-      'desc': 'Flip and match vocabulary cards and mascot picture pairs!',
+      'desc': 'Safe minimal chatting with cute buddy: exchange cheerful greetings & replies!',
     },
     {
       'index': 4,
-      'title': 'Rainbow Sentence Builder',
-      'icon': '🧩',
+      'title': 'Little Assembly Speech 🎙️',
+      'icon': '🎙️',
       'color': Color(0xFF8B5CF6),
-      'desc': 'Snap colored puzzle blocks to construct a fluent sentence!',
+      'desc': 'Take the school assembly podium to deliver your confidence speech!',
     },
     {
       'index': 5,
-      'title': 'Voice Magic Echo',
+      'title': 'Daily Spoken English 🗣️',
       'icon': '🗣️',
       'color': Color(0xFF06B6D4),
-      'desc': 'Speak the sentence aloud into the magic microphone for 3 Stars!',
+      'desc': 'Speak aloud into the magic microphone for 100% fluency stars!',
     },
     {
       'index': 6,
-      'title': 'Summit Guardian Duel',
+      'title': 'Summit Exam & House Duel 🏰',
       'icon': '🏰',
       'color': Color(0xFFFFD700),
-      'desc': 'Final summit boss duel to conquer the day and unlock the next house!',
+      'desc': 'Final summit boss duel & exam to conquer the day and unlock the next house!',
     },
   ];
 
@@ -336,52 +334,39 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
         : 'APPLE';
 
     switch (index) {
-      case 0: // Balloon Pop
-        _poppedBalloonIdx = null;
+      case 0: // Junior Sentence Builder
+        final rawSent = _syllabus.sentence.isNotEmpty ? _syllabus.sentence : 'I love learning English';
+        final cleanWords = rawSent.split(' ').where((w) => w.trim().isNotEmpty).toList();
+        _builderTargetWords = cleanWords.isEmpty ? ['I', 'like', 'cats'] : cleanWords;
+        _builderPlacedWords = [];
+        _builderAvailableWords = List<String>.from(_builderTargetWords)..shuffle();
         break;
 
-      case 1: // Letter Train
+      case 1: // Kids Spelling Bee Train
         final cleanWord = targetWord.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
         _targetLetters = cleanWord.isEmpty ? ['A', 'P', 'P', 'L', 'E'] : cleanWord.split('');
         _placedLetters = [];
         _availableLetters = List<String>.from(_targetLetters)..shuffle();
         break;
 
-      case 2: // Vocab Speed Catcher
+      case 2: // Highway Vocab Catcher
         _speedCatcherSelectedIdx = null;
         _speedCatcherRacing = false;
         break;
 
-      case 3: // Safari Memory Flip
-        final emoji = _syllabus.rounds.isNotEmpty ? _syllabus.rounds.first.emoji : '🍎';
-        final mascot = _syllabus.mascot;
-        _memoryCards = [emoji, mascot, emoji, mascot]..shuffle();
-        _flippedCardIndices = [];
-        _matchedCardIndices = {};
+      case 3: // Safe Bubble Chat
+        _chatSelectedReplyIdx = null;
         break;
 
-      case 4: // Rainbow Sentence Builder
-        final sent = _syllabus.dialogueSentence.isNotEmpty
-            ? _syllabus.dialogueSentence
-            : 'An apple is sweet and red.';
-        final words = sent.split(' ');
-        if (words.length >= 3) {
-          final p1 = words.sublist(0, (words.length / 3).ceil()).join(' ');
-          final p2 = words.sublist((words.length / 3).ceil(), (words.length * 2 / 3).ceil()).join(' ');
-          final p3 = words.sublist((words.length * 2 / 3).ceil()).join(' ');
-          _sentenceParts = [p1, p2, p3];
-        } else {
-          _sentenceParts = [sent];
-        }
-        _placedSentenceParts = [];
-        _availableSentenceParts = List<String>.from(_sentenceParts)..shuffle();
+      case 4: // Little Assembly Speech
+        _assemblyDelivered = false;
         break;
 
-      case 5: // Spoken Voice Echo
+      case 5: // Daily Spoken English
         _isSpeakingMic = false;
         break;
 
-      case 6: // Summit Guardian Boss Duel
+      case 6: // Summit Exam & House Duel
       default:
         _chosenShieldIdx = null;
         break;
@@ -445,7 +430,7 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
             const Text('🏆 👑 🌟', style: TextStyle(fontSize: 42)),
             const SizedBox(height: 12),
             Text(
-              'DAY ${widget.day} CONQUERED!',
+              'DAY ${widget.day} CONQUERED! 🌟',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFD700),
                 fontSize: 22,
@@ -454,7 +439,7 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
             ),
             const SizedBox(height: 6),
             Text(
-              'You completed all 7 Games in the Open World!\nHouse ${widget.day + 1} Palace is now unlocked on the mountain!',
+              'You mastered all 7 Daily Games!\n+100 Kids Score (KS) & +3 Star Cookies earned!\n\n🌙 Day ${widget.day + 1} unlocks tonight at 12:00 AM Midnight!',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: Colors.white,
@@ -476,7 +461,7 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
                   const Text('⭐', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 6),
                   Text(
-                    '+21 STAR COINS EARNED',
+                    '+100 KS & HERO CARD #${widget.day} WON! 🃏',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 13,
@@ -1088,96 +1073,79 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
   Widget _buildGameContentForStep(int step, String word, String phonics) {
     switch (step) {
       case 0:
-        // 🎈 1. Balloon Pop Phonics
-        final targetLetter = word.isNotEmpty ? word[0].toUpperCase() : 'A';
-        final balloons = [targetLetter, 'B', 'M', 'S'];
+        // 🧩 1. Junior Sentence Builder
+        final sentence = _syllabus.sentence.isNotEmpty ? _syllabus.sentence : 'I love learning English';
         return Column(
           children: [
             Text(
-              'Listen and pop the matching Balloon for sound "$phonics":',
+              'Snap the words in order to build today\'s sentence:',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => _speak(phonics),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFEF4444)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.volume_up_rounded, color: Color(0xFFEF4444), size: 20),
-                    const SizedBox(width: 8),
-                    Text('Hear Sound: "$phonics"',
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFEF4444)),
+              ),
+              child: Text(
+                _builderPlacedWords.isEmpty
+                    ? '[ Tap words below to build sentence ]'
+                    : '"${_builderPlacedWords.join(' ')}"',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFEDD5),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: List.generate(balloons.length, (idx) {
-                final letter = balloons[idx];
-                final isPopped = _poppedBalloonIdx == idx;
-                return GestureDetector(
-                  onTap: () {
-                    HapticFeedback.heavyImpact();
+              spacing: 8,
+              runSpacing: 8,
+              children: _builderAvailableWords.map((wordPart) {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF4444),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
                     PocketGameAudioService.instance.playCoinSound();
-                    _speak(letter);
+                    _speak(wordPart);
                     setState(() {
-                      _poppedBalloonIdx = idx;
-                      if (letter == targetLetter) {
-                        _isStepSolved = true;
+                      _builderPlacedWords.add(wordPart);
+                      _builderAvailableWords.remove(wordPart);
+                      if (_builderPlacedWords.length == _builderTargetWords.length) {
+                        if (_builderPlacedWords.join(' ') == _builderTargetWords.join(' ')) {
+                          _isStepSolved = true;
+                          _speak('Brilliant! $sentence');
+                        }
                       }
                     });
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    width: 76,
-                    height: isPopped ? 70 : 96,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isPopped
-                            ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                            : [const Color(0xFFEF4444), const Color(0xFFDC2626)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      borderRadius: BorderRadius.circular(36),
-                      border: Border.all(
-                        color: isPopped ? const Color(0xFFFFD700) : Colors.white,
-                        width: isPopped ? 3 : 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: (isPopped ? const Color(0xFF10B981) : const Color(0xFFEF4444))
-                              .withValues(alpha: 0.5),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        isPopped ? '💥 POP!' : letter,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: isPopped ? 14 : 24,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: Text(wordPart, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
                 );
-              }),
+              }).toList(),
             ),
+            if (_builderPlacedWords.isNotEmpty && !_isStepSolved) ...[
+              const SizedBox(height: 8),
+              TextButton.icon(
+                icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
+                label: Text('Reset Words', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                onPressed: () {
+                  setState(() {
+                    _builderPlacedWords.clear();
+                    _builderAvailableWords = List<String>.from(_builderTargetWords)..shuffle();
+                  });
+                },
+              ),
+            ],
           ],
         );
 
@@ -1417,81 +1385,18 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
         );
 
       case 3:
-        // 🃏 4. Safari Memory Flip
+        // 💬 4. Safe Bubble Chat with Buddy
+        final buddyName = _dayBuddy?.name ?? 'Sparky Lion';
+        final buddyAvatar = _dayBuddy?.avatar ?? '🦁';
+        final replies = [
+          'Hello $buddyName! 👋',
+          'I am ready to learn! 🚀',
+          'You are awesome! 🌟',
+        ];
         return Column(
           children: [
             Text(
-              'Flip and find the 2 matching animal pairs:',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: List.generate(_memoryCards.length, (idx) {
-                final card = _memoryCards[idx];
-                final isFlipped = _flippedCardIndices.contains(idx) || _matchedCardIndices.contains(idx);
-                return GestureDetector(
-                  onTap: () {
-                    if (isFlipped || _flippedCardIndices.length >= 2) return;
-                    HapticFeedback.lightImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    setState(() {
-                      _flippedCardIndices.add(idx);
-                      if (_flippedCardIndices.length == 2) {
-                        final idx1 = _flippedCardIndices[0];
-                        final idx2 = _flippedCardIndices[1];
-                        if (_memoryCards[idx1] == _memoryCards[idx2]) {
-                          _matchedCardIndices.add(idx1);
-                          _matchedCardIndices.add(idx2);
-                          _flippedCardIndices.clear();
-                          if (_matchedCardIndices.length >= 4) {
-                            _isStepSolved = true;
-                            _speak('Safari Match Champion!');
-                          }
-                        } else {
-                          Future.delayed(const Duration(milliseconds: 700), () {
-                            if (mounted) setState(() => _flippedCardIndices.clear());
-                          });
-                        }
-                      }
-                    });
-                  },
-                  child: Container(
-                    width: 82,
-                    height: 82,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isFlipped
-                            ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
-                            : [const Color(0xFF334155), const Color(0xFF1E293B)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isFlipped ? const Color(0xFFFFD700) : Colors.white24,
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        isFlipped ? card : '❓',
-                        style: TextStyle(fontSize: isFlipped ? 34 : 28),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ],
-        );
-
-      case 4:
-        // 🧩 5. Rainbow Sentence Builder
-        return Column(
-          children: [
-            Text(
-              'Snap blocks into the Rainbow Sentence Train:',
+              'Exchange safe, friendly messages with your buddy:',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
             ),
@@ -1499,62 +1404,184 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF97316).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFF97316)),
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
               ),
-              child: Text(
-                _placedSentenceParts.isEmpty
-                    ? '[ Empty Rainbow Slot ]'
-                    : '"${_placedSentenceParts.join(' ')}"',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFEDD5),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableSentenceParts.map((part) {
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Row(
+                children: [
+                  Text(buddyAvatar, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(buddyName,
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13)),
+                        const SizedBox(height: 2),
+                        Text(
+                          _chatSelectedReplyIdx == null
+                              ? 'Hi buddy! How are you feeling today?'
+                              : 'Wonderful! Great to chat with you today! 🌟',
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5),
+                        ),
+                      ],
+                    ),
                   ),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    setState(() {
-                      _placedSentenceParts.add(part);
-                      _availableSentenceParts.remove(part);
-                      if (_placedSentenceParts.length == _sentenceParts.length) {
-                        _isStepSolved = true;
-                        _speak(_placedSentenceParts.join(' '));
-                      }
-                    });
-                  },
-                  child: Text(part, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                );
-              }).toList(),
+                  IconButton(
+                    icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                    onPressed: () => _speak(
+                      _chatSelectedReplyIdx == null
+                          ? 'Hi buddy! How are you feeling today?'
+                          : 'Wonderful! Great to chat with you today!',
+                    ),
+                  ),
+                ],
+              ),
             ),
-            if (_placedSentenceParts.isNotEmpty && !_isStepSolved) ...[
-              const SizedBox(height: 8),
-              TextButton.icon(
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
-                label: Text('Reset Sentence', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
-                onPressed: () {
+            const SizedBox(height: 14),
+            Text('Choose your quick safe reply:',
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5)),
+            const SizedBox(height: 8),
+            for (int r = 0; r < replies.length; r++) ...[
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketGameAudioService.instance.playCoinSound();
+                  _speak(replies[r]);
                   setState(() {
-                    _placedSentenceParts.clear();
-                    _availableSentenceParts = List<String>.from(_sentenceParts)..shuffle();
+                    _chatSelectedReplyIdx = r;
+                    _isStepSolved = true;
                   });
                 },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _chatSelectedReplyIdx == r
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF334155),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _chatSelectedReplyIdx == r ? const Color(0xFFFFD700) : Colors.white24,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(replies[r],
+                          style: GoogleFonts.outfit(
+                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(_chatSelectedReplyIdx == r ? 'SENT 💬' : 'TAP TO SEND 🚀',
+                          style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
               ),
             ],
+          ],
+        );
+
+      case 4:
+        // 🎙️ 5. Little Assembly Speech
+        final speechText = _syllabus.speakingMission.isNotEmpty
+            ? _syllabus.speakingMission
+            : 'Good morning teachers and dear friends!';
+        return Column(
+          children: [
+            Text(
+              'Step onto the school assembly stage to practice your speech:',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('🎭 🎙️ 🌟', style: TextStyle(fontSize: 24)),
+                      const SizedBox(width: 8),
+                      Text('ASSEMBLY PODIUM',
+                          style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '"$speechText"',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8B5CF6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  ),
+                  icon: const Icon(Icons.volume_up_rounded, size: 18),
+                  label: const Text('LISTEN'),
+                  onPressed: () => _speak(speechText),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _assemblyDelivered ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                  icon: Icon(_assemblyDelivered ? Icons.celebration_rounded : Icons.mic_rounded, size: 18),
+                  label: Text(
+                    _assemblyDelivered ? 'SPEECH GIVEN! 👏' : 'DELIVER SPEECH 🎙️',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.heavyImpact();
+                    PocketGameAudioService.instance.playVictorySfx();
+                    setState(() {
+                      _assemblyDelivered = true;
+                      _isStepSolved = true;
+                    });
+                    _speak('Outstanding assembly speech! The audience gives you a standing ovation!');
+                  },
+                ),
+              ],
+            ),
           ],
         );
 
