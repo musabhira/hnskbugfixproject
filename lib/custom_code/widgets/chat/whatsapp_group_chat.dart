@@ -55,6 +55,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
@@ -5441,6 +5442,9 @@ Draft: "$draft"''';
               icon: const Icon(Icons.more_vert, color: Colors.white),
               color: appBarColor,
               onSelected: (value) {
+                if (value == 'switch_world') {
+                  PocketWorldModeSelectionDialog.show(context);
+                }
                 if (value == 'refresh') _handleRefresh();
                 if (value == 'info') _showGroupInfo();
                 if (value == 'ai_tutor') {
@@ -5506,6 +5510,17 @@ Draft: "$draft"''';
                     value: 'refresh',
                     child:
                         Text('Refresh', style: TextStyle(color: Colors.white)),
+                  ),
+                  const PopupMenuItem(
+                    value: 'switch_world',
+                    child: Row(
+                      children: [
+                        Text('🌐', style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 8),
+                        Text('Switch World Mode',
+                            style: TextStyle(color: Color(0xFFFFD700))),
+                      ],
+                    ),
                   ),
                   if (!isPersonalChat && !_isEnglishHub)
                     const PopupMenuItem(

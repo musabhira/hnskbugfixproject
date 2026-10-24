@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
 export 'auth_page_model.dart';
 
@@ -41,15 +42,23 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
         final isKid = await PocketKidsService.syncAndVerifyUserAccountType(uid);
         if (isKid && mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+            MaterialPageRoute(
+              builder: (_) => PocketKidsService.isKidsWorld
+                  ? const PocketPureKidsHomePage()
+                  : const PocketKidsHomePage(),
+            ),
           );
           return;
         }
       }
       if (mounted && PocketKidsService.isKidAccount) {
-        debugPrint('AuthPage: Kid account active. Redirecting to PocketKidsHomePage.');
+        debugPrint('AuthPage: Kid account active. Redirecting to Kids/Student Home.');
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+          MaterialPageRoute(
+            builder: (_) => PocketKidsService.isKidsWorld
+                ? const PocketPureKidsHomePage()
+                : const PocketKidsHomePage(),
+          ),
         );
       } else if (mounted && loggedIn) {
         debugPrint(
@@ -61,7 +70,10 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (PocketKidsService.isKidAccount) {
+    if (PocketKidsService.isKidsWorld) {
+      return const PocketPureKidsHomePage();
+    }
+    if (PocketKidsService.isStudentWorld || PocketKidsService.isKidAccount) {
       return const PocketKidsHomePage();
     }
     if (loggedIn) {

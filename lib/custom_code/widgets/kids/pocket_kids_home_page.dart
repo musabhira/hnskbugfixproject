@@ -49,9 +49,9 @@ class PocketKidsHomePage extends StatefulWidget {
   static const String routePath = '/pocket_kids_home';
 
   static Future<void> launch(BuildContext context, {bool promptProfileSetup = false}) {
-    return Navigator.pushReplacement(
-      context,
+    return Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => PocketKidsHomePage(promptProfileSetup: promptProfileSetup)),
+      (route) => false,
     );
   }
 

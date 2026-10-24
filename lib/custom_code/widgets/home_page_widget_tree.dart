@@ -51,6 +51,7 @@ import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_c
 import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
@@ -1134,7 +1135,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   Widget build(BuildContext context) {
-    if (PocketKidsService.isKidAccount) {
+    if (PocketKidsService.isKidsWorld) {
+      return const PocketPureKidsHomePage();
+    }
+    if (PocketKidsService.isStudentWorld || PocketKidsService.isKidAccount) {
       return const PocketKidsHomePage();
     }
     final conversationsAsync = ref.watch(conversationsProvider);
@@ -6860,12 +6864,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // 🧸 Switch to Kids Mode Quick Action (Replaces Voice Call icon)
+                              // 🌐 Switch World Mode Quick Action (Kids / Student / Adult)
                               _buildHeaderIconButton(
                                 context,
-                                icon: material.Icons.child_care_rounded,
+                                icon: material.Icons.public_rounded,
                                 iconColor: const Color(0xFFFFD700),
-                                onTap: () => _showSwitchToKidsAlert(context),
+                                onTap: () => PocketWorldModeSelectionDialog.show(context),
                               ),
                               const SizedBox(width: 6),
                               // Search
@@ -7176,71 +7180,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  void _showSwitchToKidsAlert(BuildContext context) {
-    HapticFeedback.mediumImpact();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFFFFD700), width: 2),
-        ),
-        title: Row(
-          children: [
-            const Text('🧸 ', style: TextStyle(fontSize: 24)),
-            Expanded(
-              child: Text(
-                'Switch to Kids Mode?',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Step into the fun 100-Day Kids Adventure with cartoon games, animal companions, voice practice, and castle quests!',
-          style: GoogleFonts.inter(
-            color: Colors.white70,
-            fontSize: 13,
-            height: 1.4,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.outfit(color: Colors.white54),
-            ),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: const Color(0xFF78350F),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await PocketWorldModeSelectionDialog.show(context);
-            },
-            icon: const Text('🌐', style: TextStyle(fontSize: 16)),
-            label: Text(
-              'Switch World',
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   bool shouldRebuild(covariant _HomeMainHeaderDelegate oldDelegate) {

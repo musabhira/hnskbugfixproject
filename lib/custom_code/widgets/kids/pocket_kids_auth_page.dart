@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 
 /// 🔐 Dedicated Kids Mode Login & Account Creation Screen
 class PocketKidsAuthPage extends StatefulWidget {
@@ -153,14 +154,24 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
         PocketKidsService.setAdminMode(true);
       }
 
+      final isYoungKid = widget.ageGroup == '4-6' ||
+          widget.ageGroup == '6-8' ||
+          widget.ageGroup.contains('4') ||
+          widget.ageGroup.contains('6');
+
       HapticFeedback.heavyImpact();
       if (mounted) {
-        PocketKidsHomePage.launch(context);
+        if (isYoungKid) {
+          PocketPureKidsHomePage.launch(context);
+        } else {
+          PocketKidsHomePage.launch(context);
+        }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Authentication notice: Proceeding to your Kids Mountain Trail!';
+          _errorMessage =
+              'Authentication notice: Proceeding to your Kids Adventure!';
         });
         // Always ensure child is not locked out of their games
         await PocketKidsService.activateKidAccount(
@@ -169,8 +180,16 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
           avatar: widget.avatar,
           isPureKid: true,
         );
+        final isYoungKid = widget.ageGroup == '4-6' ||
+            widget.ageGroup == '6-8' ||
+            widget.ageGroup.contains('4') ||
+            widget.ageGroup.contains('6');
         if (mounted) {
-          PocketKidsHomePage.launch(context);
+          if (isYoungKid) {
+            PocketPureKidsHomePage.launch(context);
+          } else {
+            PocketKidsHomePage.launch(context);
+          }
         }
       }
     } finally {
@@ -186,8 +205,16 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
       avatar: widget.avatar,
       isPureKid: true,
     );
+    final isYoungKid = widget.ageGroup == '4-6' ||
+        widget.ageGroup == '6-8' ||
+        widget.ageGroup.contains('4') ||
+        widget.ageGroup.contains('6');
     if (mounted) {
-      PocketKidsHomePage.launch(context);
+      if (isYoungKid) {
+        PocketPureKidsHomePage.launch(context);
+      } else {
+        PocketKidsHomePage.launch(context);
+      }
     }
   }
 
