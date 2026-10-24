@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_attacking_
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame_letter_tracing_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame_junior_sentence_builder.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_scenery_background.dart';
 
 /// 👶 Pure Kids World Platform (Ages 4–8)
 ///
@@ -1414,9 +1415,18 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
     return Stack(
       children: [
-        // Continuous Mountain Trail List
+        // 🌄 Dynamic Living Cartoon Nature Scenery Background (Azure Sky, Radiant Sun, Drifting Clouds & Hills)
+        const Positioned.fill(
+          child: PocketKidsNatureSceneryBackground(
+            showSun: true,
+            showTrees: true,
+          ),
+        ),
+
+        // Continuous Mountain Trail List (Climbing bottom-up from Day 1 Basecamp to Day 90 Summit)
         ListView.builder(
           controller: _trailScrollController,
+          reverse: true,
           padding: const EdgeInsets.only(top: 140, bottom: 90),
           itemCount: 91, // Days 1 to 90 + Day 91 King Lion Golden Castle
           itemBuilder: (context, idx) {

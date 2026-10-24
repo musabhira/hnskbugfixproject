@@ -620,10 +620,8 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
                   // 🐾 7 Stepping Game Ledges
                   for (int i = 0; i < totalSteps; i++) _buildStepNode(i),
 
-                  // 🚗 Kid Driver Buggy traveling between steps (IgnorePointer ensures taps on steps are never blocked!)
-                  IgnorePointer(
-                    child: _buildAnimatedBuggy(avatarConfig),
-                  ),
+                  // 🚗 Kid Driver Buggy traveling between steps
+                  _buildAnimatedBuggy(avatarConfig),
                 ],
               ),
             ),
@@ -645,8 +643,8 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
   Widget _buildTopHud() {
     return Positioned(
       top: MediaQuery.of(context).padding.top + 8,
-      left: 14,
-      right: 14,
+      left: 10,
+      right: 10,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -657,7 +655,7 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
               Navigator.pop(context);
             },
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A),
                 shape: BoxShape.circle,
@@ -674,52 +672,62 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
             ),
           ),
 
-          // Day Badge & Step Counter
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'DAY ${widget.day} OPEN WORLD 🌍',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${_completedStepIndices.length}/$totalSteps GAMES',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w900,
+          // Day Badge & Step Counter (Flexible & scale down if narrow)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'DAY ${widget.day} WORLD 🌍',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${_completedStepIndices.length}/$totalSteps',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
@@ -864,8 +872,9 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
     return Positioned(
       left: _buggyX - 32,
       top: _buggyY - 110,
-      child: Transform.rotate(
-        angle: _buggyAngle,
+      child: IgnorePointer(
+        child: Transform.rotate(
+          angle: _buggyAngle,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -930,6 +939,7 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
             ),
           ],
         ),
+      ),
       ),
     );
   }

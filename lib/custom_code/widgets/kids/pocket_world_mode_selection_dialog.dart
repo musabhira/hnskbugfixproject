@@ -105,13 +105,11 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 context,
                 emoji: '👶',
                 title: 'KIDS WORLD',
-                scoreBadge: 'KS SCORE',
-                badgeColor: const Color(0xFFFFD700),
-                badgeTextColor: const Color(0xFF78350F),
+                subtitle: 'Ages 4–8',
                 gradientColors: const [Color(0xFF0369A1), Color(0xFF075985)],
                 borderColor: const Color(0xFF38BDF8),
                 description:
-                    'Ages 4–8 • Phonics, Balloon Pop, Cartoon Village, Letter Train, Star Cookies & Mascot Playdates (Zero Text Chat)',
+                    'Phonics, Balloon Pop, Cartoon Village, Letter Tracing, Star Cookies & Mascot Playdates',
                 isActive: isKids,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
@@ -134,7 +132,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // =============================================================
               // Card 2: 🎒 STUDENT WORLD (Ages 9–16)
@@ -143,13 +141,11 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 context,
                 emoji: '🎒',
                 title: 'STUDENT WORLD',
-                scoreBadge: 'SS SCORE',
-                badgeColor: const Color(0xFF6366F1),
-                badgeTextColor: Colors.white,
+                subtitle: 'Ages 9–16',
                 gradientColors: const [Color(0xFF312E81), Color(0xFF1E1B4B)],
                 borderColor: const Color(0xFF818CF8),
                 description:
-                    'Ages 9–16 • Student English Hub, 100-Day Mountain Trail, Assembly Speech, PopArt Hero Cards, Citadel Fights & Student Chat',
+                    'Student English Hub, 100-Day Mountain Trail, Assembly Speech, PopArt Cards & Citadel Fights',
                 isActive: isStudent,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
@@ -173,7 +169,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // =============================================================
               // Card 3: 🛡️ ADULT MODE (17+)
@@ -182,13 +178,11 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 context,
                 emoji: '🛡️',
                 title: 'ADULT MODE',
-                scoreBadge: 'PS SCORE',
-                badgeColor: const Color(0xFF10B981),
-                badgeTextColor: const Color(0xFF064E3B),
+                subtitle: '17+',
                 gradientColors: const [Color(0xFF1E293B), Color(0xFF0F172A)],
                 borderColor: const Color(0xFF34D399),
                 description:
-                    '17+ • Real-World Mates Chat, Citadel Attack Raids, English Hub & Sovereign World Ranking',
+                    'Real-World Mates Chat, Citadel Attack Raids, English Hub & Sovereign World Ranking',
                 isActive: isAdult,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
@@ -246,9 +240,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
     BuildContext context, {
     required String emoji,
     required String title,
-    required String scoreBadge,
-    required Color badgeColor,
-    required Color badgeTextColor,
+    required String subtitle,
     required List<Color> gradientColors,
     required Color borderColor,
     required String description,
@@ -259,23 +251,23 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: gradientColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isActive ? const Color(0xFFFFD700) : borderColor,
-            width: isActive ? 2.2 : 1.4,
+            color: isActive ? const Color(0xFFFFD700) : borderColor.withValues(alpha: 0.6),
+            width: isActive ? 2.0 : 1.2,
           ),
           boxShadow: [
             BoxShadow(
               color: (isActive ? const Color(0xFFFFD700) : borderColor)
-                  .withValues(alpha: isActive ? 0.35 : 0.20),
-              blurRadius: isActive ? 12 : 8,
+                  .withValues(alpha: isActive ? 0.30 : 0.15),
+              blurRadius: isActive ? 10 : 6,
               offset: const Offset(0, 3),
             ),
           ],
@@ -283,90 +275,76 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: borderColor.withValues(alpha: 0.22),
                 shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: 1.4),
+                border: Border.all(color: borderColor, width: 1.2),
               ),
               alignment: Alignment.center,
-              child: Text(emoji, style: const TextStyle(fontSize: 24)),
+              child: Text(emoji, style: const TextStyle(fontSize: 22)),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14.5,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: badgeColor,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          scoreBadge,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
                           style: GoogleFonts.outfit(
-                            color: badgeTextColor,
-                            fontSize: 8.5,
+                            color: Colors.white,
                             fontWeight: FontWeight.w900,
+                            fontSize: 14.5,
+                            letterSpacing: 0.3,
                           ),
                         ),
-                      ),
-                      if (isActive) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                                color: const Color(0xFF10B981), width: 1),
                           ),
                           child: Text(
-                            'ACTIVE NOW',
+                            subtitle,
                             style: GoogleFonts.outfit(
-                              color: const Color(0xFF34D399),
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.w900,
+                              color: Colors.white70,
+                              fontSize: 9.0,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     description,
                     style: GoogleFonts.inter(
                       color: Colors.white70,
-                      fontSize: 11,
-                      height: 1.3,
+                      fontSize: 10.5,
+                      height: 1.25,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 6),
             Icon(
               isActive
                   ? Icons.check_circle_rounded
                   : Icons.arrow_forward_ios_rounded,
-              color: isActive ? const Color(0xFFFFD700) : borderColor,
-              size: isActive ? 18 : 15,
+              color: isActive ? const Color(0xFFFFD700) : Colors.white38,
+              size: isActive ? 20 : 14,
             ),
           ],
         ),
