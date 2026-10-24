@@ -299,11 +299,36 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         q.gameFormat == 'syntax_jigsaw' ||
         q.gameFormat == 'negative_sentence' ||
         q.gameFormat == 'chat_reply' ||
-        q.gameFormat == 'spoken_whisper';
+        q.gameFormat == 'spoken_whisper' ||
+        q.gameFormat == 'grammar_defusal' ||
+        q.gameFormat == 'idiom_maze';
 
     if (isWordBankMode) {
       _assembledWords = [];
-      _availableWords = List<String>.from(q.options);
+      if (q.options.isNotEmpty &&
+          !q.options.any((o) => o.split(' ').length > 3)) {
+        _availableWords = List<String>.from(q.options);
+      } else if (q.explanation.isNotEmpty) {
+        final cleanWords = q.explanation
+            .replaceAll(RegExp(r'[^\w\s\?]'), '')
+            .split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .toList();
+        cleanWords.shuffle();
+        _availableWords = cleanWords;
+      } else if (q.options.isNotEmpty) {
+        final target =
+            q.options[q.correctIndex.clamp(0, q.options.length - 1)];
+        final cleanWords = target
+            .replaceAll(RegExp(r'[^\w\s\?]'), '')
+            .split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .toList();
+        cleanWords.shuffle();
+        _availableWords = cleanWords;
+      } else {
+        _availableWords = [];
+      }
     } else {
       _assembledWords = [];
       _availableWords = [];
@@ -1188,7 +1213,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
             final bottomPad = MediaQuery.of(context).padding.bottom;
-            final collapsedH = 76.0 + bottomPad;
+            final collapsedH = 92.0 + bottomPad;
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(
                 collapsedH, drawerMaxH, _profileDrawerController.value)!;
@@ -1706,9 +1731,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         _buildProfileDrawer(drawerMaxH, collapsedH, bottomPad),
                   ),
 
-                // 12. Stacked Expanded Question / Challenge Sheet (when opened)
+                // 12. Full-Screen Interactive Game Challenge Stage (when attack is active)
                 if (_isQuestionSheetOpen)
                   Positioned(
+                    top: 0,
                     bottom: 0,
                     left: 0,
                     right: 0,
@@ -5696,7 +5722,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               },
               child: Container(
                 padding: EdgeInsets.fromLTRB(
-                    16, 6, 16, prog < 0.1 ? (8 + bottomPad) : 8),
+                    16, 4, 16, prog < 0.1 ? (4 + bottomPad) : 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.95),
                   border: Border(
@@ -5712,8 +5738,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     // Pull Handle Pill (User Directive: Slightly larger and easier to grab)
                     Container(
                       width: 44,
-                      height: 4.5,
-                      margin: const EdgeInsets.only(bottom: 7),
+                      height: 4.0,
+                      margin: const EdgeInsets.only(bottom: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(3),
@@ -6869,7 +6895,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   style: const TextStyle(fontSize: 13)),
                               const SizedBox(width: 5),
                               Text(
-                                '${info.title.toUpperCase()} (${info.titleMl})',
+                                info.title.toUpperCase(),
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF38BDF8),
                                   fontSize: 11,
@@ -6964,7 +6990,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             currentQ.gameFormat == 'syntax_jigsaw' ||
                             currentQ.gameFormat == 'negative_sentence' ||
                             currentQ.gameFormat == 'chat_reply' ||
-                            currentQ.gameFormat == 'spoken_whisper';
+                            currentQ.gameFormat == 'spoken_whisper' ||
+                            currentQ.gameFormat == 'grammar_defusal' ||
+                            currentQ.gameFormat == 'idiom_maze';
 
                     final isVerbTimelineMode =
                         currentQ.gameFormat == 'verb_timeline' ||
@@ -6975,36 +7003,51 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Assembled Sentence Drop Box
+                          // Assembled Sentence Drop Box / Runway
                           Container(
                             width: double.infinity,
-                            constraints: const BoxConstraints(minHeight: 56),
+                            constraints: const BoxConstraints(minHeight: 64),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 8),
+                                horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A),
+                              color: const Color(0xFF060911),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: _assembledWords.isNotEmpty
-                                    ? const Color(0xFF38BDF8)
-                                    : Colors.white24,
+                                    ? const Color(0xFF00E5FF)
+                                    : const Color(0xFF00E5FF).withValues(alpha: 0.35),
                                 width: 1.5,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
                             child: _assembledWords.isEmpty
                                 ? Center(
-                                    child: Text(
-                                      'വാക്കുകൾ താഴെ നിന്നും ക്രമത്തിൽ ടാപ്പ് ചെയ്യുക...',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white38,
-                                        fontSize: 12,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.touch_app_rounded,
+                                            color: Colors.white24, size: 16),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Tap word blocks below in order ➔',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white38,
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   )
                                 : Wrap(
-                                    spacing: 6,
-                                    runSpacing: 6,
+                                    spacing: 8,
+                                    runSpacing: 8,
                                     children: _assembledWords.map((w) {
                                       return GestureDetector(
                                         onTap: () {
@@ -7016,14 +7059,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         },
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
+                                              horizontal: 12, vertical: 8),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF0284C7),
+                                            color: const Color(0xFF00E5FF),
                                             borderRadius:
                                                 BorderRadius.circular(10),
-                                            border: Border.all(
-                                                color: const Color(0xFF38BDF8),
-                                                width: 1),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF0284C7)
+                                                    .withValues(alpha: 0.8),
+                                                offset: const Offset(0, 3),
+                                              ),
+                                            ],
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -7031,15 +7078,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                               Text(
                                                 w,
                                                 style: GoogleFonts.outfit(
-                                                  color: Colors.white,
+                                                  color: Colors.black,
                                                   fontSize: 13,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontWeight: FontWeight.w900,
                                                 ),
                                               ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: 5),
                                               const Icon(Icons.close_rounded,
-                                                  size: 12,
-                                                  color: Colors.white70),
+                                                  size: 13,
+                                                  color: Colors.black54),
                                             ],
                                           ),
                                         ),
@@ -7047,18 +7094,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     }).toList(),
                                   ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
 
                           // Word Bank Row Header
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'WORD BANK • ലഭ്യമായ വാക്കുകൾ',
+                                'WORD BLOCKS (Tap to Assemble)',
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white60,
+                                  color: const Color(0xFF94A3B8),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                               if (_assembledWords.isNotEmpty)
@@ -7070,12 +7118,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       _assembledWords.clear();
                                     });
                                   },
-                                  child: Text(
-                                    '🔄 Reset / വീണ്ടും',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFFFFD700),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700),
+                                          width: 0.8),
+                                    ),
+                                    child: Text(
+                                      '🔄 Reset',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -7098,15 +7158,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
+                                      horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF1E293B),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: const Color(0xFF38BDF8)
                                           .withValues(alpha: 0.6),
                                       width: 1.2,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF0F172A),
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
                                   child: Text(
                                     w,
@@ -7132,10 +7198,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           final isSelected = _selectedOption == optIdx;
                           final opt = currentQ.options[optIdx];
                           final label = optIdx == 0
-                              ? 'PAST\nകഴിഞ്ഞത്'
-                              : (optIdx == 1
-                                  ? 'PRESENT\nഇപ്പോൾ'
-                                  : 'FUTURE\nഇനി');
+                              ? 'PAST'
+                              : (optIdx == 1 ? 'PRESENT' : 'FUTURE');
                           final cleanWord = opt.split(' (').first;
 
                           return Expanded(
@@ -7197,12 +7261,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     }
 
-                    // 2B. 🔤 4-WORD SPELLING GAUNTLET (User Audio Directive: "ഒറ്റ ടാസ്കിൽ തന്നെ നാല് വേർഡിന്റെ സ്പെല്ലിംഗ് സെറ്റ് ചെയ്യണം... കുറച്ച് ഹാർഡ് ആയിട്ട് പോകട്ടെ.")
+                    // 2B. 🔤 4-WORD SPELLING GAUNTLET
                     if (currentQ.gameFormat == 'spelling_challenge') {
                       return Column(
                         children:
                             List.generate(currentQ.options.length, (optIdx) {
-                          final letter = String.fromCharCode(65 + optIdx);
                           final isSelected = _selectedOption == optIdx;
                           final optionStr = currentQ.options[optIdx];
                           final words = optionStr
@@ -7246,36 +7309,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 children: [
                                   Row(
                                     children: [
-                                      Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: isSelected
-                                              ? const Color(0xFFFFD700)
-                                              : Colors.white10,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            letter,
-                                            style: GoogleFonts.outfit(
-                                              color: isSelected
-                                                  ? Colors.black
-                                                  : Colors.white70,
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
+                                      Text(
+                                        isSelected ? '⚔️' : '🔤',
+                                        style: const TextStyle(fontSize: 16),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Set $letter: 4 Words Spelling',
+                                        'Spelling Pack ${optIdx + 1}',
                                         style: GoogleFonts.outfit(
                                           color: isSelected
                                               ? const Color(0xFFFFD700)
                                               : Colors.white70,
-                                          fontSize: 11,
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -7343,69 +7388,165 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     }
 
-                    // 3. STANDARD MCQ / DEFUSAL CARDS
+                    // 2C. 💣 SPOT THE ERROR BOMB DEFUSAL (Interactive phrase tiles, zero radio MCQs)
+                    if (currentQ.gameFormat == 'spot_error') {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFFEF4444)
+                                    .withValues(alpha: 0.5),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('💣',
+                                        style: TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'TAP FAULTY WORD BLOCK TO DEFUSE:',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFF87171),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: List.generate(
+                                      currentQ.options.length, (optIdx) {
+                                    final isSelected =
+                                        _selectedOption == optIdx;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        setState(
+                                            () => _selectedOption = optIdx);
+                                      },
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 180),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? const Color(0xFFEF4444)
+                                                  .withValues(alpha: 0.3)
+                                              : const Color(0xFF1E293B),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? const Color(0xFFEF4444)
+                                                : Colors.white24,
+                                            width: isSelected ? 2.0 : 1.0,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color:
+                                                        const Color(0xFFEF4444)
+                                                            .withValues(
+                                                                alpha: 0.3),
+                                                    blurRadius: 8,
+                                                  ),
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Text(
+                                          currentQ.options[optIdx],
+                                          style: GoogleFonts.outfit(
+                                            color: isSelected
+                                                ? const Color(0xFFFCA5A5)
+                                                : Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // 3. ARCADE BATTLE POWER CARDS (Zero Radio MCQs - Interactive Power Tiles)
+                    const icons = ['⚡', '🎯', '💎', '🔥'];
                     return Column(
                       children:
                           List.generate(currentQ.options.length, (optIdx) {
-                        final letter = String.fromCharCode(65 + optIdx);
                         final isSelected = _selectedOption == optIdx;
+                        final icon = icons[optIdx % icons.length];
 
                         return GestureDetector(
                           onTap: () {
                             setState(() => _selectedOption = optIdx);
                             HapticFeedback.selectionClick();
                           },
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
                             margin: const EdgeInsets.only(bottom: 8),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                                horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color(0xFF0284C7)
-                                      .withValues(alpha: 0.25)
+                                      .withValues(alpha: 0.35)
                                   : const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF38BDF8)
+                                    ? const Color(0xFFFFD700)
                                     : Colors.white12,
-                                width: isSelected ? 1.5 : 1,
+                                width: isSelected ? 2.0 : 1.0,
                               ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFD700)
+                                            .withValues(alpha: 0.25),
+                                        blurRadius: 8,
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected
-                                        ? const Color(0xFF38BDF8)
-                                        : Colors.white10,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      letter,
-                                      style: GoogleFonts.outfit(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : Colors.white70,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
+                                Text(
+                                  isSelected ? '⚔️' : icon,
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
                                     currentQ.options[optIdx],
                                     style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 13,
+                                      color: isSelected
+                                          ? const Color(0xFFFFD700)
+                                          : Colors.white,
+                                      fontSize: 13.5,
                                       fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.normal,
+                                          ? FontWeight.w800
+                                          : FontWeight.w500,
                                     ),
                                   ),
                                 ),
@@ -7427,7 +7568,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             currentQ.gameFormat == 'syntax_jigsaw' ||
                             currentQ.gameFormat == 'negative_sentence' ||
                             currentQ.gameFormat == 'chat_reply' ||
-                            currentQ.gameFormat == 'spoken_whisper';
+                            currentQ.gameFormat == 'spoken_whisper' ||
+                            currentQ.gameFormat == 'grammar_defusal' ||
+                            currentQ.gameFormat == 'idiom_maze';
 
                     final isReady = isWordBankMode
                         ? _assembledWords.isNotEmpty

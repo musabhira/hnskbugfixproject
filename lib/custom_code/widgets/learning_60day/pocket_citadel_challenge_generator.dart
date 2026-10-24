@@ -47,8 +47,16 @@ class DefenseGameTypeInfo {
 /// - Non-repetitive rotation across the interactive arcade game modes.
 /// - Full multi-language support (Malayalam, Hindi, Tamil, Telugu, English).
 class PocketCitadelChallengeGenerator {
-  /// 🗂️ The 12 Curated Educational Game Formats for House Defense
+  /// 🗂️ The Curated Educational Game Formats for House Defense & Speed Duels
   static const List<DefenseGameTypeInfo> availableGameTypes = [
+    DefenseGameTypeInfo(
+      id: 'mixed_duel',
+      title: 'Mixed Duel (20 Qs)',
+      titleMl: 'മിക്സഡ് പോരാട്ടം',
+      icon: '⚔️',
+      description:
+          'Arcade mix of Sentence Builder, Spot The Error, Vocab Hunt & Grammar Defense.',
+    ),
     DefenseGameTypeInfo(
       id: 'sentence_builder',
       title: 'Sentence Builder',
@@ -261,6 +269,25 @@ class PocketCitadelChallengeGenerator {
   }) {
     final r = random ?? math.Random(day * 31 + taskIndex);
     switch (format) {
+      case 'mixed_duel':
+        const mixedTypes = [
+          'sentence_builder',
+          'spot_error',
+          'verb_timeline',
+          'chat_reply',
+          'negative_sentence',
+          'spelling_challenge',
+          'spoken_whisper',
+          'vocab_gate',
+        ];
+        final picked = mixedTypes[taskIndex % mixedTypes.length];
+        return buildChallengeForFormat(
+          format: picked,
+          day: day,
+          taskIndex: taskIndex,
+          difficulty: difficulty,
+          random: r,
+        );
       case 'sentence_builder':
         return _buildSentenceBuilderChallenge(taskIndex, day, r,
             difficulty: difficulty);
@@ -299,7 +326,8 @@ class PocketCitadelChallengeGenerator {
             difficulty: difficulty);
       case 'mcq':
       default:
-        return _buildTacticalMcqChallenge(taskIndex, day, r,
+        // Strictly no 4-choice radio MCQs per user directive!
+        return _buildSentenceBuilderChallenge(taskIndex, day, r,
             difficulty: difficulty);
     }
   }

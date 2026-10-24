@@ -69,7 +69,6 @@ import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_ranking_trail_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -5716,48 +5715,6 @@ Draft: "$draft"''';
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
-
-            // 🎨 Tab 3: Flame Art Cards (User Audio Directive: "ചാറ്റ് പേജിന്റെ അവിടെ Mates Rank-ന്റെ ഇപ്പുറത്ത് ഒരു ബട്ടൺ പ്ലേസ് ചെയ്താൽ മതി...")
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.mediumImpact();
-                PopArtAvatarCardsViewerPage.open(context);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(left: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF007A), Color(0xFF7928CA), Color(0xFF4338CA)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF007A).withValues(alpha: 0.4),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🎨', style: TextStyle(fontSize: 13)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Cards',
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ),

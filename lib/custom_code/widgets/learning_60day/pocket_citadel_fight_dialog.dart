@@ -41,9 +41,9 @@ class PocketCitadelFightModal {
 
             return Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.88,
+                maxHeight: MediaQuery.of(context).size.height * 0.90,
               ),
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,320 +61,339 @@ class PocketCitadelFightModal {
                   ),
                   const SizedBox(height: 12),
 
-                  // Header with Opponent Info & Gold Trophy Reward Promise
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF1E293B),
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Text(opponentAvatar, style: const TextStyle(fontSize: 22)),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'CITADEL FIGHT DUEL',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.8,
-                                  ),
+                  // Scrollable Body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header with Opponent Info & Gold Trophy Reward Promise
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF1E293B),
+                                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 6),
-                                const Text('🥊', style: TextStyle(fontSize: 16)),
-                              ],
-                            ),
-                            Text(
-                              'Challenge $opponentName • Day $opponentDay Fortress',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF94A3B8),
-                                fontSize: 11.5,
+                                child: Text(opponentAvatar, style: const TextStyle(fontSize: 22)),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🏆', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '+1 Gold Trophy',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'CHOOSE SPEED DUEL GAME MODE (10+ FORMATS):',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Games Selector Grid (10-12 modes)
-                  SizedBox(
-                    height: 190,
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 2.3,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: games.length,
-                      itemBuilder: (context, idx) {
-                        final g = games[idx];
-                        final isSelected = g.id == selectedGameId;
-
-                        return GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setModalState(() => selectedGameId = g.id);
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF1E293B)
-                                  : const Color(0xFF0F172A),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFFFFD700)
-                                    : const Color(0xFF334155),
-                                width: isSelected ? 2.0 : 1.0,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                                        blurRadius: 8,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'CITADEL FIGHT DUEL',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFFD700),
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.8,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Text('🥊', style: TextStyle(fontSize: 16)),
+                                        ],
                                       ),
-                                    ]
-                                  : null,
+                                    ),
+                                    Text(
+                                      'Challenge $opponentName • Day $opponentDay Fortress',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF94A3B8),
+                                        fontSize: 11.5,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text('🏆', style: TextStyle(fontSize: 12)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '+1 Trophy',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          Text(
+                            'CHOOSE SPEED DUEL GAME MODE (10+ FORMATS):',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Games Selector Grid (10-12 modes)
+                          SizedBox(
+                            height: 190,
+                            child: GridView.builder(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 2.3,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
+                              itemCount: games.length,
+                              itemBuilder: (context, idx) {
+                                final g = games[idx];
+                                final isSelected = g.id == selectedGameId;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    setModalState(() => selectedGameId = g.id);
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFF0F172A),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? const Color(0xFFFFD700)
+                                            : const Color(0xFF334155),
+                                        width: isSelected ? 2.0 : 1.0,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Text(g.icon, style: const TextStyle(fontSize: 20)),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                g.title,
+                                                style: GoogleFonts.outfit(
+                                                  color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                g.titleMl,
+                                                style: GoogleFonts.inter(
+                                                  color: const Color(0xFF64748B),
+                                                  fontSize: 9.5,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Selected Game Description Box
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF334155)),
                             ),
                             child: Row(
                               children: [
-                                Text(g.icon, style: const TextStyle(fontSize: 20)),
+                                Text(activeGame.icon, style: const TextStyle(fontSize: 16)),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        g.title,
-                                        style: GoogleFonts.outfit(
-                                          color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        g.titleMl,
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFF64748B),
-                                          fontSize: 9.5,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                  child: Text(
+                                    activeGame.description,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF94A3B8),
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 14),
+
+                          Text(
+                            'ROUNDS / QUESTION COUNT (MINIMUM 20):',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // Question Count Selector (Wrap prevents 27px overflow on all screens!)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              ChoiceChip(
+                                label: const Text('10 Qs (Quick)'),
+                                selected: selectedQuestionCount == 10,
+                                selectedColor: const Color(0xFFF59E0B),
+                                backgroundColor: const Color(0xFF1E293B),
+                                labelStyle: GoogleFonts.outfit(
+                                  color: selectedQuestionCount == 10 ? const Color(0xFF0F172A) : Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                                side: BorderSide(
+                                  color: selectedQuestionCount == 10 ? const Color(0xFFFFD700) : const Color(0xFF334155),
+                                ),
+                                onSelected: (_) {
+                                  HapticFeedback.selectionClick();
+                                  setModalState(() => selectedQuestionCount = 10);
+                                },
+                              ),
+                              ChoiceChip(
+                                label: const Text('⚔️ 20 Qs (War Mode)'),
+                                selected: selectedQuestionCount == 20,
+                                selectedColor: const Color(0xFFF59E0B),
+                                backgroundColor: const Color(0xFF1E293B),
+                                labelStyle: GoogleFonts.outfit(
+                                  color: selectedQuestionCount == 20 ? const Color(0xFF0F172A) : Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                                side: BorderSide(
+                                  color: selectedQuestionCount == 20 ? const Color(0xFFFFD700) : const Color(0xFF334155),
+                                ),
+                                onSelected: (_) {
+                                  HapticFeedback.selectionClick();
+                                  setModalState(() => selectedQuestionCount = 20);
+                                },
+                              ),
+                              ChoiceChip(
+                                label: const Text('30 Qs (Epic)'),
+                                selected: selectedQuestionCount == 30,
+                                selectedColor: const Color(0xFFF59E0B),
+                                backgroundColor: const Color(0xFF1E293B),
+                                labelStyle: GoogleFonts.outfit(
+                                  color: selectedQuestionCount == 30 ? const Color(0xFF0F172A) : Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                                side: BorderSide(
+                                  color: selectedQuestionCount == 30 ? const Color(0xFFFFD700) : const Color(0xFF334155),
+                                ),
+                                onSelected: (_) {
+                                  HapticFeedback.selectionClick();
+                                  setModalState(() => selectedQuestionCount = 30);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+
+                          Text(
+                            'SCHEDULE DUEL TIME:',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // Time Options Horizontal Selector
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: PocketCitadelFightService.scheduleTimeOptions.map((time) {
+                                final isSelected = time == selectedTime;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ChoiceChip(
+                                    label: Text(time),
+                                    selected: isSelected,
+                                    selectedColor: const Color(0xFFF59E0B),
+                                    backgroundColor: const Color(0xFF1E293B),
+                                    labelStyle: GoogleFonts.outfit(
+                                      color: isSelected ? const Color(0xFF0F172A) : Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11.5,
+                                    ),
+                                    side: BorderSide(
+                                      color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF334155),
+                                    ),
+                                    onSelected: (_) {
+                                      HapticFeedback.selectionClick();
+                                      setModalState(() => selectedTime = time);
+                                    },
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  // Selected Game Description Box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF334155)),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(activeGame.icon, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            activeGame.description,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF94A3B8),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  Text(
-                    'ROUNDS / QUESTION COUNT (MINIMUM 20):',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Question Count Selector (10, 20 [War Mode], 30)
-                  Row(
-                    children: [
-                      ChoiceChip(
-                        label: const Text('10 Qs (Quick)'),
-                        selected: selectedQuestionCount == 10,
-                        selectedColor: const Color(0xFFF59E0B),
-                        backgroundColor: const Color(0xFF1E293B),
-                        labelStyle: GoogleFonts.outfit(
-                          color: selectedQuestionCount == 10 ? const Color(0xFF0F172A) : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11.5,
-                        ),
-                        side: BorderSide(
-                          color: selectedQuestionCount == 10 ? const Color(0xFFFFD700) : const Color(0xFF334155),
-                        ),
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          setModalState(() => selectedQuestionCount = 10);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('⚔️ 20 Qs (War Mode)'),
-                        selected: selectedQuestionCount == 20,
-                        selectedColor: const Color(0xFFF59E0B),
-                        backgroundColor: const Color(0xFF1E293B),
-                        labelStyle: GoogleFonts.outfit(
-                          color: selectedQuestionCount == 20 ? const Color(0xFF0F172A) : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11.5,
-                        ),
-                        side: BorderSide(
-                          color: selectedQuestionCount == 20 ? const Color(0xFFFFD700) : const Color(0xFF334155),
-                        ),
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          setModalState(() => selectedQuestionCount = 20);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('30 Qs (Epic)'),
-                        selected: selectedQuestionCount == 30,
-                        selectedColor: const Color(0xFFF59E0B),
-                        backgroundColor: const Color(0xFF1E293B),
-                        labelStyle: GoogleFonts.outfit(
-                          color: selectedQuestionCount == 30 ? const Color(0xFF0F172A) : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11.5,
-                        ),
-                        side: BorderSide(
-                          color: selectedQuestionCount == 30 ? const Color(0xFFFFD700) : const Color(0xFF334155),
-                        ),
-                        onSelected: (_) {
-                          HapticFeedback.selectionClick();
-                          setModalState(() => selectedQuestionCount = 30);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  Text(
-                    'SCHEDULE DUEL TIME:',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Time Options Horizontal Selector
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: PocketCitadelFightService.scheduleTimeOptions.map((time) {
-                        final isSelected = time == selectedTime;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(time),
-                            selected: isSelected,
-                            selectedColor: const Color(0xFFF59E0B),
-                            backgroundColor: const Color(0xFF1E293B),
-                            labelStyle: GoogleFonts.outfit(
-                              color: isSelected ? const Color(0xFF0F172A) : Colors.white70,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11.5,
-                            ),
-                            side: BorderSide(
-                              color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF334155),
-                            ),
-                            onSelected: (_) {
-                              HapticFeedback.selectionClick();
-                              setModalState(() => selectedTime = time);
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Launch Fight / Send Challenge Button
+                  // Launch Fight / Send Challenge Button (Pinned at bottom, FittedBox prevents 4.3px overflow)
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -446,22 +465,25 @@ class PocketCitadelFightModal {
                           );
                         }
                       },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('🥊', style: TextStyle(fontSize: 18)),
-                          const SizedBox(width: 8),
-                          Text(
-                            selectedTime.contains('Instant')
-                                ? 'ENTER FIGHT ARENA NOW (START DUEL)'
-                                : 'DISPATCH FIGHT CHALLENGE',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              letterSpacing: 0.6,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🥊', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text(
+                              selectedTime.contains('Instant')
+                                  ? 'ENTER TO FIGHT ⚔️'
+                                  : 'DISPATCH FIGHT CHALLENGE',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13.5,
+                                letterSpacing: 0.6,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -716,7 +738,13 @@ class _PocketCitadelFightArenaDialogState extends State<PocketCitadelFightArenaD
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Container(
         padding: const EdgeInsets.all(18),
-        child: _isFinished ? _buildResultScreen() : _buildArenaScreen(currentQ, progress),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: _isFinished ? _buildResultScreen() : _buildArenaScreen(currentQ, progress),
+        ),
       ),
     );
   }
@@ -813,7 +841,7 @@ class _PocketCitadelFightArenaDialogState extends State<PocketCitadelFightArenaD
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'ROUND ${_currentIndex + 1} OF 5',
+              'ROUND ${_currentIndex + 1} OF ${_questions.length}',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFD700),
                 fontWeight: FontWeight.w900,

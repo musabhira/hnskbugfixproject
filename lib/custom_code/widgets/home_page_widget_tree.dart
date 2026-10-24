@@ -54,7 +54,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -1172,63 +1171,31 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 1
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 🎨 Test Button: 12 Pop-Art Cards (Flame Game Engine)
-                        material.FloatingActionButton.extended(
-                          heroTag: 'flame_pop_art_cards_fab',
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            PopArtAvatarCardsViewerPage.open(context);
-                          },
-                          backgroundColor: const Color(0xFFFF007A),
-                          foregroundColor: material.Colors.white,
-                          elevation: 4,
-                          highlightElevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          icon: const Text('🎨', style: TextStyle(fontSize: 15)),
-                          label: Text(
-                            'Cards',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              color: material.Colors.white,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
+                  ? material.FloatingActionButton.extended(
+                      heroTag: 'mates_ranking_fab',
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        PocketWorldRankingTrailWidget.showMatesRankingModal(
+                          context,
+                          userId: _currentUserId,
+                        );
+                      },
+                      backgroundColor: const Color(0xFFFFFC00),
+                      foregroundColor: material.Colors.black,
+                      elevation: 4,
+                      highlightElevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      label: Text(
+                        'Mates Rank',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          color: material.Colors.black,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(width: 8),
-                        // 👥 Mates Rank FAB
-                        material.FloatingActionButton.extended(
-                          heroTag: 'mates_ranking_fab',
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            PocketWorldRankingTrailWidget.showMatesRankingModal(
-                              context,
-                              userId: _currentUserId,
-                            );
-                          },
-                          backgroundColor: const Color(0xFFFFFC00),
-                          foregroundColor: material.Colors.black,
-                          elevation: 4,
-                          highlightElevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          label: Text(
-                            'Mates Rank',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              color: material.Colors.black,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     )
                   : null,
               body: material.ColoredBox(
