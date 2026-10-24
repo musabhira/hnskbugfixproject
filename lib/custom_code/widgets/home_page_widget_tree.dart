@@ -43,15 +43,18 @@ import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -213,7 +216,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       0; // 0: All, 1: Unread, 2: Requests, 3: Mates, 4: Groups
   List<Map<String, dynamic>> _pendingRequests = [];
   List<Map<String, dynamic>> _sentRequests = [];
-  int _requestsSubTab = 0; // 0: Received, 1: Sent
+  List<PocketTalkPact> _pendingIncomingPacts = [];
+  List<CitadelFightChallenge> _pendingFightChallenges = [];
+  int _requestsSubTab = 0; // 0: All, 1: Mates, 2: PocketTalk, 3: Fight
   bool _isLoadingRequests = false;
   int _userPocketScore = 0;
   int _userPocketStage = 1;
@@ -242,10 +247,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       await PocketRobotService.runAutonomousHumanEngine(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
       final sentReqs = await PocketMateService.getSentRequests(uid);
+      final incomingPacts = await PocketTrophyService.getPendingIncomingPacts(uid);
+      final fightChallenges = await PocketCitadelFightService.getPendingChallenges(uid);
       if (mounted) {
         setState(() {
           _pendingRequests = reqs;
           _sentRequests = sentReqs;
+          _pendingIncomingPacts = incomingPacts;
+          _pendingFightChallenges = fightChallenges;
           _isLoadingRequests = false;
         });
       }
@@ -1163,31 +1172,63 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 1
-                  ? material.FloatingActionButton.extended(
-                      heroTag: 'mates_ranking_fab',
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        PocketWorldRankingTrailWidget.showMatesRankingModal(
-                          context,
-                          userId: _currentUserId,
-                        );
-                      },
-                      backgroundColor: const Color(0xFFFFFC00),
-                      foregroundColor: material.Colors.black,
-                      elevation: 4,
-                      highlightElevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      label: Text(
-                        'Mates Rank',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          color: material.Colors.black,
-                          letterSpacing: 0.3,
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 🎨 Test Button: 12 Pop-Art Cards (Flame Game Engine)
+                        material.FloatingActionButton.extended(
+                          heroTag: 'flame_pop_art_cards_fab',
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            PopArtAvatarCardsViewerPage.open(context);
+                          },
+                          backgroundColor: const Color(0xFFFF007A),
+                          foregroundColor: material.Colors.white,
+                          elevation: 4,
+                          highlightElevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          icon: const Text('🎨', style: TextStyle(fontSize: 15)),
+                          label: Text(
+                            'Cards',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              color: material.Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        // 👥 Mates Rank FAB
+                        material.FloatingActionButton.extended(
+                          heroTag: 'mates_ranking_fab',
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            PocketWorldRankingTrailWidget.showMatesRankingModal(
+                              context,
+                              userId: _currentUserId,
+                            );
+                          },
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: material.Colors.black,
+                          elevation: 4,
+                          highlightElevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          label: Text(
+                            'Mates Rank',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              color: material.Colors.black,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   : null,
               body: material.ColoredBox(
@@ -1551,6 +1592,118 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     }
   }
 
+  Future<void> _acceptPocketTalkPact(PocketTalkPact pact) async {
+    HapticFeedback.mediumImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    final peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
+    await PocketTrophyService.acceptPact(myId: uid, otherUserId: peerId);
+    await _refreshPocketTalkPeers();
+    await _loadPendingRequests();
+    ref.read(conversationsProvider.notifier).refreshNow();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🤝 Pocket Talk 4-Day Spoken English Pact Accepted! Day 1 is now active.',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _declinePocketTalkPact(PocketTalkPact pact) async {
+    HapticFeedback.lightImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    final peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
+    await PocketTrophyService.swapOrDeclinePartner(myId: uid, otherUserId: peerId);
+    await _refreshPocketTalkPeers();
+    await _loadPendingRequests();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Pocket Talk invite declined.',
+            style: GoogleFonts.outfit(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF334155),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _acceptAndStartFight(CitadelFightChallenge challenge) async {
+    HapticFeedback.heavyImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    await PocketCitadelFightService.acceptFightChallenge(challenge.id, uid);
+    await _loadPendingRequests();
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (arenaCtx) => PocketCitadelFightArenaDialog(
+          challenge: challenge,
+          opponentDay: 1,
+          questionCount: challenge.questionCount,
+          isKidMode: false,
+        ),
+      );
+    }
+  }
+
+  Future<void> _declineFightChallenge(CitadelFightChallenge challenge) async {
+    HapticFeedback.lightImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    await PocketCitadelFightService.declineFightChallenge(challenge.id, uid);
+    await _loadPendingRequests();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Fight challenge declined.',
+            style: GoogleFonts.outfit(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF334155),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  String _getPactPeerName(String peerId) {
+    if (PocketRobotService.isRobotId(peerId)) {
+      return PocketRobotService.getRobotById(peerId)?.name ?? 'Pocket Robot';
+    }
+    try {
+      final convs = ref.read(conversationsProvider).asData?.value;
+      if (convs != null) {
+        for (final c in convs) {
+          if (c.id == peerId && c.name.isNotEmpty) return c.name;
+        }
+      }
+    } catch (_) {}
+    return 'Pocket Companion';
+  }
+
+  String? _getPactPeerAvatar(String peerId) {
+    try {
+      final convs = ref.read(conversationsProvider).asData?.value;
+      if (convs != null) {
+        for (final c in convs) {
+          if (c.id == peerId && c.imageUrl != null && c.imageUrl!.isNotEmpty) {
+            return c.imageUrl;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
   void _showConversationActionSheet(ChatConversation conversation) {
     HapticFeedback.heavyImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1784,16 +1937,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         .length;
     final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
-    final pocketTalkCount = conversations.where((c) {
-      if (PocketRobotService.isRobotId(c.id) ||
-          PocketPresidentService.isPresidentId(c.id) ||
-          c.isGroup) {
-        return false;
-      }
-      return _pocketTalkPeerIds.contains(c.id) ||
-          (c.lastMessage?.contains('PocketTalk') == true ||
-              c.lastMessage?.contains('Pocket Talk') == true);
-    }).length;
+// Poket Talk category removed as requested
+
+    final totalIncomingRequests = _pendingRequests.length +
+        _pendingIncomingPacts.length +
+        _pendingFightChallenges.length;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
@@ -1806,15 +1954,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               title: 'All',
               index: 0,
               icon: Icons.all_inbox_rounded,
-              isDark: isDark,
-            ),
-            const SizedBox(width: 6),
-            _buildCategoryChipItem(
-              title: 'Poket Talk ⚡',
-              index: 6,
-              count: pocketTalkCount > 0 ? pocketTalkCount : null,
-              icon: Icons.bolt_rounded,
-              highlightBadge: pocketTalkCount > 0,
               isDark: isDark,
             ),
             const SizedBox(width: 6),
@@ -1837,11 +1976,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             _buildCategoryChipItem(
               title: 'Requests',
               index: 3,
-              count: (_pendingRequests.length + _sentRequests.length) > 0
-                  ? (_pendingRequests.length + _sentRequests.length)
-                  : null,
+              count: totalIncomingRequests > 0 ? totalIncomingRequests : null,
               icon: Icons.person_add_alt_1_rounded,
-              highlightBadge: _pendingRequests.isNotEmpty,
+              highlightBadge: totalIncomingRequests > 0,
               isDark: isDark,
             ),
             const SizedBox(width: 6),
@@ -2415,105 +2552,91 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildRequestsSubTabToggle(bool isDark) {
+    final totalCount = _pendingRequests.length +
+        _pendingIncomingPacts.length +
+        _pendingFightChallenges.length;
+
+    final subTabs = [
+      {'label': 'All', 'count': totalCount},
+      {'label': '🤝 Mates', 'count': _pendingRequests.length},
+      {'label': '🎙️ PocketTalk', 'count': _pendingIncomingPacts.length},
+      {'label': '🥊 Fight', 'count': _pendingFightChallenges.length},
+    ];
+
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            children: [
-              // Received Tab
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _requestsSubTab = 0);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _requestsSubTab == 0
-                          ? const Color(0xFFFFFC00)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.arrow_downward_rounded,
-                            size: 15,
-                            color: _requestsSubTab == 0
-                                ? Colors.black
-                                : (isDark ? Colors.white70 : Colors.black87),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Received (${_pendingRequests.length})',
-                            style: GoogleFonts.outfit(
-                              color: _requestsSubTab == 0
-                                  ? Colors.black
-                                  : (isDark ? Colors.white70 : Colors.black87),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+      child: Container(
+        height: 44,
+        margin: const EdgeInsets.only(top: 8, bottom: 8),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: subTabs.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (context, index) {
+            final tab = subTabs[index];
+            final isSelected = _requestsSubTab == index;
+            final count = tab['count'] as int;
+
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() => _requestsSubTab = index);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFFFFFC00)
+                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFFFFFC00)
+                        : (isDark ? Colors.white12 : Colors.black12),
+                    width: 1,
                   ),
                 ),
-              ),
-              // Sent Tab
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _requestsSubTab = 1);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _requestsSubTab == 1
-                          ? const Color(0xFFFFFC00)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.arrow_upward_rounded,
-                            size: 15,
-                            color: _requestsSubTab == 1
-                                ? Colors.black
-                                : (isDark ? Colors.white70 : Colors.black87),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Sent (${_sentRequests.length})',
-                            style: GoogleFonts.outfit(
-                              color: _requestsSubTab == 1
-                                  ? Colors.black
-                                  : (isDark ? Colors.white70 : Colors.black87),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${tab['label']}',
+                      style: GoogleFonts.outfit(
+                        color: isSelected
+                            ? Colors.black
+                            : (isDark ? Colors.white70 : Colors.black87),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
                     ),
-                  ),
+                    if (count > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.black
+                              : (isDark ? Colors.white24 : Colors.black12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$count',
+                          style: GoogleFonts.outfit(
+                            color: isSelected
+                                ? const Color(0xFFFFFC00)
+                                : (isDark ? Colors.white : Colors.black87),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -2857,6 +2980,488 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  List<_UnifiedRequestItem> _getUnifiedRequests() {
+    final List<_UnifiedRequestItem> items = [];
+
+    // Mate requests (show under All or Mates tab)
+    if (_requestsSubTab == 0 || _requestsSubTab == 1) {
+      for (final req in _pendingRequests) {
+        final id = req['id']?.toString() ?? UniqueKey().toString();
+        final dt = DateTime.tryParse(req['created_at']?.toString() ?? '') ?? DateTime.now();
+        items.add(_UnifiedRequestItem(id: id, type: 'mate', createdAt: dt, data: req));
+      }
+    }
+
+    // PocketTalk pacts (show under All or PocketTalk tab)
+    if (_requestsSubTab == 0 || _requestsSubTab == 2) {
+      for (final pact in _pendingIncomingPacts) {
+        items.add(_UnifiedRequestItem(
+          id: pact.pactId,
+          type: 'pact',
+          createdAt: pact.startedAt,
+          data: pact,
+        ));
+      }
+    }
+
+    // Citadel Fight challenges (show under All or Fight tab)
+    if (_requestsSubTab == 0 || _requestsSubTab == 3) {
+      for (final fight in _pendingFightChallenges) {
+        items.add(_UnifiedRequestItem(
+          id: fight.id,
+          type: 'fight',
+          createdAt: fight.createdAt,
+          data: fight,
+        ));
+      }
+    }
+
+    // Sort newest at the top (maalek maalek vannaal mathi)
+    items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return items;
+  }
+
+  Widget _buildEmptyRequestsState(bool isDark) {
+    String title = 'No Pending Requests';
+    String desc = 'Incoming Mate requests, PocketTalk pacts, and Citadel Fight duels will appear here.';
+    IconData icon = Icons.mark_email_read_rounded;
+
+    if (_requestsSubTab == 1) {
+      title = 'No Mate Requests';
+      desc = 'New friend and connection requests will appear here.';
+      icon = Icons.person_search_rounded;
+    } else if (_requestsSubTab == 2) {
+      title = 'No PocketTalk Pacts';
+      desc = 'Invitations for 4-day spoken English agreements will appear here.';
+      icon = Icons.mic_none_rounded;
+    } else if (_requestsSubTab == 3) {
+      title = 'No Fight Challenges';
+      desc = '20-question speed duel challenges from mates will appear here.';
+      icon = Icons.sports_mma_rounded;
+    }
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(icon, size: 32, color: const Color(0xFFFFFC00)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              desc,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: isDark ? Colors.white54 : Colors.black54,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestTypeBadge(String type, dynamic data) {
+    if (type == 'mate') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+        ),
+        child: Text(
+          '🤝 MATE REQUEST',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF10B981),
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
+          ),
+        ),
+      );
+    } else if (type == 'pact') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFB300).withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
+        ),
+        child: Text(
+          '🎙️ POCKET TALK (4-DAY PACT)',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFFFB300),
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
+          ),
+        ),
+      );
+    } else {
+      final fight = data as CitadelFightChallenge;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+        ),
+        child: Text(
+          '🥊 CITADEL FIGHT (${fight.questionCount} Qs WAR MODE)',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFEF4444),
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
+          ),
+        ),
+      );
+    }
+  }
+
+  String _formatRequestTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  Widget _buildMateRequestRow(Map<String, dynamic> req, bool isDark) {
+    final senderId = req['sender_id']?.toString() ?? '';
+    final isRobot = req['is_robot'] == true || PocketRobotService.isRobotId(senderId);
+    final imgUrl = req['sender_profile_image'] ?? req['avatar_url'];
+    VectorAvatarConfig? avatarConfig;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(senderId);
+      final lvl = robot?.level ?? req['learning_stage'] ?? req['level'] ?? 1;
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl is num ? lvl.toInt() : 1);
+    } else if (req['avatar_config'] != null) {
+      try {
+        avatarConfig = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatar_config']));
+      } catch (_) {}
+    }
+
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+              width: 1.5,
+            ),
+          ),
+          child: ClipOval(
+            child: isRobot
+                ? VectorAvatarWidget(config: avatarConfig ?? VectorAvatarConfig.getEvolutionAvatarForStage(1), size: 46)
+                : (imgUrl != null && imgUrl.toString().isNotEmpty)
+                    ? Image.network(
+                        imgUrl.toString(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => avatarConfig != null
+                            ? VectorAvatarWidget(config: avatarConfig, size: 46)
+                            : Container(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  (req['sender_name'] ?? 'M')[0].toUpperCase(),
+                                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                              ),
+                      )
+                    : (avatarConfig != null
+                        ? VectorAvatarWidget(config: avatarConfig, size: 46)
+                        : Container(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                            alignment: Alignment.center,
+                            child: Text(
+                              (req['sender_name'] ?? 'M')[0].toUpperCase(),
+                              style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          )),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      req['sender_name'] ?? 'Pocket Mate',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isRobot) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: const Color(0xFF06B6D4)),
+                      ),
+                      child: Text(
+                        '🤖 Lvl ${req['stage'] ?? 1}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF06B6D4),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 3),
+              Text(
+                req['message'] ?? 'wants to connect as your Mate',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                minimumSize: const Size(60, 32),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
+              onPressed: () => _acceptMateRequest(req),
+              child: Text(
+                'Accept',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+              onPressed: () => _declineMateRequest(req),
+              tooltip: 'Decline',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPocketTalkPactRow(PocketTalkPact pact, String uid, bool isDark) {
+    final peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
+    final peerName = _getPactPeerName(peerId);
+    final peerAvatar = _getPactPeerAvatar(peerId);
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 23,
+          backgroundColor: const Color(0xFFFFB300).withValues(alpha: 0.2),
+          backgroundImage: (peerAvatar != null && peerAvatar.isNotEmpty)
+              ? NetworkImage(peerAvatar)
+              : null,
+          child: (peerAvatar == null || peerAvatar.isEmpty)
+              ? Text(
+                  peerName.isNotEmpty ? peerName[0].toUpperCase() : 'P',
+                  style: const TextStyle(
+                    color: Color(0xFFFFB300),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                peerName,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Chat daily for 4 days • 1 Attack & 1 Fight for 🥈 Silver Trophy',
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  color: const Color(0xFFFFB300),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFB300),
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                minimumSize: const Size(64, 32),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
+              onPressed: () => _acceptPocketTalkPact(pact),
+              child: Text(
+                'Accept Pact 🤝',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+              onPressed: () => _declinePocketTalkPact(pact),
+              tooltip: 'Decline',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFightChallengeRow(CitadelFightChallenge fight, bool isDark) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 23,
+          backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.2),
+          backgroundImage: (fight.challengerAvatar.isNotEmpty)
+              ? NetworkImage(fight.challengerAvatar)
+              : null,
+          child: (fight.challengerAvatar.isEmpty)
+              ? Text(
+                  fight.challengerName.isNotEmpty ? fight.challengerName[0].toUpperCase() : 'C',
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                fight.challengerName,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                '${fight.gameTitle} • ${fight.questionCount} Questions Duel • Winner gets 🏆 Gold Trophy',
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                minimumSize: const Size(64, 32),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
+              onPressed: () => _acceptAndStartFight(fight),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🥊', style: TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Fight Now',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              padding: EdgeInsets.zero,
+              onPressed: () => _declineFightChallenge(fight),
+              tooltip: 'Decline',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildPendingRequestsSliver() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -2871,239 +3476,50 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       );
     }
 
-    if (_requestsSubTab == 1) {
-      if (_sentRequests.isEmpty) {
-        return SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.outbox_rounded,
-                        size: 32, color: Color(0xFFFFFC00)),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No Sent Requests',
-                  style: GoogleFonts.outfit(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Inquiries you send on Marketplace products or connection requests to other users will appear here.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    color: isDark ? Colors.white54 : Colors.black54,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      return SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final req = _sentRequests[index];
-            final reqId = req['id']?.toString() ?? '$index';
-            final receiverId = req['user_id']?.toString() ?? '';
-            final isPending = req['status'] == 'pending';
-
-            return RepaintBoundary(
-              key: ValueKey('sent_$reqId'),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => WhatsAppGroupChat(
-                        groupId: 'p:$receiverId',
-                        groupName: req['receiver_name'] ?? 'Pocket Mate',
-                        groupImage: req['receiver_profile_image'],
-                      ),
-                    ),
-                  );
-                  _loadPendingRequests();
-                  ref.read(conversationsProvider.notifier).refreshNow();
-                },
-                child: Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.black12,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor:
-                            const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                        backgroundImage: req['receiver_profile_image'] != null
-                            ? NetworkImage(req['receiver_profile_image'])
-                            : null,
-                        child: req['receiver_profile_image'] == null
-                            ? Text(
-                                (req['receiver_name'] ?? 'M')[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: Color(0xFFFFFC00),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              req['receiver_name'] ?? 'Poket Mate',
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              req['message'] ?? 'Connection request sent',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: isDark ? Colors.white54 : Colors.black54,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isPending
-                              ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
-                              : Colors.green.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isPending
-                                ? const Color(0xFFFFFC00).withValues(alpha: 0.4)
-                                : Colors.green.withValues(alpha: 0.4),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          isPending ? 'Pending ⏳' : 'Accepted ✨',
-                          style: GoogleFonts.outfit(
-                            color: isPending
-                                ? const Color(0xFFFFFC00)
-                                : Colors.greenAccent,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-          childCount: _sentRequests.length,
-          addAutomaticKeepAlives: true,
-          addRepaintBoundaries: true,
-        ),
-      );
+    final unified = _getUnifiedRequests();
+    if (unified.isEmpty) {
+      return _buildEmptyRequestsState(isDark);
     }
 
-    if (_pendingRequests.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(Icons.person_search_rounded,
-                      size: 32, color: Color(0xFFFFFC00)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No Pending Requests',
-                style: GoogleFonts.outfit(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'When someone inquires about your marketplace items or requests to connect from Anonymous English Chat, they appear here safely.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  color: isDark ? Colors.white54 : Colors.black54,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
 
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          final req = _pendingRequests[index];
-          final reqId = req['id']?.toString() ?? '$index';
+          final item = unified[index];
           return RepaintBoundary(
-            key: ValueKey(reqId),
+            key: ValueKey('req_${item.type}_${item.id}'),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: () async {
-                await Navigator.push(
-                  context,
-                  material.MaterialPageRoute(
-                    builder: (context) => WhatsAppGroupChat(
-                      groupId: 'p:${req['sender_id']}',
-                      groupName: req['sender_name'] ?? 'Pocket Mate',
-                      groupImage: req['sender_profile_image'],
+                if (item.type == 'mate') {
+                  final req = item.data as Map<String, dynamic>;
+                  await Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => WhatsAppGroupChat(
+                        groupId: 'p:${req['sender_id']}',
+                        groupName: req['sender_name'] ?? 'Pocket Mate',
+                        groupImage: req['sender_profile_image'],
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } else if (item.type == 'pact') {
+                  final pact = item.data as PocketTalkPact;
+                  final peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
+                  await Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => WhatsAppGroupChat(
+                        groupId: 'p:$peerId',
+                        groupName: _getPactPeerName(peerId),
+                        groupImage: _getPactPeerAvatar(peerId),
+                      ),
+                    ),
+                  );
+                } else if (item.type == 'fight') {
+                  _acceptAndStartFight(item.data as CitadelFightChallenge);
+                }
                 _loadPendingRequests();
                 ref.read(conversationsProvider.notifier).refreshNow();
               },
@@ -3118,191 +3534,37 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     width: 1,
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Builder(
-                      builder: (context) {
-                        final senderId = req['sender_id']?.toString() ?? '';
-                        final isRobot = req['is_robot'] == true ||
-                            PocketRobotService.isRobotId(senderId);
-                        final imgUrl =
-                            req['sender_profile_image'] ?? req['avatar_url'];
-                        VectorAvatarConfig? avatarConfig;
-                        if (isRobot) {
-                          final robot = PocketRobotService.getRobotById(senderId);
-                          final lvl = robot?.level ?? req['learning_stage'] ?? req['level'] ?? 1;
-                          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl is num ? lvl.toInt() : 1);
-                        } else if (req['avatar_config'] != null) {
-                          try {
-                            avatarConfig = VectorAvatarConfig.fromMap(
-                                Map<String, dynamic>.from(
-                                    req['avatar_config']));
-                          } catch (_) {}
-                        }
-
-                        return Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isRobot
-                                  ? const Color(0xFF06B6D4)
-                                  : const Color(0xFFFFFC00),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: isRobot
-                                ? VectorAvatarWidget(
-                                    config: avatarConfig ??
-                                        VectorAvatarConfig.getEvolutionAvatarForStage(1),
-                                    size: 48,
-                                  )
-                                : (imgUrl != null &&
-                                        imgUrl.toString().isNotEmpty)
-                                    ? Image.network(
-                                        imgUrl.toString(),
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            avatarConfig != null
-                                                ? VectorAvatarWidget(
-                                                    config: avatarConfig, size: 48)
-                                                : Container(
-                                                    color: const Color(0xFFFFFC00)
-                                                        .withValues(alpha: 0.2),
-                                                    alignment: Alignment.center,
-                                                    child: Text(
-                                                      (req['sender_name'] ?? 'M')[0]
-                                                          .toUpperCase(),
-                                                      style: const TextStyle(
-                                                        color: Color(0xFFFFFC00),
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 16,
-                                                      ),
-                                                    ),
-                                                  ),
-                                      )
-                                : (avatarConfig != null
-                                    ? VectorAvatarWidget(
-                                        config: avatarConfig, size: 48)
-                                    : Container(
-                                        color: const Color(0xFFFFFC00)
-                                            .withValues(alpha: 0.2),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          (req['sender_name'] ?? 'M')[0]
-                                              .toUpperCase(),
-                                          style: const TextStyle(
-                                            color: Color(0xFFFFFC00),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      )),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                req['sender_name'] ?? 'Poket Mate',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              if (req['is_robot'] == true ||
-                                  PocketRobotService.isRobotId(
-                                      req['sender_id']?.toString() ?? ''))
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 5, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF06B6D4)
-                                        .withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                        color: const Color(0xFF06B6D4)),
-                                  ),
-                                  child: Text(
-                                    '🤖 Lvl ${req['stage'] ?? 1}',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF06B6D4),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            req['message'] ?? 'wants to connect as a Mate',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: isDark ? Colors.white54 : Colors.black54,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Accept button
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFFC00),
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            minimumSize: const Size(60, 32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
+                        _buildRequestTypeBadge(item.type, item.data),
+                        const Spacer(),
+                        Text(
+                          _formatRequestTime(item.createdAt),
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: isDark ? Colors.white38 : Colors.black38,
                           ),
-                          onPressed: () => _acceptMateRequest(req),
-                          child: Text(
-                            'Accept',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // Decline button
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded,
-                              size: 18, color: Colors.grey),
-                          constraints:
-                              const BoxConstraints(minWidth: 32, minHeight: 32),
-                          padding: EdgeInsets.zero,
-                          onPressed: () => _declineMateRequest(req),
-                          tooltip: 'Decline',
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    if (item.type == 'mate')
+                      _buildMateRequestRow(item.data as Map<String, dynamic>, isDark)
+                    else if (item.type == 'pact')
+                      _buildPocketTalkPactRow(item.data as PocketTalkPact, uid, isDark)
+                    else if (item.type == 'fight')
+                      _buildFightChallengeRow(item.data as CitadelFightChallenge, isDark),
                   ],
                 ),
               ),
             ),
           );
         },
-        childCount: _pendingRequests.length,
+        childCount: unified.length,
         addAutomaticKeepAlives: true,
         addRepaintBoundaries: true,
       ),
@@ -6997,28 +7259,11 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
             onPressed: () async {
               Navigator.pop(ctx);
-              final hasPattern = await PocketParentalPatternLock.hasPattern();
-              if (!hasPattern && context.mounted) {
-                final setSuccess = await PocketParentalPatternLock.showSetupDialog(
-                  context,
-                  title: 'Set Parental Pattern Lock 🔒',
-                  subtitle: 'Draw a 3x3 pattern. You will need this to return to Adult Mode.',
-                );
-                if (!setSuccess) return;
-              }
-              await PocketKidsService.activateKidAccount(
-                name: 'Student Mate',
-                ageGroup: '7-12',
-                avatar: '🦁',
-                isParentSwitched: true,
-              );
-              if (context.mounted) {
-                PocketKidsHomePage.launch(context, promptProfileSetup: true);
-              }
+              await PocketWorldModeSelectionDialog.show(context);
             },
-            icon: const Text('🚀', style: TextStyle(fontSize: 16)),
+            icon: const Text('🌐', style: TextStyle(fontSize: 16)),
             label: Text(
-              'Switch to Kids',
+              'Switch World',
               style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w900,
                 fontSize: 13,
@@ -7147,4 +7392,19 @@ class InstagramBellTooltipPainter extends CustomPainter {
   bool shouldRepaint(covariant InstagramBellTooltipPainter oldDelegate) =>
       oldDelegate.color != color ||
       oldDelegate.arrowCenterFromRight != arrowCenterFromRight;
+}
+
+/// 📦 Model for unified requests list (Mates, PocketTalk 4-Day Pacts, Citadel Fight Duels)
+class _UnifiedRequestItem {
+  final String id;
+  final String type; // 'mate', 'pact', 'fight'
+  final DateTime createdAt;
+  final dynamic data;
+
+  _UnifiedRequestItem({
+    required this.id,
+    required this.type,
+    required this.createdAt,
+    required this.data,
+  });
 }

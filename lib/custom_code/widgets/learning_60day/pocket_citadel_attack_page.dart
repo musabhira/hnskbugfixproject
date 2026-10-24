@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -17,6 +16,7 @@ import 'pocket_world_street_page.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_citadel_challenge_generator.dart';
 import 'pocket_world_game_rules_modal.dart';
+import 'pocket_citadel_fight_dialog.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -32,6 +32,9 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_wi
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -70,7 +73,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
     bool isKidMode = false,
   }) async {
     // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
-    if (PocketPresidentService.isPresidentId(userId) || userId == 'pocket_president') {
+    if (PocketPresidentService.isPresidentId(userId) ||
+        userId == 'pocket_president') {
       int effectiveAttackerDay = attackerDay;
       if (effectiveAttackerDay <= 1) {
         try {
@@ -118,7 +122,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
     }
 
     // 🐾 Check if target is a Kid Animal Robot (from PocketKidsRobotsData: kid_bot_1 to kid_bot_100)
-    if (userId.startsWith('kid_bot_') || PocketKidsRobotsData.getAnimalById(userId) != null) {
+    if (userId.startsWith('kid_bot_') ||
+        PocketKidsRobotsData.getAnimalById(userId) != null) {
       final animal = PocketKidsRobotsData.getAnimalById(userId);
       final level = targetDay ?? animal?.dayLevel ?? 1;
       final palList = HousePalette.presets;
@@ -158,7 +163,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
     if (isRobot) {
       final robot = PocketRobotService.getRobotById(userId) ??
           PocketRobotService.getRobotByLevel(targetDay ?? 1);
-      final dynamicLevel = targetDay ?? PocketRobotService.getDynamicLevel(robot);
+      final dynamicLevel =
+          targetDay ?? PocketRobotService.getDynamicLevel(robot);
       final palList = HousePalette.presets;
       final autoPal = palList[(dynamicLevel - 1) % palList.length].id;
       final robotNeighbor = PocketNeighbor(
@@ -167,7 +173,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
         day: dynamicLevel,
         streak: dynamicLevel,
         rank: robot.cefrRank,
-        paletteId: paletteId ?? (robot.housePalette.isNotEmpty ? robot.housePalette : autoPal),
+        paletteId: paletteId ??
+            (robot.housePalette.isNotEmpty ? robot.housePalette : autoPal),
         isMe: false,
         hasActiveShield: true,
         statusMessage: robot.bio,
@@ -195,7 +202,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
       try {
         final res = await SupaFlow.client
             .from('profile')
-            .select('user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+            .select(
+                'user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
             .eq('user_id', userId)
             .maybeSingle();
         if (res != null) data = res;
@@ -206,20 +214,25 @@ class PocketCitadelAttackPage extends StatefulWidget {
 
     final p = data ?? {};
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
-    final isMe = (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
+    final isMe =
+        (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
 
     int effectiveDay = targetDay ?? (p['learning_day'] as num?)?.toInt() ?? 1;
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;
     final autoPal = palList[(effectiveDay - 1) % palList.length].id;
     String chosenPalette = paletteId ?? p['palette_id']?.toString() ?? autoPal;
-    if (chosenPalette == 'warm_cottage' || !palList.any((pl) => pl.id == chosenPalette)) {
+    if (chosenPalette == 'warm_cottage' ||
+        !palList.any((pl) => pl.id == chosenPalette)) {
       chosenPalette = autoPal;
     }
 
     final userNeighbor = PocketNeighbor(
       id: userId,
-      name: p['first_name'] ?? p['name'] ?? targetName ?? (isMe ? 'My Fortress' : 'Citadel Defender'),
+      name: p['first_name'] ??
+          p['name'] ??
+          targetName ??
+          (isMe ? 'My Fortress' : 'Citadel Defender'),
       day: effectiveDay,
       streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
       rank: p['rank']?.toString() ?? 'Citizen',
@@ -247,18 +260,22 @@ class PocketCitadelAttackPage extends StatefulWidget {
   }
 
   @override
-  State<PocketCitadelAttackPage> createState() => _PocketCitadelAttackPageState();
+  State<PocketCitadelAttackPage> createState() =>
+      _PocketCitadelAttackPageState();
 }
 
 class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  int _raidStep = 0; // 0: Overview, 1: Defense Question, 2: Gate Breached (Attack button ready), 3: Victory, -1: Failed
+  int _raidStep =
+      0; // 0: Overview, 1: Defense Question, 2: Gate Breached (Attack button ready), 3: Victory, -1: Failed
   int _selectedOption = -1;
   bool _isStriking = false;
   bool _isQuestionSheetOpen = false;
   late bool _isDefenderDamaged;
   List<HouseShieldQuestion> _defenseQuestions = [];
   int _currentQIdx = 0;
+  int _correctCount = 0;
+  int _incorrectCount = 0;
 
   // 🎮 Interactive Game States for Citadel Raid Challenges (Sentence Builder, Word Bank, Verb Timeline)
   List<String> _assembledWords = [];
@@ -304,7 +321,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   double _protectionHoursLeft = 0;
   bool _inCooldown = false;
   double _cooldownHoursLeft = 0;
-  int _retriesRemaining = 1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
+  int _retriesRemaining =
+      1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
   late int _attackerDay;
@@ -343,7 +361,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _attackerDay = widget.attackerDay;
     _isDefenderDamaged = widget.neighbor.isDamaged;
-    _retriesRemaining = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
+    _retriesRemaining =
+        PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
+            widget.neighbor.day);
     _checkPocketTalkCap();
 
     // ⚔️ Start energetic battle / raid music based on robot archetype & level!
@@ -470,7 +490,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       final maxTx = 0.0;
       final minTx = -((_savedWorldW * closeScale) - _savedViewportW);
       final safeMinTx = minTx < maxTx ? minTx : maxTx;
-      final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale)).clamp(safeMinTx, maxTx);
+      final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale))
+          .clamp(safeMinTx, maxTx);
       final maxTy = 0.0;
       final minTy = -((_savedWorldH * closeScale) - _savedViewportH);
       final safeMinTy = minTy < maxTy ? minTy : maxTy;
@@ -486,13 +507,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     final start = _transformationController.value;
     _cameraAnimation = Matrix4Tween(begin: start, end: target).animate(
-      CurvedAnimation(parent: _cameraAnimationController, curve: Curves.easeInOutCubic),
+      CurvedAnimation(
+          parent: _cameraAnimationController, curve: Curves.easeInOutCubic),
     )..addListener(() {
         _transformationController.value = _cameraAnimation!.value;
       });
     _cameraAnimationController.forward(from: 0.0);
   }
-
 
   void _openDefenderProfile() {
     HapticFeedback.selectionClick();
@@ -506,10 +527,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Anti-Cheat: If user minimizes the app, switches to AI/Google Lens, or leaves screen during battle
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       if (_raidStep == 1 && mounted) {
         _combatTimer?.cancel();
-        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, minutes: 30);
+        PocketFortressDefenseService.recordFailedAttackCooldown(
+            widget.neighbor.id,
+            minutes: 30);
         setState(() {
           _isAntiCheatTriggered = true;
           _raidStep = -1; // Raid Failed!
@@ -555,14 +579,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Blitz timer expired! 1 Second Chance remaining. Hurry!'),
+          content:
+              Text('⚠️ Blitz timer expired! 1 Second Chance remaining. Hurry!'),
           backgroundColor: Colors.amber,
           duration: Duration(seconds: 3),
         ),
       );
       _startCombatTimer();
     } else {
-      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, minutes: 30);
+      PocketFortressDefenseService.recordFailedAttackCooldown(
+          widget.neighbor.id,
+          minutes: 30);
       setState(() {
         _secondsLeft = 0;
         _isTimeoutTriggered = true;
@@ -590,16 +617,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
 
     final targetId = widget.neighbor.id;
-    final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
+    final inCooldown =
+        await PocketFortressDefenseService.isTargetInCooldown(targetId);
     final cooldownMinutes = inCooldown
-        ? await PocketFortressDefenseService.getCooldownMinutesRemaining(targetId)
+        ? await PocketFortressDefenseService.getCooldownMinutesRemaining(
+            targetId)
         : 0;
-    final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
+    final isProtected =
+        await PocketFortressDefenseService.isUnderPresidentialProtection(
+            targetId);
     final protectionMinutes = isProtected
-        ? await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId)
+        ? await PocketFortressDefenseService
+            .getPresidentialProtectionMinutesRemaining(targetId)
         : 0;
-    final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
-    final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
+    final attacksUsed =
+        await PocketFortressDefenseService.getDailyAttacksUsedToday();
+    final isDailyLimitReached =
+        attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
     final bool isTargetVip = widget.neighbor.isVip;
     final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
@@ -609,8 +643,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
     // User Audio Directive: Question count strictly matches defender level (e.g. Level 40 = 40 tasks, Level 10 = 10 tasks, Level 1 = 1 task)
     // Rotating across 4 interactive formats: Sentence Builder, Spelling Challenge, Verb Timeline, Tactical MCQ.
-    final questions = PocketCitadelChallengeGenerator.generateChallengesForDefender(
+    final questions =
+        PocketCitadelChallengeGenerator.generateChallengesForDefender(
       defenderLevel: widget.neighbor.day,
+      defenderId: widget.neighbor.id,
       isPresident: widget.neighbor.isPresident,
       isVip: isTargetVip,
       customArmedQuestions: customArmed,
@@ -622,7 +658,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       final indexedOptions = q.options.asMap().entries.toList();
       indexedOptions.shuffle();
       final newOptions = indexedOptions.map((e) => e.value).toList();
-      final newCorrectIndex = indexedOptions.indexWhere((e) => e.key == q.correctIndex);
+      final newCorrectIndex =
+          indexedOptions.indexWhere((e) => e.key == q.correctIndex);
       return HouseShieldQuestion(
         id: q.id,
         question: q.question,
@@ -637,17 +674,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     int defenderScore = widget.neighbor.isPresident
         ? 99999
-        : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day) + (widget.neighbor.streak * 15);
+        : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day) +
+            (widget.neighbor.streak * 15);
     try {
       if (widget.neighbor.isPresident) {
         defenderScore = 99999;
-      } else if (!widget.neighbor.id.startsWith('pocket_robo') && !widget.neighbor.id.startsWith('rival_citadel')) {
-        final res = await SupaFlow.client.from('pocket_homes').select('points, hp, stage').eq('user_id', widget.neighbor.id).maybeSingle();
+      } else if (!widget.neighbor.id.startsWith('pocket_robo') &&
+          !widget.neighbor.id.startsWith('rival_citadel')) {
+        final res = await SupaFlow.client
+            .from('pocket_homes')
+            .select('points, hp, stage')
+            .eq('user_id', widget.neighbor.id)
+            .maybeSingle();
         if (res != null && res['points'] != null) {
           defenderScore = (res['points'] as num).toInt();
         }
       } else {
-        final roboScore = await PocketFortressDefenseService.getRobotScore(widget.neighbor.id, widget.neighbor.day);
+        final roboScore = await PocketFortressDefenseService.getRobotScore(
+            widget.neighbor.id, widget.neighbor.day);
         defenderScore = roboScore;
       }
     } catch (_) {}
@@ -721,15 +765,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
     await PocketFortressDefenseService.recordAttackLaunchedToday();
     // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
-    await PocketFortressDefenseService.placeUnderPresidentialProtection(widget.neighbor.id, hours: 24);
-    await PocketPresidentService.notifyPresidentialProtection(widget.neighbor.id, hours: 24);
+    await PocketFortressDefenseService.placeUnderPresidentialProtection(
+        widget.neighbor.id,
+        hours: 24);
+    await PocketPresidentService.notifyPresidentialProtection(
+        widget.neighbor.id,
+        hours: 24);
 
-    // ⚔️ Audio Directive: Raider earns 10 to 15 Pocket Score (PS) points globally
+    // ⚔️ Audio Directive: Raider earns 10 to 15 Score points (15 SS for kids, 15 PS for adults)
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
     if (looted > 0) {
-      await PocketFortressDefenseService.awardRaidLoot(looted);
+      if (widget.isKidMode) {
+        await PocketKidsService.addStudentScore(looted);
+        await PocketKidsService.incrementAttackCount();
+      } else {
+        await PocketFortressDefenseService.awardRaidLoot(looted);
+        await PocketFortressDefenseService.awardPoints(looted);
+      }
+      final myId = SupaFlow.client.auth.currentUser?.id ?? 'me';
+      await PocketTrophyService.recordSuccessfulAttack(myId);
+      await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
     }
-    await PocketFortressDefenseService.awardPoints(looted > 0 ? looted : 15);
 
     // Phase 4: Fountain of looted coins exploding from citadel into player's grasp
     _coinController.forward(from: 0.0);
@@ -788,7 +844,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     Text(
                       'Report Fake / Invalid Question to The President',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -846,14 +903,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     border: Border.all(
                       color: aiVerdict.isApproved
                           ? const Color(0xFF10B981)
-                          : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                          : (aiVerdict.isBanThreat
+                              ? Colors.redAccent
+                              : Colors.amber),
                       width: 1,
                     ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(aiVerdict.sealIcon, style: const TextStyle(fontSize: 18)),
+                      Text(aiVerdict.sealIcon,
+                          style: const TextStyle(fontSize: 18)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -864,7 +924,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               style: TextStyle(
                                 color: aiVerdict.isApproved
                                     ? const Color(0xFF34D399)
-                                    : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                    : (aiVerdict.isBanThreat
+                                        ? Colors.redAccent
+                                        : Colors.amber),
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -872,7 +934,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             const SizedBox(height: 2),
                             Text(
                               aiVerdict.feedback,
-                              style: const TextStyle(color: Colors.white70, fontSize: 11),
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 11),
                             ),
                           ],
                         ),
@@ -899,18 +962,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFF1E293B),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'fake_english', child: Text('Fake / Gibberish English')),
-                    DropdownMenuItem(value: 'wrong_answer_key', child: Text('Incorrect / Broken Answer Key')),
-                    DropdownMenuItem(value: 'impossible_puzzle', child: Text('Unfair / Impossible Puzzle')),
-                    DropdownMenuItem(value: 'abusive_language', child: Text('Inappropriate / Abusive Language')),
-                    DropdownMenuItem(value: 'unrelated_content', child: Text('Not Educational English')),
+                    DropdownMenuItem(
+                        value: 'fake_english',
+                        child: Text('Fake / Gibberish English')),
+                    DropdownMenuItem(
+                        value: 'wrong_answer_key',
+                        child: Text('Incorrect / Broken Answer Key')),
+                    DropdownMenuItem(
+                        value: 'impossible_puzzle',
+                        child: Text('Unfair / Impossible Puzzle')),
+                    DropdownMenuItem(
+                        value: 'abusive_language',
+                        child: Text('Inappropriate / Abusive Language')),
+                    DropdownMenuItem(
+                        value: 'unrelated_content',
+                        child: Text('Not Educational English')),
                   ],
                   onChanged: (val) {
                     if (val != null) setDialogState(() => selectedReason = val);
@@ -927,19 +1001,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white60)),
             ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFDC2626),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              icon: const Icon(Icons.shield_rounded, size: 16, color: Color(0xFFFFD700)),
+              icon: const Icon(Icons.shield_rounded,
+                  size: 16, color: Color(0xFFFFD700)),
               label: Text(
                 'SUBMIT TO PRESIDENT 🏛️',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 12),
               ),
               onPressed: () {
                 Navigator.pop(ctx);
@@ -1022,7 +1101,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         'thumbnail_url': null,
         'caption': caption,
         'duration': 10,
-        'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'is_active': true,
         'is_kid': PocketKidsService.isKidAccount,
       });
@@ -1033,7 +1113,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFFFFD700)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -1045,7 +1126,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
             backgroundColor: const Color(0xFF1E1B4B),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -1070,7 +1152,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isNightByDefault = currentHour >= 18 || currentHour < 6;
     final isNight = _manualNightOverride ?? isNightByDefault;
     final hoursLeftIn6hBlock = 6 - (currentHour % 6);
-    final cycleLabel = isNight ? '🌙 Night (${hoursLeftIn6hBlock}h left)' : '☀️ Day (${hoursLeftIn6hBlock}h left)';
+    final cycleLabel = isNight
+        ? '🌙 Night (${hoursLeftIn6hBlock}h left)'
+        : '☀️ Day (${hoursLeftIn6hBlock}h left)';
     final isDay90 = widget.neighbor.day >= 90;
 
     final bool isPresident = widget.neighbor.isPresident;
@@ -1097,7 +1181,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         Navigator.of(context).pop(_raidStep == 3);
       },
       child: Scaffold(
-        backgroundColor: isNight ? const Color(0xFF031024) : const Color(0xFF0284C7),
+        backgroundColor:
+            isNight ? const Color(0xFF031024) : const Color(0xFF0284C7),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
@@ -1105,22 +1190,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final bottomPad = MediaQuery.of(context).padding.bottom;
             final collapsedH = 76.0 + bottomPad;
             final drawerMaxH = h * 0.92;
-            final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
+            final drawerCurrentH = ui.lerpDouble(
+                collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
             final isLandscape = w > h;
             final double worldH = isPresident
                 ? math.max(1800.0, worldW * (h / (w > 0 ? w : 368.0)))
                 : 1600.0;
-            final double groundY = isPresident
-                ? (isLandscape ? 780.0 : (worldH * 0.44))
-                : 920.0;
+            final double groundY =
+                isPresident ? (isLandscape ? 780.0 : (worldH * 0.44)) : 920.0;
             final double houseLeft = (worldW - houseW) / 2;
             final double houseTop = groundY - 14.0 - houseH;
 
             // 🏛️ Sovereign Presidential Palace Castle Dimensions
             final double palaceW = 540.0;
             final double palaceH = 410.0;
-            final double palaceLeft = (worldW - palaceW) / 2; // (1200 - 540) / 2 = 330.0
+            final double palaceLeft =
+                (worldW - palaceW) / 2; // (1200 - 540) / 2 = 330.0
             final double palaceTop = groundY - 10.0 - palaceH;
 
             _savedViewportW = w;
@@ -1153,7 +1239,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final defaultScale = (w <= 0)
                 ? 1.0
                 : (isPresident
-                    ? (isLandscape ? math.max(minScale, houseZoomScale) : houseZoomScale.clamp(minScale, maxScale))
+                    ? (isLandscape
+                        ? math.max(minScale, houseZoomScale)
+                        : houseZoomScale.clamp(minScale, maxScale))
                     : math.min(maxScale, math.max(minScale, houseZoomScale)));
 
             // 🏠 Default View: Camera smoothly focuses on the House/Palace centered on screen!
@@ -1168,7 +1256,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               final maxTx = 0.0;
               final minTx = -((worldW * defaultScale) - w);
               final safeMinTx = minTx < maxTx ? minTx : maxTx;
-              final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(safeMinTx, maxTx);
+              final tx = ((w / 2) - (houseCenterX * defaultScale))
+                  .clamp(safeMinTx, maxTx);
 
               final maxTy = 0.0;
               final minTy = -((worldH * defaultScale) - h);
@@ -1276,12 +1365,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ],
 
                           // 3. Post-Attack Battle Damage (Billowing dark smoke columns & fiery embers)
-                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
-                            _buildPostAttackDamageEffects(houseLeft, houseTop, houseW, houseH),
+                          if (!isPresident &&
+                              (_isDefenderDamaged || _isTargetProtected))
+                            _buildPostAttackDamageEffects(
+                                houseLeft, houseTop, houseW, houseH),
 
                           // 3B. Emergency Cordon & VIP Presidential Escort Guard
-                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected || widget.neighbor.isVip))
-                            _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY, worldW),
+                          if (!isPresident &&
+                              (_isDefenderDamaged ||
+                                  _isTargetProtected ||
+                                  widget.neighbor.isVip))
+                            _buildPresidentialSecurityLayer(houseLeft, houseTop,
+                                houseW, houseH, groundY, worldW),
 
                           // 3D. 🛡️ Active Iron Dome Interception Missile & Blast Effect
                           if (isPresident)
@@ -1289,7 +1384,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               child: AnimatedBuilder(
                                 animation: _ironDomeController,
                                 builder: (context, _) {
-                                  if (_ironDomeController.value <= 0.0 || _ironDomeController.value >= 1.0) {
+                                  if (_ironDomeController.value <= 0.0 ||
+                                      _ironDomeController.value >= 1.0) {
                                     return const SizedBox.shrink();
                                   }
                                   return IgnorePointer(
@@ -1297,7 +1393,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       painter: CitadelIronDomeInterceptPainter(
                                         prog: _ironDomeController.value,
                                         source: Offset(350, groundY - 95),
-                                        target: Offset(worldW / 2, palaceTop + 60),
+                                        target:
+                                            Offset(worldW / 2, palaceTop + 60),
                                       ),
                                     ),
                                   );
@@ -1308,9 +1405,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
                           Positioned.fill(
                             child: AnimatedBuilder(
-                              animation: Listenable.merge([_beamController, _particleController]),
+                              animation: Listenable.merge(
+                                  [_beamController, _particleController]),
                               builder: (context, _) {
-                                if (_beamController.value <= 0 && _particleController.value <= 0) {
+                                if (_beamController.value <= 0 &&
+                                    _particleController.value <= 0) {
                                   return const SizedBox.shrink();
                                 }
                                 return IgnorePointer(
@@ -1319,7 +1418,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       beamProg: _beamController.value,
                                       particleProg: _particleController.value,
                                       attackerDay: widget.attackerDay,
-                                      perk: VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay),
+                                      perk: VectorAvatarConfig
+                                          .getAvatarPerkForDay(
+                                              widget.attackerDay),
                                       groundBaseY: groundY,
                                     ),
                                   ),
@@ -1333,7 +1434,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             child: AnimatedBuilder(
                               animation: _coinController,
                               builder: (context, _) {
-                                if (_coinController.value <= 0.0 || _coinController.value >= 1.0) {
+                                if (_coinController.value <= 0.0 ||
+                                    _coinController.value >= 1.0) {
                                   return const SizedBox.shrink();
                                 }
                                 return IgnorePointer(
@@ -1351,22 +1453,32 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           // 6. 🥋 Attacking Hero Avatar Sprint & Leap Sprite during battle
                           if (_isStriking)
                             AnimatedBuilder(
-                              animation: Listenable.merge([_heroChargeController, _coinController]),
+                              animation: Listenable.merge(
+                                  [_heroChargeController, _coinController]),
                               builder: (context, _) {
                                 final prog = _heroChargeController.value;
                                 // Running up the stone path towards the citadel steps
-                                final runY = ui.lerpDouble(groundY + 180.0, groundY - 190.0, (prog / 0.55).clamp(0.0, 1.0))!;
+                                final runY = ui.lerpDouble(
+                                    groundY + 180.0,
+                                    groundY - 190.0,
+                                    (prog / 0.55).clamp(0.0, 1.0))!;
                                 // Parabolic leap during weapon strike
                                 final leapY = (prog > 0.50 && prog < 0.88)
-                                    ? -math.sin((prog - 0.50) / 0.38 * math.pi) * 48.0
+                                    ? -math.sin(
+                                            (prog - 0.50) / 0.38 * math.pi) *
+                                        48.0
                                     : 0.0;
                                 final heroY = runY + leapY;
                                 final heroX = worldW / 2;
 
-                                final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
+                                final perk =
+                                    VectorAvatarConfig.getAvatarPerkForDay(
+                                        widget.attackerDay);
                                 final isRunning = prog < 0.50;
-                                final isStrikingAtGate = prog >= 0.50 && prog < 0.88;
-                                final isCollectingLoot = _coinController.value > 0.15;
+                                final isStrikingAtGate =
+                                    prog >= 0.50 && prog < 0.88;
+                                final isCollectingLoot =
+                                    _coinController.value > 0.15;
 
                                 return Positioned(
                                   left: heroX - 42,
@@ -1376,17 +1488,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     children: [
                                       // Floating weapon badge with glowing aura
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: const Color(0xFF0F172A)
+                                              .withValues(alpha: 0.94),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           border: Border.all(
-                                            color: isStrikingAtGate ? Colors.redAccent : const Color(0xFFFFD700),
+                                            color: isStrikingAtGate
+                                                ? Colors.redAccent
+                                                : const Color(0xFFFFD700),
                                             width: 1.3,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: (isStrikingAtGate ? Colors.redAccent : Colors.amber).withValues(alpha: 0.75),
+                                              color: (isStrikingAtGate
+                                                      ? Colors.redAccent
+                                                      : Colors.amber)
+                                                  .withValues(alpha: 0.75),
                                               blurRadius: 14,
                                             ),
                                           ],
@@ -1394,7 +1514,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(perk.combatWeaponIcon, style: const TextStyle(fontSize: 14)),
+                                            Text(perk.combatWeaponIcon,
+                                                style: const TextStyle(
+                                                    fontSize: 14)),
                                             const SizedBox(width: 4),
                                             Text(
                                               perk.combatWeaponName,
@@ -1410,7 +1532,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       const SizedBox(height: 4),
                                       // Attacking Avatar with Radiant Pulsing Aura & Running tilt
                                       Transform.rotate(
-                                        angle: isRunning ? math.sin(prog * 36) * 0.12 : (isStrikingAtGate ? -0.18 : 0.0),
+                                        angle: isRunning
+                                            ? math.sin(prog * 36) * 0.12
+                                            : (isStrikingAtGate ? -0.18 : 0.0),
                                         child: Container(
                                           width: 64,
                                           height: 64,
@@ -1419,8 +1543,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                             boxShadow: [
                                               BoxShadow(
                                                 color: (isStrikingAtGate
-                                                        ? const Color(0xFFEF4444)
-                                                        : (isCollectingLoot ? const Color(0xFFFFD700) : const Color(0xFF38BDF8)))
+                                                        ? const Color(
+                                                            0xFFEF4444)
+                                                        : (isCollectingLoot
+                                                            ? const Color(
+                                                                0xFFFFD700)
+                                                            : const Color(
+                                                                0xFF38BDF8)))
                                                     .withValues(alpha: 0.75),
                                                 blurRadius: 18,
                                                 spreadRadius: 3,
@@ -1429,7 +1558,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           ),
                                           child: ClipOval(
                                             child: VectorAvatarWidget(
-                                              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.attackerDay),
+                                              config: VectorAvatarConfig
+                                                  .getEvolutionAvatarForStage(
+                                                      widget.attackerDay),
                                               size: 64,
                                             ),
                                           ),
@@ -1441,11 +1572,32 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Container(width: 8, height: 4, decoration: BoxDecoration(color: Colors.white38, borderRadius: BorderRadius.circular(2))),
+                                            Container(
+                                                width: 8,
+                                                height: 4,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white38,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            2))),
                                             const SizedBox(width: 5),
-                                            Container(width: 14, height: 5, decoration: BoxDecoration(color: Colors.white60, borderRadius: BorderRadius.circular(3))),
+                                            Container(
+                                                width: 14,
+                                                height: 5,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white60,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3))),
                                             const SizedBox(width: 5),
-                                            Container(width: 8, height: 4, decoration: BoxDecoration(color: Colors.white38, borderRadius: BorderRadius.circular(2))),
+                                            Container(
+                                                width: 8,
+                                                height: 4,
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white38,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            2))),
                                           ],
                                         ),
                                       ],
@@ -1453,14 +1605,20 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       if (isCollectingLoot) ...[
                                         const SizedBox(height: 4),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 3),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                                            color: const Color(0xFF0F172A)
+                                                .withValues(alpha: 0.95),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
+                                                color: const Color(0xFFFFD700),
+                                                width: 1.4),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                                                color: const Color(0xFFFFD700)
+                                                    .withValues(alpha: 0.65),
                                                 blurRadius: 12,
                                               ),
                                             ],
@@ -1468,12 +1626,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Text('🪙', style: TextStyle(fontSize: 14)),
+                                              const Text('🪙',
+                                                  style:
+                                                      TextStyle(fontSize: 14)),
                                               const SizedBox(width: 4),
                                               Text(
                                                 '+15 PS LOOTED!',
                                                 style: GoogleFonts.outfit(
-                                                  color: const Color(0xFFFFD700),
+                                                  color:
+                                                      const Color(0xFFFFD700),
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: 11,
                                                 ),
@@ -1501,16 +1662,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   top: 0,
                   left: 0,
                   right: 0,
-                  child: _buildTopHeaderCapsule(isNight: isNight, cycleLabel: cycleLabel),
+                  child: _buildTopHeaderCapsule(
+                      isNight: isNight, cycleLabel: cycleLabel),
                 ),
 
                 // 9. Dimmed backdrop behind Profile Drawer
-                if (!_isQuestionSheetOpen && _profileDrawerController.value > 0.02)
+                if (!_isQuestionSheetOpen &&
+                    _profileDrawerController.value > 0.02)
                   Positioned.fill(
                     child: GestureDetector(
                       onTap: () => _profileDrawerController.reverse(),
                       child: Container(
-                        color: Colors.black.withValues(alpha: 0.65 * _profileDrawerController.value),
+                        color: Colors.black.withValues(
+                            alpha: 0.65 * _profileDrawerController.value),
                       ),
                     ),
                   ),
@@ -1522,7 +1686,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     left: 0,
                     right: 0,
                     child: Opacity(
-                      opacity: (1.0 - _profileDrawerController.value * 2.5).clamp(0.0, 1.0),
+                      opacity: (1.0 - _profileDrawerController.value * 2.5)
+                          .clamp(0.0, 1.0),
                       child: IgnorePointer(
                         ignoring: _profileDrawerController.value > 0.1,
                         child: _buildBottomAttackSection(),
@@ -1537,7 +1702,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     left: 0,
                     right: 0,
                     height: drawerCurrentH,
-                    child: _buildProfileDrawer(drawerMaxH, collapsedH, bottomPad),
+                    child:
+                        _buildProfileDrawer(drawerMaxH, collapsedH, bottomPad),
                   ),
 
                 // 12. Stacked Expanded Question / Challenge Sheet (when opened)
@@ -1556,10 +1722,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-
-
   /// 💣 Battle Aftermath: Billowing dark combat smoke columns & fiery embers rising from damaged citadel
-  Widget _buildPostAttackDamageEffects(double houseLeft, double houseTop, double houseW, double houseH) {
+  Widget _buildPostAttackDamageEffects(
+      double houseLeft, double houseTop, double houseW, double houseH) {
     return AnimatedBuilder(
       animation: _ambientController,
       builder: (context, _) {
@@ -1577,19 +1742,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 Positioned(
                   left: 70,
                   top: 30,
-                  child: _buildBillowingSmokeColumn(prog, phase: 0.0, width: 62),
+                  child:
+                      _buildBillowingSmokeColumn(prog, phase: 0.0, width: 62),
                 ),
                 // Smoke plume 2: Center gate blast point
                 Positioned(
                   left: (houseW + 80) / 2 - 25,
                   top: 110,
-                  child: _buildBillowingSmokeColumn(prog, phase: 0.35, width: 78),
+                  child:
+                      _buildBillowingSmokeColumn(prog, phase: 0.35, width: 78),
                 ),
                 // Smoke plume 3: Right tower / roof breach
                 Positioned(
                   right: 70,
                   top: 40,
-                  child: _buildBillowingSmokeColumn(prog, phase: 0.70, width: 58),
+                  child:
+                      _buildBillowingSmokeColumn(prog, phase: 0.70, width: 58),
                 ),
               ],
             ),
@@ -1599,7 +1767,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  Widget _buildBillowingSmokeColumn(double prog, {double phase = 0.0, double width = 60}) {
+  Widget _buildBillowingSmokeColumn(double prog,
+      {double phase = 0.0, double width = 60}) {
     final t = (prog + phase) % 1.0;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1619,12 +1788,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               color: const Color(0xFF1E293B).withValues(alpha: opacity),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: opacity * 0.5),
+                  color:
+                      const Color(0xFF0F172A).withValues(alpha: opacity * 0.5),
                   blurRadius: 10,
                 ),
                 if (index == 3)
                   BoxShadow(
-                    color: const Color(0xFFFF9800).withValues(alpha: opacity * 0.5),
+                    color: const Color(0xFFFF9800)
+                        .withValues(alpha: opacity * 0.5),
                     blurRadius: 14,
                   ),
               ],
@@ -1636,7 +1807,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       height: 5,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFFFFB74D).withValues(alpha: opacity),
+                        color:
+                            const Color(0xFFFFB74D).withValues(alpha: opacity),
                       ),
                     ),
                   )
@@ -1672,7 +1844,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.30 + (flamePulse * 0.08)),
+                      color: const Color(0xFFFFD700)
+                          .withValues(alpha: 0.30 + (flamePulse * 0.08)),
                       blurRadius: 55,
                       spreadRadius: 8,
                     ),
@@ -1701,7 +1874,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               right: width * 0.28,
               bottom: 24,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -1743,7 +1917,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🛡️ Presidential Protection Layer: Police Officers, Army Guards, Emergency Strobes, Hazard Barricade & Warning Sign
-  Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop, double houseW, double houseH, double groundY, [double worldW = 1800.0]) {
+  Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop,
+      double houseW, double houseH, double groundY,
+      [double worldW = 1800.0]) {
     if (widget.neighbor.isPresident) {
       return _buildPresidentialSupremeSecurityPerimeter(groundY, worldW);
     }
@@ -1770,10 +1946,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 45,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.30),
+                    color: (isRedFlash
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF3B82F6))
+                        .withValues(alpha: 0.30),
                     boxShadow: [
                       BoxShadow(
-                        color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.45),
+                        color: (isRedFlash
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF3B82F6))
+                            .withValues(alpha: 0.45),
                         blurRadius: 28,
                         spreadRadius: 8,
                       ),
@@ -1789,10 +1971,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 45,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.30),
+                    color: (isRedFlash
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFFEF4444))
+                        .withValues(alpha: 0.30),
                     boxShadow: [
                       BoxShadow(
-                        color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.45),
+                        color: (isRedFlash
+                                ? const Color(0xFF3B82F6)
+                                : const Color(0xFFEF4444))
+                            .withValues(alpha: 0.45),
                         blurRadius: 28,
                         spreadRadius: 8,
                       ),
@@ -1835,7 +2023,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: GestureDetector(
                   onTap: _showPresidentialProtectionInfoDialog,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A).withValues(alpha: 0.96),
                       borderRadius: BorderRadius.circular(12),
@@ -1850,7 +2039,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           offset: const Offset(0, 4),
                         ),
                         BoxShadow(
-                          color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.35),
+                          color: (isRedFlash
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF3B82F6))
+                              .withValues(alpha: 0.35),
                           blurRadius: 12,
                         ),
                       ],
@@ -2163,7 +2355,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -2186,12 +2379,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             const SizedBox(height: 12),
             Text(
               'Following a recent combat raid, this citadel has been placed under Federal & Presidential Protection to secure the resident and allow structural rebuilding.',
-              style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                const Icon(Icons.timer_outlined, color: Color(0xFFFFD700), size: 16),
+                const Icon(Icons.timer_outlined,
+                    color: Color(0xFFFFD700), size: 16),
                 const SizedBox(width: 6),
                 Text(
                   'Active Protection: ${_protectionHoursLeft.toStringAsFixed(1)} hours remaining',
@@ -2215,7 +2410,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Acknowledge Decree 📜'),
@@ -2226,7 +2422,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🛡️ Supreme Presidential Security Perimeter: Limousine, Honor Guards, Black Cat Commandos & Warning Cordon
-  Widget _buildPresidentialSupremeSecurityPerimeter(double groundY, [double worldW = 1800.0]) {
+  Widget _buildPresidentialSupremeSecurityPerimeter(double groundY,
+      [double worldW = 1800.0]) {
     return AnimatedBuilder(
       animation: _ambientController,
       builder: (context, _) {
@@ -2251,10 +2448,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 45,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.28),
+                    color: (isRedFlash
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF3B82F6))
+                        .withValues(alpha: 0.28),
                     boxShadow: [
                       BoxShadow(
-                        color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.40),
+                        color: (isRedFlash
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF3B82F6))
+                            .withValues(alpha: 0.40),
                         blurRadius: 30,
                         spreadRadius: 8,
                       ),
@@ -2270,10 +2473,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 45,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.28),
+                    color: (isRedFlash
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFFEF4444))
+                        .withValues(alpha: 0.28),
                     boxShadow: [
                       BoxShadow(
-                        color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.40),
+                        color: (isRedFlash
+                                ? const Color(0xFF3B82F6)
+                                : const Color(0xFFEF4444))
+                            .withValues(alpha: 0.40),
                         blurRadius: 30,
                         spreadRadius: 8,
                       ),
@@ -2295,7 +2504,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 78,
                 child: GestureDetector(
                   onTap: _showPresidentialSecurityDecreeDialog,
-                  child: _buildPresidentialOfficialLimousine(prog: prog, isRedFlash: isRedFlash),
+                  child: _buildPresidentialOfficialLimousine(
+                      prog: prog, isRedFlash: isRedFlash),
                 ),
               ),
 
@@ -2305,7 +2515,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 48,
                 child: ArmySoldierGuardWidget(
                   isLeft: false,
-                  vocalText: vocalStep == 0 ? "ARMY UNIT 1: BARRICADE SECURE 🪖" : null,
+                  vocalText: vocalStep == 0
+                      ? "ARMY UNIT 1: BARRICADE SECURE 🪖"
+                      : null,
                 ),
               ),
               Positioned(
@@ -2313,7 +2525,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 48,
                 child: ArmySoldierGuardWidget(
                   isLeft: true,
-                  vocalText: vocalStep == 2 ? "DEFCON 1 MILITARY PROTOCOL 🛑" : null,
+                  vocalText:
+                      vocalStep == 2 ? "DEFCON 1 MILITARY PROTOCOL 🛑" : null,
                 ),
               ),
 
@@ -2323,7 +2536,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 54,
                 child: PoliceOfficerGuardWidget(
                   isLeft: false,
-                  vocalText: vocalStep == 1 ? "POCKET POLICE: VIP CORRIDOR SEALED 🚔" : null,
+                  vocalText: vocalStep == 1
+                      ? "POCKET POLICE: VIP CORRIDOR SEALED 🚔"
+                      : null,
                 ),
               ),
               Positioned(
@@ -2331,7 +2546,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 54,
                 child: PoliceOfficerGuardWidget(
                   isLeft: true,
-                  vocalText: vocalStep == 3 ? "POLICE INSPECTOR: CITIZENS STAY BACK 🛑" : null,
+                  vocalText: vocalStep == 3
+                      ? "POLICE INSPECTOR: CITIZENS STAY BACK 🛑"
+                      : null,
                 ),
               ),
 
@@ -2341,7 +2558,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 46,
                 child: _buildArmedRifleHonorGuard(
                   isLeft: true,
-                  vocalText: vocalStep == 1 ? "SOVEREIGN CITADEL ON WATCH! 🫡" : null,
+                  vocalText:
+                      vocalStep == 1 ? "SOVEREIGN CITADEL ON WATCH! 🫡" : null,
                 ),
               ),
               Positioned(
@@ -2349,7 +2567,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 46,
                 child: _buildArmedRifleHonorGuard(
                   isLeft: false,
-                  vocalText: vocalStep == 3 ? "HONOR GUARD POST SECURE! 🏛️" : null,
+                  vocalText:
+                      vocalStep == 3 ? "HONOR GUARD POST SECURE! 🏛️" : null,
                 ),
               ),
 
@@ -2359,7 +2578,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 top: 92,
                 child: _buildBlackCatCommando(
                   codeName: "CAT-1",
-                  vocalText: vocalStep == 0 ? "CAT-1: PERIMETER GREEN 📻" : null,
+                  vocalText:
+                      vocalStep == 0 ? "CAT-1: PERIMETER GREEN 📻" : null,
                 ),
               ),
               Positioned(
@@ -2370,7 +2590,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   vocalText: vocalStep == 2 ? "RADAR: AIRSPACE CLEAR 🎯" : null,
                 ),
               ),
-
             ],
           ),
         );
@@ -2379,7 +2598,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🚗 Official Presidential Armored Limousine with Fluttering Flags
-  Widget _buildPresidentialOfficialLimousine({required double prog, required bool isRedFlash}) {
+  Widget _buildPresidentialOfficialLimousine(
+      {required double prog, required bool isRedFlash}) {
     final flagFlutter = math.sin(prog * 8 * math.pi) * 2.0;
 
     return SizedBox(
@@ -2430,7 +2650,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF090D16), Color(0xFF020617)],
+                  colors: [
+                    Color(0xFF1E293B),
+                    Color(0xFF090D16),
+                    Color(0xFF020617)
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -2489,11 +2713,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       width: 5,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                        color: isRedFlash
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF3B82F6),
                         borderRadius: BorderRadius.circular(1),
                         boxShadow: [
                           BoxShadow(
-                            color: isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                            color: isRedFlash
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF3B82F6),
                             blurRadius: 6,
                           ),
                         ],
@@ -2506,14 +2734,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     left: 1,
                     bottom: 2,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 2, vertical: 0.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700),
                         borderRadius: BorderRadius.circular(1),
                       ),
                       child: const Text(
                         'PRES 1',
-                        style: TextStyle(fontSize: 3.5, fontWeight: FontWeight.w900, color: Colors.black),
+                        style: TextStyle(
+                            fontSize: 3.5,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black),
                       ),
                     ),
                   ),
@@ -2566,7 +2798,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(2),
-                      border: Border.all(color: const Color(0xFF334155), width: 0.5),
+                      border: Border.all(
+                          color: const Color(0xFF334155), width: 0.5),
                     ),
                     child: Align(
                       alignment: Alignment.centerRight,
@@ -2607,7 +2840,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 1.5, height: 14, color: const Color(0xFFFFD700)),
+                Container(
+                    width: 1.5, height: 14, color: const Color(0xFFFFD700)),
                 Container(
                   width: 10,
                   height: 7,
@@ -2625,7 +2859,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 1.5, height: 14, color: const Color(0xFFFFD700)),
+                Container(
+                    width: 1.5, height: 14, color: const Color(0xFFFFD700)),
                 Container(
                   width: 10,
                   height: 7,
@@ -2746,9 +2981,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(width: 3, height: 3, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                        Container(
+                            width: 3,
+                            height: 3,
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFFFD700),
+                                shape: BoxShape.circle)),
                         const SizedBox(height: 2),
-                        Container(width: 3, height: 3, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                        Container(
+                            width: 3,
+                            height: 3,
+                            decoration: const BoxDecoration(
+                                color: Color(0xFFFFD700),
+                                shape: BoxShape.circle)),
                       ],
                     ),
                   ),
@@ -2756,12 +3001,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   Positioned(
                     left: 2,
                     top: 1,
-                    child: Container(width: 6, height: 2.5, color: const Color(0xFFFFD700)),
+                    child: Container(
+                        width: 6, height: 2.5, color: const Color(0xFFFFD700)),
                   ),
                   Positioned(
                     right: 2,
                     top: 1,
-                    child: Container(width: 6, height: 2.5, color: const Color(0xFFFFD700)),
+                    child: Container(
+                        width: 6, height: 2.5, color: const Color(0xFFFFD700)),
                   ),
                 ],
               ),
@@ -2772,7 +3019,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Bayonet tip
-                Container(width: 1.5, height: 8, color: const Color(0xFFCBD5E1)),
+                Container(
+                    width: 1.5, height: 8, color: const Color(0xFFCBD5E1)),
                 // Rifle barrel
                 Container(width: 3, height: 22, color: Colors.black87),
                 // Rifle wooden stock
@@ -3076,7 +3324,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 value: (_attackerDay / 90.0).clamp(0.0, 1.0),
                 minHeight: 8,
                 backgroundColor: Colors.white12,
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
               ),
             ),
             const SizedBox(height: 6),
@@ -3152,7 +3401,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
@@ -3175,7 +3425,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             const SizedBox(height: 12),
             Text(
               'The Sovereign Citadel of The President is safeguarded by the Black Cat Special Operations Group and Royal Honor Guards.\n\n• Security Clearance: Level 90+ Required\n• Gauntlet Trials: 200 English Mastery Challenges\n• Sovereign Boss Health: 10,000 HP',
-              style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 12.5, height: 1.45),
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFFCBD5E1), fontSize: 12.5, height: 1.45),
             ),
           ],
         ),
@@ -3184,7 +3435,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFD700),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(ctx),
             child: Text(
@@ -3232,7 +3484,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: const Color(0xFF0369A1).withValues(alpha: 0.35),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFF38BDF8), width: 1.2),
                     ),
                     child: const Text('🛡️', style: TextStyle(fontSize: 22)),
                   ),
@@ -3262,7 +3515,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white70),
                   ),
                 ],
               ),
@@ -3288,10 +3542,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: const Color(0xFF031525),
-                        border: Border.all(color: const Color(0xFF22C55E), width: 1.5),
+                        border: Border.all(
+                            color: const Color(0xFF22C55E), width: 1.5),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                            color:
+                                const Color(0xFF22C55E).withValues(alpha: 0.3),
                             blurRadius: 10,
                           ),
                         ],
@@ -3299,7 +3555,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          const Icon(Icons.radar, color: Color(0xFF4ADE80), size: 28),
+                          const Icon(Icons.radar,
+                              color: Color(0xFF4ADE80), size: 28),
                           Positioned(
                             top: 8,
                             right: 12,
@@ -3323,11 +3580,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                                  color: const Color(0xFFEF4444)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: const Color(0xFFEF4444), width: 1.0),
+                                  border: Border.all(
+                                      color: const Color(0xFFEF4444),
+                                      width: 1.0),
                                 ),
                                 child: const Text(
                                   'DEFCON 1 ACTIVE',
@@ -3352,7 +3613,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           const SizedBox(height: 4),
                           Text(
                             'EL/M-2084 Phased Array 360° Radar tracking 4 sky corridors across 3,600m perimeter territory.',
-                            style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 11),
+                            style: GoogleFonts.outfit(
+                                color: const Color(0xFFCBD5E1), fontSize: 11),
                           ),
                         ],
                       ),
@@ -3372,12 +3634,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 crossAxisSpacing: 8,
                 childAspectRatio: 2.3,
                 children: [
-                  _buildDefenseMetricCard('🚀 Tamir Interceptors', '20 / 20 READY', const Color(0xFF4ADE80)),
-                  _buildDefenseMetricCard('⚡ Intercept Rate', '99.8% ACCURACY', const Color(0xFF38BDF8)),
-                  _buildDefenseMetricCard('🧱 Perimeter Blast Walls', '3,600m HARDENED', const Color(0xFFFFD700)),
-                  _buildDefenseMetricCard('🚧 Police Barricades', '4 CHECKPOINTS', const Color(0xFFF97316)),
-                  _buildDefenseMetricCard('🚔 SWAT & K9 Forces', '12 UNITS ARMED', const Color(0xFFA78BFA)),
-                  _buildDefenseMetricCard('👑 Sovereign Protocol', 'LVL 90 REQUIRED', const Color(0xFFFFD700)),
+                  _buildDefenseMetricCard('🚀 Tamir Interceptors',
+                      '20 / 20 READY', const Color(0xFF4ADE80)),
+                  _buildDefenseMetricCard('⚡ Intercept Rate', '99.8% ACCURACY',
+                      const Color(0xFF38BDF8)),
+                  _buildDefenseMetricCard('🧱 Perimeter Blast Walls',
+                      '3,600m HARDENED', const Color(0xFFFFD700)),
+                  _buildDefenseMetricCard('🚧 Police Barricades',
+                      '4 CHECKPOINTS', const Color(0xFFF97316)),
+                  _buildDefenseMetricCard('🚔 SWAT & K9 Forces',
+                      '12 UNITS ARMED', const Color(0xFFA78BFA)),
+                  _buildDefenseMetricCard('👑 Sovereign Protocol',
+                      'LVL 90 REQUIRED', const Color(0xFFFFD700)),
                 ],
               ),
 
@@ -3392,7 +3660,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         backgroundColor: const Color(0xFF0284C7),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 6,
                       ),
                       onPressed: () {
@@ -3402,7 +3671,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       icon: const Text('🚀', style: TextStyle(fontSize: 16)),
                       label: Text(
                         'Test Fire Interceptor',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
                   ),
@@ -3430,14 +3700,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         children: [
           Text(
             title,
-            style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 10.5, fontWeight: FontWeight.w600),
+            style: GoogleFonts.outfit(
+                color: const Color(0xFF94A3B8),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
             val,
-            style: GoogleFonts.sourceCodePro(color: valColor, fontSize: 11.5, fontWeight: FontWeight.bold),
+            style: GoogleFonts.sourceCodePro(
+                color: valColor, fontSize: 11.5, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -3461,7 +3735,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isRobot = widget.neighbor.isPocketRobo ||
         PocketRobotService.isRobotId(widget.neighbor.id) ||
         !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
-    final rank = _defenderGlobalRank ?? (isRobot ? widget.neighbor.day.clamp(1, 90) : 1);
+    final rank =
+        _defenderGlobalRank ?? (isRobot ? widget.neighbor.day.clamp(1, 90) : 1);
 
     final rankText = isRobot
         ? '🤖 Robot Rank #$rank'
@@ -3552,18 +3827,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
-  /// 🎒 Kid Hero Drawer Content (Homestead House, Evolution Avatar, Adventure Stats)
+  /// 🎒 Kid Hero Drawer Content (Homestead House, 180x220 PopArt Card, Adventure Stats)
   Widget _buildKidHeroDrawerContent() {
     final day = widget.neighbor.day;
     final house = PocketKidsService.getHouseForDay(day);
-    final avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(day);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Kids Hero Identity Card with Homestead House
+          // 1. Kids Hero Identity Card with Homestead House & 180x220 PopArt Collectible Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -3598,7 +3872,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                 // House Tier & Title Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: house.themeColor.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(20),
@@ -3613,22 +3888,35 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
 
-                // Mascot Avatar & Hero Info
+                // Kid Avatar & Identity
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(3),
+                      width: 58,
+                      height: 58,
+                      padding: const EdgeInsets.all(2.5),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                        color: const Color(0xFF0F172A),
+                        border: Border.all(
+                            color: const Color(0xFFFFD700), width: 2.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.40),
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
-                      child: VectorAvatarWidget(
-                        config: avatarConfig,
-                        size: 52,
-                        showAura: false,
+                      child: ClipOval(
+                        child: VectorAvatarWidget(
+                          config:
+                              PocketKidsAvatarSystem.getAvatarConfigForDay(day),
+                          size: 52,
+                          showAura: false,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -3643,8 +3931,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   widget.neighbor.name,
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -3652,7 +3940,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFD700),
                                   borderRadius: BorderRadius.circular(8),
@@ -3693,12 +3982,150 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           // 2. Kid Hero Adventure Stats Row
           Row(
             children: [
-              _buildKidStatCard('🎯', 'Trail Level', 'Day $day', const Color(0xFF0284C7)),
+              _buildKidStatCard(
+                  '🎯', 'Trail Level', 'Day $day', const Color(0xFF0284C7)),
               const SizedBox(width: 8),
-              _buildKidStatCard('⭐', 'Star Coins', '${day * 40} PTS', const Color(0xFFF59E0B)),
+              _buildKidStatCard('⭐', 'Star Coins', '${day * 40} PTS',
+                  const Color(0xFFF59E0B)),
               const SizedBox(width: 8),
-              _buildKidStatCard('🏰', 'House Tier', 'Tier ${house.tier}', const Color(0xFF10B981)),
+              _buildKidStatCard('🏰', 'House Tier', 'Tier ${house.tier}',
+                  const Color(0xFF10B981)),
             ],
+          ),
+          const SizedBox(height: 14),
+
+          // 🛡️ Kid's Fortress Defense Cards (Instagram-Style 3-Column Grid)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                  width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('🛡️ ', style: TextStyle(fontSize: 16)),
+                        Text(
+                          'DEFENSE CARDS',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: const Color(0xFF10B981), width: 0.8),
+                      ),
+                      child: Text(
+                        '$day Shields Active',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF34D399),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'These collected cards defend ${widget.neighbor.name}\'s house with Sentence Builders, Spelling Bees, and Spoken English challenges!',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 10.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 3-Column Instagram-Style Grid for defender's cards
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.72,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: day.clamp(1, 15),
+                  itemBuilder: (context, idx) {
+                    final cardDay = idx + 1;
+                    final isMaleKid = widget.neighbor.isMe
+                        ? (PocketKidsService.kidGender == 'male')
+                        : (PocketKidsService.kidGender == 'male');
+                    final card = PopArtCardHelper.getCardForDay(cardDay,
+                        isMale: isMaleKid);
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        final cardIdx =
+                            kPopArt180Cards.indexWhere((c) => c.id == card.id);
+                        PopArtAvatarCardsViewerPage.open(context,
+                            initialIndex: cardIdx >= 0 ? cardIdx : 0);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.7),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.5),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              CustomPaint(
+                                painter: PopArtCardCustomPainter(data: card),
+                              ),
+                              Positioned(
+                                top: 3,
+                                left: 3,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.75),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'D$cardDay',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -3710,7 +4137,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onPressed: () {
@@ -3718,14 +4146,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     PocketGameAudioService.instance.playCoinSound();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('🖐️ High-five sent to ${widget.neighbor.name}!'),
+                        content: Text(
+                            '🖐️ High-five sent to ${widget.neighbor.name}!'),
                         backgroundColor: const Color(0xFF10B981),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
                   },
                   icon: const Text('🖐️', style: TextStyle(fontSize: 16)),
-                  label: Text('HIGH-FIVE', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                  label: Text('HIGH-FIVE',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -3734,7 +4164,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0284C7),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onPressed: () {
@@ -3742,14 +4173,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     PocketKidsService.sendMateRequest(widget.neighbor.id);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('🤝 Mate request sent to ${widget.neighbor.name}!'),
+                        content: Text(
+                            '🤝 Mate request sent to ${widget.neighbor.name}!'),
                         backgroundColor: const Color(0xFF0284C7),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
                   },
                   icon: const Text('🤝', style: TextStyle(fontSize: 16)),
-                  label: Text('ADD MATE', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                  label: Text('ADD MATE',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
                 ),
               ),
             ],
@@ -3759,7 +4192,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  Widget _buildKidStatCard(String emoji, String title, String val, Color color) {
+  Widget _buildKidStatCard(
+      String emoji, String title, String val, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
@@ -3815,7 +4249,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                  border:
+                      Border.all(color: const Color(0xFFFFD700), width: 1.5),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.2),
@@ -3848,7 +4283,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   color: Color(0xFFFFD700),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.check, size: 12, color: Colors.black),
+                                child: const Icon(Icons.check,
+                                    size: 12, color: Colors.black),
                               ),
                             ],
                           ),
@@ -3862,11 +4298,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                           const SizedBox(height: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                              border: Border.all(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.4)),
                             ),
                             child: Text(
                               '👑 Level 90 Supreme Boss • 10,000 HP',
@@ -3894,16 +4334,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         backgroundColor: const Color(0xFF1E3A8A),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
-                      label: Text('Chat', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded,
+                          size: 16),
+                      label: Text('Chat',
+                          style:
+                              GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const WhatsAppGroupChat(
-                              groupId: 'p:${PocketPresidentService.presidentId}',
+                              groupId:
+                                  'p:${PocketPresidentService.presidentId}',
                               groupName: PocketPresidentService.presidentName,
                             ),
                           ),
@@ -3918,10 +4363,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         backgroundColor: const Color(0xFFFFD700),
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.mail_outline_rounded, size: 16),
-                      label: Text('Petition Desk', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      label: Text('Petition Desk',
+                          style:
+                              GoogleFonts.outfit(fontWeight: FontWeight.bold)),
                       onPressed: _showPresidentialPetitionDialog,
                     ),
                   ),
@@ -3955,14 +4403,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: Center(
                     child: Text(
                       'No active imperial decrees at this hour. The realm is peaceful.',
-                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                      style: GoogleFonts.inter(
+                          color: Colors.white60, fontSize: 12),
                     ),
                   ),
                 )
               else
                 ...announcements.map((dec) {
                   final title = dec['title']?.toString() ?? 'Imperial Decree';
-                  final body = dec['body']?.toString() ?? dec['message']?.toString() ?? '';
+                  final body = dec['body']?.toString() ??
+                      dec['message']?.toString() ??
+                      '';
                   final mediaUrl = dec['media_url']?.toString();
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -3970,7 +4421,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.3)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3986,7 +4439,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         const SizedBox(height: 4),
                         Text(
                           body,
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: Colors.white70, fontSize: 12),
                         ),
                         if (mediaUrl != null && mediaUrl.isNotEmpty) ...[
                           const SizedBox(height: 8),
@@ -3995,7 +4449,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             child: Image.network(
                               mediaUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink(),
                             ),
                           ),
                         ],
@@ -4073,17 +4528,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   maxLines: 4,
                   style: GoogleFonts.inter(color: Colors.white, fontSize: 13.5),
                   decoration: InputDecoration(
-                    hintText: 'State your petition or inquiry for The President...',
-                    hintStyle: GoogleFonts.inter(color: Colors.white30, fontSize: 13),
+                    hintText:
+                        'State your petition or inquiry for The President...',
+                    hintStyle:
+                        GoogleFonts.inter(color: Colors.white30, fontSize: 13),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                      borderSide: BorderSide(
+                          color:
+                              const Color(0xFFFFD700).withValues(alpha: 0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                      borderSide: const BorderSide(
+                          color: Color(0xFFFFD700), width: 1.5),
                     ),
                   ),
                 ),
@@ -4095,7 +4555,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFD700),
                       foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
                     ),
                     onPressed: isSubmitting
                         ? null
@@ -4103,8 +4564,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             final text = messageController.text.trim();
                             if (text.isEmpty) return;
                             setModalState(() => isSubmitting = true);
-                            final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
-                            await PocketPresidentService.sendUserMessageToPresident(
+                            final uid =
+                                SupaFlow.client.auth.currentUser?.id ?? 'guest';
+                            await PocketPresidentService
+                                .sendUserMessageToPresident(
                               userId: uid,
                               messageText: text,
                             );
@@ -4112,15 +4575,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               Navigator.pop(bContext);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('🏛️ Petition delivered to The President!'),
+                                  content: Text(
+                                      '🏛️ Petition delivered to The President!'),
                                   backgroundColor: Color(0xFF1E3A8A),
                                 ),
                               );
                             }
                           },
                     child: isSubmitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                        : Text('Send Petition 📜', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.black))
+                        : Text('Send Petition 📜',
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold, fontSize: 14)),
                   ),
                 ),
               ],
@@ -4167,7 +4637,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🌟 Top Floating Header: Minimal circular icon buttons (Back, Perspective Toggle, Day/Night Toggle, Profile, Info)
-  Widget _buildTopHeaderCapsule({bool isNight = false, String cycleLabel = ''}) {
+  Widget _buildTopHeaderCapsule(
+      {bool isNight = false, String cycleLabel = ''}) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -4187,7 +4658,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   border: Border.all(color: Colors.white24, width: 1),
                 ),
                 child: const Center(
-                  child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
+                  child: Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 16),
                 ),
               ),
             ),
@@ -4209,10 +4681,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           colors: [Color(0xFF0284C7), Color(0xFF4F46E5)],
                         ),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                        border: Border.all(
+                            color: const Color(0xFFFFD700), width: 1.2),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4F46E5).withValues(alpha: 0.45),
+                            color:
+                                const Color(0xFF4F46E5).withValues(alpha: 0.45),
                             blurRadius: 8,
                           ),
                         ],
@@ -4251,15 +4725,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: (isNight ? const Color(0xFFFDE047) : const Color(0xFF38BDF8)).withValues(alpha: 0.25),
+                          color: (isNight
+                                  ? const Color(0xFFFDE047)
+                                  : const Color(0xFF38BDF8))
+                              .withValues(alpha: 0.25),
                           blurRadius: 8,
                         ),
                       ],
                     ),
                     child: Center(
                       child: Icon(
-                        isNight ? Icons.nightlight_round : Icons.wb_sunny_rounded,
-                        color: isNight ? const Color(0xFFFDE047) : const Color(0xFF38BDF8),
+                        isNight
+                            ? Icons.nightlight_round
+                            : Icons.wb_sunny_rounded,
+                        color: isNight
+                            ? const Color(0xFFFDE047)
+                            : const Color(0xFF38BDF8),
                         size: 18,
                       ),
                     ),
@@ -4281,10 +4762,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.65),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF8B5CF6), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFF8B5CF6), width: 1.2),
                     ),
                     child: const Center(
-                      child: Icon(Icons.person_rounded, color: Color(0xFFA78BFA), size: 18),
+                      child: Icon(Icons.person_rounded,
+                          color: Color(0xFFA78BFA), size: 18),
                     ),
                   ),
                 ),
@@ -4303,7 +4786,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       border: Border.all(color: Colors.white24, width: 1),
                     ),
                     child: const Center(
-                      child: Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 18),
+                      child: Icon(Icons.info_outline_rounded,
+                          color: Color(0xFFFFD700), size: 18),
                     ),
                   ),
                 ),
@@ -4322,10 +4806,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.70),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFFF59E0B), width: 1.2),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                          color:
+                              const Color(0xFFF59E0B).withValues(alpha: 0.35),
                           blurRadius: 8,
                         ),
                       ],
@@ -4349,7 +4835,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         colors: [Color(0xFFEC4899), Color(0xFF8B5CF6)],
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFFC00), width: 1.2),
+                      border: Border.all(
+                          color: const Color(0xFFFFFC00), width: 1.2),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFEC4899).withValues(alpha: 0.4),
@@ -4358,7 +4845,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ],
                     ),
                     child: const Center(
-                      child: Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 17),
+                      child: Icon(Icons.auto_awesome_rounded,
+                          color: Colors.white, size: 17),
                     ),
                   ),
                 ),
@@ -4473,7 +4961,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -4515,7 +5004,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
@@ -4643,7 +5133,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   await _loadBattleState();
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF10B981), Color(0xFF047857)],
@@ -4690,10 +5181,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(_defenseQuestions.length, (idx) {
                       final q = _defenseQuestions[idx];
-                      final info = PocketCitadelChallengeGenerator.getGameInfo(q.gameFormat);
+                      final info = PocketCitadelChallengeGenerator.getGameInfo(
+                          q.gameFormat);
                       final diffColor = q.difficulty == 'easy'
                           ? const Color(0xFF10B981)
-                          : (q.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
+                          : (q.difficulty == 'hard'
+                              ? const Color(0xFFF43F5E)
+                              : const Color(0xFFF59E0B));
                       return GestureDetector(
                         onTap: () async {
                           HapticFeedback.selectionClick();
@@ -4707,16 +5201,20 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         },
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 3),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: diffColor.withValues(alpha: 0.7), width: 1),
+                            border: Border.all(
+                                color: diffColor.withValues(alpha: 0.7),
+                                width: 1),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(info.icon, style: const TextStyle(fontSize: 11)),
+                              Text(info.icon,
+                                  style: const TextStyle(fontSize: 11)),
                               const SizedBox(width: 4),
                               Text(
                                 'Day ${idx + 1}: ${info.title}',
@@ -4734,17 +5232,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                 ),
               ],
-            ]
-            else if (widget.neighbor.isPresident)
+            ] else if (widget.neighbor.isPresident)
               GestureDetector(
                 onTap: _onTapBottomAttack,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: _attackerDay <= 90
                           ? [const Color(0xFF334155), const Color(0xFF1E293B)]
-                          : [const Color(0xFFDC2626), const Color(0xFFB45309), const Color(0xFFFFD700)],
+                          : [
+                              const Color(0xFFDC2626),
+                              const Color(0xFFB45309),
+                              const Color(0xFFFFD700)
+                            ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -4755,7 +5257,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (_attackerDay <= 90 ? Colors.black : const Color(0xFFFFD700)).withValues(alpha: 0.5),
+                        color: (_attackerDay <= 90
+                                ? Colors.black
+                                : const Color(0xFFFFD700))
+                            .withValues(alpha: 0.5),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -4764,14 +5269,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_attackerDay <= 90 ? '🔒' : '👑', style: const TextStyle(fontSize: 13)),
+                      Text(_attackerDay <= 90 ? '🔒' : '👑',
+                          style: const TextStyle(fontSize: 13)),
                       const SizedBox(width: 6),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _attackerDay <= 90 ? 'LOCKED • PASS LVL 90' : 'CHALLENGE PRESIDENT ⚔️',
+                            _attackerDay <= 90
+                                ? 'LOCKED • PASS LVL 90'
+                                : 'CHALLENGE PRESIDENT ⚔️',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: _attackerDay <= 90 ? 11.5 : 13,
@@ -4801,10 +5309,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapBottomAttack,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 7),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF7C3AED), Color(0xFFB45309), Color(0xFFD97706)],
+                          colors: [
+                            Color(0xFF7C3AED),
+                            Color(0xFFB45309),
+                            Color(0xFFD97706)
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -4815,7 +5328,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.5),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -4831,16 +5345,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'PRESIDENTIAL ATTACK',
+                                'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
-                                  fontSize: 12.5,
+                                  fontSize: 12.0,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.6,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                               Text(
-                                '10 Sentries + ${widget.neighbor.day} Personal Defenses',
+                                '10 Escort Tasks (100% Correct Required) + ${widget.neighbor.day} Defenses',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFFFFD700),
                                   fontSize: 8.5,
@@ -4853,13 +5367,58 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  // 🥊 Fight Duel Button (Audio Directive!)
+                  GestureDetector(
+                    onTap: _onTapFightButton,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🥊', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'FIGHT',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF0F172A),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   if (!PocketRobotService.isRobotId(widget.neighbor.id) &&
                       _canInitiatePocketTalk) ...[
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: _onSendPocketTalkFromCitadel,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -4873,7 +5432,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFD600).withValues(alpha: 0.3),
+                              color: const Color(0xFFFFD600)
+                                  .withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -4888,7 +5448,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               'TALK PACT',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD600),
-                                fontSize: 13,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.8,
                               ),
@@ -4907,7 +5467,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapBottomAttack,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 7),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -4921,7 +5482,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.5),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -4936,7 +5498,51 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             'ATTACK',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 13.5,
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 🥊 Fight Duel Button (Audio Directive!)
+                  GestureDetector(
+                    onTap: _onTapFightButton,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🥊', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'FIGHT',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF0F172A),
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,
                             ),
@@ -4948,11 +5554,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   if (!widget.neighbor.isPresident &&
                       !PocketRobotService.isRobotId(widget.neighbor.id) &&
                       _canInitiatePocketTalk) ...[
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: _onSendPocketTalkFromCitadel,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -4966,7 +5573,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFD600).withValues(alpha: 0.35),
+                              color: const Color(0xFFFFD600)
+                                  .withValues(alpha: 0.35),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -4981,7 +5589,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               'POCKET TALK',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFD600),
-                                fontSize: 12.5,
+                                fontSize: 12.0,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.5,
                               ),
@@ -5024,7 +5632,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 📇 Draggable & Tappable Bottom Sheet Drawer for Citadel Defender Profile
-  Widget _buildProfileDrawer(double maxHeight, double collapsedH, double bottomPad) {
+  Widget _buildProfileDrawer(
+      double maxHeight, double collapsedH, double bottomPad) {
     final prog = _profileDrawerController.value;
     final isExpanded = prog > 0.5;
 
@@ -5033,7 +5642,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         color: const Color(0xFF0F172A),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         border: Border.all(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35)),
+          color:
+              const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35)),
           width: 1.5,
         ),
         boxShadow: [
@@ -5085,7 +5695,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 }
               },
               child: Container(
-                padding: EdgeInsets.fromLTRB(16, 6, 16, prog < 0.1 ? (8 + bottomPad) : 8),
+                padding: EdgeInsets.fromLTRB(
+                    16, 6, 16, prog < 0.1 ? (8 + bottomPad) : 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.95),
                   border: Border(
@@ -5117,16 +5728,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA),
+                              color: widget.neighbor.isPresident
+                                  ? const Color(0xFFFFD700)
+                                  : const Color(0xFFA78BFA),
                               width: 1.4,
                             ),
                             color: const Color(0xFF0F172A),
                           ),
                           child: ClipOval(
                             child: widget.neighbor.isPresident
-                                ? const PresidentAvatarWidget(size: 32, showGlow: false)
+                                ? const PresidentAvatarWidget(
+                                    size: 32, showGlow: false)
                                 : VectorAvatarWidget(
-                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                                    config: VectorAvatarConfig
+                                        .getEvolutionAvatarForStage(
+                                            widget.neighbor.day),
                                     size: 32,
                                   ),
                           ),
@@ -5145,7 +5761,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           ? 'The President\'s Sovereign Citadel'
                                           : '${widget.neighbor.name}\'s Profile',
                                       style: GoogleFonts.outfit(
-                                        color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : Colors.white,
+                                        color: widget.neighbor.isPresident
+                                            ? const Color(0xFFFFD700)
+                                            : Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.5,
                                       ),
@@ -5155,19 +5773,30 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ),
                                   const SizedBox(width: 6),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5, vertical: 1.5),
                                     decoration: BoxDecoration(
-                                      color: (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFF8B5CF6)).withValues(alpha: 0.3),
+                                      color: (widget.neighbor.isPresident
+                                              ? const Color(0xFFFFD700)
+                                              : const Color(0xFF8B5CF6))
+                                          .withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                        color: (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA)).withValues(alpha: 0.5),
+                                        color: (widget.neighbor.isPresident
+                                                ? const Color(0xFFFFD700)
+                                                : const Color(0xFFA78BFA))
+                                            .withValues(alpha: 0.5),
                                         width: 0.8,
                                       ),
                                     ),
                                     child: Text(
-                                      widget.neighbor.isPresident ? '👑 Sovereign Lvl 90' : 'Lvl ${widget.neighbor.day}',
+                                      widget.neighbor.isPresident
+                                          ? '👑 Sovereign Lvl 90'
+                                          : 'Lvl ${widget.neighbor.day}',
                                       style: GoogleFonts.outfit(
-                                        color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFDDD6FE),
+                                        color: widget.neighbor.isPresident
+                                            ? const Color(0xFFFFD700)
+                                            : const Color(0xFFDDD6FE),
                                         fontWeight: FontWeight.w700,
                                         fontSize: 9.5,
                                       ),
@@ -5203,12 +5832,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         // Expand / Collapse Capsule Indicator
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFF8B5CF6).withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: const Color(0xFFA78BFA).withValues(alpha: 0.4),
+                              color: const Color(0xFFA78BFA)
+                                  .withValues(alpha: 0.4),
                               width: 1,
                             ),
                           ),
@@ -5228,7 +5860,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ),
                                 ),
                               Icon(
-                                isExpanded ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_up_rounded,
+                                isExpanded
+                                    ? Icons.keyboard_arrow_down_rounded
+                                    : Icons.keyboard_arrow_up_rounded,
                                 color: const Color(0xFFA78BFA),
                                 size: 18,
                               ),
@@ -5299,7 +5933,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK', style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+            child: const Text('OK',
+                style: TextStyle(
+                    color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -5350,23 +5986,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             _buildStatRow(
               (widget.neighbor.isPocketRobo ||
                       PocketRobotService.isRobotId(widget.neighbor.id) ||
-                      !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id))
+                      !RegExp(r'^[0-9a-fA-F-]{36}$')
+                          .hasMatch(widget.neighbor.id))
                   ? 'Robot Rank'
                   : 'Global Rank',
               (widget.neighbor.isPocketRobo ||
                       PocketRobotService.isRobotId(widget.neighbor.id) ||
-                      !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id))
+                      !RegExp(r'^[0-9a-fA-F-]{36}$')
+                          .hasMatch(widget.neighbor.id))
                   ? '🤖 Robot Rank #${_defenderGlobalRank ?? widget.neighbor.day.clamp(1, 90)}'
                   : (_defenderGlobalRank != null
                       ? '🏆 Global Rank #$_defenderGlobalRank'
-                      : (widget.neighbor.isPresident ? '👑 Global Rank #1' : '🏆 Global Challenger')),
+                      : (widget.neighbor.isPresident
+                          ? '👑 Global Rank #1'
+                          : '🏆 Global Challenger')),
             ),
             _buildStatRow('Citadel Level', 'Level ${widget.neighbor.day}'),
             _buildStatRow('Pocket Score', 'PS $_defenderScore'),
             _buildStatRow('Study Streak', '🔥 ${widget.neighbor.streak} Days'),
             _buildStatRow(
               'Shield Status',
-              widget.neighbor.hasActiveShield ? '🛡️ Active Iron Dome' : '🔓 Unshielded',
+              widget.neighbor.hasActiveShield
+                  ? '🛡️ Active Iron Dome'
+                  : '🔓 Unshielded',
             ),
             _buildStatRow('Daily Attacks', '$_attacksUsed / 2 used'),
             if (_isTargetProtected)
@@ -5413,7 +6055,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 13)),
+          Text(label,
+              style: const TextStyle(color: Colors.white60, fontSize: 13)),
           Text(
             value,
             style: GoogleFonts.outfit(
@@ -5427,7 +6070,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  void _onTapFightButton() {
+    HapticFeedback.mediumImpact();
+    PocketCitadelFightModal.show(
+      context,
+      opponentId: widget.neighbor.id,
+      opponentName: widget.neighbor.name,
+      opponentAvatar: widget.neighbor.avatar,
+      opponentDay: widget.neighbor.day,
+      isKidMode: widget.isKidMode,
+    );
+  }
+
   void _showVictoryDialog() {
+    final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+    if (myId.isNotEmpty) {
+      PocketTrophyService.recordSuccessfulAttack(myId);
+    }
+
     if (widget.neighbor.isPresident) {
       PocketPresidentService.markPresidentialCitadelConquered();
       showDialog(
@@ -5467,7 +6127,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                  border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
                 ),
                 child: Row(
                   children: [
@@ -5489,7 +6150,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               const SizedBox(height: 12),
               Text(
                 '🎓 Your Official Day 90 Fluency Certificate of Sovereign Mastery is now unlocked and ready for download!',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, height: 1.4),
+                style: GoogleFonts.outfit(
+                    color: Colors.white, fontSize: 13, height: 1.4),
               ),
             ],
           ),
@@ -5501,7 +6163,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFD700),
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
                 ),
                 onPressed: () {
@@ -5516,7 +6179,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 icon: const Text('🎓', style: TextStyle(fontSize: 18)),
                 label: Text(
                   'CLAIM OFFICIAL CERTIFICATE 📜',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900, fontSize: 13),
                 ),
               ),
             ),
@@ -5576,7 +6240,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '+15 POCKET SCORE LOOTED!',
+                          widget.isKidMode
+                              ? '+15 STUDENT SCORE (SS) LOOTED! 🎓'
+                              : '+15 POCKET SCORE (PS) LOOTED! 🪙',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF34D399),
                             fontWeight: FontWeight.bold,
@@ -5584,9 +6250,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
-                          'Defender Citadel Breached & Plundered!',
-                          style: TextStyle(color: Colors.white70, fontSize: 11),
+                        Text(
+                          widget.isKidMode
+                              ? '${widget.neighbor.name}\'s Fortress Breached & Marks Claimed!'
+                              : 'Defender Citadel Breached & Plundered!',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 11),
                         ),
                       ],
                     ),
@@ -5603,11 +6272,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
               child: Row(
                 children: const [
-                  Text('👮‍♂️', style: TextStyle(fontSize: 16)),
+                  Text('🛡️', style: TextStyle(fontSize: 16)),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '26h Presidential Protection Activated for target to recover.',
+                      '24h Presidential Protection Activated for target to recover.',
                       style: TextStyle(color: Colors.white60, fontSize: 11),
                     ),
                   ),
@@ -5624,7 +6293,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () {
                 Navigator.pop(ctx);
@@ -5632,7 +6302,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               },
               child: Text(
                 'CLAIM REWARDS & RETURN 🏆',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
             ),
           ),
@@ -5640,7 +6311,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       ),
     );
   }
-
 
   void _checkPocketTalkCap() {
     final myId = SupaFlow.client.auth.currentUser?.id;
@@ -5657,7 +6327,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final myId = SupaFlow.client.auth.currentUser?.id;
     if (myId == null || myId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to start a Pocket Talk Pact')),
+        const SnackBar(
+            content: Text('Please log in to start a Pocket Talk Pact')),
       );
       return;
     }
@@ -5669,7 +6340,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('⚡ Maximum 3 active Pocket Talks reached! Complete an agreement first.'),
+            content: Text(
+                '⚡ Maximum 3 active Pocket Talks reached! Complete an agreement first.'),
             backgroundColor: Color(0xFF0F172A),
             behavior: SnackBarBehavior.floating,
           ),
@@ -5700,12 +6372,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.bolt_rounded, color: Color(0xFFFFD600), size: 18),
+              const Icon(Icons.bolt_rounded,
+                  color: Color(0xFFFFD600), size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '⚡ Pocket Talk 4-Day Pact invite sent to ${widget.neighbor.name}!',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -5749,6 +6423,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       _isQuestionSheetOpen = true;
       if (_raidStep == 0) {
         _raidStep = 1;
+        _correctCount = 0;
+        _incorrectCount = 0;
+        _currentQIdx = 0;
+        _retriesRemaining =
+            PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
+                widget.neighbor.day);
         _selectedOption = -1;
         _startCombatTimer();
       }
@@ -5780,7 +6460,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         border: Border.all(
           color: _raidStep == 2
               ? const Color(0xFFFFD700)
-              : (_raidStep == -1 ? Colors.redAccent : const Color(0xFF38BDF8).withValues(alpha: 0.6)),
+              : (_raidStep == -1
+                  ? Colors.redAccent
+                  : const Color(0xFF38BDF8).withValues(alpha: 0.6)),
           width: 1.8,
         ),
         boxShadow: [
@@ -5823,12 +6505,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     widget.neighbor.isPresident
                         ? '🏛️ Presidential Trial (${_currentQIdx + 1}/200)'
                         : (widget.neighbor.isVip && _currentQIdx < 10)
-                            ? '🏛️ Presidential Sentry (${_currentQIdx + 1}/10)'
+                            ? '🏛️ Presidential Escort (${_currentQIdx + 1}/10)'
                             : (widget.neighbor.isVip)
                                 ? '🛡️ VIP Estate Defense (${_currentQIdx - 9}/${_defenseQuestions.length - 10})'
                                 : 'Gate Defense Challenge (${_currentQIdx + 1}/${_defenseQuestions.length})',
                     style: GoogleFonts.outfit(
-                      color: (widget.neighbor.isPresident || (widget.neighbor.isVip && _currentQIdx < 10))
+                      color: (widget.neighbor.isPresident ||
+                              (widget.neighbor.isVip && _currentQIdx < 10))
                           ? const Color(0xFFFFD700)
                           : Colors.white,
                       fontSize: 15,
@@ -5839,14 +6522,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   if (_raidStep == 1) ...[
                     // ⏱️ 25s Blitz Countdown Combat Timer Pill
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: _secondsLeft <= 5
                             ? Colors.red.withValues(alpha: 0.3)
                             : const Color(0xFFFFD700).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: _secondsLeft <= 5 ? Colors.redAccent : const Color(0xFFFFD700),
+                          color: _secondsLeft <= 5
+                              ? Colors.redAccent
+                              : const Color(0xFFFFD700),
                           width: 1,
                         ),
                       ),
@@ -5856,13 +6542,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           Icon(
                             Icons.timer_rounded,
                             size: 13,
-                            color: _secondsLeft <= 5 ? Colors.redAccent : const Color(0xFFFFD700),
+                            color: _secondsLeft <= 5
+                                ? Colors.redAccent
+                                : const Color(0xFFFFD700),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${_secondsLeft}s',
                             style: GoogleFonts.outfit(
-                              color: _secondsLeft <= 5 ? Colors.redAccent : const Color(0xFFFFD700),
+                              color: _secondsLeft <= 5
+                                  ? Colors.redAccent
+                                  : const Color(0xFFFFD700),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -5874,8 +6564,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ],
                   // Close button to dismiss container and return to open world
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
-                    onPressed: () => setState(() => _isQuestionSheetOpen = false),
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.white70, size: 22),
+                    onPressed: () =>
+                        setState(() => _isQuestionSheetOpen = false),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -5888,7 +6580,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: (widget.neighbor.isVip && _currentQIdx < 10)
                             ? const Color(0xFF7C3AED).withValues(alpha: 0.35)
@@ -5903,7 +6596,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                       child: Text(
                         (widget.neighbor.isVip && _currentQIdx < 10)
-                            ? '👑 PRESIDENTIAL PROTECTION SENTRY ${_currentQIdx + 1}/10'
+                            ? '👑 PRESIDENTIAL ESCORT ${_currentQIdx + 1}/10 (100% CORRECT REQUIRED)'
                             : (_defenseQuestions.length > 10
                                 ? '🛡️ TASK ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'
                                 : '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'),
@@ -5918,7 +6611,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.flag_outlined, color: Colors.redAccent, size: 18),
+                      icon: const Icon(Icons.flag_outlined,
+                          color: Colors.redAccent, size: 18),
                       tooltip: 'Report Fake Shield',
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -5926,14 +6620,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
                         color: _retriesRemaining > 0
                             ? const Color(0xFF10B981).withValues(alpha: 0.2)
                             : Colors.red.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
+                          color: _retriesRemaining > 0
+                              ? const Color(0xFF34D399)
+                              : Colors.redAccent,
                           width: 1,
                         ),
                       ),
@@ -5943,44 +6640,233 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           Icon(
                             Icons.favorite_rounded,
                             size: 12,
-                            color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
+                            color: _retriesRemaining > 0
+                                ? const Color(0xFF34D399)
+                                : Colors.redAccent,
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            _retriesRemaining > 0 ? '1 Retry' : '0 Retries',
+                            '$_retriesRemaining Lifelines',
                             style: GoogleFonts.outfit(
-                              color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
-                              fontSize: 10.5,
+                              color: _retriesRemaining > 0
+                                  ? const Color(0xFF34D399)
+                                  : Colors.redAccent,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        (widget.neighbor.isVip && _currentQIdx < 10)
+                            ? 'Escort: 100% Req ($_correctCount/10)'
+                            : (_incorrectCount > 0
+                                ? 'Pass: 80% (✓$_correctCount ✗$_incorrectCount/${_defenseQuestions.length})'
+                                : 'Pass: 80% ($_correctCount/${_defenseQuestions.length})'),
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
                   ],
+                ),
+                // 🎴 Active PopArt Defense Card Banner (User Audio Directive!)
+                // "ഒരു ഫുൾ സ്ക്രീൻ ആയിട്ടുള്ള ഒരു പേജ് വരും. അതിൽ ആ കാർഡ് ഉണ്ടാവും.
+                // എന്നിട്ട് ആ കാർഡ് ഇങ്ങനെ സൈഡിൽ ഉണ്ടാവും റൈറ്റിൽ.
+                // എന്നിട്ട് അവിടെ ഡിഫൻസ് ആക്ടീവേറ്റഡ്, പ്രൊട്ടക്ഷൻ ആക്ടീവ് എന്ന് കാണിക്കും.
+                // എന്നിട്ട് ആ കാർഡിന് ഒരു ക്വസ്റ്റ്യൻ ആയിരിക്കും വരുക."
+                Builder(
+                  builder: (_) {
+                    final isMaleKid = widget.neighbor.isMe
+                        ? (PocketKidsService.kidGender == 'male')
+                        : (PocketKidsService.kidGender == 'male');
+                    final currentCardDay = (_currentQIdx + 1)
+                        .clamp(1, widget.neighbor.day.clamp(1, 90));
+                    final defenseCard = PopArtCardHelper.getCardForDay(
+                        currentCardDay,
+                        isMale: isMaleKid);
+                    final info = PocketCitadelChallengeGenerator.getGameInfo(
+                        currentQ.gameFormat);
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981)
+                                            .withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                            color: const Color(0xFF10B981),
+                                            width: 0.8),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('🛡️',
+                                              style: TextStyle(fontSize: 9)),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            'DEFENSE ACTIVE',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF34D399),
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'SHIELD #$currentCardDay',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  defenseCard.title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${widget.neighbor.name}\'s Fortress Shield • ${info.title}',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              final cardIdx = kPopArt180Cards
+                                  .indexWhere((c) => c.id == defenseCard.id);
+                              PopArtAvatarCardsViewerPage.open(context,
+                                  initialIndex: cardIdx >= 0 ? cardIdx : 0);
+                            },
+                            child: Container(
+                              width: 52,
+                              height: 68,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFFFFD700),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.5),
+                                child: CustomPaint(
+                                  painter: PopArtCardCustomPainter(
+                                      data: defenseCard),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 8),
                 // 🎮 Interactive Game Header Badge
                 Builder(
                   builder: (_) {
-                    final info = PocketCitadelChallengeGenerator.getGameInfo(currentQ.gameFormat);
+                    final info = PocketCitadelChallengeGenerator.getGameInfo(
+                        currentQ.gameFormat);
                     final diffColor = currentQ.difficulty == 'easy'
                         ? const Color(0xFF10B981)
-                        : (currentQ.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
+                        : (currentQ.difficulty == 'hard'
+                            ? const Color(0xFFF43F5E)
+                            : const Color(0xFFF59E0B));
 
                     return Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFF0284C7).withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8), width: 1),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(info.icon, style: const TextStyle(fontSize: 13)),
+                              Text(info.icon,
+                                  style: const TextStyle(fontSize: 13)),
                               const SizedBox(width: 5),
                               Text(
                                 '${info.title.toUpperCase()} (${info.titleMl})',
@@ -5995,7 +6881,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: diffColor.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
@@ -6013,22 +6900,30 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         const Spacer(),
                         if (currentQ.gameFormat == 'spoken_whisper')
                           GestureDetector(
-                            onTap: () => _speakIndianEnglish(currentQ.explanation),
+                            onTap: () =>
+                                _speakIndianEnglish(currentQ.explanation),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                color: const Color(0xFF6366F1)
+                                    .withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFF818CF8), width: 1),
+                                border: Border.all(
+                                    color: const Color(0xFF818CF8), width: 1),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.volume_up_rounded, color: Color(0xFF818CF8), size: 14),
+                                  const Icon(Icons.volume_up_rounded,
+                                      color: Color(0xFF818CF8), size: 14),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Listen',
-                                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                    style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -6064,14 +6959,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 // 🕹️ INTERACTIVE GAME PLAYFIELD
                 Builder(
                   builder: (context) {
-                    final isWordBankMode = currentQ.gameFormat == 'sentence_builder' ||
-                        currentQ.gameFormat == 'syntax_jigsaw' ||
-                        currentQ.gameFormat == 'negative_sentence' ||
-                        currentQ.gameFormat == 'chat_reply' ||
-                        currentQ.gameFormat == 'spoken_whisper';
+                    final isWordBankMode =
+                        currentQ.gameFormat == 'sentence_builder' ||
+                            currentQ.gameFormat == 'syntax_jigsaw' ||
+                            currentQ.gameFormat == 'negative_sentence' ||
+                            currentQ.gameFormat == 'chat_reply' ||
+                            currentQ.gameFormat == 'spoken_whisper';
 
-                    final isVerbTimelineMode = currentQ.gameFormat == 'verb_timeline' ||
-                        currentQ.gameFormat == 'tense_fortress';
+                    final isVerbTimelineMode =
+                        currentQ.gameFormat == 'verb_timeline' ||
+                            currentQ.gameFormat == 'tense_fortress';
 
                     // 1. WORD BANK MODE (Sentence Builder, Chat Reply, Negative Sentence)
                     if (isWordBankMode) {
@@ -6082,7 +6979,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           Container(
                             width: double.infinity,
                             constraints: const BoxConstraints(minHeight: 56),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 8),
                             decoration: BoxDecoration(
                               color: const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(14),
@@ -6117,11 +7015,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           });
                                         },
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 6),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF0284C7),
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
+                                                color: const Color(0xFF38BDF8),
+                                                width: 1),
                                           ),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -6135,7 +7037,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                                 ),
                                               ),
                                               const SizedBox(width: 4),
-                                              const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                              const Icon(Icons.close_rounded,
+                                                  size: 12,
+                                                  color: Colors.white70),
                                             ],
                                           ),
                                         ),
@@ -6193,12 +7097,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   });
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF1E293B),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                                      color: const Color(0xFF38BDF8)
+                                          .withValues(alpha: 0.6),
                                       width: 1.2,
                                     ),
                                   ),
@@ -6221,12 +7127,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     // 2. VERB TIMELINE ARENA MODE
                     if (isVerbTimelineMode) {
                       return Row(
-                        children: List.generate(currentQ.options.length, (optIdx) {
+                        children:
+                            List.generate(currentQ.options.length, (optIdx) {
                           final isSelected = _selectedOption == optIdx;
                           final opt = currentQ.options[optIdx];
                           final label = optIdx == 0
                               ? 'PAST\nകഴിഞ്ഞത്'
-                              : (optIdx == 1 ? 'PRESENT\nഇപ്പോൾ' : 'FUTURE\nഇനി');
+                              : (optIdx == 1
+                                  ? 'PRESENT\nഇപ്പോൾ'
+                                  : 'FUTURE\nഇനി');
                           final cleanWord = opt.split(' (').first;
 
                           return Expanded(
@@ -6237,16 +7146,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               },
                               child: Container(
                                 margin: EdgeInsets.only(
-                                  right: optIdx < currentQ.options.length - 1 ? 6 : 0,
+                                  right: optIdx < currentQ.options.length - 1
+                                      ? 6
+                                      : 0,
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 6),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                      ? const Color(0xFF0284C7)
+                                          .withValues(alpha: 0.35)
                                       : const Color(0xFF1E293B),
                                   borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                                    color: isSelected
+                                        ? const Color(0xFFFFD700)
+                                        : Colors.white12,
                                     width: isSelected ? 2.0 : 1.0,
                                   ),
                                 ),
@@ -6256,7 +7171,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       label,
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.outfit(
-                                        color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
+                                        color: isSelected
+                                            ? const Color(0xFFFFD700)
+                                            : Colors.white70,
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -6283,11 +7200,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     // 2B. 🔤 4-WORD SPELLING GAUNTLET (User Audio Directive: "ഒറ്റ ടാസ്കിൽ തന്നെ നാല് വേർഡിന്റെ സ്പെല്ലിംഗ് സെറ്റ് ചെയ്യണം... കുറച്ച് ഹാർഡ് ആയിട്ട് പോകട്ടെ.")
                     if (currentQ.gameFormat == 'spelling_challenge') {
                       return Column(
-                        children: List.generate(currentQ.options.length, (optIdx) {
+                        children:
+                            List.generate(currentQ.options.length, (optIdx) {
                           final letter = String.fromCharCode(65 + optIdx);
                           final isSelected = _selectedOption == optIdx;
                           final optionStr = currentQ.options[optIdx];
-                          final words = optionStr.split('•').map((w) => w.trim()).toList();
+                          final words = optionStr
+                              .split('•')
+                              .map((w) => w.trim())
+                              .toList();
 
                           return GestureDetector(
                             onTap: () {
@@ -6299,17 +7220,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF0284C7).withValues(alpha: 0.32)
+                                    ? const Color(0xFF0284C7)
+                                        .withValues(alpha: 0.32)
                                     : const Color(0xFF1E293B),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                                  color: isSelected
+                                      ? const Color(0xFFFFD700)
+                                      : Colors.white12,
                                   width: isSelected ? 2.0 : 1.0,
                                 ),
                                 boxShadow: isSelected
                                     ? [
                                         BoxShadow(
-                                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                          color: const Color(0xFFFFD700)
+                                              .withValues(alpha: 0.25),
                                           blurRadius: 10,
                                           offset: const Offset(0, 2),
                                         ),
@@ -6326,13 +7251,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         height: 24,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: isSelected ? const Color(0xFFFFD700) : Colors.white10,
+                                          color: isSelected
+                                              ? const Color(0xFFFFD700)
+                                              : Colors.white10,
                                         ),
                                         child: Center(
                                           child: Text(
                                             letter,
                                             style: GoogleFonts.outfit(
-                                              color: isSelected ? Colors.black : Colors.white70,
+                                              color: isSelected
+                                                  ? Colors.black
+                                                  : Colors.white70,
                                               fontWeight: FontWeight.w900,
                                               fontSize: 12,
                                             ),
@@ -6343,7 +7272,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       Text(
                                         'Set $letter: 4 Words Spelling',
                                         style: GoogleFonts.outfit(
-                                          color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
+                                          color: isSelected
+                                              ? const Color(0xFFFFD700)
+                                              : Colors.white70,
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -6351,11 +7282,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       const Spacer(),
                                       if (isSelected)
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                                            color: const Color(0xFFFFD700)
+                                                .withValues(alpha: 0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            border: Border.all(
+                                                color: const Color(0xFFFFD700),
+                                                width: 0.8),
                                           ),
                                           child: Text(
                                             'SELECTED',
@@ -6374,12 +7310,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     runSpacing: 6,
                                     children: words.map((w) {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 5),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFF0F172A),
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                           border: Border.all(
-                                            color: isSelected ? const Color(0xFF38BDF8) : Colors.white24,
+                                            color: isSelected
+                                                ? const Color(0xFF38BDF8)
+                                                : Colors.white24,
                                             width: 1,
                                           ),
                                         ),
@@ -6405,7 +7345,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                     // 3. STANDARD MCQ / DEFUSAL CARDS
                     return Column(
-                      children: List.generate(currentQ.options.length, (optIdx) {
+                      children:
+                          List.generate(currentQ.options.length, (optIdx) {
                         final letter = String.fromCharCode(65 + optIdx);
                         final isSelected = _selectedOption == optIdx;
 
@@ -6416,14 +7357,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                                  ? const Color(0xFF0284C7)
+                                      .withValues(alpha: 0.25)
                                   : const Color(0xFF1E293B),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                                color: isSelected
+                                    ? const Color(0xFF38BDF8)
+                                    : Colors.white12,
                                 width: isSelected ? 1.5 : 1,
                               ),
                             ),
@@ -6434,13 +7379,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   height: 24,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: isSelected ? const Color(0xFF38BDF8) : Colors.white10,
+                                    color: isSelected
+                                        ? const Color(0xFF38BDF8)
+                                        : Colors.white10,
                                   ),
                                   child: Center(
                                     child: Text(
                                       letter,
                                       style: GoogleFonts.outfit(
-                                        color: isSelected ? Colors.white : Colors.white70,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.white70,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
@@ -6454,7 +7403,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     style: GoogleFonts.outfit(
                                       color: Colors.white,
                                       fontSize: 13,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.normal,
                                     ),
                                   ),
                                 ),
@@ -6471,11 +7422,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 // 🚀 VERIFY / SUBMIT BUTTON
                 Builder(
                   builder: (context) {
-                    final isWordBankMode = currentQ.gameFormat == 'sentence_builder' ||
-                        currentQ.gameFormat == 'syntax_jigsaw' ||
-                        currentQ.gameFormat == 'negative_sentence' ||
-                        currentQ.gameFormat == 'chat_reply' ||
-                        currentQ.gameFormat == 'spoken_whisper';
+                    final isWordBankMode =
+                        currentQ.gameFormat == 'sentence_builder' ||
+                            currentQ.gameFormat == 'syntax_jigsaw' ||
+                            currentQ.gameFormat == 'negative_sentence' ||
+                            currentQ.gameFormat == 'chat_reply' ||
+                            currentQ.gameFormat == 'spoken_whisper';
 
                     final isReady = isWordBankMode
                         ? _assembledWords.isNotEmpty
@@ -6486,10 +7438,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: !isReady ? Colors.white12 : const Color(0xFF0284C7),
-                          foregroundColor: !isReady ? Colors.white38 : Colors.white,
+                          backgroundColor: !isReady
+                              ? Colors.white12
+                              : const Color(0xFF0284C7),
+                          foregroundColor:
+                              !isReady ? Colors.white38 : Colors.white,
                           elevation: isReady ? 4 : 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
                         onPressed: !isReady
                             ? null
@@ -6504,37 +7460,79 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       .replaceAll(RegExp(r'\s+'), ' ')
                                       .trim()
                                       .toLowerCase();
-                                  final assembled = normalize(_assembledWords.join(' '));
-                                  final expected = normalize(currentQ.explanation);
+                                  final assembled =
+                                      normalize(_assembledWords.join(' '));
+                                  final expected =
+                                      normalize(currentQ.explanation);
                                   isCorrect = (assembled == expected);
                                 } else {
-                                  isCorrect = (_selectedOption == currentQ.correctIndex);
+                                  isCorrect = (_selectedOption ==
+                                      currentQ.correctIndex);
                                 }
 
+                                final isEscortTask = (widget.neighbor.isVip &&
+                                    _currentQIdx < 10);
+                                final isEscortCompleted =
+                                    (widget.neighbor.isVip &&
+                                        _currentQIdx == 9);
+
                                 if (isCorrect) {
-                                  if (_currentQIdx + 1 < _defenseQuestions.length) {
+                                  _correctCount++;
+                                  HapticFeedback.heavyImpact();
+                                  if (_currentQIdx + 1 <
+                                      _defenseQuestions.length) {
                                     final curGate = _currentQIdx + 1;
                                     final nextGate = _currentQIdx + 2;
                                     final totalGates = _defenseQuestions.length;
                                     setState(() {
                                       _currentQIdx++;
-                                      _lastPreparedQIdx = -1; // triggers prep for next
+                                      _lastPreparedQIdx =
+                                          -1; // triggers prep for next
                                       _selectedOption = -1;
                                     });
-                                    HapticFeedback.heavyImpact();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          '🎉 Day $curGate Defense Cleared! Advancing to Day $nextGate of $totalGates...',
+                                    if (isEscortCompleted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '🎖️ PRESIDENTIAL ESCORT DEFEATED! (10/10) ⚔️\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ടിനെ തോൽപ്പിച്ചു! Advancing to ${widget.neighbor.name}\'s Fortress Cards (80% Pass Mark required)...',
+                                          ),
+                                          backgroundColor:
+                                              const Color(0xFF7C3AED),
+                                          duration: const Duration(seconds: 4),
+                                          behavior: SnackBarBehavior.floating,
                                         ),
-                                        backgroundColor: const Color(0xFF10B981),
-                                        duration: const Duration(seconds: 2),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            isEscortTask
+                                                ? '👑 Escort Task #$curGate Solved! ($_correctCount/10). Advancing...'
+                                                : '🎉 Shield #$curGate Solved! ($_correctCount/$totalGates). Advancing to Shield #$nextGate...',
+                                          ),
+                                          backgroundColor: isEscortTask
+                                              ? const Color(0xFF7C3AED)
+                                              : const Color(0xFF10B981),
+                                          duration: const Duration(seconds: 2),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
                                     _startCombatTimer();
                                   } else {
-                                    setState(() => _raidStep = 2);
+                                    // Finished all tasks! Check 80% Pass Mark
+                                    final total = _defenseQuestions.isNotEmpty
+                                        ? _defenseQuestions.length
+                                        : 1;
+                                    final accuracy =
+                                        (_correctCount / total) * 100.0;
+                                    if (accuracy >= 80.0) {
+                                      setState(() => _raidStep = 2);
+                                    } else {
+                                      setState(() => _raidStep = -1);
+                                    }
                                   }
                                 } else {
                                   if (_retriesRemaining > 0) {
@@ -6548,7 +7546,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          '⚠️ Incorrect! You have $_retriesRemaining Second Chance remaining. Check the Malayalam meaning and try again!',
+                                          '⚠️ Incorrect! Second Chance Lifeline used ($_retriesRemaining left). Try again!',
                                         ),
                                         backgroundColor: Colors.amber,
                                         duration: const Duration(seconds: 3),
@@ -6557,34 +7555,61 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     );
                                     _startCombatTimer();
                                   } else {
-                                    if (_attackerDay <= 20) {
-                                      await PocketFortressDefenseService.placeUnderPresidentialProtection(
-                                        widget.neighbor.id,
-                                        hours: 24,
-                                      );
-                                      try {
-                                        final myId = SupaFlow.client.auth.currentUser?.id;
-                                        if (myId != null) {
-                                          await PocketFortressDefenseService.recordTrainingPoints(50, myId);
-                                          final prefs = await SharedPreferences.getInstance();
-                                          await prefs.setBool('pocket_day_${myId}_${_attackerDay}_step_attack_done', true);
-                                        }
-                                      } catch (_) {}
-                                    }
-                                    await PocketFortressDefenseService.recordFailedAttackCooldown(
-                                      widget.neighbor.id,
-                                      minutes: 30,
-                                    );
-                                    if (mounted) {
+                                    if (isEscortTask) {
+                                      // 👑 User Audio Directive: 100% correct required for Presidential Escort!
+                                      HapticFeedback.vibrate();
                                       setState(() => _raidStep = -1);
+                                    } else {
+                                      // Lifeline exhausted for this card - advance to next card so attacker plays all tasks! (User Audio Directive)
+                                      _incorrectCount++;
+                                      HapticFeedback.vibrate();
+                                      if (_currentQIdx + 1 <
+                                          _defenseQuestions.length) {
+                                        final curGate = _currentQIdx + 1;
+                                        final nextGate = _currentQIdx + 2;
+                                        final totalGates =
+                                            _defenseQuestions.length;
+                                        setState(() {
+                                          _currentQIdx++;
+                                          _lastPreparedQIdx = -1;
+                                          _selectedOption = -1;
+                                        });
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              '❌ Shield #$curGate Defended! ($_correctCount/$totalGates). Advancing to Shield #$nextGate...',
+                                            ),
+                                            backgroundColor:
+                                                const Color(0xFFEF4444),
+                                            duration:
+                                                const Duration(seconds: 2),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                        _startCombatTimer();
+                                      } else {
+                                        // Finished all tasks! Check 80% Pass Mark
+                                        final total =
+                                            _defenseQuestions.isNotEmpty
+                                                ? _defenseQuestions.length
+                                                : 1;
+                                        final accuracy =
+                                            (_correctCount / total) * 100.0;
+                                        if (accuracy >= 80.0) {
+                                          setState(() => _raidStep = 2);
+                                        } else {
+                                          setState(() => _raidStep = -1);
+                                        }
+                                      }
                                     }
                                   }
                                 }
                               },
                         child: Text(
                           _currentQIdx + 1 < _defenseQuestions.length
-                              ? 'VERIFY & BREACH DAY ${_currentQIdx + 1} 🛡️'
-                              : 'BREACH CITADEL DEFENSE PERIMETER ⚡',
+                              ? 'VERIFY & BREACH SHIELD ${_currentQIdx + 1} 🛡️'
+                              : 'FINALIZE GAUNTLET & VERIFY PASS MARK ⚡',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w900,
                             fontSize: 13.5,
@@ -6597,7 +7622,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
               ]
 
-              // Step 2: All Gates Breached -> Attack button ready
+              // Step 2: Pass Mark Achieved -> Attack button ready
               else if (_raidStep == 2) ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -6608,24 +7633,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                   child: Row(
                     children: [
-                      const Text('🔓', style: TextStyle(fontSize: 26)),
+                      const Text('🏆', style: TextStyle(fontSize: 26)),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'DEFENSE SHIELDS OFFLINE!',
+                              'PASS MARK ACHIEVED! (${((_correctCount / (_defenseQuestions.isNotEmpty ? _defenseQuestions.length : 1)) * 100).toStringAsFixed(0)}% / 80%)',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFF34D399),
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 13.5,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'All security gate codes solved. Strike now to breach the citadel and claim the loot!',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                            Text(
+                              'Solved $_correctCount of ${_defenseQuestions.length} defense card tasks! Fortress defenses breached. Strike now to claim loot!',
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 11.5),
                             ),
                           ],
                         ),
@@ -6642,7 +7668,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       backgroundColor: const Color(0xFFDC2626),
                       foregroundColor: Colors.white,
                       elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {
                       setState(() => _isQuestionSheetOpen = false);
@@ -6651,14 +7678,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.flash_on_rounded, size: 20, color: Color(0xFFFFD700)),
+                        const Icon(Icons.flash_on_rounded,
+                            size: 20, color: Color(0xFFFFD700)),
                         const SizedBox(width: 8),
                         Text(
-                          'ATTACK',
+                          'ATTACK & LOOT +15 ${widget.isKidMode ? 'SS' : 'PS'}',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                            letterSpacing: 1.2,
+                            fontSize: 15,
+                            letterSpacing: 1.0,
                           ),
                         ),
                       ],
@@ -6689,7 +7717,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ? '🚨 ANTI-CHEAT TRIGGERED! RAID FAILED!'
                                   : (_isTimeoutTriggered
                                       ? '⌛ TIME EXPIRED! RAID DEFEATED!'
-                                      : 'TRAP TRIGGERED! ATTACK REPELLED!'),
+                                      : (widget.neighbor.isVip &&
+                                              _currentQIdx < 10)
+                                          ? '🏛️ PRESIDENTIAL ESCORT INTERCEPTED RAID!'
+                                          : 'TRAP TRIGGERED! ATTACK REPELLED!'),
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFF87171),
                                 fontWeight: FontWeight.bold,
@@ -6704,11 +7735,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         _isAntiCheatTriggered
                             ? 'You switched apps or minimized during combat! Cheating is strictly prohibited during Citadel Raids.'
                             : (_isTimeoutTriggered
-                                ? 'The 25-second rapid combat blitz timer ran out! The defender\'s automated shock traps were triggered.'
-                                : 'You failed to crack the defender\'s English shield. Their house defense holds firm!'),
-                        style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                                ? 'The combat timer expired! The defender\'s automated security traps triggered.'
+                                : (widget.neighbor.isVip && _currentQIdx < 10)
+                                    ? '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ട് അറ്റാക്ക് തടഞ്ഞു!\nThe 10 Presidential Escort tasks require 100% correct answers (no pass mark allowed). You reached task ${_currentQIdx + 1}/10. Practice and attack again!'
+                                    : 'You solved $_correctCount of ${_defenseQuestions.length} defense tasks (${((_correctCount / (_defenseQuestions.isNotEmpty ? _defenseQuestions.length : 1)) * 100).toStringAsFixed(0)}%).\nA minimum Pass Mark of 80% is required to breach ${widget.neighbor.name}\'s citadel!\n\nThe defender\'s fortress held firm. Practice more daily lessons to conquer this house!'),
+                        style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            height: 1.35),
                       ),
-                      if (currentQ != null && currentQ.explanation.isNotEmpty) ...[
+                      if (currentQ != null &&
+                          currentQ.explanation.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Text(
                           'Grammar Rule: ${currentQ.explanation}',
@@ -6724,15 +7761,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: Colors.amber.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.6)),
+                    border:
+                        Border.all(color: Colors.amber.withValues(alpha: 0.6)),
                   ),
                   child: Row(
                     children: [
-                      Text(_attackerDay <= 20 ? '🛡️' : '⏳', style: const TextStyle(fontSize: 18)),
+                      Text(_attackerDay <= 20 ? '🛡️' : '⏳',
+                          style: const TextStyle(fontSize: 18)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -6740,7 +7780,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ? 'Beginner Courage Pass! (Level $_attackerDay ≤ 20)\nYou bravely launched an attack on House #${widget.neighbor.day}! Attempting the raid builds confidence. +50 Pocket Score awarded! Step Passed! ✓'
                               : '6-Hour Citadel Lockdown Enforced!\nYou exhausted your second chance. Return after 6 hours to attack again.',
                           style: TextStyle(
-                            color: _attackerDay <= 20 ? const Color(0xFF34D399) : const Color(0xFFFCD34D),
+                            color: _attackerDay <= 20
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFFFCD34D),
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
@@ -6755,9 +7797,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _attackerDay <= 20 ? const Color(0xFF10B981) : const Color(0xFF334155),
+                      backgroundColor: _attackerDay <= 20
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF334155),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {
                       HapticFeedback.selectionClick();
@@ -6810,7 +7855,8 @@ class CitadelAvatarStrikePainter extends CustomPainter {
 
     final gy = groundBaseY > 0 ? groundBaseY : 920.0;
     final target = Offset(size.width * 0.5, gy - 240.0); // Citadel entrance
-    final source = Offset(size.width * 0.5, gy - 180.0); // Hero leap position at steps
+    final source =
+        Offset(size.width * 0.5, gy - 180.0); // Hero leap position at steps
 
     // ⚡ 1. Active Strike Trajectory / Projectile (beamProg > 0)
     if (beamProg > 0 && beamProg <= 1.0) {
@@ -6893,14 +7939,17 @@ class CitadelAvatarStrikePainter extends CustomPainter {
             final arcPath = Path()..moveTo(source.dx, source.dy);
             for (int i = 1; i <= 6; i++) {
               final t = i / 6.0;
-              final lx = source.dx + math.sin(t * math.pi * 3 + beamProg * 8) * (18.0 * sign);
+              final lx = source.dx +
+                  math.sin(t * math.pi * 3 + beamProg * 8) * (18.0 * sign);
               final ly = ui.lerpDouble(source.dy, target.dy, t)!;
               arcPath.lineTo(lx, ly);
             }
             canvas.drawPath(
               arcPath,
               Paint()
-                ..color = (h == 0 ? const Color(0xFFFDE047) : const Color(0xFFE879F9)).withValues(alpha: fade * 0.85)
+                ..color =
+                    (h == 0 ? const Color(0xFFFDE047) : const Color(0xFFE879F9))
+                        .withValues(alpha: fade * 0.85)
                 ..strokeWidth = 2.2
                 ..style = PaintingStyle.stroke,
             );
@@ -7004,17 +8053,23 @@ class CitadelAvatarStrikePainter extends CustomPainter {
         final angle = (i / 28.0) * math.pi * 2;
         final speed = 45.0 + (i % 6) * 16.0;
         final px = target.dx + math.cos(angle) * speed * particleProg;
-        final py = target.dy + math.sin(angle) * speed * particleProg - (12.0 * particleProg);
+        final py = target.dy +
+            math.sin(angle) * speed * particleProg -
+            (12.0 * particleProg);
 
-        sparkPaint.color = (i % 2 == 0 ? const Color(0xFFFFB703) : const Color(0xFFEF4444)).withValues(alpha: pFade);
-        canvas.drawCircle(Offset(px, py), (3.8 - (particleProg * 1.6)).clamp(1.0, 4.0), sparkPaint);
+        sparkPaint.color =
+            (i % 2 == 0 ? const Color(0xFFFFB703) : const Color(0xFFEF4444))
+                .withValues(alpha: pFade);
+        canvas.drawCircle(Offset(px, py),
+            (3.8 - (particleProg * 1.6)).clamp(1.0, 4.0), sparkPaint);
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant CitadelAvatarStrikePainter oldDelegate) =>
-      oldDelegate.beamProg != beamProg || oldDelegate.particleProg != particleProg;
+      oldDelegate.beamProg != beamProg ||
+      oldDelegate.particleProg != particleProg;
 }
 
 /// 🪙 Magnetic Coin Looting Shower Painter
@@ -7034,8 +8089,10 @@ class CitadelCoinShowerPainter extends CustomPainter {
     if (progress <= 0 || progress >= 1.0) return;
 
     final gy = groundBaseY > 0 ? groundBaseY : 920.0;
-    final origin = Offset(size.width * 0.5, gy - 240.0); // Breached mansion doors
-    final heroChest = Offset(size.width * 0.5, gy - 160.0); // Hero collection chest
+    final origin =
+        Offset(size.width * 0.5, gy - 240.0); // Breached mansion doors
+    final heroChest =
+        Offset(size.width * 0.5, gy - 160.0); // Hero collection chest
     final coinPaint = Paint()..style = PaintingStyle.fill;
     final rimPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -7076,7 +8133,8 @@ class CitadelCoinShowerPainter extends CustomPainter {
       // Gold Coin Face
       coinPaint.color = const Color(0xFFFFD700).withValues(alpha: fade);
       canvas.drawCircle(Offset(cx, cy), 5.5, coinPaint);
-      canvas.drawCircle(Offset(cx, cy), 5.5, rimPaint..color = const Color(0xFFB45309).withValues(alpha: fade));
+      canvas.drawCircle(Offset(cx, cy), 5.5,
+          rimPaint..color = const Color(0xFFB45309).withValues(alpha: fade));
 
       // Shimmer highlight
       canvas.drawCircle(
@@ -7093,14 +8151,16 @@ class CitadelCoinShowerPainter extends CustomPainter {
         heroChest,
         18.0 * (1.0 - glintFade),
         Paint()
-          ..color = const Color(0xFFFFD700).withValues(alpha: (1.0 - glintFade) * 0.6)
+          ..color =
+              const Color(0xFFFFD700).withValues(alpha: (1.0 - glintFade) * 0.6)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant CitadelCoinShowerPainter oldDelegate) => oldDelegate.progress != progress;
+  bool shouldRepaint(covariant CitadelCoinShowerPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 /// 🛡️ Iron Dome Missile Interception & Kinetic Blast Painter
@@ -7211,7 +8271,10 @@ class CitadelIronDomeInterceptPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(px, py),
           2.6 * fade,
-          Paint()..color = (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+          Paint()
+            ..color = (i % 2 == 0)
+                ? const Color(0xFFFFD700)
+                : const Color(0xFF38BDF8),
         );
       }
     }
@@ -7237,17 +8300,20 @@ class _PresidentialDispatchDialog extends StatefulWidget {
   });
 
   @override
-  State<_PresidentialDispatchDialog> createState() => _PresidentialDispatchDialogState();
+  State<_PresidentialDispatchDialog> createState() =>
+      _PresidentialDispatchDialogState();
 }
 
-class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog> {
+class _PresidentialDispatchDialogState
+    extends State<_PresidentialDispatchDialog> {
   bool _isDispatched = false;
   String _caseNumber = '';
 
   @override
   void initState() {
     super.initState();
-    _caseNumber = 'DEC-${(DateTime.now().millisecondsSinceEpoch % 90000) + 10000}';
+    _caseNumber =
+        'DEC-${(DateTime.now().millisecondsSinceEpoch % 90000) + 10000}';
     _performDispatch();
   }
 
@@ -7296,12 +8362,17 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
           color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: _isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+            color: _isDispatched
+                ? const Color(0xFF10B981)
+                : const Color(0xFFFFD700),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: (_isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.25),
+              color: (_isDispatched
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFFD700))
+                  .withValues(alpha: 0.25),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -7315,9 +8386,14 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
               height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: (_isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.15),
+                color: (_isDispatched
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFFD700))
+                    .withValues(alpha: 0.15),
                 border: Border.all(
-                  color: _isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                  color: _isDispatched
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFFD700),
                   width: 2,
                 ),
               ),
@@ -7350,7 +8426,10 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
               ),
               child: Text(
                 'Dossier #$_caseNumber • Target: ${widget.targetName}',
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 14),
@@ -7380,13 +8459,17 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
                   children: [
                     const Text(
                       '✓ Formal Investigation Opened',
-                      style: TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                          color: Color(0xFF34D399),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'The Supreme Presidential Court & Admin inspect all fraudulent defense questions. Confirmed violations result in immediate Pocket Score deduction & citadel demotion to Level 1.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -7399,12 +8482,14 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'RETURN TO COMBAT ⚔️',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold, fontSize: 13.5),
                   ),
                 ),
               ),
@@ -7467,7 +8552,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, gy + 30));
 
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, gy + 30), Paint()..shader = skyShader);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, w, gy + 30), Paint()..shader = skyShader);
 
     if (isNight) {
       // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky
@@ -7489,9 +8575,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final auroraPath = Path();
       final auroraWave = math.sin(ambientProg * 2 * math.pi) * 18.0;
       auroraPath.moveTo(0, gy * 0.35 + auroraWave);
-      auroraPath.cubicTo(w * 0.28, gy * 0.22 - auroraWave, w * 0.62, gy * 0.44 + auroraWave, w, gy * 0.28);
+      auroraPath.cubicTo(w * 0.28, gy * 0.22 - auroraWave, w * 0.62,
+          gy * 0.44 + auroraWave, w, gy * 0.28);
       auroraPath.lineTo(w, gy * 0.46);
-      auroraPath.cubicTo(w * 0.62, gy * 0.60 + auroraWave, w * 0.28, gy * 0.38 - auroraWave, 0, gy * 0.52);
+      auroraPath.cubicTo(w * 0.62, gy * 0.60 + auroraWave, w * 0.28,
+          gy * 0.38 - auroraWave, 0, gy * 0.52);
       auroraPath.close();
 
       final auroraShader = LinearGradient(
@@ -7505,7 +8593,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(Rect.fromLTWH(0, gy * 0.20, w, gy * 0.40));
-      canvas.drawPath(auroraPath, Paint()..shader = auroraShader..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22));
+      canvas.drawPath(
+          auroraPath,
+          Paint()
+            ..shader = auroraShader
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22));
 
       // 🌙 Glowing Crescent Moon
       final moonCenter = Offset(w * 0.82, gy * 0.22);
@@ -7523,8 +8615,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ..color = const Color(0xFFFEF08A).withValues(alpha: 0.30)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
       );
-      canvas.drawCircle(moonCenter, 22, Paint()..color = const Color(0xFFFEF08A));
-      canvas.drawCircle(Offset(moonCenter.dx + 8, moonCenter.dy - 5), 20, Paint()..color = const Color(0xFF090D1A));
+      canvas.drawCircle(
+          moonCenter, 22, Paint()..color = const Color(0xFFFEF08A));
+      canvas.drawCircle(Offset(moonCenter.dx + 8, moonCenter.dy - 5), 20,
+          Paint()..color = const Color(0xFF090D1A));
 
       // ✨ Expansive Twinkling Starfield across width
       final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.88);
@@ -7533,25 +8627,51 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
 
       final starPoints = [
-        Offset(w * 0.04, gy * 0.08), Offset(w * 0.08, gy * 0.24), Offset(w * 0.12, gy * 0.14),
-        Offset(w * 0.16, gy * 0.32), Offset(w * 0.20, gy * 0.06), Offset(w * 0.24, gy * 0.20),
-        Offset(w * 0.28, gy * 0.10), Offset(w * 0.32, gy * 0.28), Offset(w * 0.36, gy * 0.15),
-        Offset(w * 0.40, gy * 0.05), Offset(w * 0.44, gy * 0.22), Offset(w * 0.48, gy * 0.12),
-        Offset(w * 0.52, gy * 0.30), Offset(w * 0.56, gy * 0.08), Offset(w * 0.60, gy * 0.25),
-        Offset(w * 0.64, gy * 0.16), Offset(w * 0.68, gy * 0.07), Offset(w * 0.72, gy * 0.28),
-        Offset(w * 0.76, gy * 0.14), Offset(w * 0.80, gy * 0.05), Offset(w * 0.84, gy * 0.34),
-        Offset(w * 0.88, gy * 0.18), Offset(w * 0.92, gy * 0.09), Offset(w * 0.96, gy * 0.26),
-        Offset(w * 0.06, gy * 0.42), Offset(w * 0.15, gy * 0.46), Offset(w * 0.22, gy * 0.38),
-        Offset(w * 0.35, gy * 0.42), Offset(w * 0.42, gy * 0.36), Offset(w * 0.58, gy * 0.44),
-        Offset(w * 0.67, gy * 0.38), Offset(w * 0.75, gy * 0.46), Offset(w * 0.89, gy * 0.40),
-        Offset(w * 0.95, gy * 0.48), Offset(w * 0.10, gy * 0.04), Offset(w * 0.50, gy * 0.03),
-        Offset(w * 0.70, gy * 0.03), Offset(w * 0.90, gy * 0.04),
+        Offset(w * 0.04, gy * 0.08),
+        Offset(w * 0.08, gy * 0.24),
+        Offset(w * 0.12, gy * 0.14),
+        Offset(w * 0.16, gy * 0.32),
+        Offset(w * 0.20, gy * 0.06),
+        Offset(w * 0.24, gy * 0.20),
+        Offset(w * 0.28, gy * 0.10),
+        Offset(w * 0.32, gy * 0.28),
+        Offset(w * 0.36, gy * 0.15),
+        Offset(w * 0.40, gy * 0.05),
+        Offset(w * 0.44, gy * 0.22),
+        Offset(w * 0.48, gy * 0.12),
+        Offset(w * 0.52, gy * 0.30),
+        Offset(w * 0.56, gy * 0.08),
+        Offset(w * 0.60, gy * 0.25),
+        Offset(w * 0.64, gy * 0.16),
+        Offset(w * 0.68, gy * 0.07),
+        Offset(w * 0.72, gy * 0.28),
+        Offset(w * 0.76, gy * 0.14),
+        Offset(w * 0.80, gy * 0.05),
+        Offset(w * 0.84, gy * 0.34),
+        Offset(w * 0.88, gy * 0.18),
+        Offset(w * 0.92, gy * 0.09),
+        Offset(w * 0.96, gy * 0.26),
+        Offset(w * 0.06, gy * 0.42),
+        Offset(w * 0.15, gy * 0.46),
+        Offset(w * 0.22, gy * 0.38),
+        Offset(w * 0.35, gy * 0.42),
+        Offset(w * 0.42, gy * 0.36),
+        Offset(w * 0.58, gy * 0.44),
+        Offset(w * 0.67, gy * 0.38),
+        Offset(w * 0.75, gy * 0.46),
+        Offset(w * 0.89, gy * 0.40),
+        Offset(w * 0.95, gy * 0.48),
+        Offset(w * 0.10, gy * 0.04),
+        Offset(w * 0.50, gy * 0.03),
+        Offset(w * 0.70, gy * 0.03),
+        Offset(w * 0.90, gy * 0.04),
       ];
 
       for (int i = 0; i < starPoints.length; i++) {
         final pt = starPoints[i];
         final twinkle = 0.75 + math.sin(ambientProg * 8 * math.pi + i) * 0.25;
-        final size = ((i % 4 == 0) ? 2.5 : ((i % 2 == 0) ? 1.8 : 1.2)) * twinkle;
+        final size =
+            ((i % 4 == 0) ? 2.5 : ((i % 2 == 0) ? 1.8 : 1.2)) * twinkle;
         if (size >= 1.6) {
           canvas.drawCircle(pt, size + 1.2, starGlowPaint);
         }
@@ -7581,7 +8701,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ..color = const Color(0xFFFDE047).withValues(alpha: 0.38)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
       );
-      canvas.drawCircle(sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
+      canvas.drawCircle(
+          sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
 
       // 🎈 Floating Striped Hot Air Balloon
       final balloonX = w * 0.38 + math.sin(ambientProg * 2 * math.pi) * 28.0;
@@ -7596,10 +8717,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       _drawFluffyCloud(canvas, w * 0.88 - cloudFloat, gy * 0.38, 16);
 
       // 🕊️ Flying Birds Soaring Across the Sky with Flapping Wings & Migrating Flock
-      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15, ambientProg: ambientProg, phase: 0.0);
-      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11, ambientProg: ambientProg, phase: 0.25);
-      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13, ambientProg: ambientProg, phase: 0.5);
-      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10, ambientProg: ambientProg, phase: 0.75);
+      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15,
+          ambientProg: ambientProg, phase: 0.0);
+      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11,
+          ambientProg: ambientProg, phase: 0.25);
+      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13,
+          ambientProg: ambientProg, phase: 0.5);
+      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10,
+          ambientProg: ambientProg, phase: 0.75);
       _drawFlyingBirdsFlock(canvas, w, gy, ambientProg);
     }
 
@@ -7629,9 +8754,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: isNight ? 0.20 : 0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
-    canvas.drawLine(Offset(w * 0.24, gy - 160), Offset(w * 0.28, gy - 120), peakHighlight);
-    canvas.drawLine(Offset(w * 0.52, gy - 145), Offset(w * 0.56, gy - 110), peakHighlight);
-    canvas.drawLine(Offset(w * 0.82, gy - 175), Offset(w * 0.86, gy - 130), peakHighlight);
+    canvas.drawLine(
+        Offset(w * 0.24, gy - 160), Offset(w * 0.28, gy - 120), peakHighlight);
+    canvas.drawLine(
+        Offset(w * 0.52, gy - 145), Offset(w * 0.56, gy - 110), peakHighlight);
+    canvas.drawLine(
+        Offset(w * 0.82, gy - 175), Offset(w * 0.86, gy - 130), peakHighlight);
 
     // 🌊 Cascading Mountain Waterfall on High Peak
     _drawMountainWaterfall(
@@ -7660,7 +8788,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // 💨 4. Traditional Dutch Windmill with Rotating Sails on Hilltop
     if (!isPresident) {
-      _drawDutchWindmill(canvas, w * 0.18, gy - 32, ambientProg: ambientProg, isNight: isNight);
+      _drawDutchWindmill(canvas, w * 0.18, gy - 32,
+          ambientProg: ambientProg, isNight: isNight);
     }
 
     // 🏡 5. Citadel Courtyard Hill Plateau (Island vs Normal Estate)
@@ -7685,8 +8814,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     }
 
     final hillColors = isNight
-        ? [const Color(0xFF064E3B), const Color(0xFF065F46), const Color(0xFF022C22), const Color(0xFF022C22)]
-        : [const Color(0xFF22C55E), const Color(0xFF16A34A), const Color(0xFF15803D), const Color(0xFF14532D)];
+        ? [
+            const Color(0xFF064E3B),
+            const Color(0xFF065F46),
+            const Color(0xFF022C22),
+            const Color(0xFF022C22)
+          ]
+        : [
+            const Color(0xFF22C55E),
+            const Color(0xFF16A34A),
+            const Color(0xFF15803D),
+            const Color(0xFF14532D)
+          ];
 
     final hillPaint = Paint()
       ..shader = LinearGradient(
@@ -7698,14 +8837,17 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Vibrant Grass Ridge Edge
     final ridgePaint = Paint()
-      ..color = isNight ? const Color(0xFF059669).withValues(alpha: 0.6) : const Color(0xFF86EFAC)
+      ..color = isNight
+          ? const Color(0xFF059669).withValues(alpha: 0.6)
+          : const Color(0xFF86EFAC)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.5;
     canvas.drawPath(hillPath, ridgePaint);
 
     if (isPresident) {
       // 🌊 6. Boundless Sovereign Ocean, Island Coastal Shoreline, Bioluminescent Waves & Marine Life
-      _drawPresidentialSovereignOcean(canvas, w, h, gy, ambientProg: ambientProg, isNight: isNight);
+      _drawPresidentialSovereignOcean(canvas, w, h, gy,
+          ambientProg: ambientProg, isNight: isNight);
 
       // Coastal royal trees & island perimeter lamps
       _drawTree(canvas, w * 0.14, gy + 45, scale: 1.3);
@@ -7717,16 +8859,26 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final riverPath = Path();
       final ry = gy + 190.0;
       riverPath.moveTo(0, ry + 15);
-      riverPath.cubicTo(w * 0.25, ry - 35, w * 0.55, ry + 55, w * 0.82, ry - 15);
+      riverPath.cubicTo(
+          w * 0.25, ry - 35, w * 0.55, ry + 55, w * 0.82, ry - 15);
       riverPath.cubicTo(w * 0.90, ry - 25, w * 0.96, ry, w, ry + 25);
       riverPath.lineTo(w, ry + 115);
-      riverPath.cubicTo(w * 0.96, ry + 95, w * 0.90, ry + 75, w * 0.82, ry + 85);
+      riverPath.cubicTo(
+          w * 0.96, ry + 95, w * 0.90, ry + 75, w * 0.82, ry + 85);
       riverPath.cubicTo(w * 0.55, ry + 155, w * 0.25, ry + 65, 0, ry + 115);
       riverPath.close();
 
       final riverColors = isNight
-          ? [const Color(0xFF0C4A6E), const Color(0xFF075985), const Color(0xFF0369A1)]
-          : [const Color(0xFF0284C7), const Color(0xFF38BDF8), const Color(0xFF0EA5E9)];
+          ? [
+              const Color(0xFF0C4A6E),
+              const Color(0xFF075985),
+              const Color(0xFF0369A1)
+            ]
+          : [
+              const Color(0xFF0284C7),
+              const Color(0xFF38BDF8),
+              const Color(0xFF0EA5E9)
+            ];
       final riverPaint = Paint()
         ..shader = LinearGradient(
           colors: riverColors,
@@ -7742,10 +8894,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6
         ..strokeCap = StrokeCap.round;
-      canvas.drawLine(Offset(w * 0.12 + rippleOffset, ry + 22), Offset(w * 0.22 + rippleOffset, ry + 16), wavePaint);
-      canvas.drawLine(Offset(w * 0.36 - rippleOffset, ry + 36), Offset(w * 0.48 - rippleOffset, ry + 46), wavePaint);
-      canvas.drawLine(Offset(w * 0.65 + rippleOffset, ry + 50), Offset(w * 0.76 + rippleOffset, ry + 40), wavePaint);
-      canvas.drawLine(Offset(w * 0.86 - rippleOffset, ry + 24), Offset(w * 0.94 - rippleOffset, ry + 32), wavePaint);
+      canvas.drawLine(Offset(w * 0.12 + rippleOffset, ry + 22),
+          Offset(w * 0.22 + rippleOffset, ry + 16), wavePaint);
+      canvas.drawLine(Offset(w * 0.36 - rippleOffset, ry + 36),
+          Offset(w * 0.48 - rippleOffset, ry + 46), wavePaint);
+      canvas.drawLine(Offset(w * 0.65 + rippleOffset, ry + 50),
+          Offset(w * 0.76 + rippleOffset, ry + 40), wavePaint);
+      canvas.drawLine(Offset(w * 0.86 - rippleOffset, ry + 24),
+          Offset(w * 0.94 - rippleOffset, ry + 32), wavePaint);
 
       // 🪷 Floating Pink Lotus Water Lilies on River
       _drawWaterLily(canvas, w * 0.28, ry + 38);
@@ -7756,7 +8912,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final swanY1 = ry + 46.0;
       _drawSwan(canvas, swanX1, swanY1);
 
-      final swanX2 = w * 0.46 + math.sin(ambientProg * 2 * math.pi + 0.5) * 12.0;
+      final swanX2 =
+          w * 0.46 + math.sin(ambientProg * 2 * math.pi + 0.5) * 12.0;
       final swanY2 = ry + 56.0;
       _drawSwan(canvas, swanX2, swanY2);
 
@@ -7776,8 +8933,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       boatPath.quadraticBezierTo(boatX, boatY + 2.5, boatX - 15, boatY - 1.5);
       boatPath.close();
       canvas.drawPath(boatPath, Paint()..color = const Color(0xFF78350F));
-      canvas.drawLine(Offset(boatX - 4, boatY + 2), Offset(boatX + 4, boatY + 2), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4);
-      canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6);
+      canvas.drawLine(
+          Offset(boatX - 4, boatY + 2),
+          Offset(boatX + 4, boatY + 2),
+          Paint()
+            ..color = const Color(0xFFB45309)
+            ..strokeWidth = 2.4);
+      canvas.drawLine(
+          Offset(boatX - 8, boatY - 5),
+          Offset(boatX + 10, boatY + 12),
+          Paint()
+            ..color = const Color(0xFFFDE68A)
+            ..strokeWidth = 1.6);
 
       // ⚙️ Rotating Wooden Waterwheel on Riverbank
       _drawWaterWheel(canvas, w * 0.88, ry + 18, ambientProg: ambientProg);
@@ -7793,15 +8960,24 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       walkPath.quadraticBezierTo(w * 0.52, gy + 80, w * 0.53, gy + 10);
       walkPath.close();
 
-      final walkPaint = Paint()..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
+      final walkPaint = Paint()
+        ..color =
+            const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
       canvas.drawPath(walkPath, walkPaint);
 
-      final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
+      final stonePaint = Paint()
+        ..color =
+            const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
       for (int i = 0; i < 7; i++) {
         final stoneY = gy + 18 + (i * 22);
         final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
         canvas.drawRRect(
-          RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9), const Radius.circular(4.5)),
+          RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                  center: Offset(stoneX, stoneY),
+                  width: 34 - (i * 1.5),
+                  height: 9),
+              const Radius.circular(4.5)),
           stonePaint,
         );
       }
@@ -7820,26 +8996,41 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
       // 🦋 12. Fluttering Butterflies in Day / ✨ Glowing Fireflies at Night
       if (!isNight) {
-        _drawButterfly(canvas, w * 0.33, gy - 8, ambientProg: ambientProg, color: const Color(0xFFFB923C));
-        _drawButterfly(canvas, w * 0.36, gy + 6, ambientProg: ambientProg + 0.3, color: const Color(0xFF38BDF8));
-        _drawButterfly(canvas, w * 0.63, gy - 4, ambientProg: ambientProg + 0.6, color: const Color(0xFFFACC15));
-        _drawButterfly(canvas, w * 0.66, gy + 8, ambientProg: ambientProg + 0.2, color: const Color(0xFFF43F5E));
-        _drawButterfly(canvas, w * 0.26, gy - 22, ambientProg: ambientProg + 0.8, color: const Color(0xFFA855F7));
+        _drawButterfly(canvas, w * 0.33, gy - 8,
+            ambientProg: ambientProg, color: const Color(0xFFFB923C));
+        _drawButterfly(canvas, w * 0.36, gy + 6,
+            ambientProg: ambientProg + 0.3, color: const Color(0xFF38BDF8));
+        _drawButterfly(canvas, w * 0.63, gy - 4,
+            ambientProg: ambientProg + 0.6, color: const Color(0xFFFACC15));
+        _drawButterfly(canvas, w * 0.66, gy + 8,
+            ambientProg: ambientProg + 0.2, color: const Color(0xFFF43F5E));
+        _drawButterfly(canvas, w * 0.26, gy - 22,
+            ambientProg: ambientProg + 0.8, color: const Color(0xFFA855F7));
       } else {
-        _drawFirefly(canvas, w * 0.28, gy - 14, ambientProg: ambientProg, phase: 0.1);
-        _drawFirefly(canvas, w * 0.32, gy + 8, ambientProg: ambientProg, phase: 0.4);
-        _drawFirefly(canvas, w * 0.65, gy - 10, ambientProg: ambientProg, phase: 0.7);
-        _drawFirefly(canvas, w * 0.72, gy + 12, ambientProg: ambientProg, phase: 0.2);
-        _drawFirefly(canvas, w * 0.48, ry + 20, ambientProg: ambientProg, phase: 0.5);
-        _drawFirefly(canvas, w * 0.54, ry + 35, ambientProg: ambientProg, phase: 0.8);
-        _drawFirefly(canvas, w * 0.80, gy - 25, ambientProg: ambientProg, phase: 0.3);
-        _drawFirefly(canvas, w * 0.15, gy - 18, ambientProg: ambientProg, phase: 0.9);
+        _drawFirefly(canvas, w * 0.28, gy - 14,
+            ambientProg: ambientProg, phase: 0.1);
+        _drawFirefly(canvas, w * 0.32, gy + 8,
+            ambientProg: ambientProg, phase: 0.4);
+        _drawFirefly(canvas, w * 0.65, gy - 10,
+            ambientProg: ambientProg, phase: 0.7);
+        _drawFirefly(canvas, w * 0.72, gy + 12,
+            ambientProg: ambientProg, phase: 0.2);
+        _drawFirefly(canvas, w * 0.48, ry + 20,
+            ambientProg: ambientProg, phase: 0.5);
+        _drawFirefly(canvas, w * 0.54, ry + 35,
+            ambientProg: ambientProg, phase: 0.8);
+        _drawFirefly(canvas, w * 0.80, gy - 25,
+            ambientProg: ambientProg, phase: 0.3);
+        _drawFirefly(canvas, w * 0.15, gy - 18,
+            ambientProg: ambientProg, phase: 0.9);
       }
 
       // 13. Lush Trees: Orchard Apples & Japanese Cherry Blossom (Sakura)
       _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
-      _drawCherryBlossomTree(canvas, w * 0.22, gy - 16, scale: 1.1, ambientProg: ambientProg);
-      _drawCherryBlossomTree(canvas, w * 0.78, gy - 4, scale: 1.15, ambientProg: ambientProg);
+      _drawCherryBlossomTree(canvas, w * 0.22, gy - 16,
+          scale: 1.1, ambientProg: ambientProg);
+      _drawCherryBlossomTree(canvas, w * 0.78, gy - 4,
+          scale: 1.15, ambientProg: ambientProg);
       _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
 
       // Riverbank shade trees
@@ -7859,12 +9050,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       lowerMeadowPath.lineTo(0, h);
       lowerMeadowPath.close();
 
-      final meadowPaint = Paint()..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
+      final meadowPaint = Paint()
+        ..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
       canvas.drawPath(lowerMeadowPath, meadowPaint);
 
       // Trees in the lower valley
       _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
-      _drawCherryBlossomTree(canvas, w * 0.42, ry + 220, scale: 1.05, ambientProg: ambientProg);
+      _drawCherryBlossomTree(canvas, w * 0.42, ry + 220,
+          scale: 1.05, ambientProg: ambientProg);
       _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
       _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
     }
@@ -7891,14 +9084,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       crownPath.lineTo(crownCenter.dx - 24, crownCenter.dy - 14);
       crownPath.close();
       canvas.drawPath(crownPath, Paint()..color = const Color(0xFFFFD700));
-      canvas.drawCircle(Offset(crownCenter.dx - 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFFEF4444));
-      canvas.drawCircle(Offset(crownCenter.dx, crownCenter.dy - 18), 3.4, Paint()..color = const Color(0xFF38BDF8));
-      canvas.drawCircle(Offset(crownCenter.dx + 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFF10B981));
+      canvas.drawCircle(Offset(crownCenter.dx - 24, crownCenter.dy - 14), 2.8,
+          Paint()..color = const Color(0xFFEF4444));
+      canvas.drawCircle(Offset(crownCenter.dx, crownCenter.dy - 18), 3.4,
+          Paint()..color = const Color(0xFF38BDF8));
+      canvas.drawCircle(Offset(crownCenter.dx + 24, crownCenter.dy - 14), 2.8,
+          Paint()..color = const Color(0xFF10B981));
     }
   }
 
   /// 💨 Traditional Dutch Windmill with Rotating Timber Sails
-  void _drawDutchWindmill(Canvas canvas, double x, double y, {double ambientProg = 0.0, bool isNight = false}) {
+  void _drawDutchWindmill(Canvas canvas, double x, double y,
+      {double ambientProg = 0.0, bool isNight = false}) {
     // Stone base
     final basePath = Path();
     basePath.moveTo(x - 18, y);
@@ -7906,7 +9103,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     basePath.lineTo(x + 14, y - 48);
     basePath.lineTo(x + 18, y);
     basePath.close();
-    canvas.drawPath(basePath, Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
+    canvas.drawPath(
+        basePath,
+        Paint()
+          ..color =
+              isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
 
     // Wooden dome cap
     final capPath = Path();
@@ -7919,7 +9120,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(
       Offset(x, y - 28),
       4.5,
-      Paint()..color = isNight ? const Color(0xFFFFB703) : const Color(0xFF38BDF8),
+      Paint()
+        ..color = isNight ? const Color(0xFFFFB703) : const Color(0xFF38BDF8),
     );
 
     // Center hub for rotating sails
@@ -7955,7 +9157,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     }
 
     // Hub cap
-    canvas.drawCircle(Offset.zero, 3.5, Paint()..color = const Color(0xFF451A03));
+    canvas.drawCircle(
+        Offset.zero, 3.5, Paint()..color = const Color(0xFF451A03));
     canvas.restore();
   }
 
@@ -7973,26 +9176,37 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       envPath,
       Paint()
         ..shader = const LinearGradient(
-          colors: [Color(0xFFEF4444), Color(0xFFFBBF24), Color(0xFF06B6D4), Color(0xFFEC4899)],
+          colors: [
+            Color(0xFFEF4444),
+            Color(0xFFFBBF24),
+            Color(0xFF06B6D4),
+            Color(0xFFEC4899)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ).createShader(Rect.fromCenter(center: Offset(x, y - 14), width: 48, height: 48)),
+        ).createShader(
+            Rect.fromCenter(center: Offset(x, y - 14), width: 48, height: 48)),
     );
 
     // Ropes to basket
-    final ropePaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.0;
+    final ropePaint = Paint()
+      ..color = const Color(0xFF78350F)
+      ..strokeWidth = 1.0;
     canvas.drawLine(Offset(x - 6, y + 10), Offset(x - 4, y + 18), ropePaint);
     canvas.drawLine(Offset(x + 6, y + 10), Offset(x + 4, y + 18), ropePaint);
 
     // Wicker basket
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y + 21), width: 9, height: 6), const Radius.circular(1.5)),
+      RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset(x, y + 21), width: 9, height: 6),
+          const Radius.circular(1.5)),
       Paint()..color = const Color(0xFF92400E),
     );
   }
 
   /// 🌉 Classical Stone Arched Footbridge Spanning River
-  void _drawStoneBridge(Canvas canvas, double x, double y, {bool isNight = false}) {
+  void _drawStoneBridge(Canvas canvas, double x, double y,
+      {bool isNight = false}) {
     // Arch Path
     final bridgePath = Path();
     bridgePath.moveTo(x - 46, y - 40);
@@ -8003,8 +9217,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Stone bridge body
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y), width: 90, height: 80), const Radius.circular(8)),
-      Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+      RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset(x, y), width: 90, height: 80),
+          const Radius.circular(8)),
+      Paint()
+        ..color = isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
     );
 
     // Under-arch cutout for water
@@ -8012,10 +9229,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     archCut.moveTo(x - 30, y + 42);
     archCut.quadraticBezierTo(x, y - 4, x + 30, y + 42);
     archCut.close();
-    canvas.drawPath(archCut, Paint()..color = isNight ? const Color(0xFF0369A1) : const Color(0xFF0284C7));
+    canvas.drawPath(
+        archCut,
+        Paint()
+          ..color =
+              isNight ? const Color(0xFF0369A1) : const Color(0xFF0284C7));
 
     // Bridge Balustrade Rails
-    final railPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF94A3B8)..strokeWidth = 2.4;
+    final railPaint = Paint()
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF94A3B8)
+      ..strokeWidth = 2.4;
     canvas.drawLine(Offset(x - 44, y - 36), Offset(x + 44, y - 36), railPaint);
     canvas.drawLine(Offset(x - 44, y + 36), Offset(x + 44, y + 36), railPaint);
 
@@ -8025,23 +9248,36 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         canvas.drawCircle(
           Offset(x + ox, y + oy),
           isNight ? 9.0 : 6.0,
-          Paint()..color = const Color(0xFFFFD700).withValues(alpha: isNight ? 0.45 : 0.25)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+          Paint()
+            ..color =
+                const Color(0xFFFFD700).withValues(alpha: isNight ? 0.45 : 0.25)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
         );
-        canvas.drawCircle(Offset(x + ox, y + oy), 2.5, Paint()..color = const Color(0xFFFFD700));
+        canvas.drawCircle(Offset(x + ox, y + oy), 2.5,
+            Paint()..color = const Color(0xFFFFD700));
       }
     }
   }
 
   /// ⚙️ Rotating Wooden Waterwheel
-  void _drawWaterWheel(Canvas canvas, double x, double y, {double ambientProg = 0.0}) {
+  void _drawWaterWheel(Canvas canvas, double x, double y,
+      {double ambientProg = 0.0}) {
     canvas.save();
     canvas.translate(x, y);
     final angle = ambientProg * 2 * math.pi;
     canvas.rotate(angle);
 
-    final timberPaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 2.5;
+    final timberPaint = Paint()
+      ..color = const Color(0xFF78350F)
+      ..strokeWidth = 2.5;
     // Outer Rim
-    canvas.drawCircle(Offset.zero, 18, Paint()..color = const Color(0xFF92400E)..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    canvas.drawCircle(
+        Offset.zero,
+        18,
+        Paint()
+          ..color = const Color(0xFF92400E)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5);
     // Inner Hub
     canvas.drawCircle(Offset.zero, 5, Paint()..color = const Color(0xFF451A03));
 
@@ -8050,7 +9286,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       canvas.save();
       canvas.rotate(i * (math.pi / 4));
       canvas.drawLine(Offset.zero, const Offset(0, -18), timberPaint);
-      canvas.drawLine(const Offset(-4, -18), const Offset(4, -18), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.0);
+      canvas.drawLine(
+          const Offset(-4, -18),
+          const Offset(4, -18),
+          Paint()
+            ..color = const Color(0xFFB45309)
+            ..strokeWidth = 2.0);
       canvas.restore();
     }
     canvas.restore();
@@ -8061,7 +9302,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // Water ripple under swan
     canvas.drawOval(
       Rect.fromCenter(center: Offset(x, y + 3), width: 22, height: 5),
-      Paint()..color = Colors.white.withValues(alpha: 0.35)..style = PaintingStyle.stroke..strokeWidth = 1.0,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
     );
 
     // Swan Body
@@ -8081,25 +9325,35 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(neck, Paint()..color = Colors.white);
 
     // Orange Beak
-    canvas.drawCircle(Offset(x + 4, y - 11), 1.2, Paint()..color = const Color(0xFFF97316));
+    canvas.drawCircle(
+        Offset(x + 4, y - 11), 1.2, Paint()..color = const Color(0xFFF97316));
   }
 
   /// 🪷 Floating Pink Lotus Water Lily
   void _drawWaterLily(Canvas canvas, double x, double y) {
     // Lily Pad
-    canvas.drawCircle(Offset(x, y), 6.5, Paint()..color = const Color(0xFF059669));
+    canvas.drawCircle(
+        Offset(x, y), 6.5, Paint()..color = const Color(0xFF059669));
     // Pink Lotus Blossom
-    canvas.drawCircle(Offset(x - 1, y - 1), 3.0, Paint()..color = const Color(0xFFF472B6));
-    canvas.drawCircle(Offset(x, y), 1.5, Paint()..color = const Color(0xFFFEF08A));
+    canvas.drawCircle(
+        Offset(x - 1, y - 1), 3.0, Paint()..color = const Color(0xFFF472B6));
+    canvas.drawCircle(
+        Offset(x, y), 1.5, Paint()..color = const Color(0xFFFEF08A));
   }
 
   /// 🚩 Festive Party Bunting (Triangle celebration flags)
-  void _drawPartyBunting(Canvas canvas, double x1, double y1, double x2, double y2) {
+  void _drawPartyBunting(
+      Canvas canvas, double x1, double y1, double x2, double y2) {
     // String wire
     final stringPath = Path();
     stringPath.moveTo(x1, y1);
     stringPath.quadraticBezierTo((x1 + x2) / 2, ((y1 + y2) / 2) + 8, x2, y2);
-    canvas.drawPath(stringPath, Paint()..color = Colors.white70..strokeWidth = 1.2..style = PaintingStyle.stroke);
+    canvas.drawPath(
+        stringPath,
+        Paint()
+          ..color = Colors.white70
+          ..strokeWidth = 1.2
+          ..style = PaintingStyle.stroke);
 
     final colors = [
       const Color(0xFFEF4444),
@@ -8127,7 +9381,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }
 
   /// 🦋 Fluttering Butterfly (Daytime)
-  void _drawButterfly(Canvas canvas, double x, double y, {double ambientProg = 0.0, Color color = const Color(0xFFFB923C)}) {
+  void _drawButterfly(Canvas canvas, double x, double y,
+      {double ambientProg = 0.0, Color color = const Color(0xFFFB923C)}) {
     final wingScale = math.sin(ambientProg * 18 * math.pi).abs();
     canvas.save();
     canvas.translate(x, y);
@@ -8135,22 +9390,33 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final wingPaint = Paint()..color = color;
     // Left wing
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(-3.5 * wingScale, -2), width: 7 * wingScale, height: 6),
+      Rect.fromCenter(
+          center: Offset(-3.5 * wingScale, -2),
+          width: 7 * wingScale,
+          height: 6),
       wingPaint,
     );
     // Right wing
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(3.5 * wingScale, -2), width: 7 * wingScale, height: 6),
+      Rect.fromCenter(
+          center: Offset(3.5 * wingScale, -2), width: 7 * wingScale, height: 6),
       wingPaint,
     );
     // Body
-    canvas.drawLine(const Offset(0, -3), const Offset(0, 3), Paint()..color = const Color(0xFF1E293B)..strokeWidth = 1.2);
+    canvas.drawLine(
+        const Offset(0, -3),
+        const Offset(0, 3),
+        Paint()
+          ..color = const Color(0xFF1E293B)
+          ..strokeWidth = 1.2);
     canvas.restore();
   }
 
   /// ✨ Pulsing Firefly (Nighttime)
-  void _drawFirefly(Canvas canvas, double x, double y, {double ambientProg = 0.0, double phase = 0.0}) {
-    final pulse = 0.4 + (math.sin((ambientProg + phase) * 8 * math.pi) * 0.6).abs();
+  void _drawFirefly(Canvas canvas, double x, double y,
+      {double ambientProg = 0.0, double phase = 0.0}) {
+    final pulse =
+        0.4 + (math.sin((ambientProg + phase) * 8 * math.pi) * 0.6).abs();
     canvas.drawCircle(
       Offset(x, y),
       8.0 * pulse,
@@ -8158,23 +9424,29 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ..color = const Color(0xFFFEF08A).withValues(alpha: 0.45 * pulse)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
-    canvas.drawCircle(Offset(x, y), 2.2, Paint()..color = const Color(0xFFFEF08A));
+    canvas.drawCircle(
+        Offset(x, y), 2.2, Paint()..color = const Color(0xFFFEF08A));
   }
 
   /// 🌸 Japanese Cherry Blossom (Sakura) Tree with Falling Petals
-  void _drawCherryBlossomTree(Canvas canvas, double x, double y, {double scale = 1.0, double ambientProg = 0.0}) {
+  void _drawCherryBlossomTree(Canvas canvas, double x, double y,
+      {double scale = 1.0, double ambientProg = 0.0}) {
     // Tree Trunk
     canvas.drawLine(
       Offset(x, y),
       Offset(x, y - (28 * scale)),
-      Paint()..color = const Color(0xFF5B3417)..strokeWidth = 5.0 * scale,
+      Paint()
+        ..color = const Color(0xFF5B3417)
+        ..strokeWidth = 5.0 * scale,
     );
     // Soft pink blossom foliage
     final p1 = Paint()..color = const Color(0xFFF472B6);
     final p2 = Paint()..color = const Color(0xFFFBCFE8);
     canvas.drawCircle(Offset(x, y - (38 * scale)), 17 * scale, p1);
-    canvas.drawCircle(Offset(x - (8 * scale), y - (32 * scale)), 13 * scale, p2);
-    canvas.drawCircle(Offset(x + (8 * scale), y - (32 * scale)), 13 * scale, p2);
+    canvas.drawCircle(
+        Offset(x - (8 * scale), y - (32 * scale)), 13 * scale, p2);
+    canvas.drawCircle(
+        Offset(x + (8 * scale), y - (32 * scale)), 13 * scale, p2);
     canvas.drawCircle(Offset(x, y - (46 * scale)), 12 * scale, p2);
 
     // Drifting flower petals
@@ -8182,12 +9454,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final t = (ambientProg + (i * 0.33)) % 1.0;
       final px = x - 12 + (t * 26) + math.sin(t * 8) * 4;
       final py = y - 25 + (t * 30);
-      canvas.drawCircle(Offset(px, py), 1.6, Paint()..color = const Color(0xFFF472B6).withValues(alpha: 1.0 - t));
+      canvas.drawCircle(Offset(px, py), 1.6,
+          Paint()..color = const Color(0xFFF472B6).withValues(alpha: 1.0 - t));
     }
   }
 
   /// 🚀 Cosmic Space Rocket / Satellite soaring through upper atmosphere
-  void _drawCosmicRocket(Canvas canvas, double x, double y, {double ambientProg = 0.0}) {
+  void _drawCosmicRocket(Canvas canvas, double x, double y,
+      {double ambientProg = 0.0}) {
     canvas.save();
     canvas.translate(x, y);
     canvas.rotate(-0.38);
@@ -8202,7 +9476,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     flamePath.close();
 
     final flameShader = const LinearGradient(
-      colors: [Color(0xFF38BDF8), Color(0xFFFB923C), Color(0xFFEF4444), Colors.transparent],
+      colors: [
+        Color(0xFF38BDF8),
+        Color(0xFFFB923C),
+        Color(0xFFEF4444),
+        Colors.transparent
+      ],
       begin: Alignment.centerRight,
       end: Alignment.centerLeft,
     ).createShader(Rect.fromLTWH(-flameLen, -5, flameLen - 24, 10));
@@ -8235,44 +9514,65 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(nosePath, Paint()..color = const Color(0xFFEF4444));
 
     // Delta stabilization fins
-    final topFin = Path()..moveTo(-18, -7)..lineTo(-28, -18)..lineTo(-10, -7)..close();
+    final topFin = Path()
+      ..moveTo(-18, -7)
+      ..lineTo(-28, -18)
+      ..lineTo(-10, -7)
+      ..close();
     canvas.drawPath(topFin, Paint()..color = const Color(0xFFDC2626));
-    final btmFin = Path()..moveTo(-18, 7)..lineTo(-28, 18)..lineTo(-10, 7)..close();
+    final btmFin = Path()
+      ..moveTo(-18, 7)
+      ..lineTo(-28, 18)
+      ..lineTo(-10, 7)
+      ..close();
     canvas.drawPath(btmFin, Paint()..color = const Color(0xFFDC2626));
 
     // Glowing cyan cockpit porthole window
     canvas.drawCircle(
       const Offset(2, 0),
       4.5,
-      Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
-    canvas.drawCircle(const Offset(2, 0), 3.0, Paint()..color = const Color(0xFF38BDF8));
+    canvas.drawCircle(
+        const Offset(2, 0), 3.0, Paint()..color = const Color(0xFF38BDF8));
     canvas.drawCircle(const Offset(1, -1), 1.0, Paint()..color = Colors.white);
 
     // Blinking beacon light on top fin tip
-    canvas.drawCircle(const Offset(-28, -18), 2.2, Paint()..color = const Color(0xFFF43F5E));
+    canvas.drawCircle(
+        const Offset(-28, -18), 2.2, Paint()..color = const Color(0xFFF43F5E));
 
     canvas.restore();
   }
 
   /// ☄️ Luminous shooting star with tapering tail
-  void _drawShootingStar(Canvas canvas, double startX, double startY, double length) {
+  void _drawShootingStar(
+      Canvas canvas, double startX, double startY, double length) {
     final paint = Paint()
       ..shader = LinearGradient(
-        colors: [Colors.white, const Color(0xFF38BDF8).withValues(alpha: 0.6), Colors.transparent],
+        colors: [
+          Colors.white,
+          const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          Colors.transparent
+        ],
         begin: Alignment.centerRight,
         end: Alignment.centerLeft,
-      ).createShader(Rect.fromLTWH(startX - length, startY, length, length * 0.4))
+      ).createShader(
+          Rect.fromLTWH(startX - length, startY, length, length * 0.4))
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(startX, startY), Offset(startX - length, startY + (length * 0.35)), paint);
-    canvas.drawCircle(Offset(startX, startY), 2.2, Paint()..color = Colors.white);
+    canvas.drawLine(Offset(startX, startY),
+        Offset(startX - length, startY + (length * 0.35)), paint);
+    canvas.drawCircle(
+        Offset(startX, startY), 2.2, Paint()..color = Colors.white);
   }
 
   void _drawFluffyCloud(Canvas canvas, double cx, double cy, double r) {
     final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.80);
     canvas.drawCircle(Offset(cx, cy), r, cloudPaint);
-    canvas.drawCircle(Offset(cx + r * 0.9, cy - r * 0.35), r * 1.25, cloudPaint);
+    canvas.drawCircle(
+        Offset(cx + r * 0.9, cy - r * 0.35), r * 1.25, cloudPaint);
     canvas.drawCircle(Offset(cx + r * 1.9, cy - r * 0.15), r, cloudPaint);
     canvas.drawCircle(Offset(cx + r * 2.6, cy + r * 0.1), r * 0.75, cloudPaint);
   }
@@ -8287,7 +9587,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     double phase = 0.0,
     Color color = const Color(0xFF0369A1),
   }) {
-    final wingFlap = math.sin((ambientProg + phase) * 12 * math.pi) * (span * 0.42);
+    final wingFlap =
+        math.sin((ambientProg + phase) * 12 * math.pi) * (span * 0.42);
     final birdPaint = Paint()
       ..color = color.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
@@ -8296,13 +9597,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     final birdPath = Path();
     birdPath.moveTo(x - span, y + wingFlap);
-    birdPath.quadraticBezierTo(x - (span * 0.45), y - (span * 0.35) - wingFlap * 0.35, x, y);
-    birdPath.quadraticBezierTo(x + (span * 0.45), y - (span * 0.35) - wingFlap * 0.35, x + span, y + wingFlap);
+    birdPath.quadraticBezierTo(
+        x - (span * 0.45), y - (span * 0.35) - wingFlap * 0.35, x, y);
+    birdPath.quadraticBezierTo(x + (span * 0.45),
+        y - (span * 0.35) - wingFlap * 0.35, x + span, y + wingFlap);
     canvas.drawPath(birdPath, birdPaint);
   }
 
   /// 🕊️ Flock of Birds soaring gracefully in formation across the sky
-  void _drawFlyingBirdsFlock(Canvas canvas, double w, double gy, double ambientProg) {
+  void _drawFlyingBirdsFlock(
+      Canvas canvas, double w, double gy, double ambientProg) {
     // Flock travels horizontally across screen
     final baseOffset = (ambientProg * (w + 200)) - 100.0;
     final flockY = gy * 0.14 + math.sin(ambientProg * 4 * math.pi) * 8.0;
@@ -8347,9 +9651,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // Waterfall stream path
     final fallPath = Path();
     fallPath.moveTo(x - 3, topY);
-    fallPath.cubicTo(x - 5, topY + waterHeight * 0.35, x - 7, topY + waterHeight * 0.7, x - 10, btmY);
+    fallPath.cubicTo(x - 5, topY + waterHeight * 0.35, x - 7,
+        topY + waterHeight * 0.7, x - 10, btmY);
     fallPath.lineTo(x + 10, btmY);
-    fallPath.cubicTo(x + 7, topY + waterHeight * 0.7, x + 5, topY + waterHeight * 0.35, x + 3, topY);
+    fallPath.cubicTo(x + 7, topY + waterHeight * 0.7, x + 5,
+        topY + waterHeight * 0.35, x + 3, topY);
     fallPath.close();
 
     final fallShader = LinearGradient(
@@ -8389,14 +9695,20 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // Splash mist & foam pool at bottom
     final splashPulse = 0.85 + math.sin(ambientProg * 8 * math.pi) * 0.15;
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(x, btmY), width: 28 * splashPulse, height: 9 * splashPulse),
+      Rect.fromCenter(
+          center: Offset(x, btmY),
+          width: 28 * splashPulse,
+          height: 9 * splashPulse),
       Paint()
         ..color = Colors.white.withValues(alpha: isNight ? 0.45 : 0.75)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(x, btmY + 2), width: 34 * splashPulse, height: 6),
-      Paint()..color = (isNight ? const Color(0xFF38BDF8) : const Color(0xFFBAE6FD)).withValues(alpha: 0.55),
+      Rect.fromCenter(
+          center: Offset(x, btmY + 2), width: 34 * splashPulse, height: 6),
+      Paint()
+        ..color = (isNight ? const Color(0xFF38BDF8) : const Color(0xFFBAE6FD))
+            .withValues(alpha: 0.55),
     );
   }
 
@@ -8459,20 +9771,31 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     );
 
     canvas.drawRect(
-      Rect.fromLTWH(pillarLeftX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY),
+      Rect.fromLTWH(pillarLeftX - pillarWidth / 2, pillarTopY, pillarWidth,
+          pillarBtmY - pillarTopY),
       Paint()
-        ..shader = pillarShader.createShader(Rect.fromLTWH(pillarLeftX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY))
+        ..shader = pillarShader.createShader(Rect.fromLTWH(
+            pillarLeftX - pillarWidth / 2,
+            pillarTopY,
+            pillarWidth,
+            pillarBtmY - pillarTopY))
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
     );
     canvas.drawRect(
-      Rect.fromLTWH(pillarRightX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY),
+      Rect.fromLTWH(pillarRightX - pillarWidth / 2, pillarTopY, pillarWidth,
+          pillarBtmY - pillarTopY),
       Paint()
-        ..shader = pillarShader.createShader(Rect.fromLTWH(pillarRightX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY))
+        ..shader = pillarShader.createShader(Rect.fromLTWH(
+            pillarRightX - pillarWidth / 2,
+            pillarTopY,
+            pillarWidth,
+            pillarBtmY - pillarTopY))
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
     );
 
     // 3. Soaring Majestic Golden Eagle circling above citadel
-    final eagleOrbitX = centerX + math.cos(ambientProg * 2 * math.pi) * (w * 0.32);
+    final eagleOrbitX =
+        centerX + math.cos(ambientProg * 2 * math.pi) * (w * 0.32);
     final eagleOrbitY = gy - 360 + math.sin(ambientProg * 4 * math.pi) * 25;
     _drawGoldenEagle(canvas, eagleOrbitX, eagleOrbitY, ambientProg);
 
@@ -8486,7 +9809,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         Offset(px, py),
         2.2 * sparkleAlpha,
         Paint()
-          ..color = const Color(0xFFFFE066).withValues(alpha: 0.75 * sparkleAlpha)
+          ..color =
+              const Color(0xFFFFE066).withValues(alpha: 0.75 * sparkleAlpha)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
       );
       canvas.drawCircle(
@@ -8516,7 +9840,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // Left Wing
     final leftWing = Path();
     leftWing.moveTo(0, 0);
-    leftWing.cubicTo(-14, -8 + wingFlap, -30, -18 + wingFlap, -44, -12 + wingFlap);
+    leftWing.cubicTo(
+        -14, -8 + wingFlap, -30, -18 + wingFlap, -44, -12 + wingFlap);
     leftWing.cubicTo(-34, -2 + wingFlap, -18, 2, 0, 4);
     leftWing.close();
     canvas.drawPath(leftWing, Paint()..color = const Color(0xFFD97706));
@@ -8524,15 +9849,21 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // Right Wing
     final rightWing = Path();
     rightWing.moveTo(0, 0);
-    rightWing.cubicTo(14, -8 + wingFlap, 30, -18 + wingFlap, 44, -12 + wingFlap);
+    rightWing.cubicTo(
+        14, -8 + wingFlap, 30, -18 + wingFlap, 44, -12 + wingFlap);
     rightWing.cubicTo(34, -2 + wingFlap, 18, 2, 0, 4);
     rightWing.close();
     canvas.drawPath(rightWing, Paint()..color = const Color(0xFFD97706));
 
     // Feather Highlights
-    final featherPaint = Paint()..color = const Color(0xFFFFD700)..strokeWidth = 1.4..style = PaintingStyle.stroke;
-    canvas.drawLine(const Offset(0, 0), Offset(-40, -10 + wingFlap), featherPaint);
-    canvas.drawLine(const Offset(0, 0), Offset(40, -10 + wingFlap), featherPaint);
+    final featherPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 1.4
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+        const Offset(0, 0), Offset(-40, -10 + wingFlap), featherPaint);
+    canvas.drawLine(
+        const Offset(0, 0), Offset(40, -10 + wingFlap), featherPaint);
 
     // Eagle Body & Tail
     final body = Path();
@@ -8547,19 +9878,32 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Golden Head & Beak
     canvas.drawCircle(const Offset(0, -9), 4.5, Paint()..color = Colors.white);
-    final beak = Path()..moveTo(-2, -9)..lineTo(2, -9)..lineTo(0, -14)..close();
+    final beak = Path()
+      ..moveTo(-2, -9)
+      ..lineTo(2, -9)
+      ..lineTo(0, -14)
+      ..close();
     canvas.drawPath(beak, Paint()..color = const Color(0xFFFBBF24));
 
     canvas.restore();
   }
 
-  void _drawPicketFence(Canvas canvas, double startX, double groundY, int pickets) {
+  void _drawPicketFence(
+      Canvas canvas, double startX, double groundY, int pickets) {
     final fencePaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
     final shadowPaint = Paint()..color = Colors.black26;
 
     // Cross rails
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 18, pickets * 12.0 + 4, 3), const Radius.circular(1.5)), fencePaint);
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 8, pickets * 12.0 + 4, 3), const Radius.circular(1.5)), fencePaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(startX, groundY - 18, pickets * 12.0 + 4, 3),
+            const Radius.circular(1.5)),
+        fencePaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(startX, groundY - 8, pickets * 12.0 + 4, 3),
+            const Radius.circular(1.5)),
+        fencePaint);
 
     // Vertical pickets with pointed tops
     for (int i = 0; i < pickets; i++) {
@@ -8577,11 +9921,19 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }
 
   void _drawFlowerbed(Canvas canvas, double x, double y) {
-    final colors = [const Color(0xFFEF4444), const Color(0xFFFBBF24), const Color(0xFFEC4899), const Color(0xFF38BDF8), const Color(0xFFA855F7)];
+    final colors = [
+      const Color(0xFFEF4444),
+      const Color(0xFFFBBF24),
+      const Color(0xFFEC4899),
+      const Color(0xFF38BDF8),
+      const Color(0xFFA855F7)
+    ];
     for (int i = 0; i < 6; i++) {
       final fx = x + (i * 7) - 17;
       final fy = y + math.sin(i * 1.8) * 3;
-      final stemPaint = Paint()..color = const Color(0xFF15803D)..strokeWidth = 1.5;
+      final stemPaint = Paint()
+        ..color = const Color(0xFF15803D)
+        ..strokeWidth = 1.5;
       canvas.drawLine(Offset(fx, fy), Offset(fx, fy - 7), stemPaint);
       final petalPaint = Paint()..color = colors[i % colors.length];
       canvas.drawCircle(Offset(fx, fy - 8), 3.2, petalPaint);
@@ -8593,29 +9945,39 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawLine(
       Offset(x, y),
       Offset(x, y - (28 * scale)),
-      Paint()..color = const Color(0xFF78350F)..strokeWidth = 5.0 * scale,
+      Paint()
+        ..color = const Color(0xFF78350F)
+        ..strokeWidth = 5.0 * scale,
     );
     // Overlapping lush foliage balls
     final leafPaint1 = Paint()..color = const Color(0xFF15803D);
     final leafPaint2 = Paint()..color = const Color(0xFF22C55E);
     canvas.drawCircle(Offset(x, y - (38 * scale)), 16 * scale, leafPaint1);
-    canvas.drawCircle(Offset(x - (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
-    canvas.drawCircle(Offset(x + (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
+    canvas.drawCircle(
+        Offset(x - (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
+    canvas.drawCircle(
+        Offset(x + (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
     canvas.drawCircle(Offset(x, y - (44 * scale)), 11 * scale, leafPaint2);
 
     // Little red apples on branches
     final applePaint = Paint()..color = const Color(0xFFEF4444);
-    canvas.drawCircle(Offset(x - (4 * scale), y - (36 * scale)), 2.4 * scale, applePaint);
-    canvas.drawCircle(Offset(x + (5 * scale), y - (40 * scale)), 2.4 * scale, applePaint);
-    canvas.drawCircle(Offset(x + (3 * scale), y - (30 * scale)), 2.4 * scale, applePaint);
+    canvas.drawCircle(
+        Offset(x - (4 * scale), y - (36 * scale)), 2.4 * scale, applePaint);
+    canvas.drawCircle(
+        Offset(x + (5 * scale), y - (40 * scale)), 2.4 * scale, applePaint);
+    canvas.drawCircle(
+        Offset(x + (3 * scale), y - (30 * scale)), 2.4 * scale, applePaint);
   }
 
-  void _drawStreetLamp(Canvas canvas, double x, double y, {bool isNight = false}) {
+  void _drawStreetLamp(Canvas canvas, double x, double y,
+      {bool isNight = false}) {
     // Post
     canvas.drawLine(
       Offset(x, y),
       Offset(x, y - 46),
-      Paint()..color = const Color(0xFF475569)..strokeWidth = 3.2,
+      Paint()
+        ..color = const Color(0xFF475569)
+        ..strokeWidth = 3.2,
     );
     // Glowing warm lantern orb
     final glowRadius = isNight ? 28.0 : 20.0;
@@ -8623,10 +9985,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       Offset(x, y - 46),
       glowRadius,
       Paint()
-        ..color = (isNight ? const Color(0xFFFFB703) : const Color(0xFFFFFC00)).withValues(alpha: isNight ? 0.45 : 0.32)
+        ..color = (isNight ? const Color(0xFFFFB703) : const Color(0xFFFFFC00))
+            .withValues(alpha: isNight ? 0.45 : 0.32)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
     );
-    canvas.drawCircle(Offset(x, y - 46), 5.5, Paint()..color = const Color(0xFFFFFC00));
+    canvas.drawCircle(
+        Offset(x, y - 46), 5.5, Paint()..color = const Color(0xFFFFFC00));
   }
 
   /// 🌊 6. Boundless Sovereign Ocean ("Samudram") surrounding Fortress Island ("Dweepu")
@@ -8674,7 +10038,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(beachPath, beachPaint);
 
     // Granite Breakwater Boulders along island base
-    final rockPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF64748B);
+    final rockPaint = Paint()
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF64748B);
     for (int i = 0; i < 28; i++) {
       final rx = (i / 27) * w;
       double ryBase;
@@ -8689,7 +10054,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       }
       final rockSize = 14.0 + (math.sin(i * 2.3) * 6).abs();
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(rx, ryBase + 12), width: rockSize * 1.5, height: rockSize * 0.85),
+        Rect.fromCenter(
+            center: Offset(rx, ryBase + 12),
+            width: rockSize * 1.5,
+            height: rockSize * 0.85),
         rockPaint,
       );
     }
@@ -8732,8 +10100,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       for (int i = 0; i < 20; i++) {
         final my = oceanTopY + 40 + (i * ((h - oceanTopY - 60) / 20));
         final trackWidth = 50.0 + (i * 28.0);
-        final shimmerOffset = math.sin(ambientProg * 2 * math.pi + i * 0.6) * 18.0;
-        final shimmerAlpha = (0.18 + 0.25 * math.sin(ambientProg * 4 * math.pi + i * 0.8)).clamp(0.08, 0.50);
+        final shimmerOffset =
+            math.sin(ambientProg * 2 * math.pi + i * 0.6) * 18.0;
+        final shimmerAlpha =
+            (0.18 + 0.25 * math.sin(ambientProg * 4 * math.pi + i * 0.8))
+                .clamp(0.08, 0.50);
 
         final shimmerPaint = Paint()
           ..color = const Color(0xFFBAE6FD).withValues(alpha: shimmerAlpha)
@@ -8788,26 +10159,53 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     }
 
     // E. 🐟 Darting Schools of Bioluminescent Ocean Fish
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.05), ambientProg: ambientProg, isNight: isNight, count: 7, dir: 1.0);
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.11), ambientProg: (ambientProg + 0.4) % 1.0, isNight: isNight, count: 9, dir: -1.0);
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.17), ambientProg: (ambientProg + 0.7) % 1.0, isNight: isNight, count: 6, dir: 1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.05),
+        ambientProg: ambientProg, isNight: isNight, count: 7, dir: 1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.11),
+        ambientProg: (ambientProg + 0.4) % 1.0,
+        isNight: isNight,
+        count: 9,
+        dir: -1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.17),
+        ambientProg: (ambientProg + 0.7) % 1.0,
+        isNight: isNight,
+        count: 6,
+        dir: 1.0);
 
     // F. 🏛️ Grand Ceremonial Presidential Naval Pier / Marble Promenade
-    _drawCeremonialOceanPier(canvas, w * 0.50, gy + 16, ambientProg: ambientProg, isNight: isNight);
+    _drawCeremonialOceanPier(canvas, w * 0.50, gy + 16,
+        ambientProg: ambientProg, isNight: isNight);
 
     // G. 🚨 Offshore Nautical Territorial Warning Buoys with Flashing Beacons
-    _drawOceanNavigationalBuoy(canvas, w * 0.12, oceanTopY + (h * 0.04), ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFFEF4444));
-    _drawOceanNavigationalBuoy(canvas, w * 0.88, oceanTopY + (h * 0.05), ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFF10B981));
+    _drawOceanNavigationalBuoy(canvas, w * 0.12, oceanTopY + (h * 0.04),
+        ambientProg: ambientProg,
+        isNight: isNight,
+        beaconColor: const Color(0xFFEF4444));
+    _drawOceanNavigationalBuoy(canvas, w * 0.88, oceanTopY + (h * 0.05),
+        ambientProg: ambientProg,
+        isNight: isNight,
+        beaconColor: const Color(0xFF10B981));
 
     // H. 🏝️ Southern Vantage Island (Challenger's Island Shoreline looking across the Sovereign Bay)
-    _drawSouthernVantageIsland(canvas, w, h, ambientProg: ambientProg, isNight: isNight);
+    _drawSouthernVantageIsland(canvas, w, h,
+        ambientProg: ambientProg, isNight: isNight);
 
     // I. 🛥️ Foreground Big Tactical Assault Boat (Stationed at Vantage Shoreline Pier)
-    _drawForegroundBigBoat(canvas, w * 0.50, h * 0.655, ambientProg: ambientProg, isNight: isNight);
+    _drawForegroundBigBoat(canvas, w * 0.50, h * 0.655,
+        ambientProg: ambientProg, isNight: isNight);
 
     // J. 🌴 Giant Tropical Coconut Palms (Framing the Panoramic View from Vantage Island)
-    _drawGiantCoconutTree(canvas, 100.0, h * 0.90, height: h * 0.28, curveDirection: 1.0, ambientProg: ambientProg, isNight: isNight, twin: true);
-    _drawGiantCoconutTree(canvas, w - 100.0, h * 0.91, height: h * 0.29, curveDirection: -1.0, ambientProg: ambientProg, isNight: isNight);
+    _drawGiantCoconutTree(canvas, 100.0, h * 0.90,
+        height: h * 0.28,
+        curveDirection: 1.0,
+        ambientProg: ambientProg,
+        isNight: isNight,
+        twin: true);
+    _drawGiantCoconutTree(canvas, w - 100.0, h * 0.91,
+        height: h * 0.29,
+        curveDirection: -1.0,
+        ambientProg: ambientProg,
+        isNight: isNight);
   }
 
   /// 🐟 Swimming Bioluminescent Fish in the Deep Sovereign Sea
@@ -8822,7 +10220,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }) {
     final schoolSpeed = ambientProg * w;
     final fishGlow = Paint()
-      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFF38BDF8)).withValues(alpha: isNight ? 0.65 : 0.45)
+      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFF38BDF8))
+          .withValues(alpha: isNight ? 0.65 : 0.45)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
     final fishBody = Paint()
@@ -8832,7 +10231,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final fx = (dir > 0)
           ? ((schoolSpeed + (i * 24)) % (w + 100)) - 50
           : w - (((schoolSpeed + (i * 24)) % (w + 100)) - 50);
-      final fy = baseY + (math.sin((ambientProg * 4 * math.pi) + (i * 0.7)) * 14.0) + (i * 4);
+      final fy = baseY +
+          (math.sin((ambientProg * 4 * math.pi) + (i * 0.7)) * 14.0) +
+          (i * 4);
 
       // Glow halo
       canvas.drawCircle(Offset(fx, fy), 5.0, fishGlow);
@@ -8856,16 +10257,20 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }
 
   /// 🏛️ Grand Ceremonial Presidential Pier Extending into the Sovereign Harbor
-  void _drawCeremonialOceanPier(Canvas canvas, double x, double y, {required double ambientProg, required bool isNight}) {
+  void _drawCeremonialOceanPier(Canvas canvas, double x, double y,
+      {required double ambientProg, required bool isNight}) {
     const pierW = 120.0;
     const pierH = 260.0;
 
     // Granite foundation pillars under water
-    final pillarPaint = Paint()..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF475569);
+    final pillarPaint = Paint()
+      ..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF475569);
     for (int i = 0; i < 4; i++) {
       final py = y + 40 + (i * 55);
-      canvas.drawRect(Rect.fromLTWH(x - (pierW / 2) + 10, py, 14, 28), pillarPaint);
-      canvas.drawRect(Rect.fromLTWH(x + (pierW / 2) - 24, py, 14, 28), pillarPaint);
+      canvas.drawRect(
+          Rect.fromLTWH(x - (pierW / 2) + 10, py, 14, 28), pillarPaint);
+      canvas.drawRect(
+          Rect.fromLTWH(x + (pierW / 2) - 24, py, 14, 28), pillarPaint);
     }
 
     // Marble Pier Deck
@@ -8897,30 +10302,40 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final railPaint = Paint()
       ..color = const Color(0xFFFFD700)
       ..strokeWidth = 2.4;
-    canvas.drawLine(Offset(x - (pierW / 2) + 4, y), Offset(x - (pierW / 2) + 4, y + pierH - 8), railPaint);
-    canvas.drawLine(Offset(x + (pierW / 2) - 4, y), Offset(x + (pierW / 2) - 4, y + pierH - 8), railPaint);
+    canvas.drawLine(Offset(x - (pierW / 2) + 4, y),
+        Offset(x - (pierW / 2) + 4, y + pierH - 8), railPaint);
+    canvas.drawLine(Offset(x + (pierW / 2) - 4, y),
+        Offset(x + (pierW / 2) - 4, y + pierH - 8), railPaint);
 
     // Pierhead Flagpole with Presidential Standard
     final poleX = x;
     final poleY = y + pierH - 10;
-    canvas.drawLine(Offset(poleX, poleY), Offset(poleX, poleY - 45), Paint()..color = const Color(0xFFFFD700)..strokeWidth = 3);
+    canvas.drawLine(
+        Offset(poleX, poleY),
+        Offset(poleX, poleY - 45),
+        Paint()
+          ..color = const Color(0xFFFFD700)
+          ..strokeWidth = 3);
     final flagPath = Path();
     flagPath.moveTo(poleX, poleY - 45);
     flagPath.lineTo(poleX + 26, poleY - 37);
     flagPath.lineTo(poleX, poleY - 29);
     flagPath.close();
     canvas.drawPath(flagPath, Paint()..color = const Color(0xFF1E40AF));
-    canvas.drawCircle(Offset(poleX + 10, poleY - 37), 3, Paint()..color = const Color(0xFFFFD700));
+    canvas.drawCircle(Offset(poleX + 10, poleY - 37), 3,
+        Paint()..color = const Color(0xFFFFD700));
 
     // Warm pierhead lantern
     canvas.drawCircle(
       Offset(poleX, poleY - 46),
       14,
       Paint()
-        ..color = const Color(0xFFFFB703).withValues(alpha: isNight ? 0.55 : 0.35)
+        ..color =
+            const Color(0xFFFFB703).withValues(alpha: isNight ? 0.55 : 0.35)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
     );
-    canvas.drawCircle(Offset(poleX, poleY - 46), 4, Paint()..color = const Color(0xFFFFFC00));
+    canvas.drawCircle(
+        Offset(poleX, poleY - 46), 4, Paint()..color = const Color(0xFFFFFC00));
   }
 
   /// 🚨 Offshore Navigational Buoy with Flashing Beacon
@@ -8944,12 +10359,28 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     buoyPath.quadraticBezierTo(x, by + 10, x - 14, by);
     buoyPath.close();
     canvas.drawPath(buoyPath, Paint()..color = const Color(0xFFE2E8F0));
-    canvas.drawRect(Rect.fromLTWH(x - 11, by - 14, 22, 7), Paint()..color = beaconColor);
+    canvas.drawRect(
+        Rect.fromLTWH(x - 11, by - 14, 22, 7), Paint()..color = beaconColor);
 
     // Cage mast
-    canvas.drawLine(Offset(x - 5, by - 22), Offset(x - 2, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
-    canvas.drawLine(Offset(x + 5, by - 22), Offset(x + 2, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
-    canvas.drawLine(Offset(x, by - 22), Offset(x, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
+    canvas.drawLine(
+        Offset(x - 5, by - 22),
+        Offset(x - 2, by - 36),
+        Paint()
+          ..color = const Color(0xFF475569)
+          ..strokeWidth = 2);
+    canvas.drawLine(
+        Offset(x + 5, by - 22),
+        Offset(x + 2, by - 36),
+        Paint()
+          ..color = const Color(0xFF475569)
+          ..strokeWidth = 2);
+    canvas.drawLine(
+        Offset(x, by - 22),
+        Offset(x, by - 36),
+        Paint()
+          ..color = const Color(0xFF475569)
+          ..strokeWidth = 2);
 
     // Flashing Strobe Light
     final flashProg = ((ambientProg * 3.0) + (x * 0.01)) % 1.0;
@@ -8988,9 +10419,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     lagoonPath.moveTo(-60, h + 60);
     lagoonPath.lineTo(-60, lagoonTop + 20);
     lagoonPath.cubicTo(
-      w * 0.25, lagoonTop - 15,
-      w * 0.75, lagoonTop - 10,
-      w + 60, lagoonTop + 15,
+      w * 0.25,
+      lagoonTop - 15,
+      w * 0.75,
+      lagoonTop - 10,
+      w + 60,
+      lagoonTop + 15,
     );
     lagoonPath.lineTo(w + 60, h + 60);
     lagoonPath.close();
@@ -9019,7 +10453,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     for (int s = 0; s < 3; s++) {
-      final surfOffset = math.sin((ambientProg * 2 * math.pi) + (s * 1.8)) * 14.0;
+      final surfOffset =
+          math.sin((ambientProg * 2 * math.pi) + (s * 1.8)) * 14.0;
       final surfY = lagoonTop + 25.0 + (s * 15.0) + surfOffset;
       surfPaint
         ..color = (isNight ? const Color(0xFF67E8F9) : Colors.white)
@@ -9050,9 +10485,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     beachPath.moveTo(-40, h + 60);
     beachPath.lineTo(-40, beachTop + 20);
     beachPath.cubicTo(
-      w * 0.28, beachTop - 15,
-      w * 0.72, beachTop - 10,
-      w + 40, beachTop + 15,
+      w * 0.28,
+      beachTop - 15,
+      w * 0.72,
+      beachTop - 10,
+      w + 40,
+      beachTop + 15,
     );
     beachPath.lineTo(w + 40, h + 60);
     beachPath.close();
@@ -9077,13 +10515,17 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Subtle beach dunes and pebbles
     final pebblePaint = Paint()
-      ..color = (isNight ? const Color(0xFF1E293B) : const Color(0xFFB45309)).withValues(alpha: 0.4);
+      ..color = (isNight ? const Color(0xFF1E293B) : const Color(0xFFB45309))
+          .withValues(alpha: 0.4);
     final pebbleRand = math.Random(108);
     for (int i = 0; i < 45; i++) {
       final px = pebbleRand.nextDouble() * w;
       final py = beachTop + 10.0 + pebbleRand.nextDouble() * (h * 0.08);
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(px, py), width: 6.0 + pebbleRand.nextDouble() * 8, height: 3.0 + pebbleRand.nextDouble() * 4),
+        Rect.fromCenter(
+            center: Offset(px, py),
+            width: 6.0 + pebbleRand.nextDouble() * 8,
+            height: 3.0 + pebbleRand.nextDouble() * 4),
         pebblePaint,
       );
     }
@@ -9093,14 +10535,20 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     grassPath.moveTo(-40, h + 60);
     grassPath.lineTo(-40, grassTop + 20);
     grassPath.cubicTo(
-      w * 0.22, grassTop - 15,
-      w * 0.45, grassTop,
-      w * 0.65, grassTop - 20,
+      w * 0.22,
+      grassTop - 15,
+      w * 0.45,
+      grassTop,
+      w * 0.65,
+      grassTop - 20,
     );
     grassPath.cubicTo(
-      w * 0.85, grassTop - 25,
-      w * 0.95, grassTop - 5,
-      w + 40, grassTop + 10,
+      w * 0.85,
+      grassTop - 25,
+      w * 0.95,
+      grassTop - 5,
+      w + 40,
+      grassTop + 10,
     );
     grassPath.lineTo(w + 40, h + 60);
     grassPath.close();
@@ -9120,21 +10568,27 @@ class CitadelScenicLandscapePainter extends CustomPainter {
               ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
-      ).createShader(Rect.fromLTWH(-40, grassTop - 25, w + 80, h - grassTop + 25));
+      ).createShader(
+          Rect.fromLTWH(-40, grassTop - 25, w + 80, h - grassTop + 25));
     canvas.drawPath(grassPath, grassPaint);
 
     // Grass crest highlight ridge
     final ridgePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.5
-      ..color = (isNight ? const Color(0xFF10B981) : const Color(0xFF34D399)).withValues(alpha: 0.55);
+      ..color = (isNight ? const Color(0xFF10B981) : const Color(0xFF34D399))
+          .withValues(alpha: 0.55);
     canvas.drawPath(grassPath, ridgePaint);
 
     // 4. Southern Wooden Assault Pier / Dock (Extending into the bay toward the citadel)
-    _drawVantageIslandPier(canvas, w * 0.50, grassTop + 5, pierLength: (h * 0.08).clamp(120.0, 200.0), isNight: isNight, ambientProg: ambientProg);
+    _drawVantageIslandPier(canvas, w * 0.50, grassTop + 5,
+        pierLength: (h * 0.08).clamp(120.0, 200.0),
+        isNight: isNight,
+        ambientProg: ambientProg);
 
     // 5. Challenger's Tactical Reconnaissance Outpost (Telescope, Supply Crates, Lantern)
-    _drawVantageReconPost(canvas, w * 0.41, grassTop + (h * 0.04), isNight: isNight, ambientProg: ambientProg);
+    _drawVantageReconPost(canvas, w * 0.41, grassTop + (h * 0.04),
+        isNight: isNight, ambientProg: ambientProg);
   }
 
   /// 🪵 Wooden Assault Dock extending from the southern vantage beach into the water
@@ -9150,22 +10604,27 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     const pierW = 84.0;
 
     // Heavy wooden pylons submerged in water
-    final pylonPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
-    final pylonHighlight = Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFF78350F);
+    final pylonPaint = Paint()
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
+    final pylonHighlight = Paint()
+      ..color = isNight ? const Color(0xFF334155) : const Color(0xFF78350F);
 
     for (double py = pierTopY + 20; py < landY; py += 55) {
       // Left pylon
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 8, py, 14, 28), const Radius.circular(3)),
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 8, py, 14, 28),
+            const Radius.circular(3)),
         pylonPaint,
       );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 6, py, 4, 28), const Radius.circular(2)),
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 6, py, 4, 28),
+            const Radius.circular(2)),
         pylonHighlight,
       );
       // Right pylon
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(cx + (pierW / 2) - 6, py, 14, 28), const Radius.circular(3)),
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx + (pierW / 2) - 6, py, 14, 28),
+            const Radius.circular(3)),
         pylonPaint,
       );
     }
@@ -9184,28 +10643,36 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
       ).createShader(deckRect);
-    canvas.drawRRect(RRect.fromRectAndRadius(deckRect, const Radius.circular(6)), deckPaint);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(deckRect, const Radius.circular(6)), deckPaint);
 
     // Wooden plank floor lines
     final plankLine = Paint()
-      ..color = (isNight ? const Color(0xFF0F172A) : const Color(0xFF451A03)).withValues(alpha: 0.8)
+      ..color = (isNight ? const Color(0xFF0F172A) : const Color(0xFF451A03))
+          .withValues(alpha: 0.8)
       ..strokeWidth = 2.0;
     for (double py = pierTopY + 8; py < landY; py += 16) {
-      canvas.drawLine(Offset(cx - (pierW / 2) + 2, py), Offset(cx + (pierW / 2) - 2, py), plankLine);
+      canvas.drawLine(Offset(cx - (pierW / 2) + 2, py),
+          Offset(cx + (pierW / 2) - 2, py), plankLine);
     }
 
     // Pier bollards / mooring posts with coiled ropes
-    final bollardPaint = Paint()..color = isNight ? const Color(0xFF64748B) : const Color(0xFF92400E);
-    canvas.drawCircle(Offset(cx - (pierW / 2) + 8, pierTopY + 12), 6, bollardPaint);
-    canvas.drawCircle(Offset(cx + (pierW / 2) - 8, pierTopY + 12), 6, bollardPaint);
+    final bollardPaint = Paint()
+      ..color = isNight ? const Color(0xFF64748B) : const Color(0xFF92400E);
+    canvas.drawCircle(
+        Offset(cx - (pierW / 2) + 8, pierTopY + 12), 6, bollardPaint);
+    canvas.drawCircle(
+        Offset(cx + (pierW / 2) - 8, pierTopY + 12), 6, bollardPaint);
 
     // Warm dockhead navigational lantern at the tip of the pier
     final flicker = 0.85 + 0.15 * math.sin(ambientProg * 8 * math.pi);
     final lanternGlow = Paint()
-      ..color = (isNight ? const Color(0xFFF59E0B) : const Color(0xFFFBBF24)).withValues(alpha: 0.55 * flicker)
+      ..color = (isNight ? const Color(0xFFF59E0B) : const Color(0xFFFBBF24))
+          .withValues(alpha: 0.55 * flicker)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
     canvas.drawCircle(Offset(cx, pierTopY - 4), 22, lanternGlow);
-    canvas.drawCircle(Offset(cx, pierTopY - 4), 5.5, Paint()..color = const Color(0xFFFEF08A));
+    canvas.drawCircle(Offset(cx, pierTopY - 4), 5.5,
+        Paint()..color = const Color(0xFFFEF08A));
   }
 
   /// 🔭 Reconnaissance Vantage Post (Long-range Brass Telescope on Tripod pointing at Citadel)
@@ -9217,7 +10684,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     required double ambientProg,
   }) {
     // Sturdy wooden expedition crates
-    final cratePaint = Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFF92400E);
+    final cratePaint = Paint()
+      ..color = isNight ? const Color(0xFF334155) : const Color(0xFF92400E);
     final crateBorder = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
@@ -9229,7 +10697,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(x - 6, y - 20, 22, 20), crateBorder);
 
     // High-powered tactical observation telescope on tripod pointing directly north
-    final metalPaint = Paint()..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFFD97706);
+    final metalPaint = Paint()
+      ..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFFD97706);
     // Tripod legs
     final legPaint = Paint()
       ..strokeWidth = 3.0
@@ -9243,7 +10712,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.save();
     canvas.translate(x + 36, y - 28);
     canvas.rotate(-0.28);
-    final barrelRect = RRect.fromRectAndRadius(const Rect.fromLTWH(-8, -5, 34, 10), const Radius.circular(3));
+    final barrelRect = RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-8, -5, 34, 10), const Radius.circular(3));
     canvas.drawRRect(barrelRect, metalPaint);
     // Lens reflection
     canvas.drawCircle(
@@ -9279,7 +10749,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // 1. Churning Water Wake & Reflection around the massive hull
     final wakePaint = Paint()
-      ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: 0.35)
+      ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white)
+          .withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.5;
 
@@ -9290,9 +10761,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(wakePath, wakePaint);
 
     final foamGlow = Paint()
-      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFFE0F2FE)).withValues(alpha: 0.22)
+      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFFE0F2FE))
+          .withValues(alpha: 0.22)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
-    canvas.drawOval(Rect.fromCenter(center: const Offset(0, 54), width: 440, height: 42), foamGlow);
+    canvas.drawOval(
+        Rect.fromCenter(center: const Offset(0, 54), width: 440, height: 42),
+        foamGlow);
 
     // 2. Heavy Armored Cruiser Hull (Width ~420, Height ~90)
     // Sharpened tactical bow facing north towards the Citadel
@@ -9345,7 +10819,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final seamPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.6
-      ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF0F172A)).withValues(alpha: 0.65);
+      ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF0F172A))
+          .withValues(alpha: 0.65);
     canvas.drawLine(const Offset(-100, -18), const Offset(-100, 46), seamPaint);
     canvas.drawLine(const Offset(0, -18), const Offset(0, 48), seamPaint);
     canvas.drawLine(const Offset(100, -18), const Offset(100, 44), seamPaint);
@@ -9380,7 +10855,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     // Panoramic cockpit observation glass (glowing cockpit lights)
     final windowPaint = Paint()
-      ..color = isNight ? const Color(0xFF00F0FF).withValues(alpha: 0.85) : const Color(0xFF38BDF8).withValues(alpha: 0.75);
+      ..color = isNight
+          ? const Color(0xFF00F0FF).withValues(alpha: 0.85)
+          : const Color(0xFF38BDF8).withValues(alpha: 0.75);
     final windowGlow = Paint()
       ..color = const Color(0xFF00F0FF).withValues(alpha: 0.40)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -9414,14 +10891,17 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.2
       ..color = const Color(0xFFF59E0B);
-    canvas.drawArc(const Rect.fromLTWH(-16, -10, 32, 20), -math.pi * 0.75, math.pi * 1.5, false, radarDish);
+    canvas.drawArc(const Rect.fromLTWH(-16, -10, 32, 20), -math.pi * 0.75,
+        math.pi * 1.5, false, radarDish);
     canvas.drawCircle(Offset.zero, 3.5, Paint()..color = Colors.white);
     canvas.restore();
 
     // 5. Twin Tactical Heavy Cannons / Plasma Harpoon Turret on Forward Deck
-    final turretBase = Paint()..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
+    final turretBase = Paint()
+      ..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(115, -28, 38, 14), const Radius.circular(4)),
+      RRect.fromRectAndRadius(
+          const Rect.fromLTWH(115, -28, 38, 14), const Radius.circular(4)),
       turretBase,
     );
 
@@ -9431,8 +10911,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..strokeWidth = 4.0
       ..strokeCap = StrokeCap.round
       ..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFF475569);
-    canvas.drawLine(const Offset(145, -24), const Offset(195, -42), cannonPaint);
-    canvas.drawLine(const Offset(148, -19), const Offset(198, -37), cannonPaint);
+    canvas.drawLine(
+        const Offset(145, -24), const Offset(195, -42), cannonPaint);
+    canvas.drawLine(
+        const Offset(148, -19), const Offset(198, -37), cannonPaint);
 
     // Glowing targeting lens optics at cannon tips
     final opticGlow = Paint()..color = const Color(0xFFEF4444);
@@ -9444,7 +10926,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final polePaint = Paint()
       ..strokeWidth = 2.5
       ..color = isNight ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
-    canvas.drawLine(const Offset(-135, -28), const Offset(-135, -85), polePaint);
+    canvas.drawLine(
+        const Offset(-135, -28), const Offset(-135, -85), polePaint);
 
     final flagPath = Path();
     flagPath.moveTo(-135, -85);
@@ -9471,7 +10954,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final beamPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: isNight ? 0.35 : 0.20),
+          (isNight ? const Color(0xFF38BDF8) : Colors.white)
+              .withValues(alpha: isNight ? 0.35 : 0.20),
           Colors.transparent,
         ],
         begin: Alignment.centerLeft,
@@ -9535,14 +11019,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     required bool isNight,
   }) {
     // Dynamic breeze sway for canopy apex
-    final windSway = math.sin((ambientProg * 2 * math.pi) + (baseX * 0.005)) * 24.0;
+    final windSway =
+        math.sin((ambientProg * 2 * math.pi) + (baseX * 0.005)) * 24.0;
     final topX = baseX + (curveDirection * (height * 0.42)) + windSway;
     final topY = baseY - height;
     final ctrlX = baseX + (curveDirection * (height * 0.22));
     final ctrlY = baseY - (height * 0.55);
 
     // 1. Root Flare & Ground Tufts at Base of Tree
-    final rootPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
+    final rootPaint = Paint()
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
     canvas.drawOval(
       Rect.fromCenter(center: Offset(baseX, baseY), width: 72, height: 28),
       rootPaint,
@@ -9555,10 +11041,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final t1 = (i + 1) / segments;
 
       // Quadratic bezier point calculation: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
-      final p0x = math.pow(1 - t0, 2) * baseX + 2 * (1 - t0) * t0 * ctrlX + math.pow(t0, 2) * topX;
-      final p0y = math.pow(1 - t0, 2) * baseY + 2 * (1 - t0) * t0 * ctrlY + math.pow(t0, 2) * topY;
-      final p1x = math.pow(1 - t1, 2) * baseX + 2 * (1 - t1) * t1 * ctrlX + math.pow(t1, 2) * topX;
-      final p1y = math.pow(1 - t1, 2) * baseY + 2 * (1 - t1) * t1 * ctrlY + math.pow(t1, 2) * topY;
+      final p0x = math.pow(1 - t0, 2) * baseX +
+          2 * (1 - t0) * t0 * ctrlX +
+          math.pow(t0, 2) * topX;
+      final p0y = math.pow(1 - t0, 2) * baseY +
+          2 * (1 - t0) * t0 * ctrlY +
+          math.pow(t0, 2) * topY;
+      final p1x = math.pow(1 - t1, 2) * baseX +
+          2 * (1 - t1) * t1 * ctrlX +
+          math.pow(t1, 2) * topX;
+      final p1y = math.pow(1 - t1, 2) * baseY +
+          2 * (1 - t1) * t1 * ctrlY +
+          math.pow(t1, 2) * topY;
 
       final w0 = 36.0 - (t0 * 18.0);
       final w1 = 36.0 - (t1 * 18.0);
@@ -9579,8 +11073,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
                   ? const [Color(0xFF334155), Color(0xFF1E293B)]
                   : const [Color(0xFF1E293B), Color(0xFF0F172A)])
               : (isLightRing
-                  ? const [Color(0xFFB45309), Color(0xFF78350F), Color(0xFF451A03)]
-                  : const [Color(0xFF92400E), Color(0xFF5A2508), Color(0xFF361502)]),
+                  ? const [
+                      Color(0xFFB45309),
+                      Color(0xFF78350F),
+                      Color(0xFF451A03)
+                    ]
+                  : const [
+                      Color(0xFF92400E),
+                      Color(0xFF5A2508),
+                      Color(0xFF361502)
+                    ]),
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ).createShader(Rect.fromLTWH(p0x - w0, p0y - 10, w0 * 2, 20));
@@ -9591,14 +11093,20 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final ringRidge = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0
-        ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF260F02)).withValues(alpha: 0.7);
-      canvas.drawLine(Offset(p1x - (w1 / 2), p1y), Offset(p1x + (w1 / 2), p1y), ringRidge);
+        ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF260F02))
+            .withValues(alpha: 0.7);
+      canvas.drawLine(
+          Offset(p1x - (w1 / 2), p1y), Offset(p1x + (w1 / 2), p1y), ringRidge);
     }
 
     // 3. Cluster of Ripe Coconuts hanging beneath the palm crown
     final nutColors = isNight
         ? const [Color(0xFF334155), Color(0xFF1E293B)]
-        : const [Color(0xFFD97706), Color(0xFF92400E), Color(0xFF65A30D)]; // Mix of golden & green nuts
+        : const [
+            Color(0xFFD97706),
+            Color(0xFF92400E),
+            Color(0xFF65A30D)
+          ]; // Mix of golden & green nuts
 
     final nutRand = math.Random(42);
     for (int n = 0; n < 9; n++) {
@@ -9629,14 +11137,15 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       -math.pi * 0.44, // Upright center-right
       -math.pi * 0.30,
       -math.pi * 0.12, // Far right drooping frond
-      math.pi * 0.05,  // Heavy lower right droop
+      math.pi * 0.05, // Heavy lower right droop
       -math.pi * 0.98, // Heavy lower left droop
     ];
 
     for (int f = 0; f < frondAngles.length; f++) {
       final baseAngle = frondAngles[f];
       final frondLen = height * (0.42 + (0.08 * (f % 3)));
-      final swayFrond = math.sin((ambientProg * 2 * math.pi) + (f * 0.8)) * 0.07;
+      final swayFrond =
+          math.sin((ambientProg * 2 * math.pi) + (f * 0.8)) * 0.07;
 
       canvas.save();
       canvas.translate(topX, topY);
@@ -9700,7 +11209,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       final sx = 2 * (1 - t) * t * midX + math.pow(t, 2) * endX;
       final sy = 2 * (1 - t) * t * midY + math.pow(t, 2) * endY;
 
-      final pinnaLen = (math.sin(t * math.pi) * (length * 0.24)).clamp(12.0, 75.0);
+      final pinnaLen =
+          (math.sin(t * math.pi) * (length * 0.24)).clamp(12.0, 75.0);
       final col = leafColors[(p + frondIndex) % leafColors.length];
       leafletPaint
         ..color = col
@@ -9791,7 +11301,11 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
         final sy = r.nextDouble() * (horizonY - 20);
         final rad = 0.7 + r.nextDouble() * 1.5;
         final twinkle = 0.5 + 0.5 * math.sin(ambientProg * 2 * math.pi + i);
-        canvas.drawCircle(Offset(sx, sy), rad, starPaint..color = Colors.white.withValues(alpha: 0.3 + 0.6 * twinkle));
+        canvas.drawCircle(
+            Offset(sx, sy),
+            rad,
+            starPaint
+              ..color = Colors.white.withValues(alpha: 0.3 + 0.6 * twinkle));
       }
     }
 
@@ -9826,7 +11340,8 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
       final waveOffset = math.sin(ambientProg * 2 * math.pi + (i * 0.7)) * 25.0;
       final alpha = (0.12 + (0.18 * (i / 14))).clamp(0.08, 0.35);
       wavePaint
-        ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: alpha)
+        ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white)
+            .withValues(alpha: alpha)
         ..strokeWidth = 1.0 + (i * 0.18);
 
       final p = Path();
@@ -9850,9 +11365,7 @@ class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CitadelInfiniteOceanSkyBackdropPainter oldDelegate) =>
+  bool shouldRepaint(
+          covariant CitadelInfiniteOceanSkyBackdropPainter oldDelegate) =>
       oldDelegate.isNight != isNight || oldDelegate.ambientProg != ambientProg;
 }
-
-
-

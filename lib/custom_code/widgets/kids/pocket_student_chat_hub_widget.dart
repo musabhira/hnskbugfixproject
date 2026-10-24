@@ -813,10 +813,10 @@ class _PocketStudentChatHubWidgetState
                 // Sub-filter chips for People (All, Humans, Animals)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 20, right: 16),
                       child: Row(
                         children: [
                           _buildSearchFilterChip(
@@ -1860,10 +1860,11 @@ class _PocketStudentChatHubWidgetState
     final groupsCount = validConversations.where((c) => c.isGroup).length;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
+      padding: const EdgeInsets.only(top: 2, bottom: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(left: 14, right: 16),
         child: Row(
           children: [
             _buildCategoryChipItem(

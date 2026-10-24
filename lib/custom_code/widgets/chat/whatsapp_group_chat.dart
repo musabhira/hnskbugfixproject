@@ -69,6 +69,7 @@ import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_ranking_trail_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -4023,11 +4024,14 @@ Draft: "$draft"''';
       }
     }
 
-    final currentStreak = pact.streakDays;
-    final isCompleted = pact.isCompleted;
+    final myCompletedDays = (pact.user1Id == _currentUserId)
+        ? pact.user1Days
+        : pact.user2Days;
+    final currentStreak = myCompletedDays > 0 ? myCompletedDays : pact.streakDays;
+    final hasAttacked = pact.hasAttacked;
+    final hasFought = pact.hasFought;
+    final isCompleted = pact.isCompleted || (currentStreak >= 4 && hasAttacked && hasFought);
     final isMates = _isMate || pact.isMatesNow;
-    final dailyMinutes = pact.dailyMinutesToday.clamp(0, 15);
-    final isDailyQuotaDone = dailyMinutes >= 15;
 
     return Container(
       width: double.infinity,
@@ -4035,19 +4039,21 @@ Draft: "$draft"''';
         gradient: LinearGradient(
           colors: isCompleted
               ? [
-                  const Color(0xFFFFD700).withValues(alpha: 0.25),
-                  const Color(0xFFB45309).withValues(alpha: 0.18),
+                  const Color(0xFF0F172A),
+                  const Color(0xFF1E293B),
                 ]
               : [
-                  const Color(0xFF1E1B4B),
                   const Color(0xFF0F172A),
+                  const Color(0xFF1A1F36),
                 ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         border: Border(
           bottom: BorderSide(
             color: isCompleted
-                ? const Color(0xFFFFD700).withValues(alpha: 0.5)
-                : const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                ? const Color(0xFF94A3B8).withValues(alpha: 0.6)
+                : const Color(0xFFFFD700).withValues(alpha: 0.4),
             width: 1.2,
           ),
         ),
@@ -4057,112 +4063,65 @@ Draft: "$draft"''';
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Top Row: Header & Action Badges
           Row(
             children: [
-              // Trophy / Pact Icon
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                      : const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                      ? const Color(0xFF94A3B8).withValues(alpha: 0.25)
+                      : const Color(0xFFFFD700).withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isCompleted
-                        ? const Color(0xFFFFD700)
-                        : const Color(0xFF38BDF8),
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFFFFD700),
                     width: 1.1,
                   ),
                 ),
                 child: Text(
-                  isCompleted ? '🏆' : '⚡',
-                  style: const TextStyle(fontSize: 13),
+                  isCompleted ? '🥈' : '🎙️',
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          isCompleted
-                              ? 'POCKET TALK COMPLETED 🏆'
-                              : 'POCKET TALK 4-DAY PACT',
-                          style: GoogleFonts.outfit(
-                            color: isCompleted
-                                ? const Color(0xFFFFD700)
-                                : const Color(0xFF38BDF8),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: isMates
-                                ? Colors.green.withValues(alpha: 0.2)
-                                : Colors.amber.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            isMates ? 'VERIFIED MATES 🤝' : 'LOCKED PROFILE 🔒',
-                            style: GoogleFonts.inter(
-                              color: isMates
-                                  ? const Color(0xFF4ADE80)
-                                  : const Color(0xFFFBBF24),
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      isCompleted
+                          ? 'POCKET TALK MASTERED 🥈'
+                          : 'POCKET TALK 4-DAY PACT',
+                      style: GoogleFonts.outfit(
+                        color: isCompleted
+                            ? const Color(0xFFE2E8F0)
+                            : const Color(0xFFFFD700),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.4,
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Text(
-                          isCompleted
-                              ? 'All 4 Days Done (60 mins) • 🏆$_userTrophyCount Trophies'
-                              : isDailyQuotaDone
-                                  ? '✅ Day $currentStreak/4 Complete! (15m done)'
-                                  : '⏱️ $dailyMinutes/15 mins today • Day $currentStreak/4',
-                          style: GoogleFonts.inter(
-                            color: isDailyQuotaDone
-                                ? const Color(0xFF4ADE80)
-                                : Colors.white70,
-                            fontSize: 10.5,
-                            fontWeight: isDailyQuotaDone
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isMates
+                            ? Colors.green.withValues(alpha: 0.2)
+                            : Colors.amber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        isMates ? 'VERIFIED MATES 🤝' : 'SILVER TROPHY PACT 🥈',
+                        style: GoogleFonts.inter(
+                          color: isMates
+                              ? const Color(0xFF4ADE80)
+                              : const Color(0xFFFBBF24),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 6),
-                        // 4 Streak Indicator Dots
-                        Row(
-                          children: List.generate(4, (index) {
-                            final isFilled = index < currentStreak;
-                            return Container(
-                              margin: const EdgeInsets.only(right: 2.5),
-                              width: 6.5,
-                              height: 6.5,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isFilled
-                                    ? (isCompleted
-                                        ? const Color(0xFFFFD700)
-                                        : const Color(0xFF38BDF8))
-                                    : Colors.white24,
-                              ),
-                            );
-                          }),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -4174,7 +4133,7 @@ Draft: "$draft"''';
                 child: Container(
                   margin: const EdgeInsets.only(right: 6),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
@@ -4184,13 +4143,13 @@ Draft: "$draft"''';
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.info_outline_rounded,
-                          color: Colors.white70, size: 12),
+                          color: Colors.white70, size: 11),
                       const SizedBox(width: 3),
                       Text(
                         'RULES',
                         style: GoogleFonts.outfit(
                           color: Colors.white70,
-                          fontSize: 9,
+                          fontSize: 8.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -4198,125 +4157,201 @@ Draft: "$draft"''';
                   ),
                 ),
               ),
-              // Instant "Report Non-English" AI Inspector Button
-              InkWell(
-                onTap: _showReportNonEnglishDialog,
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                        color: Colors.redAccent.withValues(alpha: 0.4),
-                        width: 0.9),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.gavel_rounded,
-                          color: Colors.redAccent, size: 11),
-                      const SizedBox(width: 3),
-                      Text(
-                        'NON-ENGLISH',
-                        style: GoogleFonts.outfit(
-                          color: Colors.redAccent,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (currentStreak <= 1 && !isCompleted) ...[
-                const SizedBox(width: 5),
+              // Swap Button (Day 1 only)
+              if (currentStreak <= 1 && !isCompleted)
                 InkWell(
                   onTap: () => _showDay1SwapPartnerDialog(otherUserId),
                   borderRadius: BorderRadius.circular(6),
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                          color:
-                              const Color(0xFF818CF8).withValues(alpha: 0.5),
-                          width: 0.9),
+                          color: const Color(0xFF818CF8).withValues(alpha: 0.5),
+                          width: 0.8),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.swap_horiz_rounded,
-                            color: Color(0xFFA5B4FC), size: 11),
-                        const SizedBox(width: 3),
-                        Text(
-                          'SWAP 🔄',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFA5B4FC),
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          if (!isCompleted) ...[
-            const SizedBox(height: 5),
-            // Daily Progress Bar & Loss Aversion Penalty Notice
-            Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: LinearProgressIndicator(
-                      value: (dailyMinutes / 15.0).clamp(0.0, 1.0),
-                      minHeight: 4,
-                      backgroundColor: Colors.white12,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isDailyQuotaDone
-                            ? const Color(0xFF22C55E)
-                            : const Color(0xFF38BDF8),
+                    child: Text(
+                      'SWAP 🔄',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFA5B4FC),
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  isDailyQuotaDone
-                      ? 'Ready for tomorrow'
-                      : '⚠️ Skip day = -1 Trophy',
-                  style: GoogleFonts.inter(
-                    color: isDailyQuotaDone
-                        ? const Color(0xFF4ADE80)
-                        : const Color(0xFFF87171),
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w600,
+            ],
+          ),
+          const SizedBox(height: 7),
+
+          // 📊 Interactive Step-by-Step Process Dashboard Row (User Audio Directive!)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 4 Day Chat Ticks
+                ...List.generate(4, (i) {
+                  final dayNum = i + 1;
+                  final isDone = currentStreak >= dayNum;
+                  return Container(
+                    margin: const EdgeInsets.only(right: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isDone
+                          ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                          : Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isDone
+                            ? const Color(0xFF10B981)
+                            : Colors.white24,
+                        width: 0.9,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isDone
+                              ? Icons.check_circle_rounded
+                              : Icons.radio_button_unchecked_rounded,
+                          size: 11,
+                          color: isDone
+                              ? const Color(0xFF10B981)
+                              : Colors.white54,
+                        ),
+                        const SizedBox(width: 3.5),
+                        Text(
+                          'Day $dayNum',
+                          style: GoogleFonts.outfit(
+                            color: isDone ? Colors.white : Colors.white60,
+                            fontWeight:
+                                isDone ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+
+                // Citadel Attack Tick
+                Container(
+                  margin: const EdgeInsets.only(right: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: hasAttacked
+                        ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                        : const Color(0xFFEF4444).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: hasAttacked
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444).withValues(alpha: 0.6),
+                      width: 0.9,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(hasAttacked ? '⚔️' : '⚔️',
+                          style: const TextStyle(fontSize: 10)),
+                      const SizedBox(width: 3.5),
+                      Text(
+                        hasAttacked ? 'Raid Done ✓' : '1 Raid Needed',
+                        style: GoogleFonts.outfit(
+                          color: hasAttacked
+                              ? const Color(0xFF4ADE80)
+                              : const Color(0xFFFCA5A5),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Citadel Fight Tick
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: hasFought
+                        ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                        : const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: hasFought
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                      width: 0.9,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(hasFought ? '🥊' : '🥊',
+                          style: const TextStyle(fontSize: 10)),
+                      const SizedBox(width: 3.5),
+                      Text(
+                        hasFought ? 'Fight Done ✓' : '1 Fight Needed',
+                        style: GoogleFonts.outfit(
+                          color: hasFought
+                              ? const Color(0xFF4ADE80)
+                              : const Color(0xFFFCD34D),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ] else ...[
-            const SizedBox(height: 7),
+          ),
+          const SizedBox(height: 5),
+
+          // Bottom Dashboard Summary text
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isCompleted
+                      ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
+                      : currentStreak >= 4
+                          ? '⚡ All 4 Days Chat Done! Complete ${!hasAttacked ? '⚔️ Citadel Raid' : ''}${(!hasAttacked && !hasFought) ? ' & ' : ''}${!hasFought ? '🥊 Fight Duel' : ''} to mint 🥈 Silver Trophy!'
+                          : '💬 Day $currentStreak/4 Chatting • Complete 4 days + 1 Raid + 1 Fight to unlock 🥈 Silver Trophy',
+                  style: GoogleFonts.inter(
+                    color: isCompleted
+                        ? const Color(0xFFE2E8F0)
+                        : const Color(0xFF94A3B8),
+                    fontSize: 9.5,
+                    fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (isCompleted && !isMates) ...[
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.4),
                   width: 1,
                 ),
               ),
               child: Row(
                 children: [
-                  const Text('🎉', style: TextStyle(fontSize: 16)),
+                  const Text('🎉', style: TextStyle(fontSize: 14)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -5681,6 +5716,48 @@ Draft: "$draft"''';
                       ),
                     ],
                   ),
+                ),
+              ),
+            ),
+
+            // 🎨 Tab 3: Flame Art Cards (User Audio Directive: "ചാറ്റ് പേജിന്റെ അവിടെ Mates Rank-ന്റെ ഇപ്പുറത്ത് ഒരു ബട്ടൺ പ്ലേസ് ചെയ്താൽ മതി...")
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                PopArtAvatarCardsViewerPage.open(context);
+              },
+              child: Container(
+                margin: const EdgeInsets.only(left: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF007A), Color(0xFF7928CA), Color(0xFF4338CA)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF007A).withValues(alpha: 0.4),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🎨', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Cards',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

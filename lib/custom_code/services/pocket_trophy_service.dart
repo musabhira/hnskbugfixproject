@@ -28,6 +28,8 @@ class PocketTalkPact {
       hasBothSpoken; // True when both users have sent at least one message / interacted
   final int user1Days; // Distinct calendar days user1 sent messages (0 to 4)
   final int user2Days; // Distinct calendar days user2 sent messages (0 to 4)
+  final bool hasAttacked; // True if at least 1 Citadel Attack conducted during pact
+  final bool hasFought; // True if at least 1 Citadel Fight duel conducted during pact
 
   const PocketTalkPact({
     required this.pactId,
@@ -46,6 +48,8 @@ class PocketTalkPact {
     this.hasBothSpoken = false,
     this.user1Days = 0,
     this.user2Days = 0,
+    this.hasAttacked = false,
+    this.hasFought = false,
   });
 
   Map<String, dynamic> toMap() => {
@@ -65,6 +69,8 @@ class PocketTalkPact {
         'hasBothSpoken': hasBothSpoken,
         'user1Days': user1Days,
         'user2Days': user2Days,
+        'hasAttacked': hasAttacked,
+        'hasFought': hasFought,
       };
 
   factory PocketTalkPact.fromMap(Map<String, dynamic> map) {
@@ -88,6 +94,8 @@ class PocketTalkPact {
           map['hasBothSpoken'] == true || map['hasBothSpoken'] == 'true',
       user1Days: (map['user1Days'] as num?)?.toInt() ?? 0,
       user2Days: (map['user2Days'] as num?)?.toInt() ?? 0,
+      hasAttacked: map['hasAttacked'] == true || map['hasAttacked'] == 'true',
+      hasFought: map['hasFought'] == true || map['hasFought'] == 'true',
     );
   }
 }
@@ -152,6 +160,108 @@ class PocketTrophyService {
     return 0;
   }
 
+  static const String kPrefsGoldTrophiesPrefix = 'pocket_gold_trophies_';
+  static const String kPrefsSilverTrophiesPrefix = 'pocket_silver_trophies_';
+  static const String kPrefsSuccessfulAttacksPrefix = 'pocket_successful_attacks_';
+
+  /// 🏆 Get Gold Trophies (Earned exclusively through winning FIGHT duels!)
+  static Future<int> getGoldTrophies(String userId) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getInt('$kPrefsGoldTrophiesPrefix$userId') ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 🏆 Award Gold Trophy for winning a Fight duel
+  static Future<int> awardGoldTrophy(String userId, [int count = 1]) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = prefs.getInt('$kPrefsGoldTrophiesPrefix$userId') ?? 0;
+      final updated = current + count;
+      await prefs.setInt('$kPrefsGoldTrophiesPrefix$userId', updated);
+      try {
+        await _supabase.from('profile').update({
+          'gold_trophies_count': updated,
+        }).eq('user_id', userId);
+      } catch (_) {}
+      return updated;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 🥈 Get Silver Trophies (Earned through PocketTalk Spoken Pacts!)
+  static Future<int> getSilverTrophies(String userId) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final explicit = prefs.getInt('$kPrefsSilverTrophiesPrefix$userId');
+      if (explicit != null) return explicit;
+      return await getTrophyCount(userId);
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// 🥈 Award Silver Trophy for PocketTalk completion
+  static Future<int> awardSilverTrophy(String userId, [int count = 1]) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = await getSilverTrophies(userId);
+      final updated = current + count;
+      await prefs.setInt('$kPrefsSilverTrophiesPrefix$userId', updated);
+      await prefs.setInt('$kPrefsTrophiesCountKey$userId', updated);
+      try {
+        await _supabase.from('profile').update({
+          'silver_trophies_count': updated,
+          'trophies_count': updated,
+        }).eq('user_id', userId);
+      } catch (_) {}
+      return updated;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// ⚔️ Get Successful Attacks Count (Only counts when raid is won / gate breached)
+  static Future<int> getSuccessfulAttacks(String userId) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final count = prefs.getInt('$kPrefsSuccessfulAttacksPrefix$userId') ??
+          prefs.getInt('pocket_kids_attack_count') ??
+          0;
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// ⚔️ Record a successful attack won
+  static Future<int> recordSuccessfulAttack(String userId) async {
+    if (userId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = await getSuccessfulAttacks(userId);
+      final updated = current + 1;
+      await prefs.setInt('$kPrefsSuccessfulAttacksPrefix$userId', updated);
+      await prefs.setInt('pocket_kids_attack_count', updated);
+      try {
+        await _supabase.from('profile').update({
+          'successful_attacks_count': updated,
+        }).eq('user_id', userId);
+      } catch (_) {}
+      return updated;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   /// Deduct 1 Trophy from user as penalty for breaking agreement/inactivity
   static Future<int> deductTrophyPenalty(String userId) async {
     if (userId.isEmpty) return 0;
@@ -209,6 +319,8 @@ class PocketTrophyService {
           hasBothSpoken: decoded['hasBothSpoken'] == 'true',
           user1Days: int.tryParse(decoded['user1Days'] ?? '0') ?? 0,
           user2Days: int.tryParse(decoded['user2Days'] ?? '0') ?? 0,
+          hasAttacked: decoded['hasAttacked'] == 'true',
+          hasFought: decoded['hasFought'] == 'true',
         );
 
         // If local pact is already accepted, return it immediately for instant responsiveness
@@ -244,6 +356,8 @@ class PocketTrophyService {
           hasBothSpoken: res['has_both_spoken'] == true,
           user1Days: (res['user1_days'] as num?)?.toInt() ?? 0,
           user2Days: (res['user2_days'] as num?)?.toInt() ?? 0,
+          hasAttacked: res['has_attacked'] == true,
+          hasFought: res['has_fought'] == true,
         );
         await _saveLocalPact(remotePact);
         return remotePact;
@@ -632,13 +746,17 @@ class PocketTrophyService {
         await prefs.setStringList(datesKey, completedDates.toList());
       }
 
-      // Check trophy award status for sender
+      // Check trophy award status for sender (Requirements: 4 days chat + 1 attack + 1 fight)
       final trophyAwardedKey = 'pocket_pact_trophy_awarded_${pactId}_$senderId';
       final alreadyAwarded = prefs.getBool(trophyAwardedKey) ?? false;
+      final hasAttacked = prefs.getBool('pocket_pact_attack_$pactId') ?? false;
+      final hasFought = prefs.getBool('pocket_pact_fight_$pactId') ?? false;
+      final allConditionsMet = completedDates.length >= kPactRequiredDays && hasAttacked && hasFought;
       bool didUnlock = false;
 
-      if (completedDates.length >= kPactRequiredDays && !alreadyAwarded) {
+      if (allConditionsMet && !alreadyAwarded) {
         await prefs.setBool(trophyAwardedKey, true);
+        await awardSilverTrophy(senderId, 1);
         await _incrementTrophyCount(senderId);
         didUnlock = true;
 
@@ -677,6 +795,8 @@ class PocketTrophyService {
           hasBothSpoken: bothSpoken,
           user1Days: u1Days,
           user2Days: u2Days,
+          hasAttacked: hasAttacked,
+          hasFought: hasFought,
         );
         await _savePact(updated);
       }
@@ -690,6 +810,231 @@ class PocketTrophyService {
       debugPrint('Error recording user daily chat activity: $e');
       return (didCompleteDay: false, didUnlockTrophy: false, currentDays: 0);
     }
+  }
+
+  /// ⚔️ Record Citadel Attack against a pact mate (fulfills 1/3 of the 4-Day Spoken Pact)
+  static Future<bool> recordPactAttack(String myId, String opponentId) async {
+    if (myId.isEmpty || opponentId.isEmpty) return false;
+    try {
+      final pactId = _generatePactId(myId, opponentId);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_pact_attack_$pactId', true);
+
+      var pact = await getPact(myId, opponentId);
+      if (pact != null) {
+        final updated = PocketTalkPact(
+          pactId: pact.pactId,
+          user1Id: pact.user1Id,
+          user2Id: pact.user2Id,
+          initiatorId: pact.initiatorId,
+          startedAt: pact.startedAt,
+          streakDays: pact.streakDays,
+          lastSpokenDate: pact.lastSpokenDate,
+          dailyMinutesToday: pact.dailyMinutesToday,
+          isAccepted: pact.isAccepted,
+          isCompleted: pact.isCompleted,
+          isMatesNow: pact.isMatesNow,
+          trophiesEarned: pact.trophiesEarned,
+          isForfeited: pact.isForfeited,
+          hasBothSpoken: pact.hasBothSpoken,
+          user1Days: pact.user1Days,
+          user2Days: pact.user2Days,
+          hasAttacked: true,
+          hasFought: pact.hasFought,
+        );
+        await _savePact(updated);
+        await _evaluatePactCompletionAndAwardSilver(pactId, myId, opponentId);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 🥊 Record Citadel Fight duel against a pact mate (fulfills 1/3 of the 4-Day Spoken Pact)
+  static Future<bool> recordPactFight(String myId, String opponentId) async {
+    if (myId.isEmpty || opponentId.isEmpty) return false;
+    try {
+      final pactId = _generatePactId(myId, opponentId);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_pact_fight_$pactId', true);
+
+      var pact = await getPact(myId, opponentId);
+      if (pact != null) {
+        final updated = PocketTalkPact(
+          pactId: pact.pactId,
+          user1Id: pact.user1Id,
+          user2Id: pact.user2Id,
+          initiatorId: pact.initiatorId,
+          startedAt: pact.startedAt,
+          streakDays: pact.streakDays,
+          lastSpokenDate: pact.lastSpokenDate,
+          dailyMinutesToday: pact.dailyMinutesToday,
+          isAccepted: pact.isAccepted,
+          isCompleted: pact.isCompleted,
+          isMatesNow: pact.isMatesNow,
+          trophiesEarned: pact.trophiesEarned,
+          isForfeited: pact.isForfeited,
+          hasBothSpoken: pact.hasBothSpoken,
+          user1Days: pact.user1Days,
+          user2Days: pact.user2Days,
+          hasAttacked: pact.hasAttacked,
+          hasFought: true,
+        );
+        await _savePact(updated);
+        await _evaluatePactCompletionAndAwardSilver(pactId, myId, opponentId);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// 🥈 Evaluate if all 3 requirements (4 days chat + 1 attack + 1 fight) are met, and award Silver Trophy
+  static Future<bool> _evaluatePactCompletionAndAwardSilver(
+      String pactId, String myId, String otherUserId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final trophyAwardedKey = 'pocket_pact_trophy_awarded_${pactId}_$myId';
+      if (prefs.getBool(trophyAwardedKey) == true) return false;
+
+      final myDates =
+          prefs.getStringList('pocket_pact_user_dates_${pactId}_$myId') ?? [];
+      final hasAttacked = prefs.getBool('pocket_pact_attack_$pactId') ?? false;
+      final hasFought = prefs.getBool('pocket_pact_fight_$pactId') ?? false;
+
+      if (myDates.length >= kPactRequiredDays && hasAttacked && hasFought) {
+        await prefs.setBool(trophyAwardedKey, true);
+        await awardSilverTrophy(myId, 1);
+        await _incrementTrophyCount(myId);
+
+        var pact = await getPact(myId, otherUserId);
+        if (pact != null) {
+          final updated = PocketTalkPact(
+            pactId: pact.pactId,
+            user1Id: pact.user1Id,
+            user2Id: pact.user2Id,
+            initiatorId: pact.initiatorId,
+            startedAt: pact.startedAt,
+            streakDays: kPactRequiredDays,
+            lastSpokenDate: pact.lastSpokenDate,
+            dailyMinutesToday: pact.dailyMinutesToday,
+            isAccepted: true,
+            isCompleted: true,
+            isMatesNow: true,
+            trophiesEarned: pact.trophiesEarned + 1,
+            isForfeited: false,
+            hasBothSpoken: pact.hasBothSpoken,
+            user1Days: pact.user1Days,
+            user2Days: pact.user2Days,
+            hasAttacked: true,
+            hasFought: true,
+          );
+          await _savePact(updated);
+        }
+        await graduatePactToMates(myId: myId, otherUserId: otherUserId);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// 📊 Get real-time status of 4-Day Spoken Pact for Top Banner Dashboard
+  static Future<({
+    int completedDays,
+    bool hasAttacked,
+    bool hasFought,
+    bool isCompleted,
+    bool isAccepted,
+  })> getPactStatus(String myId, String otherUserId) async {
+    if (myId.isEmpty || otherUserId.isEmpty) {
+      return (
+        completedDays: 0,
+        hasAttacked: false,
+        hasFought: false,
+        isCompleted: false,
+        isAccepted: false,
+      );
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pactId = _generatePactId(myId, otherUserId);
+      final myDates =
+          prefs.getStringList('pocket_pact_user_dates_${pactId}_$myId') ?? [];
+      final hasAttacked = prefs.getBool('pocket_pact_attack_$pactId') ?? false;
+      final hasFought = prefs.getBool('pocket_pact_fight_$pactId') ?? false;
+      final pact = await getPact(myId, otherUserId);
+      final isCompleted = pact?.isCompleted == true ||
+          (prefs.getBool('pocket_pact_trophy_awarded_${pactId}_$myId') == true);
+      final isAccepted = pact?.isAccepted == true;
+
+      return (
+        completedDays: myDates.length.clamp(0, 4),
+        hasAttacked: hasAttacked || (pact?.hasAttacked == true),
+        hasFought: hasFought || (pact?.hasFought == true),
+        isCompleted: isCompleted,
+        isAccepted: isAccepted,
+      );
+    } catch (_) {
+      return (
+        completedDays: 0,
+        hasAttacked: false,
+        hasFought: false,
+        isCompleted: false,
+        isAccepted: false,
+      );
+    }
+  }
+
+  /// 📥 Get all incoming pending PocketTalk pact invites for Requests tab
+  static Future<List<PocketTalkPact>> getPendingIncomingPacts(
+      String userId) async {
+    final result = <PocketTalkPact>[];
+    if (userId.isEmpty) return result;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys =
+          prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix)).toList();
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isAccepted = decoded['isAccepted'] == 'true';
+          final isForfeited = decoded['isForfeited'] == 'true';
+          final isCompleted = decoded['isCompleted'] == 'true';
+          if (!isAccepted && !isForfeited && !isCompleted) {
+            final u1 = decoded['user1Id'] ?? '';
+            final u2 = decoded['user2Id'] ?? '';
+            final initiatorId = decoded['initiatorId'] ?? u1;
+            // Only incoming requests where the current user is recipient:
+            if (initiatorId != userId && (u1 == userId || u2 == userId)) {
+              final otherId = (u1 == userId) ? u2 : u1;
+              if (!PocketRobotService.isRobotId(otherId) &&
+                  !PocketPresidentService.isPresidentId(otherId)) {
+                result.add(
+                  PocketTalkPact(
+                    pactId: decoded['pactId'] ?? k.replaceFirst(kPrefsPactPrefix, ''),
+                    user1Id: u1,
+                    user2Id: u2,
+                    initiatorId: initiatorId,
+                    startedAt: DateTime.tryParse(decoded['startedAt'] ?? '') ??
+                        DateTime.now(),
+                    streakDays: int.tryParse(decoded['streakDays'] ?? '1') ?? 1,
+                    lastSpokenDate: decoded['lastSpokenDate'] ?? '',
+                    dailyMinutesToday:
+                        int.tryParse(decoded['dailyMinutesToday'] ?? '0') ?? 0,
+                    isAccepted: false,
+                    isCompleted: false,
+                    isMatesNow: false,
+                  ),
+                );
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return result;
   }
 
   /// Get how many days a specific user has completed in this pact (0 to 4)
@@ -1047,6 +1392,8 @@ class PocketTrophyService {
       'hasBothSpoken': pact.hasBothSpoken.toString(),
       'user1Days': pact.user1Days.toString(),
       'user2Days': pact.user2Days.toString(),
+      'hasAttacked': pact.hasAttacked.toString(),
+      'hasFought': pact.hasFought.toString(),
     };
     final encoded = Uri(queryParameters: map).query;
     await prefs.setString('$kPrefsPactPrefix${pact.pactId}', encoded);
@@ -1074,6 +1421,8 @@ class PocketTrophyService {
         'has_both_spoken': pact.hasBothSpoken,
         'user1_days': pact.user1Days,
         'user2_days': pact.user2Days,
+        'has_attacked': pact.hasAttacked,
+        'has_fought': pact.hasFought,
         'updated_at': DateTime.now().toIso8601String(),
       });
     } catch (_) {}

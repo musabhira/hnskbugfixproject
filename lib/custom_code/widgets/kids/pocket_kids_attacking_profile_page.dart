@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_wi
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_house_challenge_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 
 /// ⚔️ Dedicated Attacking Profile Page for Kids Mode
 class PocketKidsAttackingProfilePage extends StatefulWidget {
@@ -122,6 +123,17 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
       MaterialPageRoute(
         builder: (_) => PocketKidsHouseChallengePage(defender: widget.mate),
       ),
+    );
+  }
+
+  void _openFightDuel() {
+    PocketCitadelFightModal.show(
+      context,
+      opponentId: widget.mate.id,
+      opponentName: widget.mate.name,
+      opponentAvatar: widget.mate.avatar,
+      opponentDay: widget.mate.dayLevel,
+      isKidMode: true,
     );
   }
 
@@ -492,45 +504,95 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                   ),
                   child: Column(
                     children: [
-                      // Challenge / Raid Button
-                      GestureDetector(
-                        onTap: _openHouseChallenge,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                            ),
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFEF4444).withValues(alpha: 0.4),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('⚔️', style: TextStyle(fontSize: 20)),
-                              const SizedBox(width: 10),
-                              Text(
-                                widget.mate.dayLevel == 100 || widget.mate.id == PocketKidsService.lionId
-                                    ? 'ATTACK KING LION (BOSS)'
-                                    : 'CHALLENGE CITADEL',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.2,
-                                  color: Colors.white,
+                      // Challenge / Raid Button & Fight Duel Button (Audio Directive)
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: GestureDetector(
+                              onTap: _openHouseChallenge,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('⚔️', style: TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      widget.mate.dayLevel == 100 || widget.mate.id == PocketKidsService.lionId
+                                          ? 'ATTACK KING LION'
+                                          : 'CHALLENGE CITADEL',
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.8,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 3,
+                            child: GestureDetector(
+                              onTap: _openFightDuel,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFD700),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Text('🥊', style: TextStyle(fontSize: 18)),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'FIGHT',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.8,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 12),

@@ -25,9 +25,9 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_day1_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_tasks_master_hub.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_open_world_adventure_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
@@ -1508,6 +1508,49 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       ),
                     ),
                   ],
+
+                  // 👶 Quick Jump to Kids World (Ages 4–8)
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      PocketPureKidsHomePage.launch(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('👶', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'KIDS WORLD',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

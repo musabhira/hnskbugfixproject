@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 /// 🏡 Kids House / Homestead Model matching the Adult Avatar Homes
 class KidsHouse {
@@ -61,7 +62,8 @@ class KidMate {
     this.requestStatus = KidMateRequestStatus.none,
     this.bio = '',
     this.houseTier = 'Tier 1 Wooden Cabin',
-    this.challengeSentence = 'Practice makes progress! Ready to challenge my house defense?',
+    this.challengeSentence =
+        'Practice makes progress! Ready to challenge my house defense?',
     this.explicitAvatarConfig,
     this.friendshipScore = 0,
   });
@@ -136,26 +138,26 @@ class KidMessage {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'senderId': senderId,
-    'senderName': senderName,
-    'senderAvatar': senderAvatar,
-    'text': text,
-    'timestamp': timestamp.toIso8601String(),
-    'isFromMe': isFromMe,
-    'isStarGift': isStarGift,
-  };
+        'id': id,
+        'senderId': senderId,
+        'senderName': senderName,
+        'senderAvatar': senderAvatar,
+        'text': text,
+        'timestamp': timestamp.toIso8601String(),
+        'isFromMe': isFromMe,
+        'isStarGift': isStarGift,
+      };
 
   factory KidMessage.fromJson(Map<String, dynamic> json) => KidMessage(
-    id: json['id'] as String,
-    senderId: json['senderId'] as String,
-    senderName: json['senderName'] as String,
-    senderAvatar: json['senderAvatar'] as String,
-    text: json['text'] as String,
-    timestamp: DateTime.parse(json['timestamp'] as String),
-    isFromMe: json['isFromMe'] as bool,
-    isStarGift: json['isStarGift'] as bool? ?? false,
-  );
+        id: json['id'] as String,
+        senderId: json['senderId'] as String,
+        senderName: json['senderName'] as String,
+        senderAvatar: json['senderAvatar'] as String,
+        text: json['text'] as String,
+        timestamp: DateTime.parse(json['timestamp'] as String),
+        isFromMe: json['isFromMe'] as bool,
+        isStarGift: json['isStarGift'] as bool? ?? false,
+      );
 }
 
 /// 🦁 Model for Pocket Gang (Student Study Groups)
@@ -230,12 +232,17 @@ class StudentVibe {
   }
 }
 
-/// 🧸 Service for managing Kids vs Adult account separation,
+/// 🌐 Master Operating Modes / Worlds of Pocket Mates
+enum AppWorldMode { adult, student, kids }
+
+/// 🧸 Service for managing Kids vs Student vs Adult account separation,
 /// Kids profile state, 100-Day learning journey, Avatar Homes, and Kids Mates.
 class PocketKidsService {
+  static const String _keyAppWorldMode = 'pm_app_world_mode';
   static const String _keyIsKidAccount = 'pm_is_kid_account';
   static const String _keyKidName = 'pm_kid_name';
   static const String _keyKidAgeGroup = 'pm_kid_age_group';
+  static const String _keyKidGender = 'pm_kid_gender';
   static const String _keyKidAvatar = 'pm_kid_avatar';
   static const String _keyKidStars = 'pm_kid_stars';
   static const String _keyKidCurrentDay = 'pm_kid_current_day';
@@ -244,31 +251,44 @@ class PocketKidsService {
   static const String _keyKidSentRequests = 'pm_kid_sent_requests';
   static const String _keyKidReceivedRequests = 'pm_kid_received_requests';
   static const String _keyIsPureKidAccount = 'pm_is_pure_kid_account';
+  static const String _keyIsPureStudentAccount = 'pm_is_pure_student_account';
   static const String _keyIsParentSwitched = 'pm_is_parent_switched';
   static const String _keyKidIsPremium = 'pm_kid_is_premium';
   static const String _keyKidLastCompletedDate = 'pm_kid_last_completed_date';
   static const String _keyKidLastCompletedDay = 'pm_kid_last_completed_day';
   static const String _keyKidStudentScore = 'pm_kid_student_score';
+  static const String _keyKidsScore = 'pm_kid_kids_score'; // KS (Kids Score)
   static const String _keyKidFriendshipScores = 'pm_kid_friendship_scores';
 
-  static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
+  static AppWorldMode _currentWorldMode = AppWorldMode.adult;
+  static final ValueNotifier<AppWorldMode> currentWorldModeNotifier =
+      ValueNotifier<AppWorldMode>(AppWorldMode.adult);
+  static final ValueNotifier<bool> isKidAccountNotifier =
+      ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
   static final ValueNotifier<int> kidDayNotifier = ValueNotifier<int>(1);
-  static final ValueNotifier<bool> kidPremiumNotifier = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> kidPremiumNotifier =
+      ValueNotifier<bool>(false);
   static final ValueNotifier<int> studentScoreNotifier = ValueNotifier<int>(0);
+  static final ValueNotifier<int> kidsScoreNotifier = ValueNotifier<int>(0);
   static bool _initialized = false;
 
   static bool _isKidAccount = false;
   static bool _isPureKidAccount = false;
+  static bool _isPureStudentAccount = false;
   static bool _isParentSwitched = false;
   static bool _isKidPremium = false;
   static String? _lastCompletedDate;
   static int? _lastCompletedDay;
   static String _kidName = 'Little Explorer';
   static String _kidAgeGroup = '4-6';
+  static String _kidGender = 'female'; // 'female' or 'male'
   static String _kidAvatar = '🦁';
   static int _kidStars = 0;
-  static int _studentScore = 0;
+  static int _studentScore = 0; // SS
+  static int _kidsScore = 0; // KS
+  static int _attackCount = 0;
+  static int get attackCount => _attackCount;
   static int _currentUnlockedDay = 1;
   static final Map<int, int> _completedDays = {}; // day -> stars earned (1-3)
   static final Set<String> _friendIds = {};
@@ -288,10 +308,12 @@ class PocketKidsService {
     return false;
   }
 
-  /// Whether current user can exit Kids Mode back to Adult Mode
+  /// Whether current user can exit Kids/Student Mode back to Adult Mode
   /// Pure Kid / Student accounts cannot exit to Adult Mode!
-  /// Only parents who switched from Adult Mode can return to Adult Mode smoothly.
-  static bool get canExitToAdultAccount => !_isPureKidAccount;
+  /// Only parents who switched from Adult Mode can return to Adult Mode smoothly with Parental Pattern Lock.
+  static bool get canExitToAdultAccount => !_isPureKidAccount && !_isPureStudentAccount;
+  static bool get canEnterStudentWorld => !_isPureKidAccount;
+  static bool get canEnterKidsWorld => true;
 
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;
@@ -326,6 +348,14 @@ class PocketKidsService {
   static bool isDayLockedByMidnightTimer(int day) {
     if (isAdminAccount || isKidPremium) return false;
     if (day <= 1) return false;
+
+    // ⚔️ User Audio Directive: If user raided houses and accumulated the required
+    // Student Score (SS) / Pocket Score for this day, it UNLOCKS IMMEDIATELY bypassing midnight!
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    if (_studentScore >= reqScore && reqScore > 0) {
+      return false; // Unlocked immediately by earned raid score!
+    }
+
     if (_lastCompletedDay != null && day == _lastCompletedDay! + 1) {
       final todayStr = getTodayDateString();
       if (_lastCompletedDate == todayStr) {
@@ -338,9 +368,17 @@ class PocketKidsService {
   /// Checks if a day is fully unlocked and ready to play
   static bool isDayUnlocked(int day) {
     if (isAdminAccount || isKidPremium) return day <= 100;
-    if (day < _currentUnlockedDay) return true; // Already unlocked or completed past day
+    if (day < _currentUnlockedDay)
+      return true; // Already unlocked or completed past day
     if (day == _currentUnlockedDay) {
       return !isDayLockedByMidnightTimer(day);
+    }
+    // Also if accumulated score meets future day requirement:
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    if (_studentScore >= reqScore &&
+        reqScore > 0 &&
+        day <= (_lastCompletedDay ?? 0) + 1) {
+      return true;
     }
     return false;
   }
@@ -348,7 +386,8 @@ class PocketKidsService {
   /// Calculate remaining time until next 12:00 AM midnight
   static Duration getTimeUntilMidnight() {
     final now = DateTime.now();
-    final tomorrowMidnight = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
+    final tomorrowMidnight =
+        DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
     return tomorrowMidnight.difference(now);
   }
 
@@ -362,24 +401,37 @@ class PocketKidsService {
     return '${hours}h ${minutes}m ${seconds}s';
   }
 
+  static AppWorldMode get currentWorldMode => _currentWorldMode;
+  static bool get isAdultWorld => _currentWorldMode == AppWorldMode.adult;
+  static bool get isStudentWorld => _currentWorldMode == AppWorldMode.student;
+  static bool get isKidsWorld => _currentWorldMode == AppWorldMode.kids;
+
   static bool get isKidAccount => _isKidAccount;
   static bool get isPureKidAccount => _isPureKidAccount;
+  static bool get isPureStudentAccount => _isPureStudentAccount;
   static bool get isParentSwitched => _isParentSwitched;
   static String get kidName => _kidName;
   static bool get isProfileConfigured =>
       _kidName.isNotEmpty && _kidName != 'Little Explorer';
   static String get kidAgeGroup => _kidAgeGroup;
+  static String get kidGender => _kidGender;
   static String get kidAvatar => _kidAvatar;
   static int get kidStars => _kidStars;
-  static int get currentUnlockedDay => isAdminAccount ? 100 : _currentUnlockedDay;
+  static int get currentUnlockedDay =>
+      isAdminAccount ? 100 : _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
   static Set<String> get friendIds => Set.unmodifiable(_friendIds);
   static Set<String> get sentRequestIds => Set.unmodifiable(_sentRequestIds);
-  static Set<String> get receivedRequestIds => Set.unmodifiable(_receivedRequestIds);
+  static Set<String> get receivedRequestIds =>
+      Set.unmodifiable(_receivedRequestIds);
 
   /// 🎓 Student Score (SS) - Strictly isolated from adult PS (Pocket Score)!
   /// Starts at 0, tracked independently. Never cross-contaminates with adult PS.
   static int get studentScore => _studentScore;
+
+  /// 👶 Kids Score (KS) - Dedicated playful score for children (4–8 yrs)
+  /// Earned through phonics balloon pops, animal feeding, and mascot playdates!
+  static int get kidsScore => _kidsScore;
 
   /// Backwards-compatibility wrapper for legacy calls (defaults to SS)
   static int get pocketScore => _studentScore;
@@ -414,9 +466,13 @@ class PocketKidsService {
       final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
       if (effectiveUid != null) {
         await prefs.setInt('pocket_student_score_$effectiveUid', _studentScore);
-        await SupaFlow.client.from('profile').update({
-          'student_score': _studentScore,
-        }).eq('user_id', effectiveUid).catchError((_) {});
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'student_score': _studentScore,
+            })
+            .eq('user_id', effectiveUid)
+            .catchError((_) {});
       }
     } catch (_) {}
   }
@@ -434,6 +490,77 @@ class PocketKidsService {
     } catch (_) {}
   }
 
+  // --- 👶 KIDS SCORE (KS) SYSTEM ---
+  static Future<int> getKidsScore([String? uid]) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        final val = prefs.getInt('pocket_kids_score_$effectiveUid');
+        if (val != null) {
+          _kidsScore = val;
+          kidsScoreNotifier.value = val;
+          return val;
+        }
+      }
+      final fallback = prefs.getInt(_keyKidsScore) ?? _kidsScore;
+      _kidsScore = fallback;
+      kidsScoreNotifier.value = fallback;
+      return fallback;
+    } catch (_) {
+      return _kidsScore;
+    }
+  }
+
+  static Future<void> addKidsScore(int points, [String? uid]) async {
+    _kidsScore += points;
+    kidsScoreNotifier.value = _kidsScore;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyKidsScore, _kidsScore);
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        await prefs.setInt('pocket_kids_score_$effectiveUid', _kidsScore);
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'kids_score': _kidsScore,
+            })
+            .eq('user_id', effectiveUid)
+            .catchError((_) {});
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> setKidsScore(int score, [String? uid]) async {
+    _kidsScore = math.max(0, score);
+    kidsScoreNotifier.value = _kidsScore;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyKidsScore, _kidsScore);
+      final effectiveUid = uid ?? SupaFlow.client.auth.currentUser?.id;
+      if (effectiveUid != null) {
+        await prefs.setInt('pocket_kids_score_$effectiveUid', _kidsScore);
+      }
+    } catch (_) {}
+  }
+
+  static Future<int> loadAttackCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _attackCount = prefs.getInt('pocket_kids_attack_count') ?? 0;
+    } catch (_) {}
+    return _attackCount;
+  }
+
+  static Future<void> incrementAttackCount() async {
+    _attackCount++;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('pocket_kids_attack_count', _attackCount);
+    } catch (_) {}
+  }
+
   /// 🎓 Calculate Global Rank strictly among students (Up to ~17 years old)
   /// Audio directive: "ഗ്ലോബൽ റാങ്ക് സ്റ്റുഡൻസിന്റെ ആണ് കാണിക്കേണ്ടത്, അഡൽറ്റിന്റെ അല്ല... സ്റ്റുഡൻസ് എന്ന് പറയുമ്പോൾ ഒരു 17 വയസ്സുവരെ അവരുടെ ആണ് കാണിക്കേണ്ടത്."
   static int getStudentGlobalRank(int score, int dayLevel, [String? uid]) {
@@ -445,7 +572,8 @@ class PocketKidsService {
     return math.max(1, calculated);
   }
 
-  static String getStudentGlobalRankLabel(int score, int dayLevel, [String? uid]) {
+  static String getStudentGlobalRankLabel(int score, int dayLevel,
+      [String? uid]) {
     final rank = getStudentGlobalRank(score, dayLevel, uid);
     if (rank <= 0) {
       return '🌱 Student Challenger';
@@ -485,13 +613,17 @@ class PocketKidsService {
     _friendshipScores[mateId] = updated;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyKidFriendshipScores, jsonEncode(_friendshipScores));
+      await prefs.setString(
+          _keyKidFriendshipScores, jsonEncode(_friendshipScores));
     } catch (_) {}
     return updated;
   }
 
   /// 🏆 Day 100 Certificate Unlock Status
-  static bool get isCertificateUnlocked => isAdminAccount || _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
+  static bool get isCertificateUnlocked =>
+      isAdminAccount ||
+      _completedDays.containsKey(100) ||
+      _currentUnlockedDay >= 100;
 
   /// 🏰 10 Architectural Homestead Tiers matching the 100-Day Journey up to King Lion Palace
   static const List<KidsHouse> houses = [
@@ -571,7 +703,8 @@ class PocketKidsService {
       tier: 10,
       title: 'Golden Lion King Palace',
       emoji: '🦁',
-      description: 'Supreme 100-Day Grand Palace of the King of the Animal Kingdom!',
+      description:
+          'Supreme 100-Day Grand Palace of the King of the Animal Kingdom!',
       unlockedAtDay: 100,
       themeColor: Color(0xFFFF9900),
     ),
@@ -583,7 +716,8 @@ class PocketKidsService {
     for (final day in _completedDays.keys) {
       if (day > maxCompleted) maxCompleted = day;
     }
-    final effectiveDay = maxCompleted > _currentUnlockedDay ? maxCompleted : _currentUnlockedDay;
+    final effectiveDay =
+        maxCompleted > _currentUnlockedDay ? maxCompleted : _currentUnlockedDay;
     KidsHouse achieved = houses.first;
     for (final h in houses) {
       if (effectiveDay >= h.unlockedAtDay) {
@@ -605,7 +739,8 @@ class PocketKidsService {
   }
 
   /// Get current or day-specific house
-  static KidsHouse getCurrentHouse([int? day]) => day != null ? getHouseForDay(day) : currentHouse;
+  static KidsHouse getCurrentHouse([int? day]) =>
+      day != null ? getHouseForDay(day) : currentHouse;
 
   /// Get the next house to unlock
   static KidsHouse? get nextHouseToUnlock {
@@ -627,6 +762,7 @@ class PocketKidsService {
       _isParentSwitched = prefs.getBool(_keyIsParentSwitched) ?? false;
       _kidName = prefs.getString(_keyKidName) ?? 'Little Explorer';
       _kidAgeGroup = prefs.getString(_keyKidAgeGroup) ?? '4-6';
+      _kidGender = prefs.getString(_keyKidGender) ?? 'female';
       _kidAvatar = prefs.getString(_keyKidAvatar) ?? '🦁';
       _kidStars = prefs.getInt(_keyKidStars) ?? 0;
       _currentUnlockedDay = prefs.getInt(_keyKidCurrentDay) ?? 1;
@@ -639,11 +775,26 @@ class PocketKidsService {
       try {
         final uid = SupaFlow.client.auth.currentUser?.id;
         if (uid != null) {
-          final res = await SupaFlow.client.from('profile').select('is_premium').eq('id', uid).maybeSingle();
-          if (res != null && res['is_premium'] == true) {
-            _isKidPremium = true;
-            kidPremiumNotifier.value = true;
-            await prefs.setBool(_keyKidIsPremium, true);
+          final res = await SupaFlow.client
+              .from('profile')
+              .select('is_premium, gender')
+              .eq('id', uid)
+              .maybeSingle();
+          if (res != null) {
+            if (res['is_premium'] == true) {
+              _isKidPremium = true;
+              kidPremiumNotifier.value = true;
+              await prefs.setBool(_keyKidIsPremium, true);
+            }
+            if (res['gender'] != null) {
+              final g = res['gender'].toString().toLowerCase();
+              if (g == 'male' || g == 'boy') {
+                _kidGender = 'male';
+              } else {
+                _kidGender = 'female';
+              }
+              await prefs.setString(_keyKidGender, _kidGender);
+            }
           }
         }
       } catch (_) {}
@@ -690,6 +841,26 @@ class PocketKidsService {
       // Load isolated Student Score (SS) - Starts at 0
       _studentScore = prefs.getInt(_keyKidStudentScore) ?? 0;
       studentScoreNotifier.value = _studentScore;
+      
+      // Load isolated Kids Score (KS) - Starts at 0
+      _kidsScore = prefs.getInt(_keyKidsScore) ?? 0;
+      kidsScoreNotifier.value = _kidsScore;
+
+      _isPureStudentAccount = prefs.getBool(_keyIsPureStudentAccount) ?? false;
+      _attackCount = prefs.getInt('pocket_kids_attack_count') ?? 0;
+
+      // Determine active World Mode
+      final savedWorldMode = prefs.getString(_keyAppWorldMode);
+      if (savedWorldMode == 'kids') {
+        _currentWorldMode = AppWorldMode.kids;
+        _isKidAccount = true;
+      } else if (savedWorldMode == 'student') {
+        _currentWorldMode = AppWorldMode.student;
+        _isKidAccount = true;
+      } else {
+        _currentWorldMode = _isKidAccount ? AppWorldMode.student : AppWorldMode.adult;
+      }
+      currentWorldModeNotifier.value = _currentWorldMode;
 
       // Load Friendship Scores with companions and peers
       final fsRaw = prefs.getString(_keyKidFriendshipScores);
@@ -713,69 +884,178 @@ class PocketKidsService {
     }
   }
 
-  /// Activate Kids Account Mode and save profile
+  /// Activate Kids Account Mode (KS Score, Pure Cartoon Adventure, Phonics & Mascot Playdates)
   static Future<void> activateKidAccount({
     required String name,
     required String ageGroup,
     required String avatar,
+    String gender = 'female',
     bool isParentSwitched = false,
     bool isPureKid = false,
   }) async {
     _isKidAccount = true;
+    _currentWorldMode = AppWorldMode.kids;
+    currentWorldModeNotifier.value = AppWorldMode.kids;
     if (isParentSwitched) {
       _isParentSwitched = true;
       _isPureKidAccount = false;
+      _isPureStudentAccount = false;
     } else if (isPureKid) {
       _isPureKidAccount = true;
+      _isPureStudentAccount = false;
       _isParentSwitched = false;
     }
     _kidName = name.trim().isNotEmpty ? name.trim() : 'Little Explorer';
-    _kidAgeGroup = ageGroup;
+    _kidAgeGroup = ageGroup.isNotEmpty ? ageGroup : '4-6';
+    _kidGender =
+        (gender.toLowerCase().contains('boy') || gender.toLowerCase() == 'male')
+            ? 'male'
+            : 'female';
     _kidAvatar = avatar;
     isKidAccountNotifier.value = true;
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAppWorldMode, 'kids');
       await prefs.setBool(_keyIsKidAccount, true);
       await prefs.setBool(_keyIsPureKidAccount, _isPureKidAccount);
+      await prefs.setBool(_keyIsPureStudentAccount, false);
       await prefs.setBool(_keyIsParentSwitched, _isParentSwitched);
       await prefs.setString(_keyKidName, _kidName);
       await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
+      await prefs.setString(_keyKidGender, _kidGender);
       await prefs.setString(_keyKidAvatar, _kidAvatar);
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
         await prefs.setBool('is_kid_account_${user.id}', true);
-        await SupaFlow.client.from('profile').update({
-          'account_type': _isPureKidAccount ? 'pure_kid' : 'kid',
-          'kid_name': _kidName,
-          'kid_age_group': _kidAgeGroup,
-          'kid_avatar': _kidAvatar,
-        }).eq('user_id', user.id).catchError((_) {});
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'account_type': _isPureKidAccount ? 'pure_kid' : 'kid',
+              'kid_name': _kidName,
+              'kid_age_group': _kidAgeGroup,
+              'gender': _kidGender,
+              'kid_avatar': _kidAvatar,
+            })
+            .eq('user_id', user.id)
+            .catchError((_) {});
       }
     } catch (e) {
       debugPrint('PocketKidsService: Error activating kid account: $e');
     }
   }
 
-  /// Save updated Kid Profile details (name & avatar)
-  static Future<void> saveKidProfile({
+  /// Activate Student Account Mode (SS Score, PopArt Cards, Citadel Fights, School Missions)
+  static Future<void> activateStudentAccount({
     required String name,
+    required String ageGroup,
     required String avatar,
+    String gender = 'female',
+    bool isParentSwitched = false,
+    bool isPureStudent = false,
   }) async {
-    _kidName = name.trim().isNotEmpty ? name.trim() : _kidName;
+    _isKidAccount = true;
+    _currentWorldMode = AppWorldMode.student;
+    currentWorldModeNotifier.value = AppWorldMode.student;
+    if (isParentSwitched) {
+      _isParentSwitched = true;
+      _isPureKidAccount = false;
+      _isPureStudentAccount = false;
+    } else if (isPureStudent) {
+      _isPureStudentAccount = true;
+      _isPureKidAccount = false;
+      _isParentSwitched = false;
+    }
+    _kidName = name.trim().isNotEmpty ? name.trim() : 'Student Explorer';
+    _kidAgeGroup = ageGroup.isNotEmpty ? ageGroup : '9-12';
+    _kidGender =
+        (gender.toLowerCase().contains('boy') || gender.toLowerCase() == 'male')
+            ? 'male'
+            : 'female';
     _kidAvatar = avatar;
+    isKidAccountNotifier.value = true;
+
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAppWorldMode, 'student');
+      await prefs.setBool(_keyIsKidAccount, true);
+      await prefs.setBool(_keyIsPureKidAccount, false);
+      await prefs.setBool(_keyIsPureStudentAccount, _isPureStudentAccount);
+      await prefs.setBool(_keyIsParentSwitched, _isParentSwitched);
       await prefs.setString(_keyKidName, _kidName);
+      await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
+      await prefs.setString(_keyKidGender, _kidGender);
       await prefs.setString(_keyKidAvatar, _kidAvatar);
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
-        await SupaFlow.client.from('profile').update({
-          'kid_name': _kidName,
-          'kid_avatar': _kidAvatar,
-        }).eq('user_id', user.id).catchError((_) {});
+        await prefs.setBool('is_kid_account_${user.id}', true);
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'account_type': _isPureStudentAccount ? 'pure_student' : 'student',
+              'kid_name': _kidName,
+              'kid_age_group': _kidAgeGroup,
+              'gender': _kidGender,
+              'kid_avatar': _kidAvatar,
+            })
+            .eq('user_id', user.id)
+            .catchError((_) {});
+      }
+    } catch (e) {
+      debugPrint('PocketKidsService: Error activating student account: $e');
+    }
+  }
+
+  /// Switch directly between world modes for eligible accounts
+  static Future<void> switchWorldMode(AppWorldMode mode) async {
+    if (mode == AppWorldMode.adult && !canExitToAdultAccount) {
+      return; // Blocked for pure kid / pure student accounts
+    }
+    _currentWorldMode = mode;
+    currentWorldModeNotifier.value = mode;
+    _isKidAccount = (mode != AppWorldMode.adult);
+    isKidAccountNotifier.value = _isKidAccount;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAppWorldMode, mode.name);
+      await prefs.setBool(_keyIsKidAccount, _isKidAccount);
+    } catch (_) {}
+  }
+
+  /// Save updated Kid Profile details (name, avatar & gender)
+  static Future<void> saveKidProfile({
+    required String name,
+    required String avatar,
+    String? gender,
+  }) async {
+    _kidName = name.trim().isNotEmpty ? name.trim() : _kidName;
+    _kidAvatar = avatar;
+    if (gender != null && gender.isNotEmpty) {
+      _kidGender = (gender.toLowerCase().contains('boy') ||
+              gender.toLowerCase() == 'male')
+          ? 'male'
+          : 'female';
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyKidName, _kidName);
+      await prefs.setString(_keyKidAvatar, _kidAvatar);
+      await prefs.setString(_keyKidGender, _kidGender);
+
+      final user = SupaFlow.client.auth.currentUser;
+      if (user != null) {
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'kid_name': _kidName,
+              'kid_avatar': _kidAvatar,
+              'gender': _kidGender,
+            })
+            .eq('user_id', user.id)
+            .catchError((_) {});
       }
     } catch (e) {
       debugPrint('PocketKidsService: Error saving kid profile: $e');
@@ -783,26 +1063,37 @@ class PocketKidsService {
   }
 
   /// Update kid profile wrapper
-  static Future<void> updateProfile({String? name, String? avatar}) =>
-      saveKidProfile(name: name ?? _kidName, avatar: avatar ?? _kidAvatar);
+  static Future<void> updateProfile(
+          {String? name, String? avatar, String? gender}) =>
+      saveKidProfile(
+          name: name ?? _kidName,
+          avatar: avatar ?? _kidAvatar,
+          gender: gender ?? _kidGender);
 
   /// Activate Adult Account Mode
   static Future<void> activateAdultAccount() async {
     _isKidAccount = false;
     _isParentSwitched = false;
+    _currentWorldMode = AppWorldMode.adult;
+    currentWorldModeNotifier.value = AppWorldMode.adult;
     isKidAccountNotifier.value = false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAppWorldMode, 'adult');
       await prefs.setBool(_keyIsKidAccount, false);
       await prefs.setBool(_keyIsParentSwitched, false);
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
         await prefs.setBool('is_kid_account_${user.id}', false);
-        await SupaFlow.client.from('profile').update({
-          'account_type': 'adult',
-        }).eq('user_id', user.id).catchError((_) {});
+        await SupaFlow.client
+            .from('profile')
+            .update({
+              'account_type': 'adult',
+            })
+            .eq('user_id', user.id)
+            .catchError((_) {});
       }
     } catch (e) {
       debugPrint('PocketKidsService: Error activating adult account: $e');
@@ -847,7 +1138,8 @@ class PocketKidsService {
   static KidMateRequestStatus getMateRequestStatus(String kidId) {
     if (_friendIds.contains(kidId)) return KidMateRequestStatus.accepted;
     if (_sentRequestIds.contains(kidId)) return KidMateRequestStatus.sent;
-    if (_receivedRequestIds.contains(kidId)) return KidMateRequestStatus.received;
+    if (_receivedRequestIds.contains(kidId))
+      return KidMateRequestStatus.received;
     return KidMateRequestStatus.none;
   }
 
@@ -857,7 +1149,8 @@ class PocketKidsService {
     if (id.isEmpty) return false;
     if (id == 'mentor_animal_king_lion') return true;
     if (id.startsWith('kid_bot_')) return true;
-    if (PocketKidsRobotsData.robotsAndHomies.any((m) => m.id == id)) return true;
+    if (PocketKidsRobotsData.robotsAndHomies.any((m) => m.id == id))
+      return true;
     // Explicitly reject any adult robots and adult IDs:
     final lower = id.toLowerCase();
     if (lower.startsWith('pocket_robot_') ||
@@ -879,7 +1172,8 @@ class PocketKidsService {
 
   static KidMate? getKidMateById(String kidId) {
     try {
-      final found = PocketKidsRobotsData.robotsAndHomies.firstWhere((m) => m.id == kidId);
+      final found =
+          PocketKidsRobotsData.robotsAndHomies.firstWhere((m) => m.id == kidId);
       final status = getMateRequestStatus(found.id);
       final fScore = getFriendshipScore(found.id);
       return found.copyWith(
@@ -907,11 +1201,15 @@ class PocketKidsService {
 
     List<KidMate> filtered;
     if (filterTab == 1) {
-      filtered = all.where((m) => m.requestStatus == KidMateRequestStatus.accepted).toList();
+      filtered = all
+          .where((m) => m.requestStatus == KidMateRequestStatus.accepted)
+          .toList();
     } else if (filterTab == 2) {
-      filtered = all.where((m) =>
-          m.requestStatus == KidMateRequestStatus.received ||
-          m.requestStatus == KidMateRequestStatus.sent).toList();
+      filtered = all
+          .where((m) =>
+              m.requestStatus == KidMateRequestStatus.received ||
+              m.requestStatus == KidMateRequestStatus.sent)
+          .toList();
     } else {
       filtered = all;
     }
@@ -980,7 +1278,8 @@ class PocketKidsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_keyKidFriendIds, _friendIds.toList());
       await prefs.setStringList(_keyKidSentRequests, _sentRequestIds.toList());
-      await prefs.setStringList(_keyKidReceivedRequests, _receivedRequestIds.toList());
+      await prefs.setStringList(
+          _keyKidReceivedRequests, _receivedRequestIds.toList());
     } catch (_) {}
   }
 
@@ -991,8 +1290,10 @@ class PocketKidsService {
   static final Map<String, List<KidMessage>> _messagesByMate = {};
 
   /// Get messages with a specific kid mate, initializing with friendly welcome greeting
-  static List<KidMessage> getMessagesForMate(String mateId, {String? mateName, String? mateAvatar}) {
-    if (!_messagesByMate.containsKey(mateId) || _messagesByMate[mateId]!.isEmpty) {
+  static List<KidMessage> getMessagesForMate(String mateId,
+      {String? mateName, String? mateAvatar}) {
+    if (!_messagesByMate.containsKey(mateId) ||
+        _messagesByMate[mateId]!.isEmpty) {
       final name = mateName ?? 'Mate';
       final avatar = mateAvatar ?? '🌟';
       _messagesByMate[mateId] = [
@@ -1001,7 +1302,8 @@ class PocketKidsService {
           senderId: mateId,
           senderName: name,
           senderAvatar: avatar,
-          text: "Hello Mate! 🌟 Let's practice English together! Tap the speaker to hear me!",
+          text:
+              "Hello Mate! 🌟 Let's practice English together! Tap the speaker to hear me!",
           timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
           isFromMe: false,
         ),
@@ -1034,7 +1336,8 @@ class PocketKidsService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final encoded = jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
+      final encoded =
+          jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
       await prefs.setString('pm_kid_messages_$mateId', encoded);
       await boostFriendship(mateId, isStarGift ? 10 : 3);
     } catch (_) {}
@@ -1074,7 +1377,8 @@ class PocketKidsService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final encoded = jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
+      final encoded =
+          jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
       await prefs.setString('pm_kid_messages_$mateId', encoded);
     } catch (_) {}
 
@@ -1089,37 +1393,59 @@ class PocketKidsService {
     if (day <= 15) {
       return const [
         KidDefenseChallenge(
-          prompt: "Your friend says: 'Good morning!' How do you reply with kindness?",
+          prompt:
+              "Your friend says: 'Good morning!' How do you reply with kindness?",
           spokenText: "Good morning! How do you reply with kindness?",
           helperMascot: "☀️",
-          options: ["Good morning! ☀️", "Good night 🌙", "Goodbye 👋", "No thanks 🙅"],
+          options: [
+            "Good morning! ☀️",
+            "Good night 🌙",
+            "Goodbye 👋",
+            "No thanks 🙅"
+          ],
           correctIndex: 0,
           cheerMessage: "Super! A warm morning greeting makes everyone happy!",
         ),
         KidDefenseChallenge(
-          prompt: "Help the puppy find its sound! What does a friendly dog say?",
-          spokenText: "Help the puppy find its sound! What does a friendly dog say?",
+          prompt:
+              "Help the puppy find its sound! What does a friendly dog say?",
+          spokenText:
+              "Help the puppy find its sound! What does a friendly dog say?",
           helperMascot: "🐶",
           options: ["Woof Woof! 🐶", "Meow 🐱", "Quack 🦆", "Moo 🐮"],
           correctIndex: 0,
           cheerMessage: "Woof woof! Puppy is wagging its tail with joy!",
         ),
         KidDefenseChallenge(
-          prompt: "Someone shared a delicious cookie with you. What do you say?",
-          spokenText: "Someone shared a delicious cookie with you. What do you say?",
+          prompt:
+              "Someone shared a delicious cookie with you. What do you say?",
+          spokenText:
+              "Someone shared a delicious cookie with you. What do you say?",
           helperMascot: "🍪",
-          options: ["Thank you very much! 💖", "Go away! ❌", "Give me more! 😠", "Nothing 😶"],
+          options: [
+            "Thank you very much! 💖",
+            "Go away! ❌",
+            "Give me more! 😠",
+            "Nothing 😶"
+          ],
           correctIndex: 0,
-          cheerMessage: "Awesome manners! Saying 'Thank you' shows a big heart!",
+          cheerMessage:
+              "Awesome manners! Saying 'Thank you' shows a big heart!",
         ),
       ];
     } else if (day <= 30) {
       return const [
         KidDefenseChallenge(
           prompt: "Your mate is carrying heavy books. How do you offer help?",
-          spokenText: "Your mate is carrying heavy books. How do you offer help?",
+          spokenText:
+              "Your mate is carrying heavy books. How do you offer help?",
           helperMascot: "📚",
-          options: ["Let me help you! 🤝", "Run away fast! 🏃", "Laugh loudly 😄", "Ignore them 🙈"],
+          options: [
+            "Let me help you! 🤝",
+            "Run away fast! 🏃",
+            "Laugh loudly 😄",
+            "Ignore them 🙈"
+          ],
           correctIndex: 0,
           cheerMessage: "True friendship! Helping hands make light work!",
         ),
@@ -1135,7 +1461,12 @@ class PocketKidsService {
           prompt: "How do you introduce yourself politely to a new friend?",
           spokenText: "How do you introduce yourself politely to a new friend?",
           helperMascot: "👋",
-          options: ["Hello, my name is your mate! 👋", "I am leaving 🚪", "Go to sleep 💤", "I do not care 🚫"],
+          options: [
+            "Hello, my name is your mate! 👋",
+            "I am leaving 🚪",
+            "Go to sleep 💤",
+            "I do not care 🚫"
+          ],
           correctIndex: 0,
           cheerMessage: "Wonderful introduction! You made a new best mate!",
         ),
@@ -1143,18 +1474,32 @@ class PocketKidsService {
     } else if (day <= 50) {
       return const [
         KidDefenseChallenge(
-          prompt: "A friend is feeling sad on the playground. What is kind to say?",
-          spokenText: "A friend is feeling sad on the playground. What is kind to say?",
+          prompt:
+              "A friend is feeling sad on the playground. What is kind to say?",
+          spokenText:
+              "A friend is feeling sad on the playground. What is kind to say?",
           helperMascot: "🤗",
-          options: ["Are you okay? I am here for you! 🤗", "I do not care 😒", "Go home now 🏠", "Walk away 👀"],
+          options: [
+            "Are you okay? I am here for you! 🤗",
+            "I do not care 😒",
+            "Go home now 🏠",
+            "Walk away 👀"
+          ],
           correctIndex: 0,
-          cheerMessage: "Pure empathy! You bring sunshine to everyone around you!",
+          cheerMessage:
+              "Pure empathy! You bring sunshine to everyone around you!",
         ),
         KidDefenseChallenge(
           prompt: "How do you politely ask to borrow a colored drawing pencil?",
-          spokenText: "How do you politely ask to borrow a colored drawing pencil?",
+          spokenText:
+              "How do you politely ask to borrow a colored drawing pencil?",
           helperMascot: "✏️",
-          options: ["May I please borrow this pencil? ✏️", "Give it now! 😠", "Mine! 💥", "Drop it! ✋"],
+          options: [
+            "May I please borrow this pencil? ✏️",
+            "Give it now! 😠",
+            "Mine! 💥",
+            "Drop it! ✋"
+          ],
           correctIndex: 0,
           cheerMessage: "Polite speech unlocks every door in the world!",
         ),
@@ -1170,18 +1515,31 @@ class PocketKidsService {
     } else if (day <= 75) {
       return const [
         KidDefenseChallenge(
-          prompt: "You bumped into someone by mistake while running. What do you say?",
-          spokenText: "You bumped into someone by mistake while running. What do you say?",
+          prompt:
+              "You bumped into someone by mistake while running. What do you say?",
+          spokenText:
+              "You bumped into someone by mistake while running. What do you say?",
           helperMascot: "🙏",
-          options: ["I am so sorry, are you okay? 🙏", "It is your fault! 😠", "Run away! 🏃", "Do not care 🤷"],
+          options: [
+            "I am so sorry, are you okay? 🙏",
+            "It is your fault! 😠",
+            "Run away! 🏃",
+            "Do not care 🤷"
+          ],
           correctIndex: 0,
           cheerMessage: "Apologizing with sincerity is a superpower!",
         ),
         KidDefenseChallenge(
           prompt: "Spell the word for our warm, golden sunshine in the sky!",
-          spokenText: "Spell the word for our warm, golden sunshine in the sky!",
+          spokenText:
+              "Spell the word for our warm, golden sunshine in the sky!",
           helperMascot: "☀️",
-          options: ["S - U - N ☀️", "M - O - O - N 🌙", "C - A - T 🐱", "B - A - L - L ⚽"],
+          options: [
+            "S - U - N ☀️",
+            "M - O - O - N 🌙",
+            "C - A - T 🐱",
+            "B - A - L - L ⚽"
+          ],
           correctIndex: 0,
           cheerMessage: "S - U - N! You shine bright like the sun!",
         ),
@@ -1189,7 +1547,12 @@ class PocketKidsService {
           prompt: "How do you invite a classmate to play with your group?",
           spokenText: "How do you invite a classmate to play with your group?",
           helperMascot: "🎈",
-          options: ["Would you like to play together? 🎈", "No playing! 🛑", "Stay alone 🚶", "Go away 🙅"],
+          options: [
+            "Would you like to play together? 🎈",
+            "No playing! 🛑",
+            "Stay alone 🚶",
+            "Go away 🙅"
+          ],
           correctIndex: 0,
           cheerMessage: "Inclusion and teamwork make games magical!",
         ),
@@ -1197,26 +1560,47 @@ class PocketKidsService {
     } else {
       return const [
         KidDefenseChallenge(
-          prompt: "The Grand Castle King asks: 'What makes you a true English Champion?'",
-          spokenText: "The Grand Castle King asks: What makes you a true English Champion?",
+          prompt:
+              "The Grand Castle King asks: 'What makes you a true English Champion?'",
+          spokenText:
+              "The Grand Castle King asks: What makes you a true English Champion?",
           helperMascot: "👑",
-          options: ["Kindness, Daily Practice & Helping Mates! 🌟", "Being loud and angry 😡", "Breaking rules 🔨", "Giving up 😢"],
+          options: [
+            "Kindness, Daily Practice & Helping Mates! 🌟",
+            "Being loud and angry 😡",
+            "Breaking rules 🔨",
+            "Giving up 😢"
+          ],
           correctIndex: 0,
-          cheerMessage: "Royal decree: You are crowned an English Grand Champion!",
+          cheerMessage:
+              "Royal decree: You are crowned an English Grand Champion!",
         ),
         KidDefenseChallenge(
           prompt: "When working on a big adventure challenge with your team:",
-          spokenText: "When working on a big adventure challenge with your team:",
+          spokenText:
+              "When working on a big adventure challenge with your team:",
           helperMascot: "🏰",
-          options: ["We listen and support each other! 🤝", "Only one person matters 👤", "We argue 🗣️", "Quit immediately 🏳️"],
+          options: [
+            "We listen and support each other! 🤝",
+            "Only one person matters 👤",
+            "We argue 🗣️",
+            "Quit immediately 🏳️"
+          ],
           correctIndex: 0,
           cheerMessage: "United together, nothing is impossible!",
         ),
         KidDefenseChallenge(
-          prompt: "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
-          spokenText: "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
+          prompt:
+              "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
+          spokenText:
+              "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
           helperMascot: "🎉",
-          options: ["We did it together! Hooray! 🎉", "I am tired 🥱", "Not happy 🙁", "Goodbye forever ⛔"],
+          options: [
+            "We did it together! Hooray! 🎉",
+            "I am tired 🥱",
+            "Not happy 🙁",
+            "Goodbye forever ⛔"
+          ],
           correctIndex: 0,
           cheerMessage: "Hooray! The entire universe celebrates your fluency!",
         ),
@@ -1243,7 +1627,8 @@ class PocketKidsService {
           .maybeSingle();
 
       if (profile != null) {
-        final accType = profile['account_type']?.toString().toLowerCase().trim();
+        final accType =
+            profile['account_type']?.toString().toLowerCase().trim();
         if (accType == 'pure_kid' || accType == 'kid' || accType == 'student') {
           final kName = profile['kid_name']?.toString() ?? 'Young Scholar';
           final kAvatar = profile['kid_avatar']?.toString() ?? '🦁';
@@ -1252,7 +1637,9 @@ class PocketKidsService {
             name: kName,
             ageGroup: kAge,
             avatar: kAvatar,
-            isPureKid: accType == 'pure_kid' || accType == 'student' || accType == 'kid',
+            isPureKid: accType == 'pure_kid' ||
+                accType == 'student' ||
+                accType == 'kid',
           );
           return true;
         } else if (accType == 'adult') {
@@ -1305,11 +1692,14 @@ class PocketKidsService {
             isFromMe: false,
           ),
         ];
-        await prefs.setString(_kLionChatKey, jsonEncode(initial.map((m) => m.toJson()).toList()));
+        await prefs.setString(
+            _kLionChatKey, jsonEncode(initial.map((m) => m.toJson()).toList()));
         return initial;
       }
       final decoded = jsonDecode(raw) as List<dynamic>;
-      return decoded.map((e) => KidMessage.fromJson(Map<String, dynamic>.from(e))).toList();
+      return decoded
+          .map((e) => KidMessage.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
     } catch (e) {
       return [
         KidMessage(
@@ -1341,7 +1731,8 @@ class PocketKidsService {
     final updated = List<KidMessage>.from(msgs)..add(myMsg);
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kLionChatKey, jsonEncode(updated.map((m) => m.toJson()).toList()));
+    await prefs.setString(
+        _kLionChatKey, jsonEncode(updated.map((m) => m.toJson()).toList()));
 
     // Royal encouraging Lion decree reply
     Future.delayed(const Duration(milliseconds: 1500), () async {
@@ -1363,7 +1754,8 @@ class PocketKidsService {
         isFromMe: false,
       );
       final withReply = List<KidMessage>.from(updated)..add(lionReply);
-      await prefs.setString(_kLionChatKey, jsonEncode(withReply.map((m) => m.toJson()).toList()));
+      await prefs.setString(
+          _kLionChatKey, jsonEncode(withReply.map((m) => m.toJson()).toList()));
     });
 
     return myMsg;
@@ -1441,12 +1833,15 @@ class PocketKidsService {
   }
 
   /// Admin Desk: Reply to student Lion report
-  static Future<void> replyToLionReport(String reportId, String replyText) async {
+  static Future<void> replyToLionReport(
+      String reportId, String replyText) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kLionReportsKey);
       if (raw != null && raw.isNotEmpty) {
-        final list = (jsonDecode(raw) as List<dynamic>).map((e) => Map<String, dynamic>.from(e)).toList();
+        final list = (jsonDecode(raw) as List<dynamic>)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
         for (var r in list) {
           if (r['id'] == reportId) {
             r['admin_reply'] = replyText;
@@ -1465,7 +1860,8 @@ class PocketKidsService {
       id: 'gang_1',
       name: 'Lion Pride Scholars',
       emoji: '🦁',
-      description: 'Daily Spoken English drills, courage building, and Mountain Trail racing!',
+      description:
+          'Daily Spoken English drills, courage building, and Mountain Trail racing!',
       membersCount: 24,
       memberAvatars: ['🦁', '🐯', '🐼', '🦊'],
       isJoined: true,
@@ -1483,7 +1879,8 @@ class PocketKidsService {
       id: 'gang_3',
       name: 'Forest Explorers',
       emoji: '🌳',
-      description: 'Study group solving Citadel defense questions and grammar puzzles together.',
+      description:
+          'Study group solving Citadel defense questions and grammar puzzles together.',
       membersCount: 31,
       memberAvatars: ['🐻', '🐨', '🐬', '🐱'],
       isJoined: false,
@@ -1534,15 +1931,17 @@ class PocketKidsService {
     );
     final updated = List<PocketGang>.from(gangs)..insert(0, newGang);
     final prefs = await SharedPreferences.getInstance();
-    final mapped = updated.map((g) => {
-      'id': g.id,
-      'name': g.name,
-      'emoji': g.emoji,
-      'description': g.description,
-      'membersCount': g.membersCount,
-      'memberAvatars': g.memberAvatars,
-      'isJoined': g.isJoined,
-    }).toList();
+    final mapped = updated
+        .map((g) => {
+              'id': g.id,
+              'name': g.name,
+              'emoji': g.emoji,
+              'description': g.description,
+              'membersCount': g.membersCount,
+              'memberAvatars': g.memberAvatars,
+              'isJoined': g.isJoined,
+            })
+        .toList();
     await prefs.setString(_kGangsKey, jsonEncode(mapped));
   }
 
@@ -1553,21 +1952,25 @@ class PocketKidsService {
         final joined = !g.isJoined;
         return g.copyWith(
           isJoined: joined,
-          membersCount: joined ? g.membersCount + 1 : (g.membersCount > 1 ? g.membersCount - 1 : 1),
+          membersCount: joined
+              ? g.membersCount + 1
+              : (g.membersCount > 1 ? g.membersCount - 1 : 1),
         );
       }
       return g;
     }).toList();
     final prefs = await SharedPreferences.getInstance();
-    final mapped = updated.map((g) => {
-      'id': g.id,
-      'name': g.name,
-      'emoji': g.emoji,
-      'description': g.description,
-      'membersCount': g.membersCount,
-      'memberAvatars': g.memberAvatars,
-      'isJoined': g.isJoined,
-    }).toList();
+    final mapped = updated
+        .map((g) => {
+              'id': g.id,
+              'name': g.name,
+              'emoji': g.emoji,
+              'description': g.description,
+              'membersCount': g.membersCount,
+              'memberAvatars': g.memberAvatars,
+              'isJoined': g.isJoined,
+            })
+        .toList();
     await prefs.setString(_kGangsKey, jsonEncode(mapped));
   }
 
@@ -1580,7 +1983,8 @@ class PocketKidsService {
       authorAvatar: '🦁',
       dayLevel: 100,
       title: 'Royal Word of the Day: "Perseverance"',
-      message: 'Perseverance means never giving up even when the mountain path is steep! Keep climbing! 👑',
+      message:
+          'Perseverance means never giving up even when the mountain path is steep! Keep climbing! 👑',
       tag: '#KingdomDecree',
       likes: 84,
     ),
@@ -1590,7 +1994,8 @@ class PocketKidsService {
       authorAvatar: '🐯',
       dayLevel: 14,
       title: 'Pronunciation Tip: "Th" Sound',
-      message: 'Place your tongue gently between your teeth to say "Thank you" and "Think"! Try it now! 👅✨',
+      message:
+          'Place your tongue gently between your teeth to say "Thank you" and "Think"! Try it now! 👅✨',
       tag: '#PhonicsTip',
       likes: 62,
     ),
@@ -1600,7 +2005,8 @@ class PocketKidsService {
       authorAvatar: '🦊',
       dayLevel: 35,
       title: 'Friendly Manners Win Hearts',
-      message: 'Saying "May I please borrow this?" makes everyone smile. Good speech opens all castle doors! 🚪🗝️',
+      message:
+          'Saying "May I please borrow this?" makes everyone smile. Good speech opens all castle doors! 🚪🗝️',
       tag: '#Kindness',
       likes: 47,
     ),
@@ -1610,7 +2016,8 @@ class PocketKidsService {
       authorAvatar: '🐼',
       dayLevel: 4,
       title: 'Story Time: The Bamboo Forest',
-      message: 'Green bamboo bends in the wind but never breaks. Practice English a little every day to stay strong! 🎋',
+      message:
+          'Green bamboo bends in the wind but never breaks. Practice English a little every day to stay strong! 🎋',
       tag: '#DailyStory',
       likes: 55,
     ),
@@ -1620,7 +2027,8 @@ class PocketKidsService {
       authorAvatar: '🦅',
       dayLevel: 75,
       title: 'Idiom of the Day: "Spread Your Wings"',
-      message: 'It means trying something new with confidence! Speak English aloud and fly high! 🚀',
+      message:
+          'It means trying something new with confidence! Speak English aloud and fly high! 🚀',
       tag: '#IdiomPower',
       likes: 71,
     ),
@@ -1675,17 +2083,19 @@ class PocketKidsService {
     );
     final updated = [newVibe, ...currentList];
     final prefs = await SharedPreferences.getInstance();
-    final mapped = updated.map((v) => {
-      'id': v.id,
-      'authorName': v.authorName,
-      'authorAvatar': v.authorAvatar,
-      'dayLevel': v.dayLevel,
-      'title': v.title,
-      'message': v.message,
-      'tag': v.tag,
-      'likes': v.likes,
-      'isLiked': v.isLiked,
-    }).toList();
+    final mapped = updated
+        .map((v) => {
+              'id': v.id,
+              'authorName': v.authorName,
+              'authorAvatar': v.authorAvatar,
+              'dayLevel': v.dayLevel,
+              'title': v.title,
+              'message': v.message,
+              'tag': v.tag,
+              'likes': v.likes,
+              'isLiked': v.isLiked,
+            })
+        .toList();
     await prefs.setString(_kVibesKey, jsonEncode(mapped));
   }
 
@@ -1704,7 +2114,8 @@ class PocketKidsService {
         'authorName': 'King Lion 👑 🦁',
         'authorAvatar': '🦁',
         'day': 100,
-        'thought': 'Every champion was once a beginner who refused to quit. Practice 5 sentences today!',
+        'thought':
+            'Every champion was once a beginner who refused to quit. Practice 5 sentences today!',
         'likes': 142,
         'comments': 18,
         'time': 'Just now',
@@ -1714,7 +2125,8 @@ class PocketKidsService {
         'authorName': 'Cub Leo 🦁',
         'authorAvatar': '🦁',
         'day': 12,
-        'thought': 'Today I learned the difference between "their", "there", and "they\'re"! English is awesome!',
+        'thought':
+            'Today I learned the difference between "their", "there", and "they\'re"! English is awesome!',
         'likes': 28,
         'comments': 4,
         'time': '2h ago',
@@ -1724,7 +2136,8 @@ class PocketKidsService {
         'authorName': 'Bella Bunny 🐰',
         'authorAvatar': '🐰',
         'day': 8,
-        'thought': 'I read an English storybook to my little brother today. He loved the pictures!',
+        'thought':
+            'I read an English storybook to my little brother today. He loved the pictures!',
         'likes': 35,
         'comments': 6,
         'time': '5h ago',
@@ -1752,22 +2165,26 @@ class PocketKidsService {
   // --- 🛡️ CUSTOMIZABLE DEFENSE CHALLENGES (Audio Directive 7) ---
 
   /// Students can view and customize their 3-layer defense questions
-  static Future<void> saveCustomDefense(int day, List<KidDefenseChallenge> customList) async {
+  static Future<void> saveCustomDefense(
+      int day, List<KidDefenseChallenge> customList) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final mapped = customList.map((c) => {
-        'prompt': c.prompt,
-        'spokenText': c.spokenText,
-        'helperMascot': c.helperMascot,
-        'options': c.options,
-        'correctIndex': c.correctIndex,
-        'cheerMessage': c.cheerMessage,
-      }).toList();
+      final mapped = customList
+          .map((c) => {
+                'prompt': c.prompt,
+                'spokenText': c.spokenText,
+                'helperMascot': c.helperMascot,
+                'options': c.options,
+                'correctIndex': c.correctIndex,
+                'cheerMessage': c.cheerMessage,
+              })
+          .toList();
       await prefs.setString('pm_custom_defense_$day', jsonEncode(mapped));
     } catch (_) {}
   }
 
-  static Future<List<KidDefenseChallenge>> getEffectiveDefenseForDay(int day) async {
+  static Future<List<KidDefenseChallenge>> getEffectiveDefenseForDay(
+      int day) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('pm_custom_defense_$day');

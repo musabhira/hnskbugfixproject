@@ -78,6 +78,14 @@ class PocketNeighbor {
       PocketPresidentService.isPresidentId(id) ||
       id == 'pocket_president' ||
       name.toLowerCase().contains('president');
+
+  /// 🛡️ Avatar emoji or icon representation for this neighbor
+  String get avatar {
+    if (isPresident) return '👑';
+    if (isPocketRobo) return '🤖';
+    if (isVip) return '⭐';
+    return '🛡️';
+  }
 }
 
 /// 🌍 Pocket World: Interactive 2D Parallax Neighborhood Street

@@ -74,6 +74,10 @@ void main() {
         myId: 'user_alice',
         otherUserId: 'user_bob',
       );
+      await PocketTrophyService.markUserEngagement(
+        myId: 'user_bob',
+        otherUserId: 'user_alice',
+      );
 
       final pact = await PocketTrophyService.getPact('user_alice', 'user_bob');
       expect(pact, isNotNull);

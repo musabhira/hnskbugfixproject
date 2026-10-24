@@ -13,7 +13,8 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'index.dart';
 
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'
+    hide MenuFlyoutItem;
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -36,7 +37,11 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_quick_account_access_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_score_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/cards/pocket_defense_card_detail_sheet.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -113,12 +118,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (AdminAuthService.isMasterAdminEmail(curUserEmail)) return true;
     final profEmail = _profileData?['email']?.toString();
     if (AdminAuthService.isMasterAdminEmail(profEmail)) return true;
-    final username = (_profileData?['username'] ?? _profileData?['name'])?.toString().toLowerCase().trim();
+    final username = (_profileData?['username'] ?? _profileData?['name'])
+        ?.toString()
+        .toLowerCase()
+        .trim();
     if (username != null &&
         (username == 'mussabira' ||
-         username == 'musabhira' ||
-         username.contains('mussabira') ||
-         username.contains('musabthonippadam'))) {
+            username == 'musabhira' ||
+            username.contains('mussabira') ||
+            username.contains('musabthonippadam'))) {
       return true;
     }
     return false;
@@ -157,7 +165,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         final robot = PocketRobotService.getRobotById(userId) ??
             PocketRobotService.getRobotByLevel(1);
         final dynLvl = PocketRobotService.getDynamicLevel(robot);
-        final robotScore = await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
+        final robotScore =
+            await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
         if (mounted) {
           setState(() {
             _pocketScore = robotScore;
@@ -183,22 +192,30 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   VectorAvatarConfig _getAvatarConfig() {
     int day = _getEffectiveDay();
     if (_isTestingStage) {
-      return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+      return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+          talismanId: _equippedTalismanId);
     }
     // 🛡️ Progression Prestige: Only Day 90 Masters who graduated have unlocked the custom Avatar Studio sandbox!
     // Days 1–89 strictly and proudly wear their earned evolution stage avatar, prestige aura, and colors!
-    if (day >= 90 && _profileData != null && _profileData!['avatar_config'] != null) {
+    if (day >= 90 &&
+        _profileData != null &&
+        _profileData!['avatar_config'] != null) {
       try {
         final map = Map<String, dynamic>.from(_profileData!['avatar_config']);
         final cfg = VectorAvatarConfig.fromMap(map);
         // If it's a legacy default 'human' with no custom drawing or photo, default to stage evolution:
-        if (cfg.species == 'human' && cfg.customDrawingImage == null && cfg.networkImageUrl == null && cfg.imageUrl == null) {
-          return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+        if (cfg.species == 'human' &&
+            cfg.customDrawingImage == null &&
+            cfg.networkImageUrl == null &&
+            cfg.imageUrl == null) {
+          return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+              talismanId: _equippedTalismanId);
         }
         return cfg;
       } catch (_) {}
     }
-    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+        talismanId: _equippedTalismanId);
   }
 
   String get userId {
@@ -216,9 +233,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       double r = color.r;
       double g = color.g;
       double b = color.b;
-      r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
-      g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
-      b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+      r = r <= 0.03928
+          ? r / 12.92
+          : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+      g = g <= 0.03928
+          ? g / 12.92
+          : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+      b = b <= 0.03928
+          ? b / 12.92
+          : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
@@ -246,10 +269,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     // Show Posters only in Main Profile (isMe: 3 tabs: Gallery, Thoughts, Posters).
     // In Search / Other Profile (!isMe: 2 tabs: Gallery, Thoughts).
     _myAccountTabController = material.TabController(length: 1, vsync: this);
-    // Public profile focused exclusively on English Thoughts feed (Gallery & Posters hidden per directive)
-    _publicTabController = material.TabController(length: 1, vsync: this);
-    _myAccountTabController.addListener(() { if (mounted) setState(() {}); });
-    _publicTabController.addListener(() { if (mounted) setState(() {}); });
+    // Public profile tabs: Thoughts + Collectible Milestone Cards (Audio Directive!)
+    _publicTabController = material.TabController(length: 2, vsync: this);
+    _myAccountTabController.addListener(() {
+      if (mounted) setState(() {});
+    });
+    _publicTabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadInitialData(); // Instant load strategy
     _fetchThreads();
     _loadEquippedTalisman();
@@ -258,7 +285,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   void _ensurePublicTabController() {
-    const expectedLength = 1;
+    const expectedLength = 2;
     if (_publicTabController.length != expectedLength) {
       final oldIndex = _publicTabController.index.clamp(0, expectedLength - 1);
       _publicTabController.dispose();
@@ -284,19 +311,30 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _studentScore = 0;
   // 🏆 PocketTalk Spoken Trophies (Earned through 4-Day Spoken Pacts)
   int _pocketTrophyCount = 0;
+  // 🏆 Gold Trophies (Earned exclusively through Citadel Fight Duels)
+  int _goldTrophies = 0;
+  // 🥈 Silver Trophies (Earned through PocketTalk Spoken Pacts)
+  int _silverTrophies = 0;
+  // ⚔️ Successful Attacks (Raids won / gates breached)
+  int _attacksWon = 0;
 
-  bool get _isStudentProfile {
-    if (PocketKidsService.isKidAccount) return true;
-    final accType = _profileData?['account_type']?.toString().toLowerCase().trim();
-    if (accType == 'kid' || accType == 'pure_kid' || accType == 'student') return true;
-    if (PocketKidsService.isAllowedKidMateId(userId)) return true;
-    return false;
-  }
+  // 🛡️ Adult MainProfileWidget is dedicated to Adult accounts; always strictly false to guarantee adult PS & Global Rank!
+  bool get _isStudentProfile => false;
 
   Future<void> _loadPocketScore() async {
     try {
       final trophies = await PocketTrophyService.getTrophyCount(userId);
-      if (mounted) setState(() => _pocketTrophyCount = trophies);
+      final gold = await PocketTrophyService.getGoldTrophies(userId);
+      final silver = await PocketTrophyService.getSilverTrophies(userId);
+      final attacks = await PocketTrophyService.getSuccessfulAttacks(userId);
+      if (mounted) {
+        setState(() {
+          _pocketTrophyCount = trophies;
+          _goldTrophies = gold;
+          _silverTrophies = silver;
+          _attacksWon = attacks;
+        });
+      }
 
       // Load isolated Student Score
       final sScore = await PocketKidsService.getStudentScore(userId);
@@ -308,7 +346,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         final robot = PocketRobotService.getRobotById(userId) ??
             PocketRobotService.getRobotByLevel(1);
         final dynLvl = PocketRobotService.getDynamicLevel(robot);
-        final robotScore = await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
+        final robotScore =
+            await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
         if (mounted) {
           setState(() {
             _pocketScore = robotScore;
@@ -333,13 +372,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   List<HouseShieldQuestion> _shieldQuestions = [];
   List<CitadelRaidLogEntry> _recentRaids = [];
   bool _isLoadingDefense = false;
+  bool _isHouseProtected = false;
+  int _protectionMinutesLeft = 0;
 
   Future<void> _loadFortressDefenseData() async {
     final day = _getEffectiveDay();
     try {
-      HouseDefenseStatus status = await PocketFortressDefenseService.getHouseStatus(day);
+      HouseDefenseStatus status =
+          await PocketFortressDefenseService.getHouseStatus(day);
       if (!isMe && widget.userId != null) {
-        final supaHome = await PocketFortressDefenseService.getSupabaseHouse(widget.userId!);
+        final supaHome =
+            await PocketFortressDefenseService.getSupabaseHouse(widget.userId!);
         if (supaHome != null) {
           status = HouseDefenseStatus(
             currentHp: (supaHome['hp'] as num?)?.toInt() ?? 100,
@@ -349,14 +392,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         }
       } else if (isMe) {
         final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
-        PocketFortressDefenseService.syncMyHouseToSupabase(day: day, streak: streak);
+        PocketFortressDefenseService.syncMyHouseToSupabase(
+            day: day, streak: streak);
       }
       final questions = await PocketFortressDefenseService.loadShieldQuestions(
         day,
         isNeighbor: !isMe,
         targetUserId: !isMe ? widget.userId : null,
       );
-      List<CitadelRaidLogEntry> raids = await PocketFortressDefenseService.getRecentRaids();
+      List<CitadelRaidLogEntry> raids =
+          await PocketFortressDefenseService.getRecentRaids();
       if (raids.isEmpty && day >= 4) {
         final mockRaid = CitadelRaidLogEntry(
           id: 'mock_raid_${day}_1',
@@ -365,17 +410,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           attackerAvatar: '🤖',
           attackerWeapon: '⚡ Laser Broadsword',
           timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-          breached: false,
-          coinsLooted: 0,
-          ironDomeBlocked: true,
+          breached: true,
+          coinsLooted: 15,
+          ironDomeBlocked: false,
         );
         raids = [mockRaid];
       }
+
+      final houseId = isMe ? 'me' : (widget.userId ?? '');
+      final isProtected =
+          await PocketFortressDefenseService.isUnderPresidentialProtection(
+              houseId);
+      final protectionMins = isProtected
+          ? await PocketFortressDefenseService
+              .getPresidentialProtectionMinutesRemaining(houseId)
+          : 0;
+
       if (mounted) {
         setState(() {
           _fortressStatus = status;
           _shieldQuestions = questions;
           _recentRaids = raids;
+          _isHouseProtected = isProtected;
+          _protectionMinutesLeft = protectionMins;
           _isLoadingDefense = false;
         });
       }
@@ -483,13 +540,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       setState(() {
         _isAnalyzingHub = true;
       });
-      
-      final prompt = 'A user in the Poket Mates English Hub has $points points. '
+
+      final prompt =
+          'A user in the Poket Mates English Hub has $points points. '
           'Assume 0-100 points is Beginner, 100-500 is Intermediate, and 500+ is Advanced. '
           'Give a very short, encouraging 2-sentence analysis of their progress and tell them what to focus on next (e.g. Grammar, Interview Prep, Communication). Keep it friendly and concise.';
-          
+
       final response = await AIService().generateText(prompt: prompt);
-      
+
       if (response.isSuccess && response.data != null) {
         setState(() {
           _hubAnalysis = response.data!;
@@ -530,7 +588,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       SnackBar(
         content: Text(
           '🎨 Stage ${stage.stageNumber}/90: ${stage.emoji} ${stage.stageName} • ${stage.fluencyTier}',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
+          style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 12),
         ),
         backgroundColor: stage.buttonColor,
         duration: const Duration(milliseconds: 1500),
@@ -550,8 +609,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
-
-
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
@@ -569,7 +626,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (!(_isTestingStage && isMe && _isAdminUser())) {
       _localUserStage = effectiveStage;
       final stage = LearningMilestoneStage.getStageForDay(effectiveStage);
-      _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
+      _testStageIndex = (stage.stageNumber - 1)
+          .clamp(0, LearningMilestoneStage.allStages.length - 1);
 
       // Dynamic Level-Based Theme Colors
       _bgColor = stage.bgColor;
@@ -580,7 +638,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     // When viewing another user, default to showing their real profile picture if available
     if (!isMe) {
-      final pUrl = data['profile_picture_url'] ?? data['photo_url'] ?? data['avatar_url'] ?? data['image_url'];
+      final pUrl = data['profile_picture_url'] ??
+          data['photo_url'] ??
+          data['avatar_url'] ??
+          data['image_url'];
       if (pUrl != null && pUrl.toString().trim().isNotEmpty) {
         _showAvatarMode = false;
       }
@@ -606,9 +667,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             PocketRobotService.getRobotByLevel(1);
         final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
         final myId = _supabase.auth.currentUser?.id ?? '';
-        final isMate = myId.isNotEmpty ? await PocketMateService.isMate(myId, robot.id) : false;
+        final isMate = myId.isNotEmpty
+            ? await PocketMateService.isMate(myId, robot.id)
+            : false;
         final prefs = await SharedPreferences.getInstance();
-        final blockedList = myId.isNotEmpty ? (prefs.getStringList('blocked_users_$myId') ?? []) : <String>[];
+        final blockedList = myId.isNotEmpty
+            ? (prefs.getStringList('blocked_users_$myId') ?? [])
+            : <String>[];
         final isBlocked = blockedList.contains(robot.id);
 
         final robotData = {
@@ -660,11 +725,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             .select()
             .eq('user_id', userId)
             .limit(1), // Profile
-        _supabase
-            .from('gallery')
-            .select()
-            .eq('user_id', userId)
-            .order('created_at', ascending: false), // Recent Gallery directly from gallery table
+        _supabase.from('gallery').select().eq('user_id', userId).order(
+            'created_at',
+            ascending: false), // Recent Gallery directly from gallery table
         _fetchFollowCountsMap(), // Counts Map
         _checkFollowStatusBool(),
         _checkBlockStatusBool(),
@@ -728,9 +791,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             final email = _supabase.auth.currentUser?.email ?? '';
             final fallbackName =
                 email.contains('@') ? email.split('@').first : 'Pocket Mate';
-            final cleanSlug = fallbackName
-                .toLowerCase()
-                .replaceAll(RegExp(r'[^a-z0-9]'), '');
+            final cleanSlug =
+                fallbackName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
 
             // Ensure public.users row exists
             await _supabase.from('users').upsert({
@@ -771,7 +833,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               });
             }
           } catch (autoHealErr) {
-            debugPrint('Error auto-healing profile in MainProfileWidget: $autoHealErr');
+            debugPrint(
+                'Error auto-healing profile in MainProfileWidget: $autoHealErr');
             if (mounted) setState(() => _isLoading = false);
           }
         } else {
@@ -787,17 +850,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         final id = item['id']?.toString() ?? item['gallery_id']?.toString();
         if (id != null) {
           // Normalize view & table keys for legacy support
-          final Map<String, dynamic> normalizedItem = Map<String, dynamic>.from(item);
+          final Map<String, dynamic> normalizedItem =
+              Map<String, dynamic>.from(item);
           normalizedItem['gallery_id'] = item['id'] ?? item['gallery_id'];
-          normalizedItem['gallery_image_url'] = item['image_url'] ?? item['gallery_image_url'];
-          normalizedItem['gallery_title'] = item['title'] ?? item['gallery_title'];
-          normalizedItem['gallery_price'] = item['price'] ?? item['gallery_price'];
-          normalizedItem['gallery_description'] = item['description'] ?? item['gallery_description'];
-          normalizedItem['gallery_category'] = item['category'] ?? item['gallery_category'];
+          normalizedItem['gallery_image_url'] =
+              item['image_url'] ?? item['gallery_image_url'];
+          normalizedItem['gallery_title'] =
+              item['title'] ?? item['gallery_title'];
+          normalizedItem['gallery_price'] =
+              item['price'] ?? item['gallery_price'];
+          normalizedItem['gallery_description'] =
+              item['description'] ?? item['gallery_description'];
+          normalizedItem['gallery_category'] =
+              item['category'] ?? item['gallery_category'];
 
           uniqueGallery[id] = normalizedItem;
-          final category = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
-          if (category != null && category.isNotEmpty && category.toLowerCase() != 'all') {
+          final category = normalizedItem['category']?.toString().trim() ??
+              normalizedItem['gallery_category']?.toString().trim();
+          if (category != null &&
+              category.isNotEmpty &&
+              category.toLowerCase() != 'all') {
             categorySet.add(category);
           }
         }
@@ -844,16 +916,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           final id = item['id']?.toString() ?? item['gallery_id']?.toString();
           if (id != null) {
             // Normalize view & table keys for legacy support
-            final Map<String, dynamic> normalizedItem = Map<String, dynamic>.from(item);
+            final Map<String, dynamic> normalizedItem =
+                Map<String, dynamic>.from(item);
             normalizedItem['gallery_id'] = item['id'] ?? item['gallery_id'];
-            normalizedItem['gallery_image_url'] = item['image_url'] ?? item['gallery_image_url'];
-            normalizedItem['gallery_title'] = item['title'] ?? item['gallery_title'];
-            normalizedItem['gallery_price'] = item['price'] ?? item['gallery_price'];
-            normalizedItem['gallery_description'] = item['description'] ?? item['gallery_description'];
-            normalizedItem['gallery_category'] = item['category'] ?? item['gallery_category'];
+            normalizedItem['gallery_image_url'] =
+                item['image_url'] ?? item['gallery_image_url'];
+            normalizedItem['gallery_title'] =
+                item['title'] ?? item['gallery_title'];
+            normalizedItem['gallery_price'] =
+                item['price'] ?? item['gallery_price'];
+            normalizedItem['gallery_description'] =
+                item['description'] ?? item['gallery_description'];
+            normalizedItem['gallery_category'] =
+                item['category'] ?? item['gallery_category'];
 
             uniqueGallery[id] = normalizedItem;
-            final cat = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
+            final cat = normalizedItem['category']?.toString().trim() ??
+                normalizedItem['gallery_category']?.toString().trim();
             if (cat != null && cat.isNotEmpty && cat.toLowerCase() != 'all') {
               categorySet.add(cat);
             }
@@ -876,16 +955,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _fetchThreads() async {
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
     if (!isUuid || PocketRobotService.isRobotId(userId)) {
-      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(1);
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
       if (mounted) {
         setState(() {
-          _threadItems = robot.catchphrases.map((c) => {
-            'content': c,
-            'created_at': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
-            'user_id': robot.id,
-            'user_name': robot.name,
-            'user_image_url': robot.avatarUrl,
-          }).toList();
+          _threadItems = robot.catchphrases
+              .map((c) => {
+                    'content': c,
+                    'created_at': DateTime.now()
+                        .subtract(const Duration(hours: 3))
+                        .toIso8601String(),
+                    'user_id': robot.id,
+                    'user_name': robot.name,
+                    'user_image_url': robot.avatarUrl,
+                  })
+              .toList();
         });
       }
       return;
@@ -911,7 +995,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<Map<String, int>> _fetchFollowCountsMap() async {
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
     if (!isUuid || PocketRobotService.isRobotId(userId)) {
-      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(1);
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
       final dynLvl = PocketRobotService.getDynamicLevel(robot);
       return {
         'followers': 100 + (dynLvl * 14),
@@ -934,8 +1019,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           .eq('follower_id', userId);
 
       // Calculate mutual friends
-      final followerIds = (followersRes as List).map((e) => e['follower_id'].toString()).toSet();
-      final followingIds = (followingRes as List).map((e) => e['followed_id'].toString()).toSet();
+      final followerIds = (followersRes as List)
+          .map((e) => e['follower_id'].toString())
+          .toSet();
+      final followingIds = (followingRes as List)
+          .map((e) => e['followed_id'].toString())
+          .toSet();
       final mutualFriends = followerIds.intersection(followingIds);
 
       // Get base followers count from users table
@@ -953,7 +1042,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       // Also include accepted robot mates from local storage
       final prefs = await SharedPreferences.getInstance();
       final localMates = prefs.getStringList('pocket_mates_$userId') ?? [];
-      final robotMatesCount = localMates.where((id) => PocketRobotService.isRobotId(id)).length;
+      final robotMatesCount =
+          localMates.where((id) => PocketRobotService.isRobotId(id)).length;
 
       return {
         'followers': followerIds.length + baseFollowers + robotMatesCount,
@@ -1007,7 +1097,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _filteredGalleryItems = _galleryItems;
       } else {
         _filteredGalleryItems = _galleryItems.where((item) {
-          final cat = item['category']?.toString().trim() ?? item['gallery_category']?.toString().trim();
+          final cat = item['category']?.toString().trim() ??
+              item['gallery_category']?.toString().trim();
           return cat == category;
         }).toList();
       }
@@ -1045,11 +1136,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _followersCount += newFollow ? 1 : -1;
       });
       if (newFollow) {
-        await PocketRobotService.acceptRobotRequest(myId: myId, robotId: robot.id);
+        await PocketRobotService.acceptRobotRequest(
+            myId: myId, robotId: robot.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Connected with ${robot.name}! You are now Poket Mates ✨'),
+              content: Text(
+                  'Connected with ${robot.name}! You are now Poket Mates ✨'),
               backgroundColor: const Color(0xFF10B981),
               behavior: SnackBarBehavior.floating,
             ),
@@ -1082,7 +1175,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       try {
         if (_isRequested) {
-          final myProfile = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
+          final myProfile = await _supabase
+              .from('profile')
+              .select('name')
+              .eq('user_id', myId)
+              .maybeSingle();
           final myName = myProfile?['name'] ?? 'Someone';
           await _supabase.from('notifications').insert({
             'user_id': userId,
@@ -1204,7 +1301,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+                border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1286,7 +1384,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         contextType: 'english_hub',
                       );
                       // ⚡ Ensure PocketTalk 4-Day Pact is immediately created and placed in the main chat list
-                      await PocketTrophyService.ensurePact(myId: myId, otherUserId: userId);
+                      await PocketTrophyService.ensurePact(
+                          myId: myId, otherUserId: userId);
                       if (ok && mounted) {
                         setState(() => _isMateRequested = true);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -1365,17 +1464,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     // Contrast check: if background and text colors are same or too close, override text color
     var finalBtnTextColor = rawBtnTextColor;
-    if ((rawBtnColor.toARGB32() & 0xFFFFFF) == (rawBtnTextColor.toARGB32() & 0xFFFFFF) ||
-        (rawBtnColor.computeLuminance() - rawBtnTextColor.computeLuminance()).abs() < 0.15) {
-      finalBtnTextColor = rawBtnColor.computeLuminance() > 0.5 
-          ? const Color(0xFF1E293B) 
+    if ((rawBtnColor.toARGB32() & 0xFFFFFF) ==
+            (rawBtnTextColor.toARGB32() & 0xFFFFFF) ||
+        (rawBtnColor.computeLuminance() - rawBtnTextColor.computeLuminance())
+                .abs() <
+            0.15) {
+      finalBtnTextColor = rawBtnColor.computeLuminance() > 0.5
+          ? const Color(0xFF1E293B)
           : const Color(0xFFFFFFFF);
     }
 
     final bgColor = rawBgColor;
     final btnColor = _ensureContrast(rawBtnColor, bgColor, isButton: true);
     final textColor = _ensureContrast(rawTextColor, bgColor, isButton: false);
-    final btnTextColor = _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
+    final btnTextColor =
+        _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
 
     _ensurePublicTabController();
 
@@ -1391,412 +1494,967 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         successText: 'Profile updated! ✨',
         child: material.NestedScrollView(
           controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            material.SliverAppBar(
-              elevation: 0,
-              expandedHeight: 220.0,
-              pinned: true,
-              stretch: false,
-              backgroundColor:
-                  innerBoxIsScrolled ? bgColor : material.Colors.transparent,
-              leading: material.IconButton(
-                icon: const Icon(material.Icons.arrow_back, size: 22),
-                color: textColor,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              title: innerBoxIsScrolled
-                  ? Text(
-                      _profileData?['shop_name'] ?? _profileData?['name'] ?? '',
-                      style: GoogleFonts.outfit(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              material.SliverAppBar(
+                elevation: 0,
+                expandedHeight: 220.0,
+                pinned: true,
+                stretch: false,
+                backgroundColor:
+                    innerBoxIsScrolled ? bgColor : material.Colors.transparent,
+                leading: material.IconButton(
+                  icon: const Icon(material.Icons.arrow_back, size: 22),
+                  color: textColor,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                title: innerBoxIsScrolled
+                    ? Text(
+                        _profileData?['shop_name'] ??
+                            _profileData?['name'] ??
+                            '',
+                        style: GoogleFonts.outfit(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      )
+                    : null,
+                centerTitle: true,
+                actions: [
+                  if (isMe && _isAdminUser())
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            final next = (_getEffectiveDay() % 90) + 1;
+                            _jumpToDay(next);
+                          },
+                          onLongPress: () {
+                            _showStageTestingSwitcher(context);
+                          },
+                          child: Tooltip(
+                            message:
+                                '⚡ Admin Level Tester (Tap: +1 Level, Long-press: Pick 1-90)',
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 9, vertical: 5),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFF59E0B),
+                                    Color(0xFFFFD700)
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.4),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('🧪',
+                                      style: TextStyle(fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'LVL ${_getEffectiveDay()}',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    )
-                  : null,
-              centerTitle: true,
-              actions: [
-                if (isMe && _isAdminUser())
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          final next = (_getEffectiveDay() % 90) + 1;
-                          _jumpToDay(next);
-                        },
-                        onLongPress: () {
-                          _showStageTestingSwitcher(context);
-                        },
-                        child: Tooltip(
-                          message: '⚡ Admin Level Tester (Tap: +1 Level, Long-press: Pick 1-90)',
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    ),
+                  if (isMe) ...[
+                    FutureBuilder<bool>(
+                      future:
+                          PocketQuickAccountAccessService.canAccessQuickSwitch(
+                        userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                        email: _profileData?['email']?.toString() ??
+                            _supabase.auth.currentUser?.email,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == true) {
+                          return material.IconButton(
+                            icon: const Icon(
+                                material.Icons.switch_account_rounded,
+                                size: 22,
+                                color: Color(0xFFFFFC00)),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              AutoLoginBottomSheet.show(context);
+                            },
+                            tooltip: 'Quick Switch Account ⚡',
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    material.IconButton(
+                      icon: const Icon(material.Icons.fort_rounded,
+                          size: 22, color: Color(0xFFFFD700)),
+                      onPressed: () {
+                        final currentUid = widget.userId ??
+                            _supabase.auth.currentUser?.id ??
+                            '';
+                        final currentName = _profileData?['name'] ??
+                            _profileData?['username'] ??
+                            'Learner';
+                        PocketCitadelAttackPage.openForUser(
+                          context,
+                          userId: currentUid,
+                          targetName: currentName,
+                          isDefenseMode: true,
+                        );
+                      },
+                      tooltip: 'My House & Citadel Profile 🏰',
+                    ),
+                    material.IconButton(
+                      icon:
+                          const Icon(material.Icons.settings_rounded, size: 22),
+                      color: textColor,
+                      onPressed: () {
+                        material.Navigator.push(
+                          context,
+                          material.MaterialPageRoute(
+                            builder: (context) => const SettingsPage(),
+                          ),
+                        );
+                      },
+                      tooltip: 'Settings',
+                    ),
+                  ],
+                  if (!isMe)
+                    PopupMenuButton<String>(
+                      icon: const Icon(material.Icons.more_vert),
+                      color: bgColor,
+                      iconColor: textColor,
+                      onSelected: (value) async {
+                        final myId = _supabase.auth.currentUser?.id;
+                        if (value == 'Report') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Report submitted. Thank you for keeping Poket Mates safe.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        } else if (value == 'Block') {
+                          final isUuid =
+                              RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+                          final isRobot =
+                              PocketRobotService.isRobotId(userId) || !isUuid;
+                          if (myId != null) {
+                            final prefs = await SharedPreferences.getInstance();
+                            final blocked =
+                                prefs.getStringList('blocked_users_$myId') ??
+                                    [];
+                            if (!blocked.contains(userId)) {
+                              blocked.add(userId);
+                              await prefs.setStringList(
+                                  'blocked_users_$myId', blocked);
+                            }
+                            final mates =
+                                prefs.getStringList('pocket_mates_$myId') ?? [];
+                            mates.remove(userId);
+                            await prefs.setStringList(
+                                'pocket_mates_$myId', mates);
+
+                            if (!isRobot) {
+                              try {
+                                await _supabase.from('blocks').insert(
+                                    {'blocker_id': myId, 'blocked_id': userId});
+                                await _supabase
+                                    .from('follows')
+                                    .delete()
+                                    .eq('follower_id', myId)
+                                    .eq('followed_id', userId);
+                              } catch (_) {}
+                            }
+                          }
+                          if (mounted) {
+                            setState(() {
+                              _isBlocked = true;
+                              _isFollowing = false;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('User blocked.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'Report',
+                          child: Text('Report'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'Block',
+                          child: Text('Block',
+                              style: TextStyle(color: material.Colors.red)),
+                        ),
+                      ],
+                    ),
+                ],
+                flexibleSpace: material.FlexibleSpaceBar(
+                  background: _buildBanner(),
+                  collapseMode: material.CollapseMode.parallax,
+                ),
+              ),
+              material.SliverToBoxAdapter(
+                child: _buildProfileHeader(
+                    textColor, btnColor, btnTextColor, isMe),
+              ),
+              if (!(_profileData?['is_private'] == true &&
+                      !_isFollowing &&
+                      !isMe) &&
+                  _isPublicProfileView)
+                material.SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverAppBarDelegate(
+                    material.TabBar(
+                      key: ValueKey('tab_bar_public_$isMe'),
+                      controller: _publicTabController,
+                      labelColor: textColor,
+                      unselectedLabelColor: textColor.withValues(alpha: 0.5),
+                      indicatorColor: btnColor,
+                      indicatorWeight: 3,
+                      labelStyle:
+                          GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                      tabs: const [
+                        material.Tab(text: "💭 Thoughts"),
+                        material.Tab(text: "🎴 Cards"),
+                      ],
+                    ),
+                    bgColor,
+                  ),
+                ),
+            ];
+          },
+          body: Container(
+            color: bgColor,
+            child: !_isPublicProfileView
+                ? SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        if (_isHouseProtected) ...[
+                          // 🚧 Yellow & Black Police Crime Scene Tape & Sentries (User Audio Directive)
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFFF59E0B), Color(0xFFFFD700)],
+                                colors: [Color(0xFFFEF08A), Color(0xFFFDE047)],
                               ),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: const Color(0xFFCA8A04), width: 1.5),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                  color: Colors.black.withValues(alpha: 0.15),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Column(
                               children: [
-                                const Text('🧪', style: TextStyle(fontSize: 12)),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'LVL ${_getEffectiveDay()}',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('🚧',
+                                        style: TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'CRIME SCENE • DO NOT CROSS • POLICE INVESTIGATION',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF78350F),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const Text('🚧',
+                                        style: TextStyle(fontSize: 14)),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('👮‍♂️ 🚔 👮‍♀️',
+                                          style: TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '24H PRESIDENTIAL POLICE SHIELD (${(_protectionMinutesLeft / 60).toStringAsFixed(1)}h remaining)',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF38BDF8),
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                        ],
+                        FlameEnglishHouseWidget(
+                          key: ValueKey('house_${_getEffectiveDay()}'),
+                          currentDay: _getEffectiveDay(),
+                          streak: (_profileData?['daily_streak'] as num?)
+                                  ?.toInt() ??
+                              1,
+                          isDamaged: _fortressStatus?.isDamaged ?? false,
+                          houseId: isMe ? 'me' : (widget.userId ?? ''),
+                          showTestingControls: isMe && _isAdminUser(),
+                          onDayChanged: (d) => _jumpToDay(d),
                         ),
-                      ),
-                    ),
-                  ),
-                if (isMe) ...[
-                  material.IconButton(
-                    icon: const Icon(material.Icons.fort_rounded, size: 22, color: Color(0xFFFFD700)),
-                    onPressed: () {
-                      final currentUid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
-                      final currentName = _profileData?['name'] ?? _profileData?['username'] ?? 'Learner';
-                      PocketCitadelAttackPage.openForUser(
-                        context,
-                        userId: currentUid,
-                        targetName: currentName,
-                        isDefenseMode: true,
-                      );
-                    },
-                    tooltip: 'My House & Citadel Profile 🏰',
-                  ),
-                  material.IconButton(
-                    icon: const Icon(material.Icons.settings_rounded, size: 22),
-                    color: textColor,
-                    onPressed: () {
-                      material.Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (context) => const SettingsPage(),
-                        ),
-                      );
-                    },
-                    tooltip: 'Settings',
-                  ),
-                ],
-                if (!isMe)
-                  PopupMenuButton<String>(
-                    icon: const Icon(material.Icons.more_vert),
-                    color: bgColor,
-                    iconColor: textColor,
-                    onSelected: (value) async {
-                      final myId = _supabase.auth.currentUser?.id;
-                      if (value == 'Report') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Report submitted. Thank you for keeping Poket Mates safe.'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      } else if (value == 'Block') {
-                        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-                        final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
-                        if (myId != null) {
-                          final prefs = await SharedPreferences.getInstance();
-                          final blocked = prefs.getStringList('blocked_users_$myId') ?? [];
-                          if (!blocked.contains(userId)) {
-                            blocked.add(userId);
-                            await prefs.setStringList('blocked_users_$myId', blocked);
-                          }
-                          final mates = prefs.getStringList('pocket_mates_$myId') ?? [];
-                          mates.remove(userId);
-                          await prefs.setStringList('pocket_mates_$myId', mates);
-
-                          if (!isRobot) {
-                            try {
-                              await _supabase.from('blocks').insert({'blocker_id': myId, 'blocked_id': userId});
-                              await _supabase.from('follows').delete().eq('follower_id', myId).eq('followed_id', userId);
-                            } catch (_) {}
-                          }
-                        }
-                        if (mounted) {
-                          setState(() {
-                            _isBlocked = true;
-                            _isFollowing = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('User blocked.'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'Report',
-                        child: Text('Report'),
-                      ),
-                      const PopupMenuItem(
-                        value: 'Block',
-                        child: Text('Block', style: TextStyle(color: material.Colors.red)),
-                      ),
-                    ],
-                  ),
-              ],
-              flexibleSpace: material.FlexibleSpaceBar(
-                background: _buildBanner(),
-                collapseMode: material.CollapseMode.parallax,
-              ),
-            ),
-            material.SliverToBoxAdapter(
-              child:
-                  _buildProfileHeader(textColor, btnColor, btnTextColor, isMe),
-            ),
-            if (!(_profileData?['is_private'] == true && !_isFollowing && !isMe) &&
-                _isPublicProfileView)
-              material.SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  material.TabBar(
-                    key: ValueKey('tab_bar_public_$isMe'),
-                    controller: _publicTabController,
-                    labelColor: textColor,
-                    unselectedLabelColor: textColor.withValues(alpha: 0.5),
-                    indicatorColor: btnColor,
-                    indicatorWeight: 3,
-                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      material.Tab(text: "💭 Thoughts"),
-                    ],
-                  ),
-                  bgColor,
-                ),
-              ),
-          ];
-        },
-        body: Container(
-          color: bgColor,
-          child: !_isPublicProfileView
-              ? SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      FlameEnglishHouseWidget(
-                        key: ValueKey('house_${_getEffectiveDay()}'),
-                        currentDay: _getEffectiveDay(),
-                        streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
-                        isDamaged: _fortressStatus?.isDamaged ?? false,
-                        houseId: isMe ? 'me' : (widget.userId ?? ''),
-                        showTestingControls: isMe && _isAdminUser(),
-                        onDayChanged: (d) => _jumpToDay(d),
-                      ),
-                      if (_recentRaids.isNotEmpty) ...[
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF7F1D1D), Color(0xFF1E1B4B)],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.6)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.redAccent.withValues(alpha: 0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
+                        if (_recentRaids.isNotEmpty) ...[
+                          // 🚨 POLICE CRIME REPORT & REVENGE DOSSIER (User Audio Directive!)
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.redAccent.withValues(alpha: 0.25),
-                                  shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: _recentRaids.first.breached
+                                    ? const Color(0xFFEF4444)
+                                    : const Color(0xFF38BDF8),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (_recentRaids.first.breached
+                                          ? const Color(0xFFEF4444)
+                                          : const Color(0xFF38BDF8))
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
                                 ),
-                                child: Text(_recentRaids.first.attackerAvatar, style: const TextStyle(fontSize: 18)),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Top Header Row
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            '⚔️ CITADEL SIEGE ALERT',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444)
+                                            .withValues(alpha: 0.2),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Text('🚨',
+                                          style: TextStyle(fontSize: 16)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
                                             style: GoogleFonts.outfit(
-                                              color: const Color(0xFFFCA5A5),
+                                              color: const Color(0xFFFFD700),
                                               fontWeight: FontWeight.w900,
                                               fontSize: 12,
                                               letterSpacing: 0.5,
                                             ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          _recentRaids.first.breached ? '💥 Breached (-60 HP)' : '🛡️ Repelled',
-                                          style: TextStyle(
-                                            color: _recentRaids.first.breached ? const Color(0xFFF87171) : const Color(0xFF34D399),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11.5,
+                                          Text(
+                                            _recentRaids.first.breached
+                                                ? 'Crime Scene Secured • Suspect Identified'
+                                                : 'Defenses Held Firm • Suspect Repelled',
+                                            style: TextStyle(
+                                              color: _recentRaids.first.breached
+                                                  ? const Color(0xFFFCA5A5)
+                                                  : const Color(0xFF86EFAC),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      'Attacked by ${_recentRaids.first.attackerName} using ${_recentRaids.first.attackerWeapon}!',
-                                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                      overflow: TextOverflow.ellipsis,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _recentRaids.first.breached
+                                            ? const Color(0xFFEF4444)
+                                                .withValues(alpha: 0.2)
+                                            : const Color(0xFF10B981)
+                                                .withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: _recentRaids.first.breached
+                                              ? const Color(0xFFF87171)
+                                              : const Color(0xFF34D399),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _recentRaids.first.breached
+                                            ? '-${_recentRaids.first.coinsLooted > 0 ? _recentRaids.first.coinsLooted : 15} PS LOOTED'
+                                            : '0 PS LOST',
+                                        style: GoogleFonts.outfit(
+                                          color: _recentRaids.first.breached
+                                              ? const Color(0xFFF87171)
+                                              : const Color(0xFF34D399),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 10.5,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (!isMe) ...[
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 46,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFDC2626),
-                                foregroundColor: Colors.white,
-                                elevation: 6,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              ),
-                              onPressed: () {
-                                final day = _getEffectiveDay();
-                                final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => PocketWorldStreetPage(
-                                      currentDay: day,
-                                      streak: streak,
-                                    ),
+                                const SizedBox(height: 10),
+                                // Suspect & Raid Details
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white12),
                                   ),
-                                );
-                              },
-                              icon: const Icon(Icons.flash_on_rounded, size: 20),
-                              label: Text(
-                                'VISIT ON STREET & RAID CITADEL ⚔️',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  letterSpacing: 0.5,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1E293B),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: const Color(0xFFFFD700),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          _recentRaids.first.attackerAvatar,
+                                          style: const TextStyle(fontSize: 22),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Raider: ${_recentRaids.first.attackerName}',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Weapon: ${_recentRaids.first.attackerWeapon}',
+                                              style: GoogleFonts.inter(
+                                                color: Colors.white70,
+                                                fontSize: 11,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 10),
+                                // ⚔️ 1-Tap REVENGE BUTTON (User Audio Directive!)
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 44,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      foregroundColor: Colors.white,
+                                      elevation: 4,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    icon: const Text('⚔️',
+                                        style: TextStyle(fontSize: 15)),
+                                    label: Text(
+                                      'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
+                                      style: GoogleFonts.outfit(
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 12,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      HapticFeedback.heavyImpact();
+                                      final targetId =
+                                          _recentRaids.first.attackerId;
+                                      if (targetId.isNotEmpty &&
+                                          targetId != 'me') {
+                                        final isTargetProt =
+                                            await PocketFortressDefenseService
+                                                .isUnderPresidentialProtection(
+                                                    targetId);
+                                        if (isTargetProt) {
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    '👮‍♂️ Suspect is currently under 24-Hour Presidential Protection! You can launch Revenge once their protection expires.'),
+                                                backgroundColor:
+                                                    Color(0xFF0284C7),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          PocketCitadelAttackPage.openForUser(
+                                            context,
+                                            userId: targetId,
+                                            targetName:
+                                                _recentRaids.first.attackerName,
+                                          ).then((_) =>
+                                              _loadFortressDefenseData());
+                                        }
+                                      } else {
+                                        // If attackerId is empty or mock, attack rival
+                                        final rival =
+                                            await PocketFortressDefenseService
+                                                .getRecommendedRivalTarget(
+                                                    userDay:
+                                                        _getEffectiveDay());
+                                        if (mounted) {
+                                          PocketCitadelAttackPage.openForUser(
+                                            context,
+                                            userId: rival.id,
+                                            targetName: rival.name,
+                                          ).then((_) =>
+                                              _loadFortressDefenseData());
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      if (_fortressStatus?.presidentNotice != null) ...[
-                        _buildPresidentNoticeBanner(),
-                        const SizedBox(height: 16),
-                      ],
-                      if (_fortressStatus?.isJailed == true) ...[
-                        _buildJailSentenceBanner(),
-                        const SizedBox(height: 16),
-                      ],
-                      _buildMinimalDefenseSection(textColor, btnColor),
-                      if (isMe) ...[
-                        const SizedBox(height: 16),
-                        _buildMinimalAttackersSection(),
-                      ],
-                      const SizedBox(height: 32),
-                    ],
-                  ),
-                )
-              : ((_profileData?['is_private'] == true || !_isMate) && !isMe)
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(22),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E1B4B),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 1.5),
-                            ),
-                            child: const Text('🔒', style: TextStyle(fontSize: 40)),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "Profile Locked: PocketTalk in Progress",
-                            style: GoogleFonts.outfit(
-                              color: textColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
+                        ],
+                        if (!isMe) ...[
+                          const SizedBox(height: 12),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                color: textColor.withValues(alpha: 0.65),
-                                fontSize: 13,
-                                height: 1.4,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFDC2626),
+                                  foregroundColor: Colors.white,
+                                  elevation: 6,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14)),
+                                ),
+                                onPressed: () {
+                                  final day = _getEffectiveDay();
+                                  final streak =
+                                      (_profileData?['daily_streak'] as num?)
+                                              ?.toInt() ??
+                                          1;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PocketWorldStreetPage(
+                                        currentDay: day,
+                                        streak: streak,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.flash_on_rounded,
+                                    size: 20),
+                                label: Text(
+                                  'VISIT ON STREET & RAID CITADEL ⚔️',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13.5,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ],
+                        const SizedBox(height: 24),
+                        if (_fortressStatus?.presidentNotice != null) ...[
+                          _buildPresidentNoticeBanner(),
+                          const SizedBox(height: 16),
+                        ],
+                        if (_fortressStatus?.isJailed == true) ...[
+                          _buildJailSentenceBanner(),
+                          const SizedBox(height: 16),
+                        ],
+                        _buildMinimalDefenseSection(textColor, btnColor),
+                        if (isMe) ...[
+                          const SizedBox(height: 16),
+                          _buildMinimalAttackersSection(),
+                        ],
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  )
+                : ((_profileData?['is_private'] == true || !_isMate) && !isMe)
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E1B4B),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.4),
+                                    width: 1.5),
+                              ),
+                              child: const Text('🔒',
+                                  style: TextStyle(fontSize: 40)),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              "Profile Locked: PocketTalk in Progress",
+                              style: GoogleFonts.outfit(
+                                color: textColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32),
+                              child: Text(
+                                "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  color: textColor.withValues(alpha: 0.65),
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: material.TabBarView(
+                              key: ValueKey('tab_view_public_$isMe'),
+                              controller: _publicTabController,
+                              children: [
+                                _ThreadsTab(
+                                  items: _threadItems,
+                                  textColor: textColor,
+                                  btnColor: btnColor,
+                                  btnTextColor: btnTextColor,
+                                ),
+                                _buildAdultCardsTab(textColor, bgColor),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  : Column(
-                      children: [
-                        Expanded(
-                          child: material.TabBarView(
-                            key: ValueKey('tab_view_public_$isMe'),
-                            controller: _publicTabController,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
+    );
+  }
+
+  /// 🎴 Collectible Milestone PopArt Cards Tab for Public Profiles (User Audio Directive!)
+  Widget _buildAdultCardsTab(Color textColor, Color bgColor) {
+    final effectiveDay = _getEffectiveDay().clamp(1, 90);
+    final genderStr = _profileData?['gender']?.toString().toLowerCase() ?? '';
+    final isMale = genderStr == 'male' ||
+        genderStr == 'boy' ||
+        (!genderStr.contains('female') && !genderStr.contains('girl'));
+
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 40),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text('🎴', style: TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'COLLECTIBLE MILESTONE CARDS',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      '$effectiveDay / 90 Milestone Cards Unlocked',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF94A3B8),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 0.72,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: 90,
+          itemBuilder: (context, index) {
+            final cardDay = index + 1;
+            final isUnlocked = cardDay <= effectiveDay;
+            final card =
+                PopArtCardHelper.getCardForDay(cardDay, isMale: isMale);
+
+            final gameInfo = PocketCitadelChallengeGenerator.getGameForUserCard(
+                widget.userId ?? 'adult_hero', cardDay);
+            final difficulty =
+                PocketCitadelChallengeGenerator.getDifficultyForUserCard(
+                    widget.userId ?? 'adult_hero', cardDay);
+
+            if (!isUnlocked) {
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  PocketDefenseCardDetailSheet.show(
+                    context,
+                    card: card,
+                    cardDay: cardDay,
+                    gameInfo: gameInfo,
+                    difficulty: difficulty,
+                    isUnlocked: false,
+                    isCardLost: false,
+                    isKidMode: false,
+                    defenderId: widget.userId ?? 'adult_hero',
+                    defenderName: _profileData?['username'] ??
+                        _profileData?['name'] ??
+                        'Defender',
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12, width: 1),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.lock_rounded,
+                          color: Color(0xFF64748B), size: 22),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Day $cardDay',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'LOCKED',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF475569),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return GestureDetector(
+              onTap: () {
+                PocketDefenseCardDetailSheet.show(
+                  context,
+                  card: card,
+                  cardDay: cardDay,
+                  gameInfo: gameInfo,
+                  difficulty: difficulty,
+                  isUnlocked: true,
+                  isCardLost: false,
+                  isKidMode: false,
+                  defenderId: widget.userId ?? 'adult_hero',
+                  defenderName: _profileData?['username'] ??
+                      _profileData?['name'] ??
+                      'Defender',
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10.5),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CustomPaint(painter: PopArtCardCustomPainter(data: card)),
+                      Positioned(
+                        top: 3,
+                        left: 3,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Day $cardDay',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 3,
+                        left: 3,
+                        right: 3,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 3, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color:
+                                const Color(0xFF0F172A).withValues(alpha: 0.90),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                                color: const Color(0xFF38BDF8), width: 0.6),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _ThreadsTab(
-                                items: _threadItems,
-                                textColor: textColor,
-                                btnColor: btnColor,
-                                btnTextColor: btnTextColor,
+                              Text(gameInfo.icon,
+                                  style: const TextStyle(fontSize: 7.5)),
+                              const SizedBox(width: 2),
+                              Flexible(
+                                child: Text(
+                                  gameInfo.title,
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 7,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
-      ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
+      ],
     );
   }
 
@@ -1898,7 +2556,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close_rounded, color: isDark ? Colors.white60 : Colors.black45, size: 22),
+                      icon: Icon(Icons.close_rounded,
+                          color: isDark ? Colors.white60 : Colors.black45,
+                          size: 22),
                       onPressed: () => Navigator.pop(ctx),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -1969,7 +2629,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             color: isDark ? const Color(0xFF262A35) : const Color(0xFFF3F4F6),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.05),
             ),
           ),
           child: Row(
@@ -2039,7 +2701,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               child: Container(
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E2129) : Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: SafeArea(
@@ -2060,7 +2723,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close_rounded, color: isDark ? Colors.white60 : Colors.black45),
+                            icon: Icon(Icons.close_rounded,
+                                color:
+                                    isDark ? Colors.white60 : Colors.black45),
                             onPressed: () => Navigator.pop(ctx),
                           ),
                         ],
@@ -2071,12 +2736,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         maxLines: 4,
                         maxLength: 300,
                         autofocus: true,
-                        style: GoogleFonts.outfit(color: isDark ? Colors.white : Colors.black87, fontSize: 15),
+                        style: GoogleFonts.outfit(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 15),
                         decoration: InputDecoration(
-                          hintText: "What's on your mind today? Write in English or Malayalam...",
-                          hintStyle: GoogleFonts.outfit(color: isDark ? Colors.white38 : Colors.black38),
+                          hintText:
+                              "What's on your mind today? Write in English or Malayalam...",
+                          hintStyle: GoogleFonts.outfit(
+                              color: isDark ? Colors.white38 : Colors.black38),
                           filled: true,
-                          fillColor: isDark ? const Color(0xFF262A35) : const Color(0xFFF9FAFB),
+                          fillColor: isDark
+                              ? const Color(0xFF262A35)
+                              : const Color(0xFFF9FAFB),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -2102,13 +2773,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     });
 
                                     if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             'Thought posted successfully! ✨',
-                                            style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                                            style: GoogleFonts.outfit(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold),
                                           ),
-                                          backgroundColor: const Color(0xFFFFFC00),
+                                          backgroundColor:
+                                              const Color(0xFFFFFC00),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -2118,8 +2793,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   } catch (e) {
                                     setModalState(() => isSubmitting = false);
                                     if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to post thought: $e')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Failed to post thought: $e')),
                                       );
                                     }
                                   }
@@ -2128,13 +2806,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             backgroundColor: const Color(0xFFFFFC00),
                             foregroundColor: Colors.black,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
                           ),
                           child: isSubmitting
                               ? const SizedBox(
                                   width: 22,
                                   height: 22,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.black),
                                 )
                               : Text(
                                   'Post Thought',
@@ -2160,7 +2840,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _pickAndUploadGalleryImage() async {
     try {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      final picked =
+          await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
       if (picked == null) return;
 
       if (mounted) {
@@ -2171,12 +2852,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.black),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'Uploading image to gallery...',
-                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.black, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -2188,12 +2871,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
 
       final bytes = await picked.readAsBytes();
-      final fileName = 'gallery_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'gallery_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       await _supabase.storage.from('gallery').uploadBinary(
-        fileName,
-        bytes,
-        fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
-      );
+            fileName,
+            bytes,
+            fileOptions:
+                const FileOptions(contentType: 'image/jpeg', upsert: true),
+          );
       final imageUrl = _supabase.storage.from('gallery').getPublicUrl(fileName);
 
       await _supabase.from('gallery').insert({
@@ -2214,7 +2899,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 const SizedBox(width: 8),
                 Text(
                   'Added to gallery! ✨',
-                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.black, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -2260,7 +2946,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               color: const Color(0xFF0284C7).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 18),
+            child: const Icon(Icons.shield_rounded,
+                color: Color(0xFF38BDF8), size: 18),
           ),
           title: Row(
             children: [
@@ -2276,13 +2963,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: hasQuestions ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.white10,
+                  color: hasQuestions
+                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                      : Colors.white10,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   hasQuestions ? '${_shieldQuestions.length} Armed' : '0 Armed',
                   style: TextStyle(
-                    color: hasQuestions ? const Color(0xFF34D399) : Colors.white54,
+                    color:
+                        hasQuestions ? const Color(0xFF34D399) : Colors.white54,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -2307,7 +2997,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 itemCount: _shieldQuestions.length,
-                separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 12),
+                separatorBuilder: (_, __) =>
+                    const Divider(color: Colors.white10, height: 12),
                 itemBuilder: (context, index) {
                   final q = _shieldQuestions[index];
                   return Container(
@@ -2325,10 +3016,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       children: [
                         Builder(
                           builder: (context) {
-                            final info = PocketCitadelChallengeGenerator.getGameInfo(q.gameFormat);
+                            final info =
+                                PocketCitadelChallengeGenerator.getGameInfo(
+                                    q.gameFormat);
                             final diffColor = q.difficulty == 'easy'
                                 ? const Color(0xFF10B981)
-                                : (q.difficulty == 'hard' ? const Color(0xFFF43F5E) : const Color(0xFFF59E0B));
+                                : (q.difficulty == 'hard'
+                                    ? const Color(0xFFF43F5E)
+                                    : const Color(0xFFF59E0B));
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -2336,10 +3031,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                                          colors: [
+                                            Color(0xFF0284C7),
+                                            Color(0xFF0369A1)
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
@@ -2354,11 +3053,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     ),
                                     const SizedBox(width: 6),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: diffColor.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(color: diffColor, width: 0.8),
+                                        border: Border.all(
+                                            color: diffColor, width: 0.8),
                                       ),
                                       child: Text(
                                         q.difficulty.toUpperCase(),
@@ -2373,7 +3074,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 ),
                                 if (isMe)
                                   IconButton(
-                                    icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 18),
+                                    icon: const Icon(Icons.edit_note_rounded,
+                                        color: Color(0xFF38BDF8), size: 18),
                                     tooltip: 'Configure Defense',
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
@@ -2391,7 +3093,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 else
                                   const Text(
                                     '🛡️ Armed',
-                                    style: TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        color: Color(0xFF34D399),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold),
                                   ),
                               ],
                             );
@@ -2399,30 +3104,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          isMe ? q.question : 'Guarded Defense Question #${index + 1} 🔒',
+                          isMe
+                              ? q.question
+                              : 'Guarded Defense Question #${index + 1} 🔒',
                           style: TextStyle(
                             color: isMe ? Colors.white : Colors.white70,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            fontStyle: isMe ? FontStyle.normal : FontStyle.italic,
+                            fontStyle:
+                                isMe ? FontStyle.normal : FontStyle.italic,
                           ),
                         ),
-                        if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
+                        if (isMe &&
+                            q.options.isNotEmpty &&
+                            q.correctIndex < q.options.length) ...[
                           const SizedBox(height: 4),
                           Text(
                             'Answer: ${q.options[q.correctIndex]}',
-                            style: const TextStyle(color: Color(0xFF34D399), fontSize: 11.5, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                                color: Color(0xFF34D399),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600),
                           ),
                         ] else if (!isMe) ...[
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.lock_rounded, color: Color(0xFFFFFC00), size: 12),
+                              const Icon(Icons.lock_rounded,
+                                  color: Color(0xFFFFFC00), size: 12),
                               const SizedBox(width: 4),
                               Text(
                                 'Encrypted Defense • Revealed only during Citadel Raid',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.8),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -2444,8 +3159,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF59E0B),
                       foregroundColor: const Color(0xFF0F172A),
-                      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 11, horizontal: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       elevation: 3,
                     ),
                     onPressed: () {
@@ -2462,7 +3179,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.gps_fixed_rounded, size: 18, color: Color(0xFF0F172A)),
+                            const Icon(Icons.gps_fixed_rounded,
+                                size: 18, color: Color(0xFF0F172A)),
                             const SizedBox(width: 6),
                             Text(
                               '🎯 ട്രയൽ അറ്റാക്ക് (TRIAL ATTACK)',
@@ -2477,7 +3195,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         const SizedBox(height: 2),
                         Text(
                           'സ്വന്തം വീട് അറ്റാക്ക് ചെയ്ത് ഡിഫൻസ് പരിശോധിക്കാം (പോയിന്റുകൾ നഷ്ടപ്പെടില്ല)',
-                          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                          style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1E293B)),
                         ),
                       ],
                     ),
@@ -2489,7 +3210,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Text(
                   'No defense questions set yet. Earn and arm defense questions by advancing in daily learning levels!',
-                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11.5),
+                  style:
+                      GoogleFonts.inter(color: Colors.white38, fontSize: 11.5),
                 ),
               ),
           ],
@@ -2536,9 +3258,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
+                icon: const Icon(Icons.close_rounded,
+                    color: Colors.white70, size: 18),
                 onPressed: () async {
-                  await PocketFortressDefenseService.dismissPresidentNotice('me');
+                  await PocketFortressDefenseService.dismissPresidentNotice(
+                      'me');
                   _loadFortressDefenseData();
                 },
               ),
@@ -2546,8 +3270,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
           const SizedBox(height: 4),
           Text(
-            _fortressStatus?.presidentNotice ?? 'A warning has been issued regarding your defense questions.',
-            style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+            _fortressStatus?.presidentNotice ??
+                'A warning has been issued regarding your defense questions.',
+            style:
+                const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -2556,13 +3282,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF59E0B),
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(vertical: 8),
               ),
-              icon: const Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.black),
+              icon: const Icon(Icons.check_circle_outline_rounded,
+                  size: 16, color: Colors.black),
               label: Text(
                 'I UNDERSTAND & WILL UPDATE DEFENSES',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 11.5),
               ),
               onPressed: () async {
                 await PocketFortressDefenseService.dismissPresidentNotice('me');
@@ -2602,7 +3331,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             decoration: BoxDecoration(
               color: Colors.black45,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+              border: Border.all(
+                  color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
             ),
             child: const Text('⛓️', style: TextStyle(fontSize: 24)),
           ),
@@ -2623,7 +3353,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 const SizedBox(height: 2),
                 Text(
                   '$days Days Remaining • Locked from raiding other citadels due to reported fake defense traps.',
-                  style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.3),
+                  style: const TextStyle(
+                      color: Colors.white70, fontSize: 11, height: 1.3),
                 ),
               ],
             ),
@@ -2673,7 +3404,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(
                 bottom: BorderSide(
                   color: Colors.white.withValues(alpha: 0.08),
@@ -2714,11 +3446,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
                               color: Colors.redAccent.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.redAccent, width: 0.8),
+                              border: Border.all(
+                                  color: Colors.redAccent, width: 0.8),
                             ),
                             child: Text(
                               'കള്ളനെ കണ്ടെത്തി!',
@@ -2770,7 +3504,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         const SizedBox(height: 3),
                         Text(
                           'ഇതുവരെ ആരും വീട് ആക്രമിച്ചിട്ടില്ല • കള്ളന്മാരുടെ വിവരങ്ങൾ ഇവിടെ കാണാം',
-                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                          style: GoogleFonts.inter(
+                              color: Colors.white54, fontSize: 10.5),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -2778,7 +3513,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   )
                 : Column(
                     children: _recentRaids.map((entry) {
-                      final timeDiff = DateTime.now().difference(entry.timestamp);
+                      final timeDiff =
+                          DateTime.now().difference(entry.timestamp);
                       final timeText = timeDiff.inHours < 1
                           ? '${timeDiff.inMinutes.clamp(1, 60)}m ago'
                           : (timeDiff.inHours < 24
@@ -2795,8 +3531,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             color: entry.breached
                                 ? Colors.redAccent.withValues(alpha: 0.45)
                                 : (entry.ironDomeBlocked
-                                    ? const Color(0xFF00F0FF).withValues(alpha: 0.35)
-                                    : const Color(0xFF10B981).withValues(alpha: 0.35)),
+                                    ? const Color(0xFF00F0FF)
+                                        .withValues(alpha: 0.35)
+                                    : const Color(0xFF10B981)
+                                        .withValues(alpha: 0.35)),
                             width: 1.2,
                           ),
                           boxShadow: [
@@ -2828,7 +3566,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   ),
                                   child: Center(
                                     child: Text(
-                                      entry.attackerAvatar.isNotEmpty ? entry.attackerAvatar : '⚔️',
+                                      entry.attackerAvatar.isNotEmpty
+                                          ? entry.attackerAvatar
+                                          : '⚔️',
                                       style: const TextStyle(fontSize: 22),
                                     ),
                                   ),
@@ -2836,7 +3576,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -2853,11 +3594,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                           ),
                                           const SizedBox(width: 6),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 1.5),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(5),
-                                              border: Border.all(color: const Color(0xFF60A5FA), width: 0.8),
+                                              color: const Color(0xFF3B82F6)
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              border: Border.all(
+                                                  color:
+                                                      const Color(0xFF60A5FA),
+                                                  width: 0.8),
                                             ),
                                             child: Text(
                                               '🕵️‍♂️ കള്ളൻ',
@@ -2873,7 +3620,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       const SizedBox(height: 3),
                                       Row(
                                         children: [
-                                          const Icon(Icons.flash_on_rounded, size: 12, color: Colors.amber),
+                                          const Icon(Icons.flash_on_rounded,
+                                              size: 12, color: Colors.amber),
                                           const SizedBox(width: 3),
                                           Flexible(
                                             child: Text(
@@ -2908,16 +3656,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 // Stolen / Defended Score pill
                                 if (entry.breached)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.red.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                                      border: Border.all(
+                                          color: Colors.redAccent
+                                              .withValues(alpha: 0.5)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Text('📉', style: TextStyle(fontSize: 11)),
+                                        const Text('📉',
+                                            style: TextStyle(fontSize: 11)),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Stole -${entry.coinsLooted} Pocket Score',
@@ -2932,16 +3684,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   )
                                 else if (entry.ironDomeBlocked)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
+                                      color: const Color(0xFF00F0FF)
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.5)),
+                                      border: Border.all(
+                                          color: const Color(0xFF00F0FF)
+                                              .withValues(alpha: 0.5)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Text('🛡️', style: TextStyle(fontSize: 11)),
+                                        const Text('🛡️',
+                                            style: TextStyle(fontSize: 11)),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Iron Dome Blocked (0 Lost)',
@@ -2956,16 +3713,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   )
                                 else
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                      color: const Color(0xFF10B981)
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                                      border: Border.all(
+                                          color: const Color(0xFF10B981)
+                                              .withValues(alpha: 0.5)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const Text('🛡️', style: TextStyle(fontSize: 11)),
+                                        const Text('🛡️',
+                                            style: TextStyle(fontSize: 11)),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Defense Held (0 Lost)',
@@ -2987,51 +3749,81 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     onTap: () async {
                                       HapticFeedback.heavyImpact();
                                       final targetId = entry.attackerId;
-                                      if (targetId.isEmpty || targetId == userId || targetId == 'me') {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                      if (targetId.isEmpty ||
+                                          targetId == userId ||
+                                          targetId == 'me') {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
-                                            content: Text('Cannot retaliate against unknown or self raider.'),
+                                            content: Text(
+                                                'Cannot retaliate against unknown or self raider.'),
                                             backgroundColor: Color(0xFF1E293B),
                                           ),
                                         );
                                         return;
                                       }
-                                      final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
+                                      final isProtected =
+                                          await PocketFortressDefenseService
+                                              .isUnderPresidentialProtection(
+                                                  targetId);
                                       if (isProtected) {
-                                        final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId);
-                                        final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                                        final remainingMinutes =
+                                            await PocketFortressDefenseService
+                                                .getPresidentialProtectionMinutesRemaining(
+                                                    targetId);
+                                        final hours = (remainingMinutes / 60.0)
+                                            .toStringAsFixed(1);
                                         if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
                                               content: Row(
                                                 children: [
-                                                  const Text('👮‍♂️', style: TextStyle(fontSize: 16)),
+                                                  const Text('👮‍♂️',
+                                                      style: TextStyle(
+                                                          fontSize: 16)),
                                                   const SizedBox(width: 8),
                                                   Expanded(
                                                     child: Text(
                                                       'Attacker is under 24h Presidential Protection ($hours hrs left). Revenge temporarily blocked!',
-                                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                                      style: GoogleFonts.outfit(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                              backgroundColor: const Color(0xFF1E3A8A),
-                                              behavior: SnackBarBehavior.floating,
+                                              backgroundColor:
+                                                  const Color(0xFF1E3A8A),
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                             ),
                                           );
                                         }
                                         return;
                                       }
-                                      final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
+                                      final inCooldown =
+                                          await PocketFortressDefenseService
+                                              .isTargetInCooldown(targetId);
                                       if (inCooldown) {
-                                        final cdMins = await PocketFortressDefenseService.getCooldownMinutesRemaining(targetId);
-                                        final timeStr = cdMins < 60 ? '$cdMins mins' : '${(cdMins / 60.0).toStringAsFixed(1)} hrs';
+                                        final cdMins =
+                                            await PocketFortressDefenseService
+                                                .getCooldownMinutesRemaining(
+                                                    targetId);
+                                        final timeStr = cdMins < 60
+                                            ? '$cdMins mins'
+                                            : '${(cdMins / 60.0).toStringAsFixed(1)} hrs';
                                         if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             SnackBar(
-                                              content: Text('Revenge cooldown active on this house ($timeStr remaining).'),
-                                              backgroundColor: Colors.amber.shade900,
-                                              behavior: SnackBarBehavior.floating,
+                                              content: Text(
+                                                  'Revenge cooldown active on this house ($timeStr remaining).'),
+                                              backgroundColor:
+                                                  Colors.amber.shade900,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                             ),
                                           );
                                         }
@@ -3048,16 +3840,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       }
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
+                                          colors: [
+                                            Color(0xFFDC2626),
+                                            Color(0xFFB91C1C)
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: const Color(0xFFFCA5A5), width: 1.2),
+                                        border: Border.all(
+                                            color: const Color(0xFFFCA5A5),
+                                            width: 1.2),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFFDC2626).withValues(alpha: 0.45),
+                                            color: const Color(0xFFDC2626)
+                                                .withValues(alpha: 0.45),
                                             blurRadius: 6,
                                             offset: const Offset(0, 2),
                                           ),
@@ -3066,7 +3865,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Text('⚔️', style: TextStyle(fontSize: 12)),
+                                          const Text('⚔️',
+                                              style: TextStyle(fontSize: 12)),
                                           const SizedBox(width: 5),
                                           Text(
                                             'REVENGE ATTACK',
@@ -3099,17 +3899,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     int day = _getEffectiveDay();
     final stage = LearningMilestoneStage.getStageForDay(day);
     final avatar = _getAvatarConfig();
-    final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
+    final bannerUrl =
+        _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
 
     // If viewing Public Profile and custom banner exists, display it:
-    if (_isPublicProfileView && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
+    if (_isPublicProfileView &&
+        bannerUrl != null &&
+        bannerUrl.toString().isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: bannerUrl.toString(),
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (context, url) => Container(color: const Color(0xFF161E33)),
-        errorWidget: (context, url, error) => _buildStageFallbackBanner(day, stage, avatar),
+        placeholder: (context, url) =>
+            Container(color: const Color(0xFF161E33)),
+        errorWidget: (context, url, error) =>
+            _buildStageFallbackBanner(day, stage, avatar),
       );
     }
 
@@ -3117,7 +3922,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return _buildStageFallbackBanner(day, stage, avatar);
   }
 
-  Widget _buildStageFallbackBanner(int day, LearningMilestoneStage stage, VectorAvatarConfig avatar) {
+  Widget _buildStageFallbackBanner(
+      int day, LearningMilestoneStage stage, VectorAvatarConfig avatar) {
     return FlameProfileBannerWidget(
       day: day,
       stage: stage,
@@ -3230,7 +4036,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
+        _buildDualProfileSegmentSwitcher(
+            textColor, btnColor, btnTextColor, isDark),
         headerContent,
         if (!_isPublicProfileView) ...[
           Learning60DayProfileCard(
@@ -3251,7 +4058,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             },
           ),
         ],
-        _buildActionButtons(textColor, btnColor, btnTextColor, isMe, isDark, name, profileUrl),
+        _buildActionButtons(
+            textColor, btnColor, btnTextColor, isMe, isDark, name, profileUrl),
         if (!isMe) ...[
           _buildOtherUserCitadelSection(day, textColor, btnColor),
         ],
@@ -3261,10 +4069,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   /// 🏅 Global Rank / Robot Rank Badge placed directly underneath Stage & Name (Audio Directive)
   Widget _buildProfileGlobalRankBadge(LearningMilestoneStage activeStage) {
-    final targetId = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    final targetId =
+        widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
     final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
-    final isPresident = _profileData?['is_president'] == true || _profileData?['role'] == 'president';
+    final isPresident = _profileData?['is_president'] == true ||
+        _profileData?['role'] == 'president';
     final isStudent = _isStudentProfile;
 
     final int rank;
@@ -3275,7 +4085,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     if (isStudent) {
       // 🎓 Strictly Student Rank (Ages up to 17) - isolated from adult leaderboard
-      rank = PocketKidsService.getStudentGlobalRank(_studentScore, activeStage.day, targetId);
+      rank = PocketKidsService.getStudentGlobalRank(
+          _studentScore, activeStage.day, targetId);
       label = rank > 0 ? '🎓 Student Rank #$rank' : '🌱 Student Challenger';
       badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
       borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
@@ -3308,8 +4119,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       textColor = isTop3 ? const Color(0xFFFFD700) : const Color(0xFF7DD3FC);
     }
 
-    final fScore = (!isMe && isStudent) ? PocketKidsService.getFriendshipScore(targetId) : null;
-    final fBadge = fScore != null ? PocketKidsService.getFriendshipBadge(fScore) : null;
+    final fScore = (!isMe && isStudent)
+        ? PocketKidsService.getFriendshipScore(targetId)
+        : null;
+    final fBadge =
+        fScore != null ? PocketKidsService.getFriendshipBadge(fScore) : null;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -3339,19 +4153,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               PocketFriendshipScoreDialog.show(
                 context,
                 mateId: targetId,
-                mateName: _profileData?['username'] ?? _profileData?['display_name'] ?? 'Mate',
-                mateAvatar: _profileData?['kid_avatar'] ?? _profileData?['avatar_emoji'] ?? '🦁',
+                mateName: _profileData?['username'] ??
+                    _profileData?['display_name'] ??
+                    'Mate',
+                mateAvatar: _profileData?['kid_avatar'] ??
+                    _profileData?['avatar_emoji'] ??
+                    '🦁',
                 dayLevel: activeStage.day,
               );
             },
             child: Tooltip(
               message: fBadge ?? 'Friendship Score',
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEC4899).withValues(alpha: 0.20),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFF472B6).withValues(alpha: 0.65), width: 0.9),
+                  border: Border.all(
+                      color: const Color(0xFFF472B6).withValues(alpha: 0.65),
+                      width: 0.9),
                 ),
                 child: Text(
                   '💖 $fScore% Friendship',
@@ -3370,7 +4191,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  Widget _buildOtherUserCitadelSection(int day, Color textColor, Color btnColor) {
+  Widget _buildOtherUserCitadelSection(
+      int day, Color textColor, Color btnColor) {
     final gateCount = PocketScoreLevelEngine.getGatesCountForLevel(day);
     final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
 
@@ -3442,11 +4264,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.5)),
                       ),
                       child: Text(
                         '$gateCount / 9 GATES',
@@ -3466,10 +4291,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   runSpacing: 6,
                   children: List.generate(gateCount, (idx) {
                     final gateNum = idx + 1;
-                    final gateInfo = PocketScoreLevelEngine.getGateInfo(gateNum);
+                    final gateInfo =
+                        PocketScoreLevelEngine.getGateInfo(gateNum);
                     final gateName = gateInfo['title'] ?? 'Gate $gateNum';
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(6),
@@ -3477,7 +4304,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                       child: Text(
                         'Gate $gateNum: $gateName',
-                        style: const TextStyle(color: Colors.white70, fontSize: 10.5, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500),
                       ),
                     );
                   }),
@@ -3492,25 +4322,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       backgroundColor: const Color(0xFFDC2626),
                       foregroundColor: Colors.white,
                       elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () async {
                       final targetId = widget.userId ?? '';
-                      final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
+                      final isProtected = await PocketFortressDefenseService
+                          .isUnderPresidentialProtection(targetId);
                       if (isProtected) {
-                        final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId);
-                        final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                        final remainingMinutes =
+                            await PocketFortressDefenseService
+                                .getPresidentialProtectionMinutesRemaining(
+                                    targetId);
+                        final hours =
+                            (remainingMinutes / 60.0).toStringAsFixed(1);
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Row(
                                 children: [
-                                  const Text('👮‍♂️', style: TextStyle(fontSize: 18)),
+                                  const Text('👮‍♂️',
+                                      style: TextStyle(fontSize: 18)),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       'Target Citadel is under 48h Presidential Police Protection ($hours hrs left). Raids blocked!',
-                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                      style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
@@ -3523,7 +4362,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         return;
                       }
 
-                      final targetName = _profileData?['display_name'] ?? _profileData?['full_name'] ?? 'Target Raider';
+                      final targetName = _profileData?['display_name'] ??
+                          _profileData?['full_name'] ??
+                          'Target Raider';
                       final targetNeighbor = PocketNeighbor(
                         id: targetId,
                         name: targetName,
@@ -3533,7 +4374,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         paletteId: 'royal_gold',
                         isMe: false,
                         hasActiveShield: true,
-                        statusMessage: '⚔️ Defend the Citadel with English prowess!',
+                        statusMessage:
+                            '⚔️ Defend the Citadel with English prowess!',
                         hp: 100,
                         maxHp: 100,
                       );
@@ -3553,7 +4395,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     icon: const Icon(Icons.flash_on_rounded, size: 20),
                     label: Text(
                       'Attack',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5, letterSpacing: 0.5),
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          letterSpacing: 0.5),
                     ),
                   ),
                 ),
@@ -3586,7 +4431,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   curve: Curves.easeInOutCubic,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: !_isPublicProfileView ? btnColor : Colors.transparent,
+                    color:
+                        !_isPublicProfileView ? btnColor : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: !_isPublicProfileView
                         ? [
@@ -3828,7 +4674,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             decoration: BoxDecoration(
               color: activeStage.bgColor.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: activeStage.buttonColor.withValues(alpha: 0.4), width: 1.2),
+              border: Border.all(
+                  color: activeStage.buttonColor.withValues(alpha: 0.4),
+                  width: 1.2),
             ),
             child: _buildUnifiedStatsRow(
               textColor: textColor,
@@ -3884,16 +4732,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: accentColor.withValues(alpha: 0.6), width: 1),
+                  border: Border.all(
+                      color: accentColor.withValues(alpha: 0.6), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(isDay90 ? '👑' : '💎', style: const TextStyle(fontSize: 12)),
+                    Text(isDay90 ? '👑' : '💎',
+                        style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 5),
                     Text(
                       'STAGE ${activeStage.stageNumber}/90',
@@ -3911,17 +4762,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
                 final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
                 if (!isRobot) return const SizedBox.shrink();
-                final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(activeStage.day);
-                final trophies = PocketRobotService.getTrophiesForRobot(robot) + (isDay90 ? 1 : 0);
+                final robot = PocketRobotService.getRobotById(userId) ??
+                    PocketRobotService.getRobotByLevel(activeStage.day);
+                final trophies = PocketRobotService.getTrophiesForRobot(robot) +
+                    (isDay90 ? 1 : 0);
                 if (trophies <= 0) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700), width: 0.8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3952,11 +4807,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700), width: 0.8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -4014,7 +4871,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             btnColor: accentColor,
             btnTextColor: Colors.black,
             alignment: CrossAxisAlignment.start,
-            hideStageBadge: true, // Stage badge is already prominent in the Grandmaster Header Tag
+            hideStageBadge:
+                true, // Stage badge is already prominent in the Grandmaster Header Tag
           ),
         ],
       ),
@@ -4048,17 +4906,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       child: CachedNetworkImage(
                         imageUrl: profileUrl,
                         fit: BoxFit.contain,
-                        placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                        placeholder: (_, __) =>
+                            const Center(child: CircularProgressIndicator()),
                         errorWidget: (_, __, ___) => Container(
                           padding: const EdgeInsets.all(20),
                           color: const Color(0xFF1E2235),
-                          child: const Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                          child: const Icon(Icons.broken_image,
+                              color: Colors.white54, size: 48),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 28),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -4068,7 +4929,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           } else {
             setState(() => _showAvatarMode = !_showAvatarMode);
             if (isMe) {
-              SharedPreferences.getInstance().then((p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+              SharedPreferences.getInstance().then((p) =>
+                  p.setBool('show_avatar_mode_$userId', _showAvatarMode));
             }
           }
         }
@@ -4076,11 +4938,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       onLongPress: () {
         setState(() => _showAvatarMode = !_showAvatarMode);
         if (isMe) {
-          SharedPreferences.getInstance().then((p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+          SharedPreferences.getInstance().then(
+              (p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_showAvatarMode ? '🎨 Showing Pocket Mate Avatar' : '📷 Showing Real Profile Photo'),
+            content: Text(_showAvatarMode
+                ? '🎨 Showing Pocket Mate Avatar'
+                : '📷 Showing Real Profile Photo'),
             duration: const Duration(milliseconds: 700),
             behavior: SnackBarBehavior.floating,
           ),
@@ -4106,17 +4971,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           width: size,
                           height: size,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: dividerColor),
+                          placeholder: (_, __) =>
+                              Container(color: dividerColor),
                           errorWidget: (_, __, ___) => Container(
                             color: dividerColor,
-                            child: Icon(Icons.person, size: size * 0.45, color: textColor.withValues(alpha: 0.5)),
+                            child: Icon(Icons.person,
+                                size: size * 0.45,
+                                color: textColor.withValues(alpha: 0.5)),
                           ),
                         ),
                       )
                     : ClipOval(
                         child: Container(
                           color: dividerColor,
-                          child: Icon(Icons.person, size: size * 0.45, color: textColor.withValues(alpha: 0.5)),
+                          child: Icon(Icons.person,
+                              size: size * 0.45,
+                              color: textColor.withValues(alpha: 0.5)),
                         ),
                       ),
           ),
@@ -4127,8 +4997,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               onTap: () async {
                 HapticFeedback.mediumImpact();
                 final currentDay = _getEffectiveDay();
-                await JackieChanTalismanVaultModal.show(context, currentDay: currentDay);
-                final talisman = await JackieChanTalismanService.getEquippedTalisman();
+                await JackieChanTalismanVaultModal.show(context,
+                    currentDay: currentDay);
+                final talisman =
+                    await JackieChanTalismanService.getEquippedTalisman();
                 if (mounted) setState(() => _equippedTalismanId = talisman.id);
               },
               child: Container(
@@ -4136,7 +5008,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F172A),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                  border:
+                      Border.all(color: const Color(0xFFF59E0B), width: 1.5),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
@@ -4145,10 +5018,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ],
                 ),
                 child: Text(
-                  kJackieChanTalismans.firstWhere(
-                    (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
-                    orElse: () => kJackieChanTalismans.first,
-                  ).emoji,
+                  kJackieChanTalismans
+                      .firstWhere(
+                        (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
+                        orElse: () => kJackieChanTalismans.first,
+                      )
+                      .emoji,
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
@@ -4267,7 +5142,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   onAvatarSaved: (newCfg) {
                                     setState(() {
                                       _profileData ??= {};
-                                      _profileData!['avatar_config'] = newCfg.toMap();
+                                      _profileData!['avatar_config'] =
+                                          newCfg.toMap();
                                       _showAvatarMode = true;
                                     });
                                   },
@@ -4275,7 +5151,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ).then((_) => _loadInitialData());
                           },
-                          icon: const Icon(Icons.tune_rounded, size: 15, color: Color(0xFFFFFC00)),
+                          icon: const Icon(Icons.tune_rounded,
+                              size: 15, color: Color(0xFFFFFC00)),
                           label: Text(
                             'Studio 👑',
                             style: GoogleFonts.outfit(
@@ -4287,16 +5164,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: Colors.amber.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber.withValues(alpha: 0.5), width: 1),
+                            border: Border.all(
+                                color: Colors.amber.withValues(alpha: 0.5),
+                                width: 1),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.lock_rounded, size: 12, color: Colors.amberAccent),
+                              const Icon(Icons.lock_rounded,
+                                  size: 12, color: Colors.amberAccent),
                               const SizedBox(width: 4),
                               Text(
                                 'Day 90 Studio',
@@ -4315,7 +5196,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
                   // 🛡️ Progression Prestige Status Ribbon (Guarantees earned rank pride)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E2235),
                       borderRadius: BorderRadius.circular(12),
@@ -4346,7 +5228,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     child: GridView.builder(
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         childAspectRatio: 0.78,
                         crossAxisSpacing: 10,
@@ -4356,10 +5239,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       itemBuilder: (context, index) {
                         final companionDay = index + 1;
                         final a = animals90[index];
-                        final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
+                        final isUnlocked =
+                            VectorAvatarConfig.isCompanionUnlocked(
+                                companionDay, userLevel);
                         final isEquipped = currentCfg.species == a.species;
 
-                        final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+                        final previewCfg =
+                            VectorAvatarConfig.getEvolutionAvatarForStage(
                           companionDay,
                           talismanId: _equippedTalismanId,
                         ).copyWith(
@@ -4413,10 +5299,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             try {
                               final uid = _supabase.auth.currentUser?.id;
                               if (uid != null) {
-                                await _supabase
-                                    .from('profile')
-                                    .update({'avatar_config': newCfg.toMap()})
-                                    .eq('user_id', uid);
+                                await _supabase.from('profile').update({
+                                  'avatar_config': newCfg.toMap()
+                                }).eq('user_id', uid);
                               }
                             } catch (_) {}
                           },
@@ -4425,12 +5310,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             decoration: BoxDecoration(
                               color: isEquipped
                                   ? const Color(0xFF1E2238)
-                                  : (isUnlocked ? const Color(0xFF151824) : const Color(0xFF0F111A)),
+                                  : (isUnlocked
+                                      ? const Color(0xFF151824)
+                                      : const Color(0xFF0F111A)),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isEquipped
                                     ? const Color(0xFFFFFC00)
-                                    : (isUnlocked ? Colors.white12 : Colors.white.withValues(alpha: 0.04)),
+                                    : (isUnlocked
+                                        ? Colors.white12
+                                        : Colors.white.withValues(alpha: 0.04)),
                                 width: isEquipped ? 2 : 1,
                               ),
                             ),
@@ -4454,16 +5343,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     ),
                                     if (!isUnlocked)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.82),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.amber, width: 0.8),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.82),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                              color: Colors.amber, width: 0.8),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Icon(Icons.lock_rounded, size: 9, color: Colors.amber),
+                                            const Icon(Icons.lock_rounded,
+                                                size: 9, color: Colors.amber),
                                             const SizedBox(width: 2),
                                             Text(
                                               'DAY $companionDay',
@@ -4486,7 +5380,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                             color: Color(0xFFFFFC00),
                                             shape: BoxShape.circle,
                                           ),
-                                          child: const Icon(Icons.check, size: 10, color: Colors.black),
+                                          child: const Icon(Icons.check,
+                                              size: 10, color: Colors.black),
                                         ),
                                       ),
                                   ],
@@ -4496,10 +5391,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   a.species
                                       .replaceAll('_', ' ')
                                       .split(' ')
-                                      .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+                                      .map((w) => w.isNotEmpty
+                                          ? '${w[0].toUpperCase()}${w.substring(1)}'
+                                          : '')
                                       .join(' '),
                                   style: GoogleFonts.outfit(
-                                    color: isUnlocked ? Colors.white : Colors.white60,
+                                    color: isUnlocked
+                                        ? Colors.white
+                                        : Colors.white60,
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -4509,12 +5408,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 ),
                                 Text(
                                   isUnlocked
-                                      ? (isEquipped ? 'EQUIPPED' : (companionDay <= 5 ? 'STARTER' : 'UNLOCKED'))
+                                      ? (isEquipped
+                                          ? 'EQUIPPED'
+                                          : (companionDay <= 5
+                                              ? 'STARTER'
+                                              : 'UNLOCKED'))
                                       : 'DAY $companionDay CARD 💎',
                                   style: GoogleFonts.outfit(
                                     color: isEquipped
                                         ? const Color(0xFFFFFC00)
-                                        : (isUnlocked ? const Color(0xFF10B981) : Colors.amber),
+                                        : (isUnlocked
+                                            ? const Color(0xFF10B981)
+                                            : Colors.amber),
                                     fontSize: 8,
                                     fontWeight: FontWeight.w900,
                                   ),
@@ -4557,7 +5462,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            alignment: alignment == CrossAxisAlignment.center ? WrapAlignment.center : WrapAlignment.start,
+            alignment: alignment == CrossAxisAlignment.center
+                ? WrapAlignment.center
+                : WrapAlignment.start,
             spacing: 6,
             runSpacing: 4,
             children: [
@@ -4569,8 +5476,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   color: textColor,
                 ),
               ),
-              if (isVerified)
-                _buildVerifiedGoldenTick(),
+              if (isVerified) _buildVerifiedGoldenTick(),
               if (!hideStageBadge) _buildProfileStageBadge(activeStage),
             ],
           ),
@@ -4591,7 +5497,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             const SizedBox(height: 8),
             Text(
               bio,
-              textAlign: alignment == CrossAxisAlignment.center ? TextAlign.center : TextAlign.start,
+              textAlign: alignment == CrossAxisAlignment.center
+                  ? TextAlign.center
+                  : TextAlign.start,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: textColor,
@@ -4616,11 +5524,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               child: Wrap(
                 spacing: 6,
                 runSpacing: 6,
-                alignment: alignment == CrossAxisAlignment.center ? WrapAlignment.center : WrapAlignment.start,
+                alignment: alignment == CrossAxisAlignment.center
+                    ? WrapAlignment.center
+                    : WrapAlignment.start,
                 children: [
                   if (nativeLang != null && nativeLang.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
@@ -4629,7 +5540,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.language_rounded, size: 12, color: Color(0xFFFFD700)),
+                          const Icon(Icons.language_rounded,
+                              size: 12, color: Color(0xFFFFD700)),
                           const SizedBox(width: 4),
                           Text(
                             nativeLang,
@@ -4644,16 +5556,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   if (englishLvl != null && englishLvl.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF6366F1).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.school_rounded, size: 12, color: Color(0xFF818CF8)),
+                          const Icon(Icons.school_rounded,
+                              size: 12, color: Color(0xFF818CF8)),
                           const SizedBox(width: 4),
                           Text(
                             englishLvl,
@@ -4668,16 +5584,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   if (learningGoal != null && learningGoal.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flag_rounded, size: 12, color: Color(0xFF34D399)),
+                          const Icon(Icons.flag_rounded,
+                              size: 12, color: Color(0xFF34D399)),
                           const SizedBox(width: 4),
                           Text(
                             learningGoal,
@@ -4748,149 +5668,157 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 final isCompact = constraints.maxWidth < 390;
 
                 Widget buildEditProfileBtn() => Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF262626),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProfileCustomWidget(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height,
-                          ),
-                        ),
-                      ).then((_) => _loadInitialData());
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            "Edit Profile",
-                            style: GoogleFonts.outfit(
-                              color: textColor,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF262626),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileCustomWidget(
+                                width: MediaQuery.of(context).size.width,
+                                height: MediaQuery.of(context).size.height,
+                              ),
+                            ),
+                          ).then((_) => _loadInitialData());
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                "Edit Profile",
+                                style: GoogleFonts.outfit(
+                                  color: textColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    );
 
                 Widget buildAvatarStudioBtn() => Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFC00),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VectorAvatarStudioPage(
-                            initialConfig: _getAvatarConfig(),
-                            onAvatarSaved: (newCfg) {
-                              setState(() {
-                                _profileData ??= {};
-                                _profileData!['avatar_config'] = newCfg.toMap();
-                                _showAvatarMode = true;
-                              });
-                            },
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                            blurRadius: 8,
                           ),
-                        ),
-                      ).then((_) => _loadInitialData());
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.auto_awesome, size: 15, color: Colors.black),
-                              const SizedBox(width: 5),
-                              Text(
-                                "Master Studio 👑",
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        ],
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VectorAvatarStudioPage(
+                                initialConfig: _getAvatarConfig(),
+                                onAvatarSaved: (newCfg) {
+                                  setState(() {
+                                    _profileData ??= {};
+                                    _profileData!['avatar_config'] =
+                                        newCfg.toMap();
+                                    _showAvatarMode = true;
+                                  });
+                                },
                               ),
-                            ],
+                            ),
+                          ).then((_) => _loadInitialData());
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.auto_awesome,
+                                      size: 15, color: Colors.black),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    "Master Studio 👑",
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    );
 
                 Widget buildVipBtn() => Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SubscriptionPage(),
+                      height: 38,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
                         ),
-                      ).then((_) => _loadInitialData());
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Center(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.workspace_premium_rounded, size: 15, color: Colors.black),
-                              const SizedBox(width: 4),
-                              Text(
-                                "Pocket VIP 👑",
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SubscriptionPage(),
+                            ),
+                          ).then((_) => _loadInitialData());
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.workspace_premium_rounded,
+                                      size: 15, color: Colors.black),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Pocket VIP 👑",
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    );
 
                 final int currentLearningDay = _getEffectiveDay();
                 final bool isDay90Master = currentLearningDay >= 90;
@@ -4932,9 +5860,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Container(
                     height: 38,
                     decoration: BoxDecoration(
-                      color: _isFollowing
-                          ? const Color(0xFF262626)
-                          : btnColor,
+                      color: _isFollowing ? const Color(0xFF262626) : btnColor,
                       borderRadius: BorderRadius.circular(8),
                       border: _isFollowing
                           ? Border.all(color: textColor.withValues(alpha: 0.1))
@@ -4958,7 +5884,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ),
                 ),
-                if (!(_profileData?['is_private'] == true && !_isFollowing)) ...[
+                if (!(_profileData?['is_private'] == true &&
+                    !_isFollowing)) ...[
                   const SizedBox(width: 8),
                   if (_isMate)
                     Expanded(
@@ -5015,7 +5942,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           border: Border.all(
                             color: _isMateRequested
                                 ? Colors.white24
-                                : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.6),
                           ),
                         ),
                         child: InkWell(
@@ -5023,7 +5951,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ? () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Mate request already sent. Waiting for them to accept!'),
+                                      content: Text(
+                                          'Mate request already sent. Waiting for them to accept!'),
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Color(0xFF1E293B),
                                     ),
@@ -5046,7 +5975,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
-                                  _isMateRequested ? "Requested" : "Connect Mate",
+                                  _isMateRequested
+                                      ? "Requested"
+                                      : "Connect Mate",
                                   style: GoogleFonts.outfit(
                                     color: _isMateRequested
                                         ? Colors.white70
@@ -5069,32 +6000,43 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     decoration: BoxDecoration(
                       color: const Color(0xFFDC2626).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.5)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFDC2626).withValues(alpha: 0.5)),
                     ),
                     child: InkWell(
                       onTap: () async {
-                        final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(userId);
+                        final isProtected = await PocketFortressDefenseService
+                            .isUnderPresidentialProtection(userId);
                         if (isProtected) {
-                          final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(userId);
-                          final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                          final remainingMinutes =
+                              await PocketFortressDefenseService
+                                  .getPresidentialProtectionMinutesRemaining(
+                                      userId);
+                          final hours =
+                              (remainingMinutes / 60.0).toStringAsFixed(1);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Row(
                                   children: [
-                                    const Text('👮‍♂️', style: TextStyle(fontSize: 18)),
+                                    const Text('👮‍♂️',
+                                        style: TextStyle(fontSize: 18)),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         'Citadel is under 48h Presidential Police Protection ($hours hrs left). Raids temporarily blocked!',
-                                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                        style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ],
                                 ),
                                 backgroundColor: const Color(0xFF1E3A8A),
                                 behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
                             );
                           }
@@ -5102,8 +6044,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         }
 
                         final day = _getEffectiveDay();
-                        final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
-                        final targetName = _profileData?['display_name'] ?? _profileData?['full_name'] ?? name;
+                        final streak =
+                            (_profileData?['daily_streak'] as num?)?.toInt() ??
+                                1;
+                        final targetName = _profileData?['display_name'] ??
+                            _profileData?['full_name'] ??
+                            name;
 
                         final targetNeighbor = PocketNeighbor(
                           id: userId,
@@ -5114,7 +6060,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           paletteId: 'royal_gold',
                           isMe: false,
                           hasActiveShield: true,
-                          statusMessage: '⚔️ Defend the Citadel with English prowess!',
+                          statusMessage:
+                              '⚔️ Defend the Citadel with English prowess!',
                           hp: 100,
                           maxHp: 100,
                         );
@@ -5164,8 +6111,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
     int trophyCount = 0;
     if (isRobot) {
-      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(stage.day);
-      trophyCount = PocketRobotService.getTrophiesForRobot(robot) + (stage.day >= 90 ? 1 : 0);
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(stage.day);
+      trophyCount = PocketRobotService.getTrophiesForRobot(robot) +
+          (stage.day >= 90 ? 1 : 0);
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
@@ -5189,7 +6138,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Text(stage.emoji, style: const TextStyle(fontSize: 11)),
           const SizedBox(width: 4),
           Text(
-            trophyCount > 0 ? 'STAGE ${stage.stageNumber}/90 🏆x$trophyCount' : 'STAGE ${stage.stageNumber}/90',
+            trophyCount > 0
+                ? 'STAGE ${stage.stageNumber}/90 🏆x$trophyCount'
+                : 'STAGE ${stage.stageNumber}/90',
             style: GoogleFonts.outfit(
               color: accent,
               fontWeight: FontWeight.w900,
@@ -5208,29 +6159,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required Color textColor,
     required LearningMilestoneStage activeStage,
   }) {
-    final trophyCount = () {
-      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
-      if (isRobot) {
-        final robot = PocketRobotService.getRobotById(userId) ??
-            PocketRobotService.getRobotByLevel(activeStage.day);
-        final tc = PocketRobotService.getTrophiesForRobot(robot) +
-            (activeStage.day >= 90 ? 1 : 0);
-        return tc < 1 && activeStage.day >= 90 ? 1 : tc;
-      } else {
-        final base = activeStage.day >= 90
-            ? 6
-            : (activeStage.day >= 60
-                ? 5
-                : (activeStage.day >= 30
-                    ? 4
-                    : (activeStage.day >= 21
-                        ? 3
-                        : (activeStage.day >= 15 ? 2 : 1))));
-        return base + _pocketTrophyCount;
-      }
-    }();
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -5243,17 +6171,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: _isStudentProfile ? 'SS' : 'PS',
-            count: _isStudentProfile ? _studentScore : _pocketScore,
-            textColor: _isStudentProfile ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+            label: 'PS',
+            count: _pocketScore,
+            textColor: const Color(0xFFFFD700),
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    _isStudentProfile
-                        ? '🎓 Student Score: $_studentScore SS • Level ${activeStage.stageNumber}'
-                        : '🪙 Pocket Score: $_pocketScore PTS • Level ${activeStage.stageNumber}',
+                    '🪙 Pocket Score: $_pocketScore PTS • Level ${activeStage.stageNumber}',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: const Color(0xFF0F172A),
@@ -5265,11 +6191,62 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: 'Trophies',
-            count: trophyCount,
-            textColor: textColor,
-            onTap: () =>
-                _showAchievementsModal(activeStage.day, _pocketScore),
+            label: '🏆 Gold',
+            count: _goldTrophies,
+            textColor: const Color(0xFFFFD700),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🏆 Gold Trophies: $_goldTrophies Won in Citadel Fight Duels!',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF0F172A),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: _buildInstagramStatColumn(
+            label: '🥈 Silver',
+            count: _silverTrophies > 0 ? _silverTrophies : _pocketTrophyCount,
+            textColor: const Color(0xFFE2E8F0),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🥈 Silver Trophies: ${_silverTrophies > 0 ? _silverTrophies : _pocketTrophyCount} Earned in PocketTalk Spoken Pacts!',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF0F172A),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: _buildInstagramStatColumn(
+            label: '⚔️ Attacks',
+            count: _attacksWon,
+            textColor: const Color(0xFFEF4444),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '⚔️ Attacks Won: $_attacksWon Citadel Raids Successfully Won!',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF0F172A),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -5325,9 +6302,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  Widget _buildStatItem(String label, int count, Color textColor, LearningMilestoneStage stage) {
-    final isStreak = label.toLowerCase().contains('streak') || label.contains('🔥');
-    final isLevel = label.toLowerCase().contains('stage') || label.toLowerCase().contains('level');
+  Widget _buildStatItem(
+      String label, int count, Color textColor, LearningMilestoneStage stage) {
+    final isStreak =
+        label.toLowerCase().contains('streak') || label.contains('🔥');
+    final isLevel = label.toLowerCase().contains('stage') ||
+        label.toLowerCase().contains('level');
 
     Widget numberWidget = TweenAnimationBuilder<int>(
       tween: IntTween(begin: 0, end: count),
@@ -5341,7 +6321,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ? const Color(0xFFFF8906)
                 : (stage.uiThemeVariant == ProfileUIThemeVariant.goldSovereign
                     ? const Color(0xFFFFD700)
-                    : stage.uiThemeVariant == ProfileUIThemeVariant.diamondCelestial
+                    : stage.uiThemeVariant ==
+                            ProfileUIThemeVariant.diamondCelestial
                         ? const Color(0xFF00F0FF)
                         : textColor),
             fontSize: 15.5,
@@ -5386,7 +6367,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         decoration: BoxDecoration(
           color: const Color(0xFF1E212E),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.3)),
         ),
         child: content,
       );
@@ -5400,7 +6382,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+          border:
+              Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
         ),
         child: content,
       );
@@ -5410,7 +6393,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         decoration: BoxDecoration(
           color: const Color(0xFF080B1A),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.6)),
+          border:
+              Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.6)),
         ),
         child: content,
       );
@@ -5432,11 +6416,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildPocketScoreStatItem(int score, LearningMilestoneStage stage) {
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
     final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
-    final currentLvl = isRobot ? stage.day : PocketScoreLevelEngine.getLevelFromScore(score);
-    final remainingForNext = isRobot ? 0 : PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
+    final currentLvl =
+        isRobot ? stage.day : PocketScoreLevelEngine.getLevelFromScore(score);
+    final remainingForNext = isRobot
+        ? 0
+        : PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
     final progressLabel = isRobot
         ? 'Pocket Robot • Level $currentLvl Fortress'
-        : PocketScoreLevelEngine.getProgressLabel(score, trophies: _pocketTrophyCount);
+        : PocketScoreLevelEngine.getProgressLabel(score,
+            trophies: _pocketTrophyCount);
 
     return GestureDetector(
       onTap: () {
@@ -5457,7 +6445,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
             backgroundColor: const Color(0xFF0F172A),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       },
@@ -5506,7 +6495,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
             const SizedBox(height: 2),
             Text(
-              remainingForNext > 0 ? 'Lvl $currentLvl • $remainingForNext to next' : 'Lvl $currentLvl • MAX',
+              remainingForNext > 0
+                  ? 'Lvl $currentLvl • $remainingForNext to next'
+                  : 'Lvl $currentLvl • MAX',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFFC00),
                 fontSize: 9.5,
@@ -5520,16 +6511,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  Widget _buildAchievementsStatItem(Color textColor, LearningMilestoneStage stage, int day) {
+  Widget _buildAchievementsStatItem(
+      Color textColor, LearningMilestoneStage stage, int day) {
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
     final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
     int unlockedCount;
     if (isRobot) {
-      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(day);
-      unlockedCount = PocketRobotService.getTrophiesForRobot(robot) + (day >= 90 ? 1 : 0);
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(day);
+      unlockedCount =
+          PocketRobotService.getTrophiesForRobot(robot) + (day >= 90 ? 1 : 0);
       if (unlockedCount < 1 && day >= 90) unlockedCount = 1;
     } else {
-      unlockedCount = day >= 90 ? 6 : (day >= 60 ? 5 : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
+      unlockedCount = day >= 90
+          ? 6
+          : (day >= 60
+              ? 5
+              : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
       unlockedCount += _pocketTrophyCount;
     }
     final score = _pocketScore;
@@ -5574,7 +6572,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         decoration: BoxDecoration(
           color: const Color(0xFF1E212E),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.3)),
         ),
         child: content,
       );
@@ -5588,7 +6587,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+          border:
+              Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
         ),
         child: content,
       );
@@ -5598,7 +6598,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         decoration: BoxDecoration(
           color: const Color(0xFF080B1A),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.6)),
+          border:
+              Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.6)),
         ),
         child: content,
       );
@@ -5643,25 +6644,45 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       children: [
                         Text(
                           'Milestone Badges & Rewards',
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
                         ),
                         Text(
                           'Pocket Score: 🪙 $score PTS',
-                          style: GoogleFonts.inter(color: const Color(0xFFFFFC00), fontSize: 11.5, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              _buildAchievementRow('🏆', 'PocketTalk Spoken Trophies: $_pocketTrophyCount Earned', '1 Trophy earned for every 4-Day Spoken Pact completed with active mates.', _pocketTrophyCount > 0),
-              _buildAchievementRow('🎓', '90-Day Master Graduation (Target: 150 Trophies)', 'Required to unlock official global fluency certificate: $_pocketTrophyCount/150 completed (${((_pocketTrophyCount / 150.0) * 100).clamp(0, 100).toStringAsFixed(0)}%).', _pocketTrophyCount >= 150),
-              _buildAchievementRow('🌱', 'Day 1 Genesis Starter', 'Completed your first English foundation mission.', day >= 1),
-              _buildAchievementRow('👑', 'Day 15 Royalty Unlock', '15 days continuous practice milestone.', day >= 15),
-              _buildAchievementRow('🎯', 'Day 21 Habit Anchor Lock', '21 days permanent English habit loop formed.', day >= 21),
-              _buildAchievementRow('🥈', 'Day 30 Silver Knight Shield', 'Phase 1 Speech Mechanics fully conquered.', day >= 30),
-              _buildAchievementRow('🥇', 'Day 60 Gold Sovereign Crown', 'Phase 2 Real-World Fluency mastered.', day >= 60),
-              _buildAchievementRow('💎', 'Day 90 Diamond Grandmaster', 'Capstone Graduation & Celestial Ring unlocked.', day >= 90),
+              _buildAchievementRow(
+                  '🏆',
+                  'PocketTalk Spoken Trophies: $_pocketTrophyCount Earned',
+                  '1 Trophy earned for every 4-Day Spoken Pact completed with active mates.',
+                  _pocketTrophyCount > 0),
+              _buildAchievementRow(
+                  '🎓',
+                  '90-Day Master Graduation (Target: 150 Trophies)',
+                  'Required to unlock official global fluency certificate: $_pocketTrophyCount/150 completed (${((_pocketTrophyCount / 150.0) * 100).clamp(0, 100).toStringAsFixed(0)}%).',
+                  _pocketTrophyCount >= 150),
+              _buildAchievementRow('🌱', 'Day 1 Genesis Starter',
+                  'Completed your first English foundation mission.', day >= 1),
+              _buildAchievementRow('👑', 'Day 15 Royalty Unlock',
+                  '15 days continuous practice milestone.', day >= 15),
+              _buildAchievementRow('🎯', 'Day 21 Habit Anchor Lock',
+                  '21 days permanent English habit loop formed.', day >= 21),
+              _buildAchievementRow('🥈', 'Day 30 Silver Knight Shield',
+                  'Phase 1 Speech Mechanics fully conquered.', day >= 30),
+              _buildAchievementRow('🥇', 'Day 60 Gold Sovereign Crown',
+                  'Phase 2 Real-World Fluency mastered.', day >= 60),
+              _buildAchievementRow('💎', 'Day 90 Diamond Grandmaster',
+                  'Capstone Graduation & Celestial Ring unlocked.', day >= 90),
             ],
           ),
         );
@@ -5669,7 +6690,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  Widget _buildAchievementRow(String emoji, String title, String desc, bool isUnlocked) {
+  Widget _buildAchievementRow(
+      String emoji, String title, String desc, bool isUnlocked) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -5677,7 +6699,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         color: isUnlocked ? const Color(0xFF161A29) : const Color(0xFF0E1018),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isUnlocked ? const Color(0xFFFFFC00).withValues(alpha: 0.5) : Colors.white10,
+          color: isUnlocked
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+              : Colors.white10,
         ),
       ),
       child: Row(
@@ -5707,7 +6731,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ),
           Icon(
-            isUnlocked ? Icons.check_circle_rounded : Icons.lock_outline_rounded,
+            isUnlocked
+                ? Icons.check_circle_rounded
+                : Icons.lock_outline_rounded,
             color: isUnlocked ? const Color(0xFF10B981) : Colors.white24,
             size: 18,
           ),
@@ -5780,7 +6806,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  Widget _buildLanguageHubDashboard(Color textColor, Color btnColor, bool isDark) {
+  Widget _buildLanguageHubDashboard(
+      Color textColor, Color btnColor, bool isDark) {
     String rank = 'Beginner';
     Color rankColor = Colors.green;
     if (_englishHubPoints >= 500) {
@@ -5876,7 +6903,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.psychology, size: 16, color: Color(0xFFFFD600)),
+                  const Icon(Icons.psychology,
+                      size: 16, color: Color(0xFFFFD600)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -5896,13 +6924,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-
-
   void _jumpToDay(int nextDay) async {
     final day = nextDay.clamp(1, 90);
     HapticFeedback.mediumImpact();
     final stage = LearningMilestoneStage.getStageForDay(day);
-    final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+    final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(day,
+        talismanId: _equippedTalismanId);
 
     setState(() {
       _isTestingStage = true;
@@ -5916,7 +6943,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       _textColor = stage.textColor;
       _btnColor = stage.buttonColor;
       _btnTextColor = stage.buttonTextColor;
-      _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
+      _testStageIndex = (stage.stageNumber - 1)
+          .clamp(0, LearningMilestoneStage.allStages.length - 1);
     });
 
     _loadFortressDefenseData();
@@ -6021,7 +7049,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.close,
+                            color: Colors.white70, size: 20),
                       ),
                     ],
                   ),
@@ -6064,32 +7093,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       itemBuilder: (context, i) {
                         final d = i + 1;
                         final s = LearningMilestoneStage.getStageForDay(d);
-                        final av = VectorAvatarConfig.getEvolutionAvatarForStage(d);
+                        final av =
+                            VectorAvatarConfig.getEvolutionAvatarForStage(d);
                         final isCur = activeDay == d;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 6),
                           decoration: BoxDecoration(
-                            color: isCur ? s.buttonColor.withValues(alpha: 0.18) : const Color(0xFF151824),
+                            color: isCur
+                                ? s.buttonColor.withValues(alpha: 0.18)
+                                : const Color(0xFF151824),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isCur ? s.buttonColor : Colors.white.withValues(alpha: 0.06),
+                              color: isCur
+                                  ? s.buttonColor
+                                  : Colors.white.withValues(alpha: 0.06),
                               width: isCur ? 1.5 : 1,
                             ),
                           ),
                           child: ListTile(
                             dense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 2),
                             leading: Container(
                               width: 38,
                               height: 38,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: s.bgColor,
-                                border: Border.all(color: s.buttonColor, width: 1.5),
+                                border: Border.all(
+                                    color: s.buttonColor, width: 1.5),
                               ),
                               child: Center(
-                                child: Text(s.emoji, style: const TextStyle(fontSize: 16)),
+                                child: Text(s.emoji,
+                                    style: const TextStyle(fontSize: 16)),
                               ),
                             ),
                             title: Row(
@@ -6109,7 +7146,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   decoration: BoxDecoration(
                                     color: s.buttonColor,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 1),
+                                    border: Border.all(
+                                        color: Colors.white, width: 1),
                                   ),
                                 ),
                               ],
@@ -6122,8 +7160,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ),
                             trailing: isCur
-                                ? Icon(Icons.check_circle_rounded, color: s.buttonColor, size: 18)
-                                : const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 12),
+                                ? Icon(Icons.check_circle_rounded,
+                                    color: s.buttonColor, size: 18)
+                                : const Icon(Icons.arrow_forward_ios_rounded,
+                                    color: Colors.white24, size: 12),
                             onTap: () {
                               Navigator.pop(ctx);
                               _jumpToDay(d);
@@ -6154,45 +7194,92 @@ class StageBannerArtPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     final species = avatar.species;
-    final accent = VectorAvatarConfig.parseHex(avatar.outfitAccentColor, fallback: baseColor);
+    final accent = VectorAvatarConfig.parseHex(avatar.outfitAccentColor,
+        fallback: baseColor);
 
     // 1. Check for Oceanic / Marine Leviathans (12 Species)
     const marineSpecies = {
-      'abyssal_shark', 'abyssal_kraken', 'electric_ray', 'apex_orca',
-      'colossal_walrus', 'swordfish', 'sea_otter', 'oceanic_narwhal',
-      'ghost_jellyfish', 'reef_seahorse', 'sea_dragon', 'angler_leviathan'
+      'abyssal_shark',
+      'abyssal_kraken',
+      'electric_ray',
+      'apex_orca',
+      'colossal_walrus',
+      'swordfish',
+      'sea_otter',
+      'oceanic_narwhal',
+      'ghost_jellyfish',
+      'reef_seahorse',
+      'sea_dragon',
+      'angler_leviathan'
     };
 
     // 2. Check for Felines & Savanna Predators (9 Species)
     const felineSpecies = {
-      'cyber_cat', 'royal_tiger', 'golden_lion', 'shadow_leopard',
-      'golden_cheetah', 'golden_jaguar', 'black_panther', 'snow_leopard', 'solar_lion'
+      'cyber_cat',
+      'royal_tiger',
+      'golden_lion',
+      'shadow_leopard',
+      'golden_cheetah',
+      'golden_jaguar',
+      'black_panther',
+      'snow_leopard',
+      'solar_lion'
     };
 
     // 3. Check for Canines & Nocturnal Hunters (9 Species)
     const canineSpecies = {
-      'cyber_fox', 'shadow_wolf', 'noble_bear', 'celestial_hound',
-      'mecha_wolf', 'kitsune_emperor', 'cerberus_hound', 'fennec_fox', 'spotted_hyena'
+      'cyber_fox',
+      'shadow_wolf',
+      'noble_bear',
+      'celestial_hound',
+      'mecha_wolf',
+      'kitsune_emperor',
+      'cerberus_hound',
+      'fennec_fox',
+      'spotted_hyena'
     };
 
     // 4. Check for Avians & Winged Sky Lords (13 Species)
     const avianSpecies = {
-      'majestic_eagle', 'solar_phoenix', 'wisdom_owl', 'pegasus_stallion',
-      'royal_peacock', 'peregrine_falcon', 'emperor_penguin', 'rainforest_toucan',
-      'crimson_flamingo', 'golden_griffin', 'sky_thunderbird', 'thunder_roc', 'celestial_phoenix'
+      'majestic_eagle',
+      'solar_phoenix',
+      'wisdom_owl',
+      'pegasus_stallion',
+      'royal_peacock',
+      'peregrine_falcon',
+      'emperor_penguin',
+      'rainforest_toucan',
+      'crimson_flamingo',
+      'golden_griffin',
+      'sky_thunderbird',
+      'thunder_roc',
+      'celestial_phoenix'
     };
 
     // 5. Check for Serpents & Reptiles (8 Species)
     const reptileSpecies = {
-      'imperial_cobra', 'mystic_croc', 'tree_viper', 'komodo_titan',
-      'volcanic_salamander', 'chameleon_king', 'horned_lizard', 'cyber_chameleon'
+      'imperial_cobra',
+      'mystic_croc',
+      'tree_viper',
+      'komodo_titan',
+      'volcanic_salamander',
+      'chameleon_king',
+      'horned_lizard',
+      'cyber_chameleon'
     };
 
     // 6. Check for Celestial Dragons & Astral Mythics (13 Species)
     const dragonCosmicSpecies = {
-      'bored_ape', 'cosmic_unicorn', 'cosmic_dragon', 'shadow_manticore',
-      'cyber_chimera', 'obsidian_basilisk', 'cosmic_hydra', 'chrono_dragon',
-      'astral_titan', 'cosmic_dragon_sovereign'
+      'bored_ape',
+      'cosmic_unicorn',
+      'cosmic_dragon',
+      'shadow_manticore',
+      'cyber_chimera',
+      'obsidian_basilisk',
+      'cosmic_hydra',
+      'chrono_dragon',
+      'astral_titan',
+      'cosmic_dragon_sovereign'
     };
 
     if (dragonCosmicSpecies.contains(species) || stage >= 85) {
@@ -6214,12 +7301,25 @@ class StageBannerArtPainter extends CustomPainter {
 
       // 2. Twin Celestial Ringed Moons
       final moonCenter = Offset(size.width * 0.78, size.height * 0.32);
-      canvas.drawCircle(moonCenter, 28, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.3));
-      canvas.drawCircle(moonCenter, 22, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.6));
+      canvas.drawCircle(
+          moonCenter,
+          28,
+          Paint()
+            ..color = (stage == 90 ? const Color(0xFFFFFC00) : accent)
+                .withValues(alpha: 0.3));
+      canvas.drawCircle(
+          moonCenter,
+          22,
+          Paint()
+            ..color = (stage == 90 ? const Color(0xFFFFFC00) : accent)
+                .withValues(alpha: 0.6));
       // Ring
       canvas.drawOval(
         Rect.fromCenter(center: moonCenter, width: 70, height: 16),
-        Paint()..color = Colors.white.withValues(alpha: 0.4)..style = PaintingStyle.stroke..strokeWidth = 2.0,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.4)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0,
       );
 
       // 3. Shimmering Star Field
@@ -6228,16 +7328,28 @@ class StageBannerArtPainter extends CustomPainter {
         final sx = (size.width * (0.05 + ((i * 37) % 90) / 100));
         final sy = (size.height * (0.08 + ((i * 53) % 80) / 100));
         final sRadius = (i % 3 == 0) ? 2.5 : 1.2;
-        canvas.drawCircle(Offset(sx, sy), sRadius, starPaint..color = Colors.white.withValues(alpha: 0.75));
+        canvas.drawCircle(Offset(sx, sy), sRadius,
+            starPaint..color = Colors.white.withValues(alpha: 0.75));
         if (i % 4 == 0) {
           // 4-Point Star Flare
-          canvas.drawLine(Offset(sx - 5, sy), Offset(sx + 5, sy), Paint()..color = Colors.white.withValues(alpha: 0.8)..strokeWidth = 1.0);
-          canvas.drawLine(Offset(sx, sy - 5), Offset(sx, sy + 5), Paint()..color = Colors.white.withValues(alpha: 0.8)..strokeWidth = 1.0);
+          canvas.drawLine(
+              Offset(sx - 5, sy),
+              Offset(sx + 5, sy),
+              Paint()
+                ..color = Colors.white.withValues(alpha: 0.8)
+                ..strokeWidth = 1.0);
+          canvas.drawLine(
+              Offset(sx, sy - 5),
+              Offset(sx, sy + 5),
+              Paint()
+                ..color = Colors.white.withValues(alpha: 0.8)
+                ..strokeWidth = 1.0);
         }
       }
 
       // 4. Layered Jagged Astral Crystal Peaks
-      final peakPaint = Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85);
+      final peakPaint = Paint()
+        ..color = const Color(0xFF0F172A).withValues(alpha: 0.85);
       final peaks = Path()
         ..moveTo(size.width * 0.35, size.height)
         ..lineTo(size.width * 0.52, size.height * 0.45)
@@ -6254,7 +7366,6 @@ class StageBannerArtPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8;
       canvas.drawPath(peaks, peakEdgePaint);
-
     } else if (marineSpecies.contains(species)) {
       // ==========================================
       // 🌊 ABYSSAL OCEAN CURRENTS & UNDERWATER BIOME
@@ -6284,11 +7395,14 @@ class StageBannerArtPainter extends CustomPainter {
       // 2. Layered Seabed Trench & Coral Reef Silhouette
       final reefPath = Path()
         ..moveTo(size.width * 0.40, size.height)
-        ..quadraticBezierTo(size.width * 0.55, size.height * 0.60, size.width * 0.70, size.height * 0.75)
-        ..quadraticBezierTo(size.width * 0.85, size.height * 0.50, size.width, size.height * 0.65)
+        ..quadraticBezierTo(size.width * 0.55, size.height * 0.60,
+            size.width * 0.70, size.height * 0.75)
+        ..quadraticBezierTo(size.width * 0.85, size.height * 0.50, size.width,
+            size.height * 0.65)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(reefPath, Paint()..color = const Color(0xFF031926).withValues(alpha: 0.85));
+      canvas.drawPath(reefPath,
+          Paint()..color = const Color(0xFF031926).withValues(alpha: 0.85));
 
       // 3. Bioluminescent Floating Jellyfish
       final jellyCenter = Offset(size.width * 0.80, size.height * 0.36);
@@ -6300,11 +7414,15 @@ class StageBannerArtPainter extends CustomPainter {
         Paint()..color = const Color(0xFF67E8F9).withValues(alpha: 0.6),
       );
       // Tentacles
-      final tentaclePaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 1.4;
+      final tentaclePaint = Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4;
       for (int t = -2; t <= 2; t++) {
         final tp = Path()
           ..moveTo(jellyCenter.dx + t * 6, jellyCenter.dy)
-          ..quadraticBezierTo(jellyCenter.dx + t * 8, jellyCenter.dy + 15, jellyCenter.dx + t * 4, jellyCenter.dy + 26);
+          ..quadraticBezierTo(jellyCenter.dx + t * 8, jellyCenter.dy + 15,
+              jellyCenter.dx + t * 4, jellyCenter.dy + 26);
         canvas.drawPath(tp, tentaclePaint);
       }
 
@@ -6312,9 +7430,9 @@ class StageBannerArtPainter extends CustomPainter {
       for (int i = 0; i < 8; i++) {
         final bubX = size.width * (0.50 + (i * 17 % 45) / 100);
         final bubY = size.height * (0.2 + (i * 23 % 70) / 100);
-        canvas.drawCircle(Offset(bubX, bubY), (i % 3 + 1.5) * 1.5, Paint()..color = Colors.white.withValues(alpha: 0.45));
+        canvas.drawCircle(Offset(bubX, bubY), (i % 3 + 1.5) * 1.5,
+            Paint()..color = Colors.white.withValues(alpha: 0.45));
       }
-
     } else if (felineSpecies.contains(species)) {
       // ==========================================
       // 🐆 SAVANNA SUNSET & GOLDEN TWILIGHT
@@ -6331,22 +7449,27 @@ class StageBannerArtPainter extends CustomPainter {
         stops: const [0.0, 0.45, 0.8, 1.0],
       ).createShader(Rect.fromCircle(center: sunCenter, radius: 65));
       canvas.drawCircle(sunCenter, 65, Paint()..shader = sunShader);
-      canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFEF08A));
+      canvas.drawCircle(
+          sunCenter, 22, Paint()..color = const Color(0xFFFEF08A));
 
       // 2. Layered Savanna Ridges
       final savannaBack = Path()
         ..moveTo(size.width * 0.30, size.height)
-        ..quadraticBezierTo(size.width * 0.60, size.height * 0.60, size.width, size.height * 0.68)
+        ..quadraticBezierTo(size.width * 0.60, size.height * 0.60, size.width,
+            size.height * 0.68)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(savannaBack, Paint()..color = const Color(0xFF451A03).withValues(alpha: 0.75));
+      canvas.drawPath(savannaBack,
+          Paint()..color = const Color(0xFF451A03).withValues(alpha: 0.75));
 
       final savannaFore = Path()
         ..moveTo(size.width * 0.45, size.height)
-        ..quadraticBezierTo(size.width * 0.75, size.height * 0.72, size.width, size.height * 0.58)
+        ..quadraticBezierTo(size.width * 0.75, size.height * 0.72, size.width,
+            size.height * 0.58)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(savannaFore, Paint()..color = const Color(0xFF1C0A00).withValues(alpha: 0.90));
+      canvas.drawPath(savannaFore,
+          Paint()..color = const Color(0xFF1C0A00).withValues(alpha: 0.90));
 
       // 3. Acacia Tree Silhouette
       final treeX = size.width * 0.65;
@@ -6356,14 +7479,20 @@ class StageBannerArtPainter extends CustomPainter {
         ..lineTo(treeX - 2, treeBase - 28)
         ..lineTo(treeX + 3, treeBase - 28)
         ..close();
-      canvas.drawPath(treePath, Paint()..color = const Color(0xFF1C0A00)..strokeWidth = 3);
+      canvas.drawPath(
+          treePath,
+          Paint()
+            ..color = const Color(0xFF1C0A00)
+            ..strokeWidth = 3);
       // Flat Acacia Canopy
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(treeX, treeBase - 30), width: 36, height: 10),
+        Rect.fromCenter(
+            center: Offset(treeX, treeBase - 30), width: 36, height: 10),
         Paint()..color = const Color(0xFF1C0A00),
       );
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(treeX + 10, treeBase - 34), width: 26, height: 8),
+        Rect.fromCenter(
+            center: Offset(treeX + 10, treeBase - 34), width: 26, height: 8),
         Paint()..color = const Color(0xFF1C0A00),
       );
 
@@ -6371,9 +7500,9 @@ class StageBannerArtPainter extends CustomPainter {
       for (int i = 0; i < 10; i++) {
         final ex = size.width * (0.50 + (i * 29 % 45) / 100);
         final ey = size.height * (0.15 + (i * 31 % 65) / 100);
-        canvas.drawCircle(Offset(ex, ey), 1.8, Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.7));
+        canvas.drawCircle(Offset(ex, ey), 1.8,
+            Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.7));
       }
-
     } else if (canineSpecies.contains(species)) {
       // ==========================================
       // 🐺 MOONLIT MOUNTAINS & AURORA BOREALIS
@@ -6390,15 +7519,18 @@ class StageBannerArtPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.6));
       final auroraPath = Path()
         ..moveTo(size.width * 0.40, 0)
-        ..quadraticBezierTo(size.width * 0.65, size.height * 0.35, size.width, size.height * 0.15)
+        ..quadraticBezierTo(size.width * 0.65, size.height * 0.35, size.width,
+            size.height * 0.15)
         ..lineTo(size.width, 0)
         ..close();
       canvas.drawPath(auroraPath, Paint()..shader = auroraShader);
 
       // 2. Glowing Full Moon with Halo
       final moonCenter = Offset(size.width * 0.82, size.height * 0.28);
-      canvas.drawCircle(moonCenter, 32, Paint()..color = Colors.white.withValues(alpha: 0.18));
-      canvas.drawCircle(moonCenter, 18, Paint()..color = const Color(0xFFF1F5F9));
+      canvas.drawCircle(moonCenter, 32,
+          Paint()..color = Colors.white.withValues(alpha: 0.18));
+      canvas.drawCircle(
+          moonCenter, 18, Paint()..color = const Color(0xFFF1F5F9));
 
       // 3. Layered Midnight Mountain Ridges
       final distantMtn = Path()
@@ -6409,7 +7541,8 @@ class StageBannerArtPainter extends CustomPainter {
         ..lineTo(size.width, size.height * 0.48)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(distantMtn, Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.8));
+      canvas.drawPath(distantMtn,
+          Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.8));
 
       final foreMtn = Path()
         ..moveTo(size.width * 0.48, size.height)
@@ -6418,7 +7551,8 @@ class StageBannerArtPainter extends CustomPainter {
         ..lineTo(size.width, size.height * 0.56)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(foreMtn, Paint()..color = const Color(0xFF090D16).withValues(alpha: 0.95));
+      canvas.drawPath(foreMtn,
+          Paint()..color = const Color(0xFF090D16).withValues(alpha: 0.95));
 
       // Pine Tree Silhouettes
       for (int i = 0; i < 5; i++) {
@@ -6431,7 +7565,6 @@ class StageBannerArtPainter extends CustomPainter {
           ..close();
         canvas.drawPath(pine, Paint()..color = const Color(0xFF020617));
       }
-
     } else if (avianSpecies.contains(species)) {
       // ==========================================
       // 🦅 HEAVENLY CLOUD REALM & SUNBEAMS
@@ -6444,17 +7577,26 @@ class StageBannerArtPainter extends CustomPainter {
         ..strokeWidth = 2.4;
       for (int i = 0; i < 8; i++) {
         final angle = (i * math.pi) / 4;
-        canvas.drawLine(sunbeamCenter, Offset(sunbeamCenter.dx + math.cos(angle) * 75, sunbeamCenter.dy + math.sin(angle) * 75), rayPaint);
+        canvas.drawLine(
+            sunbeamCenter,
+            Offset(sunbeamCenter.dx + math.cos(angle) * 75,
+                sunbeamCenter.dy + math.sin(angle) * 75),
+            rayPaint);
       }
-      canvas.drawCircle(sunbeamCenter, 20, Paint()..color = const Color(0xFFFFFC00).withValues(alpha: 0.7));
+      canvas.drawCircle(sunbeamCenter, 20,
+          Paint()..color = const Color(0xFFFFFC00).withValues(alpha: 0.7));
 
       // 2. Soaring Cloud Banks
       void drawCloud(Offset c, double radius) {
-        final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.35);
+        final cloudPaint = Paint()
+          ..color = Colors.white.withValues(alpha: 0.35);
         canvas.drawCircle(c, radius, cloudPaint);
-        canvas.drawCircle(Offset(c.dx - radius * 0.6, c.dy + radius * 0.2), radius * 0.7, cloudPaint);
-        canvas.drawCircle(Offset(c.dx + radius * 0.6, c.dy + radius * 0.2), radius * 0.7, cloudPaint);
+        canvas.drawCircle(Offset(c.dx - radius * 0.6, c.dy + radius * 0.2),
+            radius * 0.7, cloudPaint);
+        canvas.drawCircle(Offset(c.dx + radius * 0.6, c.dy + radius * 0.2),
+            radius * 0.7, cloudPaint);
       }
+
       drawCloud(Offset(size.width * 0.65, size.height * 0.55), 24);
       drawCloud(Offset(size.width * 0.88, size.height * 0.65), 30);
 
@@ -6466,17 +7608,25 @@ class StageBannerArtPainter extends CustomPainter {
           ..moveTo(fx - 7, fy + 3)
           ..quadraticBezierTo(fx - 3, fy - 3, fx, fy)
           ..quadraticBezierTo(fx + 3, fy - 3, fx + 7, fy + 3);
-        canvas.drawPath(bird, Paint()..color = const Color(0xFF0F172A)..style = PaintingStyle.stroke..strokeWidth = 1.8);
+        canvas.drawPath(
+            bird,
+            Paint()
+              ..color = const Color(0xFF0F172A)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.8);
       }
-
     } else if (reptileSpecies.contains(species)) {
       // ==========================================
       // 🐍 VOLCANIC REALM & PREHISTORIC JUNGLE
       // ==========================================
       // 1. Magma Fissure Glow
-      final magmaRect = Rect.fromLTWH(size.width * 0.4, size.height * 0.5, size.width * 0.6, size.height * 0.5);
+      final magmaRect = Rect.fromLTWH(size.width * 0.4, size.height * 0.5,
+          size.width * 0.6, size.height * 0.5);
       final magmaShader = RadialGradient(
-        colors: [const Color(0xFFEF4444).withValues(alpha: 0.5), Colors.transparent],
+        colors: [
+          const Color(0xFFEF4444).withValues(alpha: 0.5),
+          Colors.transparent
+        ],
       ).createShader(magmaRect);
       canvas.drawRect(magmaRect, Paint()..shader = magmaShader);
 
@@ -6489,14 +7639,20 @@ class StageBannerArtPainter extends CustomPainter {
         ..lineTo(size.width, size.height * 0.55)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(crag, Paint()..color = const Color(0xFF18181B).withValues(alpha: 0.95));
+      canvas.drawPath(crag,
+          Paint()..color = const Color(0xFF18181B).withValues(alpha: 0.95));
 
       // Magma River
       final river = Path()
         ..moveTo(size.width * 0.62, size.height * 0.48)
-        ..quadraticBezierTo(size.width * 0.70, size.height * 0.72, size.width * 0.85, size.height);
-      canvas.drawPath(river, Paint()..color = const Color(0xFFF97316)..style = PaintingStyle.stroke..strokeWidth = 3.5);
-
+        ..quadraticBezierTo(size.width * 0.70, size.height * 0.72,
+            size.width * 0.85, size.height);
+      canvas.drawPath(
+          river,
+          Paint()
+            ..color = const Color(0xFFF97316)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.5);
     } else {
       // ==========================================
       // 🌲 ENCHANTED WOODLAND & FOREST CANOPY
@@ -6504,28 +7660,36 @@ class StageBannerArtPainter extends CustomPainter {
       // 1. Rolling Forest Hills
       final hill1 = Path()
         ..moveTo(size.width * 0.35, size.height)
-        ..quadraticBezierTo(size.width * 0.65, size.height * 0.55, size.width, size.height * 0.62)
+        ..quadraticBezierTo(size.width * 0.65, size.height * 0.55, size.width,
+            size.height * 0.62)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(hill1, Paint()..color = const Color(0xFF064E3B).withValues(alpha: 0.85));
+      canvas.drawPath(hill1,
+          Paint()..color = const Color(0xFF064E3B).withValues(alpha: 0.85));
 
       final hill2 = Path()
         ..moveTo(size.width * 0.50, size.height)
-        ..quadraticBezierTo(size.width * 0.75, size.height * 0.68, size.width, size.height * 0.52)
+        ..quadraticBezierTo(size.width * 0.75, size.height * 0.68, size.width,
+            size.height * 0.52)
         ..lineTo(size.width, size.height)
         ..close();
-      canvas.drawPath(hill2, Paint()..color = const Color(0xFF022C22).withValues(alpha: 0.95));
+      canvas.drawPath(hill2,
+          Paint()..color = const Color(0xFF022C22).withValues(alpha: 0.95));
 
       // 2. Ancient Tree Canopies
-      canvas.drawCircle(Offset(size.width * 0.72, size.height * 0.48), 28, Paint()..color = const Color(0xFF065F46));
-      canvas.drawCircle(Offset(size.width * 0.86, size.height * 0.42), 34, Paint()..color = const Color(0xFF047857));
+      canvas.drawCircle(Offset(size.width * 0.72, size.height * 0.48), 28,
+          Paint()..color = const Color(0xFF065F46));
+      canvas.drawCircle(Offset(size.width * 0.86, size.height * 0.42), 34,
+          Paint()..color = const Color(0xFF047857));
 
       // 3. Magical Floating Fireflies
       for (int i = 0; i < 9; i++) {
         final fx = size.width * (0.50 + (i * 23 % 45) / 100);
         final fy = size.height * (0.20 + (i * 37 % 60) / 100);
-        canvas.drawCircle(Offset(fx, fy), 2.2, Paint()..color = const Color(0xFF6EE7B7));
-        canvas.drawCircle(Offset(fx, fy), 5.0, Paint()..color = const Color(0xFF34D399).withValues(alpha: 0.25));
+        canvas.drawCircle(
+            Offset(fx, fy), 2.2, Paint()..color = const Color(0xFF6EE7B7));
+        canvas.drawCircle(Offset(fx, fy), 5.0,
+            Paint()..color = const Color(0xFF34D399).withValues(alpha: 0.25));
       }
     }
   }
@@ -6647,9 +7811,10 @@ class _GalleryTab extends StatelessWidget {
                   Stack(
                     children: [
                       ClipRRect(
-                        borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(14)),
-                        child: imageUrl != null && imageUrl.toString().isNotEmpty
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(14)),
+                        child: imageUrl != null &&
+                                imageUrl.toString().isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: imageUrl,
                                 memCacheWidth: 400,
@@ -6665,7 +7830,8 @@ class _GalleryTab extends StatelessWidget {
                                         strokeWidth: 2,
                                         valueColor: material
                                             .AlwaysStoppedAnimation<Color>(
-                                                btnColor.withValues(alpha: 0.5)),
+                                                btnColor.withValues(
+                                                    alpha: 0.5)),
                                       ),
                                     ),
                                   ),
@@ -6674,7 +7840,8 @@ class _GalleryTab extends StatelessWidget {
                                   height: 150,
                                   color: textColor.withValues(alpha: 0.05),
                                   child: Icon(material.Icons.grid_view_rounded,
-                                      color: textColor.withValues(alpha: 0.3), size: 36),
+                                      color: textColor.withValues(alpha: 0.3),
+                                      size: 36),
                                 ),
                               )
                             : Container(
@@ -6726,9 +7893,10 @@ class _GalleryTab extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10.0, 0, 10.0, 8.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: isService 
+                        color: isService
                             ? btnColor.withValues(alpha: 0.1)
                             : textColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(6),
@@ -6737,15 +7905,21 @@ class _GalleryTab extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isService ? material.Icons.handyman_outlined : material.Icons.shopping_bag_outlined,
+                            isService
+                                ? material.Icons.handyman_outlined
+                                : material.Icons.shopping_bag_outlined,
                             size: 10,
-                            color: isService ? btnColor : textColor.withValues(alpha: 0.6),
+                            color: isService
+                                ? btnColor
+                                : textColor.withValues(alpha: 0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             isService ? 'Service' : 'Product',
                             style: GoogleFonts.inter(
-                              color: isService ? btnColor : textColor.withValues(alpha: 0.6),
+                              color: isService
+                                  ? btnColor
+                                  : textColor.withValues(alpha: 0.6),
                               fontSize: 9.5,
                               fontWeight: FontWeight.w600,
                             ),
@@ -6763,8 +7937,6 @@ class _GalleryTab extends StatelessWidget {
     });
   }
 }
-
-
 
 class _ThreadsTab extends StatelessWidget {
   final List<Map<String, dynamic>> items;
@@ -6790,7 +7962,8 @@ class _ThreadsTab extends StatelessWidget {
                 size: 40, color: textColor.withValues(alpha: 0.3)),
             const SizedBox(height: 12),
             Text("No thoughts shared yet",
-                style: TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 13)),
+                style: TextStyle(
+                    color: textColor.withValues(alpha: 0.5), fontSize: 13)),
           ],
         ),
       );
@@ -6825,7 +7998,8 @@ class _ThreadsTab extends StatelessWidget {
                       color: btnColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(material.Icons.person, color: btnColor, size: 13),
+                    child:
+                        Icon(material.Icons.person, color: btnColor, size: 13),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -6899,6 +8073,4 @@ class _ThreadsTab extends StatelessWidget {
       ],
     );
   }
-
-
 }

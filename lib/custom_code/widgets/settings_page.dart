@@ -15,11 +15,9 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -317,30 +315,10 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () async {
                 Navigator.pop(ctx);
                 HapticFeedback.heavyImpact();
-                final hasPattern = await PocketParentalPatternLock.hasPattern();
-                if (!hasPattern && mounted) {
-                  final setSuccess = await PocketParentalPatternLock.showSetupDialog(
-                    context,
-                    title: 'Set Parental Pattern Lock 🔒',
-                    subtitle: 'Draw a 3x3 pattern. You will need this to return to Adult Mode.',
-                  );
-                  if (!setSuccess) return;
-                }
-                await PocketKidsService.activateKidAccount(
-                  name: PocketKidsService.kidName.isNotEmpty ? PocketKidsService.kidName : 'Little Explorer',
-                  ageGroup: PocketKidsService.kidAgeGroup.isNotEmpty ? PocketKidsService.kidAgeGroup : '6-8',
-                  avatar: PocketKidsService.kidAvatar.isNotEmpty ? PocketKidsService.kidAvatar : '🦁',
-                  isParentSwitched: true,
-                );
-                if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
-                    (route) => false,
-                  );
-                }
+                await PocketWorldModeSelectionDialog.show(context);
               },
               child: Text(
-                'ENTER STUDENT MODE',
+                'SWITCH TO STUDENT / KIDS',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
               ),
             ),

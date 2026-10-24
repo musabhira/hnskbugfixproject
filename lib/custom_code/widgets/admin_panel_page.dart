@@ -780,6 +780,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     'Courses',
     'Test Feature',
     'Dual Recorder',
+    'quick_account_switch',
   ];
 
   bool _elearningUnlocked = false;
@@ -2496,6 +2497,287 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
           ),
           const SizedBox(height: 40),
+          _buildKeystoreVaultCard(),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKeystoreVaultCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B26),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.vpn_key_rounded, color: Color(0xFF38BDF8), size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Android Keystore & Signing Vault',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Permanent Upload Key Safety & Play Console Recovery',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF10B981), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 12),
+                    const SizedBox(width: 4),
+                    Text(
+                      'ACTIVE',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF10B981),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white12),
+          const SizedBox(height: 12),
+
+          _buildVaultRow('Keystore File', 'upload-keystore.jks', Icons.folder_zip_rounded),
+          _buildVaultRow('Alias Name', 'upload', Icons.label_rounded),
+          _buildVaultRow('Keystore Password', 'pocket123', Icons.lock_outline_rounded),
+          _buildVaultRow('Key Password', 'pocket123', Icons.lock_rounded),
+          _buildVaultRow('Valid Until', 'Year 2053 (27+ Years Active)', Icons.calendar_today_rounded),
+          _buildVaultRow('SHA-1 Fingerprint', '28:6F:CA:9E:14:18:8A:FF:90:FE:23:34:54:06:B1:D3:AA:54:65:9D', Icons.fingerprint_rounded),
+          _buildVaultRow('SHA-256 Fingerprint', '1A:29:BF:0D:98:36:2C:D0:42:D1:30:FE:9C:E5:6D:C7:13:41:70:8C:B8:1E:80:92:C4:8D:0E:53:20:90:FA:2F', Icons.security_rounded),
+
+          const SizedBox(height: 20),
+
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  Clipboard.setData(const ClipboardData(
+                    text: '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',
+                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Full Keystore (.jks) Base64 copied! Save it to your notes/email.'),
+                      backgroundColor: Color(0xFF0284C7),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Copy Keystore Base64', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  Clipboard.setData(const ClipboardData(
+                    text: '''-----BEGIN CERTIFICATE-----
+MIIDRzCCAi+gAwIBAgIIG26d9uEq/ZkwDQYJKoZIhvcNAQELBQAwUTELMAkGA1UE
+BhMCVVMxFTATBgNVBAoTDFBvY2tldCBNYXRlczEUMBIGA1UECxMLRGV2ZWxvcG1l
+bnQxFTATBgNVBAMTDFBvY2tldCBNYXRlczAgFw0yNjAzMjIxMDI1MDVaGA8yMDUz
+MDgwNzEwMjUwNVowUTELMAkGA1UEBhMCVVMxFTATBgNVBAoTDFBvY2tldCBNYXRl
+czEUMBIGA1UECxMLRGV2ZWxvcG1lbnQxFTATBgNVBAMTDFBvY2tldCBNYXRlczCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAIXnZraLo1DpvC1xy29TwdiE
+n6ELyLkCErSTgwTk0z5s/0mvxRPjkNTk5Vwfqyw62LMm6zQz7x1S+osL3+MqPbTX
+W8R9Ugg1S/ffeJUZtLHKFF+PS/L/YIRTJGVI2+WCDf70Ky3XshcmjTSmmFfvnc2S
+T7u1xcn/Nrb4RDdU2a774c7cCuMTU6SugrqUus0QwlbQADKi85Fo4WDb0R4YoWfu
+aiJSkxJC5jiet6xLStq0OqRo9sRxVtIacWxlJhkn1/ADuVCPUqCbZnrci/GCGsDi
+c55tXscZFmCyovoj4rhu6g4rzyv7alZtI8zEqOODRVkMkZN++u8BqeSJeRpQg5UC
+AwEAAaMhMB8wHQYDVR0OBBYEFIZ8bqmIC2fJ9qmCMN2b2DHyBMzxMA0GCSqGSIb3
+DQEBCwUAA4IBAQAClmXsqrbcC5oS1K+UDshu3y0XcezesCI1R1bmC23iGlcbRAuy
+ZRY0h782x1wTXP+lciEIX9gjveIfRZjBlhf2WcGfXacrJ+myA9Ak2H+Fc7ToCi9o
+4luLmckGvNdxJ2Rf33cf8hZ5E2iO/hwlOopskRYkF8IzEx7ncaKm/NWvdoSuKEai
+Xs7pxaO/CGn9GVpNf4Nnckgdog6kmvG2AwsQlsfMbyt5rvP+EN2cu7ylddNsfggv
+aUpRSW+tQizv/rHbjpLu0WMehInXOhMouMfrdsD6X88aPsHks4CJpMSDxfRQ9jJh
+HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
+-----END CERTIFICATE-----''',
+                  ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Play Console Recovery Certificate (.pem) copied!'),
+                      backgroundColor: Color(0xFF059669),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.file_download_outlined, size: 16),
+                label: const Text('Copy Play Console .pem', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFFFD700),
+                  side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () => _showPlayConsoleRecoveryDialog(context),
+                icon: const Icon(Icons.help_outline_rounded, size: 16),
+                label: const Text('How to Recover if Lost?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVaultRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF38BDF8)),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(
+            child: SelectableText(
+              value,
+              style: const TextStyle(fontFamily: 'monospace', color: Color(0xFFFFD700), fontSize: 10.5),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 13, color: Colors.white38),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Copy $label',
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: value));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Copied $label: $value'), duration: const Duration(seconds: 1)),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPlayConsoleRecoveryDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5)),
+        title: Row(
+          children: [
+            const Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 24),
+            const SizedBox(width: 8),
+            Text('Google Play Key Recovery', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'കീസ്റ്റോർ നഷ്ടപ്പെട്ടാലും പേടിക്കേണ്ടതില്ല! Google Play App Signing ഉള്ളതിനാൽ താഴെ പറയുന്ന സ്റ്റെപ്പുകൾ വഴി എപ്പോൾ വേണമെങ്കിലും റീസെറ്റ് ചെയ്യാം:',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: 12),
+              _buildRecoveryStep('1', 'Google Play Console തുറക്കുക (play.google.com/console).'),
+              _buildRecoveryStep('2', 'Pocket Mates ആപ്പ് തിരഞ്ഞെടുക്കുക.'),
+              _buildRecoveryStep('3', 'ഇടതുവശത്തെ മെനുവിൽ Release -> Setup -> App integrity ക്ലിക്ക് ചെയ്യുക.'),
+              _buildRecoveryStep('4', 'App Signing tab-ൽ താഴേക്ക് സ്ക്രോൾ ചെയ്ത് "Request upload key reset" ക്ലിക്ക് ചെയ്യുക.'),
+              _buildRecoveryStep('5', 'റീസൺ ആയി "I lost my upload key" തിരഞ്ഞെടുക്കുക.'),
+              _buildRecoveryStep('6', 'മുകളിൽ നൽകിയിട്ടുള്ള "Copy Play Console .pem" ക്ലിക്ക് ചെയ്തു ലഭിക്കുന്ന upload_certificate.pem ഫയൽ അവിടെ അപ്‌ലോഡ് ചെയ്യുക.'),
+              _buildRecoveryStep('7', '24 മുതൽ 48 മണിക്കൂറിനുള്ളിൽ ഗൂഗിൾ നിങ്ങളുടെ കീ അപ്ഡേറ്റ് ചെയ്യും. അതിനുശേഷം പുതിയ അപ്ഡേറ്റുകൾ തടസ്സമില്ലാതെ അപ്‌ലോഡ് ചെയ്യാം!'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('മനസ്സിലായി (Close)', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecoveryStep(String num, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(num, style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(text, style: GoogleFonts.inter(color: Colors.white, fontSize: 12, height: 1.4)),
+          ),
         ],
       ),
     );
