@@ -6191,7 +6191,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: '🏆 Gold',
+            label: '🏆',
             count: _goldTrophies,
             textColor: const Color(0xFFFFD700),
             onTap: () {
@@ -6211,7 +6211,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: '🥈 Silver',
+            label: '🥈',
             count: _silverTrophies > 0 ? _silverTrophies : _pocketTrophyCount,
             textColor: const Color(0xFFE2E8F0),
             onTap: () {
