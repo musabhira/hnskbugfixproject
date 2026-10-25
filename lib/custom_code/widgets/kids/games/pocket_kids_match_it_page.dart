@@ -65,21 +65,46 @@ class PocketKidsMatchItPage extends StatefulWidget {
 class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
   final FlutterTts _tts = FlutterTts();
 
-  // Curated animal sets
+  // Curated animal sets (16 animals across rounds)
   static const List<MatchPairItem> _animalsPool = [
     MatchPairItem(id: '1', emoji: '🦁', name: 'Lion', phonicsLetter: 'L', themeColor: Color(0xFFFBBF24)),
     MatchPairItem(id: '2', emoji: '🐘', name: 'Elephant', phonicsLetter: 'E', themeColor: Color(0xFF93C5FD)),
     MatchPairItem(id: '3', emoji: '🐼', name: 'Panda', phonicsLetter: 'P', themeColor: Color(0xFF94A3B8)),
     MatchPairItem(id: '4', emoji: '🦊', name: 'Fox', phonicsLetter: 'F', themeColor: Color(0xFFFB923C)),
+    MatchPairItem(id: '5', emoji: '🐯', name: 'Tiger', phonicsLetter: 'T', themeColor: Color(0xFFF97316)),
+    MatchPairItem(id: '6', emoji: '🐻', name: 'Bear', phonicsLetter: 'B', themeColor: Color(0xFFB45309)),
+    MatchPairItem(id: '7', emoji: '🐸', name: 'Frog', phonicsLetter: 'F', themeColor: Color(0xFF10B981)),
+    MatchPairItem(id: '8', emoji: '🐵', name: 'Monkey', phonicsLetter: 'M', themeColor: Color(0xFFD97706)),
+    MatchPairItem(id: '9', emoji: '🐮', name: 'Cow', phonicsLetter: 'C', themeColor: Color(0xFF60A5FA)),
+    MatchPairItem(id: '10', emoji: '🦆', name: 'Duck', phonicsLetter: 'D', themeColor: Color(0xFFFACC15)),
+    MatchPairItem(id: '11', emoji: '🦒', name: 'Giraffe', phonicsLetter: 'G', themeColor: Color(0xFFEAB308)),
+    MatchPairItem(id: '12', emoji: '🐬', name: 'Dolphin', phonicsLetter: 'D', themeColor: Color(0xFF38BDF8)),
+    MatchPairItem(id: '13', emoji: '🐰', name: 'Rabbit', phonicsLetter: 'R', themeColor: Color(0xFFF43F5E)),
+    MatchPairItem(id: '14', emoji: '🦉', name: 'Owl', phonicsLetter: 'O', themeColor: Color(0xFF8B5CF6)),
+    MatchPairItem(id: '15', emoji: '🐴', name: 'Horse', phonicsLetter: 'H', themeColor: Color(0xFFB45309)),
+    MatchPairItem(id: '16', emoji: '🐧', name: 'Penguin', phonicsLetter: 'P', themeColor: Color(0xFF0F172A)),
   ];
 
   static const List<MatchPairItem> _alphabetPicturesPool = [
     MatchPairItem(id: 'a', emoji: '🍎', name: 'Apple', phonicsLetter: 'A', themeColor: Color(0xFFEF4444)),
     MatchPairItem(id: 'b', emoji: '⚽', name: 'Ball', phonicsLetter: 'B', themeColor: Color(0xFF3B82F6)),
     MatchPairItem(id: 'c', emoji: '🐱', name: 'Cat', phonicsLetter: 'C', themeColor: Color(0xFFF59E0B)),
-    MatchPairItem(id: 'd', emoji: '🦆', name: 'Duck', phonicsLetter: 'D', themeColor: Color(0xFF10B981)),
+    MatchPairItem(id: 'd', emoji: '🐕', name: 'Dog', phonicsLetter: 'D', themeColor: Color(0xFF10B981)),
+    MatchPairItem(id: 'e', emoji: '🥚', name: 'Egg', phonicsLetter: 'E', themeColor: Color(0xFFFBBF24)),
+    MatchPairItem(id: 'f', emoji: '🐟', name: 'Fish', phonicsLetter: 'F', themeColor: Color(0xFF06B6D4)),
+    MatchPairItem(id: 'g', emoji: '🍇', name: 'Grapes', phonicsLetter: 'G', themeColor: Color(0xFF8B5CF6)),
+    MatchPairItem(id: 'h', emoji: '👒', name: 'Hat', phonicsLetter: 'H', themeColor: Color(0xFFEC4899)),
+    MatchPairItem(id: 'i', emoji: '🍦', name: 'Ice Cream', phonicsLetter: 'I', themeColor: Color(0xFFF43F5E)),
+    MatchPairItem(id: 'j', emoji: '🧃', name: 'Juice', phonicsLetter: 'J', themeColor: Color(0xFFF97316)),
+    MatchPairItem(id: 'k', emoji: '🪁', name: 'Kite', phonicsLetter: 'K', themeColor: Color(0xFF38BDF8)),
+    MatchPairItem(id: 'l', emoji: '🍋', name: 'Lemon', phonicsLetter: 'L', themeColor: Color(0xFFFACC15)),
+    MatchPairItem(id: 'm', emoji: '🌙', name: 'Moon', phonicsLetter: 'M', themeColor: Color(0xFF6366F1)),
+    MatchPairItem(id: 'n', emoji: '🥜', name: 'Nut', phonicsLetter: 'N', themeColor: Color(0xFFB45309)),
+    MatchPairItem(id: 'o', emoji: '🍊', name: 'Orange', phonicsLetter: 'O', themeColor: Color(0xFFFB923C)),
+    MatchPairItem(id: 'p', emoji: '✏️', name: 'Pencil', phonicsLetter: 'P', themeColor: Color(0xFF10B981)),
   ];
 
+  int _roundIndex = 0; // 0 to 4 (5 rounds = 20 pairs)
   int _currentMode = 0; // 0 = Line Connector (Animals), 1 = 2x2 Picture-to-Letter
   
   // Mode 0: Line Connector State
@@ -91,6 +116,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
   final Map<String, bool> _pairResults = {}; // leftId -> isCorrect
 
   // Mode 1: 2x2 Picture-to-Letter State
+  List<MatchPairItem> _activePicturesPool = [];
   final Map<String, String?> _pictureSlots = {}; // pictureId -> letter
   final Set<String> _usedLetters = {};
 
@@ -120,8 +146,10 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
   }
 
   void _setupMode0() {
-    _leftItems = List.from(_animalsPool);
-    _rightItems = List.from(_animalsPool)..shuffle();
+    final startIdx = ((_roundIndex ~/ 2) * 4) % _animalsPool.length;
+    final currentSet = _animalsPool.sublist(startIdx, (startIdx + 4).clamp(0, _animalsPool.length));
+    _leftItems = List.from(currentSet);
+    _rightItems = List.from(currentSet)..shuffle();
     _connectedPairs.clear();
     _pairResults.clear();
     _selectedLeftId = null;
@@ -132,8 +160,10 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
   }
 
   void _setupMode1() {
+    final startIdx = ((_roundIndex ~/ 2) * 4) % _alphabetPicturesPool.length;
+    _activePicturesPool = _alphabetPicturesPool.sublist(startIdx, (startIdx + 4).clamp(0, _alphabetPicturesPool.length));
     _pictureSlots.clear();
-    for (final p in _alphabetPicturesPool) {
+    for (final p in _activePicturesPool) {
       _pictureSlots[p.id] = null;
     }
     _usedLetters.clear();
@@ -219,7 +249,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
     if (_isAnswerChecked || _usedLetters.contains(letter)) return;
 
     // Find first empty picture slot
-    for (final p in _alphabetPicturesPool) {
+    for (final p in _activePicturesPool) {
       if (_pictureSlots[p.id] == null) {
         HapticFeedback.selectionClick();
         PocketGameAudioService.instance.playPopSound();
@@ -247,7 +277,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
 
   void _checkMode1Answers() {
     bool allCorrect = true;
-    for (final p in _alphabetPicturesPool) {
+    for (final p in _activePicturesPool) {
       final placed = _pictureSlots[p.id];
       if (placed != p.phonicsLetter) {
         allCorrect = false;
@@ -265,7 +295,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
       _score += 15;
       PocketKidsService.addKidsScore(15);
       PocketKidsService.addStars(1);
-      _speak("Fantastic job! A for Apple, B for Ball, C for Cat, D for Duck!");
+      _speak("Fantastic job! Letters matched perfectly!");
     } else {
       HapticFeedback.heavyImpact();
       PocketGameSfx.instance.playErrorBuzz();
@@ -274,14 +304,18 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
   }
 
   void _onContinue() {
-    if (_currentMode == 0) {
-      // Advance to Mode 1
+    if (_roundIndex < 4) {
       setState(() {
-        _currentMode = 1;
+        _roundIndex++;
+        _currentMode = _roundIndex % 2;
       });
-      _setupMode1();
+      if (_currentMode == 0) {
+        _setupMode0();
+      } else {
+        _setupMode1();
+      }
     } else {
-      // Finished all rounds!
+      // Finished all 5 rounds (20 matching pairs)!
       widget.onCompleted?.call();
       _showVictoryDialog();
     }
@@ -373,7 +407,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
-                        value: _currentMode == 0 ? 0.5 : 1.0,
+                        value: (_roundIndex + 1) / 5.0,
                         minHeight: 10,
                         backgroundColor: const Color(0xFFF1F5F9),
                         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFEC4899)),
@@ -761,7 +795,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: _alphabetPicturesPool.length,
+          itemCount: _activePicturesPool.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 14,
@@ -769,7 +803,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
             childAspectRatio: 0.9,
           ),
           itemBuilder: (context, idx) {
-            final pic = _alphabetPicturesPool[idx];
+            final pic = _activePicturesPool[idx];
             final placedLetter = _pictureSlots[pic.id];
 
             Color slotBorder = const Color(0xFFCBD5E1);
@@ -814,7 +848,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
                       child: Text(
                         placedLetter ?? '',
                         style: GoogleFonts.fredoka(
-                          fontSize: 20,
+                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1E293B),
                         ),
@@ -832,7 +866,7 @@ class _PocketKidsMatchItPageState extends State<PocketKidsMatchItPage> {
         // Letter Choice Pills Row [ A ] [ B ] [ C ] [ D ] (Image 2 Screen 2)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: _alphabetPicturesPool.map((p) {
+          children: _activePicturesPool.map((p) {
             final isUsed = _usedLetters.contains(p.phonicsLetter);
 
             return GestureDetector(

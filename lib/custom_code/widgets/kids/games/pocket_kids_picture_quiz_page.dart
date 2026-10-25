@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -73,7 +74,7 @@ class PocketKidsPictureQuizPage extends StatefulWidget {
 class _PocketKidsPictureQuizPageState extends State<PocketKidsPictureQuizPage> {
   final FlutterTts _tts = FlutterTts();
 
-  // Curated Questions Database
+  // Curated 30 Questions Database across Animals, Numbers, Fruits & Objects
   static const List<PictureQuizQuestion> _allQuestions = [
     // Animals
     PictureQuizQuestion(
@@ -108,8 +109,56 @@ class _PocketKidsPictureQuizPageState extends State<PocketKidsPictureQuizPage> {
       correctIndex: 0,
       celebrationNote: 'Moo! Spot on Cow! 🐮',
     ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🐶',
+      options: ['Cat', 'Rabbit', 'Dog', 'Fox'],
+      correctIndex: 2,
+      celebrationNote: 'Woof woof! Friendly Dog! 🐶',
+    ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🐱',
+      options: ['Cat', 'Tiger', 'Lion', 'Bear'],
+      correctIndex: 0,
+      celebrationNote: 'Meow! Cute little Cat! 🐱',
+    ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🦆',
+      options: ['Chicken', 'Duck', 'Owl', 'Eagle'],
+      correctIndex: 1,
+      celebrationNote: 'Quack quack! Swimming Duck! 🦆',
+    ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🐸',
+      options: ['Fish', 'Turtle', 'Frog', 'Crocodile'],
+      correctIndex: 2,
+      celebrationNote: 'Ribbit ribbit! Jumping Frog! 🐸',
+    ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🐼',
+      options: ['Panda', 'Koala', 'Monkey', 'Pig'],
+      correctIndex: 0,
+      celebrationNote: 'Adorable cuddly Panda! 🐼',
+    ),
+    PictureQuizQuestion(
+      category: 'Animals',
+      title: 'Which animal is this?',
+      visualEmoji: '🐯',
+      options: ['Cheetah', 'Tiger', 'Cat', 'Wolf'],
+      correctIndex: 1,
+      celebrationNote: 'Mighty striped Tiger! 🐯',
+    ),
 
-    // Numbers & Counting (Reference Image 4 Screen 2)
+    // Numbers & Counting
     PictureQuizQuestion(
       category: 'Numbers',
       title: 'How many apples?',
@@ -137,8 +186,35 @@ class _PocketKidsPictureQuizPageState extends State<PocketKidsPictureQuizPage> {
       correctIndex: 1,
       celebrationNote: 'Woof woof! 3 cute puppies! 🐶',
     ),
+    PictureQuizQuestion(
+      category: 'Numbers',
+      title: 'How many balloons?',
+      visualEmoji: '🎈',
+      count: 4,
+      options: ['2', '4', '6', '8'],
+      correctIndex: 1,
+      celebrationNote: 'Pop pop! 4 flying balloons! 🎈',
+    ),
+    PictureQuizQuestion(
+      category: 'Numbers',
+      title: 'How many cars?',
+      visualEmoji: '🚗',
+      count: 6,
+      options: ['4', '5', '6', '7'],
+      correctIndex: 2,
+      celebrationNote: 'Vroom vroom! 6 zoomy cars! 🚗',
+    ),
+    PictureQuizQuestion(
+      category: 'Numbers',
+      title: 'How many flowers?',
+      visualEmoji: '🌸',
+      count: 8,
+      options: ['6', '7', '8', '9'],
+      correctIndex: 2,
+      celebrationNote: 'Blooming bright! 8 pretty flowers! 🌸',
+    ),
 
-    // Fruits
+    // Fruits & Food
     PictureQuizQuestion(
       category: 'Fruits',
       title: 'What delicious fruit is this?',
@@ -154,6 +230,88 @@ class _PocketKidsPictureQuizPageState extends State<PocketKidsPictureQuizPage> {
       options: ['Grape', 'Mango', 'Strawberry', 'Lemon'],
       correctIndex: 2,
       celebrationNote: 'Sweet sweet Strawberry! 🍓',
+    ),
+    PictureQuizQuestion(
+      category: 'Fruits',
+      title: 'What delicious fruit is this?',
+      visualEmoji: '🍎',
+      options: ['Apple', 'Pear', 'Peach', 'Cherry'],
+      correctIndex: 0,
+      celebrationNote: 'Crispy crunchy red Apple! 🍎',
+    ),
+    PictureQuizQuestion(
+      category: 'Fruits',
+      title: 'What delicious fruit is this?',
+      visualEmoji: '🥭',
+      options: ['Banana', 'Mango', 'Orange', 'Melon'],
+      correctIndex: 1,
+      celebrationNote: 'Juicy golden Mango! 🥭',
+    ),
+    PictureQuizQuestion(
+      category: 'Fruits',
+      title: 'What delicious fruit is this?',
+      visualEmoji: '🍇',
+      options: ['Blueberry', 'Plum', 'Grapes', 'Grapefruit'],
+      correctIndex: 2,
+      celebrationNote: 'Sweet purple Grapes! 🍇',
+    ),
+    PictureQuizQuestion(
+      category: 'Fruits',
+      title: 'What delicious fruit is this?',
+      visualEmoji: '🍉',
+      options: ['Watermelon', 'Kiwi', 'Pineapple', 'Coconut'],
+      correctIndex: 0,
+      celebrationNote: 'Refreshing summer Watermelon! 🍉',
+    ),
+
+    // Vehicles & Everyday Objects
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What is this vehicle?',
+      visualEmoji: '🚗',
+      options: ['Bus', 'Car', 'Train', 'Airplane'],
+      correctIndex: 1,
+      celebrationNote: 'Beep beep! Fast Car! 🚗',
+    ),
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What is this vehicle?',
+      visualEmoji: '🚂',
+      options: ['Boat', 'Truck', 'Train', 'Submarine'],
+      correctIndex: 2,
+      celebrationNote: 'Choo choo! Letter Train! 🚂',
+    ),
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What is this vehicle?',
+      visualEmoji: '🚌',
+      options: ['Bus', 'Bicycle', 'Scooter', 'Taxi'],
+      correctIndex: 0,
+      celebrationNote: 'Yellow School Bus! 🚌',
+    ),
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What is this flying high in the sky?',
+      visualEmoji: '✈️',
+      options: ['Rocket', 'Airplane', 'Helicopter', 'Hot Air Balloon'],
+      correctIndex: 1,
+      celebrationNote: 'Zooming Airplane! ✈️',
+    ),
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What gives us warmth and light every day?',
+      visualEmoji: '☀️',
+      options: ['Moon', 'Sun', 'Cloud', 'Rainbow'],
+      correctIndex: 1,
+      celebrationNote: 'Bright smiling Sun! ☀️',
+    ),
+    PictureQuizQuestion(
+      category: 'Objects',
+      title: 'What do we read to learn English?',
+      visualEmoji: '📖',
+      options: ['Pencil', 'Backpack', 'Book', 'Clock'],
+      correctIndex: 2,
+      celebrationNote: 'Wonderful Story Book! 📖',
     ),
   ];
 
@@ -171,7 +329,12 @@ class _PocketKidsPictureQuizPageState extends State<PocketKidsPictureQuizPage> {
     final filtered = _allQuestions
         .where((q) => q.category.toLowerCase() == widget.category.toLowerCase())
         .toList();
-    _questions = filtered.isNotEmpty ? filtered : _allQuestions;
+    final List<PictureQuizQuestion> pool = [...filtered];
+    for (final q in _allQuestions) {
+      if (!pool.contains(q)) pool.add(q);
+    }
+    pool.shuffle(math.Random(widget.day));
+    _questions = pool.take(20).toList();
 
     _loadQuestion();
   }

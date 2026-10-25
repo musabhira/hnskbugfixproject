@@ -1,33 +1,28 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_bottom_sheet.dart';
 
-/// 🌍 Kids Dedicated 2D Open World Adventure Page
-/// 
-/// Completely revamped and supercharged for kids:
-/// - Smooth interactive panoramic camera with auto-centering & "My Step" recenter button
-/// - Animated cartoon buggy with spinning wheels that drives between stepping stones
-/// - 10 genuinely interactive, responsive, playable mini-games (Balloon Pop, Letter Train,
-///   Animal Feeder, Safari Memory, Slingshot, Lilypad Hopper, Meadow Spy, Rainbow Sentence,
-///   Voice Echo, and Summit Guardian)
-/// - Persistent step saving with SharedPreferences so child progress is never lost
-/// - Living sunny day landscape with rotating smiling sun, clouds, rolling green hills,
-///   valley start house, and summit goal castle.
+/// 🌍 Kids Dedicated 2D Open World Rolling-Hills Driving Adventure
+///
+/// Features:
+/// - Side-scrolling rolling hills countryside physics (Hill Climb style)
+/// - Cute animated kids cartoon buggy with spinning wheels, bouncing suspension, and driver
+/// - Gas, Brake/Reverse, and Jump/Bounce pedals
+/// - 90+ roadside Buddy Houses with waving animal robots from Buddy Village
+/// - Roadside interactive Vocabulary Billboards with audio pronunciation and Malayalam meanings
+/// - Seamless infinite looping terrain
+/// - Distance odometer, words collected tracker, and KS star rewards
 class PocketKidsDayOpenWorldPage extends StatefulWidget {
   final int day;
+
   const PocketKidsDayOpenWorldPage({super.key, required this.day});
 
   static Future<void> open(BuildContext context, int day) {
@@ -44,1342 +39,722 @@ class PocketKidsDayOpenWorldPage extends StatefulWidget {
       _PocketKidsDayOpenWorldPageState();
 }
 
+class _VocabCheckpoint {
+  final double worldX;
+  final String word;
+  final String emoji;
+  final String meaningMl;
+  final String exampleEn;
+  bool isCollected = false;
+
+  _VocabCheckpoint({
+    required this.worldX,
+    required this.word,
+    required this.emoji,
+    required this.meaningMl,
+    required this.exampleEn,
+  });
+}
+
 class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
-  late KidDaySyllabus _syllabus;
-  late final KidMate? _dayBuddy;
+  late Ticker _ticker;
 
-  // Animation controllers for living open world
-  late AnimationController _ambientController;
-  late AnimationController _buggyDriveController;
-  final TransformationController _transformController =
-      TransformationController();
+  // Driving Physics State
+  double _carWorldX = 120.0;
+  double _carSpeed = 0.0;
+  double _carJumpY = 0.0;
+  double _verticalVelocity = 0.0;
+  double _wheelRotation = 0.0;
+  bool _isGasPressed = false;
+  bool _isBrakePressed = false;
 
-  int _currentStepIndex = 0; // 0 to 9 (10 games total)
-  final Set<int> _completedStepIndices = {};
-  int _earnedStars = 0;
-  bool _isDayFullyCompleted = false;
+  // Game Stats
+  int _score = 0;
+  int _wordsCollectedCount = 0;
+  final Set<String> _visitedHouseIds = {};
 
-  // Buggy physics & coordinate state
-  double _buggyX = 380.0;
-  double _buggyY = 1060.0;
-  double _buggyAngle = 0.0;
-  bool _isDriving = false;
+  // Active Proximity Targets
+  _VocabCheckpoint? _activeVocabNearby;
+  KidMate? _activeBuddyNearby;
+  bool _isSpeaking = false;
 
-  // Active step game modal state
-  int? _activePlayingStep;
-  bool _isStepSolved = false;
+  // Billboards Database along the endless highway
+  late final List<_VocabCheckpoint> _checkpoints;
 
-  // Mini-game specific local state
-  // Game 0: Junior Sentence Builder
-  List<String> _builderTargetWords = [];
-  List<String> _builderPlacedWords = [];
-  List<String> _builderAvailableWords = [];
-  // Game 1: Letter Train Spelling Bee
-  List<String> _targetLetters = [];
-  List<String> _placedLetters = [];
-  List<String> _availableLetters = [];
-  // Game 2: Highway Vocab Catcher
-  int? _speedCatcherSelectedIdx;
-  bool _speedCatcherRacing = false;
-  // Game 3: Safe Bubble Chat
-  int? _chatSelectedReplyIdx;
-  // Game 4: Little Assembly Speech
-  bool _assemblyDelivered = false;
-  // Game 5: Daily Spoken English
-  bool _isSpeakingMic = false;
-  // Game 6: Summit Exam & House Duel
-  int? _chosenShieldIdx;
-
-  // 7 Well-Planned Interactive Daily Games for Kids (100% Game-Only)
-  static const int totalSteps = 7;
-  static const List<Map<String, dynamic>> _stepDefinitions = [
-    {
-      'index': 0,
-      'title': 'Junior Sentence Builder 🧩',
-      'icon': '🧩',
-      'color': Color(0xFFEF4444),
-      'desc': 'Snap words together in correct order to construct today\'s sentence!',
-    },
-    {
-      'index': 1,
-      'title': 'Kids Spelling Bee 🔤',
-      'icon': '🚂',
-      'color': Color(0xFF3B82F6),
-      'desc': 'Assemble letter wagons in spelling order to spell today\'s word!',
-    },
-    {
-      'index': 2,
-      'title': 'Highway Vocab Catcher 🏎️',
-      'icon': '🏎️',
-      'color': Color(0xFF10B981),
-      'desc': 'Drive the racer and catch target vocabulary words on the highway!',
-    },
-    {
-      'index': 3,
-      'title': 'Safe Bubble Chat 💬',
-      'icon': '💬',
-      'color': Color(0xFFF59E0B),
-      'desc': 'Safe minimal chatting with cute buddy: exchange cheerful greetings & replies!',
-    },
-    {
-      'index': 4,
-      'title': 'Little Assembly Speech 🎙️',
-      'icon': '🎙️',
-      'color': Color(0xFF8B5CF6),
-      'desc': 'Take the school assembly podium to deliver your confidence speech!',
-    },
-    {
-      'index': 5,
-      'title': 'Daily Spoken English 🗣️',
-      'icon': '🗣️',
-      'color': Color(0xFF06B6D4),
-      'desc': 'Speak aloud into the magic microphone for 100% fluency stars!',
-    },
-    {
-      'index': 6,
-      'title': 'Summit Exam & House Duel 🏰',
-      'icon': '🏰',
-      'color': Color(0xFFFFD700),
-      'desc': 'Final summit boss duel & exam to conquer the day and unlock the next house!',
-    },
-  ];
-
-  // World size: 2400 x 1400
-  static const double worldWidth = 2400.0;
-  static const double worldHeight = 1400.0;
+  // Visual constants
+  static const double houseInterval = 820.0;
+  static const double vocabInterval = 440.0;
 
   @override
   void initState() {
     super.initState();
-    _syllabus = PocketKids100DaySyllabusDB.getSyllabusForDay(widget.day);
-    _dayBuddy = (widget.day - 1 < PocketKidsRobotsData.robotsAndHomies.length)
-        ? PocketKidsRobotsData.robotsAndHomies[widget.day - 1]
-        : null;
-
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 14),
-    )..repeat();
-
-    _buggyDriveController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-
     _initTts();
-    _loadSavedState();
+    _generateHighwayCheckpoints();
+
+    // 60fps smooth game physics loop
+    _ticker = createTicker(_onTick)..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _tts.stop();
+    super.dispose();
   }
 
   Future<void> _initTts() async {
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.38);
-      await _tts.setPitch(1.2);
+      await _tts.setPitch(1.32);
+      await _tts.setSpeechRate(0.44);
     } catch (_) {}
   }
 
-  void _speak(String text) {
+  Future<void> _speak(String text) async {
+    if (_isSpeaking) return;
+    _isSpeaking = true;
     try {
-      _tts.speak(text);
+      await _tts.stop();
+      await _tts.speak(text);
     } catch (_) {}
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) _isSpeaking = false;
+    });
   }
 
-  Future<void> _loadSavedState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final completed = <int>{};
-    for (int i = 0; i < totalSteps; i++) {
-      if (prefs.getBool('pocket_kids_day_${widget.day}_step_${i}_done') == true) {
-        completed.add(i);
-      }
+  void _generateHighwayCheckpoints() {
+    final vocabBank = [
+      {'word': 'CAR', 'emoji': '🚗', 'ml': 'കാർ', 'ex': 'The red car goes fast!'},
+      {'word': 'SUN', 'emoji': '☀️', 'ml': 'സൂര്യൻ', 'ex': 'The sun is shining bright!'},
+      {'word': 'CAT', 'emoji': '🐱', 'ml': 'പൂച്ച', 'ex': 'The cute cat says meow!'},
+      {'word': 'DOG', 'emoji': '🐶', 'ml': 'പട്ടി', 'ex': 'The happy dog wags its tail!'},
+      {'word': 'STAR', 'emoji': '⭐', 'ml': 'നക്ഷത്രം', 'ex': 'Look at the twinkling star!'},
+      {'word': 'TREE', 'emoji': '🌳', 'ml': 'മരം', 'ex': 'Big green tree with sweet apples!'},
+      {'word': 'LION', 'emoji': '🦁', 'ml': 'സിംഹം', 'ex': 'King lion roars in the jungle!'},
+      {'word': 'BUS', 'emoji': '🚌', 'ml': 'ബസ്', 'ex': 'The yellow school bus is here!'},
+      {'word': 'DUCK', 'emoji': '🦆', 'ml': 'താറാവ്', 'ex': 'The duck swims in the pond!'},
+      {'word': 'FROG', 'emoji': '🐸', 'ml': 'തവള', 'ex': 'The green frog hops so high!'},
+      {'word': 'BOAT', 'emoji': '⛵', 'ml': 'ബോട്ട്', 'ex': 'The little boat sails on the water!'},
+      {'word': 'BIRD', 'emoji': '🐦', 'ml': 'പക്ഷി', 'ex': 'The blue bird sings a sweet song!'},
+      {'word': 'APPLE', 'emoji': '🍎', 'ml': 'ആപ്പിൾ', 'ex': 'Crunchy red apple for lunch!'},
+      {'word': 'BEAR', 'emoji': '🐻', 'ml': 'കരടി', 'ex': 'Friendly brown bear loves honey!'},
+      {'word': 'MOON', 'emoji': '🌙', 'ml': 'ചന്ദ്രൻ', 'ex': 'The silver moon glows at night!'},
+      {'word': 'BALL', 'emoji': '⚽', 'ml': 'പന്ത്', 'ex': 'Kick the soccer ball into the goal!'},
+      {'word': 'TRAIN', 'emoji': '🚂', 'ml': 'ട്രെയിൻ', 'ex': 'Choo choo goes the friendly train!'},
+      {'word': 'FISH', 'emoji': '🐟', 'ml': 'മത്സ്യം', 'ex': 'The shiny fish swims so fast!'},
+      {'word': 'FLOWER', 'emoji': '🌸', 'ml': 'പൂവ്', 'ex': 'Pretty pink flower in the meadow!'},
+      {'word': 'POCKET', 'emoji': '🎒', 'ml': 'പോക്കറ്റ്', 'ex': 'Pocket Mates is full of fun!'},
+    ];
+
+    _checkpoints = [];
+    for (int i = 0; i < 60; i++) {
+      final v = vocabBank[i % vocabBank.length];
+      _checkpoints.add(
+        _VocabCheckpoint(
+          worldX: 300.0 + (i * vocabInterval),
+          word: v['word']!,
+          emoji: v['emoji']!,
+          meaningMl: v['ml']!,
+          exampleEn: v['ex']!,
+        ),
+      );
     }
-
-    int active = 0;
-    for (int i = 0; i < totalSteps; i++) {
-      if (!completed.contains(i)) {
-        active = i;
-        break;
-      }
-    }
-
-    final initialPos = _getStepPosition(active);
-
-    if (mounted) {
-      setState(() {
-        _completedStepIndices.clear();
-        _completedStepIndices.addAll(completed);
-        _currentStepIndex = active;
-        _earnedStars = completed.length * 3;
-        _isDayFullyCompleted = completed.length >= totalSteps;
-        _buggyX = initialPos.dx;
-        _buggyY = initialPos.dy;
-      });
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _focusOnPoint(_buggyX, _buggyY, scale: 1.0, animate: false);
-      });
-    }
   }
 
-  Future<void> _saveStepComplete(int stepIndex) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_kids_day_${widget.day}_step_${stepIndex}_done', true);
+  // Rolling hills height function (sinusoidal terrain)
+  static double getHillY(double x) {
+    return 45.0 * math.sin(x * 0.0028) +
+        22.0 * math.sin(x * 0.0065) +
+        12.0 * math.cos(x * 0.0012);
   }
 
-  @override
-  void dispose() {
-    _ambientController.dispose();
-    _buggyDriveController.dispose();
-    _transformController.dispose();
-    _tts.stop();
-    super.dispose();
+  // Hill slope angle for car chassis tilt
+  static double getHillAngle(double x) {
+    final dy = getHillY(x + 10.0) - getHillY(x - 10.0);
+    return math.atan2(dy, 20.0);
   }
 
-  void _focusOnPoint(double worldX, double worldY,
-      {double scale = 1.0, bool animate = false}) {
+  void _onTick(Duration elapsed) {
     if (!mounted) return;
-    final size = MediaQuery.of(context).size;
-    final targetX = -(worldX * scale) + (size.width / 2.0);
-    final targetY = -(worldY * scale) + (size.height / 2.0);
-
-    final targetMatrix = Matrix4.identity()
-      ..setEntry(0, 0, scale)
-      ..setEntry(1, 1, scale)
-      ..setEntry(0, 3, targetX)
-      ..setEntry(1, 3, targetY);
-
-    _transformController.value = targetMatrix;
-  }
-
-  Offset _getStepPosition(int index) {
-    final double t = (index + 1) / (totalSteps + 1).toDouble();
-    final double x = 280 + t * (worldWidth - 560);
-    final double y = 1080 - (t * 700) + math.sin(t * math.pi * 3) * 60;
-    return Offset(x, y);
-  }
-
-  void _driveBuggyTo(Offset target, {VoidCallback? onArrival}) {
-    if (!mounted) return;
-    _buggyDriveController.stop();
-
-    final startPos = Offset(_buggyX, _buggyY);
-    final dx = target.dx - startPos.dx;
-    final dy = target.dy - startPos.dy;
-    _buggyAngle = math.atan2(dy, dx).clamp(-0.45, 0.45);
 
     setState(() {
-      _isDriving = true;
+      // 1. Throttle / Brake acceleration
+      if (_isGasPressed) {
+        _carSpeed += 0.40;
+        if (_carSpeed > 10.5) _carSpeed = 10.5;
+      } else if (_isBrakePressed) {
+        _carSpeed -= 0.55;
+        if (_carSpeed < -5.0) _carSpeed = -5.0;
+      } else {
+        // Natural friction & coasting
+        _carSpeed *= 0.95;
+        if (_carSpeed.abs() < 0.05) _carSpeed = 0.0;
+      }
+
+      // 2. Hill slope gravitational pull
+      final carAngle = getHillAngle(_carWorldX);
+      _carSpeed -= math.sin(carAngle) * 0.16;
+
+      // 3. Update world position
+      _carWorldX += _carSpeed;
+      if (_carWorldX < 80.0) {
+        _carWorldX = 80.0;
+        _carSpeed = 0.0;
+      }
+
+      // 4. Wheel rotation based on speed
+      _wheelRotation += _carSpeed * 0.08;
+
+      // 5. Jump physics
+      if (_carJumpY < 0.0 || _verticalVelocity != 0.0) {
+        _carJumpY += _verticalVelocity;
+        _verticalVelocity += 0.55; // Gravity
+        if (_carJumpY >= 0.0) {
+          _carJumpY = 0.0;
+          _verticalVelocity = 0.0;
+        }
+      }
+
+      // 6. Proximity detection for Vocabulary Billboards
+      _VocabCheckpoint? closestVocab;
+      double minVocabDist = 120.0;
+      for (final cp in _checkpoints) {
+        final dist = (cp.worldX - _carWorldX).abs();
+        if (dist < minVocabDist) {
+          minVocabDist = dist;
+          closestVocab = cp;
+        }
+      }
+
+      if (closestVocab != _activeVocabNearby) {
+        _activeVocabNearby = closestVocab;
+        if (closestVocab != null && !closestVocab.isCollected) {
+          HapticFeedback.lightImpact();
+          _speak("${closestVocab.word}! ${closestVocab.meaningMl}");
+        }
+      }
+
+      // 7. Proximity detection for Buddy Houses
+      KidMate? closestBuddy;
+      final robots = PocketKidsRobotsData.robotsAndHomies;
+      double minHouseDist = 140.0;
+
+      for (int i = 0; i < robots.length; i++) {
+        final houseX = 650.0 + (i * houseInterval);
+        final dist = (houseX - _carWorldX).abs();
+        if (dist < minHouseDist) {
+          minHouseDist = dist;
+          closestBuddy = robots[i];
+          break;
+        }
+      }
+
+      if (closestBuddy != _activeBuddyNearby) {
+        _activeBuddyNearby = closestBuddy;
+        if (closestBuddy != null) {
+          HapticFeedback.lightImpact();
+        }
+      }
     });
+  }
 
-    final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _buggyDriveController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
-
-    void listener() {
-      if (!mounted) return;
-      final t = animation.value;
-      final curX = startPos.dx + (target.dx - startPos.dx) * t;
-      final curY = startPos.dy + (target.dy - startPos.dy) * t;
+  void _onJump() {
+    if (_carJumpY == 0.0) {
+      HapticFeedback.heavyImpact();
+      PocketGameAudioService.instance.playPopSound();
       setState(() {
-        _buggyX = curX;
-        _buggyY = curY;
+        _verticalVelocity = -8.5;
+        _carJumpY = -1.0;
       });
-      _focusOnPoint(curX, curY, scale: 1.0, animate: false);
     }
-
-    animation.addListener(listener);
-
-    _buggyDriveController.forward(from: 0.0).then((_) {
-      animation.removeListener(listener);
-      if (mounted) {
-        setState(() {
-          _buggyX = target.dx;
-          _buggyY = target.dy;
-          _isDriving = false;
-        });
-        HapticFeedback.mediumImpact();
-        onArrival?.call();
-      }
-    });
   }
 
-  void _onStepTapped(int index) {
+  void _onHonk() {
+    HapticFeedback.mediumImpact();
+    PocketGameAudioService.instance.playPopSound();
+    _speak("Beep beep! Let's drive!");
+  }
+
+  void _onCollectVocab(_VocabCheckpoint vocab) async {
+    if (vocab.isCollected) return;
+
     HapticFeedback.heavyImpact();
-    PocketGameAudioService.instance.playCoinSound();
+    PocketGameSFX.playCorrectChime();
 
-    final targetPos = _getStepPosition(index);
     setState(() {
-      _currentStepIndex = index;
-      _buggyX = targetPos.dx;
-      _buggyY = targetPos.dy;
+      vocab.isCollected = true;
+      _score += 10;
+      _wordsCollectedCount++;
     });
-    _focusOnPoint(targetPos.dx, targetPos.dy, scale: 1.0, animate: true);
-    _openGameModal(index);
+
+    await PocketKidsService.addKidsScore(10);
+    await PocketKidsService.addKidStars(1);
+
+    _speak("Great! You learned ${vocab.word}!");
   }
 
-  void _openGameModal(int index) {
-    _initGameStateForStep(index);
-    setState(() {
-      _activePlayingStep = index;
-    });
-  }
-
-  void _initGameStateForStep(int index) {
-    _isStepSolved = false;
-    final targetWord = _syllabus.dailyVocabulary.isNotEmpty
-        ? _syllabus.dailyVocabulary[index % _syllabus.dailyVocabulary.length]
-        : 'APPLE';
-
-    switch (index) {
-      case 0: // Junior Sentence Builder
-        final rawSent = _syllabus.sentence.isNotEmpty ? _syllabus.sentence : 'I love learning English';
-        final cleanWords = rawSent.split(' ').where((w) => w.trim().isNotEmpty).toList();
-        _builderTargetWords = cleanWords.isEmpty ? ['I', 'like', 'cats'] : cleanWords;
-        _builderPlacedWords = [];
-        _builderAvailableWords = List<String>.from(_builderTargetWords)..shuffle();
-        break;
-
-      case 1: // Kids Spelling Bee Train
-        final cleanWord = targetWord.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
-        _targetLetters = cleanWord.isEmpty ? ['A', 'P', 'P', 'L', 'E'] : cleanWord.split('');
-        _placedLetters = [];
-        _availableLetters = List<String>.from(_targetLetters)..shuffle();
-        break;
-
-      case 2: // Highway Vocab Catcher
-        _speedCatcherSelectedIdx = null;
-        _speedCatcherRacing = false;
-        break;
-
-      case 3: // Safe Bubble Chat
-        _chatSelectedReplyIdx = null;
-        break;
-
-      case 4: // Little Assembly Speech
-        _assemblyDelivered = false;
-        break;
-
-      case 5: // Daily Spoken English
-        _isSpeakingMic = false;
-        break;
-
-      case 6: // Summit Exam & House Duel
-      default:
-        _chosenShieldIdx = null;
-        break;
-    }
-  }
-
-  void _completeActiveStep() async {
-    if (_activePlayingStep == null) return;
-    final completedIdx = _activePlayingStep!;
+  void _showBuddyModal(KidMate buddy) {
     HapticFeedback.heavyImpact();
-    PocketGameAudioService.instance.playCoinSound();
-
-    await _saveStepComplete(completedIdx);
-
-    setState(() {
-      _completedStepIndices.add(completedIdx);
-      _earnedStars = _completedStepIndices.length * 3;
-      _activePlayingStep = null;
-    });
-
-    if (_completedStepIndices.length >= totalSteps) {
-      final summitPos = Offset(worldWidth - 260, 400);
-      _driveBuggyTo(summitPos, onArrival: () {
-        _finishDay();
-      });
-    } else {
-      int nextStep = completedIdx + 1;
-      while (nextStep < totalSteps && _completedStepIndices.contains(nextStep)) {
-        nextStep++;
-      }
-      if (nextStep < totalSteps) {
-        setState(() {
-          _currentStepIndex = nextStep;
-        });
-        final nextPos = _getStepPosition(nextStep);
-        _driveBuggyTo(nextPos);
-      }
-    }
-  }
-
-  Future<void> _finishDay() async {
-    setState(() {
-      _isDayFullyCompleted = true;
-    });
-    await PocketKidsService.completeDayGame(widget.day, 3);
     PocketGameAudioService.instance.playVictorySfx();
 
-    if (!mounted) return;
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: const BorderSide(color: Color(0xFFFFD700), width: 3),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🏆 👑 🌟', style: TextStyle(fontSize: 42)),
-            const SizedBox(height: 12),
-            Text(
-              'DAY ${widget.day} CONQUERED! 🌟',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFFD700),
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'You mastered all 7 Daily Games!\n+100 Kids Score (KS) & +3 Star Cookies earned!\n\n🌙 Day ${widget.day + 1} unlocks tonight at 12:00 AM Midnight!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('⭐', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 6),
-                  Text(
-                    '+100 KS & HERO CARD #${widget.day} WON! 🃏',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 18,
+              offset: Offset(0, -4),
             ),
           ],
         ),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(buddy.avatar, style: const TextStyle(fontSize: 64)),
+            const SizedBox(height: 8),
+            Text(
+              buddy.name,
+              style: GoogleFonts.outfit(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF0F172A),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
-            child: Text(
-              'RETURN TO TRAIL 🚀',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFBBF24)),
+              ),
+              child: Text(
+                '🏡 Buddy Village Home #${buddy.dayLevel} • Ages ${buddy.ageGroup}',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFB45309),
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              buddy.bio,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 14,
+                color: const Color(0xFF475569),
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    icon: const Icon(Icons.volume_up_rounded, size: 20),
+                    label: Text(
+                      'Listen 🔊',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
+                    ),
+                    onPressed: () {
+                      _tts.stop();
+                      _tts.speak("Hello friend! I am ${buddy.name}! Welcome to my house!");
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    icon: const Icon(Icons.waving_hand_rounded, size: 20),
+                    label: Text(
+                      'Say Hi 👋 (+5 KS)',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      if (!_visitedHouseIds.contains(buddy.id)) {
+                        _visitedHouseIds.add(buddy.id);
+                        await PocketKidsService.addKidsScore(5);
+                        setState(() => _score += 5);
+                        HapticFeedback.heavyImpact();
+                        PocketGameAudioService.instance.playCoinSound();
+                      }
+                      _speak("Hi ${buddy.name}! You are wonderful!");
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final avatarConfig =
-        PocketKidsAvatarSystem.getAvatarConfigForDay(widget.day);
+    final screenW = MediaQuery.of(context).size.width;
+    final screenH = MediaQuery.of(context).size.height;
+    final groundBase = screenH * 0.65;
+
+    // Viewport camera focuses on the car at 32% screen width
+    final cameraX = _carWorldX - (screenW * 0.32);
+    final carHillY = getHillY(_carWorldX);
+    final carAngle = getHillAngle(_carWorldX);
+    final carScreenX = screenW * 0.32;
+    final carScreenY = groundBase + carHillY + _carJumpY - 48.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF38BDF8),
+      backgroundColor: const Color(0xFF7DD3FC), // Bright Sky Blue
       body: Stack(
         children: [
-          // 1. Panoramic Open World Canvas (Panning & Zooming)
-          InteractiveViewer(
-            transformationController: _transformController,
-            boundaryMargin: const EdgeInsets.all(500),
-            minScale: 0.5,
-            maxScale: 1.8,
-            child: SizedBox(
-              width: worldWidth,
-              height: worldHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 🎨 Daytime Sunny Landscape Painter
-                  Positioned.fill(
-                    child: AnimatedBuilder(
-                      animation: _ambientController,
-                      builder: (context, _) => CustomPaint(
-                        painter: _KidsDaytimeOpenWorldPainter(
-                          progress: _ambientController.value,
-                        ),
-                      ),
-                    ),
-                  ),
+          // ===================================================================
+          // 1. ENDLESS 2D ROLLING HILLS & HIGHWAY CANVAS
+          // ===================================================================
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _KidsRollingHillsPainter(
+                cameraX: cameraX,
+                groundBaseY: groundBase,
+                checkpoints: _checkpoints,
+                robots: PocketKidsRobotsData.robotsAndHomies,
+                houseInterval: houseInterval,
+              ),
+            ),
+          ),
 
-                  // 🏡 Valley Start: House 1 (Day $day Residence)
-                  Positioned(
-                    left: 80,
-                    top: 1040,
-                    child: GestureDetector(
-                      onTap: () {
-                        if (_dayBuddy != null) {
-                          HapticFeedback.mediumImpact();
-                          PocketKidsProfileBottomSheet.show(context, mate: _dayBuddy!);
-                        }
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: const Color(0xFFFFD700), width: 1.5),
-                            ),
-                            child: Text(
-                              'HOUSE ${widget.day} • START ⛳',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          PocketAvatarHouseWidget(
-                            day: widget.day,
-                            width: 190,
-                            height: 135,
-                            lightsOn: true,
+          // ===================================================================
+          // 2. THE CARTOON BUGGY & DRIVER
+          // ===================================================================
+          Positioned(
+            left: carScreenX - 45.0,
+            top: carScreenY,
+            child: Transform.rotate(
+              angle: carAngle * 0.85,
+              alignment: Alignment.bottomCenter,
+              child: _buildBuggy(isDriving: _carSpeed.abs() > 0.5),
+            ),
+          ),
+
+          // ===================================================================
+          // 3. TOP NAVIGATION & STATS HUD
+          // ===================================================================
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  // Back Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 8,
                           ),
                         ],
                       ),
-                    ),
-                  ),
-
-                  // 🏰 Summit Finish: House 2 (Day ${day+1} Castle)
-                  Positioned(
-                    left: worldWidth - 360,
-                    top: 320,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: const Color(0xFFFFD700), width: 1.5),
-                          ),
-                          child: Text(
-                            'HOUSE ${widget.day + 1} • GOAL 🏆',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        PocketAvatarHouseWidget(
-                          day: widget.day + 1,
-                          width: 210,
-                          height: 150,
-                          lightsOn: _isDayFullyCompleted,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 🐾 7 Stepping Game Ledges
-                  for (int i = 0; i < totalSteps; i++) _buildStepNode(i),
-
-                  // 🚗 Kid Driver Buggy traveling between steps
-                  _buildAnimatedBuggy(avatarConfig),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. Top HUD Bar
-          _buildTopHud(),
-
-          // 3. Active Step Game Dialog
-          if (_activePlayingStep != null)
-            Positioned.fill(
-              child: _buildActiveGameOverlay(_activePlayingStep!),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopHud() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 8,
-      left: 10,
-      right: 10,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white24, width: 1.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.arrow_back_rounded,
-                  color: Colors.white, size: 20),
-            ),
-          ),
-
-          // Day Badge & Step Counter (Flexible & scale down if narrow)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Color(0xFF0F172A),
+                        size: 22,
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // Distance Odometer
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 8,
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
                         ),
                       ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        const Text('🚗', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 5),
                         Text(
-                          'DAY ${widget.day} WORLD 🌍',
+                          '${(_carWorldX / 10).round()} m',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 12.0,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${_completedStepIndices.length}/$totalSteps',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w900,
-                            ),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
+                  const SizedBox(width: 8),
 
-          // Recenter & Star Points Pill
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Recenter to Buggy Button
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _focusOnPoint(_buggyX, _buggyY, scale: 1.0, animate: true);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                  ),
-                  child: const Icon(Icons.my_location_rounded,
-                      color: Color(0xFFFFD700), size: 18),
-                ),
-              ),
-              const SizedBox(width: 6),
-              // Stars
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('⭐', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$_earnedStars',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepNode(int index) {
-    final pos = _getStepPosition(index);
-    final def = _stepDefinitions[index];
-    final isCompleted = _completedStepIndices.contains(index);
-    final isCurrent = index == _currentStepIndex;
-    final Color stepColor = def['color'] as Color;
-
-    return Positioned(
-      left: pos.dx - 45,
-      top: pos.dy - 65,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _onStepTapped(index),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Game Title Badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: isCompleted
-                    ? const Color(0xFF10B981)
-                    : (isCurrent ? stepColor : const Color(0xFF334155)),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: Text(
-                'GAME ${index + 1}: ${def['title']}',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Floating 3D Stepping Stone
-            Container(
-              width: isCurrent ? 74 : 64,
-              height: isCurrent ? 74 : 64,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isCompleted
-                      ? [const Color(0xFF34D399), const Color(0xFF059669)]
-                      : (isCurrent
-                          ? [stepColor, stepColor.withValues(alpha: 0.7)]
-                          : [const Color(0xFF475569), const Color(0xFF1E293B)]),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isCurrent ? const Color(0xFFFFFC00) : Colors.white,
-                  width: isCurrent ? 3.5 : 2.0,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isCurrent
-                        ? stepColor.withValues(alpha: 0.6)
-                        : Colors.black.withValues(alpha: 0.3),
-                    blurRadius: isCurrent ? 18 : 8,
-                    spreadRadius: isCurrent ? 3 : 1,
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  isCompleted ? '⭐' : def['icon'],
-                  style: TextStyle(fontSize: isCurrent ? 30 : 24),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBuggy(VectorAvatarConfig avatarConfig) {
-    return Positioned(
-      left: _buggyX - 32,
-      top: _buggyY - 110,
-      child: IgnorePointer(
-        child: Transform.rotate(
-          angle: _buggyAngle,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Driver Avatar inside Buggy
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF0F172A),
-                border: Border.all(color: const Color(0xFFFFD700), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.5),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: VectorAvatarWidget(
-                  config: avatarConfig,
-                  size: 44,
-                  showAura: false,
-                ),
-              ),
-            ),
-            const SizedBox(height: 2),
-            // Cartoon Adventure Buggy
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD700), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _isDriving ? '🏎️💨' : '🏎️',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    'KID RACER',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 8.5,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-
-  // =========================================================================
-  // 🎮 10 DISTINCT INTERACTIVE GAME ENGINES (ONE PER STEP)
-  // =========================================================================
-  Widget _buildActiveGameOverlay(int stepIndex) {
-    final def = _stepDefinitions[stepIndex];
-    final stepTitle = def['title'] as String;
-    final stepIcon = def['icon'] as String;
-    final targetWord = _syllabus.dailyVocabulary.isNotEmpty
-        ? _syllabus.dailyVocabulary[stepIndex % _syllabus.dailyVocabulary.length]
-        : 'APPLE';
-    final targetPhonics = _syllabus.phonicsFocus;
-
-    return Container(
-      color: Colors.black.withValues(alpha: 0.78),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      alignment: Alignment.center,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 420),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-            ),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: _isStepSolved ? const Color(0xFF10B981) : const Color(0xFFFFD700),
-              width: 2.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (_isStepSolved ? const Color(0xFF10B981) : const Color(0xFFFFD700))
-                    .withValues(alpha: 0.4),
-                blurRadius: 30,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(stepIcon, style: const TextStyle(fontSize: 26)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'STEP ${stepIndex + 1}: $stepTitle',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                      onPressed: () => setState(() => _activePlayingStep = null),
-                    ),
-                  ],
-                ),
-                const Divider(color: Colors.white24, height: 16),
-
-                // Specific Game Interaction per step
-                _buildGameContentForStep(stepIndex, targetWord, targetPhonics),
-
-                const SizedBox(height: 18),
-
-                // Celebration & Win Button
-                if (_isStepSolved) ...[
+                  // Words Collected Pill
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('🎉 🌟 ', style: TextStyle(fontSize: 18)),
+                        const Text('📚', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 5),
                         Text(
-                          'SOLVED! AWESOME JOB!',
+                          '$_wordsCollectedCount Words',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFF34D399),
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w800,
                             fontSize: 13,
+                            color: const Color(0xFF2563EB),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                ],
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isStepSolved ? const Color(0xFFFFD700) : const Color(0xFF334155),
-                      foregroundColor: _isStepSolved ? Colors.black : Colors.white70,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: _isStepSolved ? 6 : 0,
+                  const Spacer(),
+
+                  // Score / Stars Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
-                    onPressed: _completeActiveStep,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('⭐ ', style: TextStyle(fontSize: 18)),
+                        const Text('⭐', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
                         Text(
-                          _isStepSolved
-                              ? 'CLAIM 3 STARS & DRIVE ON! 🚀'
-                              : 'SKIP & CONTINUE 🚀',
+                          '$_score KS',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w900,
                             fontSize: 13,
+                            color: const Color(0xFFF59E0B),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildGameContentForStep(int step, String word, String phonics) {
-    switch (step) {
-      case 0:
-        // 🧩 1. Junior Sentence Builder
-        final sentence = _syllabus.sentence.isNotEmpty ? _syllabus.sentence : 'I love learning English';
-        return Column(
-          children: [
-            Text(
-              'Snap the words in order to build today\'s sentence:',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+          // ===================================================================
+          // 4. FLOATING CHECKPOINT / BUDDY INTERACTION CARD
+          // ===================================================================
+          if (_activeVocabNearby != null)
+            Positioned(
+              bottom: 110,
+              left: 20,
+              right: 20,
+              child: _buildVocabPopupCard(_activeVocabNearby!),
+            )
+          else if (_activeBuddyNearby != null)
+            Positioned(
+              bottom: 110,
+              left: 20,
+              right: 20,
+              child: _buildBuddyPopupCard(_activeBuddyNearby!),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFEF4444)),
-              ),
-              child: Text(
-                _builderPlacedWords.isEmpty
-                    ? '[ Tap words below to build sentence ]'
-                    : '"${_builderPlacedWords.join(' ')}"',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFEDD5),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _builderAvailableWords.map((wordPart) {
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEF4444),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    _speak(wordPart);
-                    setState(() {
-                      _builderPlacedWords.add(wordPart);
-                      _builderAvailableWords.remove(wordPart);
-                      if (_builderPlacedWords.length == _builderTargetWords.length) {
-                        if (_builderPlacedWords.join(' ') == _builderTargetWords.join(' ')) {
-                          _isStepSolved = true;
-                          _speak('Brilliant! $sentence');
-                        }
-                      }
-                    });
-                  },
-                  child: Text(wordPart, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
-                );
-              }).toList(),
-            ),
-            if (_builderPlacedWords.isNotEmpty && !_isStepSolved) ...[
-              const SizedBox(height: 8),
-              TextButton.icon(
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
-                label: Text('Reset Words', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
-                onPressed: () {
-                  setState(() {
-                    _builderPlacedWords.clear();
-                    _builderAvailableWords = List<String>.from(_builderTargetWords)..shuffle();
-                  });
-                },
-              ),
-            ],
-          ],
-        );
 
-      case 1:
-        // 🚂 2. Letter Train Jigsaw
-        return Column(
-          children: [
-            Text(
-              'Assemble the wagons to spell "$word":',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            // The Train Display
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('🚂', style: TextStyle(fontSize: 32)),
-                  const SizedBox(width: 4),
-                  for (int i = 0; i < _targetLetters.length; i++)
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: i < _placedLetters.length
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: i < _placedLetters.length
-                              ? const Color(0xFFFFD700)
-                              : Colors.white24,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        i < _placedLetters.length ? _placedLetters[i] : '?',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Tap letters in correct order:',
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
-            const SizedBox(height: 8),
-            // Letter choices to tap
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableLetters.map((l) {
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  ),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    setState(() {
-                      _placedLetters.add(l);
-                      _availableLetters.remove(l);
-                      if (_placedLetters.length == _targetLetters.length) {
-                        if (_placedLetters.join('') == _targetLetters.join('')) {
-                          _isStepSolved = true;
-                          _speak('Choo Choo! $word is correct!');
-                        }
-                      }
-                    });
-                  },
-                  child: Text(l, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
-                );
-              }).toList(),
-            ),
-            if (_placedLetters.isNotEmpty && !_isStepSolved) ...[
-              const SizedBox(height: 10),
-              TextButton.icon(
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
-                label: Text('Reset Train', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
-                onPressed: () {
-                  setState(() {
-                    _placedLetters.clear();
-                    _availableLetters = List<String>.from(_targetLetters)..shuffle();
-                  });
-                },
-              ),
-            ],
-          ],
-        );
-
-      case 2:
-        // 🏎️ 3. Vocab Speed Catcher & Highway Racer
-        final laneOptions = [
-          {'icon': '💎', 'word': word, 'isTarget': true},
-          {'icon': '⚡', 'word': 'Star', 'isTarget': false},
-          {'icon': '🚀', 'word': 'Moon', 'isTarget': false},
-        ];
-        return Column(
-          children: [
-            Text(
-              'Drive the racer to catch the daily vocabulary gem "$word"!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => _speak(word),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFF59E0B)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          // ===================================================================
+          // 5. DRIVING CONTROLS (GAS, BRAKE, JUMP, HORN)
+          // ===================================================================
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left Controls: Brake & Horn
+                Row(
                   children: [
-                    const Icon(Icons.volume_up_rounded, color: Color(0xFFF59E0B), size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Target Word: "$word"',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('🏁 START',
-                          style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.bold)),
-                      Text(
-                          _speedCatcherRacing
-                              ? '${_dayBuddy?.avatar ?? "🏎️"}💨 TURBO ZOOM!'
-                              : '${_dayBuddy?.avatar ?? "🏎️"} RACER READY...',
-                          style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold)),
-                      Text('FINISH 🏆',
-                          style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  for (int i = 0; i < laneOptions.length; i++) ...[
+                    // BRAKE / REVERSE PEDAL
                     GestureDetector(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        PocketGameAudioService.instance.playCoinSound();
-                        final isCorrect = laneOptions[i]['isTarget'] == true;
-                        _speak(laneOptions[i]['word'] as String);
-                        setState(() {
-                          _speedCatcherSelectedIdx = i;
-                          if (isCorrect) {
-                            _speedCatcherRacing = true;
-                            _isStepSolved = true;
-                            _speak('Vroom! You caught $word!');
-                          }
-                        });
-                      },
+                      onTapDown: (_) => setState(() => _isBrakePressed = true),
+                      onTapUp: (_) => setState(() => _isBrakePressed = false),
+                      onTapCancel: () => setState(() => _isBrakePressed = false),
                       child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        width: 72,
+                        height: 72,
                         decoration: BoxDecoration(
-                          color: _speedCatcherSelectedIdx == i
-                              ? (laneOptions[i]['isTarget'] == true
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFEF4444))
-                              : const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: _speedCatcherSelectedIdx == i
-                                ? const Color(0xFFFFD700)
-                                : Colors.white24,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text('Lane ${i + 1}',
-                                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
-                                const SizedBox(width: 8),
-                                Text(laneOptions[i]['icon'] as String, style: const TextStyle(fontSize: 20)),
-                              ],
+                          color: _isBrakePressed
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFDC2626).withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.arrow_back_rounded,
+                                color: Colors.white, size: 26),
                             Text(
-                              laneOptions[i]['word'] as String,
+                              'BRAKE',
                               style: GoogleFonts.outfit(
-                                color: Colors.white,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 14,
+                                color: Colors.white,
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // HORN BUTTON
+                    GestureDetector(
+                      onTap: _onHonk,
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBBF24),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text('📯', style: TextStyle(fontSize: 24)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Right Controls: Jump & Gas
+                Row(
+                  children: [
+                    // JUMP / BOUNCE BUTTON
+                    GestureDetector(
+                      onTap: _onJump,
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFA78BFA),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text('🦘', style: TextStyle(fontSize: 24)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // GAS ACCELERATOR PEDAL
+                    GestureDetector(
+                      onTapDown: (_) => setState(() => _isGasPressed = true),
+                      onTapUp: (_) => setState(() => _isGasPressed = false),
+                      onTapCancel: () => setState(() => _isGasPressed = false),
+                      child: Container(
+                        width: 78,
+                        height: 78,
+                        decoration: BoxDecoration(
+                          color: _isGasPressed
+                              ? const Color(0xFF059669)
+                              : const Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.arrow_forward_rounded,
+                                color: Colors.white, size: 28),
                             Text(
-                              _speedCatcherSelectedIdx == i
-                                  ? (laneOptions[i]['isTarget'] == true ? '🏎️ CAUGHT! ✨' : 'TRY AGAIN')
-                                  : 'SPEED ➡️',
+                              'GAS',
                               style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
                                 fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -1387,451 +762,547 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
                       ),
                     ),
                   ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Cartoon Buggy Widget with driver and spinning wheels
+  Widget _buildBuggy({required bool isDriving}) {
+    return SizedBox(
+      width: 90,
+      height: 60,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Exhaust smoke puffs when driving
+          if (isDriving)
+            Positioned(
+              left: -12,
+              bottom: 12,
+              child: Opacity(
+                opacity: 0.6,
+                child: Text('💨', style: const TextStyle(fontSize: 16)),
+              ),
+            ),
+
+          // Buggy Body Chassis
+          Positioned(
+            left: 8,
+            bottom: 10,
+            child: Container(
+              width: 74,
+              height: 28,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF97316), // Bright Orange
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(12),
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Racing stripe
+                  Positioned(
+                    top: 10,
+                    left: 0,
+                    right: 0,
+                    height: 5,
+                    child: Container(color: Colors.white.withValues(alpha: 0.6)),
+                  ),
+                  // Headlight
+                  Positioned(
+                    right: 4,
+                    top: 8,
+                    child: Container(
+                      width: 7,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF08A),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        );
+          ),
 
-      case 3:
-        // 💬 4. Safe Bubble Chat with Buddy
-        final buddyName = _dayBuddy?.name ?? 'Sparky Lion';
-        final buddyAvatar = _dayBuddy?.avatar ?? '🦁';
-        final replies = [
-          'Hello $buddyName! 👋',
-          'I am ready to learn! 🚀',
-          'You are awesome! 🌟',
-        ];
-        return Column(
-          children: [
-            Text(
-              'Exchange safe, friendly messages with your buddy:',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () {
-                if (_dayBuddy != null) {
-                  HapticFeedback.mediumImpact();
-                  PocketKidsProfileBottomSheet.show(context, mate: _dayBuddy!);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+          // Windshield & Roll Bar
+          Positioned(
+            left: 24,
+            top: 4,
+            child: Container(
+              width: 32,
+              height: 22,
+              decoration: BoxDecoration(
+                color: const Color(0xFFBAE6FD).withValues(alpha: 0.85),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-                child: Row(
+                border: Border.all(color: const Color(0xFF0284C7), width: 2),
+              ),
+            ),
+          ),
+
+          // Smiling Driver (Leo / Robo)
+          Positioned(
+            left: 28,
+            top: 2,
+            child: const Text('🦁', style: TextStyle(fontSize: 20)),
+          ),
+
+          // Rear Wheel
+          Positioned(
+            left: 12,
+            bottom: 0,
+            child: Transform.rotate(
+              angle: _wheelRotation,
+              child: _buildWheel(),
+            ),
+          ),
+
+          // Front Wheel
+          Positioned(
+            right: 12,
+            bottom: 0,
+            child: Transform.rotate(
+              angle: _wheelRotation,
+              child: _buildWheel(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWheel() {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: Color(0xFF94A3B8),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Interactive Vocabulary Card Popup
+  Widget _buildVocabPopupCard(_VocabCheckpoint vocab) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: vocab.isCollected
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8),
+          width: 2.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(vocab.emoji, style: const TextStyle(fontSize: 40)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
                   children: [
-                    Text(buddyAvatar, style: const TextStyle(fontSize: 28)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(buddyName,
-                                  style: GoogleFonts.outfit(
-                                      color: const Color(0xFFFFD700),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13)),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'VIEW PROFILE 👤',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF38BDF8),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _chatSelectedReplyIdx == null
-                                ? 'Hi buddy! How are you feeling today?'
-                                : 'Wonderful! Great to chat with you today! 🌟',
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5),
-                          ),
-                        ],
+                    Text(
+                      vocab.word,
+                      style: GoogleFonts.outfit(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
-                      onPressed: () => _speak(
-                        _chatSelectedReplyIdx == null
-                            ? 'Hi buddy! How are you feeling today?'
-                            : 'Wonderful! Great to chat with you today!',
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0F2FE),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        vocab.meaningMl,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0369A1),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text('Choose your quick safe reply:',
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5)),
-            const SizedBox(height: 8),
-            for (int r = 0; r < replies.length; r++) ...[
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketGameAudioService.instance.playCoinSound();
-                  _speak(replies[r]);
-                  setState(() {
-                    _chatSelectedReplyIdx = r;
-                    _isStepSolved = true;
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _chatSelectedReplyIdx == r
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF334155),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: _chatSelectedReplyIdx == r ? const Color(0xFFFFD700) : Colors.white24,
-                      width: 1.5,
-                    ),
+                const SizedBox(height: 2),
+                Text(
+                  vocab.exampleEn,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(replies[r],
-                          style: GoogleFonts.outfit(
-                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                      Text(_chatSelectedReplyIdx == r ? 'SENT 💬' : 'TAP TO SEND 🚀',
-                          style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ],
-        );
-
-      case 4:
-        // 🎙️ 5. Little Assembly Speech
-        final speechText = _syllabus.speakingMission.isNotEmpty
-            ? _syllabus.speakingMission
-            : 'Good morning teachers and dear friends!';
-        return Column(
-          children: [
-            Text(
-              'Step onto the school assembly stage to practice your speech:',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                ),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('🎭 🎙️ 🌟', style: TextStyle(fontSize: 24)),
-                      const SizedBox(width: 8),
-                      Text('ASSEMBLY PODIUM',
-                          style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '"$speechText"',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8B5CF6),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  ),
-                  icon: const Icon(Icons.volume_up_rounded, size: 18),
-                  label: const Text('LISTEN'),
-                  onPressed: () => _speak(speechText),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _assemblyDelivered ? const Color(0xFF10B981) : const Color(0xFFFFD700),
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  ),
-                  icon: Icon(_assemblyDelivered ? Icons.celebration_rounded : Icons.mic_rounded, size: 18),
-                  label: Text(
-                    _assemblyDelivered ? 'SPEECH GIVEN! 👏' : 'DELIVER SPEECH 🎙️',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
-                  ),
-                  onPressed: () {
-                    HapticFeedback.heavyImpact();
-                    PocketGameAudioService.instance.playVictorySfx();
-                    setState(() {
-                      _assemblyDelivered = true;
-                      _isStepSolved = true;
-                    });
-                    _speak('Outstanding assembly speech! The audience gives you a standing ovation!');
-                  },
                 ),
               ],
             ),
-          ],
-        );
+          ),
+          const SizedBox(width: 10),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: vocab.isCollected
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+            onPressed: () => _onCollectVocab(vocab),
+            child: Text(
+              vocab.isCollected ? 'Learned! ⭐' : 'Collect ⭐',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      case 5:
-        // 🗣️ 6. Voice Magic Echo
-        final speech = _syllabus.speakingMission.isNotEmpty
-            ? _syllabus.speakingMission
-            : 'English connects friends!';
-        return Column(
-          children: [
-            Text(
-              'Listen and repeat aloud into the magic microphone:',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF14B8A6)),
-              ),
-              child: Text(
-                '"$speech"',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF2DD4BF),
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+  // Interactive Buddy House Card Popup
+  Widget _buildBuddyPopupCard(KidMate buddy) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFBBF24), width: 2.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(buddy.avatar, style: const TextStyle(fontSize: 38)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF14B8A6),
-                    foregroundColor: Colors.white,
+                Text(
+                  buddy.name,
+                  style: GoogleFonts.outfit(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF0F172A),
                   ),
-                  icon: const Icon(Icons.volume_up_rounded),
-                  label: const Text('LISTEN'),
-                  onPressed: () => _speak(speech),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isSpeakingMic ? const Color(0xFF10B981) : const Color(0xFF6366F1),
-                    foregroundColor: Colors.white,
+                Text(
+                  '🏡 Day #${buddy.dayLevel} Home • Tap to visit!',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: const Color(0xFF64748B),
+                    fontWeight: FontWeight.w600,
                   ),
-                  icon: const Icon(Icons.mic_rounded),
-                  label: Text(_isSpeakingMic ? '100% FLUENCY! 🌟' : 'REPEAT ALOUD'),
-                  onPressed: () {
-                    HapticFeedback.heavyImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    setState(() {
-                      _isSpeakingMic = true;
-                      _isStepSolved = true;
-                    });
-                    _speak('Super clear pronunciation! 100% fluency stars awarded!');
-                  },
                 ),
               ],
             ),
-          ],
-        );
-
-      case 6:
-      default:
-        // 🏰 7. Summit Guardian Duel
-        final shields = [word, 'Castle', 'Crown'];
-        return Column(
-          children: [
-            Text(
-              'Final Summit Challenge! Which word matches Day ${widget.day}?',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
-            const SizedBox(height: 12),
-            const Text('👑 🏰 🦁', style: TextStyle(fontSize: 36)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: List.generate(shields.length, (idx) {
-                final sh = shields[idx];
-                final isChosen = _chosenShieldIdx == idx;
-                return ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isChosen ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
-                    foregroundColor: isChosen ? Colors.black : Colors.white,
-                    side: BorderSide(color: const Color(0xFFFFD700), width: isChosen ? 2.5 : 1.2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  onPressed: () {
-                    HapticFeedback.heavyImpact();
-                    PocketGameAudioService.instance.playCoinSound();
-                    _speak(sh);
-                    setState(() {
-                      _chosenShieldIdx = idx;
-                      if (idx == 0) {
-                        _isStepSolved = true;
-                      }
-                    });
-                  },
-                  child: Text(
-                    isChosen ? '🛡️ $sh 👑' : '🛡️ $sh',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                );
-              }),
+            onPressed: () => _showBuddyModal(buddy),
+            child: Text(
+              'Visit 🏡',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
             ),
-          ],
-        );
-    }
+          ),
+        ],
+      ),
+    );
   }
 }
 
-/// 🎨 Daytime Open World Rolling Hills & Living Scenery Painter
-class _KidsDaytimeOpenWorldPainter extends CustomPainter {
-  final double progress;
-  _KidsDaytimeOpenWorldPainter({required this.progress});
+/// 🎨 CustomPainter to render the rolling hills, road, buddy houses and billboards
+class _KidsRollingHillsPainter extends CustomPainter {
+  final double cameraX;
+  final double groundBaseY;
+  final List<_VocabCheckpoint> checkpoints;
+  final List<KidMate> robots;
+  final double houseInterval;
+
+  _KidsRollingHillsPainter({
+    required this.cameraX,
+    required this.groundBaseY,
+    required this.checkpoints,
+    required this.robots,
+    required this.houseInterval,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Sky Gradient (Azure blue to warm morning peach)
-    final skyPaint = Paint()
+    // 1. Distant Parallax Hills (Soft Teal Green)
+    final distantHillPaint = Paint()..color = const Color(0xFF86EFAC);
+    final distantPath = Path();
+    distantPath.moveTo(0, size.height);
+
+    for (double sx = 0; sx <= size.width; sx += 20) {
+      final distantWorldX = (cameraX * 0.45) + sx;
+      final dy = 30.0 * math.sin(distantWorldX * 0.0018);
+      final sy = groundBaseY - 60.0 + dy;
+      distantPath.lineTo(sx, sy);
+    }
+    distantPath.lineTo(size.width, size.height);
+    distantPath.close();
+    canvas.drawPath(distantPath, distantHillPaint);
+
+    // 2. Foreground Lush Rolling Hills (Vibrant Lawn Green)
+    final hillPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF38BDF8), Color(0xFF7DD3FC), Color(0xFFBAE6FD)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), skyPaint);
+        colors: [Color(0xFF4ADE80), Color(0xFF16A34A)],
+      ).createShader(Rect.fromLTWH(0, groundBaseY - 60, size.width, size.height));
 
-    // 2. Smiling Rotating Cartoon Sun
-    final sunCenter = Offset(size.width * 0.45, 160);
-    final sunPaint = Paint()..color = const Color(0xFFFFD700);
-    canvas.drawCircle(sunCenter, 65, sunPaint);
-    // Sun rays
-    final rayPaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-    for (int i = 0; i < 12; i++) {
-      final angle = (i * math.pi / 6) + (progress * math.pi * 2);
-      final p1 = sunCenter + Offset(math.cos(angle) * 75, math.sin(angle) * 75);
-      final p2 = sunCenter + Offset(math.cos(angle) * 105, math.sin(angle) * 105);
-      canvas.drawLine(p1, p2, rayPaint);
+    final hillPath = Path();
+    hillPath.moveTo(0, size.height);
+
+    for (double sx = 0; sx <= size.width; sx += 10) {
+      final worldX = cameraX + sx;
+      final hillY = _PocketKidsDayOpenWorldPageState.getHillY(worldX);
+      hillPath.lineTo(sx, groundBaseY + hillY);
     }
+    hillPath.lineTo(size.width, size.height);
+    hillPath.close();
+    canvas.drawPath(hillPath, hillPaint);
 
-    // 3. Floating Clouds
-    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
-    for (int i = 0; i < 6; i++) {
-      final cx = (i * 420.0 + progress * 160.0) % size.width;
-      final cy = 110.0 + (i % 3) * 60.0;
-      canvas.drawCircle(Offset(cx, cy), 32, cloudPaint);
-      canvas.drawCircle(Offset(cx + 26, cy - 8), 40, cloudPaint);
-      canvas.drawCircle(Offset(cx + 56, cy), 30, cloudPaint);
-    }
-
-    // 4. Distant Pastel Rolling Mountains (Background Layer)
-    final bgMountainPaint = Paint()
-      ..color = const Color(0xFF6EE7B7).withValues(alpha: 0.6);
-    final bgPath = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, 720);
-    for (double x = 0; x <= size.width; x += 120) {
-      final y = 680 - math.sin(x * 0.0025) * 220;
-      bgPath.lineTo(x, y);
-    }
-    bgPath
-      ..lineTo(size.width, size.height)
-      ..close();
-    canvas.drawPath(bgPath, bgMountainPaint);
-
-    // 5. Forefront Lush Green Rolling Hills (Active Trail Path)
-    final fgHillPaint = Paint()..color = const Color(0xFF22C55E);
-    final fgPath = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, 1140);
-    for (double x = 0; x <= size.width; x += 60) {
-      final t = x / size.width;
-      final y = 1100 - (t * 700) + math.sin(t * math.pi * 3) * 60;
-      fgPath.lineTo(x, y);
-    }
-    fgPath
-      ..lineTo(size.width, size.height)
-      ..close();
-    canvas.drawPath(fgPath, fgHillPaint);
-
-    // 6. Yellow Dirt Stepping Trail connecting steps
-    final trailPaint = Paint()
-      ..color = const Color(0xFFFDE047).withValues(alpha: 0.85)
-      ..strokeWidth = 14
-      ..strokeCap = StrokeCap.round
+    // 3. Countryside Road Ribbon (Grey Asphalt with yellow dashes)
+    final roadPaint = Paint()
+      ..color = const Color(0xFF334155)
+      ..strokeWidth = 26.0
       ..style = PaintingStyle.stroke;
-    final trailPath = Path();
-    for (double x = 200; x <= size.width - 200; x += 30) {
-      final t = x / size.width;
-      final y = 1080 - (t * 700) + math.sin(t * math.pi * 3) * 60;
-      if (x == 200) {
-        trailPath.moveTo(x, y);
+
+    final roadPath = Path();
+    for (double sx = 0; sx <= size.width; sx += 10) {
+      final worldX = cameraX + sx;
+      final hillY = _PocketKidsDayOpenWorldPageState.getHillY(worldX);
+      if (sx == 0) {
+        roadPath.moveTo(sx, groundBaseY + hillY + 12.0);
       } else {
-        trailPath.lineTo(x, y);
+        roadPath.lineTo(sx, groundBaseY + hillY + 12.0);
       }
     }
-    canvas.drawPath(trailPath, trailPaint);
+    canvas.drawPath(roadPath, roadPaint);
+
+    // 4. Draw Roadside Buddy Houses
+    for (int i = 0; i < robots.length; i++) {
+      final houseWorldX = 650.0 + (i * houseInterval);
+      final screenX = houseWorldX - cameraX;
+
+      // Only draw if within viewport range
+      if (screenX > -150 && screenX < size.width + 150) {
+        final hillY = _PocketKidsDayOpenWorldPageState.getHillY(houseWorldX);
+        final houseY = groundBaseY + hillY - 80.0;
+        _drawHouse(canvas, screenX, houseY, robots[i]);
+      }
+    }
+
+    // 5. Draw Roadside Vocabulary Billboards
+    for (final cp in checkpoints) {
+      final screenX = cp.worldX - cameraX;
+      if (screenX > -100 && screenX < size.width + 100) {
+        final hillY = _PocketKidsDayOpenWorldPageState.getHillY(cp.worldX);
+        final billboardY = groundBaseY + hillY - 65.0;
+        _drawBillboard(canvas, screenX, billboardY, cp);
+      }
+    }
+  }
+
+  void _drawHouse(Canvas canvas, double x, double y, KidMate buddy) {
+    // House Base / Walls
+    final wallPaint = Paint()..color = const Color(0xFFFEF3C7);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - 32, y + 16, 64, 44),
+        const Radius.circular(8),
+      ),
+      wallPaint,
+    );
+
+    // House Roof
+    final roofPaint = Paint()..color = const Color(0xFFEF4444);
+    final roofPath = Path()
+      ..moveTo(x - 40, y + 18)
+      ..lineTo(x, y - 8)
+      ..lineTo(x + 40, y + 18)
+      ..close();
+    canvas.drawPath(roofPath, roofPaint);
+
+    // Door
+    final doorPaint = Paint()..color = const Color(0xFFB45309);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - 10, y + 36, 20, 24),
+        const Radius.circular(4),
+      ),
+      doorPaint,
+    );
+
+    // Chimney
+    final chimneyPaint = Paint()..color = const Color(0xFF991B1B);
+    canvas.drawRect(Rect.fromLTWH(x + 16, y - 6, 12, 16), chimneyPaint);
+
+    // Waving Mascot Emoji
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: buddy.avatar,
+        style: const TextStyle(fontSize: 26),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, Offset(x - 13, y + 14));
+
+    // House Number Banner
+    final bannerPainter = TextPainter(
+      text: TextSpan(
+        text: '#${buddy.dayLevel}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final bannerBg = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - 14, y + 4, 28, 14),
+        const Radius.circular(4),
+      ),
+      bannerBg,
+    );
+    bannerPainter.paint(canvas, Offset(x - (bannerPainter.width / 2), y + 4.5));
+  }
+
+  void _drawBillboard(Canvas canvas, double x, double y, _VocabCheckpoint cp) {
+    // Wooden post
+    final postPaint = Paint()..color = const Color(0xFF78350F);
+    canvas.drawRect(Rect.fromLTWH(x - 3, y + 30, 6, 32), postPaint);
+
+    // Signboard Rect
+    final signBg = Paint()
+      ..color = cp.isCollected ? const Color(0xFF10B981) : Colors.white;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - 30, y, 60, 36),
+        const Radius.circular(10),
+      ),
+      signBg,
+    );
+
+    // Sign Border
+    final signBorder = Paint()
+      ..color = cp.isCollected ? const Color(0xFF059669) : const Color(0xFFF59E0B)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - 30, y, 60, 36),
+        const Radius.circular(10),
+      ),
+      signBorder,
+    );
+
+    // Billboard Emoji & Text
+    final emojiPainter = TextPainter(
+      text: TextSpan(
+        text: cp.emoji,
+        style: const TextStyle(fontSize: 16),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    emojiPainter.paint(canvas, Offset(x - 22, y + 8));
+
+    final wordPainter = TextPainter(
+      text: TextSpan(
+        text: cp.word,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+          color: cp.isCollected ? Colors.white : const Color(0xFF0F172A),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    wordPainter.paint(canvas, Offset(x + 2, y + 11));
   }
 
   @override
-  bool shouldRepaint(covariant _KidsDaytimeOpenWorldPainter oldDelegate) =>
-    oldDelegate.progress != progress;
+  bool shouldRepaint(covariant _KidsRollingHillsPainter oldDelegate) {
+    return oldDelegate.cameraX != cameraX;
+  }
 }

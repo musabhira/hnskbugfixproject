@@ -61,14 +61,14 @@ class _BalloonTargetWord {
 
 class _BalloonItem {
   final int id;
-  final String letter;
+  String letter;
   final Color color;
   double x; // 0.05 to 0.82
   double y; // 0.05 to 0.90
   double speed;
   double swayOffset;
-  bool isPopped;
-  bool showBurst;
+  bool isPopped = false;
+  bool showBurst = false;
 
   _BalloonItem({
     required this.id,
@@ -78,8 +78,6 @@ class _BalloonItem {
     required this.y,
     required this.speed,
     required this.swayOffset,
-    this.isPopped = false,
-    this.showBurst = false,
   });
 }
 
@@ -87,13 +85,29 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
   late AnimationController _floatTicker;
+  bool _isRoundTransitioning = false;
 
   final List<_BalloonTargetWord> _wordRounds = const [
     _BalloonTargetWord(word: 'CAT', emoji: '🐱', meaningMl: 'പൂച്ച'),
     _BalloonTargetWord(word: 'SUN', emoji: '☀️', meaningMl: 'സൂര്യൻ'),
+    _BalloonTargetWord(word: 'DOG', emoji: '🐶', meaningMl: 'പട്ടി'),
+    _BalloonTargetWord(word: 'CAR', emoji: '🚗', meaningMl: 'കാർ'),
+    _BalloonTargetWord(word: 'BUS', emoji: '🚌', meaningMl: 'ബസ്'),
     _BalloonTargetWord(word: 'STAR', emoji: '⭐', meaningMl: 'നക്ഷത്രം'),
+    _BalloonTargetWord(word: 'FISH', emoji: '🐟', meaningMl: 'മത്സ്യം'),
+    _BalloonTargetWord(word: 'BIRD', emoji: '🐦', meaningMl: 'പക്ഷി'),
     _BalloonTargetWord(word: 'FROG', emoji: '🐸', meaningMl: 'തവള'),
+    _BalloonTargetWord(word: 'TREE', emoji: '🌳', meaningMl: 'മരം'),
     _BalloonTargetWord(word: 'LION', emoji: '🦁', meaningMl: 'സിംഹം'),
+    _BalloonTargetWord(word: 'DUCK', emoji: '🦆', meaningMl: 'താറാവ്'),
+    _BalloonTargetWord(word: 'BEAR', emoji: '🐻', meaningMl: 'കരടി'),
+    _BalloonTargetWord(word: 'MOON', emoji: '🌙', meaningMl: 'ചന്ദ്രൻ'),
+    _BalloonTargetWord(word: 'BOAT', emoji: '⛵', meaningMl: 'ബോട്ട്'),
+    _BalloonTargetWord(word: 'APPLE', emoji: '🍎', meaningMl: 'ആപ്പിൾ'),
+    _BalloonTargetWord(word: 'SMILE', emoji: '😊', meaningMl: 'ചിരി'),
+    _BalloonTargetWord(word: 'TRAIN', emoji: '🚂', meaningMl: 'ട്രെയിൻ'),
+    _BalloonTargetWord(word: 'TIGER', emoji: '🐯', meaningMl: 'കടുവ'),
+    _BalloonTargetWord(word: 'POCKET', emoji: '🎒', meaningMl: 'പോക്കറ്റ്'),
   ];
 
   int _roundIndex = 0;
@@ -112,6 +126,8 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
     Color(0xFF34D399), // Mint green
     Color(0xFFA78BFA), // Pastel lavender
     Color(0xFFFB923C), // Peach orange
+    Color(0xFFEC4899), // Rose pink
+    Color(0xFF14B8A6), // Teal
   ];
 
   @override
@@ -120,7 +136,7 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
     _initTts();
     _startRound();
 
-    // 30fps smooth float ticker
+    // 60fps smooth float ticker
     _floatTicker = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -145,6 +161,7 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
 
   void _startRound() {
     _letterIndex = 0;
+    _isRoundTransitioning = false;
     _balloons.clear();
     final currentWord = _wordRounds[_roundIndex].word;
 
@@ -154,13 +171,24 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
     });
 
     final neededLetters = currentWord.split('');
-    final distractors = ['B', 'P', 'T', 'M', 'D', 'K', 'R', 'O', 'E', 'H'];
+    final distractors = ['B', 'P', 'T', 'M', 'D', 'K', 'R', 'O', 'E', 'H', 'S', 'N', 'A', 'L', 'F'];
 
-    final pool = <String>[...neededLetters];
-    for (int i = 0; i < 4; i++) {
+    // Guarantee first target letter is ready immediately!
+    final pool = <String>[neededLetters[0]];
+    // Add other letters from current word
+    for (int i = 1; i < neededLetters.length; i++) {
+      pool.add(neededLetters[i]);
+    }
+    // Add distractors to have at least 8 balloons
+    while (pool.length < 8) {
       pool.add(distractors[_rng.nextInt(distractors.length)]);
     }
     pool.shuffle(_rng);
+
+    // Make sure index 0 or near bottom has the first target letter
+    if (!pool.take(4).contains(neededLetters[0])) {
+      pool[0] = neededLetters[0];
+    }
 
     for (int i = 0; i < pool.length; i++) {
       _balloons.add(
@@ -169,8 +197,8 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
           letter: pool[i],
           color: _balloonColors[_rng.nextInt(_balloonColors.length)],
           x: 0.08 + (_rng.nextDouble() * 0.72),
-          y: 0.15 + (i * 0.12).clamp(0.0, 0.75),
-          speed: 0.0012 + (_rng.nextDouble() * 0.0010),
+          y: 0.15 + (i * 0.11).clamp(0.0, 0.85),
+          speed: 0.0016 + (_rng.nextDouble() * 0.0012),
           swayOffset: _rng.nextDouble() * math.pi * 2,
         ),
       );
@@ -180,13 +208,49 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
 
   void _tickFloat() {
     if (!mounted) return;
+    final currentWord = _wordRounds[_roundIndex].word;
+    final expectedLetter = _letterIndex < currentWord.length
+        ? currentWord[_letterIndex].toUpperCase()
+        : '';
+
     setState(() {
+      bool hasActiveExpected = false;
+
       for (final b in _balloons) {
         if (!b.isPopped) {
           b.y -= b.speed;
+          if (b.letter.toUpperCase() == expectedLetter && b.y >= -0.05 && b.y <= 1.0) {
+            hasActiveExpected = true;
+          }
+
+          // Off-screen reset to bottom
           if (b.y < -0.12) {
-            b.y = 1.05;
+            b.y = 1.05 + (_rng.nextDouble() * 0.15);
             b.x = 0.08 + (_rng.nextDouble() * 0.72);
+            b.speed = 0.0016 + (_rng.nextDouble() * 0.0012);
+            b.isPopped = false;
+            b.showBurst = false;
+            // If target letter is missing, spawn it right away!
+            if (expectedLetter.isNotEmpty && !hasActiveExpected) {
+              b.letter = expectedLetter;
+              hasActiveExpected = true;
+            }
+          }
+        }
+      }
+
+      // If target letter is still missing anywhere on screen, force any off-screen or popped balloon to be the target letter!
+      if (expectedLetter.isNotEmpty && !hasActiveExpected) {
+        for (final b in _balloons) {
+          if (b.isPopped || b.y > 0.85 || b.y < 0.0) {
+            b.isPopped = false;
+            b.showBurst = false;
+            b.letter = expectedLetter;
+            if (b.y < 0.0 || b.y > 1.0) {
+              b.y = 0.90 + (_rng.nextDouble() * 0.10);
+              b.x = 0.15 + (_rng.nextDouble() * 0.60);
+            }
+            break;
           }
         }
       }
@@ -194,9 +258,11 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
   }
 
   void _onTapBalloon(_BalloonItem balloon) {
-    if (balloon.isPopped) return;
+    if (balloon.isPopped || _isRoundTransitioning) return;
 
     final currentWord = _wordRounds[_roundIndex].word;
+    if (_letterIndex >= currentWord.length) return;
+
     final expectedLetter = currentWord[_letterIndex];
 
     if (balloon.letter.toUpperCase() == expectedLetter.toUpperCase()) {
@@ -212,9 +278,23 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
         _letterIndex++;
       });
 
-      // Hide burst particles after 350ms
+      // Hide burst particles after 350ms and respawn balloon at bottom as next distractor or needed letter
       Future.delayed(const Duration(milliseconds: 350), () {
-        if (mounted) setState(() => balloon.showBurst = false);
+        if (mounted) {
+          setState(() {
+            balloon.showBurst = false;
+            balloon.isPopped = false;
+            balloon.y = 1.08 + (_rng.nextDouble() * 0.12);
+            balloon.x = 0.08 + (_rng.nextDouble() * 0.72);
+            // If there is another needed letter, chance to be next letter
+            if (_letterIndex < currentWord.length) {
+              balloon.letter = currentWord[_letterIndex];
+            } else {
+              final distractors = ['B', 'P', 'T', 'M', 'D', 'K', 'R', 'O', 'E', 'H', 'S', 'N', 'A'];
+              balloon.letter = distractors[_rng.nextInt(distractors.length)];
+            }
+          });
+        }
       });
 
       _tts.stop();
@@ -222,6 +302,7 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
 
       // Word completed check
       if (_letterIndex >= currentWord.length) {
+        _isRoundTransitioning = true;
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) _onWordCompleted();
         });
@@ -384,7 +465,7 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
               ),
               const SizedBox(height: 6),
               Text(
-                'You completed all 5 words!\nEarned +45 KS & 3 Star Cookies! ⭐',
+                'You completed all ${_wordRounds.length} words!\nEarned +45 KS & 3 Star Cookies! ⭐',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                   fontSize: 13,
@@ -480,7 +561,7 @@ class _PocketKidsBalloonPopGameState extends State<PocketKidsBalloonPopGame>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Round ${_roundIndex + 1}/5',
+                              'Round ${_roundIndex + 1}/${_wordRounds.length}',
                               style: GoogleFonts.outfit(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,

@@ -73,8 +73,9 @@ class _PocketKidsKumiWordBuilderPageState
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
 
-  // Curated database of cute cartoon words
+  // Curated database of 36 cute cartoon words across animals, nature, food & vehicles
   static const List<KumiWordItem> _allWords = [
+    // Animals
     KumiWordItem(word: 'COW', emoji: '🐮', category: 'Animals', meaningMl: 'പശു / Cow', themeColor: Color(0xFF60A5FA)),
     KumiWordItem(word: 'ZEBRA', emoji: '🦓', category: 'Animals', meaningMl: 'സീബ്ര / Zebra', themeColor: Color(0xFFA78BFA)),
     KumiWordItem(word: 'LION', emoji: '🦁', category: 'Animals', meaningMl: 'സിംഹം / Lion', themeColor: Color(0xFFFBBF24)),
@@ -83,17 +84,36 @@ class _PocketKidsKumiWordBuilderPageState
     KumiWordItem(word: 'DUCK', emoji: '🦆', category: 'Animals', meaningMl: 'താറാവ് / Duck', themeColor: Color(0xFFF97316)),
     KumiWordItem(word: 'PANDA', emoji: '🐼', category: 'Animals', meaningMl: 'പാണ്ട / Panda', themeColor: Color(0xFF64748B)),
     KumiWordItem(word: 'FROG', emoji: '🐸', category: 'Animals', meaningMl: 'തവള / Frog', themeColor: Color(0xFF10B981)),
+    KumiWordItem(word: 'TIGER', emoji: '🐯', category: 'Animals', meaningMl: 'കടുവ / Tiger', themeColor: Color(0xFFF97316)),
+    KumiWordItem(word: 'BEAR', emoji: '🐻', category: 'Animals', meaningMl: 'കരടി / Bear', themeColor: Color(0xFFB45309)),
+    KumiWordItem(word: 'BIRD', emoji: '🐦', category: 'Animals', meaningMl: 'പക്ഷി / Bird', themeColor: Color(0xFF0EA5E9)),
+    KumiWordItem(word: 'FISH', emoji: '🐟', category: 'Animals', meaningMl: 'മത്സ്യം / Fish', themeColor: Color(0xFF06B6D4)),
+    KumiWordItem(word: 'RABBIT', emoji: '🐰', category: 'Animals', meaningMl: 'മുയൽ / Rabbit', themeColor: Color(0xFFF43F5E)),
+    KumiWordItem(word: 'MONKEY', emoji: '🐵', category: 'Animals', meaningMl: 'കുരങ്ങൻ / Monkey', themeColor: Color(0xFFD97706)),
+    KumiWordItem(word: 'ELEPHANT', emoji: '🐘', category: 'Animals', meaningMl: 'ആന / Elephant', themeColor: Color(0xFF64748B)),
+    // Fruits & Food
     KumiWordItem(word: 'APPLE', emoji: '🍎', category: 'Fruits', meaningMl: 'ആപ്പിൾ / Apple', themeColor: Color(0xFFEF4444)),
     KumiWordItem(word: 'MANGO', emoji: '🥭', category: 'Fruits', meaningMl: 'മാങ്ങ / Mango', themeColor: Color(0xFFF59E0B)),
     KumiWordItem(word: 'BANANA', emoji: '🍌', category: 'Fruits', meaningMl: 'വാഴപ്പഴം / Banana', themeColor: Color(0xFFFACC15)),
     KumiWordItem(word: 'GRAPES', emoji: '🍇', category: 'Fruits', meaningMl: 'മുന്തിരി / Grapes', themeColor: Color(0xFF8B5CF6)),
+    KumiWordItem(word: 'ORANGE', emoji: '🍊', category: 'Fruits', meaningMl: 'ഓറഞ്ച് / Orange', themeColor: Color(0xFFFB923C)),
+    KumiWordItem(word: 'BERRY', emoji: '🍓', category: 'Fruits', meaningMl: 'സ്ട്രോബെറി / Berry', themeColor: Color(0xFFE11D48)),
+    KumiWordItem(word: 'MELON', emoji: '🍉', category: 'Fruits', meaningMl: 'തണ്ണീർമത്തൻ / Melon', themeColor: Color(0xFF10B981)),
+    // Vegetables
     KumiWordItem(word: 'CARROT', emoji: '🥕', category: 'Vegetables', meaningMl: 'കാരറ്റ് / Carrot', themeColor: Color(0xFFEA580C)),
     KumiWordItem(word: 'TOMATO', emoji: '🍅', category: 'Vegetables', meaningMl: 'തക്കാളി / Tomato', themeColor: Color(0xFFDC2626)),
     KumiWordItem(word: 'CORN', emoji: '🌽', category: 'Vegetables', meaningMl: 'ചോളം / Corn', themeColor: Color(0xFFEAB308)),
+    // Nature & Vehicles
     KumiWordItem(word: 'STAR', emoji: '⭐', category: 'Knowledge', meaningMl: 'നക്ഷത്രം / Star', themeColor: Color(0xFFF59E0B)),
     KumiWordItem(word: 'MOON', emoji: '🌙', category: 'Knowledge', meaningMl: 'ചന്ദ്രൻ / Moon', themeColor: Color(0xFF38BDF8)),
     KumiWordItem(word: 'SUN', emoji: '☀️', category: 'Knowledge', meaningMl: 'സൂര്യൻ / Sun', themeColor: Color(0xFFF97316)),
     KumiWordItem(word: 'TREE', emoji: '🌳', category: 'Knowledge', meaningMl: 'മരം / Tree', themeColor: Color(0xFF059669)),
+    KumiWordItem(word: 'CAR', emoji: '🚗', category: 'Knowledge', meaningMl: 'കാർ / Car', themeColor: Color(0xFFEF4444)),
+    KumiWordItem(word: 'BUS', emoji: '🚌', category: 'Knowledge', meaningMl: 'ബസ് / Bus', themeColor: Color(0xFFFBBF24)),
+    KumiWordItem(word: 'TRAIN', emoji: '🚂', category: 'Knowledge', meaningMl: 'ട്രെയിൻ / Train', themeColor: Color(0xFF3B82F6)),
+    KumiWordItem(word: 'BOAT', emoji: '⛵', category: 'Knowledge', meaningMl: 'ബോട്ട് / Boat', themeColor: Color(0xFF0284C7)),
+    KumiWordItem(word: 'HOUSE', emoji: '🏡', category: 'Knowledge', meaningMl: 'വീട് / House', themeColor: Color(0xFF8B5CF6)),
+    KumiWordItem(word: 'BOOK', emoji: '📖', category: 'Knowledge', meaningMl: 'പുസ്തകം / Book', themeColor: Color(0xFF10B981)),
   ];
 
   late List<KumiWordItem> _sessionWords;
@@ -120,12 +140,16 @@ class _PocketKidsKumiWordBuilderPageState
       duration: const Duration(milliseconds: 600),
     );
 
-    // Filter by requested category or fallback to all
+    // Build rich 20-word session: priority to selected category, supplemented by all words
     final filtered = _allWords
         .where((w) => w.category.toLowerCase() == widget.category.toLowerCase())
         .toList();
-    _sessionWords = filtered.isNotEmpty ? filtered : _allWords;
-    _sessionWords.shuffle(math.Random(widget.day));
+    final List<KumiWordItem> pool = [...filtered];
+    for (final w in _allWords) {
+      if (!pool.contains(w)) pool.add(w);
+    }
+    pool.shuffle(math.Random(widget.day));
+    _sessionWords = pool.take(20).toList();
 
     _loadCurrentWord();
   }
