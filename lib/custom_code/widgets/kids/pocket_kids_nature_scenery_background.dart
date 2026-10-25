@@ -78,8 +78,8 @@ class _PocketKidsNatureSceneryBackgroundState
           Positioned.fill(
             child: IgnorePointer(
               child: Container(
-                color: const Color(0xFF0F172A)
-                    .withValues(alpha: widget.glassOverlayOpacity),
+                color: const Color(0xFF0F3E34)
+                    .withValues(alpha: widget.glassOverlayOpacity * 0.5),
               ),
             ),
           ),

@@ -289,6 +289,7 @@ class PocketKidsService {
   static int _kidsScore = 0; // KS
   static int _attackCount = 0;
   static int get attackCount => _attackCount;
+  static int get currentStreak => math.max(1, _completedDays.length);
   static int _currentUnlockedDay = 1;
   static final Map<int, int> _completedDays = {}; // day -> stars earned (1-3)
   static final Set<String> _friendIds = {};
@@ -298,11 +299,13 @@ class PocketKidsService {
 
   static bool _adminModeOverride = false;
 
-  /// Check if current account is Master Admin tester account (musabthonippadam@gmail.com)
+  /// Check if current account is Master Admin tester account
   static bool get isAdminAccount {
     if (_adminModeOverride) return true;
     final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim();
-    if (email == 'musabthonippadam@gmail.com') {
+    if (email == 'musabthonippadam@gmail.com' ||
+        email == 'musabdhonikallam@gmail.com' ||
+        email == 'musabdhonikalam@gmail.com') {
       return true;
     }
     return false;
@@ -846,6 +849,13 @@ class PocketKidsService {
       _kidsScore = prefs.getInt(_keyKidsScore) ?? 0;
       kidsScoreNotifier.value = _kidsScore;
 
+      // Load completed day steps
+      for (final k in prefs.getKeys()) {
+        if (k.startsWith('pm_kid_day_') && prefs.getBool(k) == true) {
+          _completedDaySteps[k] = true;
+        }
+      }
+
       _isPureStudentAccount = prefs.getBool(_keyIsPureStudentAccount) ?? false;
       _attackCount = prefs.getInt('pocket_kids_attack_count') ?? 0;
 
@@ -1110,6 +1120,9 @@ class PocketKidsService {
     } catch (_) {}
   }
 
+  /// Alias for addStars
+  static Future<void> addKidStars(int amount) => addStars(amount);
+
   /// Record completion of a day game session
   static Future<void> completeDayGame(int day, int starsEarned) async {
     _completedDays[day] = starsEarned;
@@ -1132,6 +1145,44 @@ class PocketKidsService {
       await prefs.setString(_keyKidCompletedDays, jsonEncode(jsonMap));
     } catch (_) {}
   }
+
+  /// Mark day as completed helper
+  static Future<void> markDayCompleted(int day, [int stars = 3]) =>
+      completeDayGame(day, stars);
+
+  /// Check whether a specific day has been completed
+  static bool isDayCompleted(int day) => _completedDays.containsKey(day);
+
+  /// Total completed days count
+  static int get completedDaysCount => _completedDays.length;
+
+  /// 🎯 Track completion of sequential sub-games within a day (e.g. Day 1 Step 1..10)
+  static final Map<String, bool> _completedDaySteps = {};
+
+  static bool isDayStepCompleted(int day, int stepIndex) {
+    if (isAdminAccount) return true;
+    final key = 'pm_kid_day_${day}_step_$stepIndex';
+    return _completedDaySteps[key] ?? false;
+  }
+
+  static bool isDayStepUnlocked(int day, int stepIndex) {
+    if (isAdminAccount) return true;
+    if (stepIndex <= 1) return true;
+    // Step N is unlocked if Step N-1 is completed
+    return isDayStepCompleted(day, stepIndex - 1);
+  }
+
+  static Future<void> markDayStepCompleted(int day, int stepIndex) async {
+    final key = 'pm_kid_day_${day}_step_$stepIndex';
+    _completedDaySteps[key] = true;
+    await addKidsScore(15);
+    await addStars(1);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(key, true);
+    } catch (_) {}
+  }
+
 
   // --- KIDS MATES & ROBOTS SYSTEM (90 AI BOTS & PEERS) ---
 

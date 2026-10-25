@@ -486,125 +486,161 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
     final isMe = msg.isFromMe;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
             Container(
-              width: 34,
-              height: 34,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFEF3C7),
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0F2FE),
                 shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF38BDF8), width: 1.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               alignment: Alignment.center,
-              child: Text(msg.senderAvatar, style: const TextStyle(fontSize: 18)),
+              child: Text(msg.senderAvatar, style: const TextStyle(fontSize: 20)),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: isMe
-                    ? const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isMe ? null : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMe ? 16 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 16),
-                ),
-                border: isMe ? null : Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  if (msg.isStarGift) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      margin: const EdgeInsets.only(bottom: 6),
-                      decoration: BoxDecoration(
-                        color: isMe ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '⭐ STAR GIFT ⭐',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: isMe ? Colors.white : const Color(0xFFB45309),
-                          letterSpacing: 1,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _speak(msg.text);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: isMe
+                      ? const LinearGradient(
+                          colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : const LinearGradient(
+                          colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(22),
+                    topRight: const Radius.circular(22),
+                    bottomLeft: Radius.circular(isMe ? 22 : 6),
+                    bottomRight: Radius.circular(isMe ? 6 : 22),
+                  ),
+                  border: Border.all(
+                    color: isMe ? const Color(0xFFFCD34D) : const Color(0xFFBAE6FD),
+                    width: 1.8,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isMe ? const Color(0xFFF59E0B) : const Color(0xFF0284C7))
+                          .withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
                   ],
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          msg.text,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isMe ? Colors.white : const Color(0xFF0F172A),
-                            height: 1.3,
-                          ),
+                ),
+                child: Column(
+                  crossAxisAlignment:
+                      isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    if (msg.isStarGift) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        margin: const EdgeInsets.only(bottom: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '⭐ STAR COOKIE GIFT 🍪',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // TTS Read Aloud Icon
-                      GestureDetector(
-                        onTap: () => _speak(msg.text),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
+                    ],
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            msg.text,
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isMe
+                                  ? const Color(0xFF78350F)
+                                  : const Color(0xFF0F172A),
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Cheerful Voice Note Sound Wave
+                        Container(
+                          padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
                             color: isMe
-                                ? Colors.white.withValues(alpha: 0.25)
-                                : const Color(0xFFE2E8F0),
+                                ? const Color(0xFFF59E0B).withValues(alpha: 0.2)
+                                : const Color(0xFF38BDF8).withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.volume_up_rounded,
                             size: 14,
-                            color: isMe ? Colors.white : const Color(0xFF475569),
+                            color: isMe
+                                ? const Color(0xFFB45309)
+                                : const Color(0xFF0284C7),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           if (isMe) ...[
             const SizedBox(width: 8),
             Container(
-              width: 34,
-              height: 34,
-              decoration: const BoxDecoration(
-                color: Color(0xFFDCFCE7),
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7),
                 shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFF59E0B), width: 1.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
               alignment: Alignment.center,
-              child: Text(PocketKidsService.kidAvatar, style: const TextStyle(fontSize: 18)),
+              child: Text(
+                PocketKidsService.kidAvatar.isNotEmpty ? PocketKidsService.kidAvatar : '🦁',
+                style: const TextStyle(fontSize: 20),
+              ),
             ),
           ],
         ],

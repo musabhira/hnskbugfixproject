@@ -8,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
 // ============================================================================
 // 🚂 1. JUNIOR SENTENCE BUILDER DATA MODELS & 90-DAY CURRICULUM
@@ -329,11 +330,49 @@ class KidsSentenceCurriculum {
 
   static JuniorSentenceChallenge getForDay(int day) {
     if (day <= 0) return challenges.first;
-    // Find closest or matching challenge
+    // Find matching explicit challenge if defined
     for (final c in challenges) {
       if (c.day == day) return c;
     }
-    // Return modulo mapped challenge
+    // Dynamically construct from 100-Day syllabus so all 90 days have unique sentences
+    try {
+      final syl = PocketKids100DaySyllabusDB.getSyllabusForDay(day);
+      final parts = syl.dialogueSentence.trim().split(RegExp(r'\s+'));
+      if (parts.length >= 3) {
+        final third = (parts.length / 3).ceil();
+        final part1 = parts.sublist(0, third).join(' ');
+        final part2 = parts.sublist(third, math.min(third * 2, parts.length)).join(' ');
+        final part3 = parts.sublist(math.min(third * 2, parts.length)).join(' ');
+
+        return JuniorSentenceChallenge(
+          day: day,
+          fullSentence: syl.dialogueSentence,
+          translationMl: "${syl.title} - ${syl.gameDescription}",
+          hint: syl.gameTitle,
+          tiles: [
+            JuniorSentenceTile(
+              id: '1',
+              text: part1,
+              emoji: syl.gameIcon,
+              cardColor: const Color(0xFFFF2D55),
+            ),
+            JuniorSentenceTile(
+              id: '2',
+              text: part2,
+              emoji: '✨',
+              cardColor: const Color(0xFF007AFF),
+            ),
+            JuniorSentenceTile(
+              id: '3',
+              text: part3.isNotEmpty ? part3 : 'together',
+              emoji: '🌟',
+              cardColor: const Color(0xFF10B981),
+            ),
+          ],
+        );
+      }
+    } catch (_) {}
+
     return challenges[(day - 1) % challenges.length];
   }
 }

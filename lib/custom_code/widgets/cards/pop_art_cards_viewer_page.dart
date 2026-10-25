@@ -4199,12 +4199,14 @@ class PopArtCardHelper {
   static final List<PopArtAvatarCardData> maleCards =
       kPopArt180Cards.where((c) => c.isMale).toList();
 
-  static PopArtAvatarCardData getCardForDay(int day, {required bool isMale}) {
+  static PopArtAvatarCardData getCardForDay(int day, {bool isMale = false}) {
     final list = isMale ? maleCards : femaleCards;
     if (list.isEmpty) return kPopArt180Cards.first;
     final idx = (day - 1).clamp(0, list.length - 1);
     return list[idx];
   }
+
+  static List<PopArtAvatarCardData> getAllCards() => kPopArt180Cards;
 }
 
 /// 📱 Full Swipeable Card Viewer with Flame Engine Rendering & Gender Filters
@@ -4546,3 +4548,4 @@ class _PopArtAvatarCardsViewerPageState extends State<PopArtAvatarCardsViewerPag
     );
   }
 }
+

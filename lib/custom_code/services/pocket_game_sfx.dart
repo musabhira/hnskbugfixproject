@@ -10,6 +10,9 @@ class PocketGameSfx {
   static final PocketGameSfx _instance = PocketGameSfx._internal();
   static PocketGameSfx get instance => _instance;
 
+  static void playCorrectChime() => instance.playSnapCorrect();
+  static void playVictoryFanfare() => instance.playVictory();
+
   PocketGameSfx._internal() {
     _initPlayers();
   }
@@ -266,3 +269,5 @@ class PocketGameSfx {
     buffer.setUint32(40, dataSize, Endian.little);
   }
 }
+
+typedef PocketGameSFX = PocketGameSfx;

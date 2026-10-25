@@ -1254,14 +1254,6 @@ class _PocketKidsTasksMasterHubPageState
     await _onSubStepFinished(day, 15);
   }
 
-  // 16: Automated PopArt Defense Card Shield Deployment (User Audio Directive!)
-  Future<void> _launchStep16_DefenseShield(int day) async {
-    HapticFeedback.lightImpact();
-    final isMale = PocketKidsService.kidGender == 'male';
-    final card = PopArtCardHelper.getCardForDay(day, isMale: isMale);
-    await _showDefenseCardCelebrationDialog(day, card);
-    await _onSubStepFinished(day, 16);
-  }
 
   Future<void> _showDefenseCardCelebrationDialog(
       int day, PopArtAvatarCardData card) async {

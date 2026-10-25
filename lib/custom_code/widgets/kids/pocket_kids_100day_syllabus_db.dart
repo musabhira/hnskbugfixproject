@@ -159,6 +159,7 @@ class KidDaySyllabus {
   List<String> get dailyVocabulary => rounds.map((r) => r.targetWord).toList();
   String get phonicsFocus => phonicsSound;
   String get sentencePattern => dialogueSentence;
+  String get sentence => dialogueSentence;
   String get speakingMission => dialogueSentence;
   String get dailyDefenseWord => rounds.isNotEmpty ? rounds.first.targetWord : 'BRAVE';
 }

@@ -5,9 +5,15 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🌐 Modal Dialog for seamlessly selecting between Kids World (KS), Student World (SS), and Adult Mode (PS)
+/// User Audio Directive:
+/// "ഒരു മെയിലിൽ ആണ് അഡൽറ്റും കിഡ്സും അതുപോലെ സ്റ്റുഡന്റൊക്കെ വരുന്നത്...
+/// ഒരു പാരൻ്റ് അക്കൗണ്ട് ക്രിയേറ്റ് ചെയ്തു കഴിഞ്ഞാൽ അവർക്ക് അഡൽറ്റിലേക്ക് സ്വിച്ച് ചെയ്യാം... കിഡ്സിലേക്ക് സ്വിച്ച് ചെയ്യാം.
+/// പക്ഷെ കിഡ് ആയിട്ട് തുടങ്ങിയിട്ടുണ്ടെങ്കിൽ അവർക്ക് അഡൽറ്റിലേക്കോ സ്റ്റുഡന്റിലേക്കോ പോകാൻ പറ്റില്ല.
+/// സ്റ്റുഡന്റ് ആയിട്ട് തുടങ്ങിയതാണെങ്കിൽ അഡൽറ്റിലേക്ക് പോകാൻ പറ്റില്ല പക്ഷെ കിഡ്സിലേക്ക് വരാൻ പറ്റും. അത് നോക്കണം."
 class PocketWorldModeSelectionDialog extends StatelessWidget {
   const PocketWorldModeSelectionDialog({super.key});
 
@@ -21,11 +27,41 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
     }
   }
 
+  void _showRestrictionToast(BuildContext context, String message) {
+    HapticFeedback.mediumImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.lock_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isKids = PocketKidsService.isKidsWorld;
     final isStudent = PocketKidsService.isStudentWorld;
     final isAdult = PocketKidsService.isAdultWorld;
+
+    final canEnterStudent = PocketKidsService.canEnterStudentWorld;
+    final canEnterAdult = PocketKidsService.canExitToAdultAccount;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -99,7 +135,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
               const SizedBox(height: 16),
 
               // =============================================================
-              // Card 1: 👶 KIDS WORLD (Ages 4–8)
+              // Card 1: 👶 KIDS WORLD (Ages 4–8) - Accessible by all roles!
               // =============================================================
               _buildWorldCard(
                 context,
@@ -109,25 +145,31 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 gradientColors: const [Color(0xFF0369A1), Color(0xFF075985)],
                 borderColor: const Color(0xFF38BDF8),
                 description:
-                    'Phonics, Balloon Pop, Cartoon Village, Letter Tracing, Star Cookies & Mascot Playdates',
+                    'Phonics, Balloon Pop, Cartoon Village, Letter Tracing, Past/Present/Future & Falling Blocks',
                 isActive: isKids,
+                isLocked: false,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
                   Navigator.pop(context);
                   if (isKids) return;
 
-                  await PocketKidsService.activateKidAccount(
-                    name: PocketKidsService.kidName.isNotEmpty
-                        ? PocketKidsService.kidName
-                        : 'Little Explorer',
-                    ageGroup: '4-6',
-                    avatar: PocketKidsService.kidAvatar.isNotEmpty
-                        ? PocketKidsService.kidAvatar
-                        : '🦁',
-                    isParentSwitched: true,
-                  );
-                  if (context.mounted) {
-                    PocketPureKidsHomePage.launch(context);
+                  if (PocketKidsService.kidName.isEmpty ||
+                      PocketKidsService.kidName == 'Little Explorer') {
+                    if (context.mounted) {
+                      PocketKidsProfileSetupDialog.show(context);
+                    }
+                  } else {
+                    await PocketKidsService.activateKidAccount(
+                      name: PocketKidsService.kidName,
+                      ageGroup: '4-6',
+                      avatar: PocketKidsService.kidAvatar.isNotEmpty
+                          ? PocketKidsService.kidAvatar
+                          : '🦁',
+                      isParentSwitched: true,
+                    );
+                    if (context.mounted) {
+                      PocketPureKidsHomePage.launch(context);
+                    }
                   }
                 },
               ),
@@ -135,7 +177,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
               const SizedBox(height: 10),
 
               // =============================================================
-              // Card 2: 🎒 STUDENT WORLD (Ages 9–16)
+              // Card 2: 🎒 STUDENT WORLD (Ages 9–16) - Blocked for Pure Kids!
               // =============================================================
               _buildWorldCard(
                 context,
@@ -147,7 +189,14 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 description:
                     'Student English Hub, 100-Day Mountain Trail, Assembly Speech, PopArt Cards & Citadel Fights',
                 isActive: isStudent,
+                isLocked: !canEnterStudent,
                 onTap: () async {
+                  if (!canEnterStudent) {
+                    _showRestrictionToast(context,
+                        'Kid accounts cannot switch to Student Mode 🔒');
+                    return;
+                  }
+
                   HapticFeedback.heavyImpact();
                   Navigator.pop(context);
                   if (isStudent) return;
@@ -172,7 +221,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
               const SizedBox(height: 10),
 
               // =============================================================
-              // Card 3: 🛡️ ADULT MODE (17+)
+              // Card 3: 🛡️ ADULT MODE (17+) - Blocked for Pure Kids & Students!
               // =============================================================
               _buildWorldCard(
                 context,
@@ -184,7 +233,18 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 description:
                     'Real-World Mates Chat, Citadel Attack Raids, English Hub & Sovereign World Ranking',
                 isActive: isAdult,
+                isLocked: !canEnterAdult,
                 onTap: () async {
+                  if (!canEnterAdult) {
+                    _showRestrictionToast(
+                      context,
+                      PocketKidsService.isPureKidAccount
+                          ? 'Kid accounts cannot switch to Adult Mode 🔒'
+                          : 'Student accounts cannot switch to Adult Mode 🔒',
+                    );
+                    return;
+                  }
+
                   HapticFeedback.heavyImpact();
                   if (isAdult) {
                     Navigator.pop(context);
@@ -221,7 +281,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                       color: Color(0xFF64748B), size: 14),
                   const SizedBox(width: 5),
                   Text(
-                    'Protected by Parental Pattern Lock',
+                    'Protected by Parental Security Locks',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF64748B),
                       fontSize: 11,
@@ -245,6 +305,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
     required Color borderColor,
     required String description,
     required bool isActive,
+    required bool isLocked,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -260,7 +321,11 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isActive ? const Color(0xFFFFD700) : borderColor.withValues(alpha: 0.6),
+            color: isActive
+                ? const Color(0xFFFFD700)
+                : (isLocked
+                    ? Colors.redAccent.withValues(alpha: 0.5)
+                    : borderColor.withValues(alpha: 0.6)),
             width: isActive ? 2.0 : 1.2,
           ),
           boxShadow: [
@@ -272,81 +337,97 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: borderColor.withValues(alpha: 0.22),
-                shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: 1.2),
+        child: Opacity(
+          opacity: isLocked ? 0.65 : 1.0,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isLocked
+                      ? Colors.redAccent.withValues(alpha: 0.22)
+                      : borderColor.withValues(alpha: 0.22),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: isLocked ? Colors.redAccent : borderColor,
+                      width: 1.2),
+                ),
+                alignment: Alignment.center,
+                child: Text(isLocked ? '🔒' : emoji,
+                    style: const TextStyle(fontSize: 22)),
               ),
-              alignment: Alignment.center,
-              child: Text(emoji, style: const TextStyle(fontSize: 22)),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 14.5,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            subtitle,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
                             style: GoogleFonts.outfit(
-                              color: Colors.white70,
-                              fontSize: 9.0,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14.5,
+                              letterSpacing: 0.3,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isLocked
+                                  ? Colors.redAccent.withValues(alpha: 0.25)
+                                  : Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              isLocked ? 'LOCKED 🔒' : subtitle,
+                              style: GoogleFonts.outfit(
+                                color: isLocked
+                                    ? const Color(0xFFFCA5A5)
+                                    : Colors.white70,
+                                fontSize: 9.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    description,
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 10.5,
-                      height: 1.25,
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 10.5,
+                        height: 1.25,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 6),
-            Icon(
-              isActive
-                  ? Icons.check_circle_rounded
-                  : Icons.arrow_forward_ios_rounded,
-              color: isActive ? const Color(0xFFFFD700) : Colors.white38,
-              size: isActive ? 20 : 14,
-            ),
-          ],
+              const SizedBox(width: 6),
+              Icon(
+                isActive
+                    ? Icons.check_circle_rounded
+                    : (isLocked
+                        ? Icons.lock_outline_rounded
+                        : Icons.arrow_forward_ios_rounded),
+                color: isActive
+                    ? const Color(0xFFFFD700)
+                    : (isLocked ? Colors.redAccent : Colors.white38),
+                size: isActive ? 20 : 14,
+              ),
+            ],
+          ),
         ),
       ),
     );

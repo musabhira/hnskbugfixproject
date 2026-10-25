@@ -621,6 +621,11 @@ class PocketGameAudioService with WidgetsBindingObserver {
     HapticFeedback.lightImpact();
   }
 
+  /// 🎈 Play pop sound / tap feedback
+  Future<void> playPopSound() async {
+    HapticFeedback.lightImpact();
+  }
+
   /// Dispose service
   void dispose() {
     _isDisposed = true;

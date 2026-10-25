@@ -14,6 +14,9 @@ import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dar
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
@@ -278,8 +281,8 @@ class _ProfileSetupOnboardingPageState
         return;
       }
       final age = DateTime.now().year - _selectedDob!.year;
-      if (age < 8 || age > 100) {
-        _showError('Please select a valid birth date');
+      if (age < 4 || age > 100) {
+        _showError('Please select a valid birth date (Ages 4+)');
         return;
       }
       _pageController.nextPage(
@@ -403,15 +406,16 @@ class _ProfileSetupOnboardingPageState
           'pm_referral_source_$userId', _selectedReferralSource);
       await prefs.setString('pm_english_level_$userId', _selectedEnglishLevel);
       await prefs.setString('pm_learning_goal_$userId', _selectedLearningGoal);
+      int calculatedAge = 20;
       if (_selectedDob != null) {
         await prefs.setString('pm_dob_$userId', _selectedDob!.toIso8601String());
-        final calculatedAge = DateTime.now().year - _selectedDob!.year;
+        calculatedAge = DateTime.now().year - _selectedDob!.year;
         await prefs.setInt('pm_age_$userId', calculatedAge);
       }
       await prefs.setInt('pm_daily_goal_mins_$userId', _selectedDailyGoalMins);
       await prefs.setString('pm_active_island_$userId', 'english');
 
-      // Stop BGM gracefully before entering HomePage
+      // Stop BGM gracefully before entering target world
       _bgmPlayer?.stop();
 
       if (mounted) {
@@ -432,10 +436,43 @@ class _ProfileSetupOnboardingPageState
         await _bgmPlayer?.stop();
         await PocketGameAudioService.instance.stop();
 
-        // Smooth navigation to HomePage
         if (!mounted) return;
-        context.goNamedAuth(HomePageWidget.routeName, context.mounted);
 
+        // Route automatically based on age:
+        if (calculatedAge < 9) {
+          // Pure Kids World (Ages 4-8) - Strictly locked to Kids
+          await PocketKidsService.activateKidAccount(
+            name: name,
+            ageGroup: '4-6',
+            avatar: _selectedPresetAvatar ?? '🦁',
+            isParentSwitched: false,
+            isPureKid: true,
+          );
+          if (mounted) {
+            PocketPureKidsHomePage.launch(context);
+            return;
+          }
+        } else if (calculatedAge >= 9 && calculatedAge <= 16) {
+          // Student World (Ages 9-16) - Can visit Kids, but locked from Adult
+          await PocketKidsService.activateStudentAccount(
+            name: name,
+            ageGroup: '9-12',
+            avatar: _selectedPresetAvatar ?? '🦁',
+            isParentSwitched: false,
+            isPureStudent: true,
+          );
+          if (mounted) {
+            PocketKidsHomePage.launch(context, promptProfileSetup: false);
+            return;
+          }
+        } else {
+          // Adult Mode (Ages 17+)
+          await PocketKidsService.activateAdultAccount();
+          if (mounted) {
+            context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+            return;
+          }
+        }
       }
     } catch (e, st) {
       debugPrint('Error saving onboarding profile: $e\n$st');

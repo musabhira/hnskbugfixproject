@@ -47,7 +47,12 @@ class PopArtAvatarCardData {
     this.faceDecal = 'none',
     required this.quote,
   });
+
+  Color get rarityColor => secondaryColor;
+  String get badgeEmoji => isMale ? '⚡' : '🌸';
 }
+
+typedef PopArtCardModel = PopArtAvatarCardData;
 
 /// 🖼️ Flame-Powered Vector Engine rendering high-fidelity Neo-Pop Art
 class PopArtCardFlameGame extends FlameGame {

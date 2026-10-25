@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_bottom_sheet.dart';
 
 /// 🌍 Kids Dedicated 2D Open World Adventure Page
 /// 
@@ -534,35 +535,43 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
                   Positioned(
                     left: 80,
                     top: 1040,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: const Color(0xFFFFD700), width: 1.5),
-                          ),
-                          child: Text(
-                            'HOUSE ${widget.day} • START ⛳',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_dayBuddy != null) {
+                          HapticFeedback.mediumImpact();
+                          PocketKidsProfileBottomSheet.show(context, mate: _dayBuddy!);
+                        }
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: const Color(0xFFFFD700), width: 1.5),
+                            ),
+                            child: Text(
+                              'HOUSE ${widget.day} • START ⛳',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        PocketAvatarHouseWidget(
-                          day: widget.day,
-                          width: 190,
-                          height: 135,
-                          lightsOn: true,
-                        ),
-                      ],
+                          const SizedBox(height: 6),
+                          PocketAvatarHouseWidget(
+                            day: widget.day,
+                            width: 190,
+                            height: 135,
+                            lightsOn: true,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -1401,45 +1410,73 @@ class _PocketKidsDayOpenWorldPageState extends State<PocketKidsDayOpenWorldPage>
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
-              ),
-              child: Row(
-                children: [
-                  Text(buddyAvatar, style: const TextStyle(fontSize: 28)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(buddyName,
-                            style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13)),
-                        const SizedBox(height: 2),
-                        Text(
-                          _chatSelectedReplyIdx == null
-                              ? 'Hi buddy! How are you feeling today?'
-                              : 'Wonderful! Great to chat with you today! 🌟',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5),
-                        ),
-                      ],
+            GestureDetector(
+              onTap: () {
+                if (_dayBuddy != null) {
+                  HapticFeedback.mediumImpact();
+                  PocketKidsProfileBottomSheet.show(context, mate: _dayBuddy!);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    Text(buddyAvatar, style: const TextStyle(fontSize: 28)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(buddyName,
+                                  style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13)),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'VIEW PROFILE 👤',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _chatSelectedReplyIdx == null
+                                ? 'Hi buddy! How are you feeling today?'
+                                : 'Wonderful! Great to chat with you today! 🌟',
+                            style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
-                    onPressed: () => _speak(
-                      _chatSelectedReplyIdx == null
-                          ? 'Hi buddy! How are you feeling today?'
-                          : 'Wonderful! Great to chat with you today!',
+                    IconButton(
+                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                      onPressed: () => _speak(
+                        _chatSelectedReplyIdx == null
+                            ? 'Hi buddy! How are you feeling today?'
+                            : 'Wonderful! Great to chat with you today!',
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 14),
