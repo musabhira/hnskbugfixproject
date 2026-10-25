@@ -287,8 +287,9 @@ class _PocketKidsSpokenDialogueLabPageState
     if (_speechAvailable) {
       try {
         await _speech.listen(
-          listenFor: const Duration(seconds: 8),
-          pauseFor: const Duration(seconds: 3),
+          listenOptions: stt.SpeechListenOptions(
+            listenMode: stt.ListenMode.confirmation,
+          ),
           onResult: (result) {
             if (!mounted) return;
             setState(() {
@@ -494,15 +495,6 @@ class _PocketKidsSpokenDialogueLabPageState
     );
   }
 
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _bounceController.dispose();
-    _mouthAnimController.dispose();
-    _waveController.dispose();
-    _tts.stop();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
