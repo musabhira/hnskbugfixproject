@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_service.da
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'onboarding/why_no_c_widget.dart';
 
 enum WelcomeMode {
   welcome,
@@ -932,7 +933,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   String _getPromptForStep(int step) {
     switch (step) {
       case 0:
-        return "Hi there! Welcome to Pocket Mates! Master English speaking naturally with bite-sized daily practice.";
+        return "Notice something missing? There is no C in Poket Mates! No Comparison, No Criticism, No Classroom. The only C you need is Confidence!";
       case 1:
         return "Let's answer 5 quick questions to personalize your English learning plan.";
       case 2:
@@ -2161,21 +2162,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 0: Welcome Greeting ---
   Widget _buildStep0Greeting() {
     return _buildStepContainer(
-      title: "Hi there! Welcome to Pocket Mates 👋",
+      title: "Notice something missing? 🤔",
       mascotHint:
-          "Master English speaking naturally with bite-sized daily practice and real conversation.",
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: _buildStarterAvatar(
-            size: 96,
-            isSpeaking: _isAvatarSpeaking,
-            onReplay: () => _speakStepPrompt(0),
-          ),
-        ),
-      ),
+          "Why did we drop the 'C' in POKET MATES? Because the only 'C' we believe in is your CONFIDENCE!",
+      child: const WhyNoCWidget(),
       onContinue: _nextStep,
-      buttonText: 'GET STARTED',
+      buttonText: "LET'S BUILD CONFIDENCE ➔",
     );
   }
 

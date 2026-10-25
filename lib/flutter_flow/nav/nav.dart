@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/splash/poket_mates_splash_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -325,56 +326,22 @@ class FFRoute {
             builder: (context, _) {
               if (appStateNotifier.loading) {
                 return m.Material(
-                  color: m.Colors.black,
+                  color: const m.Color(0xFF0A0E1A),
                   child: Stack(
                     children: [
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(28),
-                              child: m.Image.asset(
-                                'assets/images/pocket_mates_logo.png',
-                                width: 112,
-                                height: 112,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            const SizedBox(
-                              width: 38.0,
-                              height: 38.0,
-                              child: m.CircularProgressIndicator(
-                                color: m.Color(0xFFFFFC00),
-                                strokeWidth: 2.8,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Poket Mates',
-                              style: TextStyle(
-                                color: m.Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Hidden "Force Continue" button that appears after a shorter delay
+                      const PoketMatesBrandSplashScreen(),
+                      // Hidden "Force Continue" button that appears after a safety timeout
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 40.0),
+                          padding: const EdgeInsets.only(bottom: 24.0),
                           child: FutureBuilder(
                             future: Future.delayed(const Duration(seconds: 5)),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.done) {
                                 return m.TextButton(
                                   onPressed: () => appStateNotifier.stopShowingSplashImage(),
-                                  child: const Text('Force Continue', style: TextStyle(color: m.Colors.blue)),
+                                  child: const Text('Continue ➔', style: TextStyle(color: m.Colors.white38, fontSize: 12)),
                                 );
                               }
                               return const SizedBox.shrink();
