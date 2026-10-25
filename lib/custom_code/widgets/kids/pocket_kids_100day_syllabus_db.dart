@@ -332,28 +332,25 @@ class PocketKids100DaySyllabusDB {
       );
     }
 
-    // Days 1–15: Phase 1 — Zero Foundation (Alphabet & Phonics Valley)
-    if (clampedDay <= 15) {
-      final alphabetData = [
-        ['A', 'Apple', '🍎', '/æ/ sound', 'An apple is sweet and red.', '🦁', '🎈 Phonics Balloon Burst', 'Pop balloons matching the /æ/ sound!'],
-        ['B', 'Ball', '⚽', '/b/ sound', 'Bounce the big blue ball.', '🐯', '🚂 Letter Train Builder', 'Assemble train wagons for B-A-L-L!'],
-        ['C', 'Cat', '🐱', '/k/ sound', 'The clever cat says meow.', '🐼', '🍎 Mascot Fruit Feast', 'Feed Panda delicious C words!'],
-        ['D', 'Dog', '🐶', '/d/ sound', 'The friendly dog wags its tail.', '🦊', '🃏 Safari Memory Pair Flip', 'Flip cards to match Dog and D!'],
-        ['E', 'Elephant', '🐘', '/e/ sound', 'The huge elephant drinks water.', '🐰', '🏹 Forest Slingshot Target', 'Launch acorn at the E target!'],
-        ['F', 'Fish', '🐟', '/f/ sound', 'The swift fish swims in the river.', '🐬', '🐸 River Lilypad Hopper', 'Help the frog leap on F words!'],
-        ['G', 'Giraffe', '🦒', '/g/ sound', 'The tall giraffe eats green leaves.', '🦒', '🔍 Meadow Detective Spy', 'Spot hidden Giraffe in the grass!'],
-        ['H', 'House', '🏡', '/h/ sound', 'Our cozy house on the mountain.', '🐻', '🧩 Rainbow Sentence Jigsaw', 'Snap colored sentence blocks!'],
-        ['I', 'Iguana', '🦎', '/ɪ/ sound', 'An iguana sits in the warm sun.', '🐨', '🗣️ Magic Echo Microphone', 'Repeat iguana sentence aloud!'],
-        ['J', 'Jungle', '🌴', '/dʒ/ sound', 'The jungle is full of adventure.', '🐵', '🥁 Phonics Rhythm Drums', 'Tap the syllable drum beats!'],
-        ['K', 'Kangaroo', '🦘', '/k/ sound', 'A kangaroo hops across the valley.', '🦘', '☁️ Alphabet Cloud Catcher', 'Catch floating letter K clouds!'],
-        ['L', 'Lion', '🦁', '/l/ sound', 'The brave lion protects his mates.', '🦁', '🫧 Magic Vowel Bubble Pop', 'Burst the glowing bubble words!'],
-        ['M', 'Monkey', '🐵', '/m/ sound', 'A playful monkey loves bananas.', '🐒', '🦁 Animal Sound Mimic', 'Mimic monkey sounds and words!'],
-        ['N', 'Nest', '🪺', '/n/ sound', 'Birds build a cozy nest high above.', '🐦', '✨ Constellation Star Tracing', 'Connect stars to spell Nest!'],
-        ['O', 'Owl', '🦉', '/ɒ/ sound', 'The wise owl watches under the moon.', '🦉', '🗝️ Phonics Treasure Chest', 'Unlock the chest with key word O!'],
+    // Days 1–6: Phase 1 — Complete Alphabet Mastery (A-Z completed in 6 days!)
+    if (clampedDay <= 6) {
+      final alphabetGroups = [
+        // Day 1: A, B, C, D
+        ['A-B-C-D', 'Letters A, B, C, D', '🍎', '/æ/ /b/ /k/ /d/', 'An apple, a ball, a cat and a dog.', '🦁', '🎈 Alphabet Balloon Pop (A-D)', 'Pop balloons for letters A, B, C, D!'],
+        // Day 2: E, F, G, H
+        ['E-F-G-H', 'Letters E, F, G, H', '🐘', '/e/ /f/ /ɡ/ /h/', 'The elephant and fish see the tall giraffe.', '🐯', '🚂 Letter Train Builder (E-H)', 'Assemble train wagons for E, F, G, H!'],
+        // Day 3: I, J, K, L
+        ['I-J-K-L', 'Letters I, J, K, L', '🦁', '/ɪ/ /dʒ/ /k/ /l/', 'An iguana in the jungle sees King Lion.', '🐼', '🍎 Mascot Fruit Feast (I-L)', 'Feed Panda delicious I, J, K, L fruits!'],
+        // Day 4: M, N, O, P
+        ['M-N-O-P', 'Letters M, N, O, P', '🐵', '/m/ /n/ /ɒ/ /p/', 'A playful monkey naps in an owl nest.', '🦊', '🃏 Safari Memory Flip (M-P)', 'Flip cards to match letters M, N, O, P!'],
+        // Day 5: Q, R, S, T
+        ['Q-R-S-T', 'Letters Q, R, S, T', '👑', '/kw/ /r/ /s/ /t/', 'The queen and rabbit watch the morning sun.', '🐰', '🏹 Forest Target Aim (Q-T)', 'Hit the target with Q, R, S, T acorns!'],
+        // Day 6: U, V, W, X, Y, Z (A-Z Complete!)
+        ['U-V-W-X-Y-Z', 'Letters U, V, W, X, Y, Z', '🌈', '/ʌ/ /v/ /w/ /ks/ /j/ /z/', 'We wave from the van to the zebra: A to Z complete!', '🦄', '🌟 26-Alphabet Victory Gate', 'Celebrate mastering all 26 English letters!'],
       ];
-      final item = alphabetData[clampedDay - 1];
-      final letter = item[0];
-      final word = item[1];
+      final item = alphabetGroups[clampedDay - 1];
+      final group = item[0];
+      final titleStr = item[1];
       final emoji = item[2];
       final sound = item[3];
       final sentence = item[4];
@@ -363,8 +360,8 @@ class PocketKids100DaySyllabusDB {
 
       return KidDaySyllabus(
         day: clampedDay,
-        title: 'Letter $letter & Phonics ($word)',
-        category: '🔤 Alphabet Valley (Zero Foundation)',
+        title: '$titleStr ($group)',
+        category: '🔤 Alphabet Foundation (Days 1–6: A to Z)',
         gameType: gameType,
         gameTitle: gameTitle,
         gameIcon: emoji,
@@ -375,103 +372,116 @@ class PocketKids100DaySyllabusDB {
         dialogueSentence: sentence,
         rounds: [
           KidGameRound(
-            prompt: 'Round 1: Find the letter $letter for $word!',
-            targetWord: letter,
-            targetSubtitle: '$letter is for $word',
+            prompt: 'Round 1: Identify today\'s phonics group: $group!',
+            targetWord: group.split('-').first,
+            targetSubtitle: 'Phonics Sound: $sound',
             emoji: emoji,
-            options: [letter, 'X', 'Z'],
+            options: [group.split('-').first, '123', 'Music'],
             correctIndex: 0,
-            cheerPhrase: 'Super! $letter is for $word! $emoji',
+            cheerPhrase: 'Awesome! Phonics letters $group recognized! $emoji',
           ),
           KidGameRound(
-            prompt: 'Round 2: Which word starts with $letter $sound?',
-            targetWord: word,
-            targetSubtitle: 'Starts with $letter',
+            prompt: 'Round 2: Read today\'s story line: "$sentence"',
+            targetWord: group.split('-').last,
+            targetSubtitle: 'Story Vocabulary',
             emoji: emoji,
-            options: [word, 'Pizza', 'Rocket'],
+            options: [group.split('-').last, 'Stop', 'Wait'],
             correctIndex: 0,
-            cheerPhrase: 'Awesome sound recognition! $word starts with $letter!',
+            cheerPhrase: 'Brilliant reading and letter sound connection! 🌟',
           ),
           KidGameRound(
-            prompt: 'Round 3: Say the full phrase aloud: "$sentence"',
-            targetWord: word,
-            targetSubtitle: 'Speak Aloud',
+            prompt: 'Round 3: Say the full daily sentence aloud!',
+            targetWord: 'Alphabet Star',
+            targetSubtitle: 'Spoken Eloquence',
             emoji: emoji,
-            options: [word, 'Stop', 'Wait'],
+            options: ['Alphabet Star', 'Silent', 'No'],
             correctIndex: 0,
-            cheerPhrase: 'Beautiful spoken English! 3 Stars unlocked! ⭐⭐⭐',
+            cheerPhrase: 'Super speech! Day $clampedDay complete! ⭐⭐⭐',
           ),
         ],
       );
     }
 
-    // Days 16–30: Phase 2 — Remaining Letters & 3-Letter CVC Blends
+    // Days 7–30: Phase 2 — 3-Letter CVC Blends & Core Foundation Vocabulary (Zero single-letter drills!)
     if (clampedDay <= 30) {
-      final cvcWords = [
-        ['P', 'Pig', '🐷', '/p/ sound', 'A pink pig plays in the barn.', '🌉 CVC Word Bridge Builder', 'Place bridge planks with letters!'],
-        ['Q', 'Queen', '👸', '/kw/ sound', 'The kind queen wears a shiny crown.', '🛶 Rhyme River Rafting', 'Steer raft to rhyming docks!'],
-        ['R', 'Rabbit', '🐰', '/r/ sound', 'A swift rabbit hops in the meadow.', '🍪 Word Bakery Cookie Oven', 'Bake cookies in spelling order!'],
-        ['S', 'Sun', '☀️', '/s/ sound', 'The bright sun warms the mountain.', '🚀 Spell-Cannon Sky Rocket', 'Fire rocket at missing blend!'],
-        ['T', 'Tiger', '🐯', '/t/ sound', 'The strong tiger runs through trees.', '🎠 Word Scramble Carousel', 'Unjumble letters on the carousel!'],
-        ['U', 'Umbrella', '☂️', '/ʌ/ sound', 'Open your umbrella when rain falls.', '🐝 Honeybee Blossom Pollinator', 'Buzz to flowers with target words!'],
-        ['V', 'Van', '🚐', '/v/ sound', 'Our school van travels to the safari.', '🐿️ Squirrel Acorn Stash', 'Sort acorns into word baskets!'],
-        ['W', 'Water', '💧', '/w/ sound', 'Drink fresh water to stay strong.', '🐒 Jungle Vine Swinger', 'Swing to target blend vines!'],
-        ['X', 'Xylophone', '🎵', '/ks/ sound', 'Play cheerful music on the xylophone.', '🧪 Magic Potion Word Brewer', 'Drop ingredients into the cauldron!'],
-        ['Y', 'Yellow', '💛', '/j/ sound', 'Yellow sunflowers shine in the light.', '🎡 Phonics Windmill Spinner', 'Spin windmill to match word pairs!'],
-        ['Z', 'Zebra', '🦓', '/z/ sound', 'A zebra has black and white stripes.', '🤿 Submarine Deep Sea Sonar', 'Sonar-ping matching CVC fish!'],
-        ['CAT', 'Cat', '🐱', 'C-A-T Blend', 'The little cat naps on the rug.', '🏕️ Campfire Marshmallow Roast', 'Roast marshmallows with rhymes!'],
-        ['DOG', 'Dog', '🐶', 'D-O-G Blend', 'My pet dog loves fetching sticks.', '🪁 Flying Kite Spelling Tail', 'Attach ribbons in spelling order!'],
-        ['SUN', 'Sun', '☀️', 'S-U-N Blend', 'The morning sun wakes the animals.', '🪵 Woodpecker Tree Tapper', 'Tap letters on the tree trunk!'],
-        ['HAT', 'Hat', '🎩', 'H-A-T Blend', 'A magical hat with silver stars.', '🏰 CVC Master Gate Guardian', 'Pass the gatekeeper to advance!'],
+      final foundationTopics = [
+        // Days 7-11: CVC Vowel families
+        ['CAT & BAT', 'Short-a CVC words', '🐱', 'The fat cat sat on the comfortable mat.', '🌉 CVC Word Bridge Builder', 'Build bridge planks with CVC words!'],
+        ['HEN & RED', 'Short-e CVC words', '🐔', 'The little red hen laid a healthy egg.', '🛶 Rhyme River Rafting', 'Steer raft to rhyming docks!'],
+        ['PIG & PIN', 'Short-i CVC words', '🐷', 'The happy pink pig plays in clean water.', '🍪 Word Bakery Cookie Oven', 'Bake cookies in spelling order!'],
+        ['DOG & POT', 'Short-o CVC words', '🐶', 'The playful dog sits next to the flower pot.', '🚀 Spell-Cannon Sky Rocket', 'Fire rocket at matching CVC words!'],
+        ['SUN & BUS', 'Short-u CVC words', '☀️', 'The yellow school bus arrives in bright sun.', '🎠 Word Scramble Carousel', 'Unjumble CVC words on carousel!'],
+        // Days 12-15: Sight Words, Colors, Numbers, Family
+        ['SEE & LOOK', 'Core Sight Words', '👀', 'I can see the beautiful stars at night.', '🐝 Blossom Pollinator', 'Buzz to flowers with target sight words!'],
+        ['RED & BLUE', 'Color Words', '🎨', 'The red apple rests on the blue plate.', '🐿️ Squirrel Acorn Stash', 'Sort colors into acorn baskets!'],
+        ['ONE TO FIVE', 'Counting Numbers', '🔢', 'I have one nose and two listening ears.', '🐒 Jungle Vine Swinger', 'Swing to target numbers on vines!'],
+        ['MOM & DAD', 'Loving Family', '👨‍👩‍👧', 'I love my mom, dad and cozy home.', '🧪 Magic Potion Word Brewer', 'Drop family words into the cauldron!'],
+        // Days 16-20: Everyday World & Objects
+        ['BOOK & DESK', 'School Objects', '📚', 'Open your picture book on the study desk.', '🎡 Phonics Windmill Spinner', 'Spin windmill to match school words!'],
+        ['MILK & FRUIT', 'Healthy Foods', '🍎', 'Drink fresh milk and eat sweet crunchy fruit.', '🤿 Submarine Deep Sea Sonar', 'Sonar-ping healthy food items!'],
+        ['EYE & HAND', 'Body Parts & Senses', '👁️', 'I see with my eyes and clap with my hands.', '🏕️ Campfire Marshmallow Roast', 'Roast marshmallows with body words!'],
+        ['COW & SHEEP', 'Gentle Farm Animals', '🐄', 'The gentle cow gives fresh white milk.', '🪁 Flying Kite Spelling Tail', 'Attach animal words to kite tails!'],
+        ['SHIRT & SHOE', 'Clothes We Wear', '👟', 'Wear your warm jacket and blue shoes.', '🪵 Woodpecker Tree Tapper', 'Tap clothing words on tree trunk!'],
+        // Days 21-25: Action Verbs & Daily Routine
+        ['RUN & JUMP', 'Movement Actions', '🏃', 'We run and jump high in the playground.', '🎨 Color Splash Painter', 'Splash vibrant colors on action words!'],
+        ['WASH & BRUSH', 'Morning Habits', '🪥', 'I brush my teeth and wash my face daily.', '🟩 Wooden Shape Sorter Toybox', 'Fit morning habit blocks into cutouts!'],
+        ['BALL & KITE', 'Toys & Playtime', '🪁', 'Fly the colorful kite high in the wind.', '🌠 Shooting Star Counter', 'Count shooting stars on play words!'],
+        ['RAIN & CLOUD', 'Weather & Sky', '🌧️', 'White clouds float before the gentle rain.', '⚖️ Animal Weight Balance Scale', 'Balance light vs heavy weather items!'],
+        ['TREE & FLOWER', 'Garden & Nature', '🌸', 'Green leaves and sweet flowers grow on trees.', '🪜 Height Ladder Climber', 'Climb ladder to blooming garden words!'],
+        // Days 26-30: Shapes, Opposites & Feelings
+        ['CIRCLE & STAR', 'Basic Shapes', '⭐', 'The golden sun is a circle in the sky.', '🌡️ Hot vs Cold Thermometer Sort', 'Sort shapes and temperatures!'],
+        ['BIG & SMALL', 'Everyday Opposites', '🐘', 'The elephant is big and the mouse is small.', '🐆 Cheetah Track Race Sprint', 'Sprint along opposite word tracks!'],
+        ['HAPPY & SMILE', 'Feelings & Kindness', '😊', 'Wear a warm smile and be kind to everyone.', '🎈 Up & Down Hot Air Balloon', 'Fly balloon high with happy feelings!'],
+        ['NIGHT & SLEEP', 'Bedtime Routine', '🌙', 'Read a sweet story and sleep peacefully.', '🚪 In & Out Playhouse Doors', 'Step in bedroom and sleep well!'],
+        ['30-DAY MASTER', 'Foundation Milestone', '🏆', 'I am confident with 30 days of English words!', '🏰 Foundation High Citadel', 'Conquer the 30-Day Foundation Citadel!'],
       ];
-      final item = cvcWords[clampedDay - 16];
-      final keyWord = item[0];
-      final word = item[1];
+      final item = foundationTopics[clampedDay - 7];
+      final keyTopic = item[0];
+      final sub = item[1];
       final emoji = item[2];
-      final sound = item[3];
-      final sentence = item[4];
-      final gameTitle = item[5];
-      final gameDesc = item[6];
+      final sentence = item[3];
+      final gameTitle = item[4];
+      final gameDesc = item[5];
 
       return KidDaySyllabus(
         day: clampedDay,
-        title: 'Blending & Words: $keyWord',
-        category: '🔤 Phonics & 3-Letter Blends',
+        title: '$keyTopic ($sub)',
+        category: '🔤 CVC Blends & Vocabulary (Days 7–30)',
         gameType: gameType,
         gameTitle: gameTitle,
         gameIcon: emoji,
         gameDescription: gameDesc,
         difficultyTier: 2,
         mascot: '🦊',
-        phonicsSound: sound,
+        phonicsSound: sub,
         dialogueSentence: sentence,
         rounds: [
           KidGameRound(
-            prompt: 'Round 1: Match the word $keyWord with $sound!',
-            targetWord: keyWord,
-            targetSubtitle: 'Sound: $sound',
+            prompt: 'Round 1: Match the core topic $keyTopic!',
+            targetWord: keyTopic.split('&').first.trim(),
+            targetSubtitle: sub,
             emoji: emoji,
-            options: [keyWord, 'BED', 'LOG'],
+            options: [keyTopic.split('&').first.trim(), 'Rock', 'Cloud'],
             correctIndex: 0,
-            cheerPhrase: 'Great blend! You spelled $keyWord! $emoji',
+            cheerPhrase: 'Great job! You mastered $keyTopic! $emoji',
           ),
           KidGameRound(
-            prompt: 'Round 2: What picture matches $keyWord?',
-            targetWord: word,
-            targetSubtitle: 'Meaning & Picture',
+            prompt: 'Round 2: Read and understand: "$sentence"',
+            targetWord: keyTopic.contains('&') ? keyTopic.split('&').last.trim() : keyTopic,
+            targetSubtitle: 'Sentence Meaning',
             emoji: emoji,
-            options: [word, 'Airplane', 'Mountain'],
+            options: [keyTopic.contains('&') ? keyTopic.split('&').last.trim() : keyTopic, 'Mud', 'Rain'],
             correctIndex: 0,
-            cheerPhrase: 'Exactly right! $keyWord means $word! $emoji',
+            cheerPhrase: 'Accurate comprehension! Moving forward fast! ✨',
           ),
           KidGameRound(
-            prompt: 'Round 3: Complete the spoken sentence: "$sentence"',
-            targetWord: keyWord,
-            targetSubtitle: 'Fluency sentence',
+            prompt: 'Round 3: Say the full sentence aloud with clear pronunciation!',
+            targetWord: 'Vocabulary Master',
+            targetSubtitle: 'Voice Evaluation',
             emoji: emoji,
-            options: [keyWord, 'CAR', 'PIN'],
+            options: ['Vocabulary Master', 'Silent', 'No'],
             correctIndex: 0,
-            cheerPhrase: 'Incredible speech! Day $clampedDay complete! ⭐',
+            cheerPhrase: 'Incredible speech! Day $clampedDay complete! ⭐⭐⭐',
           ),
         ],
       );

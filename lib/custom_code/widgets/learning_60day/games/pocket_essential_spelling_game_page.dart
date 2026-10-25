@@ -11,6 +11,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_sce
 import '../pocket_fortress_defense_service.dart';
 import '../pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import '../../kids/pocket_kids_curriculum_adapter.dart';
+import '../../../services/pocket_kids_service.dart';
 
 /// 📖 Essential Word Item Model
 class EssentialWordModel {
@@ -72,12 +74,14 @@ class PocketEssentialSpellingPage extends StatefulWidget {
   final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
+  final bool isKidsMode;
 
   const PocketEssentialSpellingPage({
     super.key,
     this.day = 1,
     this.userId,
     this.onStepFinished,
+    this.isKidsMode = false,
   });
 
   static Future<void> show(
@@ -85,6 +89,7 @@ class PocketEssentialSpellingPage extends StatefulWidget {
     int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
+    bool isKidsMode = false,
   }) {
     return Navigator.push(
       context,
@@ -93,6 +98,7 @@ class PocketEssentialSpellingPage extends StatefulWidget {
           day: day,
           userId: userId,
           onStepFinished: onStepFinished,
+          isKidsMode: isKidsMode,
         ),
       ),
     );
@@ -223,7 +229,9 @@ class _PocketEssentialSpellingPageState
     _initTts();
 
     // Dynamically populate words for widget.day with 0 duplicates!
-    if (widget.day == 1) {
+    if (widget.isKidsMode) {
+      _words = PocketKidsCurriculumAdapter.getKidsSpellingWordsForDay(widget.day);
+    } else if (widget.day == 1) {
       _words = _day1DefaultWords;
     } else {
       final vocabItems = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
@@ -597,19 +605,24 @@ class _PocketEssentialSpellingPageState
   Future<void> _showExamCompletionDialog() async {
     _examTimer?.cancel();
     _isStep3Completed = true;
-    final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
-      if (uid != null && uid.isNotEmpty) {
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_3_done', true);
-      }
-      await prefs.setBool('pocket_day_guest_${widget.day}_step_3_done', true);
-    } catch (_) {}
 
-    try {
-      await PocketFortressDefenseService.recordTrainingPoints(30, uid);
-    } catch (_) {}
+    if (widget.isKidsMode) {
+      await PocketKidsService.markDayStepCompleted(widget.day, 3);
+    } else {
+      final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_3_done', true);
+        if (uid != null && uid.isNotEmpty) {
+          await prefs.setBool('pocket_day_${uid}_${widget.day}_step_3_done', true);
+        }
+        await prefs.setBool('pocket_day_guest_${widget.day}_step_3_done', true);
+      } catch (_) {}
+
+      try {
+        await PocketFortressDefenseService.recordTrainingPoints(30, uid);
+      } catch (_) {}
+    }
 
     widget.onStepFinished?.call(3);
 
@@ -629,7 +642,9 @@ class _PocketEssentialSpellingPageState
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Day ${widget.day} Spelling Mastery Complete!',
+                widget.isKidsMode
+                    ? 'Day ${widget.day} Kids Spelling Master!'
+                    : 'Day ${widget.day} Spelling Mastery Complete!',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -644,7 +659,9 @@ class _PocketEssentialSpellingPageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Superb work! You listened to and mastered all ${_words.length} essential core words with perfect spelling.',
+              widget.isKidsMode
+                  ? 'Fantastic work! You spelled all ${_words.length} kids words with flying colors & perfect sounds!'
+                  : 'Superb work! You listened to and mastered all ${_words.length} essential core words with perfect spelling.',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -657,13 +674,13 @@ class _PocketEssentialSpellingPageState
               ),
               child: Row(
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 24)),
+                  Text(widget.isKidsMode ? '⭐' : '🪙', style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Score: $_scoreCount XP',
+                        widget.isKidsMode ? 'Total Score: $_scoreCount KS' : 'Total Score: $_scoreCount XP',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.bold,
@@ -671,7 +688,9 @@ class _PocketEssentialSpellingPageState
                         ),
                       ),
                       Text(
-                        '+30 Training Points Earned!',
+                        widget.isKidsMode
+                            ? '+15 Kids Score (KS) & 1 Star ⭐'
+                            : '+30 Training Points Earned!',
                         style: GoogleFonts.inter(
                           color: Colors.white60,
                           fontSize: 12,
@@ -700,7 +719,7 @@ class _PocketEssentialSpellingPageState
               Navigator.pop(context, true);
             },
             child: Text(
-              'CONTINUE TO STEP 4 ➔',
+              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE TO STEP 4 ➔',
               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
             ),
           ),

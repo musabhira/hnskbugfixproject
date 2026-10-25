@@ -12,6 +12,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import '../pocket_fortress_defense_service.dart';
 import '../curriculum_data/pocket_90day_sentence_builder_data.dart';
+import '../../kids/pocket_kids_curriculum_adapter.dart';
+import '../../../services/pocket_kids_service.dart';
 
 /// 🧩 Sentence Challenge Question Model
 class SentenceChallengeRound {
@@ -192,12 +194,14 @@ class PocketSentenceBuilderGamePage extends StatefulWidget {
   final int day;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
+  final bool isKidsMode;
 
   const PocketSentenceBuilderGamePage({
     super.key,
     this.day = 1,
     this.userId,
     this.onStepFinished,
+    this.isKidsMode = false,
   });
 
   static Future<void> show(
@@ -205,6 +209,7 @@ class PocketSentenceBuilderGamePage extends StatefulWidget {
     int day = 1,
     String? userId,
     Function(int stepIndex)? onStepFinished,
+    bool isKidsMode = false,
   }) {
     return Navigator.push(
       context,
@@ -213,6 +218,7 @@ class PocketSentenceBuilderGamePage extends StatefulWidget {
           day: day,
           userId: userId,
           onStepFinished: onStepFinished,
+          isKidsMode: isKidsMode,
         ),
       ),
     );
@@ -263,7 +269,9 @@ class _PocketSentenceBuilderGamePageState
       duration: const Duration(milliseconds: 400),
     );
 
-    _rounds = Pocket90DaySentenceBuilderData.getSentencesForDay(widget.day);
+    _rounds = widget.isKidsMode
+        ? PocketKidsCurriculumAdapter.getKidsSentencesForDay(widget.day)
+        : Pocket90DaySentenceBuilderData.getSentencesForDay(widget.day);
     _loadRound(_currentRoundIdx);
   }
 
@@ -454,10 +462,14 @@ class _PocketSentenceBuilderGamePageState
   }
 
   Future<void> _showAllCompletedDialog() async {
-    final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
-    await PocketFortressDefenseService.recordTrainingPoints(30, uid);
+    if (widget.isKidsMode) {
+      await PocketKidsService.markDayStepCompleted(widget.day, 2);
+    } else {
+      final uid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_2_done', true);
+      await PocketFortressDefenseService.recordTrainingPoints(30, uid);
+    }
 
     widget.onStepFinished?.call(2);
 
@@ -477,7 +489,9 @@ class _PocketSentenceBuilderGamePageState
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Day ${widget.day} Sentence Builder Mastered!',
+                widget.isKidsMode
+                    ? 'Day ${widget.day} Kids Sentence Master!'
+                    : 'Day ${widget.day} Sentence Builder Mastered!',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -492,7 +506,9 @@ class _PocketSentenceBuilderGamePageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Brilliant job! You completed all ${_rounds.length} sentence building rounds with native grammar order.',
+              widget.isKidsMode
+                  ? 'Super star! You arranged all ${_rounds.length} kids sentences in perfect order with awesome sparkles!'
+                  : 'Brilliant job! You completed all ${_rounds.length} sentence building rounds with native grammar order.',
               style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5),
             ),
             const SizedBox(height: 12),
@@ -505,10 +521,12 @@ class _PocketSentenceBuilderGamePageState
               ),
               child: Row(
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 20)),
+                  Text(widget.isKidsMode ? '⭐' : '🪙', style: const TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
-                    '+30 Pocket Score Earned!',
+                    widget.isKidsMode
+                        ? '+15 Kids Score (KS) & 1 Star ⭐'
+                        : '+30 Pocket Score Earned!',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontWeight: FontWeight.bold,
@@ -533,7 +551,7 @@ class _PocketSentenceBuilderGamePageState
               Navigator.pop(context);
             },
             child: Text(
-              'CONTINUE TO STEP 3 ➔',
+              widget.isKidsMode ? 'AWESOME! CONTINUE ➔' : 'CONTINUE TO STEP 3 ➔',
               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),

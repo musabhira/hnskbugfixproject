@@ -31,6 +31,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_hero_card_
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_balloon_pop_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_story_read_aloud_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
 
 /// 👶 Pure Kids World Platform (Ages 4–8)
 ///
@@ -2946,12 +2948,12 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
                       const SizedBox(height: 20),
 
-                      // 🔤 Step 1: Phonics (1-25) ➔ Word Builder (26-60) ➔ Deep Grammar Quest (61-90)
-                      if (day <= 25)
+                      // 🔤 Step 1: Phonics Tracing (Days 1–6: A-Z Completed!) ➔ Word Builder (Days 7–60) ➔ Deep Grammar (61–90)
+                      if (day <= 6)
                         _buildActivityOptionTile(
                           stepNumber: 1,
                           iconEmoji: '🎨',
-                          title: 'Phonics & Letter Tracing (${traceItem.char} for ${traceItem.word})',
+                          title: 'Phonics & Letter Tracing (A to Z in 6 Days)',
                           subtitle: 'Trace letters with rainbow stardust & phonics pronunciation',
                           gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF9500)],
                           isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
@@ -2960,8 +2962,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                             1,
                             () => PocketKidsLetterTracingPage.show(
                               context,
-                              initialIndex:
-                                  (day - 1) % KidsTracingCurriculum.letters.length,
+                              initialIndex: (day - 1) * 4,
                             ),
                           ),
                         )
@@ -3003,40 +3004,44 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
                       const SizedBox(height: 12),
 
-                      // 🧱 Step 2: Falling Blocks Spelling Rush
+                      // 🧩 Step 2: Sentence Builder Game (Direct Adult Step 2 adapted for Kids across all 90 Days!)
                       _buildActivityOptionTile(
                         stepNumber: 2,
-                        iconEmoji: '🧱',
-                        title: 'Falling Blocks Spelling Rush',
-                        subtitle: 'Catch falling letter blocks from the sky to spell words',
+                        iconEmoji: '🧩',
+                        title: 'Sentence Builder Game 🧩',
+                        subtitle: 'Tap vibrant candy word tiles in order with Flame sparkles & Malayalam audio',
                         gradientColors: const [Color(0xFFF59E0B), Color(0xFFEA580C)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
                         onTap: () => launchStep(
                           2,
-                          () => PocketKidsFallingWordBlocksGame.show(
+                          () => PocketSentenceBuilderGamePage.show(
                             context,
                             day: day,
+                            isKidsMode: true,
+                            onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 2),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🚂 Step 3: Toy Train Sentence Builder
+                      // 🔤 Step 3: Essential Words & Spelling Challenge (Direct Adult Step 3 adapted for Kids across all 90 Days!)
                       _buildActivityOptionTile(
                         stepNumber: 3,
-                        iconEmoji: '🚂',
-                        title: 'Toy Train Sentence Builder',
-                        subtitle: 'Snap magnetic word cars in order & speak English karaoke',
+                        iconEmoji: '🔤',
+                        title: 'Essential Spelling Challenge 🔤',
+                        subtitle: 'Study kid vocabulary & tap letter tiles into slots with voice feedback',
                         gradientColors: const [Color(0xFF10B981), Color(0xFF00C7BE)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
                         onTap: () => launchStep(
                           3,
-                          () => PocketKidsSentenceBuilderPage.show(
+                          () => PocketEssentialSpellingPage.show(
                             context,
                             day: day,
+                            isKidsMode: true,
+                            onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 3),
                           ),
                         ),
                       ),
@@ -3470,14 +3475,24 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
         'type': 'art_studio',
       },
       {
-        'title': 'Toy Train Sentence Builder 🚂',
-        'sub': 'Snap magnetic train cars into order and hear kids karaoke voice read-aloud!',
+        'title': 'Sentence Builder Game 🧩',
+        'sub': 'Tap vibrant candy word tiles in order with Flame sparkles & native audio hints!',
         'color': const Color(0xFF06B6D4),
-        'emoji': '🚂',
-        'tag': 'DAILY TRAIN',
+        'emoji': '🧩',
+        'tag': 'FLAME BUILDER',
         'ks': '+15 KS',
         'cat': 4,
         'type': 'sentence_builder',
+      },
+      {
+        'title': 'Essential Spelling Challenge 🔤',
+        'sub': 'Practice spelling high-frequency kid vocabulary with interactive letter slots & TTS audio!',
+        'color': const Color(0xFF10B981),
+        'emoji': '🔤',
+        'tag': 'SPELLING EXAM',
+        'ks': '+15 KS',
+        'cat': 1,
+        'type': 'essential_spelling',
       },
       {
         'title': 'Past, Present & Future Tenses ⏳',
@@ -4009,9 +4024,18 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
         if (mounted) setState(() {});
       });
     } else if (type == 'sentence_builder') {
-      PocketKidsSentenceBuilderPage.show(
+      PocketSentenceBuilderGamePage.show(
         context,
         day: PocketKidsService.currentUnlockedDay,
+        isKidsMode: true,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'essential_spelling' || type == 'spelling') {
+      PocketEssentialSpellingPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+        isKidsMode: true,
       ).then((_) {
         if (mounted) setState(() {});
       });
