@@ -6,7 +6,6 @@ import 'curriculum_data/pocket_90day_negative_sentence_data.dart';
 import 'curriculum_data/pocket_90day_verb_timeline_data.dart';
 import 'curriculum_data/pocket_90day_speech_practice_data.dart';
 import 'pocket_90day_vocab_curriculum.dart';
-import 'pocket_defense_question_bank.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🎮 Detailed Information on each available Defense Game Type
@@ -47,20 +46,12 @@ class DefenseGameTypeInfo {
 /// - Non-repetitive rotation across the interactive arcade game modes.
 /// - Full multi-language support (Malayalam, Hindi, Tamil, Telugu, English).
 class PocketCitadelChallengeGenerator {
-  /// 🗂️ The Curated Educational Game Formats for House Defense & Speed Duels
+  /// 🗂️ The Curated Educational Game Formats for House Defense & Speed Duels (Zero 4-option MCQs)
   static const List<DefenseGameTypeInfo> availableGameTypes = [
-    DefenseGameTypeInfo(
-      id: 'mixed_duel',
-      title: 'Mixed Duel (20 Qs)',
-      titleMl: 'മിക്സഡ് പോരാട്ടം',
-      icon: '⚔️',
-      description:
-          'Arcade mix of Sentence Builder, Spot The Error, Vocab Hunt & Grammar Defense.',
-    ),
     DefenseGameTypeInfo(
       id: 'sentence_builder',
       title: 'Sentence Builder',
-      titleMl: 'വാക്യ നിർമ്മാണം',
+      titleMl: 'വാക്യ നിർമ്മാണം (Step 2)',
       icon: '🧩',
       description:
           'Arrange scrambled words into the correct grammatical sentence.',
@@ -68,10 +59,10 @@ class PocketCitadelChallengeGenerator {
     DefenseGameTypeInfo(
       id: 'spelling_challenge',
       title: 'Word Spelling',
-      titleMl: 'അക്ഷരവിന്യാസം',
+      titleMl: 'അക്ഷരവിന്യാസം (Step 3)',
       icon: '🔤',
       description:
-          'Identify 100% correct spelling out of trickily disguised options.',
+          'Assemble scrambled letters into letter slots to spell the word.',
     ),
     DefenseGameTypeInfo(
       id: 'verb_timeline',
@@ -79,6 +70,14 @@ class PocketCitadelChallengeGenerator {
       titleMl: 'ക്രിയാ കാലങ്ങൾ',
       icon: '⏳',
       description: 'Slot the correct verb form into Past, Present, or Future.',
+    ),
+    DefenseGameTypeInfo(
+      id: 'tense_fortress',
+      title: 'Tense Fortress',
+      titleMl: 'കാല പരിവർത്തനം',
+      icon: '⚡',
+      description:
+          'Master continuous, perfect, and simple tense transformations.',
     ),
     DefenseGameTypeInfo(
       id: 'chat_reply',
@@ -105,20 +104,12 @@ class PocketCitadelChallengeGenerator {
           'Listen to spoken Indian English and solve the speech puzzle.',
     ),
     DefenseGameTypeInfo(
-      id: 'grammar_defusal',
-      title: 'Grammar Defusal',
-      titleMl: 'വ്യാകരണ കോട്ട',
-      icon: '🎯',
+      id: 'spot_error',
+      title: 'Spot The Error',
+      titleMl: 'തെറ്റ് കണ്ടെത്തൽ',
+      icon: '💣',
       description:
-          'Defuse common grammatical traps and subject-verb disagreements.',
-    ),
-    DefenseGameTypeInfo(
-      id: 'vocab_gate',
-      title: 'Vocab Hunter',
-      titleMl: 'പദാവലി വേട്ട',
-      icon: '📖',
-      description:
-          'Match high-impact English words with their precise meanings.',
+          'Spot and defuse hidden grammatical errors by tapping the faulty block.',
     ),
     DefenseGameTypeInfo(
       id: 'syntax_jigsaw',
@@ -127,30 +118,6 @@ class PocketCitadelChallengeGenerator {
       icon: '🧩',
       description:
           'Reassemble complex clauses and multi-word sentence connectors.',
-    ),
-    DefenseGameTypeInfo(
-      id: 'spot_error',
-      title: 'Spot The Error',
-      titleMl: 'തെറ്റ് കണ്ടെത്തൽ',
-      icon: '💣',
-      description:
-          'Spot and defuse hidden grammatical errors before detonation.',
-    ),
-    DefenseGameTypeInfo(
-      id: 'idiom_maze',
-      title: 'Idiom Decryptor',
-      titleMl: 'ശൈലീ പ്രയോഗങ്ങൾ',
-      icon: '💡',
-      description:
-          'Decode real-world practical idioms and casual conversation slangs.',
-    ),
-    DefenseGameTypeInfo(
-      id: 'tense_fortress',
-      title: 'Tense Fortress',
-      titleMl: 'കാല പരിവർത്തനം',
-      icon: '⚡',
-      description:
-          'Master continuous, perfect, and simple tense transformations.',
     ),
   ];
 
@@ -174,6 +141,7 @@ class PocketCitadelChallengeGenerator {
       );
     }
     final cleanUid = userId.isNotEmpty ? userId : 'default_defender';
+    // Shuffled cycle across the pure interactive games
     final seed = (cleanUid.hashCode.abs() * 37 + day * 13);
     final index = seed % availableGameTypes.length;
     return availableGameTypes[index];
@@ -202,13 +170,9 @@ class PocketCitadelChallengeGenerator {
 
     final List<HouseShieldQuestion> result = [];
     final cleanUid = defenderId.isNotEmpty ? defenderId : 'default_citadel';
-    final random =
-        math.Random((cleanUid.hashCode.abs() * 17) ^ (defenderLevel * 31));
 
-    // 🏛️ 1. If defender is a VIP, generate the 10 Elite Presidential Protection Sentry Tasks FIRST!
-    if (isVip) {
-      result.addAll(_generatePresidentialSentryTasks(10, random));
-    }
+    // Note: If defender is VIP, the 10 Presidential Escort tasks are loaded
+    // separately via generateEscortTasks() so they are distinct stages!
 
     final baseCount = defenderLevel > 0 ? defenderLevel.clamp(1, 90) : 1;
     final armedPool =
@@ -216,7 +180,7 @@ class PocketCitadelChallengeGenerator {
             ? List<HouseShieldQuestion>.from(customArmedQuestions)
             : <HouseShieldQuestion>[];
 
-    // 🛡️ 2. For each day slot (1 to defenderLevel):
+    // 🛡️ For each day slot (1 to defenderLevel):
     // Shuffled game format and difficulty per defender's card (User Audio Directive!)
     for (int day = 1; day <= baseCount; day++) {
       final taskIndex = result.length + 1;
@@ -269,25 +233,6 @@ class PocketCitadelChallengeGenerator {
   }) {
     final r = random ?? math.Random(day * 31 + taskIndex);
     switch (format) {
-      case 'mixed_duel':
-        const mixedTypes = [
-          'sentence_builder',
-          'spot_error',
-          'verb_timeline',
-          'chat_reply',
-          'negative_sentence',
-          'spelling_challenge',
-          'spoken_whisper',
-          'vocab_gate',
-        ];
-        final picked = mixedTypes[taskIndex % mixedTypes.length];
-        return buildChallengeForFormat(
-          format: picked,
-          day: day,
-          taskIndex: taskIndex,
-          difficulty: difficulty,
-          random: r,
-        );
       case 'sentence_builder':
         return _buildSentenceBuilderChallenge(taskIndex, day, r,
             difficulty: difficulty);
@@ -296,6 +241,9 @@ class PocketCitadelChallengeGenerator {
             difficulty: difficulty);
       case 'verb_timeline':
         return _buildVerbTimelineChallenge(taskIndex, day, r,
+            difficulty: difficulty);
+      case 'tense_fortress':
+        return _buildTenseFortressChallenge(taskIndex, day, r,
             difficulty: difficulty);
       case 'chat_reply':
         return _buildChatReplyChallenge(taskIndex, day, r,
@@ -306,29 +254,33 @@ class PocketCitadelChallengeGenerator {
       case 'spoken_whisper':
         return _buildSpokenWhisperChallenge(taskIndex, day, r,
             difficulty: difficulty);
-      case 'grammar_defusal':
-        return _buildGrammarDefusalChallenge(taskIndex, day, r,
-            difficulty: difficulty);
-      case 'vocab_gate':
-        return _buildVocabHunterChallenge(taskIndex, day, r,
-            difficulty: difficulty);
       case 'syntax_jigsaw':
         return _buildSyntaxJigsawChallenge(taskIndex, day, r,
             difficulty: difficulty);
       case 'spot_error':
         return _buildSpotErrorChallenge(taskIndex, day, r,
             difficulty: difficulty);
+      case 'grammar_defusal':
+        return _buildGrammarDefusalChallenge(taskIndex, day, r,
+            difficulty: difficulty);
+      case 'vocab_gate':
+        return _buildVocabHunterChallenge(taskIndex, day, r,
+            difficulty: difficulty);
       case 'idiom_maze':
         return _buildIdiomMazeChallenge(taskIndex, day, r,
             difficulty: difficulty);
-      case 'tense_fortress':
-        return _buildTenseFortressChallenge(taskIndex, day, r,
-            difficulty: difficulty);
+      case 'mixed_duel':
       case 'mcq':
       default:
         // Strictly no 4-choice radio MCQs per user directive!
-        return _buildSentenceBuilderChallenge(taskIndex, day, r,
-            difficulty: difficulty);
+        // Alternate between Sentence Builder (Step 2) and Spelling (Step 3)!
+        if (taskIndex % 2 == 0) {
+          return _buildSpellingChallenge(taskIndex, day, r,
+              difficulty: difficulty);
+        } else {
+          return _buildSentenceBuilderChallenge(taskIndex, day, r,
+              difficulty: difficulty);
+        }
     }
   }
 
@@ -386,7 +338,7 @@ class PocketCitadelChallengeGenerator {
     );
   }
 
-  /// 🔤 2. Builds 4-Word Spelling Challenge
+  /// 🔤 2. Builds Essential Spelling Challenge (Day 1 Step 3 Style with Letter Slots & Letter Bank)
   static HouseShieldQuestion _buildSpellingChallenge(
     int qNum,
     int day,
@@ -394,62 +346,69 @@ class PocketCitadelChallengeGenerator {
     String difficulty = 'normal',
   }) {
     final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(day);
-    final pool = vocabList.isNotEmpty ? List.from(vocabList) : <dynamic>[];
-    pool.shuffle(random);
-
-    final selected4 = pool.take(4).toList();
-    if (selected4.length < 4) {
-      selected4.addAll(Pocket90DayVocabCurriculum.getVocabForDay(1)
-          .take(4 - selected4.length));
+    dynamic pickedWord;
+    if (vocabList.isNotEmpty) {
+      final pool = List.from(vocabList);
+      pool.shuffle(random);
+      pickedWord = pool.first;
     }
 
-    final activeLang = PocketLanguageService.currentLanguage;
-    final w1 = selected4[0].word.trim().toUpperCase();
-    final w2 = selected4[1].word.trim().toUpperCase();
-    final w3 = selected4[2].word.trim().toUpperCase();
-    final w4 = selected4[3].word.trim().toUpperCase();
+    final fallbacks = [
+      {'w': 'ALWAYS', 'm': 'എപ്പോഴും'},
+      {'w': 'BEFORE', 'm': 'മുമ്പ്'},
+      {'w': 'DOES', 'm': 'ചെയ്യുന്നു'},
+      {'w': 'FAST', 'm': 'വേഗതയുള്ള'},
+      {'w': 'FIRST', 'm': 'ആദ്യം'},
+      {'w': 'FIVE', 'm': 'അഞ്ച്'},
+      {'w': 'FOUND', 'm': 'കണ്ടെത്തി'},
+      {'w': 'GAVE', 'm': 'നൽകി'},
+      {'w': 'FRIEND', 'm': 'സുഹൃത്ത്'},
+      {'w': 'WATER', 'm': 'വെള്ളം'},
+      {'w': 'SCHOOL', 'm': 'സ്കൂൾ'},
+      {'w': 'FAMILY', 'm': 'കുടുംബം'},
+      {'w': 'HAPPY', 'm': 'സന്തോഷം'},
+      {'w': 'PEOPLE', 'm': 'ആളുകൾ'},
+      {'w': 'CONFIDENCE', 'm': 'ആത്മവിശ്വാസം'},
+    ];
 
-    final m1 = selected4[0].getMeaning(activeLang);
-    final m2 = selected4[1].getMeaning(activeLang);
-    final m3 = selected4[2].getMeaning(activeLang);
-    final m4 = selected4[3].getMeaning(activeLang);
+    String targetWord;
+    String meaningMl;
 
-    String makeTypo(String word) {
-      if (word.length <= 3) return '${word}E';
-      final idx = 1 + random.nextInt(word.length - 2);
-      const vowels = ['A', 'E', 'I', 'O', 'U'];
-      final char = word[idx];
-      if (vowels.contains(char)) {
-        final replacement = vowels[(vowels.indexOf(char) + 1) % vowels.length];
-        return word.substring(0, idx) + replacement + word.substring(idx + 1);
-      } else {
-        return word.substring(0, idx) + char + word.substring(idx);
+    if (pickedWord != null && (pickedWord.word as String).isNotEmpty) {
+      targetWord = (pickedWord.word as String).trim().toUpperCase();
+      meaningMl = pickedWord.getMeaning(PocketLanguageService.currentLanguage);
+      if (meaningMl.isEmpty) {
+        meaningMl = pickedWord.meaningMl ?? '';
       }
+    } else {
+      final fb = fallbacks[(qNum + day) % fallbacks.length];
+      targetWord = fb['w']!;
+      meaningMl = fb['m']!;
     }
 
-    final correctSet = '1. $w1 • 2. $w2 • 3. $w3 • 4. $w4';
-    final distractor1 = '1. ${makeTypo(w1)} • 2. $w2 • 3. $w3 • 4. $w4';
-    final distractor2 =
-        '1. $w1 • 2. ${makeTypo(w2)} • 3. $w3 • 4. ${makeTypo(w4)}';
-    final distractor3 = '1. $w1 • 2. $w2 • 3. ${makeTypo(w3)} • 4. $w4';
+    targetWord = targetWord.replaceAll(RegExp(r'[^A-Z]'), '');
+    if (targetWord.length < 3) targetWord = 'FAST';
 
-    final options = [correctSet, distractor1, distractor2, distractor3]
-      ..shuffle(random);
-    final correctIdx = options.indexOf(correctSet);
+    final letters = targetWord.split('');
+    const decoys = [
+      'A', 'E', 'I', 'O', 'U', 'R', 'S', 'T', 'N', 'L', 'D', 'M', 'P', 'C'
+    ];
+    final unusedDecoys = decoys.where((d) => !letters.contains(d)).toList();
+    unusedDecoys.shuffle(random);
+    final selectedDecoys =
+        unusedDecoys.take(math.min(3, unusedDecoys.length)).toList();
 
-    final meaningClues = (!PocketLanguageService.isEnglish && m1.isNotEmpty)
-        ? '\nസൂചന: 1. $m1 | 2. $m2 | 3. $m3 | 4. $m4'
-        : '';
+    final bankLetters = [...letters, ...selectedDecoys]..shuffle(random);
 
     return HouseShieldQuestion(
-      id: 'raid_gate_${qNum}_spelling4_day$day',
+      id: 'raid_gate_${qNum}_spelling_day$day',
       question:
-          '🔤 Day $day • ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തുക:\nഏത് സെറ്റിലാണ് 4 വാക്കുകളുടെയും സ്പെല്ലിംഗ് പൂർണ്ണമായും ശരിയായിട്ടുള്ളത്?$meaningClues',
-      options: options,
-      correctIndex: correctIdx,
-      explanation: 'All 4 Words Spelled Correctly: $w1, $w2, $w3, $w4',
-      category: 'vocab',
-      trapType: 'word_scramble',
+          '🔤 Day $day • അക്ഷരവിന്യാസം (Spelling Challenge):\nഅർത്ഥം: "$meaningMl"\nതാഴെയുള്ള അക്ഷരങ്ങൾ അടുക്കിവെച്ച് വാക്കിന്റെ സ്പെല്ലിംഗ് പൂർത്തിയാക്കുക:',
+      options: bankLetters,
+      correctIndex: 0,
+      explanation: targetWord,
+      category: 'spelling',
+      trapType: 'spelling_ward',
       gameFormat: 'spelling_challenge',
       difficulty: difficulty,
     );
@@ -668,63 +627,18 @@ class PocketCitadelChallengeGenerator {
     math.Random random, {
     String difficulty = 'normal',
   }) {
-    final challenge = PocketDefenseQuestionBank.getRandomChallenge(
-        'grammar_defusal',
-        day: day);
-    final options = List<String>.from(challenge['options'] ??
-        ['Option A', 'Option B', 'Option C', 'Option D']);
-    final correctIdx = (challenge['correctIndex'] as num? ?? 0)
-        .toInt()
-        .clamp(0, options.length - 1);
-
-    return HouseShieldQuestion(
-      id: 'raid_gate_${qNum}_grammar_defusal_day$day',
-      question:
-          '🎯 Day $day • വ്യാകരണ കോട്ട:\n${challenge['question'] ?? 'വ്യാകരണപരമായി ഏറ്റവും ശരിയായ വാക്യം തിരഞ്ഞെടുക്കുക:'}',
-      options: options,
-      correctIndex: correctIdx,
-      explanation: challenge['explanation'] ??
-          'വ്യാകരണ നിയമം പാലിക്കപ്പെട്ടിരിക്കുന്നു.',
-      category: 'grammar',
-      trapType: 'grammar_sentry',
-      gameFormat: 'grammar_defusal',
-      difficulty: difficulty,
-    );
+    return _buildSentenceBuilderChallenge(qNum, day, random,
+        difficulty: difficulty);
   }
 
-  /// 📖 8. Builds Vocab Hunter Challenge
+  /// 📖 8. Builds Vocab Hunter Challenge (Routes to Spelling Challenge)
   static HouseShieldQuestion _buildVocabHunterChallenge(
     int qNum,
     int day,
     math.Random random, {
     String difficulty = 'normal',
   }) {
-    final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(day);
-    if (vocabList.isNotEmpty) {
-      final v = vocabList[random.nextInt(vocabList.length)];
-      final target = v.word.toUpperCase();
-      final meaning = v.getMeaning(PocketLanguageService.currentLanguage);
-      final dist1 = 'Unrelated meaning';
-      final dist2 = 'Opposite meaning';
-      final dist3 = 'Secondary meaning';
-      final opts = [meaning, dist1, dist2, dist3]..shuffle(random);
-      final cIdx = opts.indexOf(meaning);
-
-      return HouseShieldQuestion(
-        id: 'raid_gate_${qNum}_vocab_gate_day$day',
-        question:
-            '📖 Day $day • പദാവലി വേട്ട:\n"$target" എന്ന വാക്കിന്റെ കൃത്യമായ അർത്ഥം ഏത്?',
-        options: opts,
-        correctIndex: cIdx,
-        explanation: '$target എന്നാൽ: "$meaning"',
-        category: 'vocab',
-        trapType: 'vocab_gate',
-        gameFormat: 'vocab_gate',
-        difficulty: difficulty,
-      );
-    }
-    return _buildTacticalMcqChallenge(qNum, day, random,
-        difficulty: difficulty);
+    return _buildSpellingChallenge(qNum, day, random, difficulty: difficulty);
   }
 
   /// 🧩 9. Builds Syntax Jigsaw Challenge
@@ -738,29 +652,54 @@ class PocketCitadelChallengeGenerator {
         difficulty: difficulty);
   }
 
-  /// 💣 10. Builds Spot The Error Challenge
+  /// 💣 10. Builds Spot The Error Challenge (Interactive Phrase Blocks, Zero MCQs)
   static HouseShieldQuestion _buildSpotErrorChallenge(
     int qNum,
     int day,
     math.Random random, {
     String difficulty = 'normal',
   }) {
-    final challenge =
-        PocketDefenseQuestionBank.getRandomChallenge('spot_error', day: day);
-    final options = List<String>.from(challenge['options'] ??
-        ['Sentence A', 'Sentence B', 'Sentence C', 'Sentence D']);
-    final correctIdx = (challenge['correctIndex'] as num? ?? 0)
-        .toInt()
-        .clamp(0, options.length - 1);
+    final errorScenarios = [
+      {
+        'full': 'She don\'t know the correct answer.',
+        'parts': ['She don\'t', 'know the', 'correct', 'answer.'],
+        'errIdx': 0,
+        'fix': 'Correction: "She doesn\'t" (Subject "She" takes singular verb "does not").',
+      },
+      {
+        'full': 'They was playing football in the campus ground.',
+        'parts': ['They was', 'playing football', 'in the', 'campus ground.'],
+        'errIdx': 0,
+        'fix': 'Correction: "They were" (Plural subject "They" takes plural verb "were").',
+      },
+      {
+        'full': 'He go to the office every single day.',
+        'parts': ['He go', 'to the office', 'every single', 'day.'],
+        'errIdx': 0,
+        'fix': 'Correction: "He goes" (Third person singular takes "goes").',
+      },
+      {
+        'full': 'I have seen him yesterday morning at the station.',
+        'parts': ['I have seen', 'him yesterday', 'morning at the', 'station.'],
+        'errIdx': 0,
+        'fix': 'Correction: "I saw" (Past time reference "yesterday" requires simple past).',
+      },
+      {
+        'full': 'This building is more taller than that tower.',
+        'parts': ['This building is', 'more taller', 'than that', 'tower.'],
+        'errIdx': 1,
+        'fix': 'Correction: "taller" (Avoid double comparative "more taller").',
+      },
+    ];
 
+    final sc = errorScenarios[(qNum + day) % errorScenarios.length];
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_spot_error_day$day',
       question:
-          '💣 Day $day • തെറ്റ് കണ്ടെത്തുക:\n${challenge['question'] ?? 'തെറ്റായ പ്രയോഗം ഉള്ള ഭാഗം കണ്ടെത്തുക:'}',
-      options: options,
-      correctIndex: correctIdx,
-      explanation: challenge['explanation'] ??
-          'തെറ്റായ പ്രയോഗം തിരുത്തപ്പെട്ടിരിക്കുന്നു.',
+          '💣 Day $day • തെറ്റ് കണ്ടെത്തുക (Spot the Error):\n"${sc['full']}"\nതെറ്റായ ഭാഗം ടാപ്പ് ചെയ്ത് ബോംബ് ഡിഫ്യൂസ് ചെയ്യുക:',
+      options: List<String>.from(sc['parts'] as List),
+      correctIndex: sc['errIdx'] as int,
+      explanation: sc['fix'] as String,
       category: 'grammar',
       trapType: 'spot_error',
       gameFormat: 'spot_error',
@@ -768,33 +707,15 @@ class PocketCitadelChallengeGenerator {
     );
   }
 
-  /// 💡 11. Builds Idiom Decryptor Challenge
+  /// 💡 11. Builds Idiom Decryptor Challenge (Routes to Sentence Builder)
   static HouseShieldQuestion _buildIdiomMazeChallenge(
     int qNum,
     int day,
     math.Random random, {
     String difficulty = 'normal',
   }) {
-    final challenge =
-        PocketDefenseQuestionBank.getRandomChallenge('idiom_maze', day: day);
-    final options = List<String>.from(challenge['options'] ??
-        ['Meaning A', 'Meaning B', 'Meaning C', 'Meaning D']);
-    final correctIdx = (challenge['correctIndex'] as num? ?? 0)
-        .toInt()
-        .clamp(0, options.length - 1);
-
-    return HouseShieldQuestion(
-      id: 'raid_gate_${qNum}_idiom_maze_day$day',
-      question:
-          '💡 Day $day • ശൈലീ പ്രയോഗം:\n${challenge['question'] ?? 'ഈ ശൈലിയുടെ (Idiom) യഥാർത്ഥ അർത്ഥം കണ്ടെത്തുക:'}',
-      options: options,
-      correctIndex: correctIdx,
-      explanation: challenge['explanation'] ?? 'Idiom definition verified.',
-      category: 'idiom',
-      trapType: 'idiom_maze',
-      gameFormat: 'idiom_maze',
-      difficulty: difficulty,
-    );
+    return _buildSentenceBuilderChallenge(qNum, day, random,
+        difficulty: difficulty);
   }
 
   /// ⚡ 12. Builds Tense Fortress Challenge
@@ -806,37 +727,6 @@ class PocketCitadelChallengeGenerator {
   }) {
     return _buildVerbTimelineChallenge(qNum, day, random,
         difficulty: difficulty);
-  }
-
-  /// 🛡️ Fallback Tactical Defense MCQ
-  static HouseShieldQuestion _buildTacticalMcqChallenge(
-    int qNum,
-    int day,
-    math.Random random, {
-    String difficulty = 'normal',
-  }) {
-    final challenge = PocketDefenseQuestionBank.getRandomChallenge(
-        'grammar_defusal',
-        day: day);
-    final options = List<String>.from(challenge['options'] ??
-        ['Option A', 'Option B', 'Option C', 'Option D']);
-    final correctIdx = (challenge['correctIndex'] as num? ?? 0)
-        .toInt()
-        .clamp(0, options.length - 1);
-
-    return HouseShieldQuestion(
-      id: 'raid_gate_${qNum}_mcq_day$day',
-      question:
-          '🛡️ Day $day • ഡിഫൻസ് ഗേറ്റ്:\n${challenge['question'] ?? 'ശരിയായ ഉത്തരം തിരഞ്ഞെടുക്കുക:'}',
-      options: options,
-      correctIndex: correctIdx,
-      explanation:
-          challenge['explanation'] ?? 'Grammatical consistency is required.',
-      category: challenge['category'] ?? 'grammar',
-      trapType: 'grammar_sentry',
-      gameFormat: 'mcq',
-      difficulty: difficulty,
-    );
   }
 
   /// 🏛️ Builds 200 Presidential Gauntlet Trials
@@ -860,16 +750,33 @@ class PocketCitadelChallengeGenerator {
     return trials;
   }
 
+  /// 🏛️ Public Method: Generates 10 Elite Presidential Protection Escort Tasks for VIP Defended Estates
+  static List<HouseShieldQuestion> generateEscortTasks(
+      int count, math.Random random) {
+    return _generatePresidentialSentryTasks(count, random);
+  }
+
   /// 🏛️ Builds 10 Elite Presidential Protection Escort Tasks for VIP Defended Estates (User Audio Directive)
   static List<HouseShieldQuestion> _generatePresidentialSentryTasks(
       int count, math.Random random) {
     final List<HouseShieldQuestion> sentries = [];
+    const validFormats = [
+      'sentence_builder',
+      'spelling_challenge',
+      'verb_timeline',
+      'chat_reply',
+      'negative_sentence',
+      'spot_error',
+      'spoken_whisper',
+      'tense_fortress',
+    ];
+
     for (int i = 0; i < count; i++) {
-      final cycle = i % availableGameTypes.length;
+      final cycle = i % validFormats.length;
       final sentryDay = ((i * 7 + 13) % 90) + 1;
       final taskNum = i + 1;
       final q = buildChallengeForFormat(
-        format: availableGameTypes[cycle].id,
+        format: validFormats[cycle],
         day: sentryDay,
         taskIndex: taskNum,
         difficulty: 'hard',

@@ -17,6 +17,7 @@ import 'pocket_defense_trap_modal.dart';
 import 'pocket_citadel_challenge_generator.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
+import 'games/pocket_essential_spelling_game_page.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -277,9 +278,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _correctCount = 0;
   int _incorrectCount = 0;
 
+  // 🏛️ Presidential Escort vs Core Fortress Modes (User Audio Directive!)
+  bool _isEscortMode = false;
+  bool _isEscortDefeated = false;
+  List<HouseShieldQuestion> _escortQuestions = [];
+  List<HouseShieldQuestion> _fortressQuestions = [];
+
   // 🎮 Interactive Game States for Citadel Raid Challenges (Sentence Builder, Word Bank, Verb Timeline)
   List<String> _assembledWords = [];
   List<String> _availableWords = [];
+
+  // 🔤 Interactive Spelling Challenge State (Matching Adult Day 1 Step 3 Exactly!)
+  String _targetSpellingWord = '';
+  List<String?> _spellingSlots = [];
+  List<LetterTileItem> _spellingLetterBank = [];
+
   int _lastPreparedQIdx = -1;
   final FlutterTts _combatTts = FlutterTts();
 
@@ -333,6 +346,108 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       _assembledWords = [];
       _availableWords = [];
     }
+
+    // 🔤 Prepare Step 3 Letter Slots and Letter Bank for Spelling Challenge
+    if (q.gameFormat == 'spelling_challenge') {
+      _targetSpellingWord = q.explanation
+          .trim()
+          .toUpperCase()
+          .replaceAll(RegExp(r'[^A-Z]'), '');
+      if (_targetSpellingWord.isEmpty) {
+        _targetSpellingWord = 'ALWAYS';
+      }
+      _spellingSlots = List<String?>.filled(_targetSpellingWord.length, null);
+
+      final List<String> letters;
+      if (q.options.isNotEmpty && q.options.every((o) => o.length == 1)) {
+        letters = List<String>.from(q.options);
+      } else {
+        letters = _targetSpellingWord.split('');
+        const decoys = ['A', 'E', 'I', 'O', 'U', 'R', 'S', 'T'];
+        final extra = decoys.where((d) => !letters.contains(d)).take(3);
+        letters.addAll(extra);
+        letters.shuffle();
+      }
+
+      const palette = [
+        Color(0xFF38BDF8),
+        Color(0xFF10B981),
+        Color(0xFFF59E0B),
+        Color(0xFFA855F7),
+        Color(0xFFEC4899),
+        Color(0xFF06B6D4),
+        Color(0xFFF97316),
+      ];
+
+      _spellingLetterBank = List.generate(
+        letters.length,
+        (i) => LetterTileItem(
+          id: '$i',
+          letter: letters[i].toUpperCase(),
+          color: palette[i % palette.length],
+          isUsed: false,
+        ),
+      );
+    } else {
+      _targetSpellingWord = '';
+      _spellingSlots = [];
+      _spellingLetterBank = [];
+    }
+  }
+
+  void _onSpellingSlotTapped(int slotIdx) {
+    if (slotIdx < 0 || slotIdx >= _spellingSlots.length) return;
+    final letter = _spellingSlots[slotIdx];
+    if (letter == null) return;
+    HapticFeedback.selectionClick();
+    setState(() {
+      _spellingSlots[slotIdx] = null;
+      for (final tile in _spellingLetterBank) {
+        if (tile.isUsed && tile.letter.toUpperCase() == letter.toUpperCase()) {
+          tile.isUsed = false;
+          break;
+        }
+      }
+    });
+  }
+
+  void _onSpellingTileTapped(LetterTileItem tile) {
+    if (tile.isUsed) return;
+    final emptyIdx = _spellingSlots.indexOf(null);
+    if (emptyIdx == -1) return;
+    HapticFeedback.selectionClick();
+    setState(() {
+      _spellingSlots[emptyIdx] = tile.letter.toUpperCase();
+      tile.isUsed = true;
+    });
+  }
+
+  void _onSpellingBackspace() {
+    for (int i = _spellingSlots.length - 1; i >= 0; i--) {
+      if (_spellingSlots[i] != null) {
+        _onSpellingSlotTapped(i);
+        break;
+      }
+    }
+  }
+
+  void _onSpellingShuffle() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _spellingLetterBank.shuffle();
+    });
+  }
+
+  void _onSpellingClear() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      for (final tile in _spellingLetterBank) {
+        tile.isUsed = false;
+      }
+      for (int i = 0; i < _spellingSlots.length; i++) {
+        _spellingSlots[i] = null;
+      }
+    });
   }
 
   // ⏱️ 45s Comfortable Combat Timer
@@ -666,36 +781,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       isNeighbor: true,
       targetUserId: widget.neighbor.id,
     );
-    // User Audio Directive: Question count strictly matches defender level (e.g. Level 40 = 40 tasks, Level 10 = 10 tasks, Level 1 = 1 task)
-    // Rotating across 4 interactive formats: Sentence Builder, Spelling Challenge, Verb Timeline, Tactical MCQ.
-    final questions =
+
+    // 🛡️ 1. Load 10 Presidential Escort tasks for VIP targets (User Audio Directive!)
+    List<HouseShieldQuestion> escortQuestions = [];
+    if (isTargetVip) {
+      final escortRandom = math.Random(
+          (widget.neighbor.id.hashCode.abs() * 13) + (widget.neighbor.day * 7));
+      escortQuestions = PocketCitadelChallengeGenerator.generateEscortTasks(
+          10, escortRandom);
+    }
+
+    // 🏰 2. Load Core Fortress Defense Cards (Strictly matching defenderLevel, e.g. Day 30 = 30 tasks)
+    final fortressQuestions =
         PocketCitadelChallengeGenerator.generateChallengesForDefender(
       defenderLevel: widget.neighbor.day,
       defenderId: widget.neighbor.id,
       isPresident: widget.neighbor.isPresident,
-      isVip: isTargetVip,
+      isVip: false,
       customArmedQuestions: customArmed,
     );
 
-    // Randomize option order dynamically across A, B, C, D
-    final randomizedQuestions = questions.map((q) {
-      if (q.options.length <= 1) return q;
-      final indexedOptions = q.options.asMap().entries.toList();
-      indexedOptions.shuffle();
-      final newOptions = indexedOptions.map((e) => e.value).toList();
-      final newCorrectIndex =
-          indexedOptions.indexWhere((e) => e.key == q.correctIndex);
-      return HouseShieldQuestion(
-        id: q.id,
-        question: q.question,
-        options: newOptions,
-        correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
-        explanation: q.explanation,
-        category: q.category,
-        trapType: q.trapType,
-        gameFormat: q.gameFormat,
-      );
-    }).toList();
+    final activeQuestions = (isTargetVip && !_isEscortDefeated)
+        ? escortQuestions
+        : fortressQuestions;
 
     int defenderScore = widget.neighbor.isPresident
         ? 99999
@@ -732,7 +840,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         }
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
-        _defenseQuestions = randomizedQuestions;
+        _isEscortMode = (isTargetVip && !_isEscortDefeated);
+        _escortQuestions = escortQuestions;
+        _fortressQuestions = fortressQuestions;
+        _defenseQuestions = activeQuestions;
         _defenderScore = defenderScore;
       });
     }
@@ -5332,67 +5443,173 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: _onTapBottomAttack,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 7),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF7C3AED),
-                            Color(0xFFB45309),
-                            Color(0xFFD97706)
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700),
-                          width: 1.4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFFD700).withValues(alpha: 0.5),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🏛️', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              Text(
-                                '10 Escort Tasks (100% Correct Required) + ${widget.neighbor.day} Defenses',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFFFFD700),
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                  if (!_isEscortDefeated)
+                    GestureDetector(
+                      onTap: _onTapBottomAttack,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF7C3AED),
+                              Color(0xFFB45309),
+                              Color(0xFFD97706)
                             ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🏛️', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                Text(
+                                  '10 Escort Tasks • Defeat to Unlock Attack',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_raidStep == 2)
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        _executeCitadelAttack();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: _onTapBottomAttack,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEF4444)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚔️', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ATTACK (⚔️ കോർ ഹൗസ് അറ്റാക്ക്)',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                Text(
+                                  '${widget.neighbor.day} Defenses • 80% Pass Mark',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(width: 8),
                   // 🥊 Fight Duel Button (Audio Directive!)
                   GestureDetector(
@@ -5490,49 +5707,111 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: _onTapBottomAttack,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 7),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFEF4444).withValues(alpha: 0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                  if (_raidStep == 2)
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        _executeCitadelAttack();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('⚔️', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'ATTACK',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'STRIKE & CLAIM LOOT (+15 ${widget.isKidMode ? 'SS' : 'PS'})',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: _onTapBottomAttack,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(0xFFEF4444).withValues(alpha: 0.5),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚔️', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 6),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ATTACK',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13.0,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                Text(
+                                  '${widget.neighbor.day} Defenses • 80% Pass Mark',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(width: 8),
                   // 🥊 Fight Duel Button (Audio Directive!)
                   GestureDetector(
@@ -5962,6 +6241,71 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             child: const Text('OK',
                 style: TextStyle(
                     color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEscortDefeatedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('👑', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'ESCORT DEFEATED!',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
+              'പ്രസിഡൻഷ്യൽ എസ്കോർട്ടിന്റെ 10 ലെവലുകളും വിജയകരമായി പരാജയപ്പെടുത്തി!\n\n'
+              '⚔️ കോർ ഹൗസ് അറ്റാക്ക് ബട്ടൺ അൺലോക്ക് ആയിരിക്കുന്നു. '
+              'ഇനി ${widget.neighbor.name}-ന്റെ ${widget.neighbor.day} ഡിഫൻസ് കാർഡുകൾ അറ്റാക്ക് ചെയ്യുക (80% പാസ് മാർക്ക് വേണം).',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+            },
+            child: Text(
+              'PROCEED TO HOUSE ATTACK ⚔️',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -6444,21 +6788,267 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       return;
     }
 
+    if (_raidStep == 2) {
+      _executeCitadelAttack();
+      return;
+    }
+
+    final bool isEscort = (widget.neighbor.isVip && !_isEscortDefeated);
+
     // Open the challenge questions container
     setState(() {
+      _isEscortMode = isEscort;
+      _defenseQuestions = isEscort ? _escortQuestions : _fortressQuestions;
       _isQuestionSheetOpen = true;
-      if (_raidStep == 0) {
-        _raidStep = 1;
-        _correctCount = 0;
-        _incorrectCount = 0;
-        _currentQIdx = 0;
-        _retriesRemaining =
-            PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
-                widget.neighbor.day);
-        _selectedOption = -1;
-        _startCombatTimer();
-      }
+      _raidStep = 1;
+      _correctCount = 0;
+      _incorrectCount = 0;
+      _currentQIdx = 0;
+      _lastPreparedQIdx = -1;
+      _retriesRemaining = isEscort
+          ? 1
+          : PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
+              widget.neighbor.day);
+      _selectedOption = -1;
+      _startCombatTimer();
     });
+  }
+
+  /// 🔤 Step 3 Essential Spelling Challenge Playfield (Zero MCQs - Pure Interactive Letter Tiles)
+  Widget _buildSpellingPlayfield(HouseShieldQuestion currentQ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Sound and Hint Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _speakIndianEnglish(_targetSpellingWord);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.volume_up_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Listen Word',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '${_targetSpellingWord.length} Letters',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // Letter Slots (Step 3 Style)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: List.generate(_spellingSlots.length, (slotIdx) {
+            final letter = _spellingSlots[slotIdx];
+            final isFilled = letter != null;
+            return GestureDetector(
+              onTap: () => _onSpellingSlotTapped(slotIdx),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 44,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: isFilled
+                      ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                      : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isFilled
+                        ? const Color(0xFFFFD700)
+                        : Colors.white24,
+                    width: isFilled ? 2.0 : 1.2,
+                  ),
+                  boxShadow: isFilled
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    letter ?? '_',
+                    style: GoogleFonts.outfit(
+                      color: isFilled ? const Color(0xFFFFD700) : Colors.white24,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 16),
+
+        // Letter Bank Chips (Step 3 Style)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: _spellingLetterBank.map((tile) {
+            final isUsed = tile.isUsed;
+            return GestureDetector(
+              onTap: isUsed ? null : () => _onSpellingTileTapped(tile),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 180),
+                opacity: isUsed ? 0.25 : 1.0,
+                child: Container(
+                  width: 42,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: isUsed ? const Color(0xFF1E293B) : tile.color,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isUsed ? Colors.white12 : Colors.white,
+                      width: 1.2,
+                    ),
+                    boxShadow: isUsed
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: tile.color.withValues(alpha: 0.4),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      tile.letter,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+
+        // Controls Row: Backspace, Shuffle, Clear
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: _onSpellingBackspace,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.backspace_rounded, size: 14, color: Colors.white70),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Backspace',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _onSpellingShuffle,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.shuffle_rounded, size: 14, color: Colors.white70),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Shuffle',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _onSpellingClear,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.refresh_rounded, size: 14, color: Colors.white70),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Clear',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   /// 📦 Stacked Expanded Question / Challenge Sheet (User Directive: "സ്റ്റാക്ക് ചെയ്തിട്ട് വലിയൊരു കണ്ടെയ്നർ ഇട്ടിട്ട് എക്സ്പാൻഡഡ് ആയിട്ട് അതിൽ ക്വസ്റ്റ്യൻസ് വന്നു...")
@@ -6530,14 +7120,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   Text(
                     widget.neighbor.isPresident
                         ? '🏛️ Presidential Trial (${_currentQIdx + 1}/200)'
-                        : (widget.neighbor.isVip && _currentQIdx < 10)
+                        : _isEscortMode
                             ? '🏛️ Presidential Escort (${_currentQIdx + 1}/10)'
-                            : (widget.neighbor.isVip)
-                                ? '🛡️ VIP Estate Defense (${_currentQIdx - 9}/${_defenseQuestions.length - 10})'
-                                : 'Gate Defense Challenge (${_currentQIdx + 1}/${_defenseQuestions.length})',
+                            : '🛡️ Fortress Shield (${_currentQIdx + 1}/${_defenseQuestions.length})',
                     style: GoogleFonts.outfit(
-                      color: (widget.neighbor.isPresident ||
-                              (widget.neighbor.isVip && _currentQIdx < 10))
+                      color: (widget.neighbor.isPresident || _isEscortMode)
                           ? const Color(0xFFFFD700)
                           : Colors.white,
                       fontSize: 15,
@@ -6609,25 +7196,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: (widget.neighbor.isVip && _currentQIdx < 10)
+                        color: _isEscortMode
                             ? const Color(0xFF7C3AED).withValues(alpha: 0.35)
                             : const Color(0xFF0284C7).withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: (widget.neighbor.isVip && _currentQIdx < 10)
+                          color: _isEscortMode
                               ? const Color(0xFFFFD700)
                               : const Color(0xFF38BDF8),
                           width: 1,
                         ),
                       ),
                       child: Text(
-                        (widget.neighbor.isVip && _currentQIdx < 10)
-                            ? '👑 PRESIDENTIAL ESCORT ${_currentQIdx + 1}/10 (100% CORRECT REQUIRED)'
+                        _isEscortMode
+                            ? '👑 PRESIDENTIAL ESCORT ${_currentQIdx + 1}/10 • FAIL ON 2 ERRORS'
                             : (_defenseQuestions.length > 10
                                 ? '🛡️ TASK ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'
                                 : '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}'),
                         style: TextStyle(
-                          color: (widget.neighbor.isVip && _currentQIdx < 10)
+                          color: _isEscortMode
                               ? const Color(0xFFFFD700)
                               : const Color(0xFF38BDF8),
                           fontSize: 10,
@@ -6649,46 +7236,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _retriesRemaining > 0
-                            ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                            : Colors.red.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: _retriesRemaining > 0
-                              ? const Color(0xFF34D399)
-                              : Colors.redAccent,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.favorite_rounded,
-                            size: 12,
-                            color: _retriesRemaining > 0
-                                ? const Color(0xFF34D399)
-                                : Colors.redAccent,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            '$_retriesRemaining Lifelines',
-                            style: GoogleFonts.outfit(
-                              color: _retriesRemaining > 0
-                                  ? const Color(0xFF34D399)
-                                  : Colors.redAccent,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
@@ -6697,11 +7244,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                       ),
                       child: Text(
-                        (widget.neighbor.isVip && _currentQIdx < 10)
-                            ? 'Escort: 100% Req ($_correctCount/10)'
-                            : (_incorrectCount > 0
-                                ? 'Pass: 80% (✓$_correctCount ✗$_incorrectCount/${_defenseQuestions.length})'
-                                : 'Pass: 80% ($_correctCount/${_defenseQuestions.length})'),
+                        _isEscortMode
+                            ? 'Errors: $_incorrectCount/2 (✓$_correctCount/10)'
+                            : 'Pass: 80% (✓$_correctCount ✗$_incorrectCount/${_defenseQuestions.length})',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontSize: 10,
@@ -6970,14 +7515,46 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.white12),
                   ),
-                  child: Text(
-                    currentQ.question,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      height: 1.35,
-                    ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          currentQ.question,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                      if (currentQ.gameFormat == 'spelling_challenge' ||
+                          currentQ.gameFormat == 'spoken_whisper') ...[
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            final speechWord =
+                                currentQ.gameFormat == 'spelling_challenge'
+                                    ? _targetSpellingWord
+                                    : currentQ.explanation;
+                            _speakIndianEnglish(speechWord);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6366F1)
+                                  .withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: const Color(0xFF818CF8)),
+                            ),
+                            child: const Icon(Icons.volume_up_rounded,
+                                color: Color(0xFF818CF8), size: 20),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -7261,131 +7838,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     }
 
-                    // 2B. 🔤 4-WORD SPELLING GAUNTLET
+                    // 2B. 🔤 ESSENTIAL SPELLING CHALLENGE (Adult Day 1 Step 3 Style - ZERO MCQs!)
                     if (currentQ.gameFormat == 'spelling_challenge') {
-                      return Column(
-                        children:
-                            List.generate(currentQ.options.length, (optIdx) {
-                          final isSelected = _selectedOption == optIdx;
-                          final optionStr = currentQ.options[optIdx];
-                          final words = optionStr
-                              .split('•')
-                              .map((w) => w.trim())
-                              .toList();
-
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() => _selectedOption = optIdx);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF0284C7)
-                                        .withValues(alpha: 0.32)
-                                    : const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFFFFD700)
-                                      : Colors.white12,
-                                  width: isSelected ? 2.0 : 1.0,
-                                ),
-                                boxShadow: isSelected
-                                    ? [
-                                        BoxShadow(
-                                          color: const Color(0xFFFFD700)
-                                              .withValues(alpha: 0.25),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        isSelected ? '⚔️' : '🔤',
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Spelling Pack ${optIdx + 1}',
-                                        style: GoogleFonts.outfit(
-                                          color: isSelected
-                                              ? const Color(0xFFFFD700)
-                                              : Colors.white70,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      if (isSelected)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFD700)
-                                                .withValues(alpha: 0.2),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            border: Border.all(
-                                                color: const Color(0xFFFFD700),
-                                                width: 0.8),
-                                          ),
-                                          child: Text(
-                                            'SELECTED',
-                                            style: GoogleFonts.outfit(
-                                              color: const Color(0xFFFFD700),
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 6,
-                                    runSpacing: 6,
-                                    children: words.map((w) {
-                                      return Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 5),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0F172A),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? const Color(0xFF38BDF8)
-                                                : Colors.white24,
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          w,
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      );
+                      return _buildSpellingPlayfield(currentQ);
                     }
 
                     // 2C. 💣 SPOT THE ERROR BOMB DEFUSAL (Interactive phrase tiles, zero radio MCQs)
@@ -7489,73 +7944,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     }
 
-                    // 3. ARCADE BATTLE POWER CARDS (Zero Radio MCQs - Interactive Power Tiles)
-                    const icons = ['⚡', '🎯', '💎', '🔥'];
-                    return Column(
-                      children:
-                          List.generate(currentQ.options.length, (optIdx) {
-                        final isSelected = _selectedOption == optIdx;
-                        final icon = icons[optIdx % icons.length];
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() => _selectedOption = optIdx);
-                            HapticFeedback.selectionClick();
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF0284C7)
-                                      .withValues(alpha: 0.35)
-                                  : const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFFFFD700)
-                                    : Colors.white12,
-                                width: isSelected ? 2.0 : 1.0,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFFFFD700)
-                                            .withValues(alpha: 0.25),
-                                        blurRadius: 8,
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  isSelected ? '⚔️' : icon,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    currentQ.options[optIdx],
-                                    style: GoogleFonts.outfit(
-                                      color: isSelected
-                                          ? const Color(0xFFFFD700)
-                                          : Colors.white,
-                                      fontSize: 13.5,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w800
-                                          : FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
-                    );
+                    // Fallback to Spelling Playfield (ZERO 4-OPTION MCQS ALLOWED!)
+                    return _buildSpellingPlayfield(currentQ);
                   },
                 ),
                 const SizedBox(height: 14),
@@ -7563,6 +7953,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 // 🚀 VERIFY / SUBMIT BUTTON
                 Builder(
                   builder: (context) {
+                    final isSpellingMode =
+                        currentQ.gameFormat == 'spelling_challenge';
                     final isWordBankMode =
                         currentQ.gameFormat == 'sentence_builder' ||
                             currentQ.gameFormat == 'syntax_jigsaw' ||
@@ -7571,10 +7963,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             currentQ.gameFormat == 'spoken_whisper' ||
                             currentQ.gameFormat == 'grammar_defusal' ||
                             currentQ.gameFormat == 'idiom_maze';
+                    final isVerbTimelineMode =
+                        currentQ.gameFormat == 'verb_timeline' ||
+                            currentQ.gameFormat == 'tense_fortress';
+                    final isSpotErrorMode =
+                        currentQ.gameFormat == 'spot_error';
 
-                    final isReady = isWordBankMode
-                        ? _assembledWords.isNotEmpty
-                        : _selectedOption != -1;
+                    final bool isReady;
+                    if (isSpellingMode) {
+                      isReady = _spellingSlots.isNotEmpty &&
+                          !_spellingSlots.contains(null);
+                    } else if (isWordBankMode) {
+                      isReady = _assembledWords.isNotEmpty;
+                    } else if (isVerbTimelineMode || isSpotErrorMode) {
+                      isReady = _selectedOption != -1;
+                    } else {
+                      isReady = _assembledWords.isNotEmpty ||
+                          _selectedOption != -1;
+                    }
 
                     return SizedBox(
                       width: double.infinity,
@@ -7597,7 +8003,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 _combatTimer?.cancel();
 
                                 bool isCorrect = false;
-                                if (isWordBankMode) {
+                                if (isSpellingMode) {
+                                  final spelled = _spellingSlots
+                                      .map((s) => s ?? '')
+                                      .join('')
+                                      .toUpperCase();
+                                  isCorrect = (spelled ==
+                                      _targetSpellingWord.toUpperCase());
+                                } else if (isWordBankMode) {
                                   String normalize(String s) => s
                                       .replaceAll(RegExp(r'[^\w\s]'), '')
                                       .replaceAll(RegExp(r'\s+'), ' ')
@@ -7608,64 +8021,117 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   final expected =
                                       normalize(currentQ.explanation);
                                   isCorrect = (assembled == expected);
+                                } else if (isVerbTimelineMode ||
+                                    isSpotErrorMode) {
+                                  isCorrect = (_selectedOption ==
+                                      currentQ.correctIndex);
                                 } else {
                                   isCorrect = (_selectedOption ==
                                       currentQ.correctIndex);
                                 }
 
-                                final isEscortTask = (widget.neighbor.isVip &&
-                                    _currentQIdx < 10);
-                                final isEscortCompleted =
-                                    (widget.neighbor.isVip &&
-                                        _currentQIdx == 9);
-
-                                if (isCorrect) {
-                                  _correctCount++;
-                                  HapticFeedback.heavyImpact();
-                                  if (_currentQIdx + 1 <
-                                      _defenseQuestions.length) {
-                                    final curGate = _currentQIdx + 1;
-                                    final nextGate = _currentQIdx + 2;
-                                    final totalGates = _defenseQuestions.length;
-                                    setState(() {
-                                      _currentQIdx++;
-                                      _lastPreparedQIdx =
-                                          -1; // triggers prep for next
-                                      _selectedOption = -1;
-                                    });
-                                    if (isEscortCompleted) {
+                                if (_isEscortMode) {
+                                  // 🏛️ VIP Presidential Escort Mode (User Audio Directive: 10 tasks, fail on 2 errors)
+                                  if (isCorrect) {
+                                    _correctCount++;
+                                    HapticFeedback.heavyImpact();
+                                    if (_currentQIdx + 1 <
+                                        _defenseQuestions.length) {
+                                      final curTask = _currentQIdx + 1;
+                                      setState(() {
+                                        _currentQIdx++;
+                                        _lastPreparedQIdx = -1;
+                                        _selectedOption = -1;
+                                      });
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            '🎖️ PRESIDENTIAL ESCORT DEFEATED! (10/10) ⚔️\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ടിനെ തോൽപ്പിച്ചു! Advancing to ${widget.neighbor.name}\'s Fortress Cards (80% Pass Mark required)...',
+                                            '👑 Escort Task #$curTask Solved! ($_correctCount/10). Advancing...',
                                           ),
                                           backgroundColor:
                                               const Color(0xFF7C3AED),
-                                          duration: const Duration(seconds: 4),
-                                          behavior: SnackBarBehavior.floating,
+                                          duration:
+                                              const Duration(seconds: 2),
+                                          behavior:
+                                              SnackBarBehavior.floating,
                                         ),
                                       );
+                                      _startCombatTimer();
                                     } else {
+                                      // 10th escort task defeated! Unlock core ATTACK button!
+                                      setState(() {
+                                        _isEscortDefeated = true;
+                                        _isEscortMode = false;
+                                        _isQuestionSheetOpen = false;
+                                        _raidStep = 0;
+                                        _defenseQuestions = _fortressQuestions;
+                                      });
+                                      _showEscortDefeatedDialog();
+                                    }
+                                  } else {
+                                    _incorrectCount++;
+                                    HapticFeedback.vibrate();
+                                    if (_incorrectCount >= 2) {
+                                      // 2 errors made -> Fail immediately! (User Audio Directive)
+                                      setState(() => _raidStep = -1);
+                                    } else {
+                                      // 1 error made -> Warning and proceed
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                          content: Text(
-                                            isEscortTask
-                                                ? '👑 Escort Task #$curGate Solved! ($_correctCount/10). Advancing...'
-                                                : '🎉 Shield #$curGate Solved! ($_correctCount/$totalGates). Advancing to Shield #$nextGate...',
+                                          content: const Text(
+                                            '⚠️ Escort Error! (1/2 errors). One more mistake will repel the raid!',
                                           ),
-                                          backgroundColor: isEscortTask
-                                              ? const Color(0xFF7C3AED)
-                                              : const Color(0xFF10B981),
-                                          duration: const Duration(seconds: 2),
-                                          behavior: SnackBarBehavior.floating,
+                                          backgroundColor: Colors.amber,
+                                          duration:
+                                              const Duration(seconds: 3),
+                                          behavior:
+                                              SnackBarBehavior.floating,
                                         ),
                                       );
+                                      if (_currentQIdx + 1 <
+                                          _defenseQuestions.length) {
+                                        setState(() {
+                                          _currentQIdx++;
+                                          _lastPreparedQIdx = -1;
+                                          _selectedOption = -1;
+                                        });
+                                        _startCombatTimer();
+                                      } else {
+                                        // Reached 10 with only 1 error (9/10 passed) -> Escort defeated!
+                                        setState(() {
+                                          _isEscortDefeated = true;
+                                          _isEscortMode = false;
+                                          _isQuestionSheetOpen = false;
+                                          _raidStep = 0;
+                                          _defenseQuestions =
+                                              _fortressQuestions;
+                                        });
+                                        _showEscortDefeatedDialog();
+                                      }
                                     }
+                                  }
+                                } else {
+                                  // 🏰 House Defense Cards Mode (User Audio Directive: 30 tasks, deferred check, 80% Pass Mark)
+                                  if (isCorrect) {
+                                    _correctCount++;
+                                    HapticFeedback.heavyImpact();
+                                  } else {
+                                    _incorrectCount++;
+                                    HapticFeedback.vibrate();
+                                  }
+
+                                  if (_currentQIdx + 1 <
+                                      _defenseQuestions.length) {
+                                    setState(() {
+                                      _currentQIdx++;
+                                      _lastPreparedQIdx = -1;
+                                      _selectedOption = -1;
+                                    });
                                     _startCombatTimer();
                                   } else {
-                                    // Finished all tasks! Check 80% Pass Mark
+                                    // Finished all cards! Check 80% Pass Mark
                                     final total = _defenseQuestions.isNotEmpty
                                         ? _defenseQuestions.length
                                         : 1;
@@ -7677,82 +8143,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       setState(() => _raidStep = -1);
                                     }
                                   }
-                                } else {
-                                  if (_retriesRemaining > 0) {
-                                    setState(() {
-                                      _retriesRemaining--;
-                                      if (!isWordBankMode) {
-                                        _selectedOption = -1;
-                                      }
-                                    });
-                                    HapticFeedback.heavyImpact();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          '⚠️ Incorrect! Second Chance Lifeline used ($_retriesRemaining left). Try again!',
-                                        ),
-                                        backgroundColor: Colors.amber,
-                                        duration: const Duration(seconds: 3),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                    _startCombatTimer();
-                                  } else {
-                                    if (isEscortTask) {
-                                      // 👑 User Audio Directive: 100% correct required for Presidential Escort!
-                                      HapticFeedback.vibrate();
-                                      setState(() => _raidStep = -1);
-                                    } else {
-                                      // Lifeline exhausted for this card - advance to next card so attacker plays all tasks! (User Audio Directive)
-                                      _incorrectCount++;
-                                      HapticFeedback.vibrate();
-                                      if (_currentQIdx + 1 <
-                                          _defenseQuestions.length) {
-                                        final curGate = _currentQIdx + 1;
-                                        final nextGate = _currentQIdx + 2;
-                                        final totalGates =
-                                            _defenseQuestions.length;
-                                        setState(() {
-                                          _currentQIdx++;
-                                          _lastPreparedQIdx = -1;
-                                          _selectedOption = -1;
-                                        });
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              '❌ Shield #$curGate Defended! ($_correctCount/$totalGates). Advancing to Shield #$nextGate...',
-                                            ),
-                                            backgroundColor:
-                                                const Color(0xFFEF4444),
-                                            duration:
-                                                const Duration(seconds: 2),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
-                                        );
-                                        _startCombatTimer();
-                                      } else {
-                                        // Finished all tasks! Check 80% Pass Mark
-                                        final total =
-                                            _defenseQuestions.isNotEmpty
-                                                ? _defenseQuestions.length
-                                                : 1;
-                                        final accuracy =
-                                            (_correctCount / total) * 100.0;
-                                        if (accuracy >= 80.0) {
-                                          setState(() => _raidStep = 2);
-                                        } else {
-                                          setState(() => _raidStep = -1);
-                                        }
-                                      }
-                                    }
-                                  }
                                 }
                               },
                         child: Text(
                           _currentQIdx + 1 < _defenseQuestions.length
-                              ? 'VERIFY & BREACH SHIELD ${_currentQIdx + 1} 🛡️'
-                              : 'FINALIZE GAUNTLET & VERIFY PASS MARK ⚡',
+                              ? (_isEscortMode
+                                  ? 'VERIFY ESCORT TASK ${_currentQIdx + 1} 👑'
+                                  : 'VERIFY & ADVANCE TO TASK ${_currentQIdx + 2} ➔')
+                              : (_isEscortMode
+                                  ? 'DEFEAT PRESIDENTIAL ESCORT 👑'
+                                  : 'FINALIZE 30 CARDS & VERIFY PASS MARK (80%) ⚡'),
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w900,
                             fontSize: 13.5,
@@ -7860,9 +8260,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ? '🚨 ANTI-CHEAT TRIGGERED! RAID FAILED!'
                                   : (_isTimeoutTriggered
                                       ? '⌛ TIME EXPIRED! RAID DEFEATED!'
-                                      : (widget.neighbor.isVip &&
-                                              _currentQIdx < 10)
-                                          ? '🏛️ PRESIDENTIAL ESCORT INTERCEPTED RAID!'
+                                      : _isEscortMode
+                                          ? '🏛️ PRESIDENTIAL ESCORT REPELLED RAID!'
                                           : 'TRAP TRIGGERED! ATTACK REPELLED!'),
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFF87171),
@@ -7879,8 +8278,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ? 'You switched apps or minimized during combat! Cheating is strictly prohibited during Citadel Raids.'
                             : (_isTimeoutTriggered
                                 ? 'The combat timer expired! The defender\'s automated security traps triggered.'
-                                : (widget.neighbor.isVip && _currentQIdx < 10)
-                                    ? '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ട് അറ്റാക്ക് തടഞ്ഞു!\nThe 10 Presidential Escort tasks require 100% correct answers (no pass mark allowed). You reached task ${_currentQIdx + 1}/10. Practice and attack again!'
+                                : _isEscortMode
+                                    ? '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ട് അറ്റാക്ക് തടഞ്ഞു!\nThe 10 Presidential Escort tasks require near perfection (maximum 1 error allowed). You made 2 errors at task ${_currentQIdx + 1}/10. Practice and attack again!'
                                     : 'You solved $_correctCount of ${_defenseQuestions.length} defense tasks (${((_correctCount / (_defenseQuestions.isNotEmpty ? _defenseQuestions.length : 1)) * 100).toStringAsFixed(0)}%).\nA minimum Pass Mark of 80% is required to breach ${widget.neighbor.name}\'s citadel!\n\nThe defender\'s fortress held firm. Practice more daily lessons to conquer this house!'),
                         style: const TextStyle(
                             color: Colors.white70,
