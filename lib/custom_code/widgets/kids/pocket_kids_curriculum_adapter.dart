@@ -55,6 +55,12 @@ class PocketKidsCurriculumAdapter {
       {'en': 'The blue ball can bounce .', 'ml': 'നീല പന്ത് കുതിച്ചുയരുന്നു.', 'hint': 'Start with "The blue ball"'},
       {'en': 'A cute cat says meow .', 'ml': 'ഒരു പൂച്ച മിയാവ് എന്ന് പറയുന്നു.', 'hint': 'Sound of a cat'},
       {'en': 'The friendly dog wags tail .', 'ml': 'നായ വാലാട്ടുന്നു.', 'hint': 'Start with "The friendly dog"'},
+      {'en': 'I love my happy family .', 'ml': 'എനിക്ക് എന്റെ കുടുംബം ഇഷ്ടമാണ്.', 'hint': 'Start with "I love"'},
+      {'en': 'The yellow sun is bright .', 'ml': 'മഞ്ഞ സൂര്യൻ തിളങ്ങുന്നു.', 'hint': 'What is bright?'},
+      {'en': 'A little bird can sing .', 'ml': 'ഒരു കൊച്ചു പക്ഷിക്ക് പാടാൻ കഴിയും.', 'hint': 'Who can sing?'},
+      {'en': 'We play in green park .', 'ml': 'ഞങ്ങൾ പൂന്തോട്ടത്തിൽ കളിക്കുന്നു.', 'hint': 'Where do we play?'},
+      {'en': 'The sweet milk is warm .', 'ml': 'മധുരമുള്ള പാൽ ചൂടുള്ളതാണ്.', 'hint': 'What is warm?'},
+      {'en': 'I am a brave star .', 'ml': 'ഞാൻ ഒരു ധീരമായ താരമാണ്.', 'hint': 'Who are you? (I am...)'},
     ],
     2: [
       {'en': 'The huge elephant drinks water .', 'ml': 'വലിയ ആന വെള്ളം കുടിക്കുന്നു.', 'hint': 'Who drinks water?'},

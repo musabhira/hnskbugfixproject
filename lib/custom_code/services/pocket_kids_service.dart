@@ -1160,7 +1160,6 @@ class PocketKidsService {
   static final Map<String, bool> _completedDaySteps = {};
 
   static bool isDayStepCompleted(int day, int stepIndex) {
-    if (isAdminAccount) return true;
     final key = 'pm_kid_day_${day}_step_$stepIndex';
     return _completedDaySteps[key] ?? false;
   }

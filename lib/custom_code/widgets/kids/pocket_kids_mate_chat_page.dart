@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// 💬 Child-Safe Gamified Mate Chat & Friendly Talk Page
 /// Allows kids to practice Spoken English and communicate with their Mates
@@ -37,6 +38,9 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
   List<KidMessage> _messages = [];
   bool _isSpeaking = false;
 
+  final List<String> _selectedWords = [];
+  bool _useKeyboardMode = false;
+
   static const List<String> _quickPhrases = [
     "Hello Mate! 👋",
     "High five! ✋",
@@ -47,6 +51,12 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
     "I love our adventures! 🎈",
     "Great job, champion! 🏆",
     "See you on the trail! 🏔️",
+  ];
+
+  static const List<String> _kidWordBank = [
+    "Hello", "Mate", "I", "am", "happy", "you", "are", "great", "let's", "play",
+    "English", "is", "fun", "my", "good", "friend", "champion", "star",
+    "see", "soon", "thank", "nice", "to", "meet", "how", "today"
   ];
 
   @override
@@ -105,6 +115,9 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
     if (cleanText.isEmpty) return;
 
     _textController.clear();
+    setState(() {
+      _selectedWords.clear();
+    });
 
     final sent = await PocketKidsService.sendMessageToMate(
       mateId: widget.mate.id,
@@ -349,131 +362,313 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
               ),
             ),
 
-            // Bottom Composer Bar
+            // Bottom Composer & Word Bank Bar (Child-Friendly Chip Based)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, -2),
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  // Gift Star Button
-                  GestureDetector(
-                    onTap: _sendStarGift,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Sentence Preview / Input Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Row(
+                        children: [
+                          // Gift Star Button
+                          GestureDetector(
+                            onTap: _sendStarGift,
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text('⭐', style: TextStyle(fontSize: 19)),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Sentence Builder Display or Text Field
+                          Expanded(
+                            child: _useKeyboardMode
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    ),
+                                    child: TextField(
+                                      controller: _textController,
+                                      textInputAction: TextInputAction.send,
+                                      onSubmitted: (txt) => _sendMessage(txt),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Type an English message...',
+                                        hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.symmetric(vertical: 11),
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    constraints: const BoxConstraints(minHeight: 42),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: _selectedWords.isNotEmpty
+                                            ? const Color(0xFF38BDF8)
+                                            : const Color(0xFFE2E8F0),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    alignment: Alignment.centerLeft,
+                                    child: _selectedWords.isEmpty
+                                        ? Text(
+                                            'Tap words below to chat 🧩',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 12.5,
+                                              color: const Color(0xFF94A3B8),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          )
+                                        : Wrap(
+                                            spacing: 4,
+                                            runSpacing: 4,
+                                            children: _selectedWords.asMap().entries.map((entry) {
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  HapticFeedback.lightImpact();
+                                                  setState(() {
+                                                    _selectedWords.removeAt(entry.key);
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFF0284C7),
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        entry.value,
+                                                        style: GoogleFonts.outfit(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 3),
+                                                      const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                  ),
+                          ),
+                          const SizedBox(width: 6),
+
+                          // Clear / Backspace button (in word bank mode)
+                          if (!_useKeyboardMode && _selectedWords.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                HapticFeedback.mediumImpact();
+                                setState(() {
+                                  _selectedWords.removeLast();
+                                });
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEE2E2),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.backspace_rounded, size: 16, color: Color(0xFFEF4444)),
+                              ),
+                            ),
+
+                          // Toggle Keyboard / Word Bank Mode
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                _useKeyboardMode = !_useKeyboardMode;
+                              });
+                            },
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                _useKeyboardMode ? Icons.widgets_rounded : Icons.keyboard_rounded,
+                                size: 18,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+
+                          // Send Button
+                          GestureDetector(
+                            onTap: () {
+                              final textToSend = _useKeyboardMode
+                                  ? _textController.text
+                                  : _selectedWords.join(' ');
+                              _sendMessage(textToSend);
+                            },
+                            child: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.send_rounded,
+                                color: Colors.white,
+                                size: 19,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      alignment: Alignment.center,
-                      child: const Text('⭐', style: TextStyle(fontSize: 20)),
                     ),
-                  ),
-                  const SizedBox(width: 10),
 
-                  // Text Field
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: TextField(
-                        controller: _textController,
-                        textInputAction: TextInputAction.send,
-                        onSubmitted: (txt) => _sendMessage(txt),
-                        decoration: const InputDecoration(
-                          hintText: 'Type or choose a phrase...',
-                          hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Voice Message Button (English Only)
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.heavyImpact();
-                      _sendMessage('🎙️ Spoken English Voice Note: "Great job practicing with me today!" 🌟');
-                    },
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                    // Word Bank Chips Panel (Child Friendly - Never struggle with typing)
+                    if (!_useKeyboardMode)
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF8FAFC),
+                          border: Border(
+                            top: BorderSide(color: Color(0xFFF1F5F9)),
                           ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.mic_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Send Button
-                  GestureDetector(
-                    onTap: () => _sendMessage(_textController.text),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'WORD BANK 🔤 (Tap words in order)',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF64748B),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                if (_selectedWords.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() => _selectedWords.clear());
+                                    },
+                                    child: Text(
+                                      'Clear All',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: _kidWordBank.map((word) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    PocketGameAudioService.instance.playPopSound();
+                                    setState(() {
+                                      _selectedWords.add(word);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: const Color(0xFFBAE6FD),
+                                        width: 1.2,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF0284C7).withValues(alpha: 0.05),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 1),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      word,
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF0369A1),
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.send_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

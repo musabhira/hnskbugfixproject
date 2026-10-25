@@ -855,34 +855,35 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
                 width: 2,
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'What is the ',
-                  style: GoogleFonts.inter(color: const Color(0xFF475569), fontSize: 13),
+            alignment: Alignment.center,
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF475569),
+                  fontSize: 13,
                 ),
-                Text(
-                  stageName,
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFF0284C7),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                children: [
+                  const TextSpan(text: 'What is the '),
+                  TextSpan(
+                    text: stageName,
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF0284C7),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                Text(
-                  ' tense? ',
-                  style: GoogleFonts.inter(color: const Color(0xFF475569), fontSize: 13),
-                ),
-                Text(
-                  '($stageHint)',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFD97706),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                  const TextSpan(text: ' tense? '),
+                  TextSpan(
+                    text: '($stageHint)',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFD97706),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

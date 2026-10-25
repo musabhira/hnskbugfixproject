@@ -5556,8 +5556,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     GestureDetector(
                       onTap: _onTapBottomAttack,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -5578,33 +5578,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ],
                         ),
+                        alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text('⚔️', style: TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ATTACK (⚔️ കോർ ഹൗസ് അറ്റാക്ക്)',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                Text(
-                                  '${widget.neighbor.day} Defenses • 80% Pass Mark',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'ATTACK',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
                             ),
                           ],
                         ),
@@ -5615,8 +5603,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapFightButton,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7),
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -5626,7 +5614,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         borderRadius: BorderRadius.circular(11),
                         border: Border.all(
                           color: const Color(0xFFFFD700),
-                          width: 1.2,
+                          width: 1.4,
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -5636,8 +5624,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ],
                       ),
+                      alignment: Alignment.center,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text('🥊', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 5),
@@ -5645,7 +5635,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             'FIGHT',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF0F172A),
-                              fontSize: 12.5,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,
                             ),
@@ -5758,8 +5748,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     GestureDetector(
                       onTap: _onTapBottomAttack,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -5768,45 +5758,33 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                            width: 1.2,
+                            color: const Color(0xFFFFD700),
+                            width: 1.4,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  const Color(0xFFEF4444).withValues(alpha: 0.5),
+                              color: const Color(0xFFEF4444)
+                                  .withValues(alpha: 0.5),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
+                        alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text('⚔️', style: TextStyle(fontSize: 13)),
                             const SizedBox(width: 6),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ATTACK',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Text(
-                                  '${widget.neighbor.day} Defenses • 80% Pass Mark',
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'ATTACK',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
                             ),
                           ],
                         ),
@@ -5817,8 +5795,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapFightButton,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7),
+                      height: 38,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -5828,7 +5806,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         borderRadius: BorderRadius.circular(11),
                         border: Border.all(
                           color: const Color(0xFFFFD700),
-                          width: 1.2,
+                          width: 1.4,
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -5838,8 +5816,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ),
                         ],
                       ),
+                      alignment: Alignment.center,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text('🥊', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 5),
@@ -5847,7 +5827,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             'FIGHT',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF0F172A),
-                              fontSize: 12.5,
+                              fontSize: 13.0,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.8,
                             ),

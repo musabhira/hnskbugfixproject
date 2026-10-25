@@ -782,308 +782,252 @@ class _PocketKidsLetterTracingPageState extends State<PocketKidsLetterTracingPag
             ),
           ),
 
-          // 📱 3. Top Navigation & Mascot Header Bar
+          // 📱 Main Structured Layout: Clean Top-to-Bottom Flow (Zero Overlapping / Stacking)
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              children: [
+                // 3. Top Navigation & Header Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Back Button
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.12),
-                          padding: const EdgeInsets.all(12),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Back Button
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(alpha: 0.12),
+                              padding: const EdgeInsets.all(12),
+                            ),
+                          ),
+
+                          // Title & Phonics Pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: _currentItem.primaryColor.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  _currentItem.emoji,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${_currentItem.char} for ${_currentItem.word}",
+                                  style: GoogleFonts.fredoka(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Audio Pronunciation Button
+                          IconButton(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              _tts.speak(
+                                "${_currentItem.char}! ${_currentItem.word}! ${_currentItem.malayalam}",
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.volume_up_rounded,
+                              color: Color(0xFFFFD700),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.white.withValues(alpha: 0.12),
+                              padding: const EdgeInsets.all(12),
+                            ),
+                          ),
+                        ],
                       ),
 
-                      // Title & Phonics Pill
+                      // Malayalam & Phonics Subtitle Card
+                      const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: _currentItem.primaryColor.withValues(alpha: 0.5),
-                            width: 1.5,
-                          ),
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              _currentItem.emoji,
-                              style: const TextStyle(fontSize: 22),
+                              _currentItem.phonics,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
                             const SizedBox(width: 8),
+                            const Text("•", style: TextStyle(color: Colors.white24)),
+                            const SizedBox(width: 8),
                             Text(
-                              "${_currentItem.char} for ${_currentItem.word}",
-                              style: GoogleFonts.fredoka(
-                                color: Colors.white,
+                              _currentItem.malayalam,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ],
+                  ),
+                ),
 
-                      // Audio Pronunciation Button
+                // ✍️ 4. Center Tracing Drawing Board (Expanded, Centered, Fixed Aspect/Responsive with Zero Overlap)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: 0.85,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final boardSize = Size(
+                              constraints.maxWidth,
+                              constraints.maxHeight,
+                            );
+
+                            return GestureDetector(
+                              onPanStart: (d) => _onPanStart(d, boardSize),
+                              onPanUpdate: (d) => _onPanUpdate(d, boardSize),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                                  borderRadius: BorderRadius.circular(32),
+                                  border: Border.all(
+                                    color: _currentItem.primaryColor.withValues(alpha: 0.5),
+                                    width: 2.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _currentItem.primaryColor.withValues(alpha: 0.25),
+                                      blurRadius: 28,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: CustomPaint(
+                                    size: boardSize,
+                                    painter: LetterTracingPainter(
+                                      item: _currentItem,
+                                      currentStrokeIndex: _currentStrokeIndex,
+                                      targetPointIndex: _targetPointIndex,
+                                      tracedStrokes: _tracedStrokes,
+                                      isCompleted: _isCompleted,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ⏭️ 6. Bottom Letter Carousel & Actions Bar (Fixed at bottom)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Previous Letter Button
+                      ElevatedButton.icon(
+                        onPressed: _currentIndex > 0
+                            ? () => _switchLetter(_currentIndex - 1)
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withValues(alpha: 0.12),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        label: Text(
+                          "PREV",
+                          style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+
+                      // Replay / Clear Tracing Button
                       IconButton(
                         onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          _tts.speak(
-                            "${_currentItem.char}! ${_currentItem.word}! ${_currentItem.malayalam}",
-                          );
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _resetLetterState();
+                          });
                         },
-                        icon: const Icon(
-                          Icons.volume_up_rounded,
-                          color: Color(0xFFFFD700),
-                        ),
+                        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.12),
-                          padding: const EdgeInsets.all(12),
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          padding: const EdgeInsets.all(14),
                         ),
+                      ),
+
+                      // Next Letter Button
+                      ElevatedButton.icon(
+                        onPressed:
+                            _currentIndex < KidsTracingCurriculum.letters.length - 1
+                                ? () => _switchLetter(_currentIndex + 1)
+                                : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _currentItem.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 6,
+                        ),
+                        label: Text(
+                          "NEXT ➔",
+                          style: GoogleFonts.fredoka(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        icon: const SizedBox.shrink(),
                       ),
                     ],
                   ),
-
-                  // Malayalam & Phonics Subtitle Card
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _currentItem.phonics,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text("•", style: TextStyle(color: Colors.white24)),
-                        const SizedBox(width: 8),
-                        Text(
-                          _currentItem.malayalam,
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ✍️ 4. Center Tracing Drawing Board
-          Positioned.fill(
-            top: 130,
-            bottom: 120,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final boardSize = Size(
-                    constraints.maxWidth,
-                    constraints.maxHeight,
-                  );
-
-                  return GestureDetector(
-                    onPanStart: (d) => _onPanStart(d, boardSize),
-                    onPanUpdate: (d) => _onPanUpdate(d, boardSize),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B).withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: _currentItem.primaryColor.withValues(alpha: 0.4),
-                          width: 2.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _currentItem.primaryColor.withValues(alpha: 0.2),
-                            blurRadius: 28,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: CustomPaint(
-                          size: boardSize,
-                          painter: LetterTracingPainter(
-                            item: _currentItem,
-                            currentStrokeIndex: _currentStrokeIndex,
-                            targetPointIndex: _targetPointIndex,
-                            tracedStrokes: _tracedStrokes,
-                            isCompleted: _isCompleted,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // 🎉 5. Celebratory Pop-up when Completed
-          if (_isCompleted)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Center(
-                  child: ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            _currentItem.primaryColor,
-                            _currentItem.accentColor,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _currentItem.primaryColor.withValues(alpha: 0.6),
-                            blurRadius: 36,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text("⭐⭐⭐", style: TextStyle(fontSize: 34)),
-                          const SizedBox(height: 8),
-                          Text(
-                            "SUPER STAR!",
-                            style: GoogleFonts.fredoka(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          Text(
-                            "+30 KS Points & Star Cookie 🍪",
-                            style: GoogleFonts.outfit(
-                              color: Colors.white.withValues(alpha: 0.95),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ),
-              ),
-            ),
-
-          // ⏭️ 6. Bottom Letter Carousel & Actions Bar
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Previous Letter Button
-                    ElevatedButton.icon(
-                      onPressed: _currentIndex > 0
-                          ? () => _switchLetter(_currentIndex - 1)
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.12),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                      label: Text(
-                        "PREV",
-                        style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-
-                    // Replay / Clear Tracing Button
-                    IconButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _resetLetterState();
-                        });
-                      },
-                      icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
-                        padding: const EdgeInsets.all(14),
-                      ),
-                    ),
-
-                    // Next Letter Button
-                    ElevatedButton.icon(
-                      onPressed:
-                          _currentIndex < KidsTracingCurriculum.letters.length - 1
-                              ? () => _switchLetter(_currentIndex + 1)
-                              : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _currentItem.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 6,
-                      ),
-                      label: Text(
-                        "NEXT ➔",
-                        style: GoogleFonts.fredoka(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      icon: const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],

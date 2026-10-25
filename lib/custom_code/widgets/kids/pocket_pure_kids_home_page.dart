@@ -2808,14 +2808,15 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
               await launchFn();
               await PocketKidsService.markDayStepCompleted(day, stepIndex);
 
-              // If all 8 steps are finished, also mark whole day complete & auto-award Defense Card!
+              // If all 8 steps are finished and day was not yet completed, mark day complete & auto-award Defense Card!
+              final wasDayAlreadyCompleted = PocketKidsService.isDayCompleted(day);
               int updatedCount = 0;
               for (int s = 1; s <= 8; s++) {
                 if (PocketKidsService.isDayStepCompleted(day, s)) {
                   updatedCount++;
                 }
               }
-              if (updatedCount >= 8) {
+              if (!wasDayAlreadyCompleted && updatedCount >= 8) {
                 await PocketKidsService.markDayCompleted(day, 3);
                 if (mounted && context.mounted) {
                   PocketKidsHeroCardClaimDialog.show(context, day: day);
@@ -3004,23 +3005,18 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
                       const SizedBox(height: 12),
 
-                      // 🧩 Step 2: Sentence Builder Game (Direct Adult Step 2 adapted for Kids across all 90 Days!)
+                      // 🧩 Step 2: Sentence Builder Game (Choo-Choo Train & Candy Runway Modes)
                       _buildActivityOptionTile(
                         stepNumber: 2,
-                        iconEmoji: '🧩',
-                        title: 'Sentence Builder Game 🧩',
-                        subtitle: 'Tap vibrant candy word tiles in order with Flame sparkles & Malayalam audio',
+                        iconEmoji: '🚂',
+                        title: 'Sentence Builder (Train & Runway) 🧩',
+                        subtitle: 'Build sentences with Choo-Choo train or candy blocks & audio voice',
                         gradientColors: const [Color(0xFFF59E0B), Color(0xFFEA580C)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
                         onTap: () => launchStep(
                           2,
-                          () => PocketSentenceBuilderGamePage.show(
-                            context,
-                            day: day,
-                            isKidsMode: true,
-                            onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 2),
-                          ),
+                          () => _showSentenceBuilderChoiceDialog(context, day),
                         ),
                       ),
 
@@ -3354,6 +3350,173 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                 color: Colors.white38,
                 size: 24,
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showSentenceBuilderChoiceDialog(
+    BuildContext context,
+    int day,
+  ) async {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(top: BorderSide(color: Color(0xFFF59E0B), width: 2.5)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Sentence Builder Modes 🧩',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Play with the Choo-Choo Train or the Candy Runway!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            // Option 1: Choo-Choo Train Builder
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                await PocketKidsSentenceBuilderPage.show(
+                  context,
+                  day: day,
+                  onCompleted: () => PocketKidsService.markDayStepCompleted(day, 2),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text('🚂', style: TextStyle(fontSize: 32)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choo-Choo Train Builder',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Snap words into train bogies with steam whistles & Flame smoke!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Option 2: Candy Runway Builder
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                await PocketSentenceBuilderGamePage.show(
+                  context,
+                  day: day,
+                  isKidsMode: true,
+                  onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 2),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text('🧩', style: TextStyle(fontSize: 32)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Candy Runway Builder (10 Rounds)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Tap candy tiles on runway with Malayalam audio voice & sparkles!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
