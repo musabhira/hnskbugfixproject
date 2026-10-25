@@ -17,10 +17,12 @@ class CitadelFightChallenge {
   final String gameFormat;
   final String gameTitle;
   final String scheduledTime;
-  final String status; // 'pending', 'accepted', 'completed', 'declined'
+  final String status; // 'pending', 'pending_opponent', 'accepted', 'completed', 'declined'
   final String? winnerId;
   final int challengerScore;
+  final int challengerSeconds;
   final int opponentScore;
+  final int opponentSeconds;
   final int questionCount;
   final DateTime createdAt;
 
@@ -38,7 +40,9 @@ class CitadelFightChallenge {
     this.status = 'pending',
     this.winnerId,
     this.challengerScore = 0,
+    this.challengerSeconds = 0,
     this.opponentScore = 0,
+    this.opponentSeconds = 0,
     this.questionCount = 20,
     required this.createdAt,
   });
@@ -57,7 +61,9 @@ class CitadelFightChallenge {
         'status': status,
         'winner_id': winnerId,
         'challenger_score': challengerScore,
+        'challenger_seconds': challengerSeconds,
         'opponent_score': opponentScore,
+        'opponent_seconds': opponentSeconds,
         'question_count': questionCount,
         'created_at': createdAt.toIso8601String(),
       };
@@ -77,7 +83,9 @@ class CitadelFightChallenge {
       status: json['status']?.toString() ?? 'pending',
       winnerId: json['winner_id']?.toString(),
       challengerScore: (json['challenger_score'] as num?)?.toInt() ?? 0,
+      challengerSeconds: (json['challenger_seconds'] as num?)?.toInt() ?? 0,
       opponentScore: (json['opponent_score'] as num?)?.toInt() ?? 0,
+      opponentSeconds: (json['opponent_seconds'] as num?)?.toInt() ?? 0,
       questionCount: (json['question_count'] as num?)?.toInt() ?? 20,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
@@ -144,10 +152,167 @@ class PocketCitadelFightService {
     return challenge;
   }
 
+  /// 🥊 Record Challenger's initial fight run ("ഞാൻ ഫൈറ്റ് ചെയ്തിട്ടു")
+  static Future<CitadelFightChallenge> recordChallengerFightRun({
+    required CitadelFightChallenge challenge,
+    required int score,
+    required int seconds,
+  }) async {
+    final updated = CitadelFightChallenge(
+      id: challenge.id,
+      challengerId: challenge.challengerId,
+      challengerName: challenge.challengerName,
+      challengerAvatar: challenge.challengerAvatar,
+      opponentId: challenge.opponentId,
+      opponentName: challenge.opponentName,
+      opponentAvatar: challenge.opponentAvatar,
+      gameFormat: challenge.gameFormat,
+      gameTitle: challenge.gameTitle,
+      scheduledTime: challenge.scheduledTime,
+      status: 'pending_opponent',
+      challengerScore: score,
+      challengerSeconds: seconds,
+      questionCount: challenge.questionCount,
+      createdAt: challenge.createdAt,
+    );
+
+    await _saveChallenge(updated);
+
+    // Send In-App & Supabase Notification to Opponent
+    try {
+      await SupaFlow.client.from('notifications').insert({
+        'user_id': challenge.opponentId,
+        'sender_id': challenge.challengerId,
+        'type': 'citadel_fight',
+        'title': '🥊 Citadel Fight Challenge!',
+        'message': '⚔️ ${challenge.challengerName} completed a Fight challenge in ${seconds}s ($score pts)! Can you beat their time? Tap to Fight Back!',
+        'status': 'pending',
+        'data': {
+          'fight_id': challenge.id,
+          'challenger_name': challenge.challengerName,
+          'challenger_seconds': seconds,
+          'challenger_score': score,
+          'question_count': challenge.questionCount,
+        },
+      });
+    } catch (_) {}
+
+    // Send Chat Message to Opponent
+    try {
+      await SupaFlow.client.from('messages').insert({
+        'sender_id': challenge.challengerId,
+        'receiver_id': challenge.opponentId,
+        'message_text': '🥊 CITADEL FIGHT CHALLENGE!\nI finished the speed duel in ${seconds}s with $score pts! Can you beat my time? Tap to FIGHT BACK! ⚔️',
+        'message_type': 'citadel_fight',
+        'metadata': {
+          'fight_id': challenge.id,
+          'challenger_name': challenge.challengerName,
+          'challenger_seconds': seconds,
+          'challenger_score': score,
+          'question_count': challenge.questionCount,
+        },
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+
+    return updated;
+  }
+
+  /// 🥊 Settle Opponent's fight run and determine the winner!
+  static Future<CitadelFightChallenge> resolveOpponentFightRun({
+    required CitadelFightChallenge challenge,
+    required int opponentScore,
+    required int opponentSeconds,
+  }) async {
+    // Determine winner:
+    // 1. Higher score wins.
+    // 2. If equal score, faster speed (fewer seconds) wins!
+    String winnerId;
+    if (opponentScore > challenge.challengerScore) {
+      winnerId = challenge.opponentId;
+    } else if (opponentScore < challenge.challengerScore) {
+      winnerId = challenge.challengerId;
+    } else {
+      if (opponentSeconds <= challenge.challengerSeconds) {
+        winnerId = challenge.opponentId;
+      } else {
+        winnerId = challenge.challengerId;
+      }
+    }
+
+    final updated = CitadelFightChallenge(
+      id: challenge.id,
+      challengerId: challenge.challengerId,
+      challengerName: challenge.challengerName,
+      challengerAvatar: challenge.challengerAvatar,
+      opponentId: challenge.opponentId,
+      opponentName: challenge.opponentName,
+      opponentAvatar: challenge.opponentAvatar,
+      gameFormat: challenge.gameFormat,
+      gameTitle: challenge.gameTitle,
+      scheduledTime: challenge.scheduledTime,
+      status: 'completed',
+      winnerId: winnerId,
+      challengerScore: challenge.challengerScore,
+      challengerSeconds: challenge.challengerSeconds,
+      opponentScore: opponentScore,
+      opponentSeconds: opponentSeconds,
+      questionCount: challenge.questionCount,
+      createdAt: challenge.createdAt,
+    );
+
+    await _saveChallenge(updated);
+
+    // Award Trophy to winner:
+    // English Citadel / 60-Day -> 🏆 Gold Trophy!
+    // Pocket Talk -> 🥈 Silver Trophy!
+    final isPocketTalk = challenge.gameFormat.toLowerCase().contains('talk') || challenge.gameFormat.toLowerCase().contains('spoken');
+    if (isPocketTalk) {
+      await PocketTrophyService.awardSilverTrophy(winnerId, 1);
+    } else {
+      await PocketTrophyService.awardGoldTrophy(winnerId, 1);
+    }
+
+    // Award Pocket Score to winner
+    try {
+      await SupaFlow.client.rpc('increment_pocket_score', params: {
+        'user_id': winnerId,
+        'amount': 250,
+      });
+    } catch (_) {}
+
+    // Send Completion Notification & Chat message
+    final winnerName = winnerId == challenge.opponentId ? challenge.opponentName : challenge.challengerName;
+    try {
+      for (final uid in [challenge.challengerId, challenge.opponentId]) {
+        await SupaFlow.client.from('notifications').insert({
+          'user_id': uid,
+          'sender_id': winnerId,
+          'type': 'citadel_fight_result',
+          'title': '🏆 Fight Duel Settled!',
+          'message': '⚔️ $winnerName won the speed duel! (${challenge.challengerName}: ${challenge.challengerSeconds}s vs ${challenge.opponentName}: ${opponentSeconds}s). +1 Trophy awarded!',
+          'status': 'completed',
+        });
+      }
+    } catch (_) {}
+
+    try {
+      await SupaFlow.client.from('messages').insert({
+        'sender_id': challenge.opponentId,
+        'receiver_id': challenge.challengerId,
+        'message_text': '🏆 FIGHT DUEL SETTLED!\n$winnerName won the speed duel!\n• ${challenge.challengerName}: ${challenge.challengerSeconds}s (${challenge.challengerScore} pts)\n• ${challenge.opponentName}: ${opponentSeconds}s ($opponentScore pts)\n+1 Trophy awarded! 🌟',
+        'message_type': 'citadel_fight_result',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+
+    return updated;
+  }
+
   /// 📜 Get pending fight challenges for a user
   static Future<List<CitadelFightChallenge>> getPendingChallenges(String userId) async {
     final list = await getAllChallenges(userId);
-    return list.where((f) => f.opponentId == userId && f.status == 'pending').toList();
+    return list.where((f) => f.opponentId == userId && (f.status == 'pending' || f.status == 'pending_opponent')).toList();
   }
 
   /// 📜 Get all fight challenges involving a user
@@ -181,6 +346,10 @@ class PocketCitadelFightService {
         scheduledTime: list[idx].scheduledTime,
         questionCount: list[idx].questionCount,
         status: 'accepted',
+        challengerScore: list[idx].challengerScore,
+        challengerSeconds: list[idx].challengerSeconds,
+        opponentScore: list[idx].opponentScore,
+        opponentSeconds: list[idx].opponentSeconds,
         createdAt: list[idx].createdAt,
       );
       await _saveChallenge(updated);
@@ -205,6 +374,10 @@ class PocketCitadelFightService {
         scheduledTime: list[idx].scheduledTime,
         questionCount: list[idx].questionCount,
         status: 'declined',
+        challengerScore: list[idx].challengerScore,
+        challengerSeconds: list[idx].challengerSeconds,
+        opponentScore: list[idx].opponentScore,
+        opponentSeconds: list[idx].opponentSeconds,
         createdAt: list[idx].createdAt,
       );
       await _saveChallenge(updated);
@@ -237,7 +410,9 @@ class PocketCitadelFightService {
         status: 'completed',
         winnerId: winnerId,
         challengerScore: challengerScore,
+        challengerSeconds: list[idx].challengerSeconds,
         opponentScore: opponentScore,
+        opponentSeconds: list[idx].opponentSeconds,
         createdAt: list[idx].createdAt,
       );
       await _saveChallenge(updated);

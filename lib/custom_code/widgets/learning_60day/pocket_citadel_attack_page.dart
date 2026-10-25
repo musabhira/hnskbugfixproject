@@ -8093,13 +8093,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     }
                                   }
                                 } else {
-                                  // 🏰 House Defense Cards Mode (User Audio Directive: 30 tasks, deferred check, 80% Pass Mark)
+                                  // 🏰 House Defense Cards Mode (User Audio Directive: deferred check, 80% Pass Mark, smooth submit without vibration interrupts)
                                   if (isCorrect) {
                                     _correctCount++;
                                     HapticFeedback.heavyImpact();
                                   } else {
                                     _incorrectCount++;
-                                    HapticFeedback.vibrate();
+                                    HapticFeedback.lightImpact();
                                   }
 
                                   if (_currentQIdx + 1 <
@@ -8132,7 +8132,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   : 'VERIFY & ADVANCE TO TASK ${_currentQIdx + 2} ➔')
                               : (_isEscortMode
                                   ? 'DEFEAT PRESIDENTIAL ESCORT 👑'
-                                  : 'FINALIZE 30 CARDS & VERIFY PASS MARK (80%) ⚡'),
+                                  : 'FINALIZE ${_defenseQuestions.length} CARDS & VERIFY PASS MARK (80%) ⚡'),
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.w900,
                             fontSize: 13.5,

@@ -12,6 +12,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -28,6 +30,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _connectionRequests = [];
   List<Map<String, dynamic>> _activityAlerts = [];
+  List<CitadelFightChallenge> _pendingFights = [];
 
   @override
   void initState() {
@@ -252,10 +255,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       } catch (_) {}
       await prefs.setInt('unread_notifs_count_$myId', 0);
 
+      final fights = await PocketCitadelFightService.getPendingChallenges(myId);
+
       if (mounted) {
         setState(() {
           _connectionRequests = requests;
           _activityAlerts = alerts;
+          _pendingFights = fights;
           _isLoading = false;
         });
       }
@@ -559,6 +565,135 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 ],
                               ),
                             )),
+                      ],
+
+                      // 🥊 Citadel Fight Speed Duel Challenges Banner
+                      if (_pendingFights.isNotEmpty && (_selectedFilter == 0 || _selectedFilter == 2)) ...[
+                        Row(
+                          children: [
+                            Text(
+                              '🥊 CITADEL FIGHT DUELS (SPEED CHALLENGES)',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFF59E0B),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${_pendingFights.length}',
+                                style: GoogleFonts.outfit(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ..._pendingFights.map((f) => Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(f.challengerAvatar, style: const TextStyle(fontSize: 26)),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${f.challengerName} challenged you to a Fight!',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Speed to beat: ${f.challengerSeconds}s • ${f.challengerScore} PTS (${f.gameTitle})',
+                                              style: GoogleFonts.inter(
+                                                color: const Color(0xFFFFD700),
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 11.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () async {
+                                          final myId = _supabase.auth.currentUser?.id ?? '';
+                                          await PocketCitadelFightService.declineFightChallenge(f.id, myId);
+                                          _loadNotifications();
+                                        },
+                                        child: Text(
+                                          'Dismiss',
+                                          style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ElevatedButton.icon(
+                                        onPressed: () async {
+                                          await showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (_) => PocketCitadelFightArenaDialog(
+                                              challenge: f,
+                                              opponentDay: 30,
+                                              questionCount: f.questionCount,
+                                              isOpponentRun: true,
+                                            ),
+                                          );
+                                          _loadNotifications();
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFF59E0B),
+                                          foregroundColor: const Color(0xFF0F172A),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                        icon: const Text('🥊', style: TextStyle(fontSize: 14)),
+                                        label: Text(
+                                          'FIGHT BACK ⚔️',
+                                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )),
+                        const SizedBox(height: 12),
                       ],
 
                       // Pocket Mate Requests Header
