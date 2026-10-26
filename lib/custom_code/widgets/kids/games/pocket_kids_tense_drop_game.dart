@@ -856,33 +856,36 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
               ),
             ),
             alignment: Alignment.center,
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF475569),
-                  fontSize: 13,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF475569),
+                    fontSize: 13,
+                  ),
+                  children: [
+                    const TextSpan(text: 'What is the '),
+                    TextSpan(
+                      text: stageName,
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF0284C7),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const TextSpan(text: ' tense? '),
+                    TextSpan(
+                      text: '($stageHint)',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFD97706),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-                children: [
-                  const TextSpan(text: 'What is the '),
-                  TextSpan(
-                    text: stageName,
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF0284C7),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const TextSpan(text: ' tense? '),
-                  TextSpan(
-                    text: '($stageHint)',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFD97706),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
