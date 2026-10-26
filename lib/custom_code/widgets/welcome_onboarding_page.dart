@@ -1653,6 +1653,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       },
                     ),
 
+                    const SizedBox(height: 14),
+
+                    // 💡 Trial: Brand Philosophy Footnote (Why no 'C'?)
+                    _buildWhyNoCFootnote(),
+
                   ],
                 ),
               ),
@@ -1663,6 +1668,76 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     ),
   ],
 );
+  }
+
+  Widget _buildWhyNoCFootnote() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Why no "C"? ',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                  children: [
+                    const TextSpan(
+                      text: 'PO',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextSpan(
+                      text: 'C',
+                      style: TextStyle(
+                        color: const Color(0xFFEF4444),
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: const Color(0xFFEF4444),
+                        decorationThickness: 2.2,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: 'KET MATES',
+                      style: TextStyle(color: Color(0xFFF59E0B)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'No Comparison • No Criticism • Only Confidence',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFCBD5E1),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFeaturePill(String text) {
@@ -2162,12 +2237,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 0: Welcome Greeting ---
   Widget _buildStep0Greeting() {
     return _buildStepContainer(
-      title: "Notice something missing? 🤔",
+      title: "Why no 'C' in POKET? 🤔",
       mascotHint:
-          "Why did we drop the 'C' in POKET MATES? Because the only 'C' we believe in is your CONFIDENCE!",
+          "We dropped the 'C' because real speaking doesn't need pressure!",
       child: const WhyNoCWidget(),
       onContinue: _nextStep,
-      buttonText: "LET'S BUILD CONFIDENCE ➔",
+      buttonText: "START WITH CONFIDENCE ➔",
     );
   }
 
