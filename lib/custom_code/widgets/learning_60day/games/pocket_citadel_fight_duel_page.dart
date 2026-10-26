@@ -20,6 +20,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_sentence_builder_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_negative_sentence_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_chat_reply_data.dart';
@@ -934,21 +935,21 @@ Widget _bigButton(String label, IconData icon, VoidCallback onTap,
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      height: 58,
+      height: 52,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: colors),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: _a(colors.first, .5), blurRadius: 18, offset: const Offset(0, 6))
+          BoxShadow(color: _a(colors.first, .45), blurRadius: 14, offset: const Offset(0, 4))
         ],
       ),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(icon, color: Colors.white),
+        Icon(icon, color: Colors.white, size: 22),
         const SizedBox(width: 8),
         Text(label,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
       ]),
     ),
   );
@@ -958,21 +959,21 @@ Widget _gameHeader(_GameType t, String hint) {
   final col = _gameColor(t);
   return Row(children: [
     Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: _a(col, .18),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: col),
+        color: _a(col, .16),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: col, width: 1.2),
       ),
       child: Text('${_gameEmoji(t)} ${_gameTitle(t)}',
-          style: TextStyle(color: col, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1)),
+          style: GoogleFonts.outfit(color: col, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.8)),
     ),
-    const SizedBox(width: 10),
+    const SizedBox(width: 8),
     Expanded(
         child: Text(hint,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white60, fontSize: 12))),
+            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.w500))),
   ]);
 }
 
@@ -983,33 +984,33 @@ Widget _chip(String text, Color fill, Color border, VoidCallback? onTap,
     child: GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: border, width: 2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: border, width: 1.5),
         ),
         child: Text(text,
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
       ),
     ),
   );
 }
 
-Widget _promptCard(String text, {double size = 22, Widget? extra}) {
+Widget _promptCard(String text, {double size = 19, Widget? extra}) {
   return Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
       color: _kPanel,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: _kPanel2, width: 2),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: _kPanel2, width: 1.5),
     ),
     child: Column(children: [
       Text(text,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontSize: size, fontWeight: FontWeight.w800, height: 1.3)),
-      if (extra != null) ...[const SizedBox(height: 10), extra],
+          style: GoogleFonts.inter(color: Colors.white, fontSize: size, fontWeight: FontWeight.w700, height: 1.3)),
+      if (extra != null) ...[const SizedBox(height: 8), extra],
     ]),
   );
 }
@@ -1052,18 +1053,18 @@ class _ChoiceGameState extends State<_ChoiceGame> {
       onTap: () => _tap(i),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 66,
+        height: 52,
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: fill,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: border, width: 1.8),
         ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(q.options[i],
-              style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800)),
         ),
       ),
     );
@@ -1077,19 +1078,19 @@ class _ChoiceGameState extends State<_ChoiceGame> {
         return Expanded(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 3),
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: on ? _a(_kPurple, .35) : _a(Colors.white, .05),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: on ? _kPurple : Colors.white12),
             ),
             child: Text(labels[i],
-                style: TextStyle(
+                style: GoogleFonts.outfit(
                     color: on ? Colors.white : Colors.white38,
-                    fontSize: 11,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1)),
+                    letterSpacing: 0.8)),
           ),
         );
       }),
@@ -1100,24 +1101,24 @@ class _ChoiceGameState extends State<_ChoiceGame> {
   Widget build(BuildContext context) {
     final q = widget.q;
     final isVocab = q.type == _GameType.vocab;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Column(children: [
         _gameHeader(q.type, q.sub),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _promptCard(q.prompt,
-            size: isVocab ? 38 : 22,
+            size: isVocab ? 28 : 18,
             extra: q.type == _GameType.tense ? _timeline(q.zone) : null),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Row(children: [
           Expanded(child: _opt(0)),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(child: _opt(1)),
         ]),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(children: [
           Expanded(child: _opt(2)),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(child: _opt(3)),
         ]),
       ]),
@@ -1164,41 +1165,41 @@ class _BuilderGameState extends State<_BuilderGame> {
     final res = _ok;
     final Color placedFill = res == null ? _a(_kCyan, .2) : (res ? _a(_kGreen, .28) : _a(_kRed, .28));
     final Color placedBorder = res == null ? _kCyan : (res ? _kGreen : _kRed);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
       child: Column(children: [
         _gameHeader(q.type, q.sub),
-        const SizedBox(height: 12),
-        _promptCard(q.prompt, size: 20),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
+        _promptCard(q.prompt, size: 18),
+        const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 96),
-          padding: const EdgeInsets.all(10),
+          constraints: const BoxConstraints(minHeight: 64),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: _a(Colors.white, .04),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.white24),
           ),
           child: _placed.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                  padding: EdgeInsets.only(top: 28),
-                  child: Text('Your sentence appears here…',
-                      style: TextStyle(color: Colors.white38)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Text('Tap the words below to build sentence…',
+                      style: GoogleFonts.inter(color: Colors.white38, fontSize: 13)),
                 ))
-              : Wrap(spacing: 8, runSpacing: 8, children: [
+              : Wrap(spacing: 6, runSpacing: 6, children: [
                   for (final i in _placed)
                     _chip(q.options[i], placedFill, placedBorder, () => _remove(i)),
                 ]),
         ),
         if (res == false)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 6),
             child: Text('✔ ${q.answer}',
-                style: const TextStyle(color: _kGreen, fontWeight: FontWeight.w800, fontSize: 15)),
+                style: GoogleFonts.outfit(color: _kGreen, fontWeight: FontWeight.w800, fontSize: 14)),
           ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
           for (var i = 0; i < q.options.length; i++)
             _chip(q.options[i], _kPanel, _kPanel2,
@@ -1313,25 +1314,25 @@ class _TrainGameState extends State<_TrainGame> {
           width: 8, height: 3, margin: const EdgeInsets.only(bottom: 22), color: Colors.white38));
       train.add(_wagon(i));
     }
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
       child: Column(children: [
         _gameHeader(q.type, q.sub),
+        const SizedBox(height: 8),
+        _promptCard(q.prompt, size: 24),
         const SizedBox(height: 12),
-        _promptCard(q.prompt, size: 34),
-        const SizedBox(height: 16),
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: train),
         ),
         if (_ok == false)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 6),
             child: Text('✔ ${q.answer}',
-                style: const TextStyle(color: _kGreen, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2)),
+                style: GoogleFonts.outfit(color: _kGreen, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
           ),
-        const SizedBox(height: 18),
-        Wrap(spacing: 10, runSpacing: 10, alignment: WrapAlignment.center, children: [
+        const SizedBox(height: 12),
+        Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
           for (var i = 0; i < q.options.length; i++)
             _chip(q.options[i], _kPanel, _kGold, _fill.contains(i) ? null : () => _bankTap(i),
                 opacity: _fill.contains(i) ? .15 : 1),
@@ -1652,15 +1653,66 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
     if (_phase == _Phase.resolution) {
       return Scaffold(backgroundColor: _kBg, body: SafeArea(child: _resolutionView()));
     }
-    final h = (MediaQuery.of(context).size.height * 0.30).clamp(190.0, 270.0);
+    if (_phase == _Phase.setup) {
+      return Scaffold(
+        backgroundColor: _kBg,
+        body: SafeArea(
+          child: Column(children: [
+            _hud(),
+            Expanded(child: _setupCard()),
+          ]),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: _kBg,
       body: SafeArea(
         child: Column(children: [
           _hud(),
-          _arena(h),
+          _compactClashBar(),
           Expanded(child: _bottom()),
         ]),
+      ),
+    );
+  }
+
+  Widget _compactClashBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: _kPanel,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _a(Colors.white, .12), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: _a(Colors.black, .3), blurRadius: 10, offset: const Offset(0, 3)),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _plate(
+                avatar: '🥊',
+                name: 'YOU',
+                sub: _combo >= 2 ? 'COMBO x$_combo 🔥' : '$_correct hits',
+                color: _kCyan,
+              ),
+              _plate(
+                avatar: widget.opponentAvatar,
+                name: widget.opponentName,
+                sub: 'Lv ${widget.opponentLevel} · SHIELD',
+                color: _kPink,
+                bar: _m.shield,
+                right: true,
+              ),
+            ],
+          ),
+          _popWidget(),
+          if (_phase == _Phase.countdown) _countdownWidget(),
+        ],
       ),
     );
   }
@@ -1966,23 +2018,23 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
   Widget _setupCard() {
     final b = widget.isUserBTurn;
     final opts = <int>{10, 15, 20, widget.questionCount}.toList()..sort();
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
           color: _kPanel,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: _kPurple, width: 2),
-          boxShadow: [BoxShadow(color: _a(_kPurple, .4), blurRadius: 24)],
+          boxShadow: [BoxShadow(color: _a(_kPurple, .35), blurRadius: 20)],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           // Battle Face-off Banner
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
             decoration: BoxDecoration(
               color: _a(Colors.white, .04),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white12),
             ),
             child: Row(
@@ -1991,127 +2043,127 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
                 Column(
                   children: [
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 48,
+                      height: 48,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _kPanel2,
-                        border: Border.all(color: _kCyan, width: 2.5),
-                        boxShadow: [BoxShadow(color: _a(_kCyan, .4), blurRadius: 10)],
+                        border: Border.all(color: _kCyan, width: 2.2),
+                        boxShadow: [BoxShadow(color: _a(_kCyan, .4), blurRadius: 8)],
                       ),
-                      child: const Text('🥊', style: TextStyle(fontSize: 26)),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text('YOU',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900)),
-                    const Text('Challenger',
-                        style: TextStyle(color: _kCyan, fontSize: 10, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [_kCyan, _kPink]),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text('⚡ VS ⚡',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.5)),
+                      child: const Text('🥊', style: TextStyle(fontSize: 24)),
                     ),
                     const SizedBox(height: 4),
-                    const Text('SPEED DUEL',
-                        style: TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                    Text('YOU',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w900)),
+                    Text('Challenger',
+                        style: GoogleFonts.inter(color: _kCyan, fontSize: 9.5, fontWeight: FontWeight.w700)),
                   ],
                 ),
                 Column(
                   children: [
                     Container(
-                      width: 52,
-                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [_kCyan, _kPink]),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text('⚡ VS ⚡',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2)),
+                    ),
+                    const SizedBox(height: 3),
+                    Text('SPEED DUEL',
+                        style: GoogleFonts.outfit(color: Colors.white38, fontSize: 8.5, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
                       alignment: Alignment.center,
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _kPanel2,
-                        border: Border.all(color: _kPink, width: 2.5),
-                        boxShadow: [BoxShadow(color: _a(_kPink, .4), blurRadius: 10)],
+                        border: Border.all(color: _kPink, width: 2.2),
+                        boxShadow: [BoxShadow(color: _a(_kPink, .4), blurRadius: 8)],
                       ),
                       child: _avatar(widget.opponentAvatar, widget.opponentName),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(widget.opponentName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 13,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w900)),
                     Text('Lv ${widget.opponentLevel} Defender',
-                        style: const TextStyle(color: _kPink, fontSize: 10, fontWeight: FontWeight.w700)),
+                        style: GoogleFonts.inter(color: _kPink, fontSize: 9.5, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           ShaderMask(
             shaderCallback: (r) =>
                 const LinearGradient(colors: [_kCyan, _kPink, _kGold]).createShader(r),
             child: Text(b ? 'DEFEND CITADEL DUEL' : 'CITADEL SPEED DUEL',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                style: GoogleFonts.outfit(
+                    color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
             b
                 ? 'Beat ${widget.opponentName}\'s record on speed and accuracy!'
                 : 'Real-time asynchronous English war · Fastest accuracy wins!',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           if (!b) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.bolt, color: _kGold, size: 16),
+                const Icon(Icons.bolt, color: _kGold, size: 14),
                 const SizedBox(width: 4),
                 Text('DUEL LENGTH: $_count QUESTIONS',
-                    style: const TextStyle(color: _kGold, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                    style: GoogleFonts.outfit(color: _kGold, fontSize: 10.5, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(children: [for (final n in opts) _countChip(n)]),
           ] else
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: _a(_kGold, .1),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: _a(_kGold, .6)),
               ),
               child: Text(
                   '🔒 ${widget.opponentName} completed ${widget.questionCount} questions.\nTheir score and time are locked until you finish. Beat them on correct answers — ties go to the fastest time!',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, height: 1.4, fontSize: 12)),
+                  style: GoogleFonts.inter(color: Colors.white, height: 1.35, fontSize: 11)),
             ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 5,
+            runSpacing: 5,
             alignment: WrapAlignment.center,
             children: [
               _modePill('🧩', 'Sentence Builder', _kCyan),
@@ -2121,7 +2173,7 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
               _modePill('⏱️', 'Tense Timeline', _kPurple),
             ],
           ),
-          const SizedBox(height: 16),
+          const Spacer(),
           _bigButton(
             b ? 'ACCEPT & FIGHT' : 'START 20Q DUEL FIGHT ⚔️',
             Icons.local_fire_department,
@@ -2139,21 +2191,21 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
         onTap: () => setState(() => _count = n),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: sel ? _a(_kCyan, .2) : _kBg,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: sel ? _kCyan : _kPanel2, width: 2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: sel ? _kCyan : _kPanel2, width: 1.8),
           ),
           child: Column(children: [
             Text('$n',
-                style: TextStyle(
+                style: GoogleFonts.outfit(
                     color: sel ? _kCyan : Colors.white,
-                    fontSize: 26,
+                    fontSize: 22,
                     fontWeight: FontWeight.w900)),
             Text(n == 20 ? 'DEFAULT' : 'QUESTIONS',
-                style: const TextStyle(color: Colors.white38, fontSize: 9, letterSpacing: 1)),
+                style: GoogleFonts.inter(color: Colors.white38, fontSize: 8.5, letterSpacing: 0.8)),
           ]),
         ),
       ),
