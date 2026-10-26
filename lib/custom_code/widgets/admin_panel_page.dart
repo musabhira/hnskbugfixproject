@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -171,10 +172,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   final TextEditingController _lionSafetyBannedWordController = TextEditingController();
   final List<String> _lionBannedWords = ['abuse', 'badword', 'hate', 'stupid', 'kill'];
 
+  // 🛡️ App Store & Play Store Review Mode State
+  bool _reviewHideOnAndroid = false;
+  bool _reviewHideOnIos = false;
+  bool _reviewHideForEmail = true;
+  final TextEditingController _reviewEmailController = TextEditingController(text: 'hira@gmail.com');
+  bool _isSavingReviewConfig = false;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 16, vsync: this);
+    _tabController = TabController(length: 17, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -183,7 +191,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _loadPresidentInquiries();
       _loadCurriculumDayData(1);
       _loadLionKidsInquiries();
+      _loadReviewModeConfig();
     });
+  }
+
+  Future<void> _loadReviewModeConfig() async {
+    await AppStoreReviewService.fetchRemoteReviewConfig();
+    if (mounted) {
+      setState(() {
+        _reviewHideOnAndroid = AppStoreReviewService.hideOnAndroid;
+        _reviewHideOnIos = AppStoreReviewService.hideOnIos;
+        _reviewHideForEmail = AppStoreReviewService.hideForReviewerEmail;
+        _reviewEmailController.text = AppStoreReviewService.reviewerEmail;
+      });
+    }
   }
 
   Future<void> _loadAdminMediaOverrides() async {
@@ -725,6 +746,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.sports_esports_rounded),
                 text: '🎮 Games Hub'),
+            Tab(
+                icon: Icon(Icons.published_with_changes_rounded),
+                text: '🛡️ Store Review & Mode Guard'),
           ],
         ),
       ),
@@ -747,6 +771,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildMonetizationTab(),
           _buildCurriculumTargetsTab(),
           const AdminGamesHubWidget(),
+          _buildStoreReviewModeTab(),
         ],
       ),
     );
@@ -2843,6 +2868,350 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 🛡️ STORE REVIEW & WORLD MODE VISIBILITY TAB (Play Store & App Store Approval)
+  // ---------------------------------------------------------------------------
+  Widget _buildStoreReviewModeTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF818CF8), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4F46E5).withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.security_update_good_rounded,
+                          color: Color(0xFFA5B4FC), size: 28),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Store Review & Mode Guard',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Granular controls to hide Kids & Student navigation for App Review approval',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFC7D2FE),
+                              fontSize: 11.5,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline_rounded,
+                          color: Color(0xFFFFD700), size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'When hidden: The top header Globe icon (🌐 Choose Your World), the Settings "Switch to Student & Kids Mode" tile, and Chat World Switch actions will be completely hidden from Adult mode users.',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Platform Switches Card
+          Text('Platform Wide Mode Visibility',
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              children: [
+                // Android Toggle
+                Row(
+                  children: [
+                    const Icon(Icons.android, color: Colors.green, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Hide on Android App',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            _reviewHideOnAndroid
+                                ? '🔴 Kids & Student entry is HIDDEN on all Android devices'
+                                : '🟢 Kids & Student entry is VISIBLE on Android',
+                            style: GoogleFonts.inter(
+                              color: _reviewHideOnAndroid ? Colors.orange : Colors.greenAccent,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _reviewHideOnAndroid,
+                      activeThumbColor: Colors.orange,
+                      onChanged: (val) {
+                        setState(() => _reviewHideOnAndroid = val);
+                      },
+                    ),
+                  ],
+                ),
+
+                const Divider(color: Colors.white10, height: 24),
+
+                // iOS Toggle
+                Row(
+                  children: [
+                    const Icon(Icons.apple, color: Colors.white, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Hide on iOS App',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold)),
+                          Text(
+                            _reviewHideOnIos
+                                ? '🔴 Kids & Student entry is HIDDEN on all iOS devices'
+                                : '🟢 Kids & Student entry is VISIBLE on iOS',
+                            style: GoogleFonts.inter(
+                              color: _reviewHideOnIos ? Colors.orange : Colors.greenAccent,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _reviewHideOnIos,
+                      activeThumbColor: Colors.orange,
+                      onChanged: (val) {
+                        setState(() => _reviewHideOnIos = val);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Reviewer Account Override Card (User Audio Requirement!)
+          Text('Reviewer / Test Account Override',
+              style: GoogleFonts.outfit(
+                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          Text(
+            'Keep public platforms active, but specifically hide Kids & Student modes for the review test credentials you submit to Google Play / Apple.',
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+          ),
+          const SizedBox(height: 12),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131B26),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _reviewHideForEmail
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                    : Colors.white12,
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.mark_email_read_rounded,
+                        color: Color(0xFFFFD700), size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Target Review Account Email',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: _reviewHideForEmail,
+                      activeThumbColor: const Color(0xFFFFD700),
+                      onChanged: (val) {
+                        setState(() => _reviewHideForEmail = val);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _reviewEmailController,
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'e.g. hira@gmail.com',
+                    hintStyle: GoogleFonts.inter(color: Colors.white30),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFFD700), size: 20),
+                    filled: true,
+                    fillColor: Colors.black.withValues(alpha: 0.4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _reviewHideForEmail
+                      ? '🔒 "${_reviewEmailController.text.trim()}" will NOT see Kids or Student world switch buttons anywhere.'
+                      : '🔓 Review account sees all modes normally.',
+                  style: GoogleFonts.inter(
+                    color: _reviewHideForEmail ? const Color(0xFFFFD700) : Colors.white54,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Save / Apply Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
+              ),
+              icon: _isSavingReviewConfig
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                    )
+                  : const Icon(Icons.cloud_done_rounded, color: Colors.black),
+              label: Text(
+                _isSavingReviewConfig ? 'Syncing Config...' : 'Save & Publish Store Review Rules',
+                style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              onPressed: _isSavingReviewConfig
+                  ? null
+                  : () async {
+                      setState(() => _isSavingReviewConfig = true);
+                      await AppStoreReviewService.updateReviewConfig(
+                        hideOnAndroid: _reviewHideOnAndroid,
+                        hideOnIos: _reviewHideOnIos,
+                        hideForReviewerEmail: _reviewHideForEmail,
+                        reviewerEmail: _reviewEmailController.text.trim(),
+                      );
+                      if (mounted) {
+                        setState(() => _isSavingReviewConfig = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const Icon(Icons.check_circle_rounded, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Review Mode Rules Updated in Supabase & Local Cache!',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                      }
+                    },
+            ),
+          ),
+          const SizedBox(height: 40),
         ],
       ),
     );

@@ -53,6 +53,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 
@@ -6865,14 +6866,22 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // 🌐 Switch World Mode Quick Action (Kids / Student / Adult)
-                              _buildHeaderIconButton(
-                                context,
-                                icon: material.Icons.public_rounded,
-                                iconColor: const Color(0xFFFFD700),
-                                onTap: () => PocketWorldModeSelectionDialog.show(context),
+                              // 🌐 Switch World Mode Quick Action (Kids / Student / Adult) - Hidden when Review Mode is active
+                              ValueListenableBuilder<bool>(
+                                valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
+                                builder: (context, isVisible, _) {
+                                  if (!isVisible) return const SizedBox.shrink();
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: _buildHeaderIconButton(
+                                      context,
+                                      icon: material.Icons.public_rounded,
+                                      iconColor: const Color(0xFFFFD700),
+                                      onTap: () => PocketWorldModeSelectionDialog.show(context),
+                                    ),
+                                  );
+                                },
                               ),
-                              const SizedBox(width: 6),
                               // Search
                               _buildHeaderIconButton(
                                 context,

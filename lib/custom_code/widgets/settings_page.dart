@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -1155,12 +1156,18 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // 👤 Account & Communication
               const _SectionHeader(title: 'Account & Communication'),
-              _SettingsTile(
-                icon: Icons.child_care_rounded,
-                iconColor: const Color(0xFFFF69B4),
-                title: 'Switch to Student & Kids Mode',
-                subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
-                onTap: _showSwitchToKidsDialog,
+              ValueListenableBuilder<bool>(
+                valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
+                builder: (context, isVisible, _) {
+                  if (!isVisible) return const SizedBox.shrink();
+                  return _SettingsTile(
+                    icon: Icons.child_care_rounded,
+                    iconColor: const Color(0xFFFF69B4),
+                    title: 'Switch to Student & Kids Mode',
+                    subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
+                    onTap: _showSwitchToKidsDialog,
+                  );
+                },
               ),
               _SettingsTile(
                 icon: Icons.bookmark_added_rounded,
