@@ -793,9 +793,8 @@ class _PocketKidsFallingWordBlocksGameState
 
     PocketGameSFX.playVictoryFanfare();
     await PocketKidsService.addKidsScore(30);
-    await PocketKidsService.markDayCompleted(widget.day);
     widget.onCompleted?.call();
-    _speak("Awesome! Day ${widget.day} Word Blocks Completed! You unlocked your Defense Card!");
+    _speak("Awesome! Day ${widget.day} Word Blocks Completed! Great job!");
   }
 
   @override
@@ -1293,7 +1292,7 @@ class _PocketKidsFallingWordBlocksGameState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'DEFENSE CARD UNLOCKED',
+                          'WORD BLOCK MASTER ⭐',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF0284C7),
                             fontWeight: FontWeight.w900,

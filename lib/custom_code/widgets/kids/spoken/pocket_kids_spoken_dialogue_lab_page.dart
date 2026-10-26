@@ -87,6 +87,8 @@ class _PocketKidsSpokenDialogueLabPageState
   bool _isListening = false;
   bool _hasSpokenCurrentTurn = false;
   bool _showMeaning = false;
+  int _retryCount = 0;
+  String? _feedbackMessage;
 
   String _currentMascot = '🦁';
   String _mascotName = 'Leo King';
@@ -111,13 +113,13 @@ class _PocketKidsSpokenDialogueLabPageState
       _speechAvailable = await _speech.initialize(
         onError: (err) {
           if (mounted && _isListening) {
-            _onSpeechEnded();
+            _evaluateSpokenResult();
           }
         },
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
             if (mounted && _isListening) {
-              _onSpeechEnded();
+              _evaluateSpokenResult();
             }
           }
         },
@@ -327,7 +329,7 @@ class _PocketKidsSpokenDialogueLabPageState
   void _onMicrophonePressed() async {
     if (_isListening) {
       await _speech.stop();
-      _onSpeechEnded();
+      _evaluateSpokenResult();
       return;
     }
 
@@ -338,6 +340,7 @@ class _PocketKidsSpokenDialogueLabPageState
       _isListening = true;
       _showMeaning = false;
       _recognizedSpokenText = '';
+      _feedbackMessage = null;
     });
     _waveController.repeat(reverse: true);
 
@@ -358,18 +361,13 @@ class _PocketKidsSpokenDialogueLabPageState
             setState(() {
               _recognizedSpokenText = result.recognizedWords;
             });
-            final targetWords = _turns[_currentTurnIndex]
-                .kidTargetLine
-                .toLowerCase()
-                .replaceAll(RegExp(r'[^\w\s]'), '')
-                .split(' ')
-                .where((w) => w.length > 2)
-                .toList();
-            final recognizedLower = result.recognizedWords.toLowerCase();
-            final matched = targetWords.any((w) => recognizedLower.contains(w));
 
-            if (matched || result.finalResult) {
-              _onSpeechEnded();
+            if (_isSpeechMatch(result.recognizedWords)) {
+              _speech.stop();
+              _onSpeechSuccess();
+            } else if (result.finalResult) {
+              _speech.stop();
+              _evaluateSpokenResult();
             }
           },
         );
@@ -377,24 +375,62 @@ class _PocketKidsSpokenDialogueLabPageState
         _fallbackTimerRecognition();
       }
     } else {
-      // Fallback timer simulation for environments without microphone hardware
       _fallbackTimerRecognition();
     }
   }
 
+  bool _isSpeechMatch(String spoken) {
+    if (spoken.trim().isEmpty) return false;
+    final targetWords = _turns[_currentTurnIndex]
+        .kidTargetLine
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .split(' ')
+        .where((w) => w.length >= 2)
+        .toList();
+    if (targetWords.isEmpty) return true;
+
+    final recognizedLower = spoken.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '');
+    final recognizedWords = recognizedLower.split(' ').where((w) => w.isNotEmpty).toList();
+
+    int matchedCount = 0;
+    for (final tw in targetWords) {
+      if (recognizedWords.contains(tw) || recognizedLower.contains(tw)) {
+        matchedCount++;
+      }
+    }
+
+    if (targetWords.length <= 2) {
+      return matchedCount >= 1;
+    }
+    return (matchedCount / targetWords.length) >= 0.5;
+  }
+
   void _fallbackTimerRecognition() async {
-    await Future.delayed(const Duration(milliseconds: 2400));
+    await Future.delayed(const Duration(milliseconds: 3200));
     if (mounted && _isListening) {
-      _onSpeechEnded();
+      _evaluateSpokenResult();
     }
   }
 
-  void _onSpeechEnded() async {
+  void _evaluateSpokenResult() async {
     if (!_isListening) return;
     try {
       await _speech.stop();
     } catch (_) {}
 
+    if (!mounted) return;
+    _waveController.stop();
+    _waveController.reset();
+
+    if (_isSpeechMatch(_recognizedSpokenText)) {
+      _onSpeechSuccess();
+    } else {
+      _onSpeechMismatch();
+    }
+  }
+
+  void _onSpeechSuccess() async {
     if (!mounted) return;
     _waveController.stop();
     _waveController.reset();
@@ -405,12 +441,30 @@ class _PocketKidsSpokenDialogueLabPageState
     setState(() {
       _isListening = false;
       _hasSpokenCurrentTurn = true;
+      _feedbackMessage = null;
     });
 
     await Future.delayed(const Duration(milliseconds: 300));
     if (mounted) {
       _tts.speak("Superstar! Beautiful English pronunciation!");
     }
+  }
+
+  void _onSpeechMismatch() {
+    HapticFeedback.lightImpact();
+    PocketGameSFX.instance.playErrorBuzz();
+
+    setState(() {
+      _isListening = false;
+      _retryCount++;
+      if (_recognizedSpokenText.trim().isEmpty) {
+        _feedbackMessage = "Didn't catch that! Tap the mic and speak aloud! 🎙️";
+      } else {
+        _feedbackMessage = "Heard: \"$_recognizedSpokenText\"\nAlmost there! Let's practice saying \"${_turns[_currentTurnIndex].kidTargetLine}\"! 😊";
+      }
+    });
+
+    _tts.speak("Almost there! Try saying: ${_turns[_currentTurnIndex].kidTargetLine}");
   }
 
   void _onNextTurn() {
@@ -422,6 +476,9 @@ class _PocketKidsSpokenDialogueLabPageState
         _currentTurnIndex++;
         _hasSpokenCurrentTurn = false;
         _showMeaning = false;
+        _retryCount = 0;
+        _feedbackMessage = null;
+        _recognizedSpokenText = '';
       });
       _speakMascotLine();
     } else {
@@ -1019,7 +1076,49 @@ class _PocketKidsSpokenDialogueLabPageState
                           fontSize: 14,
                         ),
                       ),
-                      if (_recognizedSpokenText.isNotEmpty) ...[
+                      if (_feedbackMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                _feedbackMessage!,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF92400E),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  height: 1.35,
+                                ),
+                              ),
+                              if (_retryCount >= 2) ...[
+                                const SizedBox(height: 8),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    HapticFeedback.lightImpact();
+                                    _onSpeechSuccess();
+                                  },
+                                  icon: const Icon(Icons.star_rounded, color: Color(0xFF047857), size: 16),
+                                  label: Text(
+                                    "Continue to Next Turn ⭐",
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF047857),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ] else if (_recognizedSpokenText.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),

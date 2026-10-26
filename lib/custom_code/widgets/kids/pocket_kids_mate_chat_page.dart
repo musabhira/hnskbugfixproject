@@ -39,7 +39,6 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
   bool _isSpeaking = false;
 
   final List<String> _selectedWords = [];
-  bool _useKeyboardMode = false;
 
   static const List<String> _quickPhrases = [
     "Hello Mate! 👋",
@@ -54,9 +53,13 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
   ];
 
   static const List<String> _kidWordBank = [
-    "Hello", "Mate", "I", "am", "happy", "you", "are", "great", "let's", "play",
-    "English", "is", "fun", "my", "good", "friend", "champion", "star",
-    "see", "soon", "thank", "nice", "to", "meet", "how", "today"
+    "Hello", "Hi", "Mate", "Friend",
+    "I", "am", "you", "are", "we", "can",
+    "happy", "good", "great", "cool", "champion", "star",
+    "play", "learn", "speak", "run", "jump",
+    "English", "is", "fun", "very", "much",
+    "today", "now", "together", "soon",
+    "Thank you", "High five", "See you", "Bye"
   ];
 
   @override
@@ -409,94 +412,103 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
                           ),
                           const SizedBox(width: 8),
 
-                          // Sentence Builder Display or Text Field
+                          // Dedicated Kids Sentence Builder Runway (Adult Step 9 / Duolingo ABC style)
                           Expanded(
-                            child: _useKeyboardMode
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(24),
-                                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                                    ),
-                                    child: TextField(
-                                      controller: _textController,
-                                      textInputAction: TextInputAction.send,
-                                      onSubmitted: (txt) => _sendMessage(txt),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Type an English message...',
-                                        hintStyle: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                        contentPadding: EdgeInsets.symmetric(vertical: 11),
+                            child: Container(
+                              constraints: const BoxConstraints(minHeight: 44),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _selectedWords.isNotEmpty
+                                      ? const Color(0xFF38BDF8)
+                                      : const Color(0xFFE2E8F0),
+                                  width: 1.5,
+                                ),
+                              ),
+                              alignment: Alignment.centerLeft,
+                              child: _selectedWords.isEmpty
+                                  ? Text(
+                                      'Tap word chips below to build reply 🧩',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 12.5,
+                                        color: const Color(0xFF94A3B8),
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                    ),
-                                  )
-                                : Container(
-                                    constraints: const BoxConstraints(minHeight: 42),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: _selectedWords.isNotEmpty
-                                            ? const Color(0xFF38BDF8)
-                                            : const Color(0xFFE2E8F0),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    alignment: Alignment.centerLeft,
-                                    child: _selectedWords.isEmpty
-                                        ? Text(
-                                            'Tap words below to chat 🧩',
-                                            style: GoogleFonts.outfit(
-                                              fontSize: 12.5,
-                                              color: const Color(0xFF94A3B8),
-                                              fontWeight: FontWeight.w600,
+                                    )
+                                  : Wrap(
+                                      spacing: 4,
+                                      runSpacing: 4,
+                                      children: _selectedWords.asMap().entries.map((entry) {
+                                        return GestureDetector(
+                                          onTap: () {
+                                            HapticFeedback.lightImpact();
+                                            setState(() {
+                                              _selectedWords.removeAt(entry.key);
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              gradient: const LinearGradient(
+                                                colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                                              ),
+                                              borderRadius: BorderRadius.circular(10),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                                                  blurRadius: 4,
+                                                  offset: const Offset(0, 1),
+                                                ),
+                                              ],
                                             ),
-                                          )
-                                        : Wrap(
-                                            spacing: 4,
-                                            runSpacing: 4,
-                                            children: _selectedWords.asMap().entries.map((entry) {
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  HapticFeedback.lightImpact();
-                                                  setState(() {
-                                                    _selectedWords.removeAt(entry.key);
-                                                  });
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFF0284C7),
-                                                    borderRadius: BorderRadius.circular(10),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Text(
-                                                        entry.value,
-                                                        style: GoogleFonts.outfit(
-                                                          color: Colors.white,
-                                                          fontSize: 12,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 3),
-                                                      const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
-                                                    ],
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  entry.value,
+                                                  style: GoogleFonts.outfit(
+                                                    color: Colors.white,
+                                                    fontSize: 12.5,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(),
+                                                const SizedBox(width: 3),
+                                                const Icon(Icons.close_rounded, size: 12, color: Colors.white70),
+                                              ],
+                                            ),
                                           ),
-                                  ),
+                                        );
+                                      }).toList(),
+                                    ),
+                            ),
                           ),
                           const SizedBox(width: 6),
 
-                          // Clear / Backspace button (in word bank mode)
-                          if (!_useKeyboardMode && _selectedWords.isNotEmpty)
+                          // Pronounce Assembled Sentence Preview
+                          if (_selectedWords.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _speak(_selectedWords.join(' '));
+                              },
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE0F2FE),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFF7DD3FC)),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.volume_up_rounded, size: 17, color: Color(0xFF0284C7)),
+                              ),
+                            ),
+                          if (_selectedWords.isNotEmpty) const SizedBox(width: 6),
+
+                          // Clear / Backspace button
+                          if (_selectedWords.isNotEmpty)
                             GestureDetector(
                               onTap: () {
                                 HapticFeedback.mediumImpact();
@@ -516,55 +528,33 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
                                 child: const Icon(Icons.backspace_rounded, size: 16, color: Color(0xFFEF4444)),
                               ),
                             ),
-
-                          // Toggle Keyboard / Word Bank Mode
-                          GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setState(() {
-                                _useKeyboardMode = !_useKeyboardMode;
-                              });
-                            },
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                _useKeyboardMode ? Icons.widgets_rounded : Icons.keyboard_rounded,
-                                size: 18,
-                                color: const Color(0xFF475569),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
+                          if (_selectedWords.isNotEmpty) const SizedBox(width: 6),
 
                           // Send Button
                           GestureDetector(
                             onTap: () {
-                              final textToSend = _useKeyboardMode
-                                  ? _textController.text
-                                  : _selectedWords.join(' ');
-                              _sendMessage(textToSend);
+                              final textToSend = _selectedWords.join(' ').trim();
+                              if (textToSend.isNotEmpty) {
+                                _sendMessage(textToSend);
+                              }
                             },
                             child: Container(
                               width: 42,
                               height: 42,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                gradient: LinearGradient(
+                                  colors: _selectedWords.isNotEmpty
+                                      ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                                      : [const Color(0xFFCBD5E1), const Color(0xFF94A3B8)],
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
+                                  if (_selectedWords.isNotEmpty)
+                                    BoxShadow(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
                                 ],
                               ),
                               alignment: Alignment.center,
@@ -579,10 +569,9 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
                       ),
                     ),
 
-                    // Word Bank Chips Panel (Child Friendly - Never struggle with typing)
-                    if (!_useKeyboardMode)
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+                    // Child-Safe Word Bank Panel (No typing needed - Step 9 style)
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
                         decoration: const BoxDecoration(
                           color: Color(0xFFF8FAFC),
                           border: Border(

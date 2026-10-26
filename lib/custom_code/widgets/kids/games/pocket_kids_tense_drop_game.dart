@@ -545,9 +545,8 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
 
     PocketGameSFX.playVictoryFanfare();
     await PocketKidsService.addKidsScore(30);
-    await PocketKidsService.markDayCompleted(widget.day);
     widget.onCompleted?.call();
-    _speak("Hooray! Day ${widget.day} Tenses Mastered! You unlocked your Defense Card!");
+    _speak("Hooray! Day ${widget.day} Tenses Mastered! Great job!");
   }
 
   @override
@@ -842,8 +841,9 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
           ),
           const SizedBox(height: 12),
 
-          // Dashed Fill-in Line
+          // Responsive Fill-in Prompt Banner
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
@@ -856,36 +856,35 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
               ),
             ),
             alignment: Alignment.center,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF475569),
-                    fontSize: 13,
-                  ),
-                  children: [
-                    const TextSpan(text: 'What is the '),
-                    TextSpan(
-                      text: stageName,
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF0284C7),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const TextSpan(text: ' tense? '),
-                    TextSpan(
-                      text: '($stageHint)',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFD97706),
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+            child: RichText(
+              textAlign: TextAlign.center,
+              softWrap: true,
+              text: TextSpan(
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF475569),
+                  fontSize: 13.5,
+                  height: 1.35,
                 ),
+                children: [
+                  const TextSpan(text: 'What is the '),
+                  TextSpan(
+                    text: stageName,
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF0284C7),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  const TextSpan(text: ' tense?\n'),
+                  TextSpan(
+                    text: '($stageHint)',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFD97706),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1062,7 +1061,7 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
             ),
             const SizedBox(height: 16),
 
-            // Defense Card Unlock Pill
+            // Tense Mastery Badge Pill
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -1088,7 +1087,7 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'DEFENSE CARD UNLOCKED',
+                          'TENSE MASTER BADGE ⭐',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF0284C7),
                             fontWeight: FontWeight.w900,
