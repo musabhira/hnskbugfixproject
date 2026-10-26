@@ -374,6 +374,7 @@ class _PocketKidsSpokenDialogueLabPageState
             }
           },
         );
+        _fallbackTimerRecognition();
       } catch (e) {
         debugPrint('STT listen error: $e');
         _evaluateSpokenResult();

@@ -915,32 +915,37 @@ class _PocketKidsLetterTracingPageState extends State<PocketKidsLetterTracingPag
                             return GestureDetector(
                               onPanStart: (d) => _onPanStart(d, boardSize),
                               onPanUpdate: (d) => _onPanUpdate(d, boardSize),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-                                  borderRadius: BorderRadius.circular(32),
-                                  border: Border.all(
-                                    color: _currentItem.primaryColor.withValues(alpha: 0.5),
-                                    width: 2.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: _currentItem.primaryColor.withValues(alpha: 0.25),
-                                      blurRadius: 28,
-                                      spreadRadius: 2,
+                              child: ScaleTransition(
+                                scale: _isCompleted
+                                    ? _scaleAnimation
+                                    : const AlwaysStoppedAnimation(1.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(32),
+                                    border: Border.all(
+                                      color: _currentItem.primaryColor.withValues(alpha: 0.5),
+                                      width: 2.5,
                                     ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: CustomPaint(
-                                    size: boardSize,
-                                    painter: LetterTracingPainter(
-                                      item: _currentItem,
-                                      currentStrokeIndex: _currentStrokeIndex,
-                                      targetPointIndex: _targetPointIndex,
-                                      tracedStrokes: _tracedStrokes,
-                                      isCompleted: _isCompleted,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: _currentItem.primaryColor.withValues(alpha: 0.25),
+                                        blurRadius: 28,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: CustomPaint(
+                                      size: boardSize,
+                                      painter: LetterTracingPainter(
+                                        item: _currentItem,
+                                        currentStrokeIndex: _currentStrokeIndex,
+                                        targetPointIndex: _targetPointIndex,
+                                        tracedStrokes: _tracedStrokes,
+                                        isCompleted: _isCompleted,
+                                      ),
                                     ),
                                   ),
                                 ),

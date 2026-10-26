@@ -1183,6 +1183,7 @@ class PocketKidsService {
     await addStars(1);
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(key, true);
     } catch (_) {}
   }
 
