@@ -321,15 +321,15 @@ class PocketKidsService {
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;
     if (enabled) {
-      _currentUnlockedDay = 100;
-      kidDayNotifier.value = 100;
+      _currentUnlockedDay = 300;
+      kidDayNotifier.value = 300;
     }
   }
 
   /// Check if user has Adventure Pass (Kid Premium)
   static bool get isKidPremium => isAdminAccount || _isKidPremium;
 
-  /// Activate or toggle Kid VIP Adventure Pass (Instant 100-Day Unlock)
+  /// Activate or toggle Kid VIP Adventure Pass (Instant 300-Day Unlock)
   static Future<void> setKidPremium(bool value) async {
     _isKidPremium = value;
     kidPremiumNotifier.value = value;
@@ -338,7 +338,7 @@ class PocketKidsService {
       await prefs.setBool(_keyKidIsPremium, value);
     } catch (_) {}
     if (value) {
-      kidDayNotifier.value = 100;
+      kidDayNotifier.value = 300;
     }
   }
 
@@ -370,7 +370,7 @@ class PocketKidsService {
 
   /// Checks if a day is fully unlocked and ready to play
   static bool isDayUnlocked(int day) {
-    if (isAdminAccount || isKidPremium) return day <= 100;
+    if (isAdminAccount || isKidPremium) return day <= 300;
     if (day < _currentUnlockedDay)
       return true; // Already unlocked or completed past day
     if (day == _currentUnlockedDay) {
@@ -421,7 +421,7 @@ class PocketKidsService {
   static String get kidAvatar => _kidAvatar;
   static int get kidStars => _kidStars;
   static int get currentUnlockedDay =>
-      isAdminAccount ? 100 : _currentUnlockedDay;
+      isAdminAccount ? 300 : _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
   static Set<String> get friendIds => Set.unmodifiable(_friendIds);
   static Set<String> get sentRequestIds => Set.unmodifiable(_sentRequestIds);
@@ -622,11 +622,11 @@ class PocketKidsService {
     return updated;
   }
 
-  /// 🏆 Day 100 Certificate Unlock Status
+  /// 🏆 Day 300 Certificate Unlock Status
   static bool get isCertificateUnlocked =>
       isAdminAccount ||
-      _completedDays.containsKey(100) ||
-      _currentUnlockedDay >= 100;
+      _completedDays.containsKey(300) ||
+      _currentUnlockedDay >= 300;
 
   /// 🏰 10 Architectural Homestead Tiers matching the 100-Day Journey up to King Lion Palace
   static const List<KidsHouse> houses = [
@@ -1131,7 +1131,7 @@ class PocketKidsService {
     _lastCompletedDay = day;
     _lastCompletedDate = getTodayDateString();
 
-    if (day >= _currentUnlockedDay && _currentUnlockedDay < 100) {
+    if (day >= _currentUnlockedDay && _currentUnlockedDay < 300) {
       _currentUnlockedDay = day + 1;
       kidDayNotifier.value = _currentUnlockedDay;
     }
@@ -1156,7 +1156,7 @@ class PocketKidsService {
   /// Total completed days count
   static int get completedDaysCount => _completedDays.length;
 
-  /// 🎯 Track completion of sequential sub-games within a day (e.g. Day 1 Step 1..10)
+  /// 🎯 Track completion of sequential sub-games within a day (e.g. Day 1 Step 1..14)
   static final Map<String, bool> _completedDaySteps = {};
 
   static bool isDayStepCompleted(int day, int stepIndex) {
@@ -1171,9 +1171,9 @@ class PocketKidsService {
     return isDayStepCompleted(day, stepIndex - 1);
   }
 
-  /// 🧒 Dynamic Step Count: Exactly 4 bite-sized micro-steps per day for peak simplicity!
+  /// 🧒 Dynamic Step Count: 14 sequential interactive educational games per day!
   static int getTotalDailyStepsForDay(int day) {
-    return 4;
+    return 14;
   }
 
   static Future<void> markDayStepCompleted(int day, int stepIndex) async {

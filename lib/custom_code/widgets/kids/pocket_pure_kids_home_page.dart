@@ -30,7 +30,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/spoken/pocket_kids_spo
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_hero_card_claim_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_balloon_pop_game.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_story_read_aloud_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/sentence_builder_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/spoken/pocket_kids_cumulative_speech_arena_page.dart';
@@ -2154,19 +2153,19 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
           ),
         ),
 
-        // Continuous Mountain Trail List (Climbing bottom-up from Day 1 Basecamp to Day 90 Summit)
+        // Continuous Mountain Trail List (Climbing bottom-up from Day 1 Basecamp to Day 300 Summit)
         ListView.builder(
           controller: _trailScrollController,
           reverse: true,
           padding: const EdgeInsets.only(top: 140, bottom: 90),
-          itemCount: 91, // Days 1 to 90 + Day 91 King Lion Golden Castle
+          itemCount: 301, // Days 1 to 300 + Day 301 King Lion Golden Castle
           itemBuilder: (context, idx) {
             final day = idx + 1;
             final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(day);
             final isUnlocked = PocketKidsService.isDayUnlocked(day);
             final isCompleted = PocketKidsService.completedDays.containsKey(day) || day < unlockedDay;
             final isCurrent = day == unlockedDay;
-            final isBossNode = day == 91;
+            final isBossNode = day == 301;
 
             // Calculate alternating horizontal alignment for cartoon S-curve
             final wave = math.sin(day * 0.55);
@@ -2721,12 +2720,12 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
   }
 
   _KidsNodeAtmosphere _getNodeAtmosphere(int day) {
-    if (day <= 30) {
+    if (day <= 100) {
       return _KidsNodeAtmosphere(
         nodeGradient: const [Color(0xFF34D399), Color(0xFF059669)],
         tag: '🌸 Meadow',
       );
-    } else if (day <= 60) {
+    } else if (day <= 200) {
       return _KidsNodeAtmosphere(
         nodeGradient: const [Color(0xFFFB923C), Color(0xFFEA580C)],
         tag: '🌲 Valley',
@@ -2749,7 +2748,11 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     if (day == 60) return '💎 Crystal Citadel';
     if (day == 70) return '🏔️ Mountain Peak';
     if (day == 80) return '🛡️ Titanium Fort';
-    if (day == 90) return '👑 King Lion Castle';
+    if (day == 100) return '👑 Meadow Citadel';
+    if (day == 150) return '🌲 Enchanted Valley';
+    if (day == 200) return '🏰 Valley Stronghold';
+    if (day == 250) return '🏔️ Sky High Summit';
+    if (day >= 300) return '👑 King Lion Grand Palace';
     return 'Level $day';
   }
 
@@ -2954,16 +2957,15 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                       const SizedBox(height: 20),
 
                       // =======================================================
-                      // 🌟 PHASE 1: DAYS 1 TO 15 — THE ALPHABET & FIRST 50 WORDS
-                      // 🌟 PEAK SIMPLICITY: Exactly 4 micro-steps (5 mins/day!)
+                      // 🌟 14 SEQUENTIAL DAILY GAMES & ADVENTURES (Days 1 to 300)
                       // =======================================================
-                      if (day <= 15) ...[
-                        // Step 1: Phonics Tracing (A to Z)
+                      // 🔤 Step 1: Phonics Tracing (Days 1–5: A-Z Completed!) ➔ Kumi Word Builder (Days 6–300)
+                      if (day <= 5)
                         _buildActivityOptionTile(
                           stepNumber: 1,
                           iconEmoji: '🎨',
-                          title: 'Phonics & Letter Tracing (Day $day)',
-                          subtitle: 'Trace letters with rainbow stardust & listen to phonics sound',
+                          title: 'Phonics & Letter Tracing (A to Z in 5 Days)',
+                          subtitle: 'Trace letters with rainbow stardust & phonics pronunciation',
                           gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF9500)],
                           isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
                           isUnlocked: PocketKidsService.isDayStepUnlocked(day, 1),
@@ -2971,375 +2973,287 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                             1,
                             () => PocketKidsLetterTracingPage.show(
                               context,
-                              initialIndex: (day - 1) % KidsTracingCurriculum.letters.length,
+                              initialIndex: ((day - 1) * 5).clamp(0, 25),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 2: 1-Tap Picture Discovery (Listen & Tap)
-                        _buildActivityOptionTile(
-                          stepNumber: 2,
-                          iconEmoji: '🍎',
-                          title: 'Picture & Sound Magic (1-Tap Match)',
-                          subtitle: 'Listen to the word and tap the cute cartoon card to win stars!',
-                          gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
-                          onTap: () => launchStep(
-                            2,
-                            () => PocketKidsPictureQuizPage.show(
-                              context,
-                              category: day % 2 == 0 ? 'Animals' : 'Fruits',
-                              day: day,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 3: 3-Letter Magnet Word Snap (C-A-T)
-                        _buildActivityOptionTile(
-                          stepNumber: 3,
-                          iconEmoji: '🔤',
-                          title: 'Baby Word Snap & Spelling 🔤',
-                          subtitle: 'Tap big letter tiles to build simple words with audio cheer',
-                          gradientColors: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
-                          onTap: () => launchStep(
-                            3,
-                            () => PocketEssentialSpellingPage.show(
-                              context,
-                              day: day,
-                              isKidsMode: true,
-                              onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 3),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 4: 1-Word Mic Magic (Echo Parrot)
-                        _buildActivityOptionTile(
-                          stepNumber: 4,
-                          iconEmoji: '🎙️',
-                          title: 'Echo Mascot (Say 1 Magic Word!) ⭐',
-                          subtitle: 'Tap the mic, say 1 word with animal buddy & claim your Hero Card!',
-                          gradientColors: const [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
-                          onTap: () => launchStep(
-                            4,
-                            () => PocketKidsSpokenDialogueLabPage.show(
-                              context,
-                              day: day,
-                            ),
-                          ),
-                        ),
-                      ]
-                      // =======================================================
-                      // 🌟 PHASE 2: DAYS 16 TO 30 — COLORS, NUMBERS & ACTION VERBS
-                      // =======================================================
-                      else if (day <= 30) ...[
-                        // Step 1: Word Builder
+                        )
+                      else
                         _buildActivityOptionTile(
                           stepNumber: 1,
                           iconEmoji: '🐮',
-                          title: 'Word Morph & Spelling 🐮',
+                          title: 'Kumi Word Builder & 3000-Vocab Morph',
                           subtitle: 'Assemble cartoon vocabulary words with native voice audio',
                           gradientColors: const [Color(0xFFFF2D55), Color(0xFFFF9500)],
                           isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
                           isUnlocked: PocketKidsService.isDayStepUnlocked(day, 1),
                           onTap: () => launchStep(
                             1,
-                            () => PocketKidsKumiWordBuilderPage.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 2: Safari Animal Feeder or Fruit Market
-                        _buildActivityOptionTile(
-                          stepNumber: 2,
-                          iconEmoji: day % 2 == 0 ? '🦁' : '🍎',
-                          title: day % 2 == 0 ? 'Safari Animal Feeder 🦁' : 'Fruit & Bakery Market 🍎',
-                          subtitle: 'Feed hungry animals or shop fruits with real voice sounds',
-                          gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
-                          onTap: () => launchStep(
-                            2,
-                            () => day % 2 == 0
-                                ? PocketKidsSafariAnimalFeederGame.show(context, day: day)
-                                : PocketKidsFruitBakeryMarketGame.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 3: Number Magic & Star Counting
-                        _buildActivityOptionTile(
-                          stepNumber: 3,
-                          iconEmoji: '🔢',
-                          title: 'Number Magic & Counting (1 to 20)',
-                          subtitle: 'Count sparkling shooting stars and puppies with voice audio',
-                          gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
-                          onTap: () => launchStep(
-                            3,
-                            () => PocketKidsNumberMagicCountingGame.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 4: Superhero Action Verbs
-                        _buildActivityOptionTile(
-                          stepNumber: 4,
-                          iconEmoji: '🦸',
-                          title: 'Superhero Action Verbs & Speaking 🦸',
-                          subtitle: 'Jump, run, fly, dance & sing with live mic scoring!',
-                          gradientColors: const [Color(0xFFEC4899), Color(0xFFDB2777)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
-                          onTap: () => launchStep(
-                            4,
-                            () => PocketKidsActionSuperheroJumpGame.show(context, day: day),
-                          ),
-                        ),
-                      ]
-                      // =======================================================
-                      // 🌟 PHASE 3: DAYS 31 TO 50 — SENTENCE TRAIN & OPPOSITES
-                      // =======================================================
-                      else if (day <= 50) ...[
-                        // Step 1: Rhyme Time Frog
-                        _buildActivityOptionTile(
-                          stepNumber: 1,
-                          iconEmoji: '🐸',
-                          title: 'Rhyme Time Frog Lilypad Hopper 🐸',
-                          subtitle: 'Leap across the river by hopping on rhyming word lilypads',
-                          gradientColors: const [Color(0xFF0284C7), Color(0xFF0369A1)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 1),
-                          onTap: () => launchStep(
-                            1,
-                            () => PocketKidsRhymeFrogHopperGame.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 2: Opposites Seesaw
-                        _buildActivityOptionTile(
-                          stepNumber: 2,
-                          iconEmoji: '⚖️',
-                          title: 'Opposites Seesaw Balance Scale ⚖️',
-                          subtitle: 'Big vs Small, Hot vs Cold! Balance the seesaw with opposite pairs',
-                          gradientColors: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
-                          onTap: () => launchStep(
-                            2,
-                            () => PocketKidsOppositesSeesawGame.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 3: Sentence Builder Train
-                        _buildActivityOptionTile(
-                          stepNumber: 3,
-                          iconEmoji: '🚂',
-                          title: 'Sentence Builder (Train & Runway) 🧩',
-                          subtitle: 'Build 3-word sentences with Choo-Choo train blocks',
-                          gradientColors: const [Color(0xFFF59E0B), Color(0xFFEA580C)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
-                          onTap: () => launchStep(
-                            3,
-                            () => _showSentenceBuilderChoiceDialog(context, day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Step 4: Safe Word-Bank Chat
-                        _buildActivityOptionTile(
-                          stepNumber: 4,
-                          iconEmoji: '💬',
-                          title: 'Safe English Chat with Buddy 💬',
-                          subtitle: 'Tap word bank chips to chat with your buddy and finish day!',
-                          gradientColors: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
-                          onTap: () => launchStep(
-                            4,
-                            () => PocketKidsMateChatPage.open(
-                              context,
-                              mate: PocketKidsRobotsData.robotsAndHomies.firstWhere(
-                                (b) => b.dayLevel >= day,
-                                orElse: () => PocketKidsRobotsData.robotsAndHomies.first,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ]
-                      // =======================================================
-                      // 🌟 PHASE 4: DAYS 51 TO 70 — DAILY ROUTINES & TENSES
-                      // =======================================================
-                      else if (day <= 70) ...[
-                        // Step 1: Spelling Runway
-                        _buildActivityOptionTile(
-                          stepNumber: 1,
-                          iconEmoji: '🔤',
-                          title: 'Essential Spelling Challenge 🔤',
-                          subtitle: 'Tap letter tiles into slots with voice feedback',
-                          gradientColors: const [Color(0xFF10B981), Color(0xFF00C7BE)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 1),
-                          onTap: () => launchStep(
-                            1,
-                            () => PocketEssentialSpellingPage.show(
+                            () => PocketKidsKumiWordBuilderPage.show(
                               context,
                               day: day,
-                              isKidsMode: true,
-                              onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 1),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
 
-                        // Step 2: Past, Present & Future Tenses
-                        _buildActivityOptionTile(
-                          stepNumber: 2,
-                          iconEmoji: '⏳',
-                          title: 'Past, Present & Future Tenses ⏳',
-                          subtitle: 'Learn action tenses with falling blocks & hints',
-                          gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
-                          onTap: () => launchStep(
-                            2,
-                            () => PocketKidsTenseDropGame.show(context, day: day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                        // Step 3: Spoken Dialogue Lab
-                        _buildActivityOptionTile(
-                          stepNumber: 3,
-                          iconEmoji: '🗣️',
-                          title: 'Spoken English & Dialogue Lab 🗣️',
-                          subtitle: 'Interactive voice conversation with animal mascot',
-                          gradientColors: const [Color(0xFF007AFF), Color(0xFF5856D6)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
-                          onTap: () => launchStep(
-                            3,
-                            () => PocketKidsSpokenDialogueLabPage.show(context, day: day),
-                          ),
+                      // 🧩 Step 2: Sentence Builder Game (Choo-Choo Train & Candy Runway Modes)
+                      _buildActivityOptionTile(
+                        stepNumber: 2,
+                        iconEmoji: '🚂',
+                        title: 'Sentence Builder (Train & Runway) 🧩',
+                        subtitle: 'Build sentences with Choo-Choo train or candy blocks & audio voice',
+                        gradientColors: const [Color(0xFFF59E0B), Color(0xFFEA580C)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
+                        onTap: () => launchStep(
+                          2,
+                          () => _showSentenceBuilderChoiceDialog(context, day),
                         ),
-                        const SizedBox(height: 12),
+                      ),
 
-                        // Step 4: Safe Chat with Buddy
-                        _buildActivityOptionTile(
-                          stepNumber: 4,
-                          iconEmoji: '💬',
-                          title: 'Safe English Chat with Buddy 💬',
-                          subtitle: 'Chat in English with your animal buddy and finish day!',
-                          gradientColors: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
-                          onTap: () => launchStep(
-                            4,
-                            () => PocketKidsMateChatPage.open(
-                              context,
-                              mate: PocketKidsRobotsData.robotsAndHomies.firstWhere(
-                                (b) => b.dayLevel >= day,
-                                orElse: () => PocketKidsRobotsData.robotsAndHomies.first,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ]
-                      // =======================================================
-                      // 🌟 PHASE 5: DAYS 71 TO 90 — STORYTELLER & SPEECH CHAMPION
-                      // =======================================================
-                      else ...[
-                        // Step 1: 2D Open World Driving Adventure
-                        _buildActivityOptionTile(
-                          stepNumber: 1,
-                          iconEmoji: '🌍',
-                          title: '2D Open World Driving Adventure 🚗',
-                          subtitle: 'Drive your cartoon buggy across rolling hills & collect words',
-                          gradientColors: const [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 1),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 1),
-                          onTap: () => launchStep(
-                            1,
-                            () => PocketKidsDayOpenWorldPage.open(context, day),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                        // Step 2: Cumulative Speech Arena
-                        _buildActivityOptionTile(
-                          stepNumber: 2,
-                          iconEmoji: '🎙️',
-                          title: 'Cumulative Speech Arena 🌟',
-                          subtitle: 'Public speaking stage! Practice 1-4 lines with microphone scoring',
-                          gradientColors: const [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 2),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 2),
-                          onTap: () => launchStep(
-                            2,
-                            () => PocketKidsCumulativeSpeechArenaPage.show(context, day: day),
+                      // 🔤 Step 3: Essential Words, Spelling & Word Detective Challenge
+                      _buildActivityOptionTile(
+                        stepNumber: 3,
+                        iconEmoji: '🔤',
+                        title: 'Essential Spelling & Word Detective 🔤',
+                        subtitle: 'Tap letter tiles into slots & fix misspelled words with audio feedback',
+                        gradientColors: const [Color(0xFF10B981), Color(0xFF00C7BE)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
+                        onTap: () => launchStep(
+                          3,
+                          () => PocketEssentialSpellingPage.show(
+                            context,
+                            day: day,
+                            isKidsMode: true,
+                            onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 3),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                      ),
 
-                        // Step 3: House Raid & Defense Challenge
-                        _buildActivityOptionTile(
-                          stepNumber: 3,
-                          iconEmoji: '⚔️',
-                          title: 'Buddy House Defense Challenge ⚔️',
-                          subtitle: 'Raid neighbor buddy houses & win gold trophy defenses!',
-                          gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 3),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 3),
-                          onTap: () => launchStep(
-                            3,
-                            () {
-                              final defender = PocketKidsRobotsData.robotsAndHomies.firstWhere(
-                                (b) => b.dayLevel >= day,
-                                orElse: () => PocketKidsRobotsData.robotsAndHomies.first,
-                              );
-                              return Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PocketKidsHouseChallengePage(defender: defender),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                        // Step 4: Safe Chat with Buddy & Hero Victory
-                        _buildActivityOptionTile(
-                          stepNumber: 4,
-                          iconEmoji: '💬',
-                          title: 'Safe English Chat with Buddy 💬',
-                          subtitle: 'Complete final chat & claim Day $day Champion Hero Card!',
-                          gradientColors: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
-                          isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
-                          isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
-                          onTap: () => launchStep(
-                            4,
-                            () => PocketKidsMateChatPage.open(
-                              context,
-                              mate: PocketKidsRobotsData.robotsAndHomies.firstWhere(
-                                (b) => b.dayLevel >= day,
-                                orElse: () => PocketKidsRobotsData.robotsAndHomies.first,
-                              ),
-                            ),
+                      // 🚗 Step 4: Speed Wheels & Vehicles Garage
+                      _buildActivityOptionTile(
+                        stepNumber: 4,
+                        iconEmoji: '🚗',
+                        title: 'Vehicles & Speed Wheels Garage 🚗',
+                        subtitle: 'Zoom cars, buses, planes & rockets with real vehicle sounds & spelling',
+                        gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
+                        onTap: () => launchStep(
+                          4,
+                          () => PocketKidsVehiclesAndWheelsGame.show(
+                            context,
+                            day: day,
                           ),
                         ),
-                      ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🦁 Step 5: Safari Animal Feeder & Zoo Sounds
+                      _buildActivityOptionTile(
+                        stepNumber: 5,
+                        iconEmoji: '🦁',
+                        title: 'Safari Animal Feeder & Zoo Sounds 🦁',
+                        subtitle: 'Feed hungry lions, pandas & monkeys their favorite food with wild sounds',
+                        gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 5),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 5),
+                        onTap: () => launchStep(
+                          5,
+                          () => PocketKidsSafariAnimalFeederGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🍎 Step 6: Fruit, Veggie & Bakery Market
+                      _buildActivityOptionTile(
+                        stepNumber: 6,
+                        iconEmoji: '🍎',
+                        title: 'Fruit, Veggie & Bakery Market 🍎',
+                        subtitle: 'Fill your shopping cart with delicious apples, bananas, cookies & cupcakes',
+                        gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 6),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 6),
+                        onTap: () => launchStep(
+                          6,
+                          () => PocketKidsFruitBakeryMarketGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🔢 Step 7: Number Magic & Star Counting
+                      _buildActivityOptionTile(
+                        stepNumber: 7,
+                        iconEmoji: '🔢',
+                        title: 'Number Magic & Star Counting 🔢',
+                        subtitle: 'Count sparkling shooting stars, balloons & puppies from 1 to 20',
+                        gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 7),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 7),
+                        onTap: () => launchStep(
+                          7,
+                          () => PocketKidsNumberMagicCountingGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🦸 Step 8: Superhero Action Verbs Arena
+                      _buildActivityOptionTile(
+                        stepNumber: 8,
+                        iconEmoji: '🦸',
+                        title: 'Superhero Action Verbs Arena 🦸',
+                        subtitle: 'Jump, run, fly, dance & sing! Master essential action verbs with audio',
+                        gradientColors: const [Color(0xFFEC4899), Color(0xFFDB2777)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 8),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 8),
+                        onTap: () => launchStep(
+                          8,
+                          () => PocketKidsActionSuperheroJumpGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🐸 Step 9: Rhyme Time Frog Lilypad Hopper
+                      _buildActivityOptionTile(
+                        stepNumber: 9,
+                        iconEmoji: '🐸',
+                        title: 'Rhyme Time Lilypad Hopper 🐸',
+                        subtitle: 'Help the cute frog leap across the river by hopping on rhyming word lilypads',
+                        gradientColors: const [Color(0xFF0284C7), Color(0xFF0369A1)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 9),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 9),
+                        onTap: () => launchStep(
+                          9,
+                          () => PocketKidsRhymeFrogHopperGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // ⚖️ Step 10: Opposites Seesaw Balance Scale
+                      _buildActivityOptionTile(
+                        stepNumber: 10,
+                        iconEmoji: '⚖️',
+                        title: 'Opposites Seesaw Balance Scale ⚖️',
+                        subtitle: 'Big vs Small, Hot vs Cold, Fast vs Slow! Balance the seesaw with opposite pairs',
+                        gradientColors: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 10),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 10),
+                        onTap: () => launchStep(
+                          10,
+                          () => PocketKidsOppositesSeesawGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // ⏳ Step 11: Past, Present & Future Tenses
+                      _buildActivityOptionTile(
+                        stepNumber: 11,
+                        iconEmoji: '⏳',
+                        title: 'Past, Present & Future Tenses ⏳',
+                        subtitle: 'Learn sleep ➔ slept with falling action blocks & native hints',
+                        gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 11),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 11),
+                        onTap: () => launchStep(
+                          11,
+                          () => PocketKidsTenseDropGame.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🗣️ Step 12: Spoken English & Dialogue Lab
+                      _buildActivityOptionTile(
+                        stepNumber: 12,
+                        iconEmoji: '🗣️',
+                        title: 'Spoken English & Dialogue Lab 🗣️',
+                        subtitle: 'Interactive voice conversation with animal mascot, live mic & stars',
+                        gradientColors: const [Color(0xFF007AFF), Color(0xFF5856D6)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 12),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 12),
+                        onTap: () => launchStep(
+                          12,
+                          () => PocketKidsSpokenDialogueLabPage.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 🎙️ Step 13: Cumulative Progressive Speech Master (Audio Directive!)
+                      _buildActivityOptionTile(
+                        stepNumber: 13,
+                        iconEmoji: '🎙️',
+                        title: 'Cumulative Speech Arena 🌟',
+                        subtitle: 'Public speaking snowball stage! Practice 1-4 lines with microphone scoring',
+                        gradientColors: const [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 13),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 13),
+                        onTap: () => launchStep(
+                          13,
+                          () => PocketKidsCumulativeSpeechArenaPage.show(
+                            context,
+                            day: day,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 💬 Step 14: Safe English Chat with Buddy / Story Read-Aloud
+                      _buildActivityOptionTile(
+                        stepNumber: 14,
+                        iconEmoji: '💬',
+                        title: 'Safe English Chat with Buddy 💬',
+                        subtitle: 'Chat in English with your animal buddy using cheerful phrase chips & finish day!',
+                        gradientColors: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
+                        isCompleted: PocketKidsService.isDayStepCompleted(day, 14),
+                        isUnlocked: PocketKidsService.isDayStepUnlocked(day, 14),
+                        onTap: () => launchStep(
+                          14,
+                          () => PocketKidsMateChatPage.open(
+                            context,
+                            mate: PocketKidsRobotsData.robotsAndHomies[
+                                (day - 1) % PocketKidsRobotsData.robotsAndHomies.length],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -3348,6 +3262,173 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
           },
         );
       },
+    );
+  }
+
+  Future<void> _showSentenceBuilderChoiceDialog(
+    BuildContext context,
+    int day,
+  ) async {
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border(top: BorderSide(color: Color(0xFFF59E0B), width: 2.5)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Sentence Builder Modes 🧩',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Play with the Choo-Choo Train or the Candy Runway!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            // Option 1: Choo-Choo Train Builder
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                await PocketKidsSentenceBuilderPage.show(
+                  context,
+                  day: day,
+                  onCompleted: () => PocketKidsService.markDayStepCompleted(day, 2),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text('🚂', style: TextStyle(fontSize: 32)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choo-Choo Train Builder (10 Rounds)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Drag train wagons into track slots with fun audio & whistle!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Option 2: Candy Runway Builder
+            GestureDetector(
+              onTap: () async {
+                Navigator.pop(ctx);
+                await PocketSentenceBuilderGamePage.show(
+                  context,
+                  day: day,
+                  isKidsMode: true,
+                  onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 2),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text('🧩', style: TextStyle(fontSize: 32)),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Candy Runway Builder (10 Rounds)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Tap word chips onto runway slots with live pronunciation!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -3517,172 +3598,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     );
   }
 
-  Future<void> _showSentenceBuilderChoiceDialog(
-    BuildContext context,
-    int day,
-  ) async {
-    return showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        decoration: const BoxDecoration(
-          color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(top: BorderSide(color: Color(0xFFF59E0B), width: 2.5)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Sentence Builder Modes 🧩',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Play with the Choo-Choo Train or the Candy Runway!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            // Option 1: Choo-Choo Train Builder
-            GestureDetector(
-              onTap: () async {
-                Navigator.pop(ctx);
-                await PocketKidsSentenceBuilderPage.show(
-                  context,
-                  day: day,
-                  onCompleted: () => PocketKidsService.markDayStepCompleted(day, 2),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Text('🚂', style: TextStyle(fontSize: 32)),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Choo-Choo Train Builder',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Snap words into train bogies with steam whistles & Flame smoke!',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Option 2: Candy Runway Builder
-            GestureDetector(
-              onTap: () async {
-                Navigator.pop(ctx);
-                await PocketSentenceBuilderGamePage.show(
-                  context,
-                  day: day,
-                  isKidsMode: true,
-                  onStepFinished: (_) => PocketKidsService.markDayStepCompleted(day, 2),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFEA580C).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Text('🧩', style: TextStyle(fontSize: 32)),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Candy Runway Builder (10 Rounds)',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Tap candy tiles on runway with Malayalam audio voice & sparkles!',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   // =========================================================================
   // TAB 3: 🎮 ARCADE & LEARNING PLAYGROUND (മിനി-ഗെയിമുകൾ & കാറ്റഗറി ഹബ്)
