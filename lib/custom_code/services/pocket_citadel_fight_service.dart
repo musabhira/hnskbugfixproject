@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 /// 🥊 Model for a Citadel Fight Challenge / Duel
 class CitadelFightChallenge {
@@ -249,6 +250,12 @@ class PocketCitadelFightService {
       });
     } catch (_) {}
 
+    // If opponent is a Robot, trigger realistic asynchronous robot fight-back after 5s
+    if (PocketRobotService.isRobotId(challenge.opponentId) ||
+        challenge.opponentId.startsWith('robot_')) {
+      _simulateRobotFightBack(updated);
+    }
+
     return updated;
   }
 
@@ -352,7 +359,68 @@ class PocketCitadelFightService {
       });
     } catch (_) {}
 
+    // Clear pending fight notification in Supabase
+    try {
+      await SupaFlow.client
+          .from('notifications')
+          .update({'status': 'resolved'})
+          .eq('type', 'citadel_fight')
+          .filter('data->>fight_id', 'eq', challenge.id);
+    } catch (_) {}
+
     return updated;
+  }
+
+  /// 🤖 Asynchronous robot fight-back simulation (fires ~5s after user finishes duel)
+  static void _simulateRobotFightBack(CitadelFightChallenge challenge) {
+    Future<void>.delayed(const Duration(seconds: 5), () async {
+      try {
+        final r = math.Random();
+        final qCount = challenge.questionCount > 0 ? challenge.questionCount : 20;
+        final userCorrect = challenge.challengerCorrect > 0
+            ? challenge.challengerCorrect
+            : (challenge.challengerScore / 180).round().clamp(0, qCount);
+        final userTime = challenge.challengerTimeSeconds > 0
+            ? challenge.challengerTimeSeconds
+            : (challenge.challengerSeconds > 0 ? challenge.challengerSeconds.toDouble() : 45.0);
+
+        // Robot wins ~45% of matches, loses ~55% of matches for satisfying learning progression
+        final robotWins = r.nextDouble() < 0.45;
+
+        int robotCorrect;
+        double robotTime;
+
+        if (robotWins) {
+          // Robot wins either with higher correct or faster time
+          if (userCorrect < qCount && r.nextBool()) {
+            robotCorrect = math.min(qCount, userCorrect + 1);
+            robotTime = math.max(12.0, userTime * (0.85 + r.nextDouble() * 0.25));
+          } else {
+            robotCorrect = userCorrect;
+            robotTime = math.max(10.0, userTime - (2.0 + r.nextDouble() * 4.5));
+          }
+        } else {
+          // Robot loses either with fewer correct or slower time
+          if (userCorrect > 3 && r.nextBool()) {
+            robotCorrect = math.max(0, userCorrect - (1 + r.nextInt(2)));
+            robotTime = userTime * (0.95 + r.nextDouble() * 0.3);
+          } else {
+            robotCorrect = userCorrect;
+            robotTime = userTime + (3.0 + r.nextDouble() * 6.0);
+          }
+        }
+
+        final robotScore = (robotCorrect * 110 + (qCount * 10 / math.max(1.0, robotTime / 10)).round()).clamp(50, 3000);
+
+        await resolveOpponentFightRun(
+          challenge: challenge,
+          opponentScore: robotScore,
+          opponentSeconds: robotTime.round(),
+          opponentCorrect: robotCorrect,
+          opponentTimeSeconds: robotTime,
+        );
+      } catch (_) {}
+    });
   }
 
   /// 📜 Get pending fight challenges for a user

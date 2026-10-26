@@ -42,6 +42,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_scor
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pocket_defense_card_detail_sheet.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -2142,6 +2144,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         if (isMe) ...[
                           const SizedBox(height: 16),
                           _buildMinimalAttackersSection(),
+                          const SizedBox(height: 16),
+                          _buildCitadelFightArenaDesk(),
                         ],
                         const SizedBox(height: 32),
                       ],
@@ -3892,6 +3896,424 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         ],
       ),
+    );
+  }
+
+  // ⚔️ CITADEL FIGHT ARENA: SPEED DUELS (User Audio Directive: "അവന്റെ മെയിൻ പ്രൊഫൈൽ വിഡ്ജറ്റിൽ ഫൈറ്റ് ചെയ്തത് കാണിക്കണം... തീഫ് ഡെസ്കിൽ കാണിക്കുമല്ലോ, അതേപോലെ അവിടെ കാണിക്കണം. ആരൊക്കെ ഫൈറ്റ് ചെയ്തു എന്ന് പറഞ്ഞിട്ട്.")
+  Widget _buildCitadelFightArenaDesk() {
+    final currentUserId = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    return FutureBuilder<List<CitadelFightChallenge>>(
+      future: PocketCitadelFightService.getAllChallenges(currentUserId),
+      builder: (context, snapshot) {
+        final challenges = snapshot.data ?? [];
+        final pendingForMe = challenges
+            .where((c) =>
+                c.opponentId == currentUserId &&
+                (c.status == 'pending' || c.status == 'pending_opponent'))
+            .toList();
+        final recentFinished = challenges
+            .where((c) => c.status == 'completed')
+            .take(5)
+            .toList();
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+              width: 1.4,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 18,
+                offset: const Offset(0, 5),
+              ),
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                blurRadius: 14,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF7C3AED).withValues(alpha: 0.35),
+                      const Color(0xFFDC2626).withValues(alpha: 0.25),
+                      const Color(0xFF0F172A),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4C1D95).withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1.3,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Text('⚔️', style: TextStyle(fontSize: 20)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  'CITADEL FIGHT ARENA: SPEED DUELS',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                      color: const Color(0xFFFFD700), width: 0.8),
+                                ),
+                                child: Text(
+                                  'ഫൈറ്റ് ഡെസ്ക്',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '1-on-1 English Duels • Fastest Speed & Accuracy Wins Gold Trophy 🏆',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Pending Challenges section
+                    if (pendingForMe.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'INCOMING DUEL CHALLENGES (${pendingForMe.length})',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFCA5A5),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...pendingForMe.map((duel) {
+                        final timeStr = duel.challengerTimeSeconds > 0
+                            ? duel.challengerTimeSeconds.toStringAsFixed(1)
+                            : '${duel.challengerSeconds}';
+                        final correctStr = duel.challengerCorrect > 0
+                            ? '${duel.challengerCorrect}/${duel.questionCount} hits'
+                            : '${duel.challengerScore} pts';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: const Color(0xFF0F172A),
+                                      border: Border.all(
+                                        color: const Color(0xFFEF4444),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Text(duel.challengerAvatar,
+                                        style: const TextStyle(fontSize: 20)),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          duel.challengerName,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Finished ${duel.questionCount}Q duel in ${timeStr}s • $correctStr',
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFF94A3B8),
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFDC2626),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    elevation: 4,
+                                  ),
+                                  icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
+                                  label: Text(
+                                    'FIGHT BACK NOW ⚔️',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    HapticFeedback.heavyImpact();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => PocketCitadelFightArenaDialog(
+                                          challenge: duel,
+                                          opponentDay: 1,
+                                          isOpponentRun: true,
+                                        ),
+                                      ),
+                                    ).then((_) => setState(() {}));
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Recent Settled Duels
+                    if (recentFinished.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'RECENT SPEED DUEL RESULTS',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...recentFinished.map((duel) {
+                        final isChallenger = duel.challengerId == currentUserId;
+                        final myScore = isChallenger ? duel.challengerScore : duel.opponentScore;
+                        final oppScore = isChallenger ? duel.opponentScore : duel.challengerScore;
+                        final myTime = isChallenger ? duel.challengerTimeSeconds : duel.opponentTimeSeconds;
+                        final oppTime = isChallenger ? duel.opponentTimeSeconds : duel.challengerTimeSeconds;
+                        final oppName = isChallenger ? duel.opponentName : duel.challengerName;
+                        final oppAvatar = isChallenger ? duel.opponentAvatar : duel.challengerAvatar;
+                        final won = duel.winnerId == currentUserId;
+                        final isDraw = duel.winnerId == 'draw';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: won
+                                  ? const Color(0xFFFFD700)
+                                  : (isDraw ? Colors.white30 : Colors.redAccent.withValues(alpha: 0.4)),
+                              width: won ? 1.4 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(won ? '🏆' : (isDraw ? '🤝' : '💥'), style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      won
+                                          ? 'YOU WON (+1 Gold Trophy 🏆)'
+                                          : (isDraw ? 'DRAW MATCH' : '$oppName Won'),
+                                      style: GoogleFonts.outfit(
+                                        color: won ? const Color(0xFFFFD700) : Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                    Text(
+                                      'You: ${myTime.toStringAsFixed(1)}s ($myScore pts) • $oppAvatar $oppName: ${oppTime.toStringAsFixed(1)}s ($oppScore pts)',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF94A3B8),
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (!won && !isDraw)
+                                GestureDetector(
+                                  onTap: () {
+                                    PocketCitadelFightModal.startDirectDuel(
+                                      context,
+                                      opponentId: isChallenger ? duel.opponentId : duel.challengerId,
+                                      opponentName: oppName,
+                                      opponentAvatar: oppAvatar,
+                                      opponentDay: 1,
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDC2626).withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.redAccent, width: 0.8),
+                                    ),
+                                    child: const Text('REMATCH ⚔️',
+                                        style: TextStyle(
+                                            color: Color(0xFFFCA5A5),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ] else if (pendingForMe.isEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            const Text('⚔️', style: TextStyle(fontSize: 26)),
+                            const SizedBox(height: 6),
+                            Text(
+                              'No Active Speed Duels',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Challenge friends or robots to 20-Question speed duels! Fastest accuracy wins Gold Trophies.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF94A3B8),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

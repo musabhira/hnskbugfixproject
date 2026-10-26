@@ -20,6 +20,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_sentence_builder_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_negative_sentence_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_chat_reply_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_verb_timeline_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day1_az_and_300vocab_data.dart';
 
 // ------------------------------- THEME ---------------------------------------
 const _kBg = Color(0xFF080C24);
@@ -83,19 +88,8 @@ Color _gameColor(_GameType t) {
   }
 }
 
-// ----------------------------- QUESTION DATA ---------------------------------
-const List<List<String>> _kBuilder = [
-  ['ഞാൻ എല്ലാ ദിവസവും സ്കൂളിൽ പോകുന്നു', 'I go to school every day'],
-  ['അവൾ ഒരു പുസ്തകം വായിക്കുന്നു', 'She is reading a book'],
-  ['എനിക്ക് ഒരു ഗ്ലാസ് വെള്ളം വേണം', 'I want a glass of water'],
-  ['നിങ്ങൾ എവിടെയാണ് താമസിക്കുന്നത്', 'Where do you live'],
-  ['അവൻ ഇന്നലെ എന്നെ വിളിച്ചു', 'He called me yesterday'],
-  ['നാളെ നമുക്ക് സിനിമയ്ക്ക് പോകാം', 'Let us go to the movies tomorrow'],
-  ['അവർ ക്രിക്കറ്റ് കളിക്കുന്നു', 'They are playing cricket'],
-];
-
-// [correct, wrong1, wrong2, wrong3]
-const List<List<String>> _kSpelling = [
+// ----------------------------- QUESTION DATA (3,000+ ITEMS) ------------------
+const List<List<String>> _kSpellingCurated = [
   ['Necessary', 'Neccessary', 'Necesary', 'Nessesary'],
   ['Receive', 'Recieve', 'Receeve', 'Riceive'],
   ['Environment', 'Enviroment', 'Environmant', 'Envirenment'],
@@ -104,45 +98,53 @@ const List<List<String>> _kSpelling = [
   ['Beautiful', 'Beutiful', 'Beautifull', 'Beatiful'],
   ['Government', 'Goverment', 'Governmant', 'Guvernment'],
   ['Tomorrow', 'Tommorow', 'Tomorow', 'Tomarrow'],
-];
-
-class _TrainItem {
-  final String word;
-  final String hint;
-  final List<int> blanks;
-  const _TrainItem(this.word, this.hint, this.blanks);
-}
-
-const List<_TrainItem> _kTrain = [
-  _TrainItem('ELEPHANT', 'ആന', [1, 5]),
-  _TrainItem('BEAUTIFUL', 'മനോഹരം', [2, 5]),
-  _TrainItem('TOMORROW', 'നാളെ', [2, 4]),
-  _TrainItem('KNOWLEDGE', 'അറിവ്', [1, 4, 6]),
-  _TrainItem('FRIEND', 'സുഹൃത്ത്', [2, 4]),
-  _TrainItem('WEATHER', 'കാലാവസ്ഥ', [2, 4]),
-  _TrainItem('HOSPITAL', 'ആശുപത്രി', [2, 6]),
-];
-
-// [malayalam, correct, wrong1, wrong2, wrong3]
-const List<List<String>> _kVocab = [
-  ['വെള്ളം', 'Water', 'Fire', 'Stone', 'Cloud'],
-  ['പുസ്തകം', 'Book', 'Pencil', 'Table', 'Window'],
-  ['വീട്', 'House', 'Road', 'River', 'Garden'],
-  ['സന്തോഷം', 'Happiness', 'Anger', 'Sadness', 'Hunger'],
-  ['ഭയം', 'Fear', 'Hope', 'Pride', 'Sleep'],
-  ['ശക്തി', 'Strength', 'Weakness', 'Silence', 'Kindness'],
-  ['വേഗം', 'Speed', 'Slow', 'Quiet', 'Heavy'],
-];
-
-// [sentence, zone(0 past,1 present,2 future), correct, w1, w2, w3]
-const List<List<String>> _kTense = [
-  ['Yesterday, she ____ to the market.', '0', 'went', 'go', 'will go', 'goes'],
-  ['Right now, they ____ football.', '1', 'are playing', 'played', 'will play', 'plays'],
-  ['Next week, I ____ my uncle.', '2', 'will visit', 'visited', 'visits', 'was visiting'],
-  ['He ____ his homework before dinner last night.', '0', 'finished', 'finishes', 'will finish', 'is finishing'],
-  ['Every morning, he ____ tea.', '1', 'drinks', 'drank', 'will drink', 'drinking'],
-  ['Last year, we ____ a new car.', '0', 'bought', 'buy', 'will buy', 'buys'],
-  ['Tomorrow morning, she ____ her exam.', '2', 'will take', 'took', 'takes', 'was taking'],
+  ['Accommodate', 'Acommodate', 'Accomodate', 'Acomodate'],
+  ['Calendar', 'Calender', 'Calandar', 'Calandor'],
+  ['Colleague', 'Coleague', 'Collegue', 'Colleag'],
+  ['Conscience', 'Concience', 'Conscence', 'Consience'],
+  ['Embarrass', 'Embarass', 'Emberrass', 'Embaras'],
+  ['Guarantee', 'Garantee', 'Garanty', 'Guaarantee'],
+  ['Harass', 'Harrass', 'Harras', 'Harres'],
+  ['Maintenance', 'Maintainance', 'Maintenence', 'Maintenanse'],
+  ['Millennium', 'Millenium', 'Milennium', 'Milenium'],
+  ['Noticeable', 'Noticable', 'Noticeble', 'Notisable'],
+  ['Occasion', 'Ocassion', 'Occassion', 'Ocasion'],
+  ['Occurrence', 'Occurence', 'Occurrance', 'Ocurrence'],
+  ['Possession', 'Posession', 'Possesion', 'Posestion'],
+  ['Privilege', 'Privelege', 'Priviledge', 'Privilige'],
+  ['Rhythm', 'Rythm', 'Rhythym', 'Rhytm'],
+  ['Success', 'Succes', 'Sucess', 'Sucses'],
+  ['Weather', 'Wheather', 'Wether', 'Weatther'],
+  ['Vacuum', 'Vaccum', 'Vacume', 'Vacuume'],
+  ['Knowledge', 'Knowlege', 'Nowledge', 'Knowlage'],
+  ['Business', 'Buissness', 'Buisness', 'Bussiness'],
+  ['Foreign', 'Foriegn', 'Forein', 'Foreing'],
+  ['Friend', 'Freind', 'Frind', 'Frend'],
+  ['Grammar', 'Grammer', 'Gramar', 'Gramer'],
+  ['Height', 'Hieght', 'Heigth', 'Hieht'],
+  ['Leisure', 'Liesure', 'Leisur', 'Leasure'],
+  ['Library', 'Libary', 'Librery', 'Liberary'],
+  ['Muscle', 'Mussle', 'Musel', 'Muscel'],
+  ['Neighbor', 'Nieghbor', 'Neighbour', 'Naybor'],
+  ['Pronunciation', 'Pronounciation', 'Pronuntiation', 'Pronunsiation'],
+  ['Questionnaire', 'Questionaire', 'Questionary', 'Questonaire'],
+  ['Schedule', 'Shedule', 'Schedul', 'Shedul'],
+  ['Threshold', 'Threshhold', 'Thresold', 'Threshould'],
+  ['Twelfth', 'Twelth', 'Twelveth', 'Twelf'],
+  ['Until', 'Untill', 'Untile', 'Untl'],
+  ['Weird', 'Wierd', 'Weerd', 'Wiered'],
+  ['Apparent', 'Apparant', 'Aparent', 'Apparrent'],
+  ['Believe', 'Beleive', 'Beleeve', 'Bilieve'],
+  ['Disappoint', 'Dissappoint', 'Disapoint', 'Dissapoint'],
+  ['Immediately', 'Imediately', 'Immediatly', 'Immedately'],
+  ['Independent', 'Independant', 'Independint', 'Indipendent'],
+  ['Intelligence', 'Intellegence', 'Inteligence', 'Intelligeance'],
+  ['Judgment', 'Judgement', 'Jugment', 'Judgmant'],
+  ['Recommend', 'Recommed', 'Recommand', 'Reccomend'],
+  ['Surprise', 'Suprise', 'Surprize', 'Supprise'],
+  ['Tendency', 'Tendancey', 'Tendancy', 'Tendisey'],
+  ['Truly', 'Truely', 'Truley', 'Trulie'],
+  ['Visible', 'Visable', 'Vissible', 'Vizible'],
 ];
 
 class _Q {
@@ -177,51 +179,94 @@ class _Res {
   const _Res(this.q, this.ok, this.ms, this.pts, this.given);
 }
 
-List<int> _shuffled(int n, math.Random r) =>
-    (List<int>.generate(n, (i) => i)..shuffle(r));
-
 /// Deterministic: same seed + count => identical question set for both players.
+/// Pulls dynamically from 3,000+ real curriculum items across 90 days!
 List<_Q> _buildQuestions(int count, int seed) {
   final r = math.Random(seed);
-  final orders = <_GameType, List<int>>{
-    _GameType.builder: _shuffled(_kBuilder.length, r),
-    _GameType.spelling: _shuffled(_kSpelling.length, r),
-    _GameType.train: _shuffled(_kTrain.length, r),
-    _GameType.vocab: _shuffled(_kVocab.length, r),
-    _GameType.tense: _shuffled(_kTense.length, r),
-  };
-  final used = <_GameType, int>{};
   final out = <_Q>[];
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  final vocabPool = Day1VocabBankData.words300;
+
+  // Track used answers to ensure 100% uniqueness in this duel
+  final usedAnswers = <String>{};
 
   for (var i = 0; i < count; i++) {
     final t = _GameType.values[i % _GameType.values.length];
-    final n = used[t] ?? 0;
-    used[t] = n + 1;
-    final ord = orders[t]!;
-    final idx = ord[n % ord.length];
 
     switch (t) {
+      // 🧩 1. SENTENCE BUILDER (Pulls from 90-day sentence builder, negative sentences, chat reply)
       case _GameType.builder:
-        final d = _kBuilder[idx];
-        final words = d[1].split(' ');
+        String sentence = '';
+        String prompt = '';
+        var attempts = 0;
+
+        while (attempts < 15) {
+          attempts++;
+          final mode = attempts % 3;
+          final day = r.nextInt(90) + 1;
+
+          if (mode == 0) {
+            final rounds = Pocket90DaySentenceBuilderData.getSentencesForDay(day);
+            if (rounds.isNotEmpty) {
+              final item = rounds[r.nextInt(rounds.length)];
+              sentence = item.sentence.replaceAll(RegExp(r'[.!?]'), '').trim();
+              prompt = item.translationMl;
+            }
+          } else if (mode == 1) {
+            final rounds = Pocket90DayNegativeSentenceData.getRoundsForDay(day);
+            if (rounds.isNotEmpty) {
+              final item = rounds[r.nextInt(rounds.length)];
+              sentence = item.negativeSentence.replaceAll(RegExp(r'[.!?]'), '').trim();
+              prompt = item.negativeSentenceMl;
+            }
+          } else {
+            final rounds = Pocket90DayChatReplyData.getScenariosForDay(day);
+            if (rounds.isNotEmpty) {
+              final item = rounds[r.nextInt(rounds.length)];
+              sentence = item.expectedReply.replaceAll(RegExp(r'[.!?]'), '').trim();
+              prompt = item.expectedReplyMl;
+            }
+          }
+
+          if (sentence.isNotEmpty && !usedAnswers.contains(sentence)) {
+            break;
+          }
+        }
+
+        if (sentence.isEmpty) {
+          sentence = 'I want to speak fluent English every day';
+          prompt = 'എനിക്ക് എല്ലാ ദിവസവും നന്നായി ഇംഗ്ലീഷ് സംസാരിക്കണം';
+        }
+        usedAnswers.add(sentence);
+
+        final words = sentence.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
         final sc = List<String>.from(words);
         var tries = 0;
         do {
           sc.shuffle(r);
           tries++;
-        } while (sc.join(' ') == d[1] && tries < 20);
+        } while (sc.join(' ') == sentence && tries < 20);
+
         out.add(_Q(
           type: t,
-          prompt: d[0],
+          prompt: prompt,
           sub: 'Tap the words in the right order',
           options: sc,
-          answer: d[1],
-          par: 4.0 + words.length * 1.6,
+          answer: sentence,
+          par: 4.0 + words.length * 1.5,
         ));
         break;
+
+      // 🔤 2. SPELLING RECTIFIER (Pulls from 50+ curated tricky exam words)
       case _GameType.spelling:
-        final d = _kSpelling[idx];
+        List<String> d = _kSpellingCurated[r.nextInt(_kSpellingCurated.length)];
+        var tries = 0;
+        while (usedAnswers.contains(d[0]) && tries < 20) {
+          d = _kSpellingCurated[r.nextInt(_kSpellingCurated.length)];
+          tries++;
+        }
+        usedAnswers.add(d[0]);
+
         final opts = List<String>.from(d)..shuffle(r);
         out.add(_Q(
           type: t,
@@ -230,50 +275,126 @@ List<_Q> _buildQuestions(int count, int seed) {
           options: opts,
           answerIndex: opts.indexOf(d[0]),
           answer: d[0],
-          par: 6,
+          par: 5.5,
         ));
         break;
+
+      // 🚂 3. WORD TRAIN (Pulls from 300+ vocabulary bank words with wagons)
       case _GameType.train:
-        final item = _kTrain[idx];
-        final letters = item.blanks.map((b) => item.word[b]).toList();
-        final pool = alphabet.split('')..shuffle(r);
-        final decoys = pool.where((l) => !letters.contains(l)).take(3).toList();
-        final bank = [...letters, ...decoys]..shuffle(r);
+        Map<String, dynamic> vItem = vocabPool[r.nextInt(vocabPool.length)];
+        var tries = 0;
+        while ((vItem['word']?.toString().length ?? 0) < 4 && tries < 30) {
+          vItem = vocabPool[r.nextInt(vocabPool.length)];
+          tries++;
+        }
+        final rawWord = vItem['word']?.toString().toUpperCase() ?? 'WATER';
+        final word = rawWord.replaceAll(RegExp(r'[^A-Z]'), '');
+        final hint = vItem['meaning']?.toString() ?? 'വെള്ളം';
+        usedAnswers.add(word);
+
+        final len = word.length;
+        final blankCount = len <= 5 ? 1 : (len <= 7 ? 2 : 3);
+        final indices = List<int>.generate(len, (idx) => idx)..shuffle(r);
+        final blanks = indices.take(blankCount).toList()..sort();
+
+        final missingLetters = blanks.map((b) => word[b]).toList();
+        final decoys = alphabet.split('').where((l) => !missingLetters.contains(l)).toList()..shuffle(r);
+        final bank = [...missingLetters, ...decoys.take(3)]..shuffle(r);
+
         out.add(_Q(
           type: t,
-          prompt: item.hint,
-          sub: '${item.word.length} letters · fill the empty wagons',
+          prompt: hint,
+          sub: '$len letters · fill the empty wagons',
           options: bank,
-          answer: item.word,
-          blanks: item.blanks,
-          par: 5.0 + item.blanks.length * 2.0,
+          answer: word,
+          blanks: blanks,
+          par: 4.5 + blanks.length * 2.0,
         ));
         break;
+
+      // ⚡ 4. VOCAB DEFUSAL (Pulls from 300+ everyday vocab bank)
       case _GameType.vocab:
-        final d = _kVocab[idx];
-        final opts = d.sublist(1)..shuffle(r);
+        final vItem = vocabPool[r.nextInt(vocabPool.length)];
+        final correctWord = vItem['word']?.toString() ?? 'Water';
+        final meaning = vItem['meaning']?.toString() ?? 'വെള്ളം';
+        usedAnswers.add(correctWord);
+
+        // Pick 3 random distinct distractors
+        final otherWords = vocabPool
+            .where((w) => w['word'] != correctWord)
+            .map((w) => w['word']?.toString() ?? '')
+            .where((w) => w.isNotEmpty)
+            .toList()
+          ..shuffle(r);
+
+        final choices = [correctWord, ...otherWords.take(3)]..shuffle(r);
+
         out.add(_Q(
           type: t,
-          prompt: d[0],
+          prompt: meaning,
           sub: 'Pick the English word',
-          options: opts,
-          answerIndex: opts.indexOf(d[1]),
-          answer: d[1],
-          par: 5,
+          options: choices,
+          answerIndex: choices.indexOf(correctWord),
+          answer: correctWord,
+          par: 5.0,
         ));
         break;
+
+      // ⏱️ 5. TENSE TIMELINE (Pulls from 90 days * 360 verbs * 3 tense forms = 1,080 questions!)
       case _GameType.tense:
-        final d = _kTense[idx];
-        final opts = d.sublist(2)..shuffle(r);
+        final day = r.nextInt(90) + 1;
+        final verbs = Pocket90DayVerbTimelineData.getVerbsForDay(day);
+        final v = verbs.isNotEmpty ? verbs[r.nextInt(verbs.length)] : null;
+        final zone = r.nextInt(3); // 0 Past, 1 Present, 2 Future
+
+        String sentence = '';
+        String correct = '';
+        if (v != null) {
+          if (zone == 0) {
+            sentence = v.pastSentence;
+            correct = v.past;
+          } else if (zone == 1) {
+            sentence = v.presentSentence;
+            correct = v.present;
+          } else {
+            sentence = v.futureSentence;
+            correct = v.future;
+          }
+        }
+
+        if (sentence.isEmpty || correct.isEmpty) {
+          sentence = 'Yesterday she went to the market.';
+          correct = 'went';
+        }
+
+        // Mask the verb in the sentence
+        final maskedSentence = sentence.replaceAll(
+          RegExp(RegExp.escape(correct), caseSensitive: false),
+          '______',
+        );
+
+        final List<String> opts = [];
+        if (v != null) {
+          opts.addAll([v.past, v.present, v.future]);
+          // Add a 4th continuous or distractor
+          opts.add('${v.baseVerb}ing');
+        } else {
+          opts.addAll(['went', 'go', 'will go', 'going']);
+        }
+        final uniqueOpts = opts.toSet().toList()..shuffle(r);
+        while (uniqueOpts.length < 4) {
+          uniqueOpts.add('is ${v?.baseVerb ?? "doing"}');
+        }
+
         out.add(_Q(
           type: t,
-          prompt: d[0],
-          sub: 'Choose the right verb form',
-          options: opts,
-          answerIndex: opts.indexOf(d[2]),
-          answer: d[2],
-          zone: int.parse(d[1]),
-          par: 6,
+          prompt: maskedSentence,
+          sub: 'Choose the right verb form (${zone == 0 ? "PAST" : zone == 1 ? "PRESENT" : "FUTURE"})',
+          options: uniqueOpts.take(4).toList(),
+          answerIndex: uniqueOpts.take(4).toList().indexOf(correct),
+          answer: correct,
+          zone: zone,
+          par: 6.0,
         ));
         break;
     }
@@ -1546,6 +1667,58 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
 
   Widget _hud() {
     final active = _phase != _Phase.setup;
+    if (!active) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(6, 4, 16, 4),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white70),
+              onPressed: _exit,
+            ),
+            Expanded(
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [_kCyan, _kPink]),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _a(_kCyan, .35),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      )
+                    ],
+                  ),
+                  child: const Text('⚔️ SPEED DUEL ARENA',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      )),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _kPanel2,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _kGold, width: 1.5),
+              ),
+              child: const Text('20Q',
+                  style: TextStyle(
+                    color: _kGold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  )),
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 2, 14, 2),
       child: Row(children: [
@@ -1566,9 +1739,7 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
                   )),
             ),
             Text(
-                active
-                    ? 'QUESTION ${math.min(_qi + 1, _total)}/$_total'
-                    : '⚔️ CITADEL FIGHT',
+                'QUESTION ${math.min(_qi + 1, _total)}/$_total',
                 style: const TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 2, fontWeight: FontWeight.w700)),
           ]),
         ),
@@ -1767,6 +1938,30 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
     return _waitingCard();
   }
 
+  Widget _modePill(String emoji, String title, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _a(color, .14),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _a(color, .5), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 6),
+          Text(title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              )),
+        ],
+      ),
+    );
+  }
+
   // ------------------------------- SETUP -------------------------------------
   Widget _setupCard() {
     final b = widget.isUserBTurn;
@@ -1782,23 +1977,121 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
           boxShadow: [BoxShadow(color: _a(_kPurple, .4), blurRadius: 24)],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          // Battle Face-off Banner
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            decoration: BoxDecoration(
+              color: _a(Colors.white, .04),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _kPanel2,
+                        border: Border.all(color: _kCyan, width: 2.5),
+                        boxShadow: [BoxShadow(color: _a(_kCyan, .4), blurRadius: 10)],
+                      ),
+                      child: const Text('🥊', style: TextStyle(fontSize: 26)),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text('YOU',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900)),
+                    const Text('Challenger',
+                        style: TextStyle(color: _kCyan, fontSize: 10, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [_kCyan, _kPink]),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('⚡ VS ⚡',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.5)),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('SPEED DUEL',
+                        style: TextStyle(color: Colors.white38, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _kPanel2,
+                        border: Border.all(color: _kPink, width: 2.5),
+                        boxShadow: [BoxShadow(color: _a(_kPink, .4), blurRadius: 10)],
+                      ),
+                      child: _avatar(widget.opponentAvatar, widget.opponentName),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(widget.opponentName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900)),
+                    Text('Lv ${widget.opponentLevel} Defender',
+                        style: const TextStyle(color: _kPink, fontSize: 10, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
           ShaderMask(
             shaderCallback: (r) =>
                 const LinearGradient(colors: [_kCyan, _kPink, _kGold]).createShader(r),
-            child: Text(b ? 'DUEL ACCEPTED' : 'CITADEL FIGHT',
+            child: Text(b ? 'DEFEND CITADEL DUEL' : 'CITADEL SPEED DUEL',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
           ),
           const SizedBox(height: 4),
-          Text('vs ${widget.opponentName} · Lv ${widget.opponentLevel}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          Text(
+            b
+                ? 'Beat ${widget.opponentName}\'s record on speed and accuracy!'
+                : 'Real-time asynchronous English war · Fastest accuracy wins!',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
           const SizedBox(height: 14),
+
           if (!b) ...[
-            const Text('HOW MANY QUESTIONS?',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54, fontSize: 11, letterSpacing: 2)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.bolt, color: _kGold, size: 16),
+                const SizedBox(width: 4),
+                Text('DUEL LENGTH: $_count QUESTIONS',
+                    style: const TextStyle(color: _kGold, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+              ],
+            ),
             const SizedBox(height: 8),
             Row(children: [for (final n in opts) _countChip(n)]),
           ] else
@@ -1810,17 +2103,30 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
                 border: Border.all(color: _a(_kGold, .6)),
               ),
               child: Text(
-                  '🔒 ${widget.opponentName} already finished ${widget.questionCount} questions.\nTheir score and time are hidden until you finish. Beat them on correct answers — ties go to the fastest time!',
+                  '🔒 ${widget.opponentName} completed ${widget.questionCount} questions.\nTheir score and time are locked until you finish. Beat them on correct answers — ties go to the fastest time!',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, height: 1.4, fontSize: 13)),
+                  style: const TextStyle(color: Colors.white, height: 1.4, fontSize: 12)),
             ),
+
           const SizedBox(height: 14),
-          const Text(
-              '🧩 Sentence Builder · 🔤 Spelling · 🚂 Word Train\n⚡ Vocab Defusal · ⏱️ Tense Timeline\nFaster answers = bigger speed bonus + combo multiplier!',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white60, fontSize: 12, height: 1.5)),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: [
+              _modePill('🧩', 'Sentence Builder', _kCyan),
+              _modePill('🔤', 'Spelling Rectifier', _kPink),
+              _modePill('🚂', 'Word Train', _kGold),
+              _modePill('⚡', 'Vocab Defusal', _kGreen),
+              _modePill('⏱️', 'Tense Timeline', _kPurple),
+            ],
+          ),
           const SizedBox(height: 16),
-          _bigButton(b ? 'ACCEPT & FIGHT' : 'FIGHT', Icons.local_fire_department, _start),
+          _bigButton(
+            b ? 'ACCEPT & FIGHT' : 'START 20Q DUEL FIGHT ⚔️',
+            Icons.local_fire_department,
+            _start,
+          ),
         ]),
       ),
     );

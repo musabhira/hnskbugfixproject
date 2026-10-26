@@ -36,6 +36,8 @@ import '/auth/auth_helper.dart';
 import 'index.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -2872,6 +2874,10 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           ),
         );
+      case 'citadel_fight':
+        return _buildCitadelFightBubble(message, isMe);
+      case 'citadel_fight_result':
+        return _buildCitadelFightResultBubble(message, isMe);
       default:
         return Text(
           message['content'] ?? message['message_text'] ?? '',
@@ -2883,6 +2889,230 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         );
     }
+  }
+
+  Widget _buildCitadelFightBubble(Map<String, dynamic> message, bool isMe) {
+    final metadata = message['metadata'] as Map<String, dynamic>? ?? {};
+    final fightId = metadata['fight_id']?.toString() ?? message['id']?.toString() ?? '';
+    final challengerName = metadata['challenger_name']?.toString() ?? 'Challenger';
+    final challengerSeconds = (metadata['challenger_seconds'] as num?)?.toInt() ?? 0;
+    final challengerTimeSec = (metadata['challenger_time_seconds'] as num?)?.toDouble() ?? challengerSeconds.toDouble();
+    final challengerScore = (metadata['challenger_score'] as num?)?.toInt() ?? 0;
+    final challengerCorrect = (metadata['challenger_correct'] as num?)?.toInt() ?? 0;
+    final questionCount = (metadata['question_count'] as num?)?.toInt() ?? 20;
+    final duelSeed = (metadata['duel_seed'] as num?)?.toInt() ?? 20240607;
+    final senderId = message['sender_id']?.toString() ?? '';
+    final receiverId = message['receiver_id']?.toString() ?? widget.receiverId;
+
+    final timeStr = challengerTimeSec > 0 ? challengerTimeSec.toStringAsFixed(1) : '$challengerSeconds';
+    final correctStr = challengerCorrect > 0 ? '$challengerCorrect/$questionCount hits' : '$challengerScore pts';
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 290),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1E1B4B),
+            Color(0xFF311042),
+            Color(0xFF0F172A),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header Badge
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDC2626), Color(0xFF7C3AED)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('⚔️ SPEED DUEL',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1)),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              const Text('🏆 GOLD TROPHY',
+                  style: TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800)),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Message Body
+          Text(
+            isMe
+                ? '⚔️ You initiated a 20Q Citadel Speed Duel!'
+                : '🥊 $challengerName challenged you to a Speed Duel!',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isMe
+                ? 'Your Record: ${timeStr}s • $correctStr\nWaiting for opponent to fight back… ⏳'
+                : 'Completed $questionCount questions in ${timeStr}s ($correctStr).\nCan you beat their split-second time?',
+            style: const TextStyle(
+              color: Color(0xFFCBD5E1),
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Interactive Fight Back Action for recipient
+          if (!isMe)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                  foregroundColor: Colors.white,
+                  elevation: 6,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
+                label: const Text(
+                  'FIGHT BACK NOW ⚔️',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
+                    fontSize: 13,
+                  ),
+                ),
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  final challenge = CitadelFightChallenge(
+                    id: fightId.isNotEmpty ? fightId : 'fight_${DateTime.now().millisecondsSinceEpoch}',
+                    challengerId: senderId,
+                    challengerName: challengerName,
+                    challengerAvatar: '🥊',
+                    opponentId: receiverId,
+                    opponentName: widget.receiverName,
+                    opponentAvatar: '🛡️',
+                    gameFormat: 'citadel_speed_duel',
+                    gameTitle: 'Citadel Speed Duel',
+                    scheduledTime: 'Instant',
+                    questionCount: questionCount,
+                    duelSeed: duelSeed,
+                    challengerScore: challengerScore,
+                    challengerSeconds: challengerSeconds,
+                    challengerCorrect: challengerCorrect,
+                    challengerTimeSeconds: challengerTimeSec,
+                    createdAt: DateTime.now(),
+                  );
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PocketCitadelFightArenaDialog(
+                        challenge: challenge,
+                        opponentDay: 1,
+                        isOpponentRun: true,
+                        questionCount: questionCount,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCitadelFightResultBubble(Map<String, dynamic> message, bool isMe) {
+    final text = message['content'] ?? message['message_text'] ?? '';
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 290),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2E1065), Color(0xFF1E1B4B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFFFD700),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'CITADEL DUEL SETTLED!',
+                  style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildThoughtMessage(Map<String, dynamic> thoughtData, bool isMe) {
