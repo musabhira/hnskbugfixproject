@@ -375,6 +375,109 @@ class KidsSentenceCurriculum {
 
     return challenges[(day - 1) % challenges.length];
   }
+
+  /// 🚂 Guarantees 10 progressive rich rounds per day for substantial gameplay!
+  static List<JuniorSentenceChallenge> getRoundsForDay(int day) {
+    final List<JuniorSentenceChallenge> list = [];
+
+    // 1. Primary day challenge
+    list.add(getForDay(day));
+
+    // 2. Syllabus rounds converted to kid sentence blocks
+    try {
+      final syl = PocketKids100DaySyllabusDB.getSyllabusForDay(day);
+      for (int i = 0; i < syl.rounds.length; i++) {
+        final r = syl.rounds[i];
+        list.add(
+          JuniorSentenceChallenge(
+            day: day,
+            fullSentence: "I see the ${r.targetWord}",
+            translationMl: "${r.targetWord} ഞാൻ കാണുന്നു ${r.emoji}",
+            hint: r.prompt,
+            tiles: [
+              const JuniorSentenceTile(
+                id: '1',
+                text: 'I see',
+                emoji: '👀',
+                cardColor: Color(0xFFFF2D55),
+              ),
+              const JuniorSentenceTile(
+                id: '2',
+                text: 'the cute',
+                emoji: '✨',
+                cardColor: Color(0xFF007AFF),
+              ),
+              JuniorSentenceTile(
+                id: '3',
+                text: r.targetWord,
+                emoji: r.emoji,
+                cardColor: const Color(0xFF10B981),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (_) {}
+
+    // 3. Extra fun sentences pool to guarantee at least 10 rounds per day!
+    final List<List<String>> extraSentences = [
+      ["The sun", "is shining", "brightly", "സൂര്യൻ തിളങ്ങുന്നു ☀️", "☀️"],
+      ["Little puppy", "can run", "very fast", "നായക്കുട്ടി വേഗത്തിൽ ഓടുന്നു 🐶", "🐶"],
+      ["Birds can", "sing a", "sweet song", "പക്ഷികൾ മനോഹരമായി പാടുന്നു 🐦", "🐦"],
+      ["We love to", "play in", "the park", "ഞങ്ങൾ പാർക്കിൽ കളിക്കുന്നു 🏞️", "🏞️"],
+      ["Fish can", "swim in", "the water", "മത്സ്യം വെള്ളത്തിൽ നീന്തുന്നു 🐟", "🐟"],
+      ["I have a", "small red", "ball", "എനിക്ക് ചെറിയൊരു പന്തുണ്ട് ⚽", "⚽"],
+      ["The car goes", "fast on", "the road", "വണ്ടി റോഡിൽ ഓടുന്നു 🚗", "🚗"],
+      ["She has an", "apple and", "orange", "ആപ്പിളും ഓറഞ്ചും ഉണ്ട് 🍎", "🍎"],
+      ["Let us go", "to the", "garden", "നമുക്ക് പൂന്തോട്ടത്തിൽ പോകാം 🌸", "🌸"],
+      ["The stars are", "shining in", "the night", "നക്ഷത്രങ്ങൾ മിന്നുന്നു ⭐", "⭐"],
+      ["We are happy", "every single", "day", "ഞങ്ങൾ എപ്പോഴും സന്തോഷവന്മാരാണ് 😊", "😊"],
+      ["Look at the", "big yellow", "moon", "വലിയ മഞ്ഞ ചന്ദ്രൻ 🌙", "🌙"],
+    ];
+
+    int poolIdx = (day * 3) % extraSentences.length;
+    final colors = [
+      const Color(0xFFFF2D55),
+      const Color(0xFFF59E0B),
+      const Color(0xFF10B981),
+      const Color(0xFF007AFF),
+      const Color(0xFF8B5CF6),
+      const Color(0xFFEC4899),
+    ];
+
+    while (list.length < 10) {
+      final item = extraSentences[poolIdx % extraSentences.length];
+      list.add(JuniorSentenceChallenge(
+        day: day,
+        fullSentence: "${item[0]} ${item[1]} ${item[2]}",
+        translationMl: item[3],
+        hint: "Tap train blocks in the right order!",
+        tiles: [
+          JuniorSentenceTile(
+            id: '1',
+            text: item[0],
+            emoji: '🚂',
+            cardColor: colors[poolIdx % colors.length],
+          ),
+          JuniorSentenceTile(
+            id: '2',
+            text: item[1],
+            emoji: '✨',
+            cardColor: colors[(poolIdx + 1) % colors.length],
+          ),
+          JuniorSentenceTile(
+            id: '3',
+            text: item[2],
+            emoji: item[4],
+            cardColor: colors[(poolIdx + 2) % colors.length],
+          ),
+        ],
+      ));
+      poolIdx++;
+    }
+
+    return list.take(10).toList();
+  }
 }
 
 // ============================================================================
@@ -552,7 +655,10 @@ class _PocketKidsSentenceBuilderPageState
   final FlutterTts _tts = FlutterTts();
 
   late int _currentDay;
-  late JuniorSentenceChallenge _currentChallenge;
+  late List<JuniorSentenceChallenge> _rounds;
+  int _currentRoundIndex = 0;
+  JuniorSentenceChallenge get _currentChallenge =>
+      _rounds[_currentRoundIndex.clamp(0, _rounds.length - 1)];
 
   // Snapped Slots & Tray State
   final List<JuniorSentenceTile?> _placedTiles = [];
@@ -567,7 +673,8 @@ class _PocketKidsSentenceBuilderPageState
   void initState() {
     super.initState();
     _currentDay = widget.initialDay;
-    _currentChallenge = KidsSentenceCurriculum.getForDay(_currentDay);
+    _rounds = KidsSentenceCurriculum.getRoundsForDay(_currentDay);
+    _currentRoundIndex = 0;
     _flameGame = SentenceBuilderFlameEngine();
 
     _trainWheelsController = AnimationController(
@@ -608,7 +715,8 @@ class _PocketKidsSentenceBuilderPageState
     HapticFeedback.selectionClick();
     setState(() {
       _currentDay = newDay;
-      _currentChallenge = KidsSentenceCurriculum.getForDay(_currentDay);
+      _rounds = KidsSentenceCurriculum.getRoundsForDay(_currentDay);
+      _currentRoundIndex = 0;
       _setupRound();
     });
     _tts.speak("Level $_currentDay! ${_currentChallenge.hint}");
@@ -686,7 +794,7 @@ class _PocketKidsSentenceBuilderPageState
     });
 
     // Reward points & star cookies
-    PocketKidsService.addKidsScore(30);
+    PocketKidsService.addKidsScore(15);
     PocketGameAudioService.instance.playVictorySfx();
     HapticFeedback.heavyImpact();
 
@@ -694,9 +802,85 @@ class _PocketKidsSentenceBuilderPageState
     _flameGame.burstVictoryConfetti();
 
     // Karaoke Spoken Read-Aloud
-    _playKaraokeReading();
+    _playKaraokeReading().then((_) {
+      if (!mounted) return;
+      if (_currentRoundIndex + 1 < _rounds.length) {
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          if (!mounted) return;
+          _advanceToNextRound();
+        });
+      } else {
+        widget.onCompleted?.call();
+        _showGrandVictoryDialog();
+      }
+    });
+  }
 
-    widget.onCompleted?.call();
+  void _advanceToNextRound() {
+    if (_currentRoundIndex + 1 < _rounds.length) {
+      setState(() {
+        _currentRoundIndex++;
+        _setupRound();
+      });
+      _tts.speak("Round ${_currentRoundIndex + 1}! ${_currentChallenge.hint}");
+    }
+  }
+
+  void _showGrandVictoryDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🚂🎉', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 12),
+            Text(
+              'Train Builder Champion! 🏆',
+              style: GoogleFonts.fredoka(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'You built all ${_rounds.length} sentences today!\n+150 Kids Score & 3 Stars ⭐⭐⭐',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text(
+                'Awesome! 🚀',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _playKaraokeReading() async {
@@ -797,11 +981,11 @@ class _PocketKidsSentenceBuilderPageState
                             const Text("🚂", style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
                             Text(
-                              "Level $_currentDay: Train Builder",
+                              "Day $_currentDay • Round ${_currentRoundIndex + 1}/${_rounds.length}",
                               style: GoogleFonts.fredoka(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 15,
                               ),
                             ),
                           ],
@@ -824,6 +1008,40 @@ class _PocketKidsSentenceBuilderPageState
                         ),
                       ),
                     ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 🌟 10-Round Progress Dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_rounds.length, (idx) {
+                      final isPassed = idx < _currentRoundIndex ||
+                          (idx == _currentRoundIndex && _isCompleted);
+                      final isCurrent = idx == _currentRoundIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        width: isCurrent ? 20 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isPassed
+                              ? const Color(0xFF10B981)
+                              : (isCurrent
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white24),
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: isCurrent
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                                    blurRadius: 6,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      );
+                    }),
                   ),
 
                   // Malayalam Translation Card
@@ -1088,62 +1306,107 @@ class _PocketKidsSentenceBuilderPageState
           // 🎉 6. Celebratory Card when Completed
           if (_isCompleted)
             Positioned.fill(
-              child: IgnorePointer(
-                child: Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 24,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 24,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF34C759), Color(0xFF00C7BE)],
                     ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF34C759), Color(0xFF00C7BE)],
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF34C759).withValues(alpha: 0.6),
+                        blurRadius: 36,
+                        spreadRadius: 4,
                       ),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF34C759).withValues(alpha: 0.6),
-                          blurRadius: 36,
-                          spreadRadius: 4,
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text("🚂💨 ⭐⭐⭐", style: TextStyle(fontSize: 32)),
+                      const SizedBox(height: 8),
+                      Text(
+                        _currentRoundIndex + 1 < _rounds.length
+                            ? "ROUND ${_currentRoundIndex + 1} CLEARED!"
+                            : "ALL ABOARD CHAMPION!",
+                        style: GoogleFonts.fredoka(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "\"${_currentChallenge.fullSentence}\"",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "+15 KS Points & Golden Star Cookie 🍪",
+                        style: GoogleFonts.outfit(
+                          color: Colors.white.withValues(alpha: 0.95),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (_currentRoundIndex + 1 < _rounds.length) ...[
+                        const SizedBox(height: 16),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            _advanceToNextRound();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Next Sentence 🚂',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Color(0xFFFFD700),
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text("🚂💨 ⭐⭐⭐", style: TextStyle(fontSize: 32)),
-                        const SizedBox(height: 8),
-                        Text(
-                          "ALL ABOARD!",
-                          style: GoogleFonts.fredoka(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "\"${_currentChallenge.fullSentence}\"",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "+30 KS Points & Golden Star Cookie 🍪",
-                          style: GoogleFonts.outfit(
-                            color: Colors.white.withValues(alpha: 0.95),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
               ),
