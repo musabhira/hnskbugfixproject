@@ -180,6 +180,69 @@ class _PocketKidsSpokenDialogueLabPageState
         ? syllabus.rounds.first.targetWord
         : 'Friend';
 
+    if (widget.day <= 15) {
+      // 🌟 Phase 1: Peak Simplicity (1-Word Micro Echoes)
+      _turns = [
+        const _KidDialogueTurn(
+          mascotLine: "Say: Hello! 👋",
+          kidTargetLine: "Hello",
+          phonetics: "Heh-loh!",
+          meaningMl: "'ഹലോ' എന്ന് പറയൂ! (Say Hello)",
+          emoji: "👋",
+        ),
+        _KidDialogueTurn(
+          mascotLine: "Say: $targetWord! 🌟",
+          kidTargetLine: targetWord,
+          phonetics: targetWord,
+          meaningMl: "'$targetWord' എന്ന് പറയൂ!",
+          emoji: "🌟",
+        ),
+        const _KidDialogueTurn(
+          mascotLine: "Say: Star! ⭐",
+          kidTargetLine: "Star",
+          phonetics: "Stahr!",
+          meaningMl: "'സ്റ്റാർ' എന്ന് പറയൂ!",
+          emoji: "⭐",
+        ),
+        const _KidDialogueTurn(
+          mascotLine: "Say: Bye Bye! 🎉",
+          kidTargetLine: "Bye bye",
+          phonetics: "By-by!",
+          meaningMl: "'ബൈ ബൈ' എന്ന് പറയൂ!",
+          emoji: "🎉",
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day <= 30) {
+      // 🌟 Phase 2: 2-Word Combos
+      _turns = [
+        const _KidDialogueTurn(
+          mascotLine: "Good morning, friend! ☀️",
+          kidTargetLine: "Good morning",
+          phonetics: "Gud mor-ning!",
+          meaningMl: "'ഗുഡ് മോർണിംഗ്' എന്ന് പറയൂ!",
+          emoji: "☀️",
+        ),
+        _KidDialogueTurn(
+          mascotLine: "Look at the $targetWord! 🌟",
+          kidTargetLine: "Big $targetWord",
+          phonetics: "Big $targetWord",
+          meaningMl: "'ബിഗ് $targetWord' എന്ന് പറയൂ!",
+          emoji: "👀",
+        ),
+        const _KidDialogueTurn(
+          mascotLine: "Thank you so much! 💖",
+          kidTargetLine: "Thank you",
+          phonetics: "Thank yoo!",
+          meaningMl: "'താങ്ക് യു' എന്ന് പറയൂ!",
+          emoji: "💖",
+        ),
+      ];
+      return;
+    }
+
     _turns = [
       _KidDialogueTurn(
         mascotLine: "Hello, little friend! What is your name? 👋",

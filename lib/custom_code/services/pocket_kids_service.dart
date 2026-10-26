@@ -1171,6 +1171,11 @@ class PocketKidsService {
     return isDayStepCompleted(day, stepIndex - 1);
   }
 
+  /// 🧒 Dynamic Step Count: Exactly 4 bite-sized micro-steps per day for peak simplicity!
+  static int getTotalDailyStepsForDay(int day) {
+    return 4;
+  }
+
   static Future<void> markDayStepCompleted(int day, int stepIndex) async {
     final key = 'pm_kid_day_${day}_step_$stepIndex';
     _completedDaySteps[key] = true;
