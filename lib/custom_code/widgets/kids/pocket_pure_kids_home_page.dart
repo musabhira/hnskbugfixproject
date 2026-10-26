@@ -2816,7 +2816,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                   updatedCount++;
                 }
               }
-              if (!wasDayAlreadyCompleted && updatedCount >= 8) {
+              if (!wasDayAlreadyCompleted && updatedCount >= 8 && stepIndex == 8) {
                 await PocketKidsService.markDayCompleted(day, 3);
                 if (mounted && context.mounted) {
                   PocketKidsHeroCardClaimDialog.show(context, day: day);

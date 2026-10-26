@@ -60,8 +60,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
   final List<String> _placedSentenceWords = [];
   List<String> _availableSentenceWords = ['cat', 'I', 'a', 'see'];
 
-  // Step 6: House Defense state
-  bool _defenseArmed = false;
+
 
   static const List<Map<String, dynamic>> _stepsMeta = [
     {
@@ -93,12 +92,6 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       'icon': '💬',
       'color': Color(0xFFF59E0B),
       'desc': 'Mascot asks you a friendly question. Answer in English!',
-    },
-    {
-      'title': 'Arm Day 1 House Defense',
-      'icon': '🛡️',
-      'color': Color(0xFFFFD700),
-      'desc': 'Set your Day 1 Defense Shield to protect your house from raids!',
     },
   ];
 
@@ -154,9 +147,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       setState(() {
         _completedSteps.clear();
         _completedSteps.addAll(completed);
-        _starsCount = completed.length * 3;
-        _activeStep = completed.length < 6 ? completed.length : 5;
-        _defenseArmed = completed.contains(5);
+        _activeStep = completed.length < 5 ? completed.length : 4;
       });
       _speakCurrentStepPrompt();
     }
@@ -172,8 +163,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       _starsCount = _completedSteps.length * 3;
     });
 
-    if (stepIndex == 5) {
-      // Day 1 fully completed!
+    if (stepIndex == 4) {
+      // Day 1 fully completed! All 5 learning games done!
       await PocketKidsService.completeDayGame(1, 3);
       await PocketKidsDefenseService.ensureDay1DefenseArmed();
       await PocketKidsService.addStars(10);
@@ -354,30 +345,6 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
     }
   }
 
-  // --- Step 6: Arm House Defense Logic ---
-  Future<void> _armHouseDefense() async {
-    HapticFeedback.heavyImpact();
-
-    const defenseTrap = KidHouseDefenseTrap(
-      day: 1,
-      type: KidDefenseTrapType.sentenceBuilder,
-      title: 'Day 1 Cat Sentry Shield',
-      prompt: 'Snap the words to defend: I see a cat!',
-      targetPhrase: 'I see a cat',
-      fragments: ['cat', 'I', 'a', 'see'],
-      helperMascot: '🐱',
-      spokenText: 'Assemble the sentence: I see a cat',
-    );
-
-    await PocketKidsDefenseService.armDayDefenseTrap(1, defenseTrap);
-
-    setState(() {
-      _defenseArmed = true;
-    });
-
-    _speak("Day 1 House Defense is armed! Your home is now protected from raids!");
-    _markStepCompleted(5);
-  }
 
   void _showStepCheerModal(int stepIndex) {
     showModalBottomSheet(
@@ -420,7 +387,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 onPressed: () {
                   Navigator.pop(ctx);
                   setState(() {
-                    _activeStep = (stepIndex + 1).clamp(0, 5);
+                    _activeStep = (stepIndex + 1).clamp(0, 4);
                   });
                   _speakCurrentStepPrompt();
                 },
@@ -630,7 +597,7 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Complete 6 games to conquer Day 1 and arm your House Defense Shield!',
+                  'Complete all 5 games to conquer Day 1 and unlock your Hero Card!',
                   style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, height: 1.3),
                 ),
               ],
@@ -714,10 +681,8 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
       case 3:
         return _buildSpokenEchoGame();
       case 4:
-        return _buildAskAndAnswerGame();
-      case 5:
       default:
-        return _buildHouseDefenseGame();
+        return _buildAskAndAnswerGame();
     }
   }
 
@@ -1218,130 +1183,5 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
     );
   }
 
-  // --- Step 6: Arm House Defense UI ---
-  Widget _buildHouseDefenseGame() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Text(
-            'Arm Day 1 House Defense 🛡️',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 19,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Protect your Avatar House! Any kid attacking you must solve this trap!',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-          ),
-          const SizedBox(height: 20),
 
-          // Shield Preview Card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: _defenseArmed ? const Color(0xFF10B981) : const Color(0xFFFFD700),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              children: [
-                const Text('🛡️ 🐱 ⚡', style: TextStyle(fontSize: 38)),
-                const SizedBox(height: 8),
-                Text(
-                  'DAY 1 DEFENSE TRAP: SENTENCE BUILDER',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '"I see a cat"',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Attacker must snap the words correctly or face shield deflection!',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _defenseArmed
-                        ? const Color(0xFF064E3B)
-                        : const Color(0xFF451A03),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _defenseArmed ? Icons.shield_rounded : Icons.shield_outlined,
-                        color: _defenseArmed ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _defenseArmed ? 'STATUS: ARMED & ACTIVE' : 'STATUS: READY TO ARM',
-                        style: GoogleFonts.jetBrainsMono(
-                          color: _defenseArmed ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Arm Defense Button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: const Color(0xFF78350F),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              elevation: 4,
-            ),
-            onPressed: _armHouseDefense,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.security_rounded, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  _defenseArmed ? 'RE-ARM DEFENSE SHIELD' : 'ARM MY HOUSE DEFENSE 🛡️',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -308,7 +308,7 @@ class PocketCitadelChallengeGenerator {
       return HouseShieldQuestion(
         id: 'raid_gate_${qNum}_sentence_builder_day$day',
         question: localizedHint.isNotEmpty
-            ? '🧩 Day $day • വാക്യം നിർമ്മിക്കുക:\n"$localizedHint"'
+            ? '${PocketLanguageService.localize(en: "🧩 Day $day • Construct the sentence:", ml: "🧩 Day $day • വാക്യം നിർമ്മിക്കുക:", hi: "🧩 दिन $day • वाक्य बनाएं:", ta: "🧩 நாள் $day • வாக்கியத்தை உருவாக்கவும்:")}\n"$localizedHint"'
             : '🧩 Day $day • Construct the target sentence in order:',
         options: scrambled,
         correctIndex: 0,
@@ -327,7 +327,7 @@ class PocketCitadelChallengeGenerator {
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_sentence_builder_day$day',
       question:
-          '🧩 Day $day • വാക്യം നിർമ്മിക്കുക:\n"ഞാൻ ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു."',
+          PocketLanguageService.localize(en: "🧩 Day $day • Construct the sentence:\n\"I practice speaking English with confidence.\"", ml: "🧩 Day $day • വാക്യം നിർമ്മിക്കുക:\n\"ഞാൻ ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു.\"", hi: "🧩 दिन $day • वाक्य बनाएं:\n\"मैं आत्मविश्वास से अंग्रेजी बोलता हूँ।\"", ta: "🧩 நாள் $day • வாக்கியத்தை உருவாக்கவும்:\n\"நான் நம்பிக்கையுடன் ஆங்கிலம் பேசுகிறேன்.\""),
       options: scrambled,
       correctIndex: 0,
       explanation: fallback,
@@ -403,7 +403,12 @@ class PocketCitadelChallengeGenerator {
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_spelling_day$day',
       question:
-          '🔤 Day $day • അക്ഷരവിന്യാസം (Spelling Challenge):\nഅർത്ഥം: "$meaningMl"\nതാഴെയുള്ള അക്ഷരങ്ങൾ അടുക്കിവെച്ച് വാക്കിന്റെ സ്പെല്ലിംഗ് പൂർത്തിയാക്കുക:',
+          PocketLanguageService.localize(
+            en: '🔤 Day $day • Word Spelling Challenge:\nMeaning: "$meaningMl"\nArrange the letters to spell the word:',
+            ml: '🔤 Day $day • അക്ഷരവിന്യാസം:\nഅർത്ഥം: "$meaningMl"\nതാഴെയുള്ള അക്ഷരങ്ങൾ അടുക്കിവെച്ച് വാക്കിന്റെ സ്പെല്ലിംഗ് പൂർത്തിയാക്കുക:',
+            hi: '🔤 दिन $day • शब्द वर्तनी:\nअर्थ: "$meaningMl"\nअक्षरों को सही क्रम में लगाकर शब्द पूरा करें:',
+            ta: '🔤 நாள் $day • சொல் எழுத்துப்பிழை:\nபொருள்: "$meaningMl"\nஎழுத்துக்களை ஒழுங்குபடுத்தி சொல்லை முடிக்கவும்:',
+          ),
       options: bankLetters,
       correctIndex: 0,
       explanation: targetWord,
@@ -443,20 +448,32 @@ class PocketCitadelChallengeGenerator {
         '______',
       );
 
+      final pastTag = PocketLanguageService.localize(en: 'PAST • Before', ml: 'PAST • കഴിഞ്ഞത്', hi: 'PAST • भूतकाल', ta: 'PAST • இறந்த காலம்');
+      final presTag = PocketLanguageService.localize(en: 'PRESENT • Now', ml: 'PRESENT • ഇപ്പോൾ', hi: 'PRESENT • वर्तमान', ta: 'PRESENT • நிகழ் காலம்');
+      final futTag = PocketLanguageService.localize(en: 'FUTURE • Next', ml: 'FUTURE • ഇനി', hi: 'FUTURE • भविष्य', ta: 'FUTURE • எதிர்காலம்');
+
       final options = [
-        '${v.past} (PAST • കഴിഞ്ഞത്)',
-        '${v.present} (PRESENT • ഇപ്പോൾ)',
-        '${v.future} (FUTURE • ഇനി)',
+        '${v.past} ($pastTag)',
+        '${v.present} ($presTag)',
+        '${v.future} ($futTag)',
       ];
+
+      final meaningStr = v.getLocalizedMeaning();
+      final displayMeaning = meaningStr.isNotEmpty ? meaningStr : v.meaningMl;
 
       return HouseShieldQuestion(
         id: 'raid_gate_${qNum}_verb_timeline_day$day',
         question:
-            '⏳ Day $day • ക്രിയാ കാലം ($targetTense):\n"$blankedSentence"\n(ക്രിയ: ${v.baseVerb} • ${v.meaningMl})',
+            PocketLanguageService.localize(
+              en: '⏳ Day $day • Verb Tense ($targetTense):\n"$blankedSentence"\n(Verb: ${v.baseVerb} • $displayMeaning)',
+              ml: '⏳ Day $day • ക്രിയാ കാലം ($targetTense):\n"$blankedSentence"\n(ക്രിയ: ${v.baseVerb} • $displayMeaning)',
+              hi: '⏳ दिन $day • क्रिया काल ($targetTense):\n"$blankedSentence"\n(क्रिया: ${v.baseVerb} • $displayMeaning)',
+              ta: '⏳ நாள் $day • வினைச்சொல் காலம் ($targetTense):\n"$blankedSentence"\n(வினை: ${v.baseVerb} • $displayMeaning)',
+            ),
         options: options,
         correctIndex: tenseChoice,
         explanation:
-            'ശരിയായ രൂപം: "$targetForm" ($targetTense tense). വാക്യം: "$sentence"',
+            'Correct: "$targetForm" ($targetTense). "$sentence"',
         category: 'tense',
         trapType: 'tense_fortress',
         gameFormat: 'verb_timeline',
@@ -543,7 +560,12 @@ class PocketCitadelChallengeGenerator {
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_chat_reply_day$day',
       question:
-          '💬 Day $day • ചാറ്റ് മറുപടി നൽകുക:\nമെസ്സേജ്: "$incoming"\n(മറുപടിയുടെ അർത്ഥം: "$expectedMl")',
+          PocketLanguageService.localize(
+            en: '💬 Day $day • Send Chat Reply:\nMessage: "$incoming"\n(Reply meaning: "$expectedMl")',
+            ml: '💬 Day $day • ചാറ്റ് മറുപടി നൽകുക:\nമെസ്സേജ്: "$incoming"\n(മറുപടിയുടെ അർത്ഥം: "$expectedMl")',
+            hi: '💬 दिन $day • चैट उत्तर दें:\nसंदेश: "$incoming"\n(उत्तर का अर्थ: "$expectedMl")',
+            ta: '💬 நாள் $day • அரட்டை பதில் அனுப்பவும்:\nசெய்தி: "$incoming"\n(பதிலின் பொருள்: "$expectedMl")',
+          ),
       options: scrambled,
       correctIndex: 0,
       explanation: expected,
@@ -575,7 +597,12 @@ class PocketCitadelChallengeGenerator {
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_negative_sentence_day$day',
       question:
-          '⛔ Day $day • നെഗറ്റീവ് വാക്യമാക്കുക:\n"$pos"\n(ലക്ഷ്യം: "$negMl")',
+          PocketLanguageService.localize(
+            en: '⛔ Day $day • Change into Negative Sentence:\n"$pos"\n(Meaning: "$negMl")',
+            ml: '⛔ Day $day • നെഗറ്റീവ് വാക്യമാക്കുക:\n"$pos"\n(ലക്ഷ്യം: "$negMl")',
+            hi: '⛔ दिन $day • नकारात्मक वाक्य बनाएं:\n"$pos"\n(अर्थ: "$negMl")',
+            ta: '⛔ நாள் $day • எதிர்மறை வாக்கியமாக மாற்றவும்:\n"$pos"\n(பொருள்: "$negMl")',
+          ),
       options: scrambled,
       correctIndex: 0,
       explanation: neg,
@@ -609,7 +636,12 @@ class PocketCitadelChallengeGenerator {
 
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_spoken_whisper_day$day',
-      question: '🎙️ Day $day • സ്പോക്കൺ വിസ്പർ:\n"$passageMl"',
+      question: PocketLanguageService.localize(
+        en: '🎙️ Day $day • Spoken Whisper:\n"$passage"',
+        ml: '🎙️ Day $day • സ്പോക്കൺ വിസ്പർ:\n"$passageMl"',
+        hi: '🎙️ दिन $day • मौखिक अभ्यास:\n"$passage"',
+        ta: '🎙️ நாள் $day • பேசும் பயிற்சி:\n"$passage"',
+      ),
       options: scrambled,
       correctIndex: 0,
       explanation: shortPassage,

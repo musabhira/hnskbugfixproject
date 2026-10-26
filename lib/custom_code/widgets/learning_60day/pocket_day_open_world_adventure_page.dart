@@ -26,7 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/spoken/pocket_spoken_avatar_simulator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_vocab_open_world_drive_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
+
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
@@ -227,24 +227,19 @@ class _PocketDayOpenWorldAdventurePageState
   bool _isGateExamPassed = false;
   int get _totalSteps {
     if (PocketKidsService.isKidAccount && widget.day == 1) {
-      return 14;
+      return 13;
     }
-    return 16;
+    return 14;
   }
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 16}) {
-    if (totalSteps == 16 && stepIndex == 16) {
-      // Step 16 is the Summit Review Milestone right past the Gate!
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 14}) {
+    if (stepIndex == totalSteps) {
+      // Summit Review Milestone right past the Gate!
       const x = 4350.0;
       return Offset(x, getGroundY(x));
     }
-    if (totalSteps == 14 && stepIndex == 14) {
-      // Step 14 is the Summit Review Milestone right past the Gate for Kids!
-      const x = 4350.0;
-      return Offset(x, getGroundY(x));
-    }
-    final stepsForSlope = (totalSteps == 16 || totalSteps == 14) ? (totalSteps - 1) : totalSteps;
+    final stepsForSlope = totalSteps - 1;
     final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
     const startX = 1040.0;
@@ -1940,7 +1935,7 @@ class _PocketDayOpenWorldAdventurePageState
                                   widget.onCompleted?.call();
                                 },
                               );
-                              await _syncStepCompletionIfDone(16);
+                              await _syncStepCompletionIfDone(_totalSteps);
                               await _loadState(preserveCarPosition: true);
                             } else {
                               setModalState(() {
@@ -2438,7 +2433,7 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildMountainStepNode(int stepIndex) {
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
-    final isPrevDone = (stepIndex == 16)
+    final isPrevDone = (stepIndex == _totalSteps)
         ? _isGateExamPassed
         : (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
     // Strict sequential unlocking:
@@ -2562,7 +2557,7 @@ class _PocketDayOpenWorldAdventurePageState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            (stepIndex == 16)
+                            (stepIndex == _totalSteps)
                                 ? '🔒 Pass the Gate ${widget.day} Spoken Exam on the summit to unlock the Day ${widget.day} Performance Review!'
                                 : PocketLanguageService.localize(
                                     en: '🔒 Complete Step ${stepIndex - 1} first to unlock Step $stepIndex!',
@@ -2810,11 +2805,9 @@ class _PocketDayOpenWorldAdventurePageState
           case 11:
             return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
           case 12:
-            return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
-          case 13:
             return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-          case 14:
-            return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
+          case 13:
+            return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
           default:
             return const _StepInfo('Practice Ledge', '⭐', Colors.white);
         }
@@ -2846,13 +2839,9 @@ class _PocketDayOpenWorldAdventurePageState
         case 12:
           return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
         case 13:
-          return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
-        case 14:
-          return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
-        case 15:
           return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-        case 16:
-          return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
+        case 14:
+          return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
         default:
           return const _StepInfo('Practice Ledge', '⭐', Colors.white);
       }
@@ -2884,13 +2873,9 @@ class _PocketDayOpenWorldAdventurePageState
       case 12:
         return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
       case 13:
-        return const _StepInfo('House Defense Shield Command', '🛡️', Color(0xFF8B5CF6));
-      case 14:
-        return const _StepInfo('Poketalk: 4-Day Spoken Pact', '📞', Color(0xFFF59E0B));
-      case 15:
         return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-      case 16:
-        return _StepInfo('Day ${widget.day} Review & Performance Card', '🏆', const Color(0xFFFFD700));
+      case 14:
+        return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
       default:
         return const _StepInfo('Practice Ledge', '⭐', Colors.white);
     }
@@ -2916,11 +2901,11 @@ class _PocketDayOpenWorldAdventurePageState
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
 
-    // Kids Day 1 specific step mappings (English Hub & Poketalk removed, so 12=Defense, 13=Attack, 14=Review)
+    // Kids Day 1 specific step mappings (12=Attack, 13=Review; defense is automated upon completing day!)
     final isKid = PocketKidsService.isKidAccount;
     if (isKid && day == 1) {
       if (s == 12) {
-        await PocketHouseDefenseChatPage.show(
+        await PocketHouseAttackPage.show(
           context,
           day: day,
           stepIndex: 12,
@@ -2932,18 +2917,6 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 13) {
-        await PocketHouseAttackPage.show(
-          context,
-          day: day,
-          stepIndex: 13,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
-        );
-        await _syncStepCompletionIfDone(13);
-        await _loadState(preserveCarPosition: true);
-        return;
-      }
-      if (s == 14) {
         await PocketDay1ReviewCardPage.show(
           context,
           day: day,
@@ -2952,7 +2925,7 @@ class _PocketDayOpenWorldAdventurePageState
             widget.onCompleted?.call();
           },
         );
-        await _syncStepCompletionIfDone(14);
+        await _syncStepCompletionIfDone(13);
         await _loadState(preserveCarPosition: true);
         return;
       }
@@ -3202,31 +3175,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // House Defense Shield Command (Step 13 on All Days 1 to 90)
+    // House Attack Quest: Citadel Raid (Step 13 on All Days 1 to 90)
     if (s == 13) {
-      await PocketHouseDefenseChatPage.show(
-        context,
-        day: day,
-        stepIndex: s,
-        userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
-      );
-      await _syncStepCompletionIfDone(s);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Poketalk: 4-Day Spoken Pact (Step 14 on All Days 1 to 90)
-    if (s == 14) {
-      await PocketTalkCardSwiperDialog.show(context);
-      await _onStepCompleted(s);
-      await _syncStepCompletionIfDone(s);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // House Attack Quest: Citadel Raid (Step 15 on All Days 1 to 90)
-    if (s == 15) {
       await PocketHouseAttackPage.show(
         context,
         day: day,
@@ -3239,8 +3189,8 @@ class _PocketDayOpenWorldAdventurePageState
       return;
     }
 
-    // Step 16: Grand Review & Performance Card (Step 16 on All Days 1 to 90)
-    if (s == 16) {
+    // Step 14: Grand Review & Performance Card (Step 14 on All Days 1 to 90)
+    if (s == 14) {
       await PocketDay1ReviewCardPage.show(
         context,
         day: day,
@@ -3249,7 +3199,7 @@ class _PocketDayOpenWorldAdventurePageState
           widget.onCompleted?.call();
         },
       );
-      await _syncStepCompletionIfDone(16);
+      await _syncStepCompletionIfDone(14);
       await _loadState(preserveCarPosition: true);
       return;
     }
