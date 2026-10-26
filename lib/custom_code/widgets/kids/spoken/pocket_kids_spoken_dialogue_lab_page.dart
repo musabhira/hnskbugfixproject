@@ -354,6 +354,9 @@ class _PocketKidsSpokenDialogueLabPageState
       try {
         await _speech.listen(
           listenOptions: stt.SpeechListenOptions(
+            listenFor: const Duration(seconds: 15),
+            pauseFor: const Duration(seconds: 3),
+            partialResults: true,
             listenMode: stt.ListenMode.confirmation,
           ),
           onResult: (result) {
@@ -371,11 +374,17 @@ class _PocketKidsSpokenDialogueLabPageState
             }
           },
         );
-      } catch (_) {
-        _fallbackTimerRecognition();
+      } catch (e) {
+        debugPrint('STT listen error: $e');
+        _evaluateSpokenResult();
       }
     } else {
-      _fallbackTimerRecognition();
+      setState(() {
+        _isListening = false;
+        _feedbackMessage = "Microphone not initialized. Please ensure mic permission is granted! 🎙️";
+      });
+      _waveController.stop();
+      _waveController.reset();
     }
   }
 
@@ -1076,6 +1085,26 @@ class _PocketKidsSpokenDialogueLabPageState
                           fontSize: 14,
                         ),
                       ),
+                      if (_isListening && _recognizedSpokenText.trim().isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF60A5FA), width: 1.5),
+                          ),
+                          child: Text(
+                            '🎙️ "$_recognizedSpokenText"',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF1E40AF),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                       if (_feedbackMessage != null) ...[
                         const SizedBox(height: 12),
                         Container(

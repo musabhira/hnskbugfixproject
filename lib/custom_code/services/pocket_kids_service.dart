@@ -1183,6 +1183,21 @@ class PocketKidsService {
     await addStars(1);
     try {
       final prefs = await SharedPreferences.getInstance();
+    } catch (_) {}
+  }
+
+  /// 🛡️ Check if the Day Master Defense Card has already been claimed for this day
+  static bool isDayCardClaimed(int day) {
+    final key = 'pm_kid_day_${day}_card_claimed';
+    return _completedDaySteps[key] ?? false;
+  }
+
+  /// Mark Day Master Defense Card claimed so it only awards once per day
+  static Future<void> markDayCardClaimed(int day) async {
+    final key = 'pm_kid_day_${day}_card_claimed';
+    _completedDaySteps[key] = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(key, true);
     } catch (_) {}
   }

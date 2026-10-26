@@ -2815,16 +2815,19 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
               await launchFn();
               await PocketKidsService.markDayStepCompleted(day, stepIndex);
 
-              // If all 14 steps are finished and day was not yet completed, mark day complete & auto-award Defense Card!
-              final wasDayAlreadyCompleted = PocketKidsService.isDayCompleted(day);
+              // 🛡️ Only award & show Defense Card when ALL sequential steps are completed AND user finishes the FINAL step of the day!
+              final wasCardClaimed = PocketKidsService.isDayCardClaimed(day);
               int updatedCount = 0;
               for (int s = 1; s <= totalDailySteps; s++) {
                 if (PocketKidsService.isDayStepCompleted(day, s)) {
                   updatedCount++;
                 }
               }
-              if (!wasDayAlreadyCompleted && updatedCount >= totalDailySteps && stepIndex == totalDailySteps) {
+              if (!wasCardClaimed &&
+                  updatedCount >= totalDailySteps &&
+                  stepIndex == totalDailySteps) {
                 await PocketKidsService.markDayCompleted(day, 3);
+                await PocketKidsService.markDayCardClaimed(day);
                 if (mounted && context.mounted) {
                   PocketKidsHeroCardClaimDialog.show(context, day: day);
                 }

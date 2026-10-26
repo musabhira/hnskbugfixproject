@@ -590,20 +590,33 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
 
           // 3. 🌟 Top Kumi Reference Header & Question UI
           SafeArea(
-            child: Column(
-              children: [
-                _buildTopKumiHeader(),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          _buildTopKumiHeader(),
 
-                // Mascot Dialogue & Prompt Banner (Reference Image 1 Screen 2)
-                _buildMascotPromptBanner(currentVerb, stageName, stageHint, nativeMeaning),
+                          // Mascot Dialogue & Prompt Banner (Reference Image 1 Screen 2)
+                          _buildMascotPromptBanner(
+                              currentVerb, stageName, stageHint, nativeMeaning),
 
-                const Spacer(),
+                          const Spacer(),
 
-                // Option Choice Chips & "Check it" Lime Green Button
-                _buildOptionChipsAndCheckButton(),
+                          // Option Choice Chips & "Check it" Lime Green Button
+                          _buildOptionChipsAndCheckButton(),
 
-                const SizedBox(height: 16),
-              ],
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -791,12 +804,16 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
                   children: [
                     Row(
                       children: [
-                        Text(
-                          currentVerb.baseVerb,
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF0F172A),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 22,
+                        Flexible(
+                          child: Text(
+                            currentVerb.baseVerb,
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -815,12 +832,15 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
                       style: GoogleFonts.inter(
                         color: const Color(0xFF64748B),
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 12.5,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
@@ -856,35 +876,38 @@ class _PocketKidsTenseDropGameState extends State<PocketKidsTenseDropGame>
               ),
             ),
             alignment: Alignment.center,
-            child: RichText(
-              textAlign: TextAlign.center,
-              softWrap: true,
-              text: TextSpan(
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF475569),
-                  fontSize: 13.5,
-                  height: 1.35,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: RichText(
+                textAlign: TextAlign.center,
+                softWrap: true,
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF475569),
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                  children: [
+                    const TextSpan(text: 'What is the '),
+                    TextSpan(
+                      text: stageName,
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF0284C7),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    const TextSpan(text: ' tense? '),
+                    TextSpan(
+                      text: '($stageHint)',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFD97706),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
-                children: [
-                  const TextSpan(text: 'What is the '),
-                  TextSpan(
-                    text: stageName,
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF0284C7),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14.5,
-                    ),
-                  ),
-                  const TextSpan(text: ' tense?\n'),
-                  TextSpan(
-                    text: '($stageHint)',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFD97706),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),

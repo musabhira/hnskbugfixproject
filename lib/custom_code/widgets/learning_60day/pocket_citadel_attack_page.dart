@@ -5556,8 +5556,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     GestureDetector(
                       onTap: _onTapBottomAttack,
                       child: Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -5603,8 +5603,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapFightButton,
                     child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -5629,8 +5629,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('🥊', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 5),
+                          const Text('🥊', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
                           Text(
                             'FIGHT',
                             style: GoogleFonts.outfit(
@@ -5748,8 +5748,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     GestureDetector(
                       onTap: _onTapBottomAttack,
                       child: Container(
-                        height: 38,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: 40,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
@@ -5775,7 +5775,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('⚔️', style: TextStyle(fontSize: 13)),
+                            const Text('⚔️', style: TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
                             Text(
                               'ATTACK',
@@ -5795,8 +5795,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapFightButton,
                     child: Container(
-                      height: 38,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -5821,8 +5821,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('🥊', style: TextStyle(fontSize: 13)),
-                          const SizedBox(width: 5),
+                          const Text('🥊', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
                           Text(
                             'FIGHT',
                             style: GoogleFonts.outfit(
