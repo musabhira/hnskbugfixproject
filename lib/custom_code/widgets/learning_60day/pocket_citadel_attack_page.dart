@@ -18,6 +18,7 @@ import 'pocket_citadel_challenge_generator.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
+import 'games/pocket_citadel_runner_attack_page.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -6774,23 +6775,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
 
     final bool isEscort = (widget.neighbor.isVip && !_isEscortDefeated);
+    final count = (isEscort && _escortQuestions.isNotEmpty)
+        ? _escortQuestions.length
+        : widget.neighbor.day;
 
-    // Open the challenge questions container
-    setState(() {
-      _isEscortMode = isEscort;
-      _defenseQuestions = isEscort ? _escortQuestions : _fortressQuestions;
-      _isQuestionSheetOpen = true;
-      _raidStep = 1;
-      _correctCount = 0;
-      _incorrectCount = 0;
-      _currentQIdx = 0;
-      _lastPreparedQIdx = -1;
-      _retriesRemaining = isEscort
-          ? 1
-          : PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
-              widget.neighbor.day);
-      _selectedOption = -1;
-      _startCombatTimer();
+    // 🏃 Launch Subway-Surfers Style 2D Runner Citadel Attack Game!
+    PocketCitadelRunnerAttackPage.open(
+      context,
+      defenderName: widget.neighbor.name,
+      defenderLevel: count > 0 ? count : widget.neighbor.day,
+      defenderId: widget.neighbor.id,
+      isKidMode: widget.isKidMode,
+    ).then((result) {
+      if (result != null && result['passed'] == true) {
+        _executeCitadelAttack();
+      }
     });
   }
 

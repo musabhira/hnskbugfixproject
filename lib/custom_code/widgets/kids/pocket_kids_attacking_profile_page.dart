@@ -4,10 +4,10 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_house_challenge_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_citadel_runner_attack_page.dart';
 
 /// ⚔️ Dedicated Attacking Profile Page for Kids Mode
 class PocketKidsAttackingProfilePage extends StatefulWidget {
@@ -119,10 +119,12 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
   }
 
   void _openHouseChallenge() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PocketKidsHouseChallengePage(defender: widget.mate),
-      ),
+    PocketCitadelRunnerAttackPage.open(
+      context,
+      defenderName: widget.mate.name,
+      defenderLevel: widget.mate.dayLevel,
+      defenderId: widget.mate.id,
+      isKidMode: true,
     );
   }
 

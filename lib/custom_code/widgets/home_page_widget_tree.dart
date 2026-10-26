@@ -1621,6 +1621,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           opponentDay: 1,
           questionCount: challenge.questionCount,
           isKidMode: false,
+          isOpponentRun: true,
         ),
       );
     }

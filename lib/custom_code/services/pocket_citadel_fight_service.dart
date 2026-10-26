@@ -24,6 +24,11 @@ class CitadelFightChallenge {
   final int opponentScore;
   final int opponentSeconds;
   final int questionCount;
+  final int duelSeed;
+  final int challengerCorrect;
+  final int opponentCorrect;
+  final double challengerTimeSeconds;
+  final double opponentTimeSeconds;
   final DateTime createdAt;
 
   const CitadelFightChallenge({
@@ -44,6 +49,11 @@ class CitadelFightChallenge {
     this.opponentScore = 0,
     this.opponentSeconds = 0,
     this.questionCount = 20,
+    this.duelSeed = 20240607,
+    this.challengerCorrect = 0,
+    this.opponentCorrect = 0,
+    this.challengerTimeSeconds = 0.0,
+    this.opponentTimeSeconds = 0.0,
     required this.createdAt,
   });
 
@@ -65,6 +75,11 @@ class CitadelFightChallenge {
         'opponent_score': opponentScore,
         'opponent_seconds': opponentSeconds,
         'question_count': questionCount,
+        'duel_seed': duelSeed,
+        'challenger_correct': challengerCorrect,
+        'opponent_correct': opponentCorrect,
+        'challenger_time_seconds': challengerTimeSeconds,
+        'opponent_time_seconds': opponentTimeSeconds,
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -87,6 +102,13 @@ class CitadelFightChallenge {
       opponentScore: (json['opponent_score'] as num?)?.toInt() ?? 0,
       opponentSeconds: (json['opponent_seconds'] as num?)?.toInt() ?? 0,
       questionCount: (json['question_count'] as num?)?.toInt() ?? 20,
+      duelSeed: (json['duel_seed'] as num?)?.toInt() ?? 20240607,
+      challengerCorrect: (json['challenger_correct'] as num?)?.toInt() ?? 0,
+      opponentCorrect: (json['opponent_correct'] as num?)?.toInt() ?? 0,
+      challengerTimeSeconds: (json['challenger_time_seconds'] as num?)?.toDouble() ??
+          ((json['challenger_seconds'] as num?)?.toDouble() ?? 0.0),
+      opponentTimeSeconds: (json['opponent_time_seconds'] as num?)?.toDouble() ??
+          ((json['opponent_seconds'] as num?)?.toDouble() ?? 0.0),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
           : DateTime.now(),
@@ -157,6 +179,9 @@ class PocketCitadelFightService {
     required CitadelFightChallenge challenge,
     required int score,
     required int seconds,
+    int? challengerCorrect,
+    double? challengerTimeSeconds,
+    int? duelSeed,
   }) async {
     final updated = CitadelFightChallenge(
       id: challenge.id,
@@ -172,6 +197,9 @@ class PocketCitadelFightService {
       status: 'pending_opponent',
       challengerScore: score,
       challengerSeconds: seconds,
+      challengerCorrect: challengerCorrect ?? (score / 180).round().clamp(0, challenge.questionCount),
+      challengerTimeSeconds: challengerTimeSeconds ?? seconds.toDouble(),
+      duelSeed: duelSeed ?? challenge.duelSeed,
       questionCount: challenge.questionCount,
       createdAt: challenge.createdAt,
     );
@@ -193,6 +221,9 @@ class PocketCitadelFightService {
           'challenger_seconds': seconds,
           'challenger_score': score,
           'question_count': challenge.questionCount,
+          'duel_seed': updated.duelSeed,
+          'challenger_correct': updated.challengerCorrect,
+          'challenger_time_seconds': updated.challengerTimeSeconds,
         },
       });
     } catch (_) {}
@@ -210,6 +241,9 @@ class PocketCitadelFightService {
           'challenger_seconds': seconds,
           'challenger_score': score,
           'question_count': challenge.questionCount,
+          'duel_seed': updated.duelSeed,
+          'challenger_correct': updated.challengerCorrect,
+          'challenger_time_seconds': updated.challengerTimeSeconds,
         },
         'created_at': DateTime.now().toIso8601String(),
       });
@@ -223,21 +257,28 @@ class PocketCitadelFightService {
     required CitadelFightChallenge challenge,
     required int opponentScore,
     required int opponentSeconds,
+    int? opponentCorrect,
+    double? opponentTimeSeconds,
   }) async {
     // Determine winner:
-    // 1. Higher score wins.
-    // 2. If equal score, faster speed (fewer seconds) wins!
+    // 1. More correct answers wins.
+    // 2. If equal correct answers, faster speed (fewer seconds) wins!
+    final aC = challenge.challengerCorrect > 0
+        ? challenge.challengerCorrect
+        : (challenge.challengerScore / 180).round().clamp(0, challenge.questionCount);
+    final bC = opponentCorrect ?? (opponentScore / 180).round().clamp(0, challenge.questionCount);
+    final aT = challenge.challengerTimeSeconds > 0
+        ? challenge.challengerTimeSeconds
+        : challenge.challengerSeconds.toDouble();
+    final bT = opponentTimeSeconds ?? opponentSeconds.toDouble();
+
     String winnerId;
-    if (opponentScore > challenge.challengerScore) {
-      winnerId = challenge.opponentId;
-    } else if (opponentScore < challenge.challengerScore) {
-      winnerId = challenge.challengerId;
+    if (bC != aC) {
+      winnerId = bC > aC ? challenge.opponentId : challenge.challengerId;
+    } else if ((bT - aT).abs() > 0.0005) {
+      winnerId = bT < aT ? challenge.opponentId : challenge.challengerId;
     } else {
-      if (opponentSeconds <= challenge.challengerSeconds) {
-        winnerId = challenge.opponentId;
-      } else {
-        winnerId = challenge.challengerId;
-      }
+      winnerId = 'draw';
     }
 
     final updated = CitadelFightChallenge(
@@ -258,6 +299,11 @@ class PocketCitadelFightService {
       opponentScore: opponentScore,
       opponentSeconds: opponentSeconds,
       questionCount: challenge.questionCount,
+      duelSeed: challenge.duelSeed,
+      challengerCorrect: aC,
+      opponentCorrect: bC,
+      challengerTimeSeconds: aT,
+      opponentTimeSeconds: bT,
       createdAt: challenge.createdAt,
     );
 
