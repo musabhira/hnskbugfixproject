@@ -270,12 +270,12 @@ class Day1CurriculumJsonData {
       "stepNumber": 3,
       "id": "step_3_essential_spelling",
       "title": {
-        "en": "GAME 2: Essential Words & Spelling Challenge",
-        "ml": "ഗെയിം 2: എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്",
-        "hi": "गेम 2: आवश्यक शब्द और वर्तनी चुनौती",
-        "ta": "விளையாட்டு 2: அத்தியாவசிய சொற்கள் & எழுத்துப்பிழை சோதனை"
+        "en": "Spelling",
+        "ml": "സ്പെല്ലിംഗ്",
+        "hi": "वर्तनी",
+        "ta": "எழுத்துப்பிழை"
       },
-      "icon": "👂",
+      "icon": "🔤",
       "gameType": "essential_spelling",
       "canBeSkipped": false,
       "description": {

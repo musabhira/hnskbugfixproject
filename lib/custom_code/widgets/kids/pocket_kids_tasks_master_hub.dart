@@ -1403,9 +1403,9 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 3,
-          'title': 'Essential Words & Spelling',
+          'title': 'Spelling',
           'sub': 'Spell check listening & vocabulary quiz',
-          'icon': '👂',
+          'icon': '🔤',
           'color': const Color(0xFF38BDF8),
         },
         {

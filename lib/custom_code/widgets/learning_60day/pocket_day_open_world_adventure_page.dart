@@ -2787,7 +2787,7 @@ class _PocketDayOpenWorldAdventurePageState
           case 2:
             return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
           case 3:
-            return const _StepInfo('Essential Words & Spelling', '👂', Color(0xFF38BDF8));
+            return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
           case 4:
             return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
           case 5:
@@ -2819,7 +2819,7 @@ class _PocketDayOpenWorldAdventurePageState
         case 2:
           return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
         case 3:
-          return const _StepInfo('Essential Words & Spelling', '👂', Color(0xFF38BDF8));
+          return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
         case 4:
           return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
         case 5:
@@ -2853,7 +2853,7 @@ class _PocketDayOpenWorldAdventurePageState
       case 2:
         return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
       case 3:
-        return const _StepInfo('Essential Words & Spelling', '👂', Color(0xFF38BDF8));
+        return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
       case 4:
         return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFF10B981));
       case 5:

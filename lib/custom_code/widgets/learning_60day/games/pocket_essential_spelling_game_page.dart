@@ -19,8 +19,12 @@ class EssentialWordModel {
   final String word;
   final String phonetic;
   final Color color;
-  final String meaningMl; // Clean Malayalam meaning ONLY
+  final String meaningMl; // Clean Malayalam meaning
   final String? nativeMeaning;
+  final String hindiMeaning;
+  final String tamilMeaning;
+  final String teluguMeaning;
+  final String kannadaMeaning;
   final String exampleSentence;
 
   const EssentialWordModel({
@@ -29,11 +33,40 @@ class EssentialWordModel {
     required this.color,
     required this.meaningMl,
     this.nativeMeaning,
+    this.hindiMeaning = '',
+    this.tamilMeaning = '',
+    this.teluguMeaning = '',
+    this.kannadaMeaning = '',
     required this.exampleSentence,
   });
 
   String get meaningText {
     if (PocketLanguageService.isEnglish) {
+      return '';
+    }
+    if (PocketLanguageService.isMalayalam) {
+      if (meaningMl.isNotEmpty) return meaningMl;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      return '';
+    }
+    if (PocketLanguageService.isHindi) {
+      if (hindiMeaning.isNotEmpty) return hindiMeaning;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      return '';
+    }
+    if (PocketLanguageService.isTamil) {
+      if (tamilMeaning.isNotEmpty) return tamilMeaning;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      return '';
+    }
+    if (PocketLanguageService.isTelugu) {
+      if (teluguMeaning.isNotEmpty) return teluguMeaning;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
+      return '';
+    }
+    if (PocketLanguageService.isKannada) {
+      if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
+      if (nativeMeaning != null && nativeMeaning!.isNotEmpty) return nativeMeaning!;
       return '';
     }
     if (nativeMeaning != null && nativeMeaning!.isNotEmpty) {
@@ -131,6 +164,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/dʌz/',
       color: Color(0xFF10B981), // Emerald
       meaningMl: 'ചെയ്യുന്നു',
+      hindiMeaning: 'करता है / करती है',
+      tamilMeaning: 'செய்கிறது',
+      teluguMeaning: 'చేస్తుంది',
+      kannadaMeaning: 'ಮಾಡುತ್ತದೆ',
       exampleSentence: 'He does his work diligently.',
     ),
     EssentialWordModel(
@@ -138,6 +175,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/fɑːst/',
       color: Color(0xFFEF4444), // Crimson
       meaningMl: 'വേഗതയുള്ള',
+      hindiMeaning: 'तेज़',
+      tamilMeaning: 'வேகமாக',
+      teluguMeaning: 'వేగంగా',
+      kannadaMeaning: 'ವೇಗವಾಗಿ',
       exampleSentence: 'A cheetah runs very fast.',
     ),
     EssentialWordModel(
@@ -145,6 +186,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/fɜːst/',
       color: Color(0xFF38BDF8), // Sky Blue
       meaningMl: 'ആദ്യം / ഒന്നാമത്',
+      hindiMeaning: 'पहला / प्रथम',
+      tamilMeaning: 'முதலில்',
+      teluguMeaning: 'మొదటి',
+      kannadaMeaning: 'ಮೊದಲನೆಯ',
       exampleSentence: 'She came first in the race.',
     ),
     EssentialWordModel(
@@ -152,6 +197,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/faɪv/',
       color: Color(0xFFA855F7), // Purple
       meaningMl: 'അഞ്ച്',
+      hindiMeaning: 'पाँच',
+      tamilMeaning: 'ஐந்து',
+      teluguMeaning: 'ఐదు',
+      kannadaMeaning: 'ಐದು',
       exampleSentence: 'I have five red apples.',
     ),
     EssentialWordModel(
@@ -159,6 +208,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/faʊnd/',
       color: Color(0xFFF59E0B), // Amber
       meaningMl: 'കണ്ടെത്തി',
+      hindiMeaning: 'पाया / मिला',
+      tamilMeaning: 'கண்டுபிடித்தேன்',
+      teluguMeaning: 'కనుగొన్నారు',
+      kannadaMeaning: 'ಕಂಡುಬಂದಿದೆ',
       exampleSentence: 'I found my lost keys.',
     ),
     EssentialWordModel(
@@ -166,6 +219,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/ɡeɪv/',
       color: Color(0xFFF97316), // Coral Orange
       meaningMl: 'നൽകി',
+      hindiMeaning: 'दिया',
+      tamilMeaning: 'கொடுத்தார்',
+      teluguMeaning: 'ఇచ్చారు',
+      kannadaMeaning: 'ನೀಡಿದರು',
       exampleSentence: 'He gave me a good book.',
     ),
     EssentialWordModel(
@@ -173,6 +230,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/ˈɔːl.weɪz/',
       color: Color(0xFF06B6D4), // Cyan
       meaningMl: 'എപ്പോഴും',
+      hindiMeaning: 'हमेशा',
+      tamilMeaning: 'எப்போதும்',
+      teluguMeaning: 'ఎల్లప్పుడూ',
+      kannadaMeaning: 'ಯಾವಾಗಲೂ',
       exampleSentence: 'Always speak the truth.',
     ),
     EssentialWordModel(
@@ -180,6 +241,10 @@ class _PocketEssentialSpellingPageState
       phonetic: '/bɪˈfɔːr/',
       color: Color(0xFF6366F1), // Indigo
       meaningMl: 'മുമ്പ്',
+      hindiMeaning: 'पहले',
+      tamilMeaning: 'முன்பு',
+      teluguMeaning: 'ముందు',
+      kannadaMeaning: 'ಮೊದಲು',
       exampleSentence: 'Wash hands before eating.',
     ),
   ];
@@ -257,6 +322,10 @@ class _PocketEssentialSpellingPageState
           color: palette[loadedWords.length % palette.length],
           meaningMl: item.malayalamMeaning,
           nativeMeaning: nativeMeaning,
+          hindiMeaning: item.hindiMeaning,
+          tamilMeaning: item.tamilMeaning,
+          teluguMeaning: item.teluguMeaning,
+          kannadaMeaning: item.kannadaMeaning,
           exampleSentence: item.exampleSentence,
         ));
       }
@@ -832,7 +901,7 @@ class _PocketEssentialSpellingPageState
                 child: Text(
                   _isPracticeExamMode
                       ? 'DAY ${widget.day} • STEP 3: SPELLING EXAM 🎮'
-                      : 'DAY ${widget.day} • STEP 3: ESSENTIAL WORDS & SPELLING 👂',
+                      : 'DAY ${widget.day} • STEP 3: SPELLING 🔤',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -939,7 +1008,7 @@ class _PocketEssentialSpellingPageState
                   children: [
                     const Text('🌟 ', style: TextStyle(fontSize: 20)),
                     Text(
-                      'Essential Spoken Words',
+                      'Spelling',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 20,

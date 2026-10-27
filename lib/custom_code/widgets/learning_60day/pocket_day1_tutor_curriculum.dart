@@ -786,13 +786,13 @@ class Day1Curriculum {
             gameType = 'flame_sentence_builder';
           }
 
-          // Step 3 on ALL DAYS (1 to 90): Essential Words & Spelling Challenge (User Audio Directive!)
+          // Step 3 on ALL DAYS (1 to 90): Spelling Challenge (User Audio Directive!)
           if (stepNum == 3) {
-            titleEn = '👂 Essential Words & Spelling Challenge';
-            titleMl = '👂 എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്';
+            titleEn = '🔤 Step 3: Spelling';
+            titleMl = '🔤 സ്റ്റെപ്പ് 3: സ്പെല്ലിംഗ്';
             descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
-            descMl = 'ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക, തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക!';
-            icon = '👂';
+            descMl = 'വാക്കുകൾ കേട്ട് ശരിയായ സ്പെല്ലിംഗ് ടൈപ്പ് ചെയ്ത് എക്സാം പൂർത്തിയാക്കുക!';
+            icon = '🔤';
             gameType = 'essential_spelling';
           }
 
@@ -951,13 +951,13 @@ class Day1Curriculum {
         gameType = 'flame_sentence_builder';
       }
 
-      // Step 3 on ALL DAYS (1 to 90): Essential Words & Spelling Challenge (User Audio Directive!)
+      // Step 3 on ALL DAYS (1 to 90): Spelling Challenge (User Audio Directive!)
       if (stepNum == 3) {
-        titleEn = '👂 Essential Words & Spelling Challenge';
-        titleMl = '👂 എസൻഷ്യൽ വേർഡ്സ് & സ്പെല്ലിംഗ് ചലഞ്ച്';
+        titleEn = '🔤 Step 3: Spelling';
+        titleMl = '🔤 സ്റ്റെപ്പ് 3: സ്പെല്ലിംഗ്';
         descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
-        descMl = 'ഓരോ വാക്കിലും ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കുക, തുടർന്ന് സ്പെല്ലിംഗ് എക്സാം പൂർത്തിയാക്കുക!';
-        icon = '👂';
+        descMl = 'വാക്കുകൾ കേട്ട് ശരിയായ സ്പെല്ലിംഗ് ടൈപ്പ് ചെയ്ത് എക്സാം പൂർത്തിയാക്കുക!';
+        icon = '🔤';
         gameType = 'essential_spelling';
       }
 

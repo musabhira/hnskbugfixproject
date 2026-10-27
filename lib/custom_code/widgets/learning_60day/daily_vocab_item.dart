@@ -59,38 +59,37 @@ class DailyVocabItem {
     );
   }
 
-  String getMeaning(String language) {
-    final lang = language.toLowerCase();
-    if (lang.contains('hind') || lang == 'hi') {
-      if (hindiMeaning.isNotEmpty) return hindiMeaning;
-      final dict = PocketLanguageService.getWordTranslation(word, 'hindi');
-      if (dict.isNotEmpty) return dict;
-      return definition.isNotEmpty ? definition : word;
-    }
-    if (lang.contains('tamil') || lang == 'ta') {
-      if (tamilMeaning.isNotEmpty) return tamilMeaning;
-      final dict = PocketLanguageService.getWordTranslation(word, 'tamil');
-      if (dict.isNotEmpty) return dict;
-      return definition.isNotEmpty ? definition : word;
-    }
-    if (lang.contains('telug') || lang == 'te') {
-      if (teluguMeaning.isNotEmpty) return teluguMeaning;
-      final dict = PocketLanguageService.getWordTranslation(word, 'telugu');
-      if (dict.isNotEmpty) return dict;
-      return definition.isNotEmpty ? definition : word;
-    }
-    if (lang.contains('kannad') || lang == 'kn') {
-      if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
-      final dict = PocketLanguageService.getWordTranslation(word, 'kannada');
-      if (dict.isNotEmpty) return dict;
-      return definition.isNotEmpty ? definition : word;
-    }
+  String getMeaning([String? language]) {
+    final lang = (language ?? PocketLanguageService.currentLanguage).toLowerCase().trim();
     if (lang.contains('malay') || lang == 'ml') {
       if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
-      final dict = PocketLanguageService.getWordTranslation(word, 'malayalam');
-      if (dict.isNotEmpty) return dict;
-      return definition.isNotEmpty ? definition : word;
+    } else if (lang.contains('hind') || lang == 'hi') {
+      if (hindiMeaning.isNotEmpty) return hindiMeaning;
+    } else if (lang.contains('tamil') || lang == 'ta') {
+      if (tamilMeaning.isNotEmpty) return tamilMeaning;
+    } else if (lang.contains('telug') || lang == 'te') {
+      if (teluguMeaning.isNotEmpty) return teluguMeaning;
+    } else if (lang.contains('kannad') || lang == 'kn') {
+      if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
     }
+
+    if (PocketLanguageService.isMalayalam && malayalamMeaning.isNotEmpty) {
+      return malayalamMeaning;
+    }
+    if (PocketLanguageService.isHindi && hindiMeaning.isNotEmpty) {
+      return hindiMeaning;
+    }
+    if (PocketLanguageService.isTamil && tamilMeaning.isNotEmpty) {
+      return tamilMeaning;
+    }
+    if (PocketLanguageService.isTelugu && teluguMeaning.isNotEmpty) {
+      return teluguMeaning;
+    }
+    if (PocketLanguageService.isKannada && kannadaMeaning.isNotEmpty) {
+      return kannadaMeaning;
+    }
+    if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
+    if (hindiMeaning.isNotEmpty) return hindiMeaning;
     return definition.isNotEmpty ? definition : word;
   }
 }
