@@ -20,7 +20,6 @@ import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
 import '../report_dailoge.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -856,7 +855,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
-  Future<void> _executeCitadelAttack() async {
+  Future<void> _executeCitadelAttack({bool isPostRunnerAnimation = false}) async {
     if (_isStriking) return;
     setState(() => _isStriking = true);
 
@@ -905,8 +904,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       defenderHasIronDome: widget.neighbor.hasActiveShield,
     );
 
-    await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
-    await PocketFortressDefenseService.recordAttackLaunchedToday();
+    if (!isPostRunnerAnimation) {
+      await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
+      await PocketFortressDefenseService.recordAttackLaunchedToday();
+    }
     // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
     await PocketFortressDefenseService.placeUnderPresidentialProtection(
         widget.neighbor.id,
@@ -918,16 +919,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     // ⚔️ Audio Directive: Raider earns 10 to 15 Score points (15 SS for kids, 15 PS for adults)
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
     if (looted > 0) {
-      if (widget.isKidMode) {
-        await PocketKidsService.addStudentScore(looted);
-        await PocketKidsService.incrementAttackCount();
-      } else {
-        await PocketFortressDefenseService.awardRaidLoot(looted);
-        await PocketFortressDefenseService.awardPoints(looted);
+      if (!isPostRunnerAnimation) {
+        if (widget.isKidMode) {
+          await PocketKidsService.addStudentScore(looted);
+          await PocketKidsService.incrementAttackCount();
+        } else {
+          await PocketFortressDefenseService.awardRaidLoot(looted);
+          await PocketFortressDefenseService.awardPoints(looted);
+        }
+        final myId = SupaFlow.client.auth.currentUser?.id ?? 'me';
+        await PocketTrophyService.recordSuccessfulAttack(myId);
+        await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
       }
-      final myId = SupaFlow.client.auth.currentUser?.id ?? 'me';
-      await PocketTrophyService.recordSuccessfulAttack(myId);
-      await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
     }
 
     // Phase 4: Fountain of looted coins exploding from citadel into player's grasp
@@ -6461,10 +6464,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   void _showVictoryDialog() {
-    final myId = SupaFlow.client.auth.currentUser?.id ?? '';
-    if (myId.isNotEmpty) {
-      PocketTrophyService.recordSuccessfulAttack(myId);
-    }
 
     if (widget.neighbor.isPresident) {
       PocketPresidentService.markPresidentialCitadelConquered();
@@ -6747,7 +6746,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       isKidMode: widget.isKidMode,
     ).then((result) {
       if (result != null && result['passed'] == true) {
-        _executeCitadelAttack();
+        _executeCitadelAttack(isPostRunnerAnimation: true);
       }
     });
   }

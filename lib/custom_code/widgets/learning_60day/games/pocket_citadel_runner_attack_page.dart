@@ -331,7 +331,7 @@ class _PocketCitadelRunnerAttackPageState
   static const double _baseSpeed = 330;
   static const double _approachDist = 380;
   static const double _stopGap = 165;
-  static const double _houseGap = 340;
+  static const double _houseGap = 200;
 
   final List<_Ob> _obs = [];
   final List<_Pt> _pts = [];
@@ -1008,10 +1008,11 @@ class _PocketCitadelRunnerAttackPageState
     if (_won) {
       if (widget.isKidMode) {
         await PocketKidsService.addStars(15);
+        await PocketKidsService.incrementAttackCount();
       } else {
         final myId = SupaFlow.client.auth.currentUser?.id;
         if (myId != null && myId.isNotEmpty) {
-          PocketTrophyService.recordSuccessfulAttack(myId);
+          await PocketTrophyService.recordSuccessfulAttack(myId);
         }
       }
     }
@@ -1823,6 +1824,17 @@ class _PocketCitadelRunnerAttackPageState
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: _jump,
+                onHorizontalDragUpdate: (d) {
+                  if (_phase == _Ph.courtyard) {
+                    setState(() {
+                      // Allow panning left/right around the house to inspect the estate!
+                      _dist = (_dist - d.primaryDelta! / _scale).clamp(
+                        _houseX - 380.0,
+                        _houseX - 60.0,
+                      );
+                    });
+                  }
+                },
                 onVerticalDragEnd: (d) {
                   final v = d.velocity.pixelsPerSecond.dy;
                   if (v < -150) {
@@ -1841,14 +1853,14 @@ class _PocketCitadelRunnerAttackPageState
                       valueListenable: _frame,
                       builder: (c, _, __) {
                         final sx = _playerX + (_houseX - _dist) * _scale;
-                        if (sx < -300 || sx > _size.width + 300) {
+                        if (sx < -400 || sx > _size.width + 400) {
                           return const SizedBox.shrink();
                         }
-                        final wv = 240 * _scale, hv = 260 * _scale;
+                        final wv = 280 * _scale, hv = 280 * _scale;
                         return Stack(children: [
                           Positioned(
                             left: sx - wv / 2,
-                            top: _groundY - hv + 6 * _scale,
+                            top: _groundY - hv + 8 * _scale,
                             width: wv,
                             height: hv,
                             child: _buildHouseWidget(c),
@@ -1867,20 +1879,18 @@ class _PocketCitadelRunnerAttackPageState
     );
   }
 
-  bool get _hasCustomHouse =>
-      widget.houseBuilder != null || widget.isKidMode;
+  bool get _hasCustomHouse => true;
 
   Widget _buildHouseWidget(BuildContext c) {
     if (widget.houseBuilder != null) return widget.houseBuilder!(c);
-    if (widget.isKidMode) {
-      return PocketAvatarHouseWidget(
-        day: widget.defenderLevel,
-        isDamaged: _dmg > 0,
-        width: 240 * _scale,
-        height: 260 * _scale,
-      );
-    }
-    return const SizedBox.shrink();
+    final day = widget.defenderLevel.clamp(1, 100);
+    return PocketAvatarHouseWidget(
+      day: day,
+      isDamaged: _dmg > 0,
+      width: 280 * _scale,
+      height: 280 * _scale,
+      lightsOn: true,
+    );
   }
 
   Widget _hud() {
@@ -2331,10 +2341,13 @@ class _PocketCitadelRunnerAttackPageState
 
   Widget _courtyardOverlay() {
     final pad = MediaQuery.of(context).padding;
+    final houseTitle = widget.defenderLevel >= 90
+        ? '👑 Sovereign Palace Citadel (Day ${widget.defenderLevel})'
+        : '🏡 ${widget.defenderName}\'s Estate (Day ${widget.defenderLevel})';
     return Positioned(
       left: 16,
       right: 16,
-      bottom: pad.bottom + 28,
+      bottom: pad.bottom + 20,
       child: ValueListenableBuilder<int>(
         valueListenable: _frame,
         builder: (_, __, ___) {
@@ -2342,18 +2355,36 @@ class _PocketCitadelRunnerAttackPageState
           return Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: _pop(Colors.black.withValues(alpha: 0.6), r: 12, sh: 3),
-              child: Text(
-                  '🏰 ALL $_total GATES BREACHED · SCORE ${(_acc * 100).round()}%',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w900, fontSize: 14)),
+              decoration: _pop(Colors.black.withValues(alpha: 0.75), r: 14, sh: 3),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '🏰 ALL $_total GATES BREACHED · SCORE ${(_acc * 100).round()}%',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF69F0AE)),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    houseTitle,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 12, color: Colors.white),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    '↔️ Swipe left / right to inspect full house · സ്ക്രോൾ ചെയ്ത് വീട് കാണാം',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 10.5, color: Color(0xFFFFF59D)),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             GestureDetector(
               onTap: _startAttack,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 26, vertical: 18),
+                    const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                       colors: [Color(0xFFFF6D00), Color(0xFFFFD600)]),
@@ -2371,7 +2402,7 @@ class _PocketCitadelRunnerAttackPageState
                 child: const Text('⚔️ ATTACK & LOOT HOUSE',
                     style: TextStyle(
                         color: Colors.black,
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5)),
               ),

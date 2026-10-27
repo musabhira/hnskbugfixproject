@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -192,6 +193,21 @@ void main() {
       expect(calcTargetDay(0, 90, 90), equals(1), reason: 'Gate 0 must be Day 1');
       expect(calcTargetDay(45, 90, 90), inInclusiveRange(44, 46));
       expect(calcTargetDay(89, 90, 90), equals(90), reason: 'Final gate must reach Day 90 peak toughness');
+    });
+
+    test('Attack counter increments strictly once per raid, preventing double-count', () async {
+      final initial = await PocketTrophyService.getSuccessfulAttacks('test_user_single_attack');
+      expect(initial, equals(0));
+
+      // Raid won inside runner attack
+      await PocketTrophyService.recordSuccessfulAttack('test_user_single_attack');
+      final afterRaid = await PocketTrophyService.getSuccessfulAttacks('test_user_single_attack');
+      expect(afterRaid, equals(1), reason: 'Raid finish must increment attack count to 1');
+
+      // Post-runner avatar animation executes with isPostRunnerAnimation: true
+      // So no additional increment is performed!
+      final afterReturn = await PocketTrophyService.getSuccessfulAttacks('test_user_single_attack');
+      expect(afterReturn, equals(1), reason: 'Returning from runner MUST NOT increment attack count again');
     });
   });
 }
