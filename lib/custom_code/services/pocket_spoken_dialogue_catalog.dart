@@ -57,6 +57,84 @@ class PocketSpokenDialogueCatalog {
     // 🟢 TIER 1: LEVEL 1 TO 15 (FOUNDATIONAL BASICS & COURTESY)
     // ==========================================
     PocketSpokenDialogueItem(
+      id: 'dialogue_whats_up',
+      type: 'spoken_dialogue',
+      tag: '💬 Casual Chat • Day 1',
+      minLevel: 1,
+      maxLevel: 30,
+      gradientColors: [0xFF06B6D4, 0xFF3B82F6],
+      question: 'What\'s up?',
+      answer: 'Not much, just chilling.',
+      alternativeReplies: ['All good here!', 'Just relaxing.'],
+      malayalamNote: 'സുഹൃത്തുക്കളോട് വിശേഷം ചോദിക്കാൻ \'What\'s up?\' എന്ന് ലളിതമായി ചോദിക്കാം.',
+    ),
+
+    PocketSpokenDialogueItem(
+      id: 'dialogue_drink_water',
+      type: 'spoken_dialogue',
+      tag: '💬 Daily Care • Day 1',
+      minLevel: 1,
+      maxLevel: 25,
+      gradientColors: [0xFF0284C7, 0xFF0EA5E9],
+      question: 'Did you drink water?',
+      answer: 'Yes, I just did!',
+      alternativeReplies: ['Having some right now.', 'Thanks for reminding me!'],
+      malayalamNote: 'വെള്ളം കുടിച്ചോ എന്ന് ചോദിക്കുമ്പോൾ \'Did you drink water?\' എന്ന് ചോദിക്കാം.',
+    ),
+
+    PocketSpokenDialogueItem(
+      id: 'dialogue_had_breakfast',
+      type: 'spoken_dialogue',
+      tag: '💬 Daily Routine • Day 2',
+      minLevel: 1,
+      maxLevel: 25,
+      gradientColors: [0xFF10B981, 0xFF059669],
+      question: 'Had your breakfast?',
+      answer: 'Yes, I had it!',
+      alternativeReplies: ['Going to have now.', 'Not yet, will eat soon.'],
+      malayalamNote: 'പ്രഭാതഭക്ഷണം കഴിച്ചോ എന്ന് ചോദിക്കുമ്പോൾ \'Had your breakfast?\' എന്ന് പറയാം.',
+    ),
+
+    PocketSpokenDialogueItem(
+      id: 'dialogue_are_you_free',
+      type: 'spoken_dialogue',
+      tag: '💬 Quick Connect • Day 2',
+      minLevel: 1,
+      maxLevel: 30,
+      gradientColors: [0xFF8B5CF6, 0xFF6366F1],
+      question: 'Are you free now?',
+      answer: 'Yes, let\'s talk!',
+      alternativeReplies: ['Give me five minutes.', 'Yes, free now.'],
+      malayalamNote: 'ഇപ്പോൾ ഒഴിവുണ്ടോ എന്ന് ചോദിക്കുമ്പോൾ \'Are you free now?\' എന്ന് ഉപയോഗിക്കാം.',
+    ),
+
+    PocketSpokenDialogueItem(
+      id: 'dialogue_student_homework',
+      type: 'spoken_dialogue',
+      tag: '📚 Student Life • Day 3',
+      minLevel: 1,
+      maxLevel: 35,
+      gradientColors: [0xFFF59E0B, 0xFFD97706],
+      question: 'Did you finish your homework?',
+      answer: 'Yes, all done for today!',
+      alternativeReplies: ['Almost finished.', 'Working on it now.'],
+      malayalamNote: 'ഹോംവർക്ക് കഴിഞ്ഞോ എന്ന് ചോദിക്കാൻ \'Did you finish your homework?\' എന്ന് ചോദിക്കാം.',
+    ),
+
+    PocketSpokenDialogueItem(
+      id: 'dialogue_kids_play',
+      type: 'spoken_dialogue',
+      tag: '🎈 Fun & Play • Day 3',
+      minLevel: 1,
+      maxLevel: 20,
+      gradientColors: [0xFFEC4899, 0xFFF43F5E],
+      question: 'Can we go play now?',
+      answer: 'Yes, let\'s go play!',
+      alternativeReplies: ['Sure, let\'s go outside!'],
+      malayalamNote: 'കളിക്കാൻ പോകാമോ എന്ന് ചോദിക്കുമ്പോൾ \'Can we go play now?\' എന്ന് പറയാം.',
+    ),
+
+    PocketSpokenDialogueItem(
       id: 'dialogue_how_are_you',
       type: 'spoken_dialogue',
       tag: '💬 Daily Greeting • Day 1',
@@ -625,17 +703,17 @@ class PocketSpokenDialogueCatalog {
     PocketSpokenDialogueItem(
       id: 'dialogue_collaborate_future',
       type: 'spoken_dialogue',
-      tag: '💬 Professional Partnership • Day 75',
+      tag: '💬 Partnership • Day 75',
       minLevel: 55,
       maxLevel: 90,
       gradientColors: [0xFF1E1B4B, 0xFF581C87], // Sovereign Velvet
-      question: 'I am truly looking forward to collaborating with you on this initiative.',
-      answer: 'Likewise! It is going to be an enriching and rewarding experience.',
+      question: 'Looking forward to working together.',
+      answer: 'Likewise! Great to team up.',
       alternativeReplies: [
-        'The feeling is mutual! Let\'s create something outstanding.',
-        'I share your enthusiasm entirely.',
+        'The feeling is mutual!',
+        'Glad to collaborate.',
       ],
-      malayalamNote: '\'Looking forward to\' എന്നതിന് ശേഷം verb+ing (e.g. collaborating, meeting) വരണം. മറുപടിയായി \'Likewise!\' എന്ന് മനോഹരമായി പറയാം.',
+      malayalamNote: '\'Looking forward to\' എന്നതിന് ശേഷം verb+ing വരണം. മറുപടിയായി \'Likewise!\' എന്ന് പറയാം.',
     ),
 
     PocketSpokenDialogueItem(
@@ -645,11 +723,10 @@ class PocketSpokenDialogueCatalog {
       minLevel: 70,
       maxLevel: 90,
       gradientColors: [0xFFB45309, 0xFFF59E0B], // Imperial Gold
-      question: 'What is the secret to thinking directly in English without hesitation?',
-      answer: 'Consistent daily dialogue, embracing small errors, and speaking out loud every day!',
+      question: 'How do you think directly in English?',
+      answer: 'Practice daily speaking without translating in mind!',
       alternativeReplies: [
-        'Replacing mental translation with spontaneous reflex phrases.',
-        'Cements neural pathways so speech flows effortlessly like your mother tongue.',
+        'Speak small phrases out loud every day.',
       ],
       malayalamNote: 'ഇംഗ്ലീഷിൽ നേരിട്ട് ചിന്തിക്കാൻ സ്ഥിരമായി സംസാരിക്കുകയും മനസ്സിനുള്ളിലെ തർജ്ജമ ഒഴിവാക്കുകയും ചെയ്യുക.',
     ),

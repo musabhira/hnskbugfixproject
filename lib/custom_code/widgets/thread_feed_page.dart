@@ -991,6 +991,25 @@ class ModernCard extends StatelessWidget {
                               );
                             },
                           ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.block_rounded,
+                              color: textColor.withValues(alpha: 0.5),
+                              size: 18,
+                            ),
+                            tooltip: 'Block User',
+                            onPressed: () async {
+                              final authorId = cardData['user_id']?.toString() ?? '';
+                              final authorName = cardData['name']?.toString() ?? 'User';
+                              if (authorId.isNotEmpty) {
+                                await ReportHelper.blockUser(
+                                  context: context,
+                                  targetUserId: authorId,
+                                  targetUserName: authorName,
+                                );
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),

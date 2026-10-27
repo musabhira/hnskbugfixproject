@@ -21,6 +21,7 @@ import 'custom_code/services/in_app_notification_service.dart';
 import 'custom_code/services/pocket_kids_service.dart';
 import 'custom_code/services/pocket_language_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
+import 'services/iap_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -90,6 +91,11 @@ void main() {
       // 5b. Initialize App Store / Play Store Review Mode & World Switch Guard
       try {
         await AppStoreReviewService.initialize();
+      } catch (_) {}
+
+      // 5c. Initialize IAPService (In-App Purchases for Google Play & Apple App Store)
+      try {
+        await IAPService().initialize();
       } catch (_) {}
 
       // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)

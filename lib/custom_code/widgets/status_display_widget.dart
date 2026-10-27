@@ -6350,63 +6350,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 1. Top Capsule Tag & Robot Level
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.40),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🤖', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
-                          Text(
-                            '$robotName • Day $level',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: const BoxDecoration(
-                              color: Colors.white60,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            tag,
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.95),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // 1. Interactive Spoken Dialogue Card
 
-                  const SizedBox(height: 14),
 
                   // 2. Preposition Rule Banner (If Preposition Rule)
                   if (preposition != null && preposition.isNotEmpty) ...[
@@ -6696,61 +6641,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                         ),
 
-                        // Optional alternative replies chips
-                        if (alternatives.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 42),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '💡 Or reply naturally with:',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white70,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  children: alternatives.take(3).map((alt) {
-                                    return GestureDetector(
-                                      onTap: () => _speakVibeText(alt),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: Colors.white.withValues(alpha: 0.15),
-                                            width: 0.8,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.volume_up, color: Color(0xFF38BDF8), size: 11),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              alt,
-                                              style: GoogleFonts.inter(
-                                                color: Colors.white.withValues(alpha: 0.95),
-                                                fontSize: 11.5,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+
                       ],
                     ),
                   ),

@@ -19,6 +19,8 @@ import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
+import '../report_dailoge.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -1188,6 +1190,39 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         currentQ: currentQ,
         reason: reason,
       ),
+    );
+  }
+
+  void _showCitadelReportOptions() {
+    HapticFeedback.mediumImpact();
+    ReportHelper.showReportDialog(
+      context: context,
+      contentType: 'citadel',
+      contentId: widget.neighbor.id,
+      contentTitle: "${widget.neighbor.name}'s Citadel",
+      onReportSubmitted: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Report filed. The President & Safety Team will inspect this Citadel within 24h.'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showBlockDefenderDialog() async {
+    await ReportHelper.blockUser(
+      context: context,
+      targetUserId: widget.neighbor.id,
+      targetUserName: widget.neighbor.name,
+      onBlocked: () {
+        if (mounted) {
+          Navigator.pop(context, false);
+        }
+      },
     );
   }
 
@@ -5014,6 +5049,66 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           color: Colors.white, size: 17),
                     ),
                   ),
+                ),
+                const SizedBox(width: 8),
+
+                // 6. 🛡️ Safety Menu Button (Report / Block Citadel & Defender)
+                PopupMenuButton<String>(
+                  tooltip: 'Citadel Safety Options',
+                  icon: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.70),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white24,
+                        width: 1.2,
+                      ),
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.more_vert_rounded,
+                          color: Colors.white70, size: 18),
+                    ),
+                  ),
+                  color: const Color(0xFF1E293B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Colors.white24),
+                  ),
+                  onSelected: (val) {
+                    if (val == 'report_citadel') {
+                      _showCitadelReportOptions();
+                    } else if (val == 'block_defender') {
+                      _showBlockDefenderDialog();
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'report_citadel',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag_rounded,
+                              color: Colors.orangeAccent, size: 18),
+                          SizedBox(width: 8),
+                          Text('Report Citadel / User',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'block_defender',
+                      child: Row(
+                        children: [
+                          Icon(Icons.block_rounded,
+                              color: Colors.redAccent, size: 18),
+                          SizedBox(width: 8),
+                          Text('Block Defender',
+                              style: TextStyle(color: Colors.redAccent)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

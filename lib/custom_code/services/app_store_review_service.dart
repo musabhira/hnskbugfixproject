@@ -32,6 +32,9 @@ class AppStoreReviewService {
   /// Reactive notifier for UI components (Header Globe icon, Settings tile, Chat popup)
   static final ValueNotifier<bool> worldSwitchVisibleNotifier = ValueNotifier<bool>(true);
 
+  static String _cachedUserEmail = '';
+  static const String _kPrefsCachedUserEmail = 'pm_review_cached_user_email';
+
   /// Synchronous getter to check if World Switch Buttons should be shown right now
   static bool get isWorldSwitchVisible {
     if (!_initialized) {
@@ -39,13 +42,17 @@ class AppStoreReviewService {
     }
 
     final currentUser = SupaFlow.client.auth.currentUser;
-    final userEmail = currentUser?.email?.toLowerCase().trim() ?? '';
+    String userEmail = currentUser?.email?.toLowerCase().trim() ?? '';
+    if (userEmail.isEmpty && _cachedUserEmail.isNotEmpty) {
+      userEmail = _cachedUserEmail;
+    }
     final targetReviewEmail = _reviewerEmail.toLowerCase().trim();
 
     // 1. Email Specific Hide Check (e.g., hira@gmail.com)
     if (_hideForReviewerEmail) {
       if (userEmail.isNotEmpty &&
           (userEmail == defaultReviewerEmail ||
+              userEmail.startsWith('hira@') ||
               userEmail.contains('hira@') ||
               (targetReviewEmail.isNotEmpty &&
                   (userEmail == targetReviewEmail ||
@@ -75,12 +82,19 @@ class AppStoreReviewService {
       _hideOnIos = prefs.getBool(_kPrefsHideIos) ?? false;
       _hideForReviewerEmail = prefs.getBool(_kPrefsHideReviewEmail) ?? true;
       _reviewerEmail = prefs.getString(_kPrefsReviewEmail) ?? defaultReviewerEmail;
+      _cachedUserEmail = prefs.getString(_kPrefsCachedUserEmail) ??
+          (SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '');
       _initialized = true;
       _updateNotifier();
 
       // Listen to auth changes so when user logs in/out, notifier updates immediately
       try {
-        SupaFlow.client.auth.onAuthStateChange.listen((_) {
+        SupaFlow.client.auth.onAuthStateChange.listen((data) {
+          final email = data.session?.user.email ?? SupaFlow.client.auth.currentUser?.email;
+          if (email != null && email.isNotEmpty) {
+            _cachedUserEmail = email.toLowerCase().trim();
+            prefs.setString(_kPrefsCachedUserEmail, _cachedUserEmail);
+          }
           _updateNotifier();
         });
       } catch (_) {}

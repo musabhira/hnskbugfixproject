@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_patter
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🌐 Modal Dialog for seamlessly selecting between Kids World (KS), Student World (SS), and Adult Mode (PS)
@@ -19,6 +20,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
 
   /// Opens the World Selection Modal immediately without blocking preliminary checks
   static Future<void> show(BuildContext context) async {
+    if (!AppStoreReviewService.isWorldSwitchVisible) return;
     if (context.mounted) {
       return showDialog(
         context: context,

@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -64,6 +65,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
           'time': r['created_at'] ?? DateTime.now().toIso8601String(),
           'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(r['sender_id']?.toString() ?? ''),
           'archetype': r['archetype'],
+          'type': r['type'] ?? 'mate_request',
+          'context_type': r['data'] is Map ? r['data']['context_type'] : r['context_type'],
           'avatarUrl': r['avatar_url'] ?? r['sender_profile_image'],
           'avatarConfig': r['avatar_config'],
           'sender_profile_image': r['sender_profile_image'] ?? r['avatar_url'],
@@ -361,6 +364,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
       myId: myId,
       senderId: senderId,
     );
+
+    // If this is a 4-Day Pocket Talk Spoken Pact request, also accept the pact!
+    final isPocketTalkReq = req['type'] == 'pocket_talk' ||
+        req['context_type'] == 'pocket_talk' ||
+        req['message']?.toString().contains('Spoken English Pact') == true ||
+        req['message']?.toString().contains('Pocket Talk') == true;
+    if (isPocketTalkReq) {
+      await PocketTrophyService.acceptPact(
+        myId: myId,
+        otherUserId: senderId,
+      );
+    }
 
     // Remove from pending
     _connectionRequests.removeWhere((r) => r['id'] == req['id']);
@@ -751,6 +766,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   VectorAvatarConfig.getEvolutionAvatarForStage(stageNum);
                             }
 
+                            final isPocketTalk = req['type'] == 'pocket_talk' ||
+                                req['context_type'] == 'pocket_talk' ||
+                                req['message']?.toString().contains('Spoken English Pact') == true ||
+                                req['message']?.toString().contains('Pocket Talk') == true;
+
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(14),
@@ -758,10 +778,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 color: const Color(0xFF131520),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isRobot
-                                      ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
-                                      : const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                                  width: 1.2,
+                                  color: isPocketTalk
+                                      ? const Color(0xFFFFD700)
+                                      : isRobot
+                                          ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
+                                          : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                                  width: isPocketTalk ? 1.5 : 1.2,
                                 ),
                               ),
                               child: Column(
@@ -886,7 +908,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           onPressed: () => _acceptRequest(req),
                                           icon: const Icon(Icons.check_rounded, color: Colors.black, size: 16),
                                           label: Text(
-                                            'Accept Mate',
+                                            isPocketTalk ? 'Accept 4-Day Pact ⚡' : 'Accept Mate',
                                             style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
                                           ),
                                           style: ElevatedButton.styleFrom(

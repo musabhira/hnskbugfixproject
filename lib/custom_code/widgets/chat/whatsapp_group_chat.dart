@@ -5530,6 +5530,12 @@ Draft: "$draft"''';
                       child: Text('Leave Group',
                           style: TextStyle(color: Colors.red)),
                     ),
+                  if (!isPersonalChat)
+                    const PopupMenuItem(
+                      value: 'report_group',
+                      child: Text('Report Group',
+                          style: TextStyle(color: Colors.orange)),
+                    ),
                   if (isPersonalChat) ...[
                     const PopupMenuItem(
                       value: 'clear',
@@ -8165,6 +8171,22 @@ Draft: "$draft"''';
               );
             },
           ),
+          if (!isMe &&
+              message.senderId.isNotEmpty &&
+              message.senderId != _currentUserId)
+            ListTile(
+              leading: const Icon(Icons.block, color: Colors.redAccent),
+              title: const Text('Block User',
+                  style: TextStyle(color: Colors.redAccent)),
+              onTap: () {
+                Navigator.pop(context);
+                final senderDisplayName = message.senderName ??
+                    (message.senderProfile?['name'] ??
+                        (message.metadata?['robot_name'] ??
+                            (message.metadata?['sender_name'] ?? 'User')));
+                _showBlockUserDialog(message.senderId, senderDisplayName);
+              },
+            ),
           if (canDelete)
             ListTile(
               leading:

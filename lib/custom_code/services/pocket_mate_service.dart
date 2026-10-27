@@ -150,18 +150,26 @@ class PocketMateService {
         name = profileRes?['name'] ?? 'Pocket Mate';
       }
 
+      final notifType = (contextType == 'pocket_talk' || contextType == 'poket_talk')
+          ? 'pocket_talk'
+          : 'mate_request';
       final defaultMsg = contextType == 'gallery_market'
           ? '$name inquired about your market item. Wants to connect as your Mate!'
-          : '$name matched from Anonymous English Chat! Wants to become your Pocket Mate.';
+          : (contextType == 'pocket_talk' || contextType == 'poket_talk')
+              ? '$name challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Poketalk tab!'
+              : '$name matched from Anonymous English Chat! Wants to become your Pocket Mate.';
 
       await _supabase.from('notifications').insert({
         'user_id': receiverId,
         'sender_id': senderId,
         'source_id': senderId,
-        'type': 'mate_request',
+        'type': notifType,
         'message': message ?? defaultMsg,
         'status': 'pending',
         'created_at': DateTime.now().toIso8601String(),
+        'data': {
+          'context_type': contextType ?? notifType,
+        },
       });
 
       // Also record in SharedPreferences for rapid local sync
@@ -402,7 +410,7 @@ class PocketMateService {
           .select('id')
           .eq('sender_id', senderId)
           .eq('user_id', receiverId)
-          .eq('type', 'mate_request')
+          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
           .eq('status', 'pending')
           .maybeSingle();
 
@@ -427,7 +435,7 @@ class PocketMateService {
           .select('*')
           .eq('user_id', receiverId)
           .eq('sender_id', senderId)
-          .eq('type', 'mate_request')
+          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
           .eq('status', 'pending')
           .maybeSingle();
 
@@ -473,7 +481,7 @@ class PocketMateService {
           .from('notifications')
           .select('user_id')
           .eq('sender_id', myId)
-          .eq('type', 'mate_request')
+          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
           .eq('status', 'pending');
       for (final r in (res as List)) {
         if (r['user_id'] != null) set.add(r['user_id'].toString());
@@ -579,7 +587,7 @@ class PocketMateService {
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
-          .eq('type', 'mate_request')
+          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
           .eq('status', 'pending')
           .order('created_at', ascending: false);
 

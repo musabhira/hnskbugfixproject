@@ -33,6 +33,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
@@ -1427,6 +1428,74 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
+  Future<void> _sendPocketTalkChallengeFromProfile() async {
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId == null) return;
+    final targetId = userId;
+    if (targetId.isEmpty) return;
+    final targetName = _profileData?['name']?.toString() ?? _profileData?['display_name']?.toString() ?? 'Mate';
+    final targetAvatar = _profileData?['profile_picture_url']?.toString() ?? _profileData?['avatar_url']?.toString();
+
+    HapticFeedback.heavyImpact();
+    final ok = await PocketMateService.sendMateRequest(
+      senderId: myId,
+      receiverId: targetId,
+      receiverName: targetName,
+      receiverAvatarUrl: targetAvatar,
+      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Poketalk tab!',
+      contextType: 'pocket_talk',
+    );
+
+    await PocketTrophyService.requestPact(
+      myId: myId,
+      otherUserId: targetId,
+    );
+
+    // Save to SharedPreferences sent cache so it appears instantly under Sent tab
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sentKey = 'poket_talk_sent_candidates_$myId';
+      final currentSentJson = prefs.getStringList(sentKey) ?? [];
+      final candidateMap = {
+        'id': targetId,
+        'user_id': targetId,
+        'receiver_id': targetId,
+        'receiver_name': targetName,
+        'receiver_avatar': targetAvatar,
+        'context_type': 'pocket_talk',
+        'message': '⚡ 4-Day Spoken English Pact Request (Pending)',
+        'created_at': DateTime.now().toIso8601String(),
+        'status': 'pending',
+      };
+      currentSentJson.removeWhere((item) => item.contains(targetId));
+      currentSentJson.insert(0, jsonEncode(candidateMap));
+      await prefs.setStringList(sentKey, currentSentJson);
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() => _isMateRequested = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚡ 4-Day Pocket Talk Challenge sent to $targetName! Check Requests & Chats.',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E1B4B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
   // --- UI Construction ---
 
   @override
@@ -1644,74 +1713,82 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   if (!isMe)
                     PopupMenuButton<String>(
                       icon: const Icon(material.Icons.more_vert),
-                      color: bgColor,
+                      color: const Color(0xFF1E293B),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.white24),
+                      ),
                       iconColor: textColor,
                       onSelected: (value) async {
-                        final myId = _supabase.auth.currentUser?.id;
+                        final authorName = _profileData?['name']?.toString() ??
+                            _profileData?['display_name']?.toString() ??
+                            'User';
+                        final authorHandle =
+                            _profileData?['username']?.toString() ?? authorName;
+                        final targetUid = userId;
                         if (value == 'Report') {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Report submitted. Thank you for keeping Poket Mates safe.'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
+                          ReportHelper.showReportDialog(
+                            context: context,
+                            contentType: 'user',
+                            contentId: targetUid,
+                            contentTitle: '$authorName (@$authorHandle)',
+                            onReportSubmitted: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Report submitted. Thank you for keeping Poket Mates safe.'),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
                           );
                         } else if (value == 'Block') {
-                          final isUuid =
-                              RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-                          final isRobot =
-                              PocketRobotService.isRobotId(userId) || !isUuid;
-                          if (myId != null) {
-                            final prefs = await SharedPreferences.getInstance();
-                            final blocked =
-                                prefs.getStringList('blocked_users_$myId') ??
-                                    [];
-                            if (!blocked.contains(userId)) {
-                              blocked.add(userId);
-                              await prefs.setStringList(
-                                  'blocked_users_$myId', blocked);
-                            }
-                            final mates =
-                                prefs.getStringList('pocket_mates_$myId') ?? [];
-                            mates.remove(userId);
-                            await prefs.setStringList(
-                                'pocket_mates_$myId', mates);
-
-                            if (!isRobot) {
-                              try {
-                                await _supabase.from('blocks').insert(
-                                    {'blocker_id': myId, 'blocked_id': userId});
-                                await _supabase
-                                    .from('follows')
-                                    .delete()
-                                    .eq('follower_id', myId)
-                                    .eq('followed_id', userId);
-                              } catch (_) {}
-                            }
-                          }
-                          if (mounted) {
+                          final blocked = await ReportHelper.blockUser(
+                            context: context,
+                            targetUserId: targetUid,
+                            targetUserName: authorName,
+                            onBlocked: () {
+                              if (mounted) {
+                                setState(() {
+                                  _isBlocked = true;
+                                  _isFollowing = false;
+                                });
+                              }
+                            },
+                          );
+                          if (blocked && mounted) {
                             setState(() {
                               _isBlocked = true;
                               _isFollowing = false;
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('User blocked.'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
                           }
                         }
                       },
                       itemBuilder: (context) => [
                         const PopupMenuItem(
                           value: 'Report',
-                          child: Text('Report'),
+                          child: Row(
+                            children: [
+                              Icon(Icons.flag_rounded,
+                                  color: Colors.orangeAccent, size: 18),
+                              SizedBox(width: 8),
+                              Text('Report User',
+                                  style: TextStyle(color: Colors.white)),
+                            ],
+                          ),
                         ),
                         const PopupMenuItem(
                           value: 'Block',
-                          child: Text('Block',
-                              style: TextStyle(color: material.Colors.red)),
+                          child: Row(
+                            children: [
+                              Icon(Icons.block_rounded,
+                                  color: Colors.redAccent, size: 18),
+                              SizedBox(width: 8),
+                              Text('Block User',
+                                  style: TextStyle(color: Colors.redAccent)),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -2130,6 +2207,38 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ),
                           ),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 46,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14)),
+                                ),
+                                onPressed: _isMateRequested
+                                    ? null
+                                    : () => _sendPocketTalkChallengeFromProfile(),
+                                icon: const Icon(Icons.bolt_rounded,
+                                    color: Color(0xFFFFD700), size: 22),
+                                label: Text(
+                                  _isMateRequested
+                                      ? 'POCKET TALK REQUEST PENDING ⏳'
+                                      : 'CHALLENGE TO POCKET TALK (4-DAY PACT) ⚡',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                         const SizedBox(height: 24),
                         if (_fortressStatus?.presidentNotice != null) ...[
@@ -2189,6 +2298,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   color: textColor.withValues(alpha: 0.65),
                                   fontSize: 13,
                                   height: 1.4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFFC00),
+                                foregroundColor: Colors.black,
+                                elevation: 6,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              onPressed: _isMateRequested
+                                  ? null
+                                  : () => _sendPocketTalkChallengeFromProfile(),
+                              icon: const Icon(Icons.bolt_rounded, size: 20),
+                              label: Text(
+                                _isMateRequested
+                                    ? 'Request Pending ⏳'
+                                    : 'Challenge to Pocket Talk ⚡',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),

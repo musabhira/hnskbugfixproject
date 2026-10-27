@@ -24,6 +24,7 @@ import '../../services/pocket_president_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 import 'pocket_reels_content_engine.dart';
+import '../report_dailoge.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, or Vocab
 enum ReelItemType { home, game, vibe, story, interview, speakChallenge, vocabCard }
@@ -2162,6 +2163,34 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 14),
+
+              // 🛡️ Citadel & User Safety Menu (Report / Block)
+              GestureDetector(
+                onTap: () => _showNeighborSafetyMenu(neighbor),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.7),
+                    border: Border.all(color: Colors.white24, width: 1.2),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.more_vert_rounded,
+                        color: Colors.white70, size: 20),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Options',
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
 
               // 🏛️ Presidential Protection status pill (shown only if protected; 100% indicator removed per User Directive)
               if (_protectedHomeIds.contains(neighbor.id)) ...[
@@ -2416,7 +2445,110 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       ],
     ),
   );
-}
+  }
+
+  /// 🛡️ Safety Menu for Citadel Homesteads (Apple/Play Store UGC Compliance)
+  void _showNeighborSafetyMenu(PocketNeighbor neighbor) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bottomSheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    const Icon(Icons.shield_outlined, color: Colors.amber, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Citadel Safety & Moderation',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Divider(color: Colors.white12),
+              ListTile(
+                leading: const Icon(Icons.flag_outlined, color: Colors.amber),
+                title: Text(
+                  'Report Citadel / Player',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Report offensive house name, bio, or abusive behavior',
+                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(bottomSheetContext);
+                  ReportHelper.showReportDialog(
+                    context: context,
+                    contentType: 'citadel_homestead',
+                    contentId: neighbor.id,
+                    contentTitle: "${neighbor.name}'s Citadel",
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.block_outlined, color: Colors.redAccent),
+                title: Text(
+                  'Block ${neighbor.name}',
+                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Hide this Citadel homestead and prevent all interactions',
+                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(bottomSheetContext);
+                  ReportHelper.blockUser(
+                    context: context,
+                    targetUserId: neighbor.id,
+                    targetUserName: neighbor.name,
+                    onBlocked: () {
+                      if (mounted) {
+                        setState(() {
+                          _feedItems.removeWhere((item) => item.neighbor?.id == neighbor.id);
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${neighbor.name} blocked and removed from feed'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   /// 🎮 Interactive Multi-Type Mini-Game Slide (Clean non-blocking parent scrolling - User Audio Directive)
   Widget _buildInteractiveGameSlide(ReelGameCard card, int index) {
@@ -5434,10 +5566,103 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                   child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
               ),
+              const SizedBox(height: 14),
+
+              // 🛡️ Safety Menu Button (Report / Block Vibe)
+              GestureDetector(
+                onTap: () => _showVibeSafetyMenu(vibe),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.more_vert_rounded,
+                      color: Colors.white70, size: 20),
+                ),
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showVibeSafetyMenu(ReelVibeCard vibe) {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.flag_rounded, color: Colors.orangeAccent),
+              title: const Text('Report Vibe',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+              subtitle: const Text('Flag inappropriate video or image',
+                  style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                ReportHelper.showReportDialog(
+                  context: context,
+                  contentType: 'vibe',
+                  contentId: vibe.id,
+                  contentTitle: "${vibe.authorName}'s Vibe",
+                  onReportSubmitted: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Report filed. We will review this media within 24 hours.'),
+                        backgroundColor: Color(0xFF10B981),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            ListTile(
+              leading:
+                  const Icon(Icons.block_rounded, color: Colors.redAccent),
+              title: Text('Block ${vibe.authorName}',
+                  style: const TextStyle(
+                      color: Colors.redAccent, fontWeight: FontWeight.w600)),
+              subtitle: const Text('Hide all content from this creator',
+                  style: TextStyle(color: Colors.white54, fontSize: 12)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await ReportHelper.blockUser(
+                  context: context,
+                  targetUserId: vibe.userId,
+                  targetUserName: vibe.authorName,
+                  onBlocked: () {
+                    widget.onNextReel();
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,5 +1,7 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -403,26 +405,42 @@ class _ReportDialogState extends State<ReportDialog>
   }
 }
 
-// Usage example for your GalleryDetailPage
+// Usage example for your GalleryDetailPage / Threads / Feeds
 class ReportButton extends StatelessWidget {
   final String contentType;
   final String contentId;
   final String contentTitle;
+  final String? authorId;
+  final String? authorName;
   final VoidCallback? onReportSubmitted;
+  final VoidCallback? onUserBlocked;
+  final Color? iconColor;
 
   const ReportButton({
     super.key,
     required this.contentType,
     required this.contentId,
     required this.contentTitle,
+    this.authorId,
+    this.authorName,
     this.onReportSubmitted,
+    this.onUserBlocked,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    final canBlock =
+        authorId != null && authorId!.isNotEmpty && authorId != currentUserId;
+
     return PopupMenuButton<String>(
-      color: const Color.fromARGB(255, 27, 27, 27),
-      icon: const Icon(Icons.more_vert, color: Colors.white),
+      color: const Color(0xFF1E293B),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.white24),
+      ),
+      icon: Icon(Icons.more_vert, color: iconColor ?? Colors.white70),
       onSelected: (value) async {
         if (value == 'report') {
           final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
@@ -439,27 +457,39 @@ class ReportButton extends StatelessWidget {
               onReportSubmitted: onReportSubmitted,
             );
           }
+        } else if (value == 'block' && canBlock) {
+          await ReportHelper.blockUser(
+            context: context,
+            targetUserId: authorId!,
+            targetUserName: authorName ?? 'User',
+            onBlocked: onUserBlocked,
+          );
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'report',
-          child: Container(
-            color: const Color.fromARGB(255, 27, 27, 27), // Background color
-            padding: const EdgeInsets.symmetric(
-                vertical: 8, horizontal: 12), // Optional padding
-            child: const Row(
+          child: Row(
+            children: [
+              Icon(Icons.flag_rounded, color: Colors.orangeAccent, size: 18),
+              SizedBox(width: 10),
+              Text('Report Content',
+                  style: TextStyle(color: Colors.white, fontSize: 13)),
+            ],
+          ),
+        ),
+        if (canBlock)
+          const PopupMenuItem(
+            value: 'block',
+            child: Row(
               children: [
-                Icon(Icons.flag, color: Colors.red, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Report',
-                  style: TextStyle(color: Colors.white), // White text
-                ),
+                Icon(Icons.block_rounded, color: Colors.redAccent, size: 18),
+                SizedBox(width: 10),
+                Text('Block User',
+                    style: TextStyle(color: Colors.redAccent, fontSize: 13)),
               ],
             ),
           ),
-        ),
       ],
     );
   }
@@ -468,25 +498,9 @@ class ReportButton extends StatelessWidget {
 class ReportHelper {
   static final _supabase = Supabase.instance.client;
 
-  // Report types enum for consistency
-  // enum ReportType {
-  //   inappropriate('Inappropriate Content'),
-  //   spam('Spam'),
-  //   harassment('Harassment'),
-  //   violence('Violence'),
-  //   nudity('Nudity/Sexual Content'),
-  //   hateSpeech('Hate Speech'),
-  //   misinformation('Misinformation'),
-  //   copyright('Copyright Violation'),
-  //   other('Other');
-
-  //   const ReportType(this.displayName);
-  //   final String displayName;
-  // }
-
   // Submit report to Supabase
   static Future<bool> submitReport({
-    required String contentType, // 'gallery', 'comment', 'user'
+    required String contentType, // 'gallery', 'comment', 'user', 'citadel', 'vibe'
     required String contentId,
     required String reportType,
     required String? description,
@@ -512,6 +526,108 @@ class ReportHelper {
       return true;
     } catch (e) {
       print('Error submitting report: $e');
+      return false;
+    }
+  }
+
+  // Universal User Blocking Method (Handles Supabase blocks table + Local SharedPreferences)
+  static Future<bool> blockUser({
+    required BuildContext context,
+    required String targetUserId,
+    required String targetUserName,
+    VoidCallback? onBlocked,
+  }) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.redAccent, width: 1.2),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.block_rounded, color: Colors.redAccent, size: 22),
+            SizedBox(width: 8),
+            Text('Block User?',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to block $targetUserName?\n\n'
+          '• You will no longer see their content, posts, or citadels.\n'
+          '• They will not be able to message or attack you.\n'
+          '• They will be removed from your mates list.',
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Block',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return false;
+
+    try {
+      final myId = _supabase.auth.currentUser?.id;
+      if (myId != null && targetUserId.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        final blocked = prefs.getStringList('blocked_users_$myId') ?? [];
+        if (!blocked.contains(targetUserId)) {
+          blocked.add(targetUserId);
+          await prefs.setStringList('blocked_users_$myId', blocked);
+        }
+        final mates = prefs.getStringList('pocket_mates_$myId') ?? [];
+        mates.remove(targetUserId);
+        await prefs.setStringList('pocket_mates_$myId', mates);
+
+        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetUserId);
+        final isRobot = PocketRobotService.isRobotId(targetUserId) || !isUuid;
+        if (!isRobot) {
+          try {
+            await _supabase.from('blocks').insert({
+              'blocker_id': myId,
+              'blocked_id': targetUserId,
+            });
+            await _supabase
+                .from('follows')
+                .delete()
+                .eq('follower_id', myId)
+                .eq('followed_id', targetUserId);
+          } catch (_) {}
+        }
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$targetUserName has been blocked.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        onBlocked?.call();
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error blocking user: $e');
       return false;
     }
   }
