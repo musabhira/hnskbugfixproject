@@ -74,139 +74,17 @@ class _PocketLibraryPageState extends State<PocketLibraryPage> {
 
   final List<String> _categories = [
     'All',
-    'മലയാള സാഹിത്യം (Malayalam Classics)',
-    'Free Public Library',
-    'Google Books Search',
     'Short Stories',
     'Classic Literature',
     'Wisdom & Mindset',
     'Sci-Fi & Cosmos',
     'English Graded Readers',
+    'Free Public Library',
+    'Google Books Search',
   ];
 
-  // 35+ Rich Curated Offline & Cultural Heritage Books
+  // Rich Curated English Offline Books & Stories
   final List<BookItem> _curatedBooks = [
-    // --- MALAYALAM CLASSICS & KERALA HERITAGE ---
-    BookItem(
-      id: 'malayalam_basheer_goat',
-      title: 'പാത്തുമ്മയുടെ ആട് (Pathummayude Aadu)',
-      author: 'വൈക്കം മുഹമ്മദ് ബഷീർ (Vaikom Muhammad Basheer)',
-      category: 'മലയാള സാഹിത്യം (Malayalam Classics)',
-      coverColor: '#1E3A8A',
-      gradientColors: [const Color(0xFF0F172A), const Color(0xFF1E3A8A)],
-      summary: 'മലയാള സാഹിത്യത്തിലെ എക്കാലത്തെയും മഹത്തായ ഹാസ്യ-കുടുംബ നോവൽ. ബഷീറിന്റെ തറവാട്ടു വീട്ടിലെ ആടും ഉമ്മയും സഹോദരങ്ങളും ചേരുന്ന ജീവിതക്കാഴ്ചകൾ.',
-      readingTimeMinutes: 14,
-      chapters: [
-        BookChapter(
-          chapterTitle: 'ഭാഗം 1: എന്റെ തറവാടും പാത്തുമ്മയുടെ ആടും',
-          content: '''ഞാൻ എന്റെ വീട്ടിൽ വന്നിട്ട് ഇപ്പോൾ കുറച്ചു ദിവസങ്ങളായി. തലവേദനയും ക്ഷീണവും കാരണം കുറച്ചു വിശ്രമം വേണമെന്ന വിചാരത്തോടെയാണ് നാട്ടിലെത്തിയത്.
-പക്ഷേ ഇവിടെ എവിടെ വിശ്രമം? വീട്ടിലെ പ്രധാന താരം പാത്തുമ്മയും അവളുടെ ആടുമാണ്!
-
-ഈ ആട് കാണുന്നതൊക്കെ തിന്നും. കടലാസ്, തുണി, വാഴയില, പുസ്തകം—എന്തിനേറെ എന്റെ പുസ്തകങ്ങൾ വരെ അത് ചവച്ചുതുപ്പി. ഒരു ദിവസം രാവിലെ ഞാൻ നോക്കുമ്പോൾ എന്റെ പുതിയ പുസ്തകത്തിന്റെ പ്രൂഫ് ഷീറ്റ് പാത്തുമ്മയുടെ ആട് വളരെ ഭംഗിയായി ചവച്ചരച്ച് ആസ്വദിച്ചു തിന്നുന്നു!
-
-"എടീ പാത്തുമ്മാ, നിന്റെ ആട് എന്റെ പുസ്തകം തിന്നുന്നേ!" എന്ന് ഞാൻ വിളിച്ചുപറഞ്ഞു.
-ഉടനെ പാത്തുമ്മ ഓടിവന്നു: "അയ്യോ എന്റെ കൊച്ചുബഷീറേ, ആട് മിണ്ടാപ്രാണിയല്ലേ, അതിന് വിശന്നിട്ടല്ലേ! നിന്റെ ആ പുസ്തകത്തിന് അത്രേം രുചിയുള്ളതുകൊണ്ടാ അത് തിന്നത്!"
-ഞാൻ അന്തംവിട്ടുപോയി. ഇതാണ് എന്റെ വീട്!''',
-        ),
-        BookChapter(
-          chapterTitle: 'ഭാഗം 2: ആടിന്റെ കഷ്ടപ്പാടുകൾ',
-          content: '''പാത്തുമ്മയുടെ ആടിന് ഒരു പ്രത്യേകതയുണ്ട്. വീട്ടിൽ ആരുമില്ലാത്ത നേരം നോക്കി അടുക്കളയിൽ കയറും. കഞ്ഞിവെള്ളവും ചോറും പാത്രവും വരെ നക്കും.
-ഉമ്മ ഇടയ്ക്ക് പറയും: "ആടിനെ എങ്ങോട്ടെങ്കിലും കൊണ്ടുപോയി കെട്ടിക്കൂടെ പെണ്ണേ?"
-പാത്തുമ്മ പറയും: "ഉമ്മാ, ഇത് സാധാരണ ആടല്ല, ഇതിന്റെ പാല് കുടിച്ചാൽ തലച്ചോറ് കൂടും!"
-
-വീട്ടിലെ ദാരിദ്ര്യത്തിലും സ്നേഹത്തിലും ചിരി നിറച്ചുകൊണ്ട് ബഷീറിയൻ നർമ്മം ഇവിടെ ഇതൾവിടരുന്നു.''',
-        ),
-      ],
-    ),
-    BookItem(
-      id: 'malayalam_ramanan_changampuzha',
-      title: 'രമണൻ (Ramanan)',
-      author: 'ചങ്ങമ്പുഴ കൃഷ്ണപിള്ള (Changampuzha)',
-      category: 'മലയാള സാഹിത്യം (Malayalam Classics)',
-      coverColor: '#831843',
-      gradientColors: [const Color(0xFF831843), const Color(0xFFBE185D)],
-      summary: 'മലയാളികളെ കണ്ണീരണിയിച്ച അമരപ്രണയകാവ്യം. കാനനച്ഛായയിൽ ആടുമേയ്ക്കുന്ന രമണന്റെയും ചന്ദ്രികയുടെയും അനശ്വര കഥ.',
-      readingTimeMinutes: 12,
-      chapters: [
-        BookChapter(
-          chapterTitle: 'കാനനച്ഛായയിൽ',
-          content: '''"കാനനച്ഛായയിലാടുമേയ്ക്കാൻ
-ഞാനും വരട്ടെയോ നിന്റെകൂടെ?
-പാടില്ല പാടില്ല നമ്മളൊത്തു
-പാടില്ല കാട്ടിൽ നടന്നിടുവാൻ..."
-
-മലയാള കവിതാലോകത്ത് വിപ്ലവം സൃഷ്ടിച്ച ഗാനകാവ്യമാണ് ചങ്ങമ്പുഴയുടെ 'രമണൻ'. പാവപ്പെട്ട ഇടയയുവാവായ രമണന്റെയും സമ്പന്നയായ ചന്ദ്രികയുടെയും പ്രണയവും തുടർന്നുണ്ടാകുന്ന വിരഹവേദനയുമാണ് കാവ്യത്തിന്റെ കാതൽ.
-
-"പൂവണിഞ്ഞൊരു പൊൻവനത്തിലൂടെ
-പൂങ്കുയിൽ പാടും വഴിയിലൂടെ
-പാവമാം എന്നെ മറന്നുവോ നീ,
-പാതിരാക്കാറ്റേ പറയുമോ നീ..."''',
-        ),
-      ],
-    ),
-    BookItem(
-      id: 'malayalam_chemmeen_thakazhi',
-      title: 'ചെമ്മീൻ (Chemmeen)',
-      author: 'തകഴി ശിവശങ്കരപ്പിള്ള (Thakazhi)',
-      category: 'മലയാള സാഹിത്യം (Malayalam Classics)',
-      coverColor: '#064E3B',
-      gradientColors: [const Color(0xFF064E3B), const Color(0xFF047857)],
-      summary: 'കടലമ്മയുടെ നിയമങ്ങളും തീരദേശ മനുഷ്യരുടെ വിശ്വാസങ്ങളും പ്രണയവും പറഞ്ഞ തകഴിയുടെ ലോകപ്രശസ്ത നോവൽ.',
-      readingTimeMinutes: 15,
-      chapters: [
-        BookChapter(
-          chapterTitle: 'കടലിന്റെ മക്കൾ',
-          content: '''കടലമ്മ വിശാലമാണ്. പക്ഷേ അവൾക്ക് കർക്കശമായ നിയമങ്ങളുണ്ട്. കടലിൽ പോകുന്ന അരയന്റെ ജീവൻ കരയിലിരിക്കുന്ന അവന്റെ പെണ്ണിന്റെ ചാരിത്ര്യത്തിലാണ് എന്ന വിശ്വാസം.
-
-കറുത്തമ്മയും പരീക്കുട്ടിയും തമ്മിലുള്ള സ്നേഹം കടപ്പുറത്തെ മണൽത്തരികൾ പോലെ പവിത്രമായിരുന്നു.
-"പരീക്കുട്ടി, നമ്മൾ തമ്മിലുള്ള ഈ ബന്ധം ആരും അറിയരുത്..." കറുത്തമ്മ പറഞ്ഞു.
-"കറുത്തമ്മാ, നീയില്ലാതെ എനിക്ക് ഈ കടപ്പുറത്ത് എന്തുണ്ട്?" പരീക്കുട്ടിയുടെ മറുപടി കടലിരമ്പം പോലെ അവളുടെ കാതുകളിൽ മുഴങ്ങി.
-
-തകഴിയുടെ ജീവസ്സുറ്റ ഭാഷയിലൂടെ കടലിന്റെയും മനുഷ്യഹൃദയങ്ങളുടെയും ആഴം അനുഭവപ്പെടുന്നു.''',
-        ),
-      ],
-    ),
-    BookItem(
-      id: 'malayalam_veena_poovu',
-      title: 'വീണപൂവ് (Veena Poovu)',
-      author: 'മഹാകവി കുമാരനാശാൻ (Kumaran Asan)',
-      category: 'മലയാള സാഹിത്യം (Malayalam Classics)',
-      coverColor: '#581C87',
-      gradientColors: [const Color(0xFF3B0764), const Color(0xFF7E22CE)],
-      summary: 'ഒരു പൂവിന്റെ ജനനം മുതൽ മരണം വരെയുള്ള ജീവിതചക്രം മാനവജീവിതത്തിന്റെ നശ്വരതയുമായി താരതമ്യം ചെയ്ത ദാർശനിക വിലാപകാവ്യം.',
-      readingTimeMinutes: 10,
-      chapters: [
-        BookChapter(
-          chapterTitle: 'ഹാ, പുഷ്പമേ...',
-          content: '''"ഹാ, പുഷ്പമേ, അധികതുംഗപദത്തിലെത്ര
-ശോഭിച്ചിരുന്നിതൊരു രാജ്ഞികണക്കയേ നീ!
-ആഹാ, കിടപ്പതിതു കാണ്മതിതോ വിഭൂതി-
-ഹാ! ഹന്ത! ദൈവഘടനാഗതി പാരമഗ്ര്യം!"
-
-ഒരു ചെറിയ പൂവിന്റെ കൊഴിഞ്ഞുവീഴ്ചയെ മനുഷ്യന്റെ ജനിമൃതികളുമായി കോർത്തിണക്കി മഹാകവി കുമാരനാശാൻ രചിച്ച അത്ഭുതകാവ്യം. പുഷ്പം വിടർന്നുല്ലസിച്ച യൗവനവും കാറ്റിന്റെ ക്രൂരതയാൽ നിലംപതിച്ച അന്ത്യവും ഇവിടെ കണ്ണീരോടെ വർണ്ണിക്കപ്പെടുന്നു.''',
-        ),
-      ],
-    ),
-    BookItem(
-      id: 'malayalam_aithihyamala',
-      title: 'ഐതിഹ്യമാല: പറയിപെറ്റ പന്തിരുകുലം',
-      author: 'കൊട്ടാരത്തിൽ ശങ്കുണ്ണി (Kottarathil Sankunni)',
-      category: 'മലയാള സാഹിത്യം (Malayalam Classics)',
-      coverColor: '#78350F',
-      gradientColors: [const Color(0xFF451A03), const Color(0xFFB45309)],
-      summary: 'കേരള ചരിത്രത്തിലെ ഏറ്റവും പ്രശസ്തമായ ഐതിഹ്യം. വരരുചിയുടെയും പഞ്ചമിയുടെയും പന്ത്രണ്ട് മക്കളുടെ വിസ്മയകഥകൾ.',
-      readingTimeMinutes: 16,
-      chapters: [
-        BookChapter(
-          chapterTitle: 'പറയിപെറ്റ പന്തിരുകുലം',
-          content: '''വിക്രാമാദിത്യ സദസ്സിലെ ജ്ഞാനിയായ വരരുചി ദേശാടനത്തിനിടയിൽ വിധിനിയോഗത്താൽ പഞ്ചമി എന്ന സ്ത്രീയെ വേൾക്കുകയും, അവർക്ക് ജനിച്ച പന്ത്രണ്ട് കുഞ്ഞുങ്ങളെ വഴിയിൽ ഉപേക്ഷിക്കുകയും ചെയ്തു.
-"കുഞ്ഞിന് വായുണ്ടോ?" വരരുചി ചോദിക്കും.
-"ഉണ്ട്" എന്ന് പഞ്ചമി പറയുമ്പോൾ: "എന്നാൽ വായ തന്ന ദൈവം തീറ്റയും കൊടുക്കും, അതിനെ അവിടെ വെച്ചേക്കുക" എന്ന് പറഞ്ഞ് യാത്ര തുടരും.
-
-അങ്ങനെ വഴിയിൽ ഉപേക്ഷിക്കപ്പെട്ട പന്ത്രണ്ട് കുഞ്ഞുങ്ങളെ പന്ത്രണ്ട് വ്യത്യസ്ത സമുദായങ്ങളിലെ ദമ്പതികൾ എടുത്തു വളർത്തി. അവരാണ് മേഴത്തോൾ അഗ്നിഹോത്രി, പാക്കനാർ, പെരുന്തച്ചൻ, നാറാണത്തു ഭ്രാന്തൻ തുടങ്ങിയ വിഖ്യാതരായ പന്തിരുകുലക്കാർ!''',
-        ),
-      ],
-    ),
     // --- GLOBAL ENGLISH MASTERPIECES ---
     BookItem(
       id: 'sherlock_holmes_1',
@@ -693,37 +571,6 @@ Tap the "Open Web Edition" button in the top bar to preview and read full chapte
             ),
           ],
         ),
-        actions: [
-          // XP & Streak Badge
-          Container(
-            margin: const EdgeInsets.only(right: 14, top: 10, bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: accentYellow.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: accentYellow.withValues(alpha: 0.4), width: 1),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8906), size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '$_readStreakDays Days',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 6),
-                const Text('•', style: TextStyle(color: Colors.white38)),
-                const SizedBox(width: 6),
-                const Icon(Icons.stars_rounded, color: accentYellow, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  '$_xpPoints XP',
-                  style: GoogleFonts.inter(color: accentYellow, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         color: accentYellow,
@@ -732,11 +579,6 @@ Tap the "Open Web Edition" button in the top bar to preview and read full chapte
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
           children: [
-            // In-House Promo Banner
-            const PocketHouseAdWidget(
-              compact: true,
-              margin: EdgeInsets.only(left: 16, right: 16, bottom: 12),
-            ),
 
             // Search Bar
             Padding(

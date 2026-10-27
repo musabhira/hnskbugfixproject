@@ -44,7 +44,7 @@ class _DailyMediaToolsPageState extends State<DailyMediaToolsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -312,7 +312,7 @@ class _DailyMediaToolsPageState extends State<DailyMediaToolsPage>
               ),
             ),
             Text(
-              'Compress • Audio Extract • PDF Maker',
+              'Compress • Audio Extract',
               style: GoogleFonts.inter(
                 fontSize: 11,
                 color: Colors.white60,
@@ -335,9 +335,6 @@ class _DailyMediaToolsPageState extends State<DailyMediaToolsPage>
             Tab(
                 icon: Icon(Icons.audiotrack_rounded, size: 18),
                 text: 'Extract Audio'),
-            Tab(
-                icon: Icon(Icons.picture_as_pdf_rounded, size: 18),
-                text: 'Image to PDF'),
           ],
         ),
       ),
@@ -346,7 +343,6 @@ class _DailyMediaToolsPageState extends State<DailyMediaToolsPage>
         children: [
           _buildCompressorTab(),
           _buildAudioExtractorTab(),
-          _buildPdfMakerTab(),
         ],
       ),
     );

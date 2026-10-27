@@ -296,6 +296,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _checkEulaAndRedirect();
       _loadVibesFilterInitial();
       _checkOnboarding();
+      AppStoreReviewService.fetchRemoteReviewConfig();
     });
   }
 

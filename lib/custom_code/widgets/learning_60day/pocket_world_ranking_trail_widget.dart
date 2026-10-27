@@ -227,8 +227,8 @@ class _PocketWorldRankingTrailWidgetState
         );
       }
 
-      // Safe fallback: never let canyon be empty or have only 1 house
-      if (list.length <= 1) {
+      // Safe fallback: never let canyon be empty or have only 1 house in World Mode
+      if (_isWorldMode && list.length <= 1) {
         list = await PocketRankingService.fetchGlobalLeaderboard(
           limit: 300,
           forceRefresh: true,

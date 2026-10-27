@@ -1349,21 +1349,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
-        'title': 'Admin Panel',
-        'subtitle': 'System, Curriculum & Cohort Command Center',
-        'icon': Icons.admin_panel_settings_rounded,
-        'category': 'Executive',
-        'color': const Color(0xFFFFFC00),
-        'gradient': [const Color(0xFFFFFC00), const Color(0xFFFF8906)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'afro_fade',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => AdminAuthService.authenticateAndOpen(context),
-      },
-      {
         'title': 'English Learning Tasks',
         'subtitle': '60-90 Day Plan • Dragon Evolution & Daily Drills',
         'icon': Icons.task_alt_rounded,
@@ -1425,26 +1410,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 builder: (context) => const VoiceAccentCoachPage())),
       },
       {
-        'title': 'Avatar Studio & NFT',
-        'subtitle': '300+ Species & 1-of-1 Mint',
-        'icon': Icons.face_retouching_natural_rounded,
-        'category': 'Avatars',
-        'color': const Color(0xFFFFD700),
-        'gradient': [const Color(0xFFFFD700), const Color(0xFFFF8906)],
-        'avatar': const VectorAvatarConfig(
-          species: 'cyber_fox',
-          artStyle: 'cyberpunk',
-          outfitStyle: 'hacker_hood',
-          auraStyle: 'matrix_green',
-          hairStyle: 'anime_spiky',
-          hairColor: '#00F0FF',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const VectorAvatarStudioPage())),
-      },
-      {
         'title': 'Avatar Network',
         'subtitle': 'DiceBear & RoboHash (Millions+)',
         'icon': Icons.public_rounded,
@@ -1482,7 +1447,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Daily Media Suite',
-        'subtitle': 'Compress, Audio & PDF',
+        'subtitle': 'Compress & Audio Extract',
         'icon': Icons.video_file_rounded,
         'category': 'Utilities',
         'color': const Color(0xFF10B981),
@@ -1691,21 +1656,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const TeamsDedicatedPage())),
-      },
-      {
-        'title': 'World Clock',
-        'subtitle': 'Global Timezones & Clocks',
-        'icon': Icons.public_rounded,
-        'category': 'Utilities',
-        'color': const Color(0xFFFFFC00),
-        'gradient': [const Color(0xFFFFFC00), const Color(0xFFFF8906)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'side_part',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => _showWorldClockSimulation(),
       },
     ];
 

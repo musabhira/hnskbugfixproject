@@ -597,6 +597,32 @@ class PocketRankingService {
     } catch (_) {}
 
     try {
+      final flRes1 = await _supabase
+          .from('friendlist')
+          .select('profile_id')
+          .eq('user_id', currentUserId);
+      for (final row in flRes1) {
+        final fid = row['profile_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final flRes2 = await _supabase
+          .from('friendlist')
+          .select('user_id')
+          .eq('profile_id', currentUserId);
+      for (final row in flRes2) {
+        final fid = row['user_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
       final convRes1 = await _supabase
           .from('conversations')
           .select('user2_id')
@@ -659,7 +685,7 @@ class PocketRankingService {
           final res = await _supabase
               .from('profile')
               .select('user_id, name, profile_image_url, pocket_score, account_type, kid_name')
-              .filter('user_id', 'in', queryIds);
+              .inFilter('user_id', queryIds);
 
           for (final row in res) {
             final uid = row['user_id']?.toString() ?? '';
