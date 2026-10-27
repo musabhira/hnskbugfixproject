@@ -147,8 +147,10 @@ class PocketCitadelFightService {
     required String gameTitle,
     required String scheduledTime,
     int questionCount = 20,
+    int? duelSeed,
   }) async {
     final fightId = 'fight_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(9999)}';
+    final seed = duelSeed ?? ((DateTime.now().microsecondsSinceEpoch ^ math.Random().nextInt(99999999)) & 0x7FFFFFFF);
     final challenge = CitadelFightChallenge(
       id: fightId,
       challengerId: challengerId,
@@ -161,6 +163,7 @@ class PocketCitadelFightService {
       gameTitle: gameTitle,
       scheduledTime: scheduledTime,
       questionCount: questionCount,
+      duelSeed: seed,
       status: 'pending',
       createdAt: DateTime.now(),
     );
@@ -268,11 +271,9 @@ class PocketCitadelFightService {
     double? opponentTimeSeconds,
   }) async {
     // Determine winner:
-    // 1. More correct answers wins.
-    // 2. If equal correct answers, faster speed (fewer seconds) wins!
-    final aC = challenge.challengerCorrect > 0
-        ? challenge.challengerCorrect
-        : (challenge.challengerScore / 180).round().clamp(0, challenge.questionCount);
+    // 1. More correct answers wins unconditionally!
+    // 2. If equal correct answers, faster speed (fewer seconds) wins as tie-breaker!
+    final aC = challenge.challengerCorrect;
     final bC = opponentCorrect ?? (opponentScore / 180).round().clamp(0, challenge.questionCount);
     final aT = challenge.challengerTimeSeconds > 0
         ? challenge.challengerTimeSeconds
@@ -334,8 +335,24 @@ class PocketCitadelFightService {
       });
     } catch (_) {}
 
-    // Send Completion Notification & Chat message
-    final winnerName = winnerId == challenge.opponentId ? challenge.opponentName : challenge.challengerName;
+    // Send Completion Notification & Chat message with clear accuracy breakdown
+    final isDraw = winnerId == 'draw';
+    final isChallengerWinner = winnerId == challenge.challengerId;
+    final winnerName = isDraw ? 'Draw' : (isChallengerWinner ? challenge.challengerName : challenge.opponentName);
+    final winScore = isChallengerWinner ? challenge.challengerScore : opponentScore;
+    final winCorrect = isChallengerWinner ? aC : bC;
+    final winTime = (isChallengerWinner ? aT : bT).toStringAsFixed(1);
+    final loserName = isChallengerWinner ? challenge.opponentName : challenge.challengerName;
+    final loserScore = isChallengerWinner ? opponentScore : challenge.challengerScore;
+    final loserCorrect = isChallengerWinner ? bC : aC;
+    final loserTime = (isChallengerWinner ? bT : aT).toStringAsFixed(1);
+
+    final String resultHeadline = isDraw
+        ? '🤝 Legendary Draw! Both scored $aC/${challenge.questionCount} correct!'
+        : bC != aC
+            ? '🏆 $winnerName won on accuracy! ($winCorrect/${challenge.questionCount} correct in ${winTime}s vs $loserCorrect/${challenge.questionCount} in ${loserTime}s)'
+            : '⚡ $winnerName won on speed tie-breaker! (Both $aC/${challenge.questionCount} correct • ${winTime}s vs ${loserTime}s)';
+
     try {
       for (final uid in [challenge.challengerId, challenge.opponentId]) {
         await SupaFlow.client.from('notifications').insert({
@@ -343,7 +360,7 @@ class PocketCitadelFightService {
           'sender_id': winnerId,
           'type': 'citadel_fight_result',
           'title': '🏆 Fight Duel Settled!',
-          'message': '⚔️ $winnerName won the speed duel! (${challenge.challengerName}: ${challenge.challengerSeconds}s vs ${challenge.opponentName}: ${opponentSeconds}s). +1 Trophy awarded!',
+          'message': resultHeadline,
           'status': 'completed',
         });
       }
@@ -353,7 +370,7 @@ class PocketCitadelFightService {
       await SupaFlow.client.from('messages').insert({
         'sender_id': challenge.opponentId,
         'receiver_id': challenge.challengerId,
-        'message_text': '🏆 FIGHT DUEL SETTLED!\n$winnerName won the speed duel!\n• ${challenge.challengerName}: ${challenge.challengerSeconds}s (${challenge.challengerScore} pts)\n• ${challenge.opponentName}: ${opponentSeconds}s ($opponentScore pts)\n+1 Trophy awarded! 🌟',
+        'message_text': '🏆 FIGHT DUEL SETTLED!\n$resultHeadline\n• $winnerName: $winCorrect/${challenge.questionCount} correct in ${winTime}s ($winScore pts)\n• $loserName: $loserCorrect/${challenge.questionCount} correct in ${loserTime}s ($loserScore pts)\n+1 Trophy awarded! 🌟',
         'message_type': 'citadel_fight_result',
         'created_at': DateTime.now().toIso8601String(),
       });
@@ -377,36 +394,36 @@ class PocketCitadelFightService {
       try {
         final r = math.Random();
         final qCount = challenge.questionCount > 0 ? challenge.questionCount : 20;
-        final userCorrect = challenge.challengerCorrect > 0
-            ? challenge.challengerCorrect
-            : (challenge.challengerScore / 180).round().clamp(0, qCount);
+        final userCorrect = challenge.challengerCorrect;
         final userTime = challenge.challengerTimeSeconds > 0
             ? challenge.challengerTimeSeconds
             : (challenge.challengerSeconds > 0 ? challenge.challengerSeconds.toDouble() : 45.0);
 
-        // Robot wins ~45% of matches, loses ~55% of matches for satisfying learning progression
+        // Robot plays realistically:
+        // ACCURACY IS THE DECISIVE FACTOR:
         final robotWins = r.nextDouble() < 0.45;
 
         int robotCorrect;
         double robotTime;
 
         if (robotWins) {
-          // Robot wins either with higher correct or faster time
-          if (userCorrect < qCount && r.nextBool()) {
-            robotCorrect = math.min(qCount, userCorrect + 1);
+          // Robot wins by having HIGHER accuracy (or equal accuracy with faster time)
+          if (userCorrect < qCount) {
+            robotCorrect = math.min(qCount, userCorrect + (1 + r.nextInt(2)));
             robotTime = math.max(12.0, userTime * (0.85 + r.nextDouble() * 0.25));
           } else {
-            robotCorrect = userCorrect;
-            robotTime = math.max(10.0, userTime - (2.0 + r.nextDouble() * 4.5));
+            robotCorrect = qCount;
+            robotTime = math.max(10.0, userTime - (1.5 + r.nextDouble() * 3.0));
           }
         } else {
-          // Robot loses either with fewer correct or slower time
-          if (userCorrect > 3 && r.nextBool()) {
-            robotCorrect = math.max(0, userCorrect - (1 + r.nextInt(2)));
-            robotTime = userTime * (0.95 + r.nextDouble() * 0.3);
+          // Robot loses: Robot gets FEWER correct answers than user (or equal with slower time)
+          if (userCorrect > 0) {
+            robotCorrect = math.max(0, userCorrect - (1 + r.nextInt(3)));
+            // Even if robot took less time, user wins on accuracy!
+            robotTime = userTime * (0.8 + r.nextDouble() * 0.4);
           } else {
-            robotCorrect = userCorrect;
-            robotTime = userTime + (3.0 + r.nextDouble() * 6.0);
+            robotCorrect = 0;
+            robotTime = userTime + (3.0 + r.nextDouble() * 5.0);
           }
         }
 

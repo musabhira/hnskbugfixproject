@@ -105,12 +105,8 @@ class PocketCitadelFightArenaDialog extends StatelessWidget {
         userATimeSeconds: challenge.challengerTimeSeconds > 0
             ? challenge.challengerTimeSeconds
             : (challenge.challengerSeconds > 0 ? challenge.challengerSeconds.toDouble() : null),
-        userAScore: challenge.challengerScore > 0 ? challenge.challengerScore : null,
-        userACorrect: challenge.challengerCorrect > 0
-            ? challenge.challengerCorrect
-            : (challenge.challengerScore > 0
-                ? (challenge.challengerScore / 180).round().clamp(0, effectiveCount)
-                : null),
+        userAScore: challenge.challengerScore,
+        userACorrect: challenge.challengerCorrect,
         duelSeed: challenge.duelSeed,
         onDuelFinished: (result) async {
           if (!isUserB) {

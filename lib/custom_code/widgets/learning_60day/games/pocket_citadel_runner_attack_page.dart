@@ -27,6 +27,11 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_sentence_builder_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_negative_sentence_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day1_az_and_300vocab_data.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/curriculum_90days/spellings_90.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
 
 enum _Ph {
   ready,
@@ -288,11 +293,15 @@ class _PocketCitadelRunnerAttackPageState
     Color(0xFFFFA726), Color(0xFFEC407A),
   ];
   static const List<String> _typeTitle = [
-    'Sentence Builder', 'Spelling Rectifier', 'Word Bank Train', 'Voice Echo'
+    'Sentence Builder',
+    'Spelling Detective',
+    'Word Bank Train',
+    'Voice Echo (Audio)',
+    'Negative Sentence',
   ];
 
   // ═══════════════════════ STATE ═══════════════════════
-  final Random _rnd = Random();
+  Random _rnd = Random();
   final ValueNotifier<int> _frame = ValueNotifier<int>(0);
   late final Ticker _ticker;
   Duration _last = Duration.zero;
@@ -368,6 +377,10 @@ class _PocketCitadelRunnerAttackPageState
 
   void _newRaid() {
     _total = max(1, widget.defenderLevel);
+    // Unique seed per defender and raid attempt so different defenders and re-raids have distinct questions
+    final seed = (widget.defenderId?.hashCode ?? 0) ^ (widget.defenderLevel * 10007) ^ DateTime.now().minute;
+    _rnd = Random(seed);
+
     final custom = widget.customSentences
             ?.where((m) => m['ml'] != null && m['en'] != null)
             .map((m) => <String>[m['ml']!, m['en']!])
@@ -375,8 +388,8 @@ class _PocketCitadelRunnerAttackPageState
         <List<String>>[];
     _sentBank = [..._sentences, ...custom];
 
-    // Gate 1 = Sentence Builder (Malayalam to English)
-    // Other gates = random mix, never duplicate task types consecutively
+    // Gate 1 = Sentence Builder (Peak Simplicity, Day 1)
+    // Other gates = progressive mix among [0: Sentence, 1: Spelling, 2: Train, 3: Voice Echo, 4: Negative Sentence]
     _plan = [];
     var prev = -1;
     for (var i = 0; i < _total; i++) {
@@ -384,7 +397,7 @@ class _PocketCitadelRunnerAttackPageState
       if (i == 0) {
         t = 0; // Sentence Builder
       } else {
-        final bag = [0, 0, 1, 2, 3].where((x) => x != prev).toList();
+        final bag = [0, 1, 2, 3, 4].where((x) => x != prev).toList();
         t = bag[_rnd.nextInt(bag.length)];
       }
       _plan.add(t);
@@ -457,88 +470,224 @@ class _PocketCitadelRunnerAttackPageState
 
   // ═══════════════════════ CHALLENGE ENGINE ═══════════════════════
   _Ch _makeChallenge(int g) {
+    // Progressive Difficulty Scaling across the gates:
+    // Gate 0 corresponds to Day 1 (Peak Simplicity).
+    // As gate g approaches _total - 1, targetDay climbs towards defenderLevel (clamped to 90).
+    final double progress = _total <= 1 ? 0.0 : (g / (_total - 1)).clamp(0.0, 1.0);
+    final int maxLevel = max(1, min(widget.defenderLevel, 90));
+    final int targetDay = (1 + (progress * (maxLevel - 1))).round().clamp(1, 90);
+
     switch (_plan[g]) {
       case 0:
         {
-          final s = _sentBank[_next(_qA, _sentBank.length)];
-          final words = s[1]
+          // ── 0. SENTENCE BUILDER ──
+          String mal = '';
+          String eng = '';
+          if (widget.isKidMode) {
+            final pData = StudentCreativeWriting90DayCurriculum.getProfileData(targetDay);
+            if (pData.sentences.isNotEmpty) {
+              final sList = pData.sentences[_rnd.nextInt(pData.sentences.length)];
+              eng = sList.join(' ');
+              mal = 'Build the sentence: $eng (${pData.heroName})';
+            }
+          }
+          if (eng.isEmpty) {
+            final rounds = Pocket90DaySentenceBuilderData.getSentencesForDay(targetDay);
+            if (rounds.isNotEmpty) {
+              final item = rounds[_rnd.nextInt(rounds.length)];
+              eng = item.sentence;
+              mal = item.translationMl;
+            }
+          }
+          if (eng.isEmpty) {
+            final s = _sentBank[_next(_qA, _sentBank.length)];
+            mal = s[0];
+            eng = s[1];
+          }
+
+          final words = eng
               .replaceAll(RegExp(r'[.?!]+$'), '')
               .split(' ')
               .where((w) => w.isNotEmpty)
               .toList();
           final lower = words.map((w) => w.toLowerCase()).toSet();
-          final extra =
-              _distract.where((d) => !lower.contains(d)).toList()..shuffle(_rnd);
-          final chips = <String>[...words, ...extra.take(2)]..shuffle(_rnd);
+          final extra = _distract.where((d) => !lower.contains(d)).toList()..shuffle(_rnd);
+          final chips = <String>[...words, ...extra.take(min(3, max(1, 1 + g ~/ 20)))]..shuffle(_rnd);
+
           return _Ch(
             type: 0,
-            instruction:
-                'Build the sentence in English · ഇംഗ്ലീഷിൽ വാക്യം ഉണ്ടാക്കൂ',
-            prompt: s[0],
-            correct: s[1],
+            instruction: 'Build the sentence in English · ഇംഗ്ലീഷിൽ വാക്യം ഉണ്ടാക്കൂ (Day $targetDay)',
+            prompt: mal,
+            correct: eng,
             chips: chips,
             target: words,
           );
         }
+
       case 1:
         {
+          // ── 1. SPELLING DETECTIVE / RECTIFIER ──
           final opts = <List<String>>[];
           final ci = <int>[];
           final used = <String>{};
+
+          if (targetDay <= k90UniqueSpellings.length) {
+            final sp = k90UniqueSpellings[targetDay - 1];
+            final correct = sp['correct']?.toString().toUpperCase() ?? 'SCHOOL';
+            final wrong = sp['wrong']?.toString().toUpperCase() ?? 'SCHOL';
+            final opt = [correct, wrong, '${wrong}E', '${correct}S']..shuffle(_rnd);
+            opts.add(opt);
+            ci.add(opt.indexOf(correct));
+            used.add(correct.toLowerCase());
+          }
+
           while (opts.length < 4) {
             final e = _spell[_next(_qB, _spell.length)];
-            if (!used.add(e[0])) continue;
+            if (!used.add(e[0].toLowerCase())) continue;
             final o = [...e]..shuffle(_rnd);
             opts.add(o);
             ci.add(o.indexOf(e[0]));
           }
+
           return _Ch(
             type: 1,
-            instruction:
-                'Tap the correct spelling · ശരിയായ സ്പെല്ലിംഗ് തിരഞ്ഞെടുക്കൂ',
+            instruction: 'Spot the correct spelling · ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തൂ (Day $targetDay)',
             correct: [for (var k = 0; k < 4; k++) opts[k][ci[k]]].join(', '),
             options: opts,
             correctIdx: ci,
           );
         }
+
       case 2:
         {
-          final e = _words[_next(_qC, _words.length)];
-          final w = e[0];
+          // ── 2. WORD TRAIN WAGONS ──
+          String w = '';
+          String malMeaning = '';
+          String emoji = '🚂';
+
+          final vocabPool = Day1VocabBankData.words300;
+          if (vocabPool.isNotEmpty) {
+            final filtered = vocabPool.where((item) {
+              final len = item['word']?.toString().length ?? 0;
+              return targetDay <= 20 ? (len >= 3 && len <= 5) : (len >= 5);
+            }).toList();
+            final item = (filtered.isNotEmpty ? filtered : vocabPool)[_rnd.nextInt(filtered.isNotEmpty ? filtered.length : vocabPool.length)];
+            w = (item['word']?.toString() ?? 'apple').toLowerCase();
+            malMeaning = item['meaning']?.toString() ?? 'ആപ്പിൾ';
+            emoji = item['emoji']?.toString() ?? '🍎';
+          }
+
+          if (w.isEmpty) {
+            final e = _words[_next(_qC, _words.length)];
+            w = e[0];
+            malMeaning = e[1];
+            emoji = e[2];
+          }
+
           final n = w.length;
-          final bc = min(max(2, (n / 2).ceil()), n - 1);
+          final bc = min(max(1, (targetDay / 30).ceil()), n - 1);
           final idx = List<int>.generate(n, (i) => i)..shuffle(_rnd);
           final blanks = idx.take(bc).toList()..sort();
           final letters = blanks.map((i) => w[i]).toList();
           const abc = 'abcdefghijklmnopqrstuvwxyz';
-          var d = abc[_rnd.nextInt(26)];
-          while (w.contains(d)) {
-            d = abc[_rnd.nextInt(26)];
+          final decoys = <String>[];
+          while (decoys.length < 3) {
+            final d = abc[_rnd.nextInt(26)];
+            if (!w.contains(d) && !decoys.contains(d)) decoys.add(d);
           }
-          final chips = <String>[...letters, d]..shuffle(_rnd);
+          final chips = <String>[...letters, ...decoys]..shuffle(_rnd);
+
           return _Ch(
             type: 2,
-            instruction:
-                'Fill the train wagons · ഒഴിഞ്ഞ അക്ഷരങ്ങൾ നിറയ്ക്കൂ',
-            prompt: e[1],
-            emoji: e[2],
+            instruction: 'Fill the train wagons · ഒഴിഞ്ഞ അക്ഷരങ്ങൾ നിറയ്ക്കൂ (Day $targetDay)',
+            prompt: malMeaning,
+            emoji: emoji,
             correct: w,
             word: w,
             blanks: blanks,
             chips: chips,
           );
         }
-      default:
+
+      case 3:
         {
-          final e = _voice[_next(_qD, _voice.length)];
-          final o = [...e]..shuffle(_rnd);
+          // ── 3. VOICE ECHO (AUDIO LISTENING) ──
+          // NEVER show answer text on screen! User listens to spoken audio and chooses sentence!
+          String spoken = '';
+          String alt1 = '';
+          String alt2 = '';
+
+          final rounds = Pocket90DaySentenceBuilderData.getSentencesForDay(targetDay);
+          if (rounds.isNotEmpty) {
+            final item = rounds[_rnd.nextInt(rounds.length)];
+            spoken = item.sentence.replaceAll(RegExp(r'[.!?]'), '').trim();
+            final words = spoken.split(' ');
+            if (words.length >= 3) {
+              final wordsAlt1 = List<String>.from(words);
+              wordsAlt1[words.length - 1] = '${words.last}s';
+              alt1 = wordsAlt1.join(' ');
+
+              final wordsAlt2 = List<String>.from(words);
+              wordsAlt2[0] = words[0] == 'I' ? 'He' : 'I';
+              alt2 = wordsAlt2.join(' ');
+            }
+          }
+
+          if (spoken.isEmpty) {
+            final e = _voice[_next(_qD, _voice.length)];
+            spoken = e[0];
+            alt1 = e[1];
+            alt2 = e[2];
+          }
+
+          final optsList = [spoken, alt1.isNotEmpty ? alt1 : '$spoken now', alt2.isNotEmpty ? alt2 : 'Then $spoken']..shuffle(_rnd);
+
           return _Ch(
             type: 3,
-            instruction:
-                'Listen & choose what you heard · കേട്ടിട്ട് ശരിയായ വാക്യം തിരഞ്ഞെടുക്കൂ',
-            correct: e[0],
-            options: [o],
-            correctIdx: [o.indexOf(e[0])],
+            instruction: '🎧 Listen to audio & choose sentence · കേട്ടിട്ട് വാക്യം തിരഞ്ഞെടുക്കൂ (Day $targetDay)',
+            prompt: 'Listen to the audio clip carefully',
+            correct: spoken,
+            options: [optsList],
+            correctIdx: [optsList.indexOf(spoken)],
+          );
+        }
+
+      case 4:
+      default:
+        {
+          // ── 4. NEGATIVE SENTENCE BUILDER ──
+          String positive = '';
+          String negative = '';
+          String translation = '';
+
+          final negRounds = Pocket90DayNegativeSentenceData.getRoundsForDay(targetDay);
+          if (negRounds.isNotEmpty) {
+            final item = negRounds[_rnd.nextInt(negRounds.length)];
+            positive = item.positiveSentence.replaceAll(RegExp(r'[.!?]'), '').trim();
+            negative = item.negativeSentence.replaceAll(RegExp(r'[.!?]'), '').trim();
+            translation = item.negativeSentenceMl;
+          }
+
+          if (negative.isEmpty) {
+            positive = 'He runs fast';
+            negative = 'He does not run fast';
+            translation = 'അവൻ വേഗത്തിൽ ഓടുന്നില്ല';
+          }
+
+          final targetWords = negative
+              .split(' ')
+              .where((w) => w.isNotEmpty)
+              .toList();
+          final distractors = ['is', 'was', 'did', 'not', 'are'].where((d) => !targetWords.contains(d)).take(2).toList();
+          final allChips = <String>[...targetWords, ...distractors]..shuffle(_rnd);
+
+          return _Ch(
+            type: 4,
+            instruction: 'Convert to Negative Sentence · നിഷേധ വാക്യമാക്കൂ (Day $targetDay)',
+            prompt: '$positive\n($translation)',
+            correct: negative,
+            chips: allChips,
+            target: targetWords,
           );
         }
     }
@@ -547,6 +696,7 @@ class _PocketCitadelRunnerAttackPageState
   bool _canSubmit(_Ch ch) {
     switch (ch.type) {
       case 0:
+      case 4:
         return _selA.isNotEmpty;
       case 1:
         return !_pickB.contains(null);
@@ -566,9 +716,10 @@ class _PocketCitadelRunnerAttackPageState
 
     switch (ch.type) {
       case 0:
+      case 4:
         {
           mine = _selA.map((i) => ch.chips[i]).join(' ');
-          final ok = mine.toLowerCase() == ch.target.join(' ').toLowerCase();
+          final ok = mine.toLowerCase().trim() == ch.target.join(' ').toLowerCase().trim();
           earned = ok ? 1 : 0;
           question = ch.prompt;
           break;
@@ -744,6 +895,9 @@ class _PocketCitadelRunnerAttackPageState
       _listening = false;
       _phase = _Ph.challenge;
     });
+    if (ch.type == 3) {
+      Future.delayed(const Duration(milliseconds: 350), () => _speak(ch));
+    }
   }
 
   void _startAttack() {
@@ -1957,6 +2111,7 @@ class _PocketCitadelRunnerAttackPageState
   Widget _challengeBody(_Ch ch, Color col) {
     switch (ch.type) {
       case 0:
+      case 4:
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _label(ch.instruction),
           Container(
@@ -2121,25 +2276,22 @@ class _PocketCitadelRunnerAttackPageState
                     runSpacing: 10,
                     alignment: WrapAlignment.center,
                     children: [
-                      _popBtn('🔊 LISTEN', () => _speak(ch),
+                      _popBtn('🔊 REPLAY AUDIO', () => _speak(ch),
                           color: const Color(0xFF80D8FF), fs: 16),
                       if (widget.onListen != null)
                         _popBtn(_listening ? '👂 LISTENING…' : '🎤 SPEAK IT',
                             _listening ? null : () => _speakBack(ch),
                             color: const Color(0xFFFF8A80), fs: 16),
                     ]),
-                if (widget.onSpeak == null) ...[
-                  const SizedBox(height: 10),
-                  Text('“${ch.correct}”',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800)),
-                  const Text('(read it, then pick the matching sentence below)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54, fontSize: 11)),
-                ],
+                const SizedBox(height: 12),
+                const Text(
+                  '🎧 Listen carefully to the spoken audio above!\nChoose the matching sentence you heard:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700),
+                ),
                 if (_heardD != null) ...[
                   const SizedBox(height: 8),
                   Text('Heard: "$_heardD"',

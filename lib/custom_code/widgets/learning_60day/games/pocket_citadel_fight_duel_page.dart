@@ -591,6 +591,7 @@ Path _starPath(Offset c, double r) {
   return p;
 }
 
+// ignore: unused_element
 class _ArenaPainter extends CustomPainter {
   final _ArenaModel m;
   _ArenaPainter(this.m, Listenable repaint) : super(repaint: repaint);
@@ -1574,16 +1575,18 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
     // ---- Round 3: resolve the duel (User B just finished) --------------------
     _aT = widget.userATimeSeconds ?? double.infinity;
     _aS = widget.userAScore ?? 0;
-    _aC = widget.userACorrect ?? ((_aS / 180).round().clamp(0, n)); // estimate
+    _aC = widget.userACorrect ?? ((_aS / 180).round().clamp(0, n));
     if (_correct != _aC) {
       _winner = _correct > _aC ? 'user_b' : 'user_a';
-      _reason = 'Won on accuracy: more correct answers';
+      _reason = _correct > _aC
+          ? 'Won on accuracy: $_correct vs $_aC correct answers!'
+          : 'Won on accuracy: $_aC vs $_correct correct answers!';
     } else if ((_myTime - _aT).abs() > 0.0005) {
       _winner = _myTime < _aT ? 'user_b' : 'user_a';
-      _reason = 'Tie on correct answers – the faster finish wins!';
+      _reason = 'Tie-breaker on speed: both got $_correct correct (${_myTime.toStringAsFixed(1)}s vs ${_aT.toStringAsFixed(1)}s)!';
     } else {
       _winner = 'draw';
-      _reason = 'Identical accuracy and time';
+      _reason = 'Legendary Draw: both scored $_correct correct in identical time!';
     }
     _xp = _winner == 'user_b'
         ? 50 + _correct * 5 + _maxCombo * 2
@@ -1879,43 +1882,6 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
   }
 
   static MainAxisSize minAxisAlignmentRow(bool _) => MainAxisSize.min;
-
-  Widget _arena(double h) {
-    return SizedBox(
-      height: h,
-      child: Stack(children: [
-        Positioned.fill(
-          child: RepaintBoundary(
-            child: CustomPaint(painter: _ArenaPainter(_m, _frame)),
-          ),
-        ),
-        Positioned(
-          left: 10,
-          top: 8,
-          child: _plate(
-            avatar: '🥊',
-            name: 'YOU',
-            sub: _combo >= 2 ? 'COMBO x$_combo 🔥' : '$_correct hits',
-            color: _kCyan,
-          ),
-        ),
-        Positioned(
-          right: 10,
-          top: 8,
-          child: _plate(
-            avatar: widget.opponentAvatar,
-            name: widget.opponentName,
-            sub: 'Lv ${widget.opponentLevel} · SHIELD',
-            color: _kPink,
-            bar: _m.shield,
-            right: true,
-          ),
-        ),
-        _popWidget(),
-        if (_phase == _Phase.countdown) _countdownWidget(),
-      ]),
-    );
-  }
 
   Widget _popWidget() {
     if (_popText.isEmpty) return const SizedBox.shrink();
