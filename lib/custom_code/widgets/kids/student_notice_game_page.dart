@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
-const Color kNBg = Color(0xFF0F172A);
-const Color kNCard = Color(0xFF1E293B);
+const Color kNBg = Color(0xFF0B111E);
+const Color kNCard = Color(0xFF141C2F);
 const Color kNGold = Color(0xFFFFD700);
 const Color kNRed = Color(0xFFEF4444);
 const Color kNAccent = Color(0xFFF97316);
@@ -51,7 +51,7 @@ const List<_NoticeStep> _kNoticeSteps = [
   ),
 ];
 
-/// 📢 Step 9: Gamified Notice Masterclass (Word-Bank Snap Engine)
+/// 📢 Step 9: Gamified Notice Masterclass (Sleek Dark Board & Flame Powered)
 class StudentNoticeGamePage extends StatefulWidget {
   final int day;
   final int stepIndex;
@@ -225,22 +225,27 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kNCard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kNGold.withValues(alpha: 0.6)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FlameIcon(size: 24),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kNCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kNGold.withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: kNGold, size: 15),
+                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: kNGold, size: 16),
-                    Text(' $_xp XP', style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -253,29 +258,29 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage> {
               child: Row(
                 children: [
                   Text(
-                    'Step ${_currentStep + 1} of ${_kNoticeSteps.length}: ${_currentStep < _kNoticeSteps.length ? _kNoticeSteps[_currentStep].label : 'Notice Ready!'}',
-                    style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.w700, fontSize: 14),
+                    'Step ${_currentStep + 1} of ${_kNoticeSteps.length}: ${_currentStep < _kNoticeSteps.length ? _kNoticeSteps[_currentStep].label : 'Notice Complete!'}',
+                    style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                 ],
               ),
             ),
 
-            // Official Notice Board Preview
+            // Sleek Dark Chalkboard Notice Board (Zero Stark White)
             Expanded(
-              flex: 4,
-              child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFDF5),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black, width: 3),
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: kNGold.withValues(alpha: 0.5), width: 2),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.45),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -283,74 +288,89 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage> {
                     children: [
                       // School Name
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: _placed[0] != null ? const Color(0xFFFEF3C7) : const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(6),
+                          color: _placed[0] != null ? const Color(0xFF0F766E).withValues(alpha: 0.3) : Colors.white10,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _placed[0] != null ? const Color(0xFF14B8A6) : Colors.white24),
                         ),
                         child: Text(
-                          _placed[0] ?? '[ School Name Slot ]',
+                          _placed[0] ?? '[ 1. School Name Slot ]',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: _placed[0] != null ? Colors.black : Colors.black26,
+                            color: _placed[0] != null ? const Color(0xFF5EEAD4) : Colors.white38,
                           ),
                           textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // NOTICE Header
-                      Text(
-                        _placed[1] ?? '[ NOTICE ]',
-                        style: GoogleFonts.outfit(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          decoration: TextDecoration.underline,
-                          color: _placed[1] != null ? const Color(0xFFDC2626) : Colors.black26,
                         ),
                       ),
                       const SizedBox(height: 14),
 
+                      // NOTICE Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _placed[1] != null ? kNRed.withValues(alpha: 0.25) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: _placed[1] != null ? Border.all(color: kNRed, width: 1.5) : null,
+                        ),
+                        child: Text(
+                          _placed[1] ?? '[ 2. NOTICE HEADER ]',
+                          style: GoogleFonts.outfit(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            color: _placed[1] != null ? const Color(0xFFFCA5A5) : Colors.white38,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Headline
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        color: _placed[2] != null ? const Color(0xFFFEE2E2) : const Color(0xFFF3F4F6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _placed[2] != null ? kNGold.withValues(alpha: 0.2) : Colors.white10,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _placed[2] != null ? kNGold : Colors.white24),
+                        ),
                         child: Text(
-                          _placed[2] ?? '[ Headline Slot ]',
+                          _placed[2] ?? '[ 3. Headline Slot ]',
                           style: GoogleFonts.outfit(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: _placed[2] != null ? Colors.black : Colors.black26,
+                            color: _placed[2] != null ? kNGold : Colors.white38,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
 
                       // Date & Venue
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          _placed[3] ?? '[ Date & Venue Slot ]',
+                          _placed[3] != null ? '📅 ${_placed[3]}' : '[ 4. Date & Venue Slot ]',
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            color: _placed[3] != null ? Colors.black87 : Colors.black26,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: _placed[3] != null ? Colors.white : Colors.white38,
                           ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 24),
 
                       // Signatory
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          _placed[4] ?? '[ Signatory Slot ]',
+                          _placed[4] != null ? '✍️ ${_placed[4]}' : '[ 5. Signatory Slot ]',
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _placed[4] != null ? Colors.black : Colors.black26,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                            color: _placed[4] != null ? const Color(0xFF67E8F9) : Colors.white38,
                           ),
                         ),
                       ),
@@ -360,15 +380,15 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage> {
               ),
             ),
 
-            // Word Bank Options
+            // Word Bank Options Dock
             if (_currentStep < _kNoticeSteps.length)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 decoration: BoxDecoration(
                   color: kNCard,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  border: Border.all(color: kNAccent.withValues(alpha: 0.3)),
+                  border: Border.all(color: kNAccent.withValues(alpha: 0.35)),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -376,9 +396,9 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage> {
                   children: [
                     Text(
                       'Choose the best text for ${_kNoticeSteps[_currentStep].label}:',
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,

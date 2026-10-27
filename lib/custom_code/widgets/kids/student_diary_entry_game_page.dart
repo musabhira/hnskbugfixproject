@@ -5,15 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
-const Color kDBg = Color(0xFF0F172A);
-const Color kDCard = Color(0xFF1E293B);
+const Color kDBg = Color(0xFF0B111E);
+const Color kDCard = Color(0xFF141C2F);
 const Color kDGold = Color(0xFFFFD700);
 const Color kDEm = Color(0xFF10B981);
 const Color kDCy = Color(0xFF38BDF8);
 
 class _DiaryRound {
   final String dateStr;
+  final String mood;
   final List<String> sentence1Words;
   final List<String> sentence2Words;
   final List<String> distractors;
@@ -21,6 +23,7 @@ class _DiaryRound {
 
   const _DiaryRound({
     required this.dateStr,
+    required this.mood,
     required this.sentence1Words,
     required this.sentence2Words,
     required this.distractors,
@@ -33,21 +36,23 @@ class _DiaryRound {
 const List<_DiaryRound> _kDiaryRounds = [
   _DiaryRound(
     dateStr: 'Sunday Evening',
+    mood: '😄 Happy',
     sentence1Words: ['Today', 'was', 'fun', 'with', 'my', 'friends', '.'],
     sentence2Words: ['Tomorrow', 'I', 'will', 'learn', 'new', 'words', '.'],
-    distractors: ['cry', 'late', 'angry'],
+    distractors: ['cry', 'late'],
     prompt: 'Tap words to write your evening diary!',
   ),
   _DiaryRound(
     dateStr: 'Monday Afternoon',
+    mood: '🌟 Proud',
     sentence1Words: ['I', 'got', 'a', 'gold', 'star', 'in', 'class', '.'],
     sentence2Words: ['I', 'feel', 'very', 'proud', 'today', '.'],
-    distractors: ['sad', 'sleep', 'bad'],
+    distractors: ['sad', 'bad'],
     prompt: 'Record your proud school moment!',
   ),
 ];
 
-/// 📖 Step 7: Gamified Diary Entry Adventure (Word-Bank Snap Engine)
+/// 📖 Step 7: Gamified Diary Entry Adventure (Overflow-Safe & Animated Flame)
 class StudentDiaryEntryGamePage extends StatefulWidget {
   final int day;
   final int stepIndex;
@@ -91,14 +96,11 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   final FlutterTts _tts = FlutterTts();
   int _roundIdx = 0;
   int _xp = 30;
-  String _selectedMood = '😄 Happy';
   int _placedCount = 0;
   int _wrongCount = 0;
   late List<String> _bankTiles;
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-
-  final List<String> _moods = ['😄 Happy', '🤩 Excited', '🤔 Thoughtful', '🌟 Proud'];
 
   _DiaryRound get _currentRound => _kDiaryRounds[_roundIdx];
 
@@ -268,22 +270,27 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kDCard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kDGold.withValues(alpha: 0.6)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FlameIcon(size: 24),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kDCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kDGold.withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: kDGold, size: 15),
+                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kDGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: kDGold, size: 16),
-                    Text(' $_xp XP', style: GoogleFonts.outfit(color: kDGold, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -297,192 +304,168 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
           },
           child: Column(
             children: [
-              // Mood Selector Chips
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              // Scrollable Diary Notebook (Zero Overflow)
+              Expanded(
                 child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+                  child: Column(
                     children: [
-                      Text('Mood: ', style: GoogleFonts.outfit(color: Colors.white70, fontWeight: FontWeight.w600)),
-                      for (final m in _moods)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 6),
-                          child: GestureDetector(
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              setState(() => _selectedMood = m);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _selectedMood == m ? kDGold : kDCard,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _selectedMood == m ? kDGold : Colors.white24,
-                                ),
-                              ),
-                              child: Text(
-                                m,
-                                style: GoogleFonts.outfit(
-                                  color: _selectedMood == m ? Colors.black : Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
+                      // Header Ribbon
+                      Row(
+                        children: [
+                          Text(
+                            'Entry ${_roundIdx + 1} of ${_kDiaryRounds.length}',
+                            style: GoogleFonts.outfit(color: kDGold, fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: kDCard,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: kDGold.withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              'Mood: ${_currentRound.mood}',
+                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Visual Diary Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF9E6),
+                          borderRadius: BorderRadius.circular(16),
+                          border: const Border(
+                            left: BorderSide(color: Color(0xFFDC2626), width: 5),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              blurRadius: 14,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Dear Diary, ${_currentRound.mood.split(' ').first}',
+                                  style: GoogleFonts.caveat(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF78350F),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  _currentRound.dateStr,
+                                  style: GoogleFonts.caveat(
+                                    fontSize: 15,
+                                    color: const Color(0xFF92400E),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 16, thickness: 1, color: Color(0xFFE5D5B5)),
+
+                            // Sentence 1
+                            Text(
+                              '1. Today\'s highlight:',
+                              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF78350F)),
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (int i = 0; i < s1.length; i++)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: i < s1Placed ? const Color(0xFFFEF08A) : const Color(0xFFF3F4F6),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: i < s1Placed ? const Color(0xFFCA8A04) : const Color(0xFFD1D5DB),
+                                        width: i < s1Placed ? 1.8 : 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      i < s1Placed ? s1[i] : '____',
+                                      style: GoogleFonts.caveat(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: i < s1Placed ? const Color(0xFF451A03) : Colors.black26,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Sentence 2
+                            Text(
+                              '2. Tomorrow\'s wish:',
+                              style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFF78350F)),
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                for (int i = 0; i < s2.length; i++)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: i < s2Placed ? const Color(0xFFBBF7D0) : const Color(0xFFF3F4F6),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: i < s2Placed ? const Color(0xFF16A34A) : const Color(0xFFD1D5DB),
+                                        width: i < s2Placed ? 1.8 : 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      i < s2Placed ? s2[i] : '____',
+                                      style: GoogleFonts.caveat(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: i < s2Placed ? const Color(0xFF14532D) : Colors.black26,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
 
-              // Visual Diary Notebook Card
-              Expanded(
-                flex: 4,
-                child: Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF9E6),
-                      borderRadius: BorderRadius.circular(16),
-                      border: const Border(
-                        left: BorderSide(color: Color(0xFFDC2626), width: 6),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.45),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Dear Diary, $_selectedMood',
-                              style: GoogleFonts.caveat(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF78350F),
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              _currentRound.dateStr,
-                              style: GoogleFonts.caveat(
-                                fontSize: 16,
-                                color: const Color(0xFF92400E),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 20, thickness: 1, color: Color(0xFFE5D5B5)),
-
-                        // Sentence 1
-                        Text(
-                          '1. Today\'s highlight:',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF78350F)),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (int i = 0; i < s1.length; i++)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: i < s1Placed ? const Color(0xFFFEF08A) : const Color(0xFFF3F4F6),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: i < s1Placed ? const Color(0xFFCA8A04) : const Color(0xFFD1D5DB),
-                                    width: i < s1Placed ? 1.8 : 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  i < s1Placed ? s1[i] : '____',
-                                  style: GoogleFonts.caveat(
-                                    fontSize: 21,
-                                    fontWeight: FontWeight.bold,
-                                    color: i < s1Placed ? const Color(0xFF451A03) : Colors.black26,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Sentence 2
-                        Text(
-                          '2. Looking ahead:',
-                          style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF78350F)),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (int i = 0; i < s2.length; i++)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: i < s2Placed ? const Color(0xFFBBF7D0) : const Color(0xFFF3F4F6),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: i < s2Placed ? const Color(0xFF16A34A) : const Color(0xFFD1D5DB),
-                                    width: i < s2Placed ? 1.8 : 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  i < s2Placed ? s2[i] : '____',
-                                  style: GoogleFonts.caveat(
-                                    fontSize: 21,
-                                    fontWeight: FontWeight.bold,
-                                    color: i < s2Placed ? const Color(0xFF14532D) : Colors.black26,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const Spacer(),
-
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '💡 ${_currentRound.prompt}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              color: const Color(0xFF92400E),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Interactive Word Bank
+              // Compact, Scroll-Safe Word Bank Dock (Zero Overflow)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 decoration: BoxDecoration(
                   color: kDCard,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  border: Border.all(color: kDGold.withValues(alpha: 0.3)),
+                  border: Border.all(color: kDGold.withValues(alpha: 0.35)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 12,
+                      offset: const Offset(0, -3),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -490,47 +473,40 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.touch_app_rounded, color: kDGold, size: 18),
+                        const Icon(Icons.touch_app_rounded, color: kDGold, size: 16),
                         const SizedBox(width: 6),
                         Text(
-                          'Word Bank (Tap words to form the diary entries)',
+                          'Word Bank (Tap to fill the diary)',
                           style: GoogleFonts.outfit(
                             color: Colors.white70,
                             fontWeight: FontWeight.w700,
-                            fontSize: 13,
+                            fontSize: 12.5,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         for (int i = 0; i < _bankTiles.length; i++)
                           GestureDetector(
                             onTap: () => _onTileTap(_bankTiles[i]),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                               decoration: BoxDecoration(
-                                color: _getTileColor(i).withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: _getTileColor(i), width: 1.8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: _getTileColor(i).withValues(alpha: 0.25),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                                color: _getTileColor(i).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: _getTileColor(i), width: 1.6),
                               ),
                               child: Text(
                                 _bankTiles[i],
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: 15,
                                 ),
                               ),
                             ),

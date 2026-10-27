@@ -1,74 +1,69 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
-const Color kBBg = Color(0xFF0A111F);
-const Color kBCard = Color(0xFF142038);
-const Color kBGold = Color(0xFFFFD700);
-const Color kBEm = Color(0xFF10B981);
-const Color kBCy = Color(0xFF38BDF8);
+const Color kPBg = Color(0xFF0A111F);
+const Color kPCard = Color(0xFF142038);
+const Color kPGold = Color(0xFFFFD700);
+const Color kPEm = Color(0xFF10B981);
+const Color kPCy = Color(0xFF38BDF8);
 
-class _BioHero {
-  final String icon;
-  final String category;
-  final String name;
-  final String born;
-  final String profession;
-  final String deed;
-  final List<String> possibleProfessions;
-  final List<String> possibleDeeds;
-  final List<String> traits;
+class _ExamProfileRound {
+  final String heroName;
+  final String heroEmoji;
+  final Map<String, String> examClues;
+  final List<List<String>> sentences;
+  final List<String> distractors;
 
-  const _BioHero({
-    required this.icon,
-    required this.category,
-    required this.name,
-    required this.born,
-    required this.profession,
-    required this.deed,
-    required this.possibleProfessions,
-    required this.possibleDeeds,
-    required this.traits,
+  const _ExamProfileRound({
+    required this.heroName,
+    required this.heroEmoji,
+    required this.examClues,
+    required this.sentences,
+    required this.distractors,
   });
+
+  List<String> get allSentenceWords => [for (final s in sentences) ...s];
 }
 
-const List<_BioHero> _kHeroes = [
-  _BioHero(
-    icon: '🔬',
-    category: 'Legendary Scientist',
-    name: 'Marie Curie',
-    born: '1867, Warsaw',
-    profession: 'Physicist & Chemist',
-    deed: 'Discovered radioactivity and won 2 Nobel Prizes',
-    possibleProfessions: ['Physicist & Chemist', 'Doctor', 'Astronaut'],
-    possibleDeeds: [
-      'Discovered radioactivity and won 2 Nobel Prizes',
-      'Walked on the moon',
-      'Built a wooden ship',
+const List<_ExamProfileRound> _kExamProfiles = [
+  _ExamProfileRound(
+    heroName: 'Dr. A.P.J. Abdul Kalam',
+    heroEmoji: '🚀',
+    examClues: {
+      'Born': '15 October 1931, Rameswaram',
+      'Known as': 'Missile Man of India',
+      'Position': '11th President of India',
+      'Award': 'Bharat Ratna',
+    },
+    sentences: [
+      ['A. P. J. Abdul Kalam', 'was', 'born', 'in', 'Rameswaram', '.'],
+      ['He', 'was', 'the', '11th', 'President', 'of', 'India', '.'],
     ],
-    traits: ['Curious', 'Brave', 'Hardworking', 'Humble'],
+    distractors: ['singer', 'yesterday', 'moon'],
   ),
-  _BioHero(
-    icon: '🏏',
-    category: 'Legendary Sports Hero',
-    name: 'Sachin Tendulkar',
-    born: '1973, Mumbai',
-    profession: 'Master Cricketer',
-    deed: 'Scored 100 international centuries for India',
-    possibleProfessions: ['Master Cricketer', 'Swimmer', 'Pilot'],
-    possibleDeeds: [
-      'Scored 100 international centuries for India',
-      'Climbed Mount Everest',
-      'Invented the telephone',
+  _ExamProfileRound(
+    heroName: 'Mary Kom',
+    heroEmoji: '🥊',
+    examClues: {
+      'Born': '1 March 1983, Manipur',
+      'Sport': 'Boxing',
+      'Achievement': 'Six-time World Champion',
+      'Award': 'Padma Vibhushan',
+    },
+    sentences: [
+      ['Mary Kom', 'was', 'born', 'in', 'Manipur', '.'],
+      ['She', 'is', 'a', 'famous', 'World', 'Champion', '.'],
     ],
-    traits: ['Disciplined', 'Determined', 'Team Player', 'Humble'],
+    distractors: ['cricket', 'dance', 'sleep'],
   ),
 ];
 
-/// 👤 Step 8: Gamified Legend Bio Creator (Word-Bank Snap Engine)
+/// 👤 Step 8: Exam Profile-to-Paragraph Writing Quest (Authentic School Exam Training)
 class StudentBioCreatorGamePage extends StatefulWidget {
   final int day;
   final int stepIndex;
@@ -107,20 +102,25 @@ class StudentBioCreatorGamePage extends StatefulWidget {
   State<StudentBioCreatorGamePage> createState() => _StudentBioCreatorGameState();
 }
 
-class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage> {
+class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
+    with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
-  int _heroIdx = 0;
+  int _roundIdx = 0;
   int _xp = 35;
-  String? _selectedProfession;
-  String? _selectedDeed;
-  final Set<String> _selectedTraits = {};
+  int _currentSentenceIdx = 0;
+  int _currentWordIdx = 0;
+  int _wrongCount = 0;
+  late List<String> _bankTiles;
+  late final AnimationController _shakeCtrl =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _BioHero get _hero => _kHeroes[_heroIdx];
+  _ExamProfileRound get _round => _kExamProfiles[_roundIdx];
 
   @override
   void initState() {
     super.initState();
     _initTts();
+    _setupRound();
   }
 
   Future<void> _initTts() async {
@@ -130,71 +130,69 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage> {
     } catch (_) {}
   }
 
+  void _setupRound() {
+    final curSentence = _round.sentences[_currentSentenceIdx];
+    final all = [...curSentence, ..._round.distractors]..shuffle();
+    setState(() {
+      _bankTiles = all;
+      _currentWordIdx = 0;
+    });
+  }
+
   @override
   void dispose() {
+    _shakeCtrl.dispose();
     _tts.stop();
     super.dispose();
   }
 
-  bool get _isComplete =>
-      _selectedProfession != null &&
-      _selectedDeed != null &&
-      _selectedTraits.length >= 2;
-
-  void _onProfessionTap(String prof) {
-    if (prof == _hero.profession) {
-      PocketGameSfx.instance.playSnapCorrect();
-      _tts.speak(prof);
-      setState(() => _selectedProfession = prof);
-    } else {
-      PocketGameSfx.instance.playErrorBuzz();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('⚠️ Not quite! Try the correct profession for ${_hero.name}'),
-          duration: const Duration(seconds: 1),
-          backgroundColor: const Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+  void _triggerErrorShake() {
+    _shakeCtrl.forward(from: 0);
+    PocketGameSfx.instance.playErrorBuzz();
   }
 
-  void _onDeedTap(String deed) {
-    if (deed == _hero.deed) {
-      PocketGameSfx.instance.playSnapCorrect();
-      _tts.speak(deed);
-      setState(() => _selectedDeed = deed);
-    } else {
-      PocketGameSfx.instance.playErrorBuzz();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('⚠️ Try the greatest achievement of ${_hero.name}'),
-          duration: const Duration(seconds: 1),
-          backgroundColor: const Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
+  void _onTileTap(String word) {
+    final curSentence = _round.sentences[_currentSentenceIdx];
+    final expected = curSentence[_currentWordIdx];
 
-  void _onTraitTap(String trait) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (_selectedTraits.contains(trait)) {
-        _selectedTraits.remove(trait);
-      } else {
-        _selectedTraits.add(trait);
+    if (word == expected) {
+      PocketGameSfx.instance.playSnapCorrect();
+      _tts.speak(word);
+      setState(() {
+        _currentWordIdx++;
+        _bankTiles.remove(word);
+      });
+
+      if (_currentWordIdx == curSentence.length) {
+        _onSentenceFinished();
       }
-    });
+    } else {
+      _wrongCount++;
+      _triggerErrorShake();
+    }
   }
 
-  Future<void> _onFinishCard() async {
-    PocketGameSfx.instance.playVictory();
-    final cardBio =
-        '${_hero.name}, born ${_hero.born}. ${_hero.profession}. ${_hero.deed}. Traits: ${_selectedTraits.join(', ')}.';
-    _tts.speak(cardBio);
+  Future<void> _onSentenceFinished() async {
+    final fullSentence = _round.sentences[_currentSentenceIdx].join(' ');
+    await Future.delayed(const Duration(milliseconds: 250));
+    _tts.speak(fullSentence);
 
-    setState(() => _xp += 30);
+    if (_currentSentenceIdx < _round.sentences.length - 1) {
+      await Future.delayed(const Duration(milliseconds: 700));
+      setState(() {
+        _currentSentenceIdx++;
+        _setupRound();
+      });
+    } else {
+      _onRoundComplete();
+    }
+  }
+
+  Future<void> _onRoundComplete() async {
+    PocketGameSfx.instance.playVictory();
+    final roundXp = math.max(15, 30 - (_wrongCount * 5));
+    setState(() => _xp += roundXp);
+
     widget.onStepFinished?.call(widget.stepIndex);
 
     if (!mounted) return;
@@ -202,59 +200,59 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: kBCard,
+        backgroundColor: kPCard,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: kBGold, width: 2),
+          side: const BorderSide(color: kPGold, width: 2),
         ),
         child: Padding(
           padding: const EdgeInsets.all(22),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🏅 ✨ 🌟', style: TextStyle(fontSize: 48)),
+              const Text('📝 🏅 🌟', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 8),
               Text(
-                'Legend Profile Unlocked!',
+                'Profile Paragraph Complete!',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: kBGold,
+                  color: kPGold,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
               Text(
-                '+30 XP  •  ⭐⭐⭐',
+                '+$roundXp XP  •  ⭐⭐⭐',
                 style: GoogleFonts.outfit(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: kBEm,
+                  color: kPEm,
                 ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kBGold,
+                  backgroundColor: kPGold,
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_heroIdx < _kHeroes.length - 1) {
+                  if (_roundIdx < _kExamProfiles.length - 1) {
                     setState(() {
-                      _heroIdx++;
-                      _selectedProfession = null;
-                      _selectedDeed = null;
-                      _selectedTraits.clear();
+                      _roundIdx++;
+                      _currentSentenceIdx = 0;
+                      _wrongCount = 0;
+                      _setupRound();
                     });
                   } else {
                     Navigator.of(context).maybePop();
                   }
                 },
                 child: Text(
-                  _heroIdx < _kHeroes.length - 1 ? 'NEXT HERO PROFILE ▶' : 'FINISH QUEST 🏆',
+                  _roundIdx < _kExamProfiles.length - 1 ? 'NEXT EXAM QUESTION ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -265,341 +263,270 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage> {
     );
   }
 
+  Color _getTileColor(int index) {
+    const colors = [kPCy, kPEm, kPGold, Color(0xFFFF9100), Color(0xFFA855F7)];
+    return colors[index % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBBg,
+      backgroundColor: kPBg,
       appBar: AppBar(
-        backgroundColor: kBBg,
+        backgroundColor: kPBg,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          'Legend Bio Creator 👤',
+          'Exam Profile Writing 👤',
           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kBCard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kBGold.withValues(alpha: 0.6)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FlameIcon(size: 24),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kPCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kPGold.withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: kPGold, size: 15),
+                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kPGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: kBGold, size: 16),
-                    Text(' $_xp XP', style: GoogleFonts.outfit(color: kBGold, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Hero Card Progress
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    'Card ${_heroIdx + 1} of ${_kHeroes.length}: ${_hero.category}',
-                    style: GoogleFonts.outfit(color: kBGold, fontWeight: FontWeight.w700, fontSize: 14),
-                  ),
-                  const Spacer(),
-                  Text(_hero.icon, style: const TextStyle(fontSize: 20)),
-                ],
-              ),
-            ),
-
-            // Visual 3D Hero Profile Card
-            Expanded(
-              flex: 4,
-              child: Center(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E293B), Color(0xFF0F3D33)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: kBGold, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: kBGold.withValues(alpha: 0.25),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
+        child: AnimatedBuilder(
+          animation: _shakeCtrl,
+          builder: (context, child) {
+            final offset = math.sin(_shakeCtrl.value * math.pi * 6) * 8 * (1 - _shakeCtrl.value);
+            return Transform.translate(offset: Offset(offset, 0), child: child);
+          },
+          child: Column(
+            children: [
+              // Scrollable Exam Clues + Paragraph Workspace
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(_hero.icon, style: const TextStyle(fontSize: 28)),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      // Header
+                      Text(
+                        'Question ${_roundIdx + 1} of ${_kExamProfiles.length}: Profile to Paragraph',
+                        style: GoogleFonts.outfit(color: kPGold, fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Official Exam Profile Clues Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: kPCy.withValues(alpha: 0.5)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
+                                Text(_round.heroEmoji, style: const TextStyle(fontSize: 22)),
+                                const SizedBox(width: 6),
                                 Text(
-                                  _hero.name,
+                                  _round.heroName,
                                   style: GoogleFonts.outfit(
-                                    fontSize: 22,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 16,
                                     color: Colors.white,
                                   ),
                                 ),
-                                Text(
-                                  'Born: ${_hero.born}',
-                                  style: GoogleFonts.outfit(fontSize: 12, color: Colors.white70),
-                                ),
                               ],
                             ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: kBEm,
-                              borderRadius: BorderRadius.circular(12),
+                            const Divider(height: 14, thickness: 1, color: Colors.white12),
+                            for (final entry in _round.examClues.entries)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '• ${entry.key}: ',
+                                      style: GoogleFonts.outfit(
+                                        color: kPCy,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white70,
+                                          fontSize: 12.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Student Answer Sheet
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFDF5),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            child: Text(
-                              'HERO',
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '📝 Your Answer Paragraph:',
                               style: GoogleFonts.outfit(
-                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                fontSize: 13,
+                                color: const Color(0xFF1E293B),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20, thickness: 1, color: Colors.white24),
+                            const SizedBox(height: 8),
 
-                      // Profession
-                      Text(
-                        'Profession / Title:',
-                        style: GoogleFonts.outfit(fontSize: 12, color: Colors.white70),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _selectedProfession != null
-                              ? kBEm.withValues(alpha: 0.2)
-                              : Colors.white10,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedProfession != null ? kBEm : Colors.white24,
-                          ),
-                        ),
-                        child: Text(
-                          _selectedProfession ?? 'Tap profession from bank below...',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: _selectedProfession != null ? kBEm : Colors.white38,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Achievement
-                      Text(
-                        'Greatest Deed:',
-                        style: GoogleFonts.outfit(fontSize: 12, color: Colors.white70),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _selectedDeed != null
-                              ? kBGold.withValues(alpha: 0.2)
-                              : Colors.white10,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedDeed != null ? kBGold : Colors.white24,
-                          ),
-                        ),
-                        child: Text(
-                          _selectedDeed ?? 'Tap achievement from bank below...',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: _selectedDeed != null ? kBGold : Colors.white38,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Trait Badges
-                      Text(
-                        'Personality Traits (Pick 2+):',
-                        style: GoogleFonts.outfit(fontSize: 12, color: Colors.white70),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final t in _hero.traits)
-                            GestureDetector(
-                              onTap: () => _onTraitTap(t),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _selectedTraits.contains(t)
-                                      ? kBEm
-                                      : Colors.white12,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _selectedTraits.contains(t) ? kBEm : Colors.white24,
-                                  ),
-                                ),
-                                child: Text(
-                                  t,
+                            // Display Completed and Active Sentences
+                            for (int sIdx = 0; sIdx < _round.sentences.length; sIdx++) ...[
+                              if (sIdx < _currentSentenceIdx) ...[
+                                Text(
+                                  '✓ ${_round.sentences[sIdx].join(' ')}',
                                   style: GoogleFonts.outfit(
-                                    fontSize: 12,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: _selectedTraits.contains(t) ? Colors.black : Colors.white,
+                                    color: const Color(0xFF047857),
                                   ),
                                 ),
-                              ),
-                            ),
-                        ],
+                                const SizedBox(height: 6),
+                              ] else if (sIdx == _currentSentenceIdx) ...[
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    for (int w = 0; w < _round.sentences[sIdx].length; w++)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: w < _currentWordIdx
+                                              ? const Color(0xFFDCFCE7)
+                                              : const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: w < _currentWordIdx
+                                                ? const Color(0xFF16A34A)
+                                                : const Color(0xFFCBD5E1),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          w < _currentWordIdx
+                                              ? _round.sentences[sIdx][w]
+                                              : '____',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: w < _currentWordIdx
+                                                ? const Color(0xFF14532D)
+                                                : Colors.black26,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
 
-            // Word Bank Section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              decoration: BoxDecoration(
-                color: kBCard,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: kBEm.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Step 1: Pick Profession  •  Step 2: Pick Deed',
-                    style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Professions Row
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final p in _hero.possibleProfessions)
-                        GestureDetector(
-                          onTap: () => _onProfessionTap(p),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _selectedProfession == p
-                                  ? kBEm.withValues(alpha: 0.3)
-                                  : kBBg,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: _selectedProfession == p ? kBEm : kBCy,
-                              ),
-                            ),
-                            child: Text(
-                              p,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Deeds Row
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final d in _hero.possibleDeeds)
-                        GestureDetector(
-                          onTap: () => _onDeedTap(d),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _selectedDeed == d
-                                  ? kBGold.withValues(alpha: 0.3)
-                                  : kBBg,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: _selectedDeed == d ? kBGold : Colors.white24,
-                              ),
-                            ),
-                            child: Text(
-                              d,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kBGold,
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor: Colors.white12,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: _isComplete ? _onFinishCard : null,
-                      child: Text(
-                        'Unlock Legend Card 🏅',
-                        style: GoogleFonts.outfit(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: _isComplete ? Colors.black : Colors.white38,
-                        ),
-                      ),
+              // Word Bank Dock
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                decoration: BoxDecoration(
+                  color: kPCard,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border.all(color: kPEm.withValues(alpha: 0.35)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Word Bank (Tap words to form Sentence ${_currentSentenceIdx + 1}):',
+                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (int i = 0; i < _bankTiles.length; i++)
+                          GestureDetector(
+                            onTap: () => _onTileTap(_bankTiles[i]),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                              decoration: BoxDecoration(
+                                color: _getTileColor(i).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: _getTileColor(i), width: 1.6),
+                              ),
+                              child: Text(
+                                _bankTiles[i],
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

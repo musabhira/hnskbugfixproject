@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
 const Color kLBg = Color(0xFF0A0F1D);
 const Color kLCard = Color(0xFF131D33);
@@ -272,22 +273,27 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kLCard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kLGold.withValues(alpha: 0.6)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FlameIcon(size: 24),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kLCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kLGold.withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: kLGold, size: 15),
+                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kLGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: kLGold, size: 16),
-                    Text(' $_xp XP', style: GoogleFonts.outfit(color: kLGold, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -301,30 +307,29 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
           },
           child: Column(
             children: [
-              // Progress Ribbon
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Text(
-                      'Round ${_roundIdx + 1} of ${_kLetterRounds.length}',
-                      style: GoogleFonts.outfit(color: kLGold, fontWeight: FontWeight.w700, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    Text(
-                      _currentRound.recipient,
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Visual Parchment Letter Preview Card
+              // Scrollable Parchment Letter Preview (Zero Overflow)
               Expanded(
-                flex: 4,
-                child: Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                  child: Column(
+                    children: [
+                      // Progress Ribbon
+                      Row(
+                        children: [
+                          Text(
+                            'Round ${_roundIdx + 1} of ${_kLetterRounds.length}',
+                            style: GoogleFonts.outfit(color: kLGold, fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
+                          const Spacer(),
+                          Text(
+                            _currentRound.recipient,
+                            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFFDF5),
@@ -447,7 +452,7 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
                               ),
                           ],
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 20),
 
                         // Bottom Hint Pill
                         Container(
@@ -469,8 +474,10 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
+            ),
+          ),
 
               // Interactive Word Bank
               Container(

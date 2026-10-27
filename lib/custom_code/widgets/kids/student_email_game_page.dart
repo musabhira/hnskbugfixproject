@@ -4,9 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
-const Color kEBg = Color(0xFF0F172A);
-const Color kECard = Color(0xFF1E293B);
+const Color kEBg = Color(0xFF0B111E);
+const Color kECard = Color(0xFF141C2F);
 const Color kEGold = Color(0xFFFFD700);
 const Color kECy = Color(0xFF38BDF8);
 const Color kEEm = Color(0xFF10B981);
@@ -47,7 +48,7 @@ const List<_EmailRound> _kEmailRounds = [
   ),
 ];
 
-/// 📧 Step 10: Gamified Email Etiquette Game (Word-Bank Snap Engine)
+/// 📧 Step 10: Gamified Email Etiquette Game (Flame Powered & Overflow Safe)
 class StudentEmailGamePage extends StatefulWidget {
   final int day;
   final int stepIndex;
@@ -241,22 +242,27 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: kECard,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kEGold.withValues(alpha: 0.6)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const FlameIcon(size: 24),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kECard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: kEGold.withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: kEGold, size: 15),
+                      Text(' $_xp XP', style: GoogleFonts.outfit(color: kEGold, fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: kEGold, size: 16),
-                    Text(' $_xp XP', style: GoogleFonts.outfit(color: kEGold, fontWeight: FontWeight.bold, fontSize: 13)),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -264,21 +270,22 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Visual Email Composer Card
+            // Scrollable Futuristic Dark Mail Composer (Zero Overflow)
             Expanded(
-              flex: 4,
-              child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: kECy.withValues(alpha: 0.5), width: 1.5),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.45),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -287,109 +294,106 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.mail_outline_rounded, color: Color(0xFF2563EB)),
+                          const Icon(Icons.mark_email_read_rounded, color: kECy),
                           const SizedBox(width: 8),
                           Text(
                             'To: ${_round.recipient}',
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: const Color(0xFF1E293B),
+                              fontSize: 14.5,
+                              color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                      const Divider(height: 20, thickness: 1),
+                      const Divider(height: 20, thickness: 1, color: Colors.white12),
 
                       // Subject Line
                       Text(
                         'Subject:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
                       ),
                       const SizedBox(height: 4),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: _selectedSubject != null ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
+                          color: _selectedSubject != null ? kECy.withValues(alpha: 0.2) : Colors.white10,
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: _selectedSubject != null ? const Color(0xFF3B82F6) : const Color(0xFFCBD5E1),
+                            color: _selectedSubject != null ? kECy : Colors.white24,
                           ),
                         ),
                         child: Text(
                           _selectedSubject ?? '[ Choose a polite Subject line below ]',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: _selectedSubject != null ? const Color(0xFF1E3A8A) : Colors.black26,
+                            fontSize: 13.5,
+                            color: _selectedSubject != null ? Colors.white : Colors.white38,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
 
                       // Greeting
                       Text(
                         'Greeting:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
                       ),
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                         decoration: BoxDecoration(
-                          color: _selectedGreeting != null ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
+                          color: _selectedGreeting != null ? kEEm.withValues(alpha: 0.2) : Colors.white10,
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: _selectedGreeting != null ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
+                            color: _selectedGreeting != null ? kEEm : Colors.white24,
                           ),
                         ),
                         child: Text(
                           _selectedGreeting ?? '[ Polite Greeting ]',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: _selectedGreeting != null ? const Color(0xFF065F46) : Colors.black26,
+                            fontSize: 13.5,
+                            color: _selectedGreeting != null ? const Color(0xFF6EE7B7) : Colors.white38,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
 
                       // Body
                       Text(
                         'Message Body:',
-                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                        style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w600, color: kECy),
                       ),
                       const SizedBox(height: 4),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: _selectedBody != null ? const Color(0xFFFFFBEB) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
+                          color: _selectedBody != null ? kEGold.withValues(alpha: 0.18) : Colors.white10,
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: _selectedBody != null ? const Color(0xFFF59E0B) : const Color(0xFFCBD5E1),
+                            color: _selectedBody != null ? kEGold : Colors.white24,
                           ),
                         ),
                         child: Text(
                           _selectedBody ?? '[ Polite message sentence ]',
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w600,
-                            color: _selectedBody != null ? const Color(0xFF78350F) : Colors.black26,
+                            color: _selectedBody != null ? Colors.white : Colors.white38,
                           ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(height: 20),
 
                       // Sign off
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Regards,\nAarav, Class 7B',
-                          style: GoogleFonts.outfit(
-                            fontSize: 12,
-                            color: const Color(0xFF475569),
-                          ),
+                      Text(
+                        'Regards,\nAarav, Class 7B',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.5,
+                          color: Colors.white70,
                         ),
                       ),
                     ],
@@ -398,14 +402,14 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
               ),
             ),
 
-            // Word Bank Options
+            // Word Bank Options Dock
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               decoration: BoxDecoration(
                 color: kECard,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: kECy.withValues(alpha: 0.3)),
+                border: Border.all(color: kECy.withValues(alpha: 0.35)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -418,7 +422,7 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
                           : _step == 1
                               ? 'Step 2: Pick a polite Greeting:'
                               : 'Step 3: Pick a polite Body sentence:',
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -444,7 +448,7 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 13.5,
                                 ),
                               ),
                             ),
