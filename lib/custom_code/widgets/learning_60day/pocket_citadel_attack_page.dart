@@ -28,7 +28,6 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
@@ -6604,74 +6603,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           setState(() => _canInitiatePocketTalk = can);
         }
       });
-    }
-  }
-
-  Future<void> _onSendPocketTalkFromCitadel() async {
-    final myId = SupaFlow.client.auth.currentUser?.id;
-    if (myId == null || myId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please log in to start a Pocket Talk Pact')),
-      );
-      return;
-    }
-    final targetId = widget.neighbor.id;
-    if (targetId == myId) return;
-
-    final canStart = await PocketTrophyService.canInitiateNewPact(myId);
-    if (!canStart) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                '⚡ Maximum 3 active Pocket Talks reached! Complete an agreement first.'),
-            backgroundColor: Color(0xFF0F172A),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-      return;
-    }
-
-    HapticFeedback.mediumImpact();
-    await PocketTrophyService.requestPact(
-      myId: myId,
-      otherUserId: targetId,
-      autoAccept: PocketRobotService.isRobotId(targetId) ||
-          PocketPresidentService.isPresidentId(targetId),
-    );
-
-    try {
-      await PocketMateService.sendMateRequest(
-        senderId: myId,
-        receiverId: targetId,
-        message: '⚡ Sent PocketTalk 4-Day Spoken Pact invite! Tap to accept.',
-        contextType: 'citadel',
-      );
-    } catch (_) {}
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.bolt_rounded,
-                  color: Color(0xFFFFD600), size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '⚡ Pocket Talk 4-Day Pact invite sent to ${widget.neighbor.name}!',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF0F172A),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     }
   }
 
