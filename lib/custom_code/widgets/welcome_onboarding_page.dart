@@ -2308,7 +2308,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 2: Learner Track Choice (Adult vs Kids) ---
+  // --- Step 2: Learner Track Choice (Adult 18+ vs Student 9-18 vs Kids Up to 8) ---
   Widget _buildStepLearnerTrack() {
     final trans = PocketLanguageService.getLearnerTypeTranslations(_selectedNativeLanguage);
     return _buildStepContainer(
@@ -2317,7 +2317,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           'Choose the personalized track suited for your learning journey.',
       child: Column(
         children: [
-          // Option 1 (First): 🚀 English Mastery (Adults)
+          // Option 1: 🚀 English Mastery (Adults 18+)
           GestureDetector(
             onTap: () async {
               HapticFeedback.selectionClick();
@@ -2326,8 +2326,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.all(15),
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -2344,16 +2344,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               child: Row(
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('🚀', style: TextStyle(fontSize: 28)),
+                    child: const Text('🚀', style: TextStyle(fontSize: 26)),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2364,10 +2364,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['adultTitle'] ?? 'Adult (13+) - English Mastering',
+                              trans['adultTitle'] ?? 'Adult (18+) - Spoken English',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -2378,7 +2378,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                trans['adultBadge'] ?? '13+ ADULT',
+                                trans['adultBadge'] ?? '18+ ADULT',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFFFFD700),
                                   fontSize: 10,
@@ -2393,34 +2393,123 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           trans['adultDesc'] ?? '',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF94A3B8),
-                            fontSize: 11.5,
+                            fontSize: 11,
                             height: 1.3,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 16),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 15),
                 ],
               ),
             ),
           ),
 
-          // Option 2 (Second): 🧸 Junior Explorer (Kids)
+          // Option 2: 🎒 Student World (Ages 9 to 18)
           GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
               _bgmPlayer?.stop();
-              PocketKidsOnboardingPage.launch(context);
+              PocketKidsOnboardingPage.launch(context, initialAgeGroup: '9-18');
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(15),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF6366F1).withValues(alpha: 0.25),
+                    const Color(0xFF1E1B4B),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF818CF8).withValues(alpha: 0.8),
+                  width: 1.6,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text('🎒', style: TextStyle(fontSize: 26)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            Text(
+                              trans['studentTitle'] ?? 'Student (9–18) - School English',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                trans['studentBadge'] ?? '9–18 STUDENT',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFA5B4FC),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          trans['studentDesc'] ?? '',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF818CF8), size: 15),
+                ],
+              ),
+            ),
+          ),
+
+          // Option 3: 🧸 Junior Explorer (Kids Up to 8)
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              _bgmPlayer?.stop();
+              PocketKidsOnboardingPage.launch(context, initialAgeGroup: '6-8');
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     const Color(0xFF0284C7).withValues(alpha: 0.25),
-                    const Color(0xFF1E293B),
+                    const Color(0xFF0F172A),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -2432,16 +2521,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               child: Row(
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('🧸', style: TextStyle(fontSize: 28)),
+                    child: const Text('🧸', style: TextStyle(fontSize: 26)),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2452,10 +2541,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['kidsTitle'] ?? 'Student & Kids - Gamified English Adventure',
+                              trans['kidsTitle'] ?? 'Kids (Up to 8) - Junior Explorer',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -2466,7 +2555,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                trans['kidsBadge'] ?? 'STUDENT & KIDS',
+                                trans['kidsBadge'] ?? 'UP TO 8 KIDS',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF38BDF8),
                                   fontSize: 10,
@@ -2481,14 +2570,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           trans['kidsDesc'] ?? '',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF94A3B8),
-                            fontSize: 11.5,
+                            fontSize: 11,
                             height: 1.3,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF38BDF8), size: 16),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF38BDF8), size: 15),
                 ],
               ),
             ),

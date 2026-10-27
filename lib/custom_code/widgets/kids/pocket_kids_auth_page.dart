@@ -142,22 +142,39 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
         }
       }
 
-      // Activate Kids mode locally and in SharedPreferences
-      await PocketKidsService.activateKidAccount(
-        name: widget.kidName,
-        ageGroup: widget.ageGroup,
-        avatar: widget.avatar,
-        isPureKid: !isAdmin,
-      );
+      final isStudent = widget.ageGroup == '9-18' ||
+          widget.ageGroup == '9-12' ||
+          widget.ageGroup.contains('9') ||
+          widget.ageGroup.contains('18');
+
+      // Activate Student or Kids mode locally and in SharedPreferences
+      if (isStudent) {
+        await PocketKidsService.activateStudentAccount(
+          name: widget.kidName,
+          ageGroup: widget.ageGroup,
+          avatar: widget.avatar,
+          isPureStudent: !isAdmin,
+        );
+      } else {
+        await PocketKidsService.activateKidAccount(
+          name: widget.kidName,
+          ageGroup: widget.ageGroup,
+          avatar: widget.avatar,
+          isPureKid: !isAdmin,
+        );
+      }
 
       if (isAdmin) {
         PocketKidsService.setAdminMode(true);
       }
 
-      final isYoungKid = widget.ageGroup == '4-6' ||
-          widget.ageGroup == '6-8' ||
-          widget.ageGroup.contains('4') ||
-          widget.ageGroup.contains('6');
+      final isYoungKid = !isStudent &&
+          (widget.ageGroup == '4-6' ||
+              widget.ageGroup == '3-5' ||
+              widget.ageGroup == '6-8' ||
+              widget.ageGroup.contains('3') ||
+              widget.ageGroup.contains('4') ||
+              widget.ageGroup.contains('6'));
 
       HapticFeedback.heavyImpact();
       if (mounted) {

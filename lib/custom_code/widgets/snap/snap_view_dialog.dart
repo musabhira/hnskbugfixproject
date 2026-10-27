@@ -363,8 +363,8 @@ class _SnapViewDialogState extends State<SnapViewDialog> with SingleTickerProvid
                 ),
               ),
 
-              // 3. Snapchat-style Caption Banner
-              if (widget.caption != null && widget.caption!.trim().isNotEmpty)
+              // 3. Snapchat-style Caption Banner (Only for image/media snaps, NOT text vibe cards)
+              if (!_isTextSnap && widget.caption != null && widget.caption!.trim().isNotEmpty)
                 Positioned(
                   bottom: 70,
                   left: 16,

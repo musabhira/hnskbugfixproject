@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -252,9 +254,93 @@ class PocketLanguageGuardService {
         });
       } catch (_) {}
 
+      // 3. Asynchronously trigger Jevv AI background score deduction (Adult Pocket Score / Student Score / Kids Score)
+      applyNonEnglishScorePenalty(
+        userId: userId,
+        detectedLanguage: detectedLanguage,
+        messageSnippet: messageSnippet,
+      );
+
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// 🤖 Jevv AI Asynchronous Background Moderator:
+  /// Periodically checks messages (every 10-15 mins throttle) and applies score deduction
+  /// to enforce English-only conversations without impeding realtime chat responsiveness.
+  static Future<void> applyNonEnglishScorePenalty({
+    required String userId,
+    required String detectedLanguage,
+    required String messageSnippet,
+  }) async {
+    if (userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final penaltyThrottleKey = 'jevv_ai_penalty_ts_$userId';
+      final lastPenalty = prefs.getInt(penaltyThrottleKey) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      // Background penalty applies at most once every 10-15 minutes
+      if (now - lastPenalty < 10 * 60 * 1000) {
+        return;
+      }
+      await prefs.setInt(penaltyThrottleKey, now);
+
+      final accountType = prefs.getString('pm_app_world_mode') ?? 'adult';
+      const penalty = 15;
+
+      // Deduct score based on account type
+      if (accountType == 'kids') {
+        final currentStars = prefs.getInt('pm_kid_stars') ?? 0;
+        final newStars = math.max(0, currentStars - 5);
+        await prefs.setInt('pm_kid_stars', newStars);
+      } else if (accountType == 'student') {
+        final currentScore = prefs.getInt('pm_kid_student_score') ?? 100;
+        final newScore = math.max(0, currentScore - penalty);
+        await prefs.setInt('pm_kid_student_score', newScore);
+      }
+
+      // Supabase database deduction
+      try {
+        final profRes = await SupaFlow.client
+            .from('profile')
+            .select('pocket_score')
+            .eq('user_id', userId)
+            .maybeSingle();
+        final currentScore = (profRes?['pocket_score'] as num?)?.toInt() ?? 100;
+        final updatedScore = math.max(0, currentScore - penalty);
+        await SupaFlow.client
+            .from('profile')
+            .update({'pocket_score': updatedScore})
+            .eq('user_id', userId);
+
+        await SupaFlow.client.rpc('deduct_pocket_score_penalty', params: {
+          'user_id': userId,
+          'penalty_amount': penalty,
+          'reason': 'Jevv AI: Non-English language detected ($detectedLanguage)',
+        }).catchError((_) {});
+      } catch (_) {}
+
+      // Friendly Jevv AI In-App notification
+      final sample = messageSnippet.length > 25
+          ? '${messageSnippet.substring(0, 25)}...'
+          : messageSnippet;
+      final penaltyNotice = '🤖 Jevv AI Language Moderator:\n'
+          'Non-English detected ($detectedLanguage): "$sample".\n'
+          '⚠️ Pocket Score -$penalty. Pocket Mates is an English-Only community! Please chat in English to restore your score. 🌟';
+
+      try {
+        await SupaFlow.client.from('notifications').insert({
+          'user_id': userId,
+          'source_id': userId,
+          'type': 'jevv_language_penalty',
+          'message': penaltyNotice,
+          'status': 'unread',
+        });
+      } catch (_) {}
+    } catch (e) {
+      debugPrint('Jevv AI score penalty error: $e');
     }
   }
 }

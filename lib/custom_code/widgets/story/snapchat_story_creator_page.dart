@@ -264,6 +264,12 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
     } catch (_) {}
   }
 
+  bool get _isAdminUser {
+    final email =
+        Supabase.instance.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
+    return email == 'musabthonippadam@gmail.com';
+  }
+
   Future<void> _loadPrivacySettings() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -275,7 +281,12 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
           if (savedPrivacy != null) _statusPrivacy = savedPrivacy;
           if (savedExcluded != null) _excludedUserIds = savedExcluded.toSet();
           if (savedIncluded != null) _includedUserIds = savedIncluded.toSet();
-          _isPrivateStory = _statusPrivacy != 'public';
+          if (!_isAdminUser) {
+            _statusPrivacy = 'my_contacts';
+            _isPrivateStory = true;
+          } else {
+            _isPrivateStory = _statusPrivacy != 'public';
+          }
         });
       }
     } catch (_) {}
@@ -509,25 +520,27 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                     if (mounted) setState(() {});
                   },
                 ),
-                const Divider(color: Colors.white10, height: 16),
+                if (_isAdminUser) ...[
+                  const Divider(color: Colors.white10, height: 16),
 
-                // 4. Public
-                _buildPrivacyRadioOption(
-                  title: 'Public (Explore Vibes)',
-                  subtitle: 'Anyone on Pocket Mates can discover this vibe',
-                  icon: Icons.public_rounded,
-                  value: 'public',
-                  groupValue: _statusPrivacy,
-                  onChanged: (val) {
-                    setState(() {
-                      _statusPrivacy = val!;
-                      _isPrivateStory = false;
-                    });
-                    setModalState(() {});
-                    _savePrivacySettings();
-                    Navigator.pop(ctx);
-                  },
-                ),
+                  // 4. Public (musabthonippadam@gmail.com only)
+                  _buildPrivacyRadioOption(
+                    title: 'Public (Explore Vibes) 🌟',
+                    subtitle: 'Admin Only: Anyone on Pocket Mates can discover this vibe',
+                    icon: Icons.public_rounded,
+                    value: 'public',
+                    groupValue: _statusPrivacy,
+                    onChanged: (val) {
+                      setState(() {
+                        _statusPrivacy = val!;
+                        _isPrivateStory = false;
+                      });
+                      setModalState(() {});
+                      _savePrivacySettings();
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Center(
                   child: Text(
@@ -760,8 +773,30 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                         icon: Icon(Icons.search, color: Colors.white38, size: 20),
                         border: InputBorder.none,
                       ),
-                      onChanged: (q) {
+                      onChanged: (q) async {
                         setPickerState(() => searchQuery = q);
+                        if (q.trim().length >= 2) {
+                          try {
+                            final res = await supabase
+                                .from('profile')
+                                .select('id, user_id, name, display_name, profile_image_url')
+                                .or('name.ilike.%$q%,display_name.ilike.%$q%')
+                                .limit(25);
+                            for (final item in res) {
+                              final uid = item['user_id']?.toString() ?? item['id']?.toString();
+                              if (uid != null && uid != widget.userId) {
+                                if (!_contactsAndMatesList.any((c) => c['id'] == uid)) {
+                                  _contactsAndMatesList.add({
+                                    'id': uid,
+                                    'name': item['display_name'] ?? item['name'] ?? 'User',
+                                    'avatar': item['profile_image_url'],
+                                  });
+                                }
+                              }
+                            }
+                            setPickerState(() {});
+                          } catch (_) {}
+                        }
                       },
                     ),
                   ),
@@ -1377,14 +1412,15 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         return;
       }
 
-      // ─── Image or Text Upload ───────────────────────────
+      // ─── Image or Video or Text Upload ───────────────────────────
+      final isVideo = _mediaType == 'video';
       String mediaUrl = '';
       if (_selectedFile != null) {
         final bytes = _imageBytes ?? await _selectedFile!.readAsBytes();
 
         Uint8List bytesToUpload = bytes;
         // Fast compression only if image is huge (> 1.5MB) to avoid UI freezing
-        if (bytes.lengthInBytes > 1500 * 1024) {
+        if (!isVideo && bytes.lengthInBytes > 1500 * 1024) {
           try {
             img.Image? originalImage = img.decodeImage(bytes);
             if (originalImage != null) {
@@ -1399,20 +1435,22 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
         setState(() => _uploadProgress = 0.5);
 
+        final fileExt = isVideo ? 'mp4' : 'jpg';
+        final contentType = isVideo ? 'video/mp4' : 'image/jpeg';
         final fileName =
-            'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+            'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
         try {
           await supabase.storage.from('statuses').uploadBinary(
                 fileName,
                 bytesToUpload,
                 fileOptions:
-                    const FileOptions(contentType: 'image/jpeg', upsert: true),
-              ).timeout(const Duration(seconds: 15));
+                    FileOptions(contentType: contentType, upsert: true),
+              ).timeout(Duration(seconds: isVideo ? 90 : 25));
 
           mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
           try {
             await DefaultCacheManager()
-                .putFile(mediaUrl, bytesToUpload, fileExtension: 'jpg');
+                .putFile(mediaUrl, bytesToUpload, fileExtension: fileExt);
           } catch (_) {}
         } catch (storageErr) {
           debugPrint('Storage upload error: $storageErr');
@@ -1420,13 +1458,17 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         setState(() => _uploadProgress = 0.8);
       }
 
+      // Enforce Admin-only public vibe policy
+      final effectivePrivacy = !_isAdminUser ? 'my_contacts' : _statusPrivacy;
+      final effectiveIsPrivate = !_isAdminUser ? true : (effectivePrivacy != 'public');
+
       // Metadata for overlay text & stickers
       final metadata = {
         'overlay_text': _overlayText.isNotEmpty ? _overlayText : null,
         'filter': _filters[_selectedFilterIndex]['name'],
         'duration': _storyDuration,
-        'is_private': _statusPrivacy != 'public',
-        'status_privacy': _statusPrivacy,
+        'is_private': effectiveIsPrivate,
+        'status_privacy': effectivePrivacy,
         'excluded_user_ids': _excludedUserIds.toList(),
         'included_user_ids': _includedUserIds.toList(),
         'stickers': _placedStickers
@@ -2254,6 +2296,10 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   // Privacy Switch Indicator (Public vs Pocket Mates Only)
                   GestureDetector(
                     onTap: () {
+                      if (!_isAdminUser) {
+                        _showStatusPrivacySheet(context);
+                        return;
+                      }
                       setState(() {
                         _isPrivateStory = !_isPrivateStory;
                       });
@@ -2265,7 +2311,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                         color: Colors.black.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: _isPrivateStory
+                          color: (_isPrivateStory || !_isAdminUser)
                               ? const Color(0xFF38BDF8)
                               : const Color(0xFFFFFC00),
                           width: 1,
@@ -2274,13 +2320,19 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       child: Row(
                         children: [
                           Icon(
-                            _isPrivateStory ? Icons.lock_outline_rounded : Icons.public_rounded,
-                            color: _isPrivateStory ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                            (_isPrivateStory || !_isAdminUser)
+                                ? Icons.lock_outline_rounded
+                                : Icons.public_rounded,
+                            color: (_isPrivateStory || !_isAdminUser)
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFFFFFC00),
                             size: 14,
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            _isPrivateStory ? 'Poket Mates' : 'Public Vibe',
+                            (_isPrivateStory || !_isAdminUser)
+                                ? 'Poket Mates'
+                                : 'Public Vibe',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12,

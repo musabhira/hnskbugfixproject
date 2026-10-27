@@ -8212,44 +8212,72 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             children: [
               GestureDetector(
                 onTap: () {
+                  final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
+                  final isAdmin = email == 'musabthonippadam@gmail.com';
+                  if (!isAdmin) {
+                    _scaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Only Admin (musabthonippadam@gmail.com) can post Public Vibes. Your vibes are shared with Poket Mates! 🔒',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                        ),
+                        backgroundColor: const Color(0xFF1E293B),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
                   setState(() {
                     _isPrivateStory = !_isPrivateStory;
                   });
                   HapticFeedback.lightImpact();
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: _isPrivateStory
-                        ? const Color(0xFF38BDF8).withValues(alpha: 0.16)
-                        : const Color(0xFFFFFC00).withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: _isPrivateStory
-                          ? const Color(0xFF38BDF8)
-                          : const Color(0xFFFFFC00),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _isPrivateStory ? Icons.lock_outline_rounded : Icons.public_rounded,
-                        color: _isPrivateStory ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _isPrivateStory ? 'Poket Mates (Private) 🔒' : 'Public Vibe 🌟',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
+                child: Builder(
+                  builder: (context) {
+                    final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
+                    final isAdmin = email == 'musabthonippadam@gmail.com';
+                    final isPrivate = _isPrivateStory || !isAdmin;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: isPrivate
+                            ? const Color(0xFF38BDF8).withValues(alpha: 0.16)
+                            : const Color(0xFFFFFC00).withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isPrivate
+                              ? const Color(0xFF38BDF8)
+                              : const Color(0xFFFFFC00),
+                          width: 1.2,
                         ),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isPrivate
+                                ? Icons.lock_outline_rounded
+                                : Icons.public_rounded,
+                            color: isPrivate
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFFFFFC00),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isPrivate
+                                ? 'Poket Mates (Private) 🔒'
+                                : 'Public Vibe 🌟',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

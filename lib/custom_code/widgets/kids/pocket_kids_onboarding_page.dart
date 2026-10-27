@@ -7,15 +7,18 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_auth_page.
 /// 🧸 Dedicated Kids Account & Profile Creation Onboarding Page
 /// 100% separate from Adult Onboarding, filled with high-energy cartoon magic!
 class PocketKidsOnboardingPage extends StatefulWidget {
-  const PocketKidsOnboardingPage({super.key});
+  final String? initialAgeGroup;
+  const PocketKidsOnboardingPage({super.key, this.initialAgeGroup});
 
   static const String routeName = 'PocketKidsOnboarding';
   static const String routePath = '/pocket_kids_onboarding';
 
-  static Future<void> launch(BuildContext context) {
+  static Future<void> launch(BuildContext context, {String? initialAgeGroup}) {
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PocketKidsOnboardingPage()),
+      MaterialPageRoute(
+        builder: (_) => PocketKidsOnboardingPage(initialAgeGroup: initialAgeGroup),
+      ),
     );
   }
 
@@ -29,9 +32,15 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
   final TextEditingController _nameController = TextEditingController();
 
   int _step = 0;
-  String _selectedAgeGroup = '6-8';
+  late String _selectedAgeGroup;
   String _selectedAvatar = '🦁';
   String _selectedHouse = 'Rainbow Treehouse';
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedAgeGroup = widget.initialAgeGroup ?? '6-8';
+  }
 
   static const List<Map<String, String>> _mascots = [
     {'emoji': '🦁', 'name': 'Leo Lion', 'tag': 'Brave'},
@@ -333,23 +342,23 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
     final ages = [
       {
         'range': '3-5',
-        'title': 'Tiny Explorers',
+        'title': 'Tiny Explorers (3–5)',
         'desc': 'ABCs, Colors & Nursery Fun',
         'emoji': '🐣',
         'color': const Color(0xFF10B981)
       },
       {
         'range': '6-8',
-        'title': 'Word Detectives',
+        'title': 'Word Detectives (Kids 6–8)',
         'desc': 'Phonics, Animals & Words',
-        'emoji': '🦁',
+        'emoji': '🧸',
         'color': const Color(0xFFF59E0B)
       },
       {
-        'range': '9-12',
-        'title': 'Language Champions',
-        'desc': 'Stories, Sentences & Speaking',
-        'emoji': '🚀',
+        'range': '9-18',
+        'title': 'Student Champions (9–18)',
+        'desc': 'School Missions, Grammar & Citadel Fights',
+        'emoji': '🎒',
         'color': const Color(0xFF6366F1)
       },
     ];

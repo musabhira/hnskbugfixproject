@@ -2117,25 +2117,45 @@ class PocketRobotService {
     final word = vocabWords.isNotEmpty ? vocabWords[rand.nextInt(vocabWords.length)] : null;
 
     final List<String> spokenEnglishVibeTemplates = [
+      '🧩 GAME SNAP: Sentence Builder!\n\n'
+      'Rearrange these words into a grammatically correct sentence:\n'
+      '👉 [always / hard / he / works / very]\n\n'
+      '💬 Reply to me in chat with the correct sentence to win +10 Score! 🏆',
+
+      '🔍 GAME SNAP: Spot The Spelling Mistake!\n\n'
+      'Which word below has an incorrect spelling?\n'
+      'A) Necessary\n'
+      'B) Recieve\n'
+      'C) Tomorrow\n'
+      'D) Calendar\n\n'
+      '💬 Reply with the misspelled word & its correct spelling! 🎯',
+
+      '⚡ GAME SNAP: Quick Grammar Challenge!\n\n'
+      'Fill in the blank with the correct verb:\n'
+      '"Neither John nor his friends ___ attending the event tomorrow."\n'
+      'A) is\n'
+      'B) are\n'
+      'C) was\n'
+      'D) have\n\n'
+      '💬 Reply to me with your answer right now! 🧠✨',
+
+      '🎯 GAME SNAP: Spot The Error!\n\n'
+      'Find the mistake in this sentence:\n'
+      '"She did not knew the answer to the teacher\'s question."\n\n'
+      '💬 Send me the corrected sentence to level up your English! 🔥',
+
+      '🥊 GAME SNAP: Preposition Battle!\n\n'
+      'Choose the right preposition:\n'
+      '"I have been living in this city ___ five years."\n'
+      'Choose: [SINCE] or [FOR]?\n\n'
+      '💬 Reply to me with your choice! 🌟',
+
       if (word != null)
-        '📚 Word of the Day (Day $dynLvl):\n\n'
-        '✨ ${word.word.toUpperCase()} [${word.phonetic}]\n'
-        '💡 Malayalam: ${word.malayalamMeaning}\n'
-        '📖 Meaning: ${word.definition}\n'
-        '🗣️ Spoken Practice: "${word.exampleSentence}"',
-      '🗣️ Spoken English Fluency Tip:\n\n'
-      'Never translate directly from Malayalam! Think in natural English action chunks like "Could you please help me with this?" or "I am heading out now." Speak it aloud boldly right now! 🎙️✨',
-      '⚡ Essential Spoken Phrasal Verb:\n\n'
-      '• Figure out = മനസ്സിലാക്കുക / പരിഹാരം കണ്ടെത്തുക\n'
-      '• Hang on = അല്പം കാത്തിരിക്കുക\n'
-      'Example: "Hang on a second, I will figure it out!" 🤝',
-      '🎯 Daily Confidence Challenge:\n\n'
-      'Record a 15-second audio note to me in English describing your morning! Fluency grows when you speak daily without fear. 🌟🔥',
-      '💡 Spoken English Vocabulary Upgrade:\n\n'
-      '• Replace "Very good" with "Outstanding!"\n'
-      '• Replace "Very tired" with "Exhausted!"\n'
-      '• Replace "Very happy" with "Thrilled!"\n'
-      'Elevate your daily English expression step by step! 🚀',
+        '🎮 GAME SNAP: Word Challenge (Day $dynLvl)!\n\n'
+        'Word: ${word.word.toUpperCase()} [${word.phonetic}]\n'
+        'Meaning: ${word.definition}\n'
+        'Example: "${word.exampleSentence}"\n\n'
+        '💬 Make your own English sentence using "${word.word.toUpperCase()}" and send it to me! 🚀',
     ];
 
     final vibeText = caption ?? spokenEnglishVibeTemplates[rand.nextInt(spokenEnglishVibeTemplates.length)];
