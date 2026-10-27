@@ -11,50 +11,53 @@ const Color kSCard = Color(0xFF141C2F);
 const Color kSGold = Color(0xFFFFD700);
 const Color kSEm = Color(0xFF10B981);
 const Color kSCy = Color(0xFF38BDF8);
+const Color kSRed = Color(0xFFEF4444);
 
-class _SpellDetectiveCase {
-  final String sentencePrefix;
-  final String sentenceSuffix;
-  final String misspelledWord;
+class _DetectiveCase {
+  final String wrongWord;
   final String correctWord;
+  final String clue;
   final List<String> distractors;
 
-  const _SpellDetectiveCase({
-    required this.sentencePrefix,
-    required this.sentenceSuffix,
-    required this.misspelledWord,
+  const _DetectiveCase({
+    required this.wrongWord,
     required this.correctWord,
+    required this.clue,
     required this.distractors,
   });
 
   List<String> get correctLetters => correctWord.toUpperCase().split('');
+  List<String> get wrongLetters => wrongWord.toUpperCase().split('');
 }
 
-const List<_SpellDetectiveCase> _kDetectiveCases = [
-  _SpellDetectiveCase(
-    sentencePrefix: 'The',
-    sentenceSuffix: 'gave a speech today.',
-    misspelledWord: 'PRINCPAL',
+const List<_DetectiveCase> _kCases = [
+  _DetectiveCase(
+    wrongWord: 'PRINCPAL',
     correctWord: 'PRINCIPAL',
+    clue: 'The head or chief teacher of a school',
     distractors: ['E', 'O'],
   ),
-  _SpellDetectiveCase(
-    sentencePrefix: 'My best',
-    sentenceSuffix: 'won first prize.',
-    misspelledWord: 'FREIND',
+  _DetectiveCase(
+    wrongWord: 'FREIND',
     correctWord: 'FRIEND',
+    clue: 'A person you like and know well',
     distractors: ['A', 'U'],
   ),
-  _SpellDetectiveCase(
-    sentencePrefix: 'We went to the',
-    sentenceSuffix: 'to read books.',
-    misspelledWord: 'LIBARY',
+  _DetectiveCase(
+    wrongWord: 'LIBARY',
     correctWord: 'LIBRARY',
+    clue: 'A place where books are kept to read',
     distractors: ['E', 'O'],
+  ),
+  _DetectiveCase(
+    wrongWord: 'BOROW',
+    correctWord: 'BORROW',
+    clue: 'To take something with a promise to return it',
+    distractors: ['A', 'U'],
   ),
 ];
 
-/// 🔍 Step 11: Gamified Spelling Detective (Letter-by-Letter Box Speller)
+/// 🔍 Step 11: Spelling Detective (Interactive Typo Fixer)
 class StudentSpellingDetectiveGamePage extends StatefulWidget {
   final int day;
   final int stepIndex;
@@ -105,7 +108,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _SpellDetectiveCase get _currentCase => _kDetectiveCases[_caseIdx];
+  _DetectiveCase get _currentCase => _kCases[_caseIdx];
 
   @override
   void initState() {
@@ -167,10 +170,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
 
   Future<void> _onCaseSolved() async {
     PocketGameSfx.instance.playVictory();
-    final fullSentence =
-        '${_currentCase.sentencePrefix} ${_currentCase.correctWord} ${_currentCase.sentenceSuffix}';
-    await Future.delayed(const Duration(milliseconds: 250));
-    _tts.speak(fullSentence);
+    await Future.delayed(const Duration(milliseconds: 200));
+    _tts.speak(_currentCase.correctWord.toLowerCase());
 
     final roundXp = math.max(15, 30 - (_wrongCount * 5));
     setState(() => _xp += roundXp);
@@ -195,7 +196,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
               const Text('🔍 🕵️ ⭐', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 8),
               Text(
-                'Spelling Solved!',
+                'Correct Spelling Restored!',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -203,16 +204,25 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
-              Text(
-                _currentCase.correctWord,
-                style: GoogleFonts.outfit(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: kSEm,
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: kSEm.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: kSEm, width: 1.5),
+                ),
+                child: Text(
+                  _currentCase.correctWord,
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: kSEm,
+                    letterSpacing: 2,
+                  ),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 '+$roundXp XP  •  ⭐⭐⭐',
                 style: GoogleFonts.outfit(
@@ -231,7 +241,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_caseIdx < _kDetectiveCases.length - 1) {
+                  if (_caseIdx < _kCases.length - 1) {
                     setState(() {
                       _caseIdx++;
                       _loadCase();
@@ -241,7 +251,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   }
                 },
                 child: Text(
-                  _caseIdx < _kDetectiveCases.length - 1 ? 'NEXT CASE ▶' : 'FINISH QUEST 🏆',
+                  _caseIdx < _kCases.length - 1 ? 'NEXT MYSTERY ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -260,6 +270,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
   @override
   Widget build(BuildContext context) {
     final letters = _currentCase.correctLetters;
+    final wrongLetters = _currentCase.wrongLetters;
 
     return Scaffold(
       backgroundColor: kSBg,
@@ -312,48 +323,116 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
           },
           child: Column(
             children: [
-              // Scrollable Crime Scene Clue (Zero Overflow)
+              // Scrollable Detective Workspace
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                   child: Column(
                     children: [
+                      // Header
                       Row(
                         children: [
                           Text(
-                            'Case ${_caseIdx + 1} of ${_kDetectiveCases.length}',
+                            'Case ${_caseIdx + 1} of ${_kCases.length}',
                             style: GoogleFonts.outfit(color: kSGold, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFEF4444)),
+                              color: kSCard,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: kSCy.withValues(alpha: 0.4)),
                             ),
-                            child: Text(
-                              'Typo was: ${_currentCase.misspelledWord}',
-                              style: GoogleFonts.outfit(color: const Color(0xFFFCA5A5), fontSize: 12, fontWeight: FontWeight.bold),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.lightbulb_rounded, color: kSGold, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _currentCase.clue,
+                                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.w600),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
 
-                      // Crime Scene Board
+                      // 1. Wrong Spelling Banner on Top (User Directive: "Already wrong aayittulla spelling mele kodukkanam")
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F1123),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: kSRed.withValues(alpha: 0.6), width: 1.5),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.cancel_rounded, color: kSRed, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'INCORRECT SPELLING FOUND:',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFCA5A5),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            // Wrong letter tiles
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                for (final ch in wrongLetters)
+                                  Container(
+                                    width: 32,
+                                    height: 38,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: kSRed.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: kSRed.withValues(alpha: 0.7)),
+                                    ),
+                                    child: Text(
+                                      ch,
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFCA5A5),
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 2. Correct Solution Letter Boxes Below (User Directive: "Adiyil petti petti koduthitt thiruthanam")
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: kSCy.withValues(alpha: 0.4), width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.45),
-                              blurRadius: 14,
-                              offset: const Offset(0, 5),
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
@@ -362,25 +441,22 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.search_rounded, color: kSGold, size: 22),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.check_circle_outline_rounded, color: kSEm, size: 18),
+                                const SizedBox(width: 6),
                                 Text(
-                                  'Spell the word letter by letter:',
-                                  style: GoogleFonts.outfit(color: kSGold, fontWeight: FontWeight.bold, fontSize: 14),
+                                  'TAP TO SPELL CORRECTLY:',
+                                  style: GoogleFonts.outfit(
+                                    color: kSEm,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    letterSpacing: 1.2,
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 14),
 
-                            // Sentence Clue
-                            Text(
-                              '"${_currentCase.sentencePrefix} [ ___ ] ${_currentCase.sentenceSuffix}"',
-                              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 15, fontStyle: FontStyle.italic),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 20),
-
-                            // Interactive Letter Boxes
+                            // Solution Letter Boxes
                             Wrap(
                               spacing: 6,
                               runSpacing: 8,
@@ -388,8 +464,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                               children: [
                                 for (int i = 0; i < letters.length; i++)
                                   Container(
-                                    width: 38,
-                                    height: 48,
+                                    width: 34,
+                                    height: 44,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       color: i < _placedLetterCount
@@ -397,7 +473,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                                           : (i == _placedLetterCount
                                               ? kSGold.withValues(alpha: 0.2)
                                               : Colors.white10),
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: i < _placedLetterCount
                                             ? kSEm
@@ -408,7 +484,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                                     child: Text(
                                       i < _placedLetterCount ? letters[i] : (i == _placedLetterCount ? '?' : ''),
                                       style: GoogleFonts.outfit(
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w900,
                                         color: i < _placedLetterCount
                                             ? kSEm
@@ -426,7 +502,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 ),
               ),
 
-              // Letter Bank Dock
+              // Letter Bank Dock at the Bottom
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -440,8 +516,8 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Letter Bank (Tap the next letter to snap into box):',
-                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12.5, fontWeight: FontWeight.bold),
+                      'Letter Bank (Tap in order to build the correct spelling):',
+                      style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Center(
