@@ -901,7 +901,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981),
                 borderRadius: BorderRadius.circular(8),
@@ -910,32 +910,36 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 'YOUR RANK',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
-                  fontSize: 9.5,
+                  fontSize: 9.0,
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              widget.isMatesOnly
-                  ? 'Mate Rank #$_myHumanRank'
-                  : 'Human Rank #$_myHumanRank',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
+            Expanded(
+              child: Text(
+                widget.isMatesOnly
+                    ? 'Mate Rank #$_myHumanRank'
+                    : 'Human Rank #$_myHumanRank',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 6),
             Text(
               '🪙 ${_formatScore(myUser.pocketScore)} PS',
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFD700),
                 fontWeight: FontWeight.w900,
-                fontSize: 13,
+                fontSize: 12.5,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.all(4),
               decoration: const BoxDecoration(
@@ -943,7 +947,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.my_location_rounded,
-                  color: Color(0xFF34D399), size: 15),
+                  color: Color(0xFF34D399), size: 14),
             ),
           ],
         ),

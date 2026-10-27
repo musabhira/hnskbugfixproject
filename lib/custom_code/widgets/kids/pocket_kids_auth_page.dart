@@ -107,7 +107,9 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
 
     try {
       final normalizedEmail = email.toLowerCase().trim();
-      final isAdmin = normalizedEmail == 'musabthonippadam@gmail.com';
+      final isAdmin = normalizedEmail == 'musabthonippadam@gmail.com' ||
+          normalizedEmail == 'hira@gmail.com' ||
+          normalizedEmail == 'musabhira@gmail.com';
       if (isAdmin) {
         PocketKidsService.setAdminMode(true);
       }

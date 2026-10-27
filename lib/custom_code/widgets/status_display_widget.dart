@@ -8213,12 +8213,16 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
               GestureDetector(
                 onTap: () {
                   final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
-                  final isAdmin = email == 'musabthonippadam@gmail.com';
+                  final isAdmin = email == 'musabthonippadam@gmail.com' ||
+                      email == 'hira@gmail.com' ||
+                      email == 'musabhira@gmail.com' ||
+                      email.contains('musabthonippadam') ||
+                      email.contains('musabhira');
                   if (!isAdmin) {
                     _scaffoldMessengerKey.currentState?.showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Only Admin (musabthonippadam@gmail.com) can post Public Vibes. Your vibes are shared with Poket Mates! 🔒',
+                          'Only Admin can post Public Vibes. Your vibes are shared with Poket Mates! 🔒',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                         ),
                         backgroundColor: const Color(0xFF1E293B),
@@ -8235,7 +8239,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 child: Builder(
                   builder: (context) {
                     final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
-                    final isAdmin = email == 'musabthonippadam@gmail.com';
+                    final isAdmin = email == 'musabthonippadam@gmail.com' ||
+                        email == 'hira@gmail.com' ||
+                        email == 'musabhira@gmail.com' ||
+                        email.contains('musabthonippadam') ||
+                        email.contains('musabhira');
                     final isPrivate = _isPrivateStory || !isAdmin;
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),

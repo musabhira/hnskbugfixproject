@@ -304,6 +304,8 @@ class PocketKidsService {
     if (_adminModeOverride) return true;
     final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim();
     if (email == 'musabthonippadam@gmail.com' ||
+        email == 'hira@gmail.com' ||
+        email == 'musabhira@gmail.com' ||
         email == 'musabdhonikallam@gmail.com' ||
         email == 'musabdhonikalam@gmail.com') {
       return true;

@@ -585,7 +585,7 @@ class _PocketKidsProfilePageState extends State<PocketKidsProfilePage>
                                     _buildInstaStatColumn(
                                         '$_silverTrophies', '🥈 Silver'),
                                     _buildInstaStatColumn(
-                                        '$_attacksWon', '⚔️ Attacks'),
+                                        '$_attacksWon', '⚔️'),
                                   ],
                                 ),
                               ),

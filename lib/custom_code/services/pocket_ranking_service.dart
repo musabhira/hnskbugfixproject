@@ -584,6 +584,45 @@ class PocketRankingService {
     } catch (_) {}
 
     try {
+      final followersRes = await _supabase
+          .from('follows')
+          .select('follower_id')
+          .eq('followed_id', currentUserId);
+      for (final row in followersRes) {
+        final fid = row['follower_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final convRes1 = await _supabase
+          .from('conversations')
+          .select('user2_id')
+          .eq('user1_id', currentUserId);
+      for (final row in convRes1) {
+        final fid = row['user2_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final convRes2 = await _supabase
+          .from('conversations')
+          .select('user1_id')
+          .eq('user2_id', currentUserId);
+      for (final row in convRes2) {
+        final fid = row['user1_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
       final prefs = await SharedPreferences.getInstance();
       final localMates = prefs.getStringList('pocket_mates_$currentUserId') ?? [];
       for (final id in localMates) {
@@ -592,6 +631,23 @@ class PocketRankingService {
         }
       }
     } catch (_) {}
+
+    // Fallback: If no mates recorded yet, fetch registered community profiles so leaderboard is never empty
+    if (mateIds.length <= 1) {
+      try {
+        final fallbackRes = await _supabase
+            .from('profile')
+            .select('user_id')
+            .order('pocket_score', ascending: false)
+            .limit(30);
+        for (final row in fallbackRes) {
+          final uid = row['user_id']?.toString();
+          if (uid != null && uid.isNotEmpty && !PocketRobotService.isRobotId(uid)) {
+            mateIds.add(uid);
+          }
+        }
+      } catch (_) {}
+    }
 
     final List<PocketRankedUser> matesList = [];
 
@@ -661,15 +717,12 @@ class PocketRankingService {
       ));
     }
 
-    // Sort by pocket score descending with micro-fraction tie-breaker (pure human mates)
+    // Sort by pocket score descending; for ties / zero score, sort alphabetically (Audio Directive)
     matesList.sort((a, b) {
-      final diff = b.pocketScore.compareTo(a.pocketScore);
-      if (diff != 0) return diff;
-      final tieA = a.userId.hashCode.abs() % 10;
-      final tieB = b.userId.hashCode.abs() % 10;
-      final tieDiff = tieB.compareTo(tieA);
-      if (tieDiff != 0) return tieDiff;
-      return a.name.compareTo(b.name);
+      if (a.pocketScore != b.pocketScore) {
+        return b.pocketScore.compareTo(a.pocketScore);
+      }
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
 
     // Assign Mates Rank 1..M

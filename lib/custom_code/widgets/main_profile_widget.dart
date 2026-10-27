@@ -6653,7 +6653,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
         Expanded(
           child: _buildInstagramStatColumn(
-            label: '⚔️ Attacks',
+            label: '⚔️',
             count: _attacksWon,
             textColor: const Color(0xFFEF4444),
             onTap: () {

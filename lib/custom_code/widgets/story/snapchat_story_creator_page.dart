@@ -267,7 +267,11 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   bool get _isAdminUser {
     final email =
         Supabase.instance.client.auth.currentUser?.email?.toLowerCase().trim() ?? '';
-    return email == 'musabthonippadam@gmail.com';
+    return email == 'musabthonippadam@gmail.com' ||
+        email == 'hira@gmail.com' ||
+        email == 'musabhira@gmail.com' ||
+        email.contains('musabthonippadam') ||
+        email.contains('musabhira');
   }
 
   Future<void> _loadPrivacySettings() async {

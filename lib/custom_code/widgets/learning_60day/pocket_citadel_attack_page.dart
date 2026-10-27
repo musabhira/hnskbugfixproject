@@ -205,7 +205,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
         final res = await SupaFlow.client
             .from('profile')
             .select(
-                'user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+                'user_id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo')
             .eq('user_id', userId)
             .maybeSingle();
         if (res != null) data = res;
@@ -219,7 +219,10 @@ class PocketCitadelAttackPage extends StatefulWidget {
     final isMe =
         (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
 
-    int effectiveDay = targetDay ?? (p['learning_day'] as num?)?.toInt() ?? 1;
+    int effectiveDay = targetDay ??
+        (p['learning_day'] as num?)?.toInt() ??
+        (p['level'] as num?)?.toInt() ??
+        1;
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;
     final autoPal = palList[(effectiveDay - 1) % palList.length].id;
@@ -495,6 +498,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   double _savedWorldH = 3400.0;
   double _savedMinScale = 0.23;
   double _savedGroundY = 920.0;
+  int? _fetchedDefenderGlobalRank;
 
   @override
   void initState() {
@@ -506,6 +510,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(
             widget.neighbor.day);
     _checkPocketTalkCap();
+    _loadDefenderGlobalRank();
 
     // ⚔️ Start energetic battle / raid music based on robot archetype & level!
     PocketGameAudioService.instance.playAttackTheme(
@@ -3856,6 +3861,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  void _loadDefenderGlobalRank() {
+    final isRobot = widget.neighbor.isPocketRobo ||
+        PocketRobotService.isRobotId(widget.neighbor.id) ||
+        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+    if (!isRobot && !widget.neighbor.isPresident) {
+      PocketRankingService.fetchUserGlobalRank(
+        widget.neighbor.id,
+        _defenderScore,
+        widget.isKidMode,
+      ).then((rank) {
+        if (mounted && rank > 0) {
+          setState(() {
+            _fetchedDefenderGlobalRank = rank;
+          });
+        }
+      }).catchError((_) {});
+    }
+  }
+
   /// 🏅 Get cached Global Rank of the defender (Audio Directive)
   int? get _defenderGlobalRank {
     final isRobot = widget.neighbor.isPocketRobo ||
@@ -3865,6 +3889,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       return widget.neighbor.day.clamp(1, 90);
     }
     if (widget.neighbor.isPresident) return 1;
+    if (_fetchedDefenderGlobalRank != null && _fetchedDefenderGlobalRank! > 0) {
+      return _fetchedDefenderGlobalRank;
+    }
     return PocketRankingService.getCachedGlobalRank(widget.neighbor.id);
   }
 
@@ -3873,16 +3900,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isRobot = widget.neighbor.isPocketRobo ||
         PocketRobotService.isRobotId(widget.neighbor.id) ||
         !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
-    final rank =
-        _defenderGlobalRank ?? (isRobot ? widget.neighbor.day.clamp(1, 90) : 1);
+    final rank = _defenderGlobalRank;
 
     final rankText = isRobot
-        ? '🤖 Robot Rank #$rank'
+        ? '🤖 Robot Rank #${rank ?? widget.neighbor.day.clamp(1, 90)}'
         : (widget.neighbor.isPresident
             ? '👑 Global Rank #1'
-            : '🏆 Global Rank #$rank');
+            : (rank != null && rank > 0
+                ? '🏆 Global Rank #$rank'
+                : '🏆 Global Challenger'));
 
-    final isTop3 = (rank <= 3) || widget.neighbor.isPresident;
+    final isTop3 = ((rank ?? 999) <= 3) || widget.neighbor.isPresident;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -5645,53 +5673,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                     ),
                   ),
-                  if (!PocketRobotService.isRobotId(widget.neighbor.id) &&
-                      _canInitiatePocketTalk) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: _onSendPocketTalkFromCitadel,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: const Color(0xFFFFD600),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD600)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('⚡', style: TextStyle(fontSize: 13)),
-                            const SizedBox(width: 5),
-                            Text(
-                              'TALK PACT',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD600),
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               )
             else
@@ -5837,54 +5818,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                     ),
                   ),
-                  if (!widget.neighbor.isPresident &&
-                      !PocketRobotService.isRobotId(widget.neighbor.id) &&
-                      _canInitiatePocketTalk) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: _onSendPocketTalkFromCitadel,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.circular(11),
-                          border: Border.all(
-                            color: const Color(0xFFFFD600),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD600)
-                                  .withValues(alpha: 0.35),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('⚡', style: TextStyle(fontSize: 13)),
-                            const SizedBox(width: 5),
-                            Text(
-                              'POCKET TALK',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD600),
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
           ],

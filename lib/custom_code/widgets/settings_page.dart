@@ -1159,7 +1159,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ValueListenableBuilder<bool>(
                 valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
                 builder: (context, isVisible, _) {
-                  if (!isVisible) return const SizedBox.shrink();
+                  if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible) return const SizedBox.shrink();
                   return _SettingsTile(
                     icon: Icons.child_care_rounded,
                     iconColor: const Color(0xFFFF69B4),

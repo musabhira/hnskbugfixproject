@@ -43,11 +43,15 @@ class AppStoreReviewService {
     final targetReviewEmail = _reviewerEmail.toLowerCase().trim();
 
     // 1. Email Specific Hide Check (e.g., hira@gmail.com)
-    if (_hideForReviewerEmail &&
-        targetReviewEmail.isNotEmpty &&
-        userEmail.isNotEmpty &&
-        (userEmail == targetReviewEmail || userEmail.contains(targetReviewEmail))) {
-      return false; // HIDE for review account!
+    if (_hideForReviewerEmail) {
+      if (userEmail.isNotEmpty &&
+          (userEmail == defaultReviewerEmail ||
+              userEmail.contains('hira@') ||
+              (targetReviewEmail.isNotEmpty &&
+                  (userEmail == targetReviewEmail ||
+                      userEmail.contains(targetReviewEmail))))) {
+        return false; // HIDE for review account!
+      }
     }
 
     // 2. Platform Specific Hide Check
@@ -74,8 +78,37 @@ class AppStoreReviewService {
       _initialized = true;
       _updateNotifier();
 
+      // Listen to auth changes so when user logs in/out, notifier updates immediately
+      try {
+        SupaFlow.client.auth.onAuthStateChange.listen((_) {
+          _updateNotifier();
+        });
+      } catch (_) {}
+
       // Fetch from Supabase app_tool_configs
       await fetchRemoteReviewConfig();
+
+      // Listen to Supabase realtime updates on app_tool_configs
+      try {
+        SupaFlow.client
+            .from('app_tool_configs')
+            .stream(primaryKey: ['tool_name'])
+            .eq('tool_name', _kReviewConfigKey)
+            .listen((data) {
+              if (data.isNotEmpty) {
+                final row = data.first;
+                _hideOnAndroid = row['android_active'] == true;
+                _hideOnIos = row['ios_active'] == true;
+                if (row['reviewer_email_hide'] != null) {
+                  _hideForReviewerEmail = row['reviewer_email_hide'] == true;
+                }
+                if (row['reviewer_email'] != null && row['reviewer_email'].toString().isNotEmpty) {
+                  _reviewerEmail = row['reviewer_email'].toString();
+                }
+                _updateNotifier();
+              }
+            });
+      } catch (_) {}
     } catch (_) {
       _initialized = true;
       _updateNotifier();

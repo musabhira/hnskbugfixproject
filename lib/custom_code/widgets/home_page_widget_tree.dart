@@ -6870,7 +6870,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                               ValueListenableBuilder<bool>(
                                 valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
                                 builder: (context, isVisible, _) {
-                                  if (!isVisible) return const SizedBox.shrink();
+                                  if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible) return const SizedBox.shrink();
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 6),
                                     child: _buildHeaderIconButton(

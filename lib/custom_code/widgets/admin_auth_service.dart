@@ -8,6 +8,7 @@ class AdminAuthService {
   /// Master Admin Email (Only this specific user can ever see or access the Admin Panel)
   static const String masterAdminEmail = 'musabthonippadam@gmail.com';
   static const String alternateAdminEmail = 'musabhira@gmail.com';
+  static const String hiraAdminEmail = 'hira@gmail.com';
 
   /// Master PIN (as fallback)
   static const String masterPin = '7788';
@@ -19,6 +20,7 @@ class AdminAuthService {
     final clean = email.toLowerCase().trim();
     return clean == masterAdminEmail ||
         clean == alternateAdminEmail ||
+        clean == hiraAdminEmail ||
         clean.contains('musabthonippadam') ||
         clean.contains('mussabthonippadam') ||
         clean.contains('musabhira');
