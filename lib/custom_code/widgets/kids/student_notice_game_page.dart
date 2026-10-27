@@ -6,6 +6,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kNBg = Color(0xFF0B111E);
 const Color kNCard = Color(0xFF141C2F);
 const Color kNGold = Color(0xFFFFD700);
@@ -28,33 +30,6 @@ class _NoticeRound {
     required this.distractors,
   });
 }
-
-const List<_NoticeRound> _kNoticeRounds = [
-  _NoticeRound(
-    title: '🏆 Annual Sports Meet Notice',
-    category: 'School Event Notice',
-    partLabels: ['1. Institution', '2. Header', '3. Event Title', '4. Date & Ground'],
-    targetParts: [
-      'GREENFIELD PUBLIC SCHOOL',
-      'NOTICE',
-      'ANNUAL SPORTS MEET',
-      '12 December • School Ground',
-    ],
-    distractors: ['Cinema Hall', 'Tomorrow Morning'],
-  ),
-  _NoticeRound(
-    title: '🎒 Lost & Found Notice',
-    category: 'Lost & Found Notice',
-    partLabels: ['1. Institution', '2. Header', '3. Item Lost', '4. Venue & Contact'],
-    targetParts: [
-      'SUNRISE MODEL SCHOOL',
-      'NOTICE',
-      'LOST: BLUE WATER BOTTLE',
-      'Room 12 • Contact Class 7',
-    ],
-    distractors: ['Toy Shop', 'Call Police'],
-  ),
-];
 
 /// 📢 Step 9: Gamified Notice Masterclass (Interactive Bulletin Board Builder)
 class StudentNoticeGamePage extends StatefulWidget {
@@ -98,6 +73,7 @@ class StudentNoticeGamePage extends StatefulWidget {
 class _StudentNoticeGameState extends State<StudentNoticeGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
+  late final List<_NoticeRound> _rounds;
   int _roundIdx = 0;
   int _xp = 30;
   int _placedCount = 0;
@@ -106,11 +82,21 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _NoticeRound get _currentRound => _kNoticeRounds[_roundIdx];
+  _NoticeRound get _currentRound => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getNoticeData(widget.day);
+    _rounds = [
+      _NoticeRound(
+        title: dayData.title,
+        category: dayData.category,
+        partLabels: dayData.partLabels,
+        targetParts: dayData.targetParts,
+        distractors: dayData.distractors,
+      ),
+    ];
     _initTts();
     _setupRound();
   }
@@ -222,7 +208,7 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_roundIdx < _kNoticeRounds.length - 1) {
+                  if (_roundIdx < _rounds.length - 1) {
                     setState(() {
                       _roundIdx++;
                       _setupRound();
@@ -232,7 +218,7 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _kNoticeRounds.length - 1 ? 'NEXT NOTICE ▶' : 'FINISH QUEST 🏆',
+                  _roundIdx < _rounds.length - 1 ? 'NEXT NOTICE ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -312,12 +298,12 @@ class _StudentNoticeGameState extends State<StudentNoticeGamePage>
                       Row(
                         children: [
                           Text(
-                            'Notice ${_roundIdx + 1} of ${_kNoticeRounds.length}: ${_currentRound.category}',
+                            'Notice ${_roundIdx + 1} of ${_rounds.length}: ${_currentRound.category}',
                             style: GoogleFonts.outfit(color: kNGold, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                           const Spacer(),
                           Text(
-                            '${_placedCount}/${targets.length} Slotted',
+                            '$_placedCount/${targets.length} Slotted',
                             style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
                           ),
                         ],

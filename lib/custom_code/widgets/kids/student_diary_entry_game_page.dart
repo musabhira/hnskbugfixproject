@@ -7,6 +7,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kDBg = Color(0xFF0B111E);
 const Color kDCard = Color(0xFF141C2F);
 const Color kDGold = Color(0xFFFFD700);
@@ -32,25 +34,6 @@ class _DiaryRound {
 
   List<String> get allWords => [...sentence1Words, ...sentence2Words];
 }
-
-const List<_DiaryRound> _kDiaryRounds = [
-  _DiaryRound(
-    dateStr: 'Sunday Evening',
-    mood: '😄 Happy',
-    sentence1Words: ['Today', 'was', 'fun', 'with', 'my', 'friends', '.'],
-    sentence2Words: ['Tomorrow', 'I', 'will', 'learn', 'new', 'words', '.'],
-    distractors: ['cry', 'late'],
-    prompt: 'Tap words to write your evening diary!',
-  ),
-  _DiaryRound(
-    dateStr: 'Monday Afternoon',
-    mood: '🌟 Proud',
-    sentence1Words: ['I', 'got', 'a', 'gold', 'star', 'in', 'class', '.'],
-    sentence2Words: ['I', 'feel', 'very', 'proud', 'today', '.'],
-    distractors: ['sad', 'bad'],
-    prompt: 'Record your proud school moment!',
-  ),
-];
 
 /// 📖 Step 7: Gamified Diary Entry Adventure (Overflow-Safe & Animated Flame)
 class StudentDiaryEntryGamePage extends StatefulWidget {
@@ -94,6 +77,7 @@ class StudentDiaryEntryGamePage extends StatefulWidget {
 class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
+  late final List<_DiaryRound> _rounds;
   int _roundIdx = 0;
   int _xp = 30;
   int _placedCount = 0;
@@ -102,11 +86,22 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _DiaryRound get _currentRound => _kDiaryRounds[_roundIdx];
+  _DiaryRound get _currentRound => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getDiaryData(widget.day);
+    _rounds = [
+      _DiaryRound(
+        dateStr: dayData.dateStr,
+        mood: dayData.mood,
+        sentence1Words: dayData.sentence1Words,
+        sentence2Words: dayData.sentence2Words,
+        distractors: dayData.distractors,
+        prompt: dayData.prompt,
+      ),
+    ];
     _initTts();
     _setupRound();
   }
@@ -220,7 +215,7 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_roundIdx < _kDiaryRounds.length - 1) {
+                  if (_roundIdx < _rounds.length - 1) {
                     setState(() {
                       _roundIdx++;
                       _setupRound();
@@ -230,7 +225,7 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _kDiaryRounds.length - 1 ? 'NEXT DIARY ENTRY ▶' : 'FINISH QUEST 🏆',
+                  _roundIdx < _rounds.length - 1 ? 'NEXT DIARY ENTRY ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -314,7 +309,7 @@ class _StudentDiaryEntryGameState extends State<StudentDiaryEntryGamePage>
                       Row(
                         children: [
                           Text(
-                            'Entry ${_roundIdx + 1} of ${_kDiaryRounds.length}',
+                            'Entry ${_roundIdx + 1} of ${_rounds.length}',
                             style: GoogleFonts.outfit(color: kDGold, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                           const Spacer(),

@@ -6,6 +6,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kEBg = Color(0xFF0B111E);
 const Color kECard = Color(0xFF141C2F);
 const Color kEGold = Color(0xFFFFD700);
@@ -31,22 +33,6 @@ class _EmailRound {
     required this.bodyOptions,
   });
 }
-
-const List<_EmailRound> _kEmailRounds = [
-  _EmailRound(
-    recipient: 'Class Teacher',
-    subjectCorrect: 'Leave Request for 14 March',
-    subjectOptions: ['Leave Request for 14 March', 'hi', 'URGENT READ NOW'],
-    greetingCorrect: "Dear Ma'am,",
-    greetingOptions: ["Dear Ma'am,", 'Yo teacher!', 'Hey!'],
-    bodyCorrect: 'I am unwell with fever today and kindly request leave.',
-    bodyOptions: [
-      'I am unwell with fever today and kindly request leave.',
-      'not coming bye',
-      'give me leave fast',
-    ],
-  ),
-];
 
 /// 📧 Step 10: Gamified Email Etiquette Game (Flame Powered & Overflow Safe)
 class StudentEmailGamePage extends StatefulWidget {
@@ -89,6 +75,7 @@ class StudentEmailGamePage extends StatefulWidget {
 
 class _StudentEmailGameState extends State<StudentEmailGamePage> {
   final FlutterTts _tts = FlutterTts();
+  late final _EmailRound _round;
   int _step = 0; // 0=subject, 1=greeting, 2=body, 3=ready to send
   int _xp = 30;
   String? _selectedSubject;
@@ -96,11 +83,19 @@ class _StudentEmailGameState extends State<StudentEmailGamePage> {
   String? _selectedBody;
   bool _isSent = false;
 
-  _EmailRound get _round => _kEmailRounds[0];
-
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getEmailData(widget.day);
+    _round = _EmailRound(
+      recipient: dayData.recipient,
+      subjectCorrect: dayData.subjectCorrect,
+      subjectOptions: dayData.subjectOptions,
+      greetingCorrect: dayData.greetingCorrect,
+      greetingOptions: dayData.greetingOptions,
+      bodyCorrect: dayData.bodyCorrect,
+      bodyOptions: dayData.bodyOptions,
+    );
     _initTts();
   }
 

@@ -509,10 +509,13 @@ class _PocketKidsTasksMasterHubPageState
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
 
     final Map<String, bool> subFlags = {};
-    for (int step = 1; step <= 17; step++) {
+    for (int step = 1; step <= 19; step++) {
       final flagKey =
           'pocket_kids_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
-      subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
+      final altKey =
+          'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      subFlags['step_$step'] = (prefs.getBool(flagKey) ?? false) ||
+          (prefs.getBool(altKey) ?? false);
     }
 
     if (mounted) {
@@ -1385,12 +1388,12 @@ class _PocketKidsTasksMasterHubPageState
   /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<KidsInPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
-    if (day == 1) {
-      final kidsDay1Meta = [
+    if (PocketKidsService.isKidAccount) {
+      final kidsDayMeta = [
         {
           'step': 1,
-          'title': 'Meet Letters & Phonics',
-          'sub': 'Acoustic letter sounds & pronunciations',
+          'title': day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+          'sub': day == 1 ? 'Acoustic letter sounds & pronunciations' : '1-on-1 Avatar conversation',
           'icon': '🔤',
           'color': const Color(0xFF00F0FF),
         },
@@ -1410,15 +1413,15 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 4,
-          'title': '50+ Essential Beginner Words',
-          'sub': 'Foundational word vault with native audio',
+          'title': day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          'sub': day == 1 ? 'Foundational word vault with native audio' : 'Interactive spoken dialogue practice',
           'icon': '📚',
           'color': const Color(0xFF10B981),
         },
         {
           'step': 5,
-          'title': 'Letter & Word Hunt',
-          'sub': 'Search and match word puzzle challenge',
+          'title': day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
+          'sub': day == 1 ? 'Search and match word puzzle challenge' : 'Comprehension story reading & questions',
           'icon': '🔍',
           'color': const Color(0xFFF59E0B),
         },
@@ -1439,7 +1442,7 @@ class _PocketKidsTasksMasterHubPageState
         {
           'step': 8,
           'title': 'Legend Bio Creator',
-          'sub': 'Craft glowing hero & scientist profile cards',
+          'sub': day == 1 ? "Mus'ab Hira Profile & Paragraph Builder" : 'Craft glowing hero & scientist profile cards',
           'icon': '👤',
           'color': const Color(0xFF10B981),
         },
@@ -1466,15 +1469,15 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 12,
-          'title': 'Spoken English Chat',
+          'title': day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
           'sub': '1-on-1 spoken conversation with Animal Companion',
           'icon': '🎙️',
           'color': const Color(0xFFEC4899),
         },
         {
           'step': 13,
-          'title': 'Reading Room: The Crow',
-          'sub': 'Listen, read aloud & comprehension questions',
+          'title': day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+          'sub': 'Listen, read aloud & comprehension quest',
           'icon': '📖',
           'color': const Color(0xFF60A5FA),
         },
@@ -1515,6 +1518,142 @@ class _PocketKidsTasksMasterHubPageState
         },
         {
           'step': 19,
+          'title': 'Day $day Review & Performance Card',
+          'sub': 'Full score evaluation & House progression',
+          'icon': '🏆',
+          'color': const Color(0xFFFFD700),
+        },
+      ];
+
+      return kidsDayMeta.map((s) {
+        final stepNum = s['step'] as int;
+        final flagKey = 'step_$stepNum';
+        final isComp = _subStepFlags[flagKey] ?? false;
+        final isUnlocked = admin ||
+            stepNum == 1 ||
+            (_subStepFlags['step_${stepNum - 1}'] ?? false);
+
+        return KidsInPathSubStep(
+          stepIndex: stepNum,
+          title: s['title'] as String,
+          subtitle: s['sub'] as String,
+          icon: s['icon'] as String,
+          color: s['color'] as Color,
+          isCompleted: isComp,
+          isUnlocked: isUnlocked,
+          onAction: () async {
+            if (!mounted) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketDayOpenWorldAdventurePage(
+                  day: day,
+                  userId: widget.userId ?? _supabase.auth.currentUser?.id,
+                  onCompleted: () => _loadData(),
+                ),
+              ),
+            );
+            await _loadData();
+          },
+        );
+      }).toList();
+    }
+
+    if (day == 1) {
+      final adultDay1Meta = [
+        {
+          'step': 1,
+          'title': 'Meet Letters & Phonics',
+          'sub': 'Acoustic letter sounds & pronunciations',
+          'icon': '🔤',
+          'color': const Color(0xFF00F0FF),
+        },
+        {
+          'step': 2,
+          'title': 'Sentence Builder Game',
+          'sub': 'Interactive word blocks & sentence assembly',
+          'icon': '🧩',
+          'color': const Color(0xFF00E5FF),
+        },
+        {
+          'step': 3,
+          'title': 'Spelling',
+          'sub': 'Spell check listening & vocabulary quiz',
+          'icon': '🔤',
+          'color': const Color(0xFF38BDF8),
+        },
+        {
+          'step': 4,
+          'title': '50+ Essential Beginner Words',
+          'sub': 'Foundational word vault with native audio',
+          'icon': '📚',
+          'color': const Color(0xFF10B981),
+        },
+        {
+          'step': 5,
+          'title': 'Letter & Word Hunt',
+          'sub': 'Search and match word puzzle challenge',
+          'icon': '🔍',
+          'color': const Color(0xFFF59E0B),
+        },
+        {
+          'step': 6,
+          'title': 'Spoken English Chat',
+          'sub': '1-on-1 spoken conversation with Animal Companion',
+          'icon': '🎙️',
+          'color': const Color(0xFFEC4899),
+        },
+        {
+          'step': 7,
+          'title': 'Reading Room: The Crow',
+          'sub': 'Listen, read aloud & comprehension questions',
+          'icon': '📖',
+          'color': const Color(0xFF60A5FA),
+        },
+        {
+          'step': 8,
+          'title': 'Verb Timeline Arcade',
+          'sub': 'Past, Present & Future action tenses shelves',
+          'icon': '⏳',
+          'color': const Color(0xFFFF9100),
+        },
+        {
+          'step': 9,
+          'title': 'Chat Reply Builder',
+          'sub': 'Quick response word blocks for instant chats',
+          'icon': '💬',
+          'color': const Color(0xFF00E676),
+        },
+        {
+          'step': 10,
+          'title': 'Negative Sentence Builder',
+          'sub': 'Transform statements using not & does not',
+          'icon': '🔄',
+          'color': const Color(0xFFA855F7),
+        },
+        {
+          'step': 11,
+          'title': 'Mini Speech Practice',
+          'sub': 'Short spoken delivery & pronunciation scoring',
+          'icon': '📢',
+          'color': const Color(0xFFE11D48),
+        },
+        {
+          'step': 12,
+          'title': 'English Hub Community Chat',
+          'sub': 'Join global learner conversation channels',
+          'icon': '🌐',
+          'color': const Color(0xFFFFFC00),
+        },
+        {
+          'step': 13,
+          'title': 'House Attack Quest: Citadel Raid',
+          'sub': 'Raid Animal robot fortress & breach shields',
+          'icon': '⚔️',
+          'color': const Color(0xFFEF4444),
+        },
+        {
+          'step': 14,
           'title': 'Day 1 Review & Performance Card',
           'sub': 'Full score evaluation & House 2 unlocking',
           'icon': '🏆',
@@ -1522,7 +1661,7 @@ class _PocketKidsTasksMasterHubPageState
         },
       ];
 
-      return kidsDay1Meta.map((s) {
+      return adultDay1Meta.map((s) {
         final stepNum = s['step'] as int;
         final flagKey = 'step_$stepNum';
         final isComp = _subStepFlags[flagKey] ?? false;

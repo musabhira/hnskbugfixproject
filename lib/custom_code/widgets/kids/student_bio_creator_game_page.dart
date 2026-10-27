@@ -6,6 +6,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kPBg = Color(0xFF0A111F);
 const Color kPCard = Color(0xFF142038);
 const Color kPGold = Color(0xFFFFD700);
@@ -29,39 +31,6 @@ class _ExamProfileRound {
 
   List<String> get allSentenceWords => [for (final s in sentences) ...s];
 }
-
-const List<_ExamProfileRound> _kExamProfiles = [
-  _ExamProfileRound(
-    heroName: 'Dr. A.P.J. Abdul Kalam',
-    heroEmoji: '🚀',
-    examClues: {
-      'Born': '15 October 1931, Rameswaram',
-      'Known as': 'Missile Man of India',
-      'Position': '11th President of India',
-      'Award': 'Bharat Ratna',
-    },
-    sentences: [
-      ['A. P. J. Abdul Kalam', 'was', 'born', 'in', 'Rameswaram', '.'],
-      ['He', 'was', 'the', '11th', 'President', 'of', 'India', '.'],
-    ],
-    distractors: ['singer', 'yesterday', 'moon'],
-  ),
-  _ExamProfileRound(
-    heroName: 'Mary Kom',
-    heroEmoji: '🥊',
-    examClues: {
-      'Born': '1 March 1983, Manipur',
-      'Sport': 'Boxing',
-      'Achievement': 'Six-time World Champion',
-      'Award': 'Padma Vibhushan',
-    },
-    sentences: [
-      ['Mary Kom', 'was', 'born', 'in', 'Manipur', '.'],
-      ['She', 'is', 'a', 'famous', 'World', 'Champion', '.'],
-    ],
-    distractors: ['cricket', 'dance', 'sleep'],
-  ),
-];
 
 /// 👤 Step 8: Exam Profile-to-Paragraph Writing Quest (Authentic School Exam Training)
 class StudentBioCreatorGamePage extends StatefulWidget {
@@ -105,6 +74,7 @@ class StudentBioCreatorGamePage extends StatefulWidget {
 class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
+  late final List<_ExamProfileRound> _rounds;
   int _roundIdx = 0;
   int _xp = 35;
   int _currentSentenceIdx = 0;
@@ -114,11 +84,21 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _ExamProfileRound get _round => _kExamProfiles[_roundIdx];
+  _ExamProfileRound get _round => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getProfileData(widget.day);
+    _rounds = [
+      _ExamProfileRound(
+        heroName: dayData.heroName,
+        heroEmoji: dayData.heroEmoji,
+        examClues: dayData.examClues,
+        sentences: dayData.sentences,
+        distractors: dayData.distractors,
+      ),
+    ];
     _initTts();
     _setupRound();
   }
@@ -240,7 +220,7 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_roundIdx < _kExamProfiles.length - 1) {
+                  if (_roundIdx < _rounds.length - 1) {
                     setState(() {
                       _roundIdx++;
                       _currentSentenceIdx = 0;
@@ -252,7 +232,7 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _kExamProfiles.length - 1 ? 'NEXT EXAM QUESTION ▶' : 'FINISH QUEST 🏆',
+                  _roundIdx < _rounds.length - 1 ? 'NEXT EXAM QUESTION ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -330,7 +310,7 @@ class _StudentBioCreatorGameState extends State<StudentBioCreatorGamePage>
                     children: [
                       // Header
                       Text(
-                        'Question ${_roundIdx + 1} of ${_kExamProfiles.length}: Profile to Paragraph',
+                        'Question ${_roundIdx + 1} of ${_rounds.length}: Profile to Paragraph',
                         style: GoogleFonts.outfit(color: kPGold, fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                       const SizedBox(height: 8),

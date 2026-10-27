@@ -233,7 +233,7 @@ class _PocketDayOpenWorldAdventurePageState
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
   int get _totalSteps {
-    if (PocketKidsService.isKidAccount && widget.day == 1) {
+    if (PocketKidsService.isKidAccount) {
       return 19;
     }
     return 14;
@@ -2786,51 +2786,72 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
-    if (widget.day == 1) {
-      if (PocketKidsService.isKidAccount) {
-        switch (s) {
-          case 1:
-            return const _StepInfo('Meet Letters & Phonics', '🔤', Color(0xFF00F0FF));
-          case 2:
-            return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
-          case 3:
-            return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
-          case 4:
-            return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
-          case 5:
-            return const _StepInfo('Letter & Word Hunt', '🔍', Color(0xFFF59E0B));
-          case 6:
-            return const _StepInfo('Letter Writing Quest', '✉️', Color(0xFF38BDF8));
-          case 7:
-            return const _StepInfo('Diary Entry Adventure', '📖', Color(0xFFFFD700));
-          case 8:
-            return const _StepInfo('Legend Bio Creator', '👤', Color(0xFF10B981));
-          case 9:
-            return const _StepInfo('Notice Masterclass', '📢', Color(0xFFEF4444));
-          case 10:
-            return const _StepInfo('Email Etiquette', '📧', Color(0xFF38BDF8));
-          case 11:
-            return const _StepInfo('Spelling Detective', '🔍', Color(0xFFFFD700));
-          case 12:
-            return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFFEC4899));
-          case 13:
-            return const _StepInfo('Reading Room: The Crow', '📖', Color(0xFF60A5FA));
-          case 14:
-            return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
-          case 15:
-            return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
-          case 16:
-            return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
-          case 17:
-            return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
-          case 18:
-            return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-          case 19:
-            return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
-          default:
-            return const _StepInfo('Practice Ledge', '⭐', Colors.white);
-        }
+    if (PocketKidsService.isKidAccount) {
+      switch (s) {
+        case 1:
+          return _StepInfo(
+            widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+            '🔤',
+            const Color(0xFF00F0FF),
+          );
+        case 2:
+          return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
+        case 3:
+          return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
+        case 4:
+          return _StepInfo(
+            widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+            '📚',
+            const Color(0xFF10B981),
+          );
+        case 5:
+          return _StepInfo(
+            widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
+            '🔍',
+            const Color(0xFFF59E0B),
+          );
+        case 6:
+          return const _StepInfo('Letter Writing Quest', '✉️', Color(0xFF38BDF8));
+        case 7:
+          return const _StepInfo('Diary Entry Adventure', '📖', Color(0xFFFFD700));
+        case 8:
+          return const _StepInfo('Legend Bio Creator', '👤', Color(0xFF10B981));
+        case 9:
+          return const _StepInfo('Notice Masterclass', '📢', Color(0xFFEF4444));
+        case 10:
+          return const _StepInfo('Email Etiquette', '📧', Color(0xFF38BDF8));
+        case 11:
+          return const _StepInfo('Spelling Detective', '🔍', Color(0xFFFFD700));
+        case 12:
+          return _StepInfo(
+            widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
+            '🎙️',
+            const Color(0xFFEC4899),
+          );
+        case 13:
+          return _StepInfo(
+            widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+            '📖',
+            const Color(0xFF60A5FA),
+          );
+        case 14:
+          return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+        case 15:
+          return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
+        case 16:
+          return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
+        case 17:
+          return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
+        case 18:
+          return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+        case 19:
+          return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
+        default:
+          return const _StepInfo('Practice Ledge', '⭐', Colors.white);
       }
+    }
+
+    if (widget.day == 1) {
 
       switch (s) {
         case 1:
@@ -2920,9 +2941,107 @@ class _PocketDayOpenWorldAdventurePageState
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
 
-    // Kids Day 1 specific step mappings (6-11: Creative Writing Games, 12: Spoken Chat, 13: Reading Room, 14: Verb Timeline, 15: Chat Reply, 16: Negative, 17: Mini Speech, 18: House Attack, 19: Review)
+    // Kids specific step mappings (1-19) for ALL 90 days
     final isKid = PocketKidsService.isKidAccount;
-    if (isKid && day == 1) {
+    if (isKid) {
+      if (s == 1) {
+        if (day == 1) {
+          await PocketDay1Step1AvatarChatPage.show(
+            context,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        } else if (day == 2) {
+          await PocketDay2Step1AvatarChatPage.show(
+            context,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        } else {
+          await PocketDayAvatarChatPage.show(
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        }
+        await _syncStepCompletionIfDone(1);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 2) {
+        await PocketSentenceBuilderGamePage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        );
+        await _syncStepCompletionIfDone(2);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 3) {
+        await PocketEssentialSpellingPage.show(
+          context,
+          day: day,
+          userId: uid,
+          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        );
+        await _syncStepCompletionIfDone(3);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 4) {
+        if (day == 1) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PocketDay1Step2AvatarChatPage(
+                userId: uid,
+                stepIndex: 4,
+                onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+              ),
+            ),
+          );
+        } else if (day == 2) {
+          await PocketDay2Step4AvatarChatPage.show(
+            context,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        } else {
+          await PocketDay1Step4AvatarChatPage.show(
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        }
+        await _syncStepCompletionIfDone(4);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
+      if (s == 5) {
+        if (day == 1) {
+          await PocketDay1Step3AvatarChatPage.show(
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        } else {
+          await PocketDay1Step5AvatarChatPage.show(
+            context,
+            day: day,
+            stepIndex: 5,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          );
+        }
+        await _syncStepCompletionIfDone(5);
+        await _loadState(preserveCarPosition: true);
+        return;
+      }
       if (s == 6) {
         await StudentLetterWritingGamePage.show(
           context,
@@ -2996,24 +3115,45 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 12) {
-        await PocketDay1Step4AvatarChatPage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(12),
-        );
+        if (day == 1) {
+          await PocketDay1Step4AvatarChatPage.show(
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(12),
+          );
+        } else {
+          final res = await PocketSpokenAvatarSimulatorPage.launch(
+            context,
+            day: day,
+            onCompleted: () => _onStepCompleted(12),
+          );
+          if (res == true) {
+            await _onStepCompleted(12);
+          }
+        }
         await _syncStepCompletionIfDone(12);
         await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 13) {
-        await PocketDay1Step5AvatarChatPage.show(
-          context,
-          day: day,
-          stepIndex: 13,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(13),
-        );
+        if (day == 1) {
+          await PocketDay1Step5AvatarChatPage.show(
+            context,
+            day: day,
+            stepIndex: 13,
+            userId: uid,
+            onStepFinished: (finishedStep) => _onStepCompleted(13),
+          );
+        } else {
+          await PocketVocabOpenWorldDrivePage.show(
+            context,
+            day: day,
+            stepIndex: 13,
+            userId: uid,
+            onCompleted: () => _onStepCompleted(13),
+          );
+        }
         await _syncStepCompletionIfDone(13);
         await _loadState(preserveCarPosition: true);
         return;

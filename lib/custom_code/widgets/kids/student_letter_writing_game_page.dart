@@ -7,6 +7,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kLBg = Color(0xFF0A0F1D);
 const Color kLCard = Color(0xFF131D33);
 const Color kLGold = Color(0xFFFFD700);
@@ -33,25 +35,6 @@ class _LetterRound {
 
   List<String> get allTargetWords => [...line1Words, ...line2Words];
 }
-
-const List<_LetterRound> _kLetterRounds = [
-  _LetterRound(
-    title: '✉️ Friendly Letter to a Friend',
-    recipient: 'To: Best Friend',
-    line1Words: ['Dear', 'Rahul', ','],
-    line2Words: ['How', 'are', 'you', '?'],
-    distractors: ['Sir', 'yesterday', 'bye'],
-    hint: 'Day 1 Starter: Greet your friend and ask how they are!',
-  ),
-  _LetterRound(
-    title: '✉️ Respectful Letter to Teacher',
-    recipient: 'To: Class Teacher',
-    line1Words: ['Respected', 'Teacher', ','],
-    line2Words: ['Please', 'grant', 'leave', '.'],
-    distractors: ['Hey', 'play', 'cool'],
-    hint: 'Day 1 Starter: Begin with a polite greeting and simple request.',
-  ),
-];
 
 /// ✉️ Step 6: Gamified Letter Writing Game (Word-Bank Snap Engine)
 class StudentLetterWritingGamePage extends StatefulWidget {
@@ -95,6 +78,7 @@ class StudentLetterWritingGamePage extends StatefulWidget {
 class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
+  late final List<_LetterRound> _rounds;
   int _roundIdx = 0;
   int _xp = 30;
   int _placedCount = 0;
@@ -104,11 +88,22 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _LetterRound get _currentRound => _kLetterRounds[_roundIdx];
+  _LetterRound get _currentRound => _rounds[_roundIdx];
 
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getLetterData(widget.day);
+    _rounds = [
+      _LetterRound(
+        title: dayData.title,
+        recipient: dayData.recipient,
+        line1Words: dayData.line1Words,
+        line2Words: dayData.line2Words,
+        distractors: dayData.distractors,
+        hint: dayData.hint,
+      ),
+    ];
     _initTts();
     _setupRound();
   }
@@ -223,7 +218,7 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_roundIdx < _kLetterRounds.length - 1) {
+                  if (_roundIdx < _rounds.length - 1) {
                     setState(() {
                       _roundIdx++;
                       _setupRound();
@@ -233,7 +228,7 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
                   }
                 },
                 child: Text(
-                  _roundIdx < _kLetterRounds.length - 1 ? 'NEXT LETTER ▶' : 'FINISH QUEST 🏆',
+                  _roundIdx < _rounds.length - 1 ? 'NEXT LETTER ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -317,7 +312,7 @@ class _StudentLetterWritingGameState extends State<StudentLetterWritingGamePage>
                       Row(
                         children: [
                           Text(
-                            'Round ${_roundIdx + 1} of ${_kLetterRounds.length}',
+                            'Day ${widget.day} • Round ${_roundIdx + 1} of ${_rounds.length}',
                             style: GoogleFonts.outfit(color: kLGold, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                           const Spacer(),

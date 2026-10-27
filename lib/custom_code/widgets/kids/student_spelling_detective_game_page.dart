@@ -6,6 +6,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/flame_icon_widget.dart';
 
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+
 const Color kSBg = Color(0xFF0B111E);
 const Color kSCard = Color(0xFF141C2F);
 const Color kSGold = Color(0xFFFFD700);
@@ -29,33 +31,6 @@ class _DetectiveCase {
   List<String> get correctLetters => correctWord.toUpperCase().split('');
   List<String> get wrongLetters => wrongWord.toUpperCase().split('');
 }
-
-const List<_DetectiveCase> _kCases = [
-  _DetectiveCase(
-    wrongWord: 'PRINCPAL',
-    correctWord: 'PRINCIPAL',
-    clue: 'The head or chief teacher of a school',
-    distractors: ['E', 'O'],
-  ),
-  _DetectiveCase(
-    wrongWord: 'FREIND',
-    correctWord: 'FRIEND',
-    clue: 'A person you like and know well',
-    distractors: ['A', 'U'],
-  ),
-  _DetectiveCase(
-    wrongWord: 'LIBARY',
-    correctWord: 'LIBRARY',
-    clue: 'A place where books are kept to read',
-    distractors: ['E', 'O'],
-  ),
-  _DetectiveCase(
-    wrongWord: 'BOROW',
-    correctWord: 'BORROW',
-    clue: 'To take something with a promise to return it',
-    distractors: ['A', 'U'],
-  ),
-];
 
 /// 🔍 Step 11: Spelling Detective (Interactive Typo Fixer)
 class StudentSpellingDetectiveGamePage extends StatefulWidget {
@@ -100,6 +75,7 @@ class StudentSpellingDetectiveGamePage extends StatefulWidget {
 class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveGamePage>
     with SingleTickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
+  late final List<_DetectiveCase> _cases;
   int _caseIdx = 0;
   int _xp = 35;
   int _placedLetterCount = 0;
@@ -108,11 +84,20 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
   late final AnimationController _shakeCtrl =
       AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
 
-  _DetectiveCase get _currentCase => _kCases[_caseIdx];
+  _DetectiveCase get _currentCase => _cases[_caseIdx];
 
   @override
   void initState() {
     super.initState();
+    final dayData = StudentCreativeWriting90DayCurriculum.getSpellingData(widget.day);
+    _cases = [
+      _DetectiveCase(
+        wrongWord: dayData.wrongWord,
+        correctWord: dayData.correctWord,
+        clue: dayData.clue,
+        distractors: dayData.distractors,
+      ),
+    ];
     _initTts();
     _loadCase();
   }
@@ -241,7 +226,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  if (_caseIdx < _kCases.length - 1) {
+                  if (_caseIdx < _cases.length - 1) {
                     setState(() {
                       _caseIdx++;
                       _loadCase();
@@ -251,7 +236,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                   }
                 },
                 child: Text(
-                  _caseIdx < _kCases.length - 1 ? 'NEXT MYSTERY ▶' : 'FINISH QUEST 🏆',
+                  _caseIdx < _cases.length - 1 ? 'NEXT MYSTERY ▶' : 'FINISH QUEST 🏆',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15),
                 ),
               ),
@@ -333,7 +318,7 @@ class _StudentSpellingDetectiveGameState extends State<StudentSpellingDetectiveG
                       Row(
                         children: [
                           Text(
-                            'Case ${_caseIdx + 1} of ${_kCases.length}',
+                            'Case ${_caseIdx + 1} of ${_cases.length}',
                             style: GoogleFonts.outfit(color: kSGold, fontWeight: FontWeight.w700, fontSize: 13),
                           ),
                           const Spacer(),
