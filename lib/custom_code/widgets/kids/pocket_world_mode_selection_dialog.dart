@@ -152,8 +152,31 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 isLocked: false,
                 onTap: () async {
                   HapticFeedback.heavyImpact();
+                  if (isKids) {
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  // 🔒 Parental Gate Lock Check:
+                  // Switching from Adult Mode to Kids Mode REQUIRES configuring the pattern lock first!
+                  final hasPattern = await PocketParentalPatternLock.hasPattern();
+                  if (!hasPattern) {
+                    if (!context.mounted) return;
+                    final setupOk = await PocketParentalPatternLock.showSetupDialog(
+                      context,
+                      title: 'Set Parental Lock First 🔒',
+                      subtitle: 'Create your 3x3 pattern lock now so only you can switch back to Adult Mode.',
+                    );
+                    if (!setupOk) {
+                      if (context.mounted) {
+                        _showRestrictionToast(context, 'Parental pattern lock is required to enter Kids Mode 🔒');
+                      }
+                      return;
+                    }
+                  }
+
+                  if (!context.mounted) return;
                   Navigator.pop(context);
-                  if (isKids) return;
 
                   if (PocketKidsService.kidName.isEmpty ||
                       PocketKidsService.kidName == 'Little Explorer') {
@@ -200,8 +223,31 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                   }
 
                   HapticFeedback.heavyImpact();
+                  if (isStudent) {
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  // 🔒 Parental Gate Lock Check:
+                  // Switching from Adult Mode to Student Mode REQUIRES configuring the pattern lock first!
+                  final hasPattern = await PocketParentalPatternLock.hasPattern();
+                  if (!hasPattern) {
+                    if (!context.mounted) return;
+                    final setupOk = await PocketParentalPatternLock.showSetupDialog(
+                      context,
+                      title: 'Set Parental Lock First 🔒',
+                      subtitle: 'Create your 3x3 pattern lock now so only you can return to Adult Mode.',
+                    );
+                    if (!setupOk) {
+                      if (context.mounted) {
+                        _showRestrictionToast(context, 'Parental pattern lock is required to enter Student Mode 🔒');
+                      }
+                      return;
+                    }
+                  }
+
+                  if (!context.mounted) return;
                   Navigator.pop(context);
-                  if (isStudent) return;
 
                   await PocketKidsService.activateStudentAccount(
                     name: PocketKidsService.kidName.isNotEmpty

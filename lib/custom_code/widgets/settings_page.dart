@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -326,6 +327,162 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         );
       },
+    );
+  }
+
+  Future<void> _showParentalLockSettingsModal() async {
+    HapticFeedback.lightImpact();
+    final hasPattern = await PocketParentalPatternLock.hasPattern();
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.pattern_rounded, color: Color(0xFFF59E0B), size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Parental Security Lock 🔒',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        hasPattern ? 'Pattern Lock is Active & Configured' : 'No Pattern Lock Set Yet',
+                        style: GoogleFonts.inter(
+                          color: hasPattern ? const Color(0xFF10B981) : Colors.amber,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'A 3x3 security pattern lock protects Kids and Student World, preventing children from switching into Adult Mode without your permission.',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 22),
+            if (hasPattern) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38BDF8),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final success = await PocketParentalPatternLock.showSetupDialog(
+                      context,
+                      title: 'Reset Pattern Lock 🔒',
+                      subtitle: 'Draw a new 3x3 pattern to replace your existing lock.',
+                    );
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Pattern Lock updated successfully! ✅'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 20),
+                  label: Text('Change / Reset Pattern Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    side: const BorderSide(color: Colors.redAccent),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final verified = await PocketParentalPatternLock.verifyOrSetup(
+                      context,
+                      title: 'Confirm Lock Removal 🔒',
+                      subtitle: 'Draw pattern lock to confirm removal.',
+                    );
+                    if (verified) {
+                      await PocketParentalPatternLock.clearPattern();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Parental Lock removed. You can set a new one anytime.'),
+                            backgroundColor: Color(0xFFEF4444),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                  label: Text('Remove Pattern Lock', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13)),
+                ),
+              ),
+            ] else ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final success = await PocketParentalPatternLock.showSetupDialog(
+                      context,
+                      title: 'Create Parental Pattern 🔒',
+                      subtitle: 'Draw a 3x3 pattern (connect at least 4 dots)',
+                    );
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Parental Pattern Lock configured! 🔒✅'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.add_moderator_rounded, size: 20),
+                  label: Text('Setup Pattern Lock Now 🔒', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1160,12 +1317,24 @@ class _SettingsPageState extends State<SettingsPage> {
                 valueListenable: AppStoreReviewService.worldSwitchVisibleNotifier,
                 builder: (context, isVisible, _) {
                   if (!isVisible || !AppStoreReviewService.isWorldSwitchVisible) return const SizedBox.shrink();
-                  return _SettingsTile(
-                    icon: Icons.child_care_rounded,
-                    iconColor: const Color(0xFFFF69B4),
-                    title: 'Switch to Student & Kids Mode',
-                    subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
-                    onTap: _showSwitchToKidsDialog,
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.child_care_rounded,
+                        iconColor: const Color(0xFFFF69B4),
+                        title: 'Switch to Student & Kids Mode',
+                        subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
+                        onTap: _showSwitchToKidsDialog,
+                      ),
+                      _SettingsTile(
+                        icon: Icons.pattern_rounded,
+                        iconColor: const Color(0xFFF59E0B),
+                        title: 'Parental Security Lock 🔒',
+                        subtitle: 'Configure or reset 3x3 pattern lock for Kids Mode',
+                        onTap: _showParentalLockSettingsModal,
+                      ),
+                    ],
                   );
                 },
               ),

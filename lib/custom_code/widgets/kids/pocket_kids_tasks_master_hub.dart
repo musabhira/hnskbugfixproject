@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
@@ -6163,7 +6164,252 @@ class _PocketKidsTasksMasterHubPageState
     );
   }
 
-  /// 🏰 Stone Wall Barrier & Fortress Exam Gate between House $day and House ${day + 1}
+  /// ⚔️ Fortress Citadel Attack Gate between House $day and House ${day + 1}
+  /// User Audio Directive:
+  /// "ഈ ടാർഗറ്റ് പേജിൽ നമ്മൾ ഗേറ്റ്... ഗേറ്റ് അൺലോക്ക് ആവണം എന്നുണ്ടെങ്കിൽ അതിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ
+  /// അറ്റാക്ക് എന്നൊരു സാധനം കാണിക്കും. എന്താ സംഭവം എന്ന് വെച്ചാൽ ഒരാളെ അറ്റാക്ക് ചെയ്യണം. ഒരാൾ മതി ഒരാളെ അറ്റാക്ക് ചെയ്യണം.
+  /// അപ്പൊ 90 റോബോട്ടിൽ ഒന്നാമത്തെ ലെവലിൽ നിൽക്കുന്ന റോബോട്ട് ഉണ്ടാവില്ലേ? ആ റോബോട്ടിനെയാണ് നമ്മൾ അറ്റാക്ക് ചെയ്യേണ്ടത്.
+  /// അറ്റാക്ക് ചെയ്തിട്ട് തിരിച്ചുവരിക. ചിലപ്പോൾ തോറ്റു എന്ന് വരും പക്ഷെ കുഴപ്പമില്ല. തോറ്റാലും കംപ്ലീറ്റ് ചെയ്താൽ മതി.
+  /// കംപ്ലീറ്റ് ചെയ്തിട്ട് തിരിച്ചുവന്നാൽ മതി. അങ്ങനെ മതി... റോബോട്ടുകളെ അറ്റാക്ക് ചെയ്യുക എന്നുള്ളതാണ്.
+  /// അറ്റാക്ക് ചെയ്യുമ്പോൾ പോക്കറ്റ് സ്കോർ കിട്ടും."
+  Future<void> _recordGateBreached(int day) async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_student_gate_${uid}_${day}_breached', true);
+      await prefs.setBool('pocket_student_day_${uid}_${day}_completed', true);
+      await prefs.setInt('learning_student_last_completed_day_$uid', day);
+      final now = DateTime.now();
+      await prefs.setString('learning_student_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+
+      // Award +50 Student Score
+      await PocketFortressDefenseService.recordTrainingPoints(50, uid);
+    }
+    _completedDays.add(day);
+    HapticFeedback.heavyImpact();
+    await _loadData();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('💥', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚔️ Gate $day Breached! House ${day + 1} is now Unlocked! +50 Student Score Awarded.',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showGateCitadelAttackDialog(int day) async {
+    HapticFeedback.heavyImpact();
+    final robot = PocketRobotService.getRobotByLevel(day);
+    final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+    final isBreached = _isDayCompleted(day) || _isMasterAdmin;
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.shield_rounded, color: Color(0xFFEF4444), size: 24),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'GATE $day CITADEL ASSAULT ⚔️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    isBreached ? 'Gate Cleared • Re-attack for Bonus Score' : 'Defeat Citadel to Unlock House ${day + 1}',
+                    style: GoogleFonts.inter(
+                      color: isBreached ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Defender Card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                      image: robot.avatarUrl.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(robot.avatarUrl), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: robot.avatarUrl.isEmpty
+                        ? const Center(child: Text('🤖', style: TextStyle(fontSize: 26)))
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                robot.name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'LVL $dynamicLevel',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${robot.cefrRank} • Gate $day Fortress Guardian',
+                          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('⚔️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Launch an attack against ${robot.name}\'s Citadel! Win or lose, completing the raid will break open Gate $day and grant +50 Score.',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 4,
+                ),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: robot.id,
+                    targetName: robot.name,
+                    targetDay: day,
+                    attackerDay: _progress?.currentDay ?? 1,
+                  );
+                  // On return: record gate breached & complete day!
+                  await _recordGateBreached(day);
+                },
+                icon: const Icon(Icons.flash_on_rounded, size: 20),
+                label: Text(
+                  'LAUNCH ATTACK NOW ⚔️',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🏰 Stone Wall Barrier & Fortress Citadel Gate between House $day and House ${day + 1}
   /// User Audio Directive:
   /// "ടാർഗറ്റ് പേജിൽ ഒന്നാമത്തെ വീടിന്റെ അപ്പുറത്ത് എന്ത് ചെയ്യുക? ഒരു മതില്... മതിലല്ല, ഒരു ഗേറ്റ് വയ്ക്കുക.
   /// ചെറിയ മതിലുപോലെ ഇങ്ങനെ ഇതാക്കി വയ്ക്കുക. ഗേറ്റ് വയ്ക്കുക. ആ ഗേറ്റ് അൺലോക്ക് ആവണം എന്നുണ്ടെങ്കിൽ ചെറിയൊരു സ്റ്റെപ്പ് കൊടുക്കുക.
@@ -6187,7 +6433,7 @@ class _PocketKidsTasksMasterHubPageState
         (isCurrent &&
             (_subStepFlags['step_$requiredTasks'] == true ||
                 completedTasks >= requiredTasks));
-    final bool isExamReady = !isCompleted && isCurrent && areHouseTasksDone;
+    final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
     final gateY = _getNodeY(day) - (_nodeSpacingY * 0.50);
@@ -6207,56 +6453,8 @@ class _PocketKidsTasksMasterHubPageState
         onTap: () {
           HapticFeedback.heavyImpact();
           if (isCompleted) {
-            if (_isMasterAdmin) {
-              // 🔐 Master Admin (musabthonippadam@gmail.com): Retake/re-test exam anytime!
-              _launchStep17_MasteryExam(day, _currentLearnerLevel);
-              return;
-            }
-            // For regular users, offer re-taking the passed exam for review and practice
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                backgroundColor: const Color(0xFF1E293B),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                title: Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded,
-                        color: Color(0xFF10B981), size: 24),
-                    const SizedBox(width: 8),
-                    Text('Gate $day Cleared!',
-                        style: GoogleFonts.outfit(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                content: Text(
-                  'You passed the Gate $day Exam! Would you like to re-take this exam for practice and review?',
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text('Close',
-                        style: GoogleFonts.outfit(color: Colors.white54)),
-                  ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _launchStep17_MasteryExam(day, _currentLearnerLevel);
-                    },
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: Text('Re-test Exam',
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            );
+            // Re-attack open gate defender for review, training, and bonus score
+            _showGateCitadelAttackDialog(day);
             return;
           }
 
@@ -6300,7 +6498,7 @@ class _PocketKidsTasksMasterHubPageState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Complete all House $day tasks first to unlock Gate $day Exam! ($completedTasks/$requiredTasks done)',
+                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/$requiredTasks done)',
                         style: GoogleFonts.outfit(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
@@ -6313,8 +6511,8 @@ class _PocketKidsTasksMasterHubPageState
             return;
           }
 
-          // Open the Level Mastery Exam Dialog!
-          _launchStep17_MasteryExam(day, _currentLearnerLevel);
+          // Open the Citadel Attack Dialog against the Level Robot!
+          _showGateCitadelAttackDialog(day);
         },
         child: SizedBox(
           width: gateWidth,
@@ -6421,8 +6619,8 @@ class _PocketKidsTasksMasterHubPageState
                     end: Alignment.bottomCenter,
                     colors: isCompleted
                         ? [const Color(0xFF047857), const Color(0xFF064E3B)]
-                        : (isExamReady
-                            ? [const Color(0xFFB45309), const Color(0xFF78350F)]
+                        : (isAttackReady
+                            ? [const Color(0xFF7F1D1D), const Color(0xFF991B1B)]
                             : [
                                 const Color(0xFF1E293B),
                                 const Color(0xFF0F172A)
@@ -6433,20 +6631,20 @@ class _PocketKidsTasksMasterHubPageState
                   border: Border.all(
                     color: isCompleted
                         ? const Color(0xFF10B981)
-                        : (isExamReady
-                            ? const Color(0xFFFFD700)
+                        : (isAttackReady
+                            ? const Color(0xFFEF4444)
                             : Colors.white24),
-                    width: isExamReady || isCompleted ? 2.0 : 1.2,
+                    width: isAttackReady || isCompleted ? 2.0 : 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isCompleted
                           ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                          : (isExamReady
-                              ? const Color(0xFFFFD700).withValues(alpha: 0.4)
+                          : (isAttackReady
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.5)
                               : Colors.black.withValues(alpha: 0.4)),
-                      blurRadius: isExamReady ? 14 : 10,
-                      spreadRadius: isExamReady ? 2 : 1,
+                      blurRadius: isAttackReady ? 14 : 10,
+                      spreadRadius: isAttackReady ? 2 : 1,
                     ),
                   ],
                 ),
@@ -6463,8 +6661,8 @@ class _PocketKidsTasksMasterHubPageState
                           height: 38,
                           color: isCompleted
                               ? const Color(0xFF34D399)
-                              : (isExamReady
-                                  ? const Color(0xFFFFD700)
+                              : (isAttackReady
+                                  ? const Color(0xFFFCA5A5)
                                       .withValues(alpha: 0.5)
                                   : Colors.white12),
                         ),
@@ -6475,21 +6673,21 @@ class _PocketKidsTasksMasterHubPageState
                     Icon(
                       isCompleted
                           ? Icons.lock_open_rounded
-                          : (isExamReady
-                              ? Icons.edit_note_rounded
+                          : (isAttackReady
+                              ? Icons.flash_on_rounded
                               : Icons.lock_rounded),
                       color: isCompleted
                           ? const Color(0xFF6EE7B7)
-                          : (isExamReady
-                              ? const Color(0xFFFFFC00)
+                          : (isAttackReady
+                              ? const Color(0xFFFF5252)
                               : Colors.white38),
-                      size: isExamReady ? 26 : 24,
+                      size: isAttackReady ? 26 : 24,
                     ),
                   ],
                 ),
               ),
 
-              // 3. Floating Interactive Exam Badge above Gate
+              // 3. Floating Interactive Attack/Breach Badge above Gate
               Positioned(
                 top: -8,
                 child: Container(
@@ -6501,8 +6699,8 @@ class _PocketKidsTasksMasterHubPageState
                     border: Border.all(
                       color: isCompleted
                           ? const Color(0xFF10B981)
-                          : (isExamReady
-                              ? const Color(0xFFFFD700)
+                          : (isAttackReady
+                              ? const Color(0xFFEF4444)
                               : Colors.white24),
                       width: 1.2,
                     ),
@@ -6517,23 +6715,23 @@ class _PocketKidsTasksMasterHubPageState
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        isCompleted ? '✨' : (isExamReady ? '📝' : '🔒'),
+                        isCompleted ? '✨' : (isAttackReady ? '⚔️' : '🔒'),
                         style: const TextStyle(fontSize: 9),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         isCompleted
                             ? 'GATE OPEN • DAY $day ✓'
-                            : (isExamReady
-                                ? 'GATE $day EXAM READY • TAP TO START'
+                            : (isAttackReady
+                                ? 'GATE $day • ATTACK TO BREACH ⚔️'
                                 : (day == currentDay
                                     ? 'GATE $day LOCKED • $completedTasks/16 TASKS'
                                     : 'GATE $day LOCKED')),
                         style: GoogleFonts.outfit(
                           color: isCompleted
                               ? const Color(0xFF34D399)
-                              : (isExamReady
-                                  ? const Color(0xFFFFD700)
+                              : (isAttackReady
+                                  ? const Color(0xFFF87171)
                                   : Colors.white54),
                           fontSize: 8.5,
                           fontWeight: FontWeight.w900,
@@ -6880,12 +7078,12 @@ class _PocketKidsTasksMasterHubPageState
     HapticFeedback.selectionClick();
     final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
     String message = 'House $day is locked!';
-    bool canTakeGateExam = false;
+    bool canAttackGate = false;
 
     if (day > 1 && !_isDayCompleted(day - 1)) {
       message =
-          '🔒 House $day is locked! You must pass the Gate ${day - 1} Exam (Pass Mark: 60%) to unlock House $day!';
-      canTakeGateExam = true;
+          '🔒 House $day is locked! Attack Level ${day - 1} Citadel to breach Gate ${day - 1}!';
+      canAttackGate = true;
     } else if (_studentScore < reqScore) {
       final missing = reqScore - _studentScore;
       message =
@@ -6899,19 +7097,18 @@ class _PocketKidsTasksMasterHubPageState
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFFFFD700), width: 1.0),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.0),
         ),
-        action: canTakeGateExam
+        action: canAttackGate
             ? SnackBarAction(
-                label: 'GATE ${day - 1} EXAM 📝',
-                textColor: const Color(0xFFFFD700),
-                onPressed: () =>
-                    _launchStep17_MasteryExam(day - 1, _currentLearnerLevel),
+                label: 'BREACH GATE ${day - 1} ⚔️',
+                textColor: const Color(0xFFFF5252),
+                onPressed: () => _showGateCitadelAttackDialog(day - 1),
               )
             : null,
         content: Row(
           children: [
-            const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 16),
+            const Icon(Icons.shield_rounded, color: Color(0xFFFF5252), size: 16),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

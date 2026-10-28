@@ -54,6 +54,12 @@ class PocketParentalPatternLock extends StatefulWidget {
     return saved.trim() == pattern.trim();
   }
 
+  /// Remove/clear saved pattern lock (for reset)
+  static Future<bool> clearPattern() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.remove(_prefKeyPattern);
+  }
+
   /// Shows the pattern dialog. If no pattern has been set yet, prompts to set one!
   /// Returns `true` if successfully verified/set, `false` otherwise.
   static Future<bool> verifyOrSetup(

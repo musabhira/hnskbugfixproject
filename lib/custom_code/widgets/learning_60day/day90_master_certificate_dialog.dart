@@ -87,7 +87,10 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
 
       final email = SupaFlow.client.auth.currentUser?.email;
       final isAdmin = email != null &&
-          (email == 'musabthonippadam@gmail.com' || email.contains('mussabira'));
+          (email == 'musabthodupuzha@gmail.com' ||
+              email == 'musabthonippadam@gmail.com' ||
+              email.contains('mussabira') ||
+              email.contains('musab'));
 
       if (mounted) {
         setState(() {
@@ -243,6 +246,25 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
                 child: Text(
                   'Or get Poket VIP Pass (Free Certificate Included) 👑',
                   style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await IAPService().restorePurchases();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Checking previous purchases with App Store / Google Play...'),
+                        backgroundColor: Color(0xFF1E293B),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.restore_rounded, size: 16, color: Colors.white54),
+                label: Text(
+                  'Restore Purchases',
+                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
                 ),
               ),
             ],
