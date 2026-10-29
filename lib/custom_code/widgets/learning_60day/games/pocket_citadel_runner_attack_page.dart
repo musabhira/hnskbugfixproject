@@ -32,6 +32,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_d
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day1_az_and_300vocab_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/curriculum_90days/spellings_90.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 enum _Ph {
   ready,
@@ -516,8 +517,20 @@ class _PocketCitadelRunnerAttackPageState
 
           return _Ch(
             type: 0,
-            instruction: 'Build the sentence in English · ഇംഗ്ലീഷിൽ വാക്യം ഉണ്ടാക്കൂ (Day $targetDay)',
-            prompt: mal,
+            instruction: PocketLanguageService.localize(
+              en: 'Build the sentence in English (Day $targetDay)',
+              ml: 'ഇംഗ്ലീഷിൽ വാക്യം ഉണ്ടാക്കൂ (Day $targetDay)',
+              ta: 'ஆங்கிலத்தில் வாக்கியத்தை உருவாக்கவும் (நாள் $targetDay)',
+              hi: 'अंग्रेजी में वाक्य बनाएं (दिन $targetDay)',
+            ),
+            prompt: PocketLanguageService.isMalayalam
+                ? mal
+                : PocketLanguageService.localize(
+                    en: 'Assemble the sentence in English:',
+                    ml: mal,
+                    ta: 'ஆங்கில வாக்கியத்தை உருவாக்கவும்:',
+                    hi: 'अंग्रेजी वाक्य बनाएं:',
+                  ),
             correct: eng,
             chips: chips,
             target: words,
@@ -551,7 +564,12 @@ class _PocketCitadelRunnerAttackPageState
 
           return _Ch(
             type: 1,
-            instruction: 'Spot the correct spelling · ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തൂ (Day $targetDay)',
+            instruction: PocketLanguageService.localize(
+              en: 'Spot the correct spelling (Day $targetDay)',
+              ml: 'ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തൂ (Day $targetDay)',
+              ta: 'சரியான எழுத்துப்பிழையைக் கண்டறியவும் (நாள் $targetDay)',
+              hi: 'सही वर्तनी पहचानें (दिन $targetDay)',
+            ),
             correct: [for (var k = 0; k < 4; k++) opts[k][ci[k]]].join(', '),
             options: opts,
             correctIdx: ci,
@@ -562,7 +580,7 @@ class _PocketCitadelRunnerAttackPageState
         {
           // ── 2. WORD TRAIN WAGONS ──
           String w = '';
-          String malMeaning = '';
+          String rawMeaning = '';
           String emoji = '🚂';
 
           final vocabPool = Day1VocabBankData.words300;
@@ -573,16 +591,18 @@ class _PocketCitadelRunnerAttackPageState
             }).toList();
             final item = (filtered.isNotEmpty ? filtered : vocabPool)[_rnd.nextInt(filtered.isNotEmpty ? filtered.length : vocabPool.length)];
             w = (item['word']?.toString() ?? 'apple').toLowerCase();
-            malMeaning = item['meaning']?.toString() ?? 'ആപ്പിൾ';
+            rawMeaning = item['meaning']?.toString() ?? 'ആപ്പിൾ';
             emoji = item['emoji']?.toString() ?? '🍎';
           }
 
           if (w.isEmpty) {
             final e = _words[_next(_qC, _words.length)];
             w = e[0];
-            malMeaning = e[1];
+            rawMeaning = e[1];
             emoji = e[2];
           }
+
+          final displayMeaning = PocketLanguageService.getVocabMeaning(w, defaultFallback: rawMeaning);
 
           final n = w.length;
           final bc = min(max(1, (targetDay / 30).ceil()), n - 1);
@@ -599,8 +619,13 @@ class _PocketCitadelRunnerAttackPageState
 
           return _Ch(
             type: 2,
-            instruction: 'Fill the train wagons · ഒഴിഞ്ഞ അക്ഷരങ്ങൾ നിറയ്ക്കൂ (Day $targetDay)',
-            prompt: malMeaning,
+            instruction: PocketLanguageService.localize(
+              en: 'Fill the train wagons (Day $targetDay)',
+              ml: 'ഒഴിഞ്ഞ അക്ഷരങ്ങൾ നിറയ്ക്കൂ (Day $targetDay)',
+              ta: 'ரயில் பெட்டிகளில் விடுபட்ட எழுத்துக்களை நிரப்பவும் (நாள் $targetDay)',
+              hi: 'रेलगाड़ी के डिब्बों में अक्षर भरें (दिन $targetDay)',
+            ),
+            prompt: displayMeaning,
             emoji: emoji,
             correct: w,
             word: w,
@@ -644,8 +669,18 @@ class _PocketCitadelRunnerAttackPageState
 
           return _Ch(
             type: 3,
-            instruction: '🎧 Listen to audio & choose sentence · കേട്ടിട്ട് വാക്യം തിരഞ്ഞെടുക്കൂ (Day $targetDay)',
-            prompt: 'Listen to the audio clip carefully',
+            instruction: PocketLanguageService.localize(
+              en: '🎧 Listen to audio & choose sentence (Day $targetDay)',
+              ml: '🎧 കേട്ടിട്ട് വാക്യം തിരഞ്ഞെടുക്കൂ (Day $targetDay)',
+              ta: '🎧 ஒலியைக் கேட்டு சரியான வாக்கியத்தைத் தேர்வுசெய்க (நாள் $targetDay)',
+              hi: '🎧 ऑडियो सुनें और सही वाक्य चुनें (दिन $targetDay)',
+            ),
+            prompt: PocketLanguageService.localize(
+              en: 'Listen to the audio clip carefully',
+              ml: 'ഓഡിയോ ശ്രദ്ധിച്ചു കേൾക്കുക',
+              ta: 'ஒலிப்பதிவை கவனமாகக் கேளுங்கள்',
+              hi: 'ऑडियो को ध्यान से सुनें',
+            ),
             correct: spoken,
             options: [optsList],
             correctIdx: [optsList.indexOf(spoken)],
@@ -683,8 +718,20 @@ class _PocketCitadelRunnerAttackPageState
 
           return _Ch(
             type: 4,
-            instruction: 'Convert to Negative Sentence · നിഷേധ വാക്യമാക്കൂ (Day $targetDay)',
-            prompt: '$positive\n($translation)',
+            instruction: PocketLanguageService.localize(
+              en: 'Convert to Negative Sentence (Day $targetDay)',
+              ml: 'നിഷേധ വാക്യമാക്കൂ (Day $targetDay)',
+              ta: 'எதிர்மறை வாக்கியமாக மாற்றவும் (நாள் $targetDay)',
+              hi: 'नकारात्मक वाक्य बनाएं (दिन $targetDay)',
+            ),
+            prompt: PocketLanguageService.isMalayalam
+                ? '$positive\n($translation)'
+                : PocketLanguageService.localize(
+                    en: 'Transform to negative: "$positive"',
+                    ml: '$positive\n($translation)',
+                    ta: 'எதிர்மறையாக மாற்றவும்: "$positive"',
+                    hi: 'नकारात्मक में बदलें: "$positive"',
+                  ),
             correct: negative,
             chips: allChips,
             target: targetWords,
@@ -2371,9 +2418,14 @@ class _PocketCitadelRunnerAttackPageState
                         fontWeight: FontWeight.w800, fontSize: 12, color: Colors.white),
                   ),
                   const SizedBox(height: 2),
-                  const Text(
-                    '↔️ Swipe left / right to inspect full house · സ്ക്രോൾ ചെയ്ത് വീട് കാണാം',
-                    style: TextStyle(
+                  Text(
+                    PocketLanguageService.localize(
+                      en: '↔️ Swipe left / right to inspect full house',
+                      ml: '↔️ സ്ക്രോൾ ചെയ്ത് വീട് കാണാം',
+                      ta: '↔️ முழு வீட்டையும் பார்க்க இடது / வலதுபுறம் ஸ்வைப் செய்யவும்',
+                      hi: '↔️ पूरा घर देखने के लिए बाएँ / दाएँ स्वाइप करें',
+                    ),
+                    style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 10.5, color: Color(0xFFFFF59D)),
                   ),
                 ],

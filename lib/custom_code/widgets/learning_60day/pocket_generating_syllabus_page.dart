@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/pocket_language_service.dart';
 import 'pocket_syllabus_repository.dart';
 
 /// 🧠 Premium Cinematic Screen that displays the personalized AI curriculum generation animation
@@ -33,21 +34,29 @@ class _PocketGeneratingSyllabusPageState
     {
       'titleEn': 'Analyzing speech baseline & vocabulary level...',
       'titleMl': 'നിങ്ങളുടെ ഭാഷാ നിലവാരവും പദസമ്പത്തും വിശകലനം ചെയ്യുന്നു...',
+      'titleTa': 'உங்கள் பேச்சுத் திறன் மற்றும் சொல்லகராதி அளவை பகுப்பாய்வு செய்கிறது...',
+      'titleHi': 'आपकी बोलने की क्षमता और शब्दावली स्तर का विश्लेषण हो रहा है...',
       'icon': '🧠',
     },
     {
       'titleEn': 'Mapping daily 10-minute micro practice slots...',
       'titleMl': 'ദിവസേനയുള്ള 10 മിനിറ്റ് സ്പീക്കിംഗ് സമയങ്ങൾ ക്രമീകരിക്കുന്നു...',
+      'titleTa': 'தினசரி 10 நிமிட பயிற்சி நேரங்களை ஒழுங்கமைக்கிறது...',
+      'titleHi': 'दैनिक 10 मिनट के अभ्यास स्लॉट निर्धारित किए जा रहे हैं...',
       'icon': '⏱️',
     },
     {
       'titleEn': 'Synthesizing voice shadow modules & native guides...',
       'titleMl': 'വോയ്സ് മിഷനുകളും മലയാളം ഉച്ചാരണ സഹായികളും ബന്ധിപ്പിക്കുന്നു...',
+      'titleTa': 'குரல் பயிற்சிகள் மற்றும் உச்சரிப்பு வழிகாட்டிகளை இணைக்கிறது...',
+      'titleHi': 'वॉयस मॉड्यूल और उच्चारण मार्गदर्शिकाएँ जोड़ी जा रही हैं...',
       'icon': '🎙️',
     },
     {
       'titleEn': 'Personalized 90-Day Master Syllabus Ready!',
       'titleMl': 'നിങ്ങൾക്കായുള്ള 90-ദിവസത്തെ സ്പെഷ്യൽ സിലബസ് തയ്യാറായി! 🎉',
+      'titleTa': 'உங்களுக்கான 90-நாள் சிறப்பு பாடத்திட்டம் தயார்! 🎉',
+      'titleHi': 'आपका 90-दिवसीय विशेष सिलेबस तैयार है! 🎉',
       'icon': '🌟',
     },
   ];
@@ -85,7 +94,12 @@ class _PocketGeneratingSyllabusPageState
   @override
   Widget build(BuildContext context) {
     final track = PocketSyllabusRepository.getTrack(widget.level);
-    final isMalayalam = widget.nativeLanguage.toLowerCase() == 'malayalam';
+    final isMalayalam = widget.nativeLanguage.toLowerCase() == 'malayalam' ||
+        PocketLanguageService.isMalayalam;
+    final isTamil = widget.nativeLanguage.toLowerCase() == 'tamil' ||
+        PocketLanguageService.isTamil;
+    final isHindi = widget.nativeLanguage.toLowerCase() == 'hindi' ||
+        PocketLanguageService.isHindi;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -150,12 +164,18 @@ class _PocketGeneratingSyllabusPageState
               // Title
               Text(
                 _isComplete
-                    ? (isMalayalam
-                        ? 'നിങ്ങളുടെ സിലബസ് തയ്യാറായി!'
-                        : 'Your 90-Day Syllabus is Ready!')
-                    : (isMalayalam
-                        ? 'നിങ്ങൾക്കായി സിലബസ് ഒരുക്കുന്നു...'
-                        : 'Generating Custom Syllabus...'),
+                    ? PocketLanguageService.localize(
+                        en: 'Your 90-Day Syllabus is Ready!',
+                        ml: 'നിങ്ങളുടെ സിലബസ് തയ്യാറായി!',
+                        ta: 'உங்கள் 90-நாள் பாடத்திட்டம் தயார்! 🎉',
+                        hi: 'आपका 90-दिवसीय सिलेबस तैयार है! 🎉',
+                      )
+                    : PocketLanguageService.localize(
+                        en: 'Generating Custom Syllabus...',
+                        ml: 'നിങ്ങൾക്കായി സിലബസ് ഒരുക്കുന്നു...',
+                        ta: 'உங்களுக்கான பாடத்திட்டம் உருவாகிறது...',
+                        hi: 'आपके लिए सिलेबस तैयार हो रहा है...',
+                      ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                   color: Colors.white,
@@ -168,12 +188,18 @@ class _PocketGeneratingSyllabusPageState
 
               Text(
                 _isComplete
-                    ? (isMalayalam
-                        ? 'നിങ്ങളുടെ നിലവാരത്തിനനുസരിച്ചുള്ള പ്രത്യേക റോഡ്മാപ്പ് തയ്യാറാക്കിയിരിക്കുന്നു.'
-                        : 'Calibrated perfectly for your speaking fluency path.')
-                    : (isMalayalam
-                        ? 'നിങ്ങളുടെ മുൻഗണനകളും നിലവാരവും അടിസ്ഥാനമാക്കി റോഡ്മാപ്പ് നിർമ്മിക്കുന്നു.'
-                        : 'Analyzing your responses to construct an optimal learning journey.'),
+                    ? PocketLanguageService.localize(
+                        en: 'Calibrated perfectly for your speaking fluency path.',
+                        ml: 'നിങ്ങളുടെ നിലവാരത്തിനനുസരിച്ചുള്ള പ്രത്യേക റോഡ്മാപ്പ് തയ്യാറാക്കിയിരിക്കുന്നു.',
+                        ta: 'உங்கள் பேசும் பயிற்சிக்கு ஏற்றவாறு சரியாக அமைக்கப்பட்டுள்ளது.',
+                        hi: 'आपकी बोलने की क्षमता के अनुसार सही ढंग से तैयार किया गया है।',
+                      )
+                    : PocketLanguageService.localize(
+                        en: 'Analyzing your responses to construct an optimal learning journey.',
+                        ml: 'നിങ്ങളുടെ മുൻഗണനകളും നിലവാരവും അടിസ്ഥാനമാക്കി റോഡ്മാപ്പ് നിർമ്മിക്കുന്നു.',
+                        ta: 'உங்கள் விருப்பங்களின் அடிப்படையில் சிறந்த பயிற்சிப் பாதை உருவாக்கப்படுகிறது.',
+                        hi: 'आपकी प्राथमिकताओं के आधार पर सर्वोत्तम शिक्षण मार्ग तैयार किया जा रहा है।',
+                      ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   color: const Color(0xFF94A3B8),
@@ -238,16 +264,28 @@ class _PocketGeneratingSyllabusPageState
                                         : FontWeight.w500,
                                   ),
                                 ),
-                                if (isMalayalam)
-                                  Text(
-                                    stepData['titleMl']!,
-                                    style: GoogleFonts.inter(
-                                      color: isDone || isCurrent
-                                          ? const Color(0xFF94A3B8)
-                                          : Colors.white24,
-                                      fontSize: 11,
-                                    ),
-                                  ),
+                                () {
+                                  final localizedSub = isTamil
+                                      ? stepData['titleTa']
+                                      : (isHindi
+                                          ? stepData['titleHi']
+                                          : (isMalayalam
+                                              ? stepData['titleMl']
+                                              : null));
+                                  if (localizedSub != null &&
+                                      localizedSub.isNotEmpty) {
+                                    return Text(
+                                      localizedSub,
+                                      style: GoogleFonts.inter(
+                                        color: isDone || isCurrent
+                                            ? const Color(0xFF94A3B8)
+                                            : Colors.white24,
+                                        fontSize: 11,
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                }(),
                               ],
                             ),
                           ),
@@ -353,9 +391,12 @@ class _PocketGeneratingSyllabusPageState
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        isMalayalam
-                            ? 'ദിവസം 1 ആരംഭിക്കുക 🚀'
-                            : 'START DAY 1 JOURNEY 🚀',
+                        PocketLanguageService.localize(
+                          en: 'START DAY 1 JOURNEY 🚀',
+                          ml: 'ദിവസം 1 ആരംഭിക്കുക 🚀',
+                          ta: 'நாள் 1 தொடங்கவும் 🚀',
+                          hi: 'दिन 1 शुरू करें 🚀',
+                        ),
                         style: GoogleFonts.outfit(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
@@ -368,9 +409,12 @@ class _PocketGeneratingSyllabusPageState
               else
                 Center(
                   child: Text(
-                    isMalayalam
-                        ? 'ദയവായി ഒരു നിമിഷം കാത്തിരിക്കൂ...'
-                        : 'Calibrating syllabus...',
+                    PocketLanguageService.localize(
+                      en: 'Calibrating syllabus...',
+                      ml: 'ദയവായി ഒരു നിമിഷം കാത്തിരിക്കൂ...',
+                      ta: 'பாடத்திட்டம் சீரமைக்கப்படுகிறது...',
+                      hi: 'सिलेबस को व्यवस्थित किया जा रहा है...',
+                    ),
                     style: GoogleFonts.inter(
                       color: Colors.white38,
                       fontSize: 12,

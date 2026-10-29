@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
 /// 👤 Dedicated Gamified Student Profile Page (Light Mode Anime/Cartoon Aesthetic)
@@ -1194,7 +1195,12 @@ class _PocketKidsProfilePageState extends State<PocketKidsProfilePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
+                            PocketLanguageService.localize(
+                              en: 'POLICE CRIME DOSSIER',
+                              ml: 'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
+                              ta: 'POLICE CRIME DOSSIER (வழக்கு நாட்குறிப்பு)',
+                              hi: 'POLICE CRIME DOSSIER (केस डायरी)',
+                            ),
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFD700),
                               fontWeight: FontWeight.w900,
@@ -1319,7 +1325,12 @@ class _PocketKidsProfilePageState extends State<PocketKidsProfilePage>
                     ),
                     icon: const Text('⚔️', style: TextStyle(fontSize: 15)),
                     label: Text(
-                      'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
+                      PocketLanguageService.localize(
+                        en: 'LAUNCH POLICE REVENGE RAID',
+                        ml: 'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
+                        ta: 'பதிலடித் தாக்குதல் தொடங்கவும் ⚔️',
+                        hi: 'जवाबी हमला शुरू करें ⚔️',
+                      ),
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
                         fontSize: 12,

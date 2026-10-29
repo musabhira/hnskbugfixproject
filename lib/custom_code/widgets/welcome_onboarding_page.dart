@@ -1104,6 +1104,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('pm_native_language', _selectedNativeLanguage);
+      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage);
       await prefs.setString('pm_target_language', _selectedTargetLanguage);
       await prefs.setString('pm_referral_source', _selectedReferralSource);
       await prefs.setString('pm_english_level', _selectedEnglishLevel);
@@ -1129,6 +1130,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await prefs.setString(
           'pocket_day1_selected_track_${user?.id ?? "guest"}', trackStr);
       if (user != null) {
+        await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage,
+            userId: user.id);
         await prefs.setBool('pm_onboarding_seen_${user.id}', true);
         await SupaFlow.client.from('profile').upsert({
           'user_id': user.id,

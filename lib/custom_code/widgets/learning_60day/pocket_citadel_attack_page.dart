@@ -22,6 +22,7 @@ import 'games/pocket_citadel_runner_attack_page.dart';
 import '../report_dailoge.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
@@ -5609,7 +5610,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
+                                  PocketLanguageService.localize(
+                                    en: 'PRESIDENTIAL ESCORT ATTACK',
+                                    ml: 'PRESIDENTIAL ESCORT ATTACK (എസ്കോർട്ട് അറ്റാക്ക്)',
+                                    ta: 'PRESIDENTIAL ESCORT ATTACK (பாதுகாப்புப் படை தாக்குதல்)',
+                                    hi: 'PRESIDENTIAL ESCORT ATTACK (एस्कॉर्ट हमला)',
+                                  ),
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
                                     fontSize: 12.0,
@@ -6289,10 +6295,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
-              'പ്രസിഡൻഷ്യൽ എസ്കോർട്ടിന്റെ 10 ലെവലുകളും വിജയകരമായി പരാജയപ്പെടുത്തി!\n\n'
-              '⚔️ കോർ ഹൗസ് അറ്റാക്ക് ബട്ടൺ അൺലോക്ക് ആയിരിക്കുന്നു. '
-              'ഇനി ${widget.neighbor.name}-ന്റെ ${widget.neighbor.day} ഡിഫൻസ് കാർഡുകൾ അറ്റാക്ക് ചെയ്യുക (80% പാസ് മാർക്ക് വേണം).',
+              PocketLanguageService.localize(
+                en: '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
+                    'All 10 Presidential Escort levels defeated successfully!\n\n'
+                    '⚔️ Core House Attack unlocked. Now attack ${widget.neighbor.name}\'s ${widget.neighbor.day} defense cards (80% pass mark required).',
+                ml: '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
+                    'പ്രസിഡൻഷ്യൽ എസ്കോർട്ടിന്റെ 10 ലെവലുകളും വിജയകരമായി പരാജയപ്പെടുത്തി!\n\n'
+                    '⚔️ കോർ ഹൗസ് അറ്റാക്ക് ബട്ടൺ അൺലോക്ക് ആയിരിക്കുന്നു. '
+                    'ഇനി ${widget.neighbor.name}-ന്റെ ${widget.neighbor.day} ഡിഫൻസ് കാർഡുകൾ അറ്റാക്ക് ചെയ്യുക (80% പാസ് മാർക്ക് വേണം).',
+                ta: '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
+                    'தலைவரின் பாதுகாப்புப் படையின் 10 நிலைகளும் வெற்றிகரமாக முறியடிக்கப்பட்டன!\n\n'
+                    '⚔️ பிரதான இல்லத் தாக்குதல் திறக்கப்பட்டது. இப்போது ${widget.neighbor.name}-ன் ${widget.neighbor.day} பாதுகாப்பு அட்டைகளைத் தாக்குங்கள் (80% மதிப்பெண் தேவை).',
+                hi: '🏛️ PRESIDENTIAL ESCORT BROKEN!\n'
+                    'राष्ट्रपति एस्कॉर्ट के सभी 10 स्तर सफलतापूर्वक पार कर लिए गए!\n\n'
+                    '⚔️ मुख्य हाउस अटैक अनलॉक हो गया है। अब ${widget.neighbor.name} के ${widget.neighbor.day} रक्षा कार्डों पर हमला करें (80% अंक आवश्यक)।',
+              ),
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 13,
@@ -8216,7 +8233,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             : (_isTimeoutTriggered
                                 ? 'The combat timer expired! The defender\'s automated security traps triggered.'
                                 : _isEscortMode
-                                    ? '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ട് അറ്റാക്ക് തടഞ്ഞു!\nThe 10 Presidential Escort tasks require near perfection (maximum 1 error allowed). You made 2 errors at task ${_currentQIdx + 1}/10. Practice and attack again!'
+                                    ? PocketLanguageService.localize(
+                                        en: '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nThe 10 Presidential Escort tasks require near perfection (maximum 1 error allowed). You made 2 errors at task ${_currentQIdx + 1}/10. Practice and attack again!',
+                                        ml: '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nപ്രസിഡൻഷ്യൽ എസ്കോർട്ട് അറ്റാക്ക് തടഞ്ഞു!\nThe 10 Presidential Escort tasks require near perfection (maximum 1 error allowed). You made 2 errors at task ${_currentQIdx + 1}/10. Practice and attack again!',
+                                        ta: '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nபாதுகாப்புப் படை உங்கள் தாக்குதலைத் தடுத்தது!\n10 பணிகளில் அதிகபட்சம் 1 தவறு மட்டுமே அனுமதிக்கப்படும். பயிற்சி செய்து மீண்டும் தாக்கவும்!',
+                                        hi: '🛑 PRESIDENTIAL ESCORT REPELLED RAID!\nएस्कॉर्ट सुरक्षा ने हमला रोक दिया!\n10 कार्यों में अधिकतम 1 गलती की अनुमति है। अभ्यास करें और पुनः प्रयास करें!',
+                                      )
                                     : 'You solved $_correctCount of ${_defenseQuestions.length} defense tasks (${((_correctCount / (_defenseQuestions.isNotEmpty ? _defenseQuestions.length : 1)) * 100).toStringAsFixed(0)}%).\nA minimum Pass Mark of 80% is required to breach ${widget.neighbor.name}\'s citadel!\n\nThe defender\'s fortress held firm. Practice more daily lessons to conquer this house!'),
                         style: const TextStyle(
                             color: Colors.white70,

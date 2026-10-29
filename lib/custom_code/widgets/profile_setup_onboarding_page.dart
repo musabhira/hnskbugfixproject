@@ -397,7 +397,8 @@ class _ProfileSetupOnboardingPageState
       await prefs.setInt('initial_home_tab_global', 3);
 
       // Save onboarding answers
-      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage);
+      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage,
+          userId: userId);
       await prefs.setString(
           'pm_native_language_$userId', _selectedNativeLanguage);
       await prefs.setString(

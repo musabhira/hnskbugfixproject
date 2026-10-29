@@ -754,6 +754,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (profileResponse != null) {
         await prefs.setString(
             'cached_profile_$userId', jsonEncode(profileResponse));
+        await PocketLanguageService.syncWithUserProfile(profileResponse,
+            userId: userId);
         final score = (profileResponse['pocket_score'] as num?)?.toInt() ?? 0;
         final day = PocketScoreLevelEngine.getLevelFromScore(score);
         PocketMissionTimerService.instance.initForDay(day);

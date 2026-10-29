@@ -469,7 +469,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
                                       ),
                                     ),
                                     Text(
-                                      g.titleMl,
+                                      g.localizedTitle,
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

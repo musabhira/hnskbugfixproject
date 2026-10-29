@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_d
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_chat_reply_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_90day_verb_timeline_data.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/day1_az_and_300vocab_data.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 // ------------------------------- THEME ---------------------------------------
 const _kBg = Color(0xFF080C24);
@@ -211,21 +212,42 @@ List<_Q> _buildQuestions(int count, int seed) {
             if (rounds.isNotEmpty) {
               final item = rounds[r.nextInt(rounds.length)];
               sentence = item.sentence.replaceAll(RegExp(r'[.!?]'), '').trim();
-              prompt = item.translationMl;
+              prompt = PocketLanguageService.isMalayalam
+                  ? item.translationMl
+                  : PocketLanguageService.localize(
+                      en: 'Build the sentence in English:',
+                      ml: item.translationMl,
+                      ta: 'வாக்கியத்தை ஆங்கிலத்தில் உருவாக்கவும்:',
+                      hi: 'अंग्रेजी में वाक्य बनाएं:',
+                    );
             }
           } else if (mode == 1) {
             final rounds = Pocket90DayNegativeSentenceData.getRoundsForDay(day);
             if (rounds.isNotEmpty) {
               final item = rounds[r.nextInt(rounds.length)];
               sentence = item.negativeSentence.replaceAll(RegExp(r'[.!?]'), '').trim();
-              prompt = item.negativeSentenceMl;
+              prompt = PocketLanguageService.isMalayalam
+                  ? item.negativeSentenceMl
+                  : PocketLanguageService.localize(
+                      en: 'Convert to negative sentence:',
+                      ml: item.negativeSentenceMl,
+                      ta: 'எதிர்மறை வாக்கியமாக மாற்றவும்:',
+                      hi: 'नकारात्मक वाक्य में बदलें:',
+                    );
             }
           } else {
             final rounds = Pocket90DayChatReplyData.getScenariosForDay(day);
             if (rounds.isNotEmpty) {
               final item = rounds[r.nextInt(rounds.length)];
               sentence = item.expectedReply.replaceAll(RegExp(r'[.!?]'), '').trim();
-              prompt = item.expectedReplyMl;
+              prompt = PocketLanguageService.isMalayalam
+                  ? item.expectedReplyMl
+                  : PocketLanguageService.localize(
+                      en: 'Send the polite English reply:',
+                      ml: item.expectedReplyMl,
+                      ta: 'சரியான ஆங்கில பதிலை அனுப்பவும்:',
+                      hi: 'सही अंग्रेजी उत्तर भेजें:',
+                    );
             }
           }
 
@@ -236,7 +258,12 @@ List<_Q> _buildQuestions(int count, int seed) {
 
         if (sentence.isEmpty) {
           sentence = 'I want to speak fluent English every day';
-          prompt = 'എനിക്ക് എല്ലാ ദിവസവും നന്നായി ഇംഗ്ലീഷ് സംസാരിക്കണം';
+          prompt = PocketLanguageService.localize(
+            en: 'I want to speak fluent English every day',
+            ml: 'എനിക്ക് എല്ലാ ദിവസവും നന്നായി ഇംഗ്ലീഷ് സംസാരിക്കണം',
+            ta: 'நான் தினமும் சரளமாக ஆங்கிலம் பேச விரும்புகிறேன்',
+            hi: 'मैं हर दिन धाराप्रवाह अंग्रेजी बोलना चाहता हूँ',
+          );
         }
         usedAnswers.add(sentence);
 
@@ -290,7 +317,7 @@ List<_Q> _buildQuestions(int count, int seed) {
         }
         final rawWord = vItem['word']?.toString().toUpperCase() ?? 'WATER';
         final word = rawWord.replaceAll(RegExp(r'[^A-Z]'), '');
-        final hint = vItem['meaning']?.toString() ?? 'വെള്ളം';
+        final hint = PocketLanguageService.getVocabMeaning(word, defaultFallback: vItem['meaning']?.toString());
         usedAnswers.add(word);
 
         final len = word.length;
@@ -317,7 +344,7 @@ List<_Q> _buildQuestions(int count, int seed) {
       case _GameType.vocab:
         final vItem = vocabPool[r.nextInt(vocabPool.length)];
         final correctWord = vItem['word']?.toString() ?? 'Water';
-        final meaning = vItem['meaning']?.toString() ?? 'വെള്ളം';
+        final meaning = PocketLanguageService.getVocabMeaning(correctWord, defaultFallback: vItem['meaning']?.toString());
         usedAnswers.add(correctWord);
 
         // Pick 3 random distinct distractors

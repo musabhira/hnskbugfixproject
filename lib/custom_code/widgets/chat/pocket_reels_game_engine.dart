@@ -58,6 +58,14 @@ class ReelGameCard {
     if (nativeExplanations.containsKey(lang)) {
       return nativeExplanations[lang]!;
     }
+    // Guarantees non-Malayalam languages (Tamil, Hindi, etc.) never fall back to Malayalam!
+    if (lang.toLowerCase() != 'malayalam') {
+      return nativeExplanations['English'] ??
+          nativeExplanations.values.firstWhere(
+            (e) => !RegExp(r'[\u0D00-\u0D7F]').hasMatch(e),
+            orElse: () => 'Master natural English by practicing daily!',
+          );
+    }
     return nativeExplanations['Malayalam'] ??
         nativeExplanations['English'] ??
         'Master natural English by practicing daily!';

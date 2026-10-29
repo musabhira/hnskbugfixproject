@@ -229,7 +229,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static Map<String, String> get kLanguageLabels =>
       PocketDailyMissionPage.kLanguageLabels;
 
-  String _selectedLanguage = 'Malayalam';
+  String _selectedLanguage = PocketLanguageService.currentLanguage;
   String _selectedCategory = 'all';
   bool _isRoadmapView = true; // 🗺️ Default to scenic gamified journey roadmap
   LearnerLevel _activeLearnerLevel = LearnerLevel.zero;
@@ -4268,8 +4268,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     setState(() {
-      _selectedLanguage =
-          prefs.getString('pocket_mission_pref_lang') ?? 'Malayalam';
+      _selectedLanguage = PocketLanguageService.currentLanguage;
       _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;

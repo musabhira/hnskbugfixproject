@@ -14,6 +14,7 @@ import 'pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 import 'flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// ⚔️ Dedicated House Attack Page (Step 8/9 across Days 1 to 90)
 ///
@@ -583,6 +584,10 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                       'Hi $_userName! We are going to attack a rival house now! Here we don\'t attack with weapons, we attack with ENGLISH power! Are you ready?',
                   textMl:
                       'ഹായ് $_userName! നമ്മൾ ഇപ്പോൾ ഒരു വീടിനെ അറ്റാക്ക് ചെയ്യാൻ പോവുകയാണ്! ഇവിടെ നമ്മൾ അറ്റാക്ക് ചെയ്യുന്നത് തോക്കുകൊണ്ടോ വാളുകൊണ്ടോ അല്ല, നമ്മുടെ ഇംഗ്ലീഷ് കൊണ്ടാണ്! Are you ready?',
+                  textTa:
+                      'வணக்கம் $_userName! நாம் இப்போது ஒரு வீட்டைத் தாக்கப் போகிறோம்! இங்கே நாம் ஆயுதங்களால் தாக்கவில்லை, நமது ஆங்கில அறிவாற்றலால் தாக்குகிறோம்! நீங்கள் தயாரா?',
+                  textHi:
+                      'नमस्ते $_userName! हम अब एक प्रतिद्वंद्वी घर पर हमला करने जा रहे हैं! यहाँ हम हथियारों से नहीं, अंग्रेजी की शक्ति से हमला करते हैं! क्या आप तैयार हैं?',
                   child: _chatState == 0
                       ? Column(
                           children: [
@@ -671,6 +676,8 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                   _buildCyberCatMessageBubble(
                     textEn: 'Awesome! Click this button to launch the attack!',
                     textMl: 'ഗംഭീരം! ഈ ബട്ടണിൽ ക്ലിക്ക് ചെയ്ത് അറ്റാക്ക് തുടങ്ങൂ!',
+                    textTa: 'அற்புதம்! இந்த பொத்தானைக் கிளிக் செய்து தாக்குதலைத் தொடங்குங்கள்!',
+                    textHi: 'शानदार! हमला शुरू करने के लिए इस बटन पर क्लिक करें!',
                     child: Column(
                       children: [
                         const SizedBox(height: 14),
@@ -728,7 +735,12 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'ഇതിൽ ക്ലിക്ക് ചെയ്ത് അറ്റാക്ക് ചെയ്യുക ➔',
+                                    PocketLanguageService.localize(
+                                      en: 'Click here to launch attack ➔',
+                                      ml: 'ഇതിൽ ക്ലിക്ക് ചെയ്ത് അറ്റാക്ക് ചെയ്യുക ➔',
+                                      ta: 'இங்கே கிளிக் செய்து தாக்கவும் ➔',
+                                      hi: 'हमला करने के लिए यहाँ क्लिक करें ➔',
+                                    ),
                                     style: GoogleFonts.inter(
                                       color: Colors.white70,
                                       fontSize: 12,
@@ -755,6 +767,8 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
   Widget _buildCyberCatMessageBubble({
     required String textEn,
     required String textMl,
+    String? textTa,
+    String? textHi,
     Widget? child,
   }) {
     return Row(
@@ -836,7 +850,12 @@ class _PocketHouseAttackPageState extends State<PocketHouseAttackPage>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  textMl,
+                  PocketLanguageService.localize(
+                    en: textEn,
+                    ml: textMl,
+                    ta: textTa ?? textEn,
+                    hi: textHi ?? textEn,
+                  ),
                   style: GoogleFonts.inter(
                     color: const Color(0xFFCBD5E1),
                     fontSize: 12.5,

@@ -1327,7 +1327,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   const SizedBox(height: 6),
                   Text(
                     '• Chat 15 minutes each day for 4 consecutive days (1 Hour Total)\n'
-                    '• ⚠️ Skipping a day breaks the pact and deducts 1 Trophy (കമ്മിയാവും)\n'
+                    '• ⚠️ ' + PocketLanguageService.localize(
+                      en: 'Skipping a day breaks the pact and deducts 1 Trophy\n',
+                      ml: 'Skipping a day breaks the pact and deducts 1 Trophy (കമ്മിയാവും)\n',
+                      ta: 'ஒரு நாளைத் தவறவிட்டால் உடன்படிக்கை முறிந்து 1 கோப்பை கழிக்கப்படும்\n',
+                      hi: 'एक दिन छोड़ने पर समझौता टूट जाएगा और 1 ट्रॉफी कम हो जाएगी\n',
+                    ) +
                     '• English only: Non-English can be reported & penalized\n'
                     '• Complete 4 days to earn +1 Spoken Trophy 🏆 & unlock full profile!',
                     style: GoogleFonts.inter(
@@ -1970,7 +1975,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
+                                            PocketLanguageService.localize(
+                                              en: 'POLICE CRIME DOSSIER',
+                                              ml: 'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
+                                              ta: 'POLICE CRIME DOSSIER (வழக்கு நாட்குறிப்பு)',
+                                              hi: 'POLICE CRIME DOSSIER (केस डायरी)',
+                                            ),
                                             style: GoogleFonts.outfit(
                                               color: const Color(0xFFFFD700),
                                               fontWeight: FontWeight.w900,
@@ -2100,7 +2110,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     icon: const Text('⚔️',
                                         style: TextStyle(fontSize: 15)),
                                     label: Text(
-                                      'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
+                                      PocketLanguageService.localize(
+                                        en: 'LAUNCH POLICE REVENGE RAID',
+                                        ml: 'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
+                                        ta: 'பதிலடித் தாக்குதல் தொடங்கவும் ⚔️',
+                                        hi: 'जवाबी हमला शुरू करें ⚔️',
+                                      ),
                                       style: GoogleFonts.outfit(
                                         fontWeight: FontWeight.w900,
                                         fontSize: 12,
@@ -3319,7 +3334,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 size: 18, color: Color(0xFF0F172A)),
                             const SizedBox(width: 6),
                             Text(
-                              '🎯 ട്രയൽ അറ്റാക്ക് (TRIAL ATTACK)',
+                              PocketLanguageService.localize(
+                                en: '🎯 TRIAL ATTACK',
+                                ml: '🎯 ട്രയൽ അറ്റാക്ക് (TRIAL ATTACK)',
+                                ta: '🎯 சோதனைத் தாக்குதல் (TRIAL ATTACK)',
+                                hi: '🎯 ट्रायल अटैक (TRIAL ATTACK)',
+                              ),
                               style: GoogleFonts.outfit(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 13,
@@ -3330,7 +3350,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'സ്വന്തം വീട് അറ്റാക്ക് ചെയ്ത് ഡിഫൻസ് പരിശോധിക്കാം (പോയിന്റുകൾ നഷ്ടപ്പെടില്ല)',
+                          PocketLanguageService.localize(
+                            en: 'Attack your own house to test defenses (no points lost)',
+                            ml: 'സ്വന്തം വീട് അറ്റാക്ക് ചെയ്ത് ഡിഫൻസ് പരിശോധിക്കാം (പോയിന്റുകൾ നഷ്ടപ്പെടില്ല)',
+                            ta: 'சொந்த வீட்டைத் தாக்கி பாதுகாப்பை சோதிக்கவும் (புள்ளிகள் இழக்கப்படாது)',
+                            hi: 'सुरक्षा जाँचने के लिए अपने घर पर हमला करें (कोई अंक नहीं कटेगा)',
+                          ),
                           style: GoogleFonts.inter(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -3591,7 +3616,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   color: Colors.redAccent, width: 0.8),
                             ),
                             child: Text(
-                              'കള്ളനെ കണ്ടെത്തി!',
+                              PocketLanguageService.localize(
+                                en: 'Thief Identified!',
+                                ml: 'കള്ളനെ കണ്ടെത്തി!',
+                                ta: 'திருடன் கண்டுபிடிக்கப்பட்டான்!',
+                                hi: 'चोर की पहचान हो गई!',
+                              ),
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFCA5A5),
                                 fontSize: 9.5,
@@ -3603,7 +3633,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'പോലീസ് അന്വേഷണ റിപ്പോർട്ട് • Identified Attackers & Stolen Score',
+                        PocketLanguageService.localize(
+                          en: 'Police Crime Report • Identified Attackers & Stolen Score',
+                          ml: 'പോലീസ് അന്വേഷണ റിപ്പോർട്ട് • Identified Attackers & Stolen Score',
+                          ta: 'காவல் அறிக்கை • அடையாளம் காணப்பட்ட தாக்குபவர்கள்',
+                          hi: 'पुलिस जांच रिपोर्ट • पहचाने गए हमलावर',
+                        ),
                         style: GoogleFonts.inter(
                           color: Colors.white70,
                           fontSize: 10.5,
@@ -3639,7 +3674,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          'ഇതുവരെ ആരും വീട് ആക്രമിച്ചിട്ടില്ല • കള്ളന്മാരുടെ വിവരങ്ങൾ ഇവിടെ കാണാം',
+                          PocketLanguageService.localize(
+                            en: 'No intrusions recorded yet • Attacker details will appear here',
+                            ml: 'ഇതുവരെ ആരും വീട് ആക്രമിച്ചിട്ടില്ല • കള്ളന്മാരുടെ വിവരങ്ങൾ ഇവിടെ കാണാം',
+                            ta: 'இதுவரை யாரும் வீட்டைத் தாக்கவில்லை • தாக்குபவர்களின் விவரங்கள் இங்கே தோன்றும்',
+                            hi: 'अभी तक किसी ने हमला नहीं किया • हमलावरों का विवरण यहाँ दिखेगा',
+                          ),
                           style: GoogleFonts.inter(
                               color: Colors.white54, fontSize: 10.5),
                           textAlign: TextAlign.center,
@@ -3743,7 +3783,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                                   width: 0.8),
                                             ),
                                             child: Text(
-                                              '🕵️‍♂️ കള്ളൻ',
+                                              PocketLanguageService.localize(
+                                                en: '🕵️‍♂️ Suspect',
+                                                ml: '🕵️‍♂️ കള്ളൻ',
+                                                ta: '🕵️‍♂️ சந்தேக நபர்',
+                                                hi: '🕵️‍♂️ संदिग्ध',
+                                              ),
                                               style: GoogleFonts.outfit(
                                                 color: const Color(0xFF93C5FD),
                                                 fontSize: 9,
@@ -4143,7 +4188,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       color: const Color(0xFFFFD700), width: 0.8),
                                 ),
                                 child: Text(
-                                  'ഫൈറ്റ് ഡെസ്ക്',
+                                  PocketLanguageService.localize(
+                                    en: 'Fight Desk',
+                                    ml: 'ഫൈറ്റ് ഡെസ്ക്',
+                                    ta: 'சண்டை மேசை',
+                                    hi: 'फाइट डेस्क',
+                                  ),
                                   style: GoogleFonts.outfit(
                                     color: const Color(0xFFFFD700),
                                     fontSize: 9.5,

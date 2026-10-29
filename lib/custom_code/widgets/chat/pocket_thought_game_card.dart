@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/pocket_language_service.dart';
 import 'pocket_reels_game_engine.dart';
 import '../learning_60day/pocket_fortress_defense_service.dart';
 
@@ -173,7 +174,8 @@ class _PocketThoughtGameCardState extends State<PocketThoughtGameCard> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      widget.card.getExplanation('Malayalam'),
+                      widget.card
+                          .getExplanation(PocketLanguageService.currentLanguage),
                       style: GoogleFonts.inter(
                         color: isDark ? Colors.white70 : Colors.black87,
                         fontSize: 11.5,

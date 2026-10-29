@@ -13,6 +13,8 @@ class DefenseGameTypeInfo {
   final String id;
   final String title;
   final String titleMl;
+  final String? titleTa;
+  final String? titleHi;
   final String icon;
   final String description;
 
@@ -20,9 +22,18 @@ class DefenseGameTypeInfo {
     required this.id,
     required this.title,
     required this.titleMl,
+    this.titleTa,
+    this.titleHi,
     required this.icon,
     required this.description,
   });
+
+  String get localizedTitle => PocketLanguageService.localize(
+        en: title,
+        ml: titleMl,
+        ta: titleTa ?? title,
+        hi: titleHi ?? title,
+      );
 }
 
 /// ⚔️ Pocket Citadel Challenge Generator
@@ -52,6 +63,8 @@ class PocketCitadelChallengeGenerator {
       id: 'sentence_builder',
       title: 'Sentence Builder',
       titleMl: 'വാക്യ നിർമ്മാണം (Step 2)',
+      titleTa: 'வாக்கிய உருவாக்கம் (படி 2)',
+      titleHi: 'वाक्य निर्माण (चरण 2)',
       icon: '🧩',
       description:
           'Arrange scrambled words into the correct grammatical sentence.',
@@ -60,6 +73,8 @@ class PocketCitadelChallengeGenerator {
       id: 'spelling_challenge',
       title: 'Word Spelling',
       titleMl: 'അക്ഷരവിന്യാസം (Step 3)',
+      titleTa: 'சொல் எழுத்துப்பிழை (படி 3)',
+      titleHi: 'शब्द वर्तनी (चरण 3)',
       icon: '🔤',
       description:
           'Assemble scrambled letters into letter slots to spell the word.',
@@ -68,6 +83,8 @@ class PocketCitadelChallengeGenerator {
       id: 'verb_timeline',
       title: 'Verb Timeline Arena',
       titleMl: 'ക്രിയാ കാലങ്ങൾ',
+      titleTa: 'வினை காலங்கள்',
+      titleHi: 'क्रिया काल',
       icon: '⏳',
       description: 'Slot the correct verb form into Past, Present, or Future.',
     ),
@@ -75,6 +92,8 @@ class PocketCitadelChallengeGenerator {
       id: 'tense_fortress',
       title: 'Tense Fortress',
       titleMl: 'കാല പരിവർത്തനം',
+      titleTa: 'கால மாற்றம்',
+      titleHi: 'काल परिवर्तन',
       icon: '⚡',
       description:
           'Master continuous, perfect, and simple tense transformations.',
@@ -83,6 +102,8 @@ class PocketCitadelChallengeGenerator {
       id: 'chat_reply',
       title: 'Chat Reply Builder',
       titleMl: 'ചാറ്റ് മറുപടി',
+      titleTa: 'அரட்டை பதில்',
+      titleHi: 'चैट उत्तर',
       icon: '💬',
       description:
           'Craft natural and polite English responses to incoming messages.',
@@ -91,6 +112,8 @@ class PocketCitadelChallengeGenerator {
       id: 'negative_sentence',
       title: 'Negative Builder',
       titleMl: 'നെഗറ്റീവ് വാക്യം',
+      titleTa: 'எதிர்மறை வாக்கியம்',
+      titleHi: 'नकारात्मक वाक्य',
       icon: '⛔',
       description:
           'Transform positive sentences into accurate negative structures.',
@@ -99,6 +122,8 @@ class PocketCitadelChallengeGenerator {
       id: 'spoken_whisper',
       title: 'Spoken Whisper',
       titleMl: 'ഉച്ചാരണ പരീക്ഷ',
+      titleTa: 'பேச்சுப் பயிற்சி',
+      titleHi: 'उच्चारण अभ्यास',
       icon: '🎙️',
       description:
           'Listen to spoken Indian English and solve the speech puzzle.',
@@ -107,6 +132,8 @@ class PocketCitadelChallengeGenerator {
       id: 'spot_error',
       title: 'Spot The Error',
       titleMl: 'തെറ്റ് കണ്ടെത്തൽ',
+      titleTa: 'பிழையைக் கண்டறிதல்',
+      titleHi: 'त्रुटि पहचान',
       icon: '💣',
       description:
           'Spot and defuse hidden grammatical errors by tapping the faulty block.',
@@ -115,6 +142,8 @@ class PocketCitadelChallengeGenerator {
       id: 'syntax_jigsaw',
       title: 'Syntax Jigsaw',
       titleMl: 'വാക്യഘടന പസിൽ',
+      titleTa: 'தொடரியல் புதிர்',
+      titleHi: 'वाक्य विन्यास पहेली',
       icon: '🧩',
       description:
           'Reassemble complex clauses and multi-word sentence connectors.',
@@ -136,6 +165,8 @@ class PocketCitadelChallengeGenerator {
         id: 'sentence_builder',
         title: 'Sentence Builder',
         titleMl: 'വാക്യ നിർമ്മാണം',
+        titleTa: 'வாக்கிய உருவாக்கம்',
+        titleHi: 'वाक्य निर्माण',
         icon: '🧩',
         description: 'Construct the target sentence.',
       );
@@ -354,36 +385,45 @@ class PocketCitadelChallengeGenerator {
     }
 
     final fallbacks = [
-      {'w': 'ALWAYS', 'm': 'എപ്പോഴും'},
-      {'w': 'BEFORE', 'm': 'മുമ്പ്'},
-      {'w': 'DOES', 'm': 'ചെയ്യുന്നു'},
-      {'w': 'FAST', 'm': 'വേഗതയുള്ള'},
-      {'w': 'FIRST', 'm': 'ആദ്യം'},
-      {'w': 'FIVE', 'm': 'അഞ്ച്'},
-      {'w': 'FOUND', 'm': 'കണ്ടെത്തി'},
-      {'w': 'GAVE', 'm': 'നൽകി'},
-      {'w': 'FRIEND', 'm': 'സുഹൃത്ത്'},
-      {'w': 'WATER', 'm': 'വെള്ളം'},
-      {'w': 'SCHOOL', 'm': 'സ്കൂൾ'},
-      {'w': 'FAMILY', 'm': 'കുടുംബം'},
-      {'w': 'HAPPY', 'm': 'സന്തോഷം'},
-      {'w': 'PEOPLE', 'm': 'ആളുകൾ'},
-      {'w': 'CONFIDENCE', 'm': 'ആത്മവിശ്വാസം'},
+      {'w': 'ALWAYS', 'en': 'at all times', 'ta': 'எப்போதும்', 'hi': 'हमेशा', 'ml': 'എപ്പോഴും'},
+      {'w': 'BEFORE', 'en': 'earlier', 'ta': 'முன்பு', 'hi': 'पहले', 'ml': 'മുമ്പ്'},
+      {'w': 'DOES', 'en': 'performs', 'ta': 'செய்கிறது', 'hi': 'करता है', 'ml': 'ചെയ്യുന്നു'},
+      {'w': 'FAST', 'en': 'quick', 'ta': 'வேகமாக', 'hi': 'तेज़', 'ml': 'വേഗതയുള്ള'},
+      {'w': 'FIRST', 'en': 'initial', 'ta': 'முதலில்', 'hi': 'पहला', 'ml': 'ആദ്യം'},
+      {'w': 'FIVE', 'en': 'number 5', 'ta': 'ஐந்து', 'hi': 'पाँच', 'ml': 'അഞ്ച്'},
+      {'w': 'FOUND', 'en': 'discovered', 'ta': 'கண்டுபிடித்தது', 'hi': 'पाया', 'ml': 'കണ്ടെത്തി'},
+      {'w': 'GAVE', 'en': 'provided', 'ta': 'கொடுத்தது', 'hi': 'दिया', 'ml': 'നൽകി'},
+      {'w': 'FRIEND', 'en': 'companion', 'ta': 'நண்பர்', 'hi': 'मित्र', 'ml': 'സുഹൃത്ത്'},
+      {'w': 'WATER', 'en': 'water', 'ta': 'தண்ணீர்', 'hi': 'पानी', 'ml': 'വെള്ളം'},
+      {'w': 'SCHOOL', 'en': 'school', 'ta': 'பள்ளி', 'hi': 'स्कूल', 'ml': 'സ്കൂൾ'},
+      {'w': 'FAMILY', 'en': 'family', 'ta': 'குடும்பம்', 'hi': 'परिवार', 'ml': 'കുടുംബം'},
+      {'w': 'HAPPY', 'en': 'joyful', 'ta': 'மகிழ்ச்சி', 'hi': 'खुश', 'ml': 'സന്തോഷം'},
+      {'w': 'PEOPLE', 'en': 'persons', 'ta': 'மக்கள்', 'hi': 'लोग', 'ml': 'ആളുകൾ'},
+      {'w': 'CONFIDENCE', 'en': 'self-assurance', 'ta': 'நம்பிக்கை', 'hi': 'आत्मविश्वास', 'ml': 'ആത്മവിശ്വാസം'},
     ];
 
     String targetWord;
-    String meaningMl;
+    String displayMeaning;
 
     if (pickedWord != null && (pickedWord.word as String).isNotEmpty) {
       targetWord = (pickedWord.word as String).trim().toUpperCase();
-      meaningMl = pickedWord.getMeaning(PocketLanguageService.currentLanguage);
-      if (meaningMl.isEmpty) {
-        meaningMl = pickedWord.meaningMl ?? '';
+      final langMeaning = pickedWord.getMeaning(PocketLanguageService.currentLanguage);
+      if (langMeaning.isNotEmpty && (!PocketLanguageService.isMalayalam ? !RegExp(r'[\u0D00-\u0D7F]').hasMatch(langMeaning) : true)) {
+        displayMeaning = langMeaning;
+      } else if (PocketLanguageService.isMalayalam) {
+        displayMeaning = pickedWord.meaningMl ?? targetWord;
+      } else {
+        displayMeaning = targetWord;
       }
     } else {
       final fb = fallbacks[(qNum + day) % fallbacks.length];
       targetWord = fb['w']!;
-      meaningMl = fb['m']!;
+      displayMeaning = PocketLanguageService.localize(
+        en: fb['en']!,
+        ml: fb['ml']!,
+        ta: fb['ta']!,
+        hi: fb['hi']!,
+      );
     }
 
     targetWord = targetWord.replaceAll(RegExp(r'[^A-Z]'), '');
@@ -404,10 +444,10 @@ class PocketCitadelChallengeGenerator {
       id: 'raid_gate_${qNum}_spelling_day$day',
       question:
           PocketLanguageService.localize(
-            en: '🔤 Day $day • Word Spelling Challenge:\nMeaning: "$meaningMl"\nArrange the letters to spell the word:',
-            ml: '🔤 Day $day • അക്ഷരവിന്യാസം:\nഅർത്ഥം: "$meaningMl"\nതാഴെയുള്ള അക്ഷരങ്ങൾ അടുക്കിവെച്ച് വാക്കിന്റെ സ്പെല്ലിംഗ് പൂർത്തിയാക്കുക:',
-            hi: '🔤 दिन $day • शब्द वर्तनी:\nअर्थ: "$meaningMl"\nअक्षरों को सही क्रम में लगाकर शब्द पूरा करें:',
-            ta: '🔤 நாள் $day • சொல் எழுத்துப்பிழை:\nபொருள்: "$meaningMl"\nஎழுத்துக்களை ஒழுங்குபடுத்தி சொல்லை முடிக்கவும்:',
+            en: '🔤 Day $day • Word Spelling Challenge:\nMeaning: "$displayMeaning"\nArrange the letters to spell the word:',
+            ml: '🔤 Day $day • അക്ഷരവിന്യാസം:\nഅർത്ഥം: "$displayMeaning"\nതാഴെയുള്ള അക്ഷരങ്ങൾ അടുക്കിവെച്ച് വാക്കിന്റെ സ്പെല്ലിംഗ് പൂർത്തിയാക്കുക:',
+            hi: '🔤 दिन $day • शब्द वर्तनी:\nअर्थ: "$displayMeaning"\nअक्षरों को सही क्रम में लगाकर शब्द पूरा करें:',
+            ta: '🔤 நாள் $day • சொல் எழுத்துப்பிழை:\nபொருள்: "$displayMeaning"\nஎழுத்துக்களை ஒழுங்குபடுத்தி சொல்லை முடிக்கவும்:',
           ),
       options: bankLetters,
       correctIndex: 0,
@@ -459,7 +499,9 @@ class PocketCitadelChallengeGenerator {
       ];
 
       final meaningStr = v.getLocalizedMeaning();
-      final displayMeaning = meaningStr.isNotEmpty ? meaningStr : v.meaningMl;
+      final displayMeaning = meaningStr.isNotEmpty
+          ? meaningStr
+          : (PocketLanguageService.isMalayalam ? v.meaningMl : v.baseVerb);
 
       return HouseShieldQuestion(
         id: 'raid_gate_${qNum}_verb_timeline_day$day',
@@ -483,7 +525,7 @@ class PocketCitadelChallengeGenerator {
 
     final scenarios = [
       {
-        'verb': 'WRITE • എഴുതുക',
+        'base': 'WRITE',
         'past': 'wrote',
         'present': 'writes',
         'future': 'will write',
@@ -493,7 +535,7 @@ class PocketCitadelChallengeGenerator {
         'idx': 0,
       },
       {
-        'verb': 'SPEAK • സംസാരിക്കുക',
+        'base': 'SPEAK',
         'past': 'spoke',
         'present': 'speaks',
         'future': 'will speak',
@@ -503,7 +545,7 @@ class PocketCitadelChallengeGenerator {
         'idx': 2,
       },
       {
-        'verb': 'BUILD • നിർമ്മിക്കുക',
+        'base': 'BUILD',
         'past': 'built',
         'present': 'builds',
         'future': 'will build',
@@ -515,19 +557,27 @@ class PocketCitadelChallengeGenerator {
     ];
 
     final sc = scenarios[qNum % scenarios.length];
+    final pastTag = PocketLanguageService.localize(en: 'PAST • Before', ml: 'PAST • കഴിഞ്ഞത്', hi: 'PAST • भूतकाल', ta: 'PAST • இறந்த காலம்');
+    final presTag = PocketLanguageService.localize(en: 'PRESENT • Now', ml: 'PRESENT • ഇപ്പോൾ', hi: 'PRESENT • वर्तमान', ta: 'PRESENT • நிகழ் காலம்');
+    final futTag = PocketLanguageService.localize(en: 'FUTURE • Next', ml: 'FUTURE • ഇനി', hi: 'FUTURE • भविष्य', ta: 'FUTURE • எதிர்காலம்');
+
     final options = [
-      '${sc['past']} (PAST • കഴിഞ്ഞത്)',
-      '${sc['present']} (PRESENT • ഇപ്പോൾ)',
-      '${sc['future']} (FUTURE • ഇനി)',
+      '${sc['past']} ($pastTag)',
+      '${sc['present']} ($presTag)',
+      '${sc['future']} ($futTag)',
     ];
 
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_verb_timeline_day$day',
-      question:
-          '⏳ Day $day • ക്രിയാ കാലം (${sc['targetTense']}):\n"${sc['sentence']}"\n(ക്രിയ: ${sc['verb']})',
+      question: PocketLanguageService.localize(
+        en: '⏳ Day $day • Verb Tense (${sc['targetTense']}):\n"${sc['sentence']}"\n(Verb: ${sc['base']})',
+        ml: '⏳ Day $day • ക്രിയാ കാലം (${sc['targetTense']}):\n"${sc['sentence']}"\n(ക്രിയ: ${sc['base']})',
+        ta: '⏳ நாள் $day • வினைச்சொல் காலம் (${sc['targetTense']}):\n"${sc['sentence']}"\n(வினை: ${sc['base']})',
+        hi: '⏳ दिन $day • क्रिया काल (${sc['targetTense']}):\n"${sc['sentence']}"\n(क्रिया: ${sc['base']})',
+      ),
       options: options,
       correctIndex: sc['idx'] as int,
-      explanation: 'ശരിയായ രൂപം: ${sc['correct']} (${sc['targetTense']})',
+      explanation: 'Correct: "${sc['correct']}" (${sc['targetTense']})',
       category: 'tense',
       trapType: 'tense_fortress',
       gameFormat: 'verb_timeline',
@@ -561,10 +611,10 @@ class PocketCitadelChallengeGenerator {
       id: 'raid_gate_${qNum}_chat_reply_day$day',
       question:
           PocketLanguageService.localize(
-            en: '💬 Day $day • Send Chat Reply:\nMessage: "$incoming"\n(Reply meaning: "$expectedMl")',
+            en: '💬 Day $day • Send Chat Reply:\nMessage: "$incoming"\nArrange the words to reply accurately:',
             ml: '💬 Day $day • ചാറ്റ് മറുപടി നൽകുക:\nമെസ്സേജ്: "$incoming"\n(മറുപടിയുടെ അർത്ഥം: "$expectedMl")',
-            hi: '💬 दिन $day • चैट उत्तर दें:\nसंदेश: "$incoming"\n(उत्तर का अर्थ: "$expectedMl")',
-            ta: '💬 நாள் $day • அரட்டை பதில் அனுப்பவும்:\nசெய்தி: "$incoming"\n(பதிலின் பொருள்: "$expectedMl")',
+            hi: '💬 दिन $day • चैट उत्तर दें:\nसंदेश: "$incoming"\nउचित उत्तर बनाने के लिए शब्दों को व्यवस्थित करें:',
+            ta: '💬 நாள் $day • அரட்டை பதில் அனுப்பவும்:\nசெய்தி: "$incoming"\nசரியான பதிலை அமைக்க சொற்களை ஒழுங்கமைக்கவும்:',
           ),
       options: scrambled,
       correctIndex: 0,
@@ -598,10 +648,10 @@ class PocketCitadelChallengeGenerator {
       id: 'raid_gate_${qNum}_negative_sentence_day$day',
       question:
           PocketLanguageService.localize(
-            en: '⛔ Day $day • Change into Negative Sentence:\n"$pos"\n(Meaning: "$negMl")',
+            en: '⛔ Day $day • Change into Negative Sentence:\nTransform: "$pos"',
             ml: '⛔ Day $day • നെഗറ്റീവ് വാക്യമാക്കുക:\n"$pos"\n(ലക്ഷ്യം: "$negMl")',
-            hi: '⛔ दिन $day • नकारात्मक वाक्य बनाएं:\n"$pos"\n(अर्थ: "$negMl")',
-            ta: '⛔ நாள் $day • எதிர்மறை வாக்கியமாக மாற்றவும்:\n"$pos"\n(பொருள்: "$negMl")',
+            hi: '⛔ दिन $day • नकारात्मक वाक्य बनाएं:\n"$pos"',
+            ta: '⛔ நாள் $day • எதிர்மறை வாக்கியமாக மாற்றவும்:\n"$pos"',
           ),
       options: scrambled,
       correctIndex: 0,
@@ -727,8 +777,12 @@ class PocketCitadelChallengeGenerator {
     final sc = errorScenarios[(qNum + day) % errorScenarios.length];
     return HouseShieldQuestion(
       id: 'raid_gate_${qNum}_spot_error_day$day',
-      question:
-          '💣 Day $day • തെറ്റ് കണ്ടെത്തുക (Spot the Error):\n"${sc['full']}"\nതെറ്റായ ഭാഗം ടാപ്പ് ചെയ്ത് ബോംബ് ഡിഫ്യൂസ് ചെയ്യുക:',
+      question: PocketLanguageService.localize(
+        en: '💣 Day $day • Spot the Error:\n"${sc['full']}"\nTap the faulty block to defuse the bomb:',
+        ml: '💣 Day $day • തെറ്റ് കണ്ടെത്തുക (Spot the Error):\n"${sc['full']}"\nതെറ്റായ ഭാഗം ടാപ്പ് ചെയ്ത് ബോംബ് ഡിഫ്യൂസ് ചെയ്യുക:',
+        ta: '💣 நாள் $day • பிழையைக் கண்டறியவும்:\n"${sc['full']}"\nதவறான பகுதியைத் தொட்டு குண்டை செயலிழக்கச் செய்யவும்:',
+        hi: '💣 दिन $day • त्रुटि पहचानें:\n"${sc['full']}"\nगलत भाग पर टैप करके बम निष्क्रिय करें:',
+      ),
       options: List<String>.from(sc['parts'] as List),
       correctIndex: sc['errIdx'] as int,
       explanation: sc['fix'] as String,

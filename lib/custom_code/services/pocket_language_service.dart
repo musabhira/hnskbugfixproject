@@ -17,18 +17,22 @@ class PocketLanguageService {
   static bool _initialized = false;
 
   /// Initialize and load saved language globally
-  static Future<String> init() async {
-    if (_initialized) return activeLanguageNotifier.value;
+  static Future<String> init({bool force = false, String? userId}) async {
+    if (_initialized && !force) return activeLanguageNotifier.value;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final currentUserId = SupaFlow.client.auth.currentUser?.id;
+      final currentUserId = userId ?? SupaFlow.client.auth.currentUser?.id;
 
-      String? savedLang = prefs.getString(kPrefNativeLang);
-      if (savedLang == null && currentUserId != null) {
+      String? savedLang;
+      // 1. Prioritize active user's specific saved language key
+      if (currentUserId != null && currentUserId.isNotEmpty) {
         savedLang = prefs.getString('pm_native_language_$currentUserId');
       }
+      // 2. Global saved keys
+      savedLang ??= prefs.getString(kPrefNativeLang);
       savedLang ??= prefs.getString(kPrefMissionLang);
       savedLang ??= prefs.getString('preferred_language');
+      savedLang ??= prefs.getString('selected_native_language');
 
       if (savedLang != null && savedLang.isNotEmpty) {
         activeLanguageNotifier.value = _normalizeLanguage(savedLang);
@@ -41,6 +45,15 @@ class PocketLanguageService {
       debugPrint('PocketLanguageService init error: $e');
     }
     return activeLanguageNotifier.value;
+  }
+
+  /// Sync language directly from fetched Supabase user profile
+  static Future<void> syncWithUserProfile(Map<String, dynamic>? profile, {String? userId}) async {
+    if (profile == null) return;
+    final lang = profile['native_language']?.toString();
+    if (lang != null && lang.trim().isNotEmpty) {
+      await setNativeLanguage(lang, userId: userId);
+    }
   }
 
   /// Universal Multi-Language Text Resolver
@@ -812,5 +825,156 @@ class PocketLanguageService {
         };
     }
   }
+
+  /// 📖 Vocabulary Meaning Resolver
+  /// Translates common English words to Tamil, Hindi, or Malayalam dynamically.
+  /// Guarantees that Tamil users NEVER see fallback Malayalam words like "വെള്ളം"!
+  static String getVocabMeaning(dynamic itemOrWord, {String? defaultFallback}) {
+    final lang = currentLanguage.toLowerCase();
+    String wordKey = '';
+    if (itemOrWord is Map) {
+      wordKey = (itemOrWord['word'] ?? '').toString().trim().toLowerCase();
+    } else if (itemOrWord != null) {
+      wordKey = itemOrWord.toString().trim().toLowerCase();
+    }
+    wordKey = wordKey.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+
+    if (_vocabDict.containsKey(wordKey)) {
+      final entry = _vocabDict[wordKey]!;
+      if (lang == 'tamil' && entry.containsKey('ta')) return entry['ta']!;
+      if (lang == 'hindi' && entry.containsKey('hi')) return entry['hi']!;
+      if (lang == 'malayalam' && entry.containsKey('ml')) return entry['ml']!;
+      if (lang == 'english') return wordKey;
+    }
+
+    if (lang == 'malayalam') {
+      if (itemOrWord is Map && itemOrWord['meaning'] != null) {
+        return itemOrWord['meaning'].toString();
+      }
+      return defaultFallback ?? (wordKey.isNotEmpty ? wordKey : 'വാക്ക്');
+    }
+
+    if (lang == 'tamil') {
+      if (wordKey.isNotEmpty) return wordKey;
+      return defaultFallback != null && !RegExp(r'[\u0D00-\u0D7F]').hasMatch(defaultFallback)
+          ? defaultFallback
+          : 'சொல்';
+    }
+
+    return wordKey.isNotEmpty ? wordKey : (defaultFallback ?? '');
+  }
+
+  static const Map<String, Map<String, String>> _vocabDict = {
+    'water': {'ta': 'தண்ணீர்', 'hi': 'पानी', 'ml': 'വെള്ളം'},
+    'food': {'ta': 'உணவு', 'hi': 'खाना', 'ml': 'ഭക്ഷണം'},
+    'book': {'ta': 'புத்தகம்', 'hi': 'किताब', 'ml': 'പുസ്തകം'},
+    'pen': {'ta': 'பேனா', 'hi': 'कलम', 'ml': 'പേന'},
+    'paper': {'ta': 'காகிதம்', 'hi': 'कागज़', 'ml': 'കടലാസ്'},
+    'bag': {'ta': 'பை', 'hi': 'बस्ता', 'ml': 'ബാഗ് / സഞ്ചി'},
+    'chair': {'ta': 'நாற்காலி', 'hi': 'कुर्सी', 'ml': 'കസേര'},
+    'table': {'ta': 'மேசை', 'hi': 'मेज़', 'ml': 'മേശ'},
+    'bed': {'ta': 'படுக்கை', 'hi': 'बिस्तर', 'ml': 'കിടക്ക'},
+    'door': {'ta': 'கதவு', 'hi': 'दरवाज़ा', 'ml': 'വാതിൽ'},
+    'window': {'ta': 'ஜன்னல்', 'hi': 'खिड़की', 'ml': 'ജനൽ'},
+    'phone': {'ta': 'தொலைபேசி', 'hi': 'फ़ोन', 'ml': 'ഫോൺ'},
+    'key': {'ta': 'சாவி', 'hi': 'चाबी', 'ml': 'താക്കോൽ'},
+    'clock': {'ta': 'கடிகாரம்', 'hi': 'घड़ी', 'ml': 'ഘടികാരം'},
+    'cup': {'ta': 'கோப்பை', 'hi': 'प्याला', 'ml': 'കപ്പ്'},
+    'plate': {'ta': 'தட்டு', 'hi': 'थाली', 'ml': 'തളിക / പ്ലേറ്റ്'},
+    'spoon': {'ta': 'கரண்டி', 'hi': 'चम्मच', 'ml': 'സ്പൂൺ'},
+    'glass': {'ta': 'டம்ளர்', 'hi': 'गिलास', 'ml': 'ഗ്ലാസ്'},
+    'bottle': {'ta': 'பாட்டில்', 'hi': 'बोतल', 'ml': 'കുപ്പി'},
+    'box': {'ta': 'பெட்டி', 'hi': 'डिब्बा', 'ml': 'പെട്ടി'},
+    'light': {'ta': 'வெளிச்சம்', 'hi': 'रोशनी', 'ml': 'വെളിച്ചം'},
+    'fan': {'ta': 'மின்விசிறி', 'hi': 'पंखा', 'ml': 'ഫാൻ'},
+    'mirror': {'ta': 'கண்ணாடி', 'hi': 'आईना', 'ml': 'കണ്ണാടി'},
+    'shoes': {'ta': 'காலணி', 'hi': 'जूते', 'ml': 'ഷൂസ്'},
+    'shirt': {'ta': 'சட்டை', 'hi': 'कमीज़', 'ml': 'കുപ്പായം'},
+    'pants': {'ta': 'கால்சட்டை', 'hi': 'पतलून', 'ml': 'പാന്റ്സ്'},
+    'hat': {'ta': 'தொப்பி', 'hi': 'टोपी', 'ml': 'തൊപ്പി'},
+    'watch': {'ta': 'கைக்கடிகாரம்', 'hi': 'घड़ी', 'ml': 'വാച്ച്'},
+    'ring': {'ta': 'மோதிரம்', 'hi': 'अंगूठी', 'ml': 'മോതിരം'},
+    'car': {'ta': 'மகிழுந்து', 'hi': 'गाड़ी', 'ml': 'കാർ'},
+    'bus': {'ta': 'பேருந்து', 'hi': 'बस', 'ml': 'ബസ്'},
+    'train': {'ta': 'ரயில்', 'hi': 'रेलगाड़ी', 'ml': 'തീവണ്ടി'},
+    'road': {'ta': 'சாலை', 'hi': 'सड़क', 'ml': 'വഴി / റോഡ്'},
+    'bridge': {'ta': 'பாலம்', 'hi': 'पुल', 'ml': 'പാലം'},
+    'school': {'ta': 'பள்ளி', 'hi': 'स्कूल', 'ml': 'സ്കൂൾ'},
+    'college': {'ta': 'கல்லூரி', 'hi': 'कॉलेज', 'ml': 'കോളേജ്'},
+    'office': {'ta': 'அலுவலகம்', 'hi': 'कार्यालय', 'ml': 'ഓഫീസ്'},
+    'market': {'ta': 'சந்தை', 'hi': 'बाज़ार', 'ml': 'മാർക്കറ്റ്'},
+    'hospital': {'ta': 'மருத்துவமனை', 'hi': 'अस्पताल', 'ml': 'ആശുപത്രി'},
+    'bank': {'ta': 'வங்கி', 'hi': 'बैंक', 'ml': 'ബാങ്ക്'},
+    'park': {'ta': 'பூங்கா', 'hi': 'बगीचा', 'ml': 'പാർക്ക്'},
+    'tree': {'ta': 'மரம்', 'hi': 'पेड़', 'ml': 'മരം'},
+    'flower': {'ta': 'பூ', 'hi': 'फूल', 'ml': 'പൂവ്'},
+    'sun': {'ta': 'சூரியன்', 'hi': 'सूरज', 'ml': 'സൂര്യൻ'},
+    'moon': {'ta': 'நிலவு', 'hi': 'चाँद', 'ml': 'ചന്ദ്രൻ'},
+    'star': {'ta': 'நட்சத்திரம்', 'hi': 'तारा', 'ml': 'നക്ഷത്രം'},
+    'sky': {'ta': 'வானம்', 'hi': 'आसमान', 'ml': 'ആകാശം'},
+    'rain': {'ta': 'மழை', 'hi': 'बारिश', 'ml': 'മഴ'},
+    'wind': {'ta': 'காற்று', 'hi': 'हवा', 'ml': 'കാറ്റ്'},
+    'dog': {'ta': 'நாய்', 'hi': 'कुत्ता', 'ml': 'നായ'},
+    'cat': {'ta': 'பூனை', 'hi': 'बिल्ली', 'ml': 'പൂച്ച'},
+    'bird': {'ta': 'பறவை', 'hi': 'चिड़िया', 'ml': 'പക്ഷി'},
+    'fish': {'ta': 'மீன்', 'hi': 'मछली', 'ml': 'മീൻ'},
+    'cow': {'ta': 'பசு', 'hi': 'गाय', 'ml': 'പശു'},
+    'milk': {'ta': 'பால்', 'hi': 'दूध', 'ml': 'പാൽ'},
+    'tea': {'ta': 'தேநீர்', 'hi': 'चाय', 'ml': 'ചായ'},
+    'coffee': {'ta': 'காபி', 'hi': 'कॉफ़ी', 'ml': 'കാപ്പി'},
+    'bread': {'ta': 'ரொட்டி', 'hi': 'रोटी', 'ml': 'ബ്രെഡ്'},
+    'rice': {'ta': 'சாதம்', 'hi': 'चावल', 'ml': 'അരി / ചോറ്'},
+    'apple': {'ta': 'ஆப்பிள்', 'hi': 'सेब', 'ml': 'ആപ്പിൾ'},
+    'mango': {'ta': 'மாம்பழம்', 'hi': 'आम', 'ml': 'മാമ്പഴം'},
+    'banana': {'ta': 'வாழைப்பழம்', 'hi': 'केला', 'ml': 'വാഴപ്പഴം'},
+    'orange': {'ta': 'ஆரஞ்சு', 'hi': 'संतरा', 'ml': 'ഓറഞ്ച്'},
+    'egg': {'ta': 'முட்டை', 'hi': 'अंडा', 'ml': 'മുട്ട'},
+    'salt': {'ta': 'உப்பு', 'hi': 'नमक', 'ml': 'ഉപ്പ്'},
+    'sugar': {'ta': 'சர்க்கரை', 'hi': 'चीनी', 'ml': 'പഞ്ചസാര'},
+    'oil': {'ta': 'எண்ணெய்', 'hi': 'तेल', 'ml': 'എണ്ണ'},
+    'soap': {'ta': 'சோப்பு', 'hi': 'साबुन', 'ml': 'സോപ്പ്'},
+    'towel': {'ta': 'துண்டு', 'hi': 'तौलिया', 'ml': 'തോർത്ത്'},
+    'clean': {'ta': 'சுத்தம்', 'hi': 'साफ़', 'ml': 'വൃത്തിയുള്ള'},
+    'wash': {'ta': 'கழுவுதல்', 'hi': 'धोना', 'ml': 'കഴുകുക'},
+    'sleep': {'ta': 'தூங்குதல்', 'hi': 'सोना', 'ml': 'ഉറങ്ങുക'},
+    'wake': {'ta': 'எழுந்திருத்தல்', 'hi': 'जागना', 'ml': 'ഉണരുക'},
+    'eat': {'ta': 'சாப்பிடுதல்', 'hi': 'खाना', 'ml': 'കഴിക്കുക'},
+    'drink': {'ta': 'குடித்தல்', 'hi': 'पीना', 'ml': 'കുടിക്കുക'},
+    'read': {'ta': 'படித்தல்', 'hi': 'पढ़ना', 'ml': 'വായിക്കുക'},
+    'write': {'ta': 'எழுதுதல்', 'hi': 'लिखना', 'ml': 'എഴുതുക'},
+    'speak': {'ta': 'பேசுதல்', 'hi': 'बोलना', 'ml': 'സംസാരിക്കുക'},
+    'listen': {'ta': 'கேட்டல்', 'hi': 'सुनना', 'ml': 'കേൾക്കുക'},
+    'walk': {'ta': 'நடத்தல்', 'hi': 'चलना', 'ml': 'നടക്കുക'},
+    'run': {'ta': 'ஓடுதல்', 'hi': 'दौड़ना', 'ml': 'ഓടുക'},
+    'sit': {'ta': 'உட்காருதல்', 'hi': 'बैठना', 'ml': 'ഇരിക്കുക'},
+    'stand': {'ta': 'நிற்றல்', 'hi': 'खड़े होना', 'ml': 'നിൽക്കുക'},
+    'play': {'ta': 'விளையாடுதல்', 'hi': 'खेलना', 'ml': 'കളിക്കുക'},
+    'learn': {'ta': 'கற்றுக்கொள்ளுதல்', 'hi': 'सीखना', 'ml': 'പഠിക്കുക'},
+    'work': {'ta': 'வேலை செய்தல்', 'hi': 'काम करना', 'ml': 'ജോലി ചെയ്യുക'},
+    'help': {'ta': 'உதவுதல்', 'hi': 'मदद करना', 'ml': 'സഹായിക്കുക'},
+    'happy': {'ta': 'மகிழ்ச்சி', 'hi': 'खुश', 'ml': 'സന്തോഷം'},
+    'sad': {'ta': 'சோகம்', 'hi': 'उदास', 'ml': 'വിഷമം'},
+    'fast': {'ta': 'வேகமாக', 'hi': 'तेज़', 'ml': 'വേഗതയുള്ള'},
+    'slow': {'ta': 'மெதுவாக', 'hi': 'धीमा', 'ml': 'പതുക്കെ'},
+    'first': {'ta': 'முதலில்', 'hi': 'पहला', 'ml': 'ആദ്യം'},
+    'last': {'ta': 'கடைசி', 'hi': 'आखिरी', 'ml': 'അവസാനം'},
+    'today': {'ta': 'இன்று', 'hi': 'आज', 'ml': 'ഇന്ന്'},
+    'tomorrow': {'ta': 'நாளை', 'hi': 'कल', 'ml': 'നാളെ'},
+    'yesterday': {'ta': 'நேற்று', 'hi': 'कल (बीता)', 'ml': 'ഇന്നലെ'},
+    'morning': {'ta': 'காலை', 'hi': 'सुबह', 'ml': 'രാവിലെ'},
+    'night': {'ta': 'இரவு', 'hi': 'रात', 'ml': 'രാത്രി'},
+    'friend': {'ta': 'நண்பர்', 'hi': 'दोस्त', 'ml': 'സുഹൃത്ത്'},
+    'family': {'ta': 'குடும்பம்', 'hi': 'परिवार', 'ml': 'കുടുംബം'},
+    'mother': {'ta': 'அம்மா', 'hi': 'माँ', 'ml': 'അമ്മ'},
+    'father': {'ta': 'அப்பா', 'hi': 'पिता', 'ml': 'അച്ഛൻ'},
+    'brother': {'ta': 'சகோதரன்', 'hi': 'भाई', 'ml': 'സഹോദരൻ'},
+    'sister': {'ta': 'சகோதரி', 'hi': 'बहन', 'ml': 'സഹോദരി'},
+    'doctor': {'ta': 'மருத்துவர்', 'hi': 'डॉक्टर', 'ml': 'ഡോക്ടർ'},
+    'teacher': {'ta': 'ஆசிரியர்', 'hi': 'शिक्षक', 'ml': 'അധ്യാപകൻ'},
+    'money': {'ta': 'பணம்', 'hi': 'पैसे', 'ml': 'പണം'},
+    'house': {'ta': 'வீடு', 'hi': 'घर', 'ml': 'വീട്'},
+    'time': {'ta': 'நேரம்', 'hi': 'समय', 'ml': 'സമയം'},
+    'day': {'ta': 'நாள்', 'hi': 'दिन', 'ml': 'ദിവസം'},
+  };
 }
 
