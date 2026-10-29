@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_auth_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 
 /// 🧸 Dedicated Kids Account & Profile Creation Onboarding Page
 /// 100% separate from Adult Onboarding, filled with high-energy cartoon magic!
@@ -112,13 +115,24 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
         ? _nameController.text.trim()
         : 'Little Hero';
 
+    final user = SupaFlow.client.auth.currentUser;
+    final isParentSwitched = user != null;
+
+    await PocketKidsService.activateKidAccount(
+      name: name,
+      ageGroup: _selectedAgeGroup,
+      avatar: _selectedAvatar,
+      isParentSwitched: isParentSwitched,
+      isPureKid: !isParentSwitched,
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pm_kid_house', _selectedHouse);
+    } catch (_) {}
+
     if (mounted) {
-      PocketKidsAuthPage.launch(
-        context,
-        kidName: name,
-        ageGroup: _selectedAgeGroup,
-        avatar: _selectedAvatar,
-      );
+      PocketPureKidsHomePage.launch(context);
     }
   }
 

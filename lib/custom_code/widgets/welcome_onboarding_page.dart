@@ -1343,6 +1343,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           await prefs.setString(
               'saved_pm_password_${cleanEmail.toLowerCase()}', rawPassword);
 
+          // Restore paired kid profile progress from parent's cloud account
+          await PocketKidsService.loadKidProgressFromParentCloud();
+
           final isStudent = await PocketKidsService.syncAndVerifyUserAccountType(user.uid ?? '');
           if (isStudent && mounted) {
             setState(() {

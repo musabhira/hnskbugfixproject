@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_home_visit_modal.dart';
+import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_global_rank_list_view.dart';
@@ -377,10 +378,17 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     if (unlocked) {
       await PocketKidsService.activateAdultAccount();
       if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomePageWidget()),
-          (route) => false,
-        );
+        if (SupaFlow.client.auth.currentUser != null) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomePageWidget()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AuthPageWidget()),
+            (route) => false,
+          );
+        }
       }
     }
   }

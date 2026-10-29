@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manage
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_notifications_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
@@ -3126,10 +3127,17 @@ class _KidsChatHeaderDelegate extends SliverPersistentHeaderDelegate {
     if (unlocked) {
       await PocketKidsService.activateAdultAccount();
       if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          material.MaterialPageRoute(builder: (_) => const HomePageWidget()),
-          (route) => false,
-        );
+        if (SupaFlow.client.auth.currentUser != null) {
+          Navigator.of(context).pushAndRemoveUntil(
+            material.MaterialPageRoute(builder: (_) => const HomePageWidget()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            material.MaterialPageRoute(builder: (_) => const AuthPageWidget()),
+            (route) => false,
+          );
+        }
       }
     }
   }

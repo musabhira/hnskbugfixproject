@@ -783,7 +783,7 @@ class PocketKidsService {
           final res = await SupaFlow.client
               .from('profile')
               .select('is_premium, gender')
-              .eq('id', uid)
+              .eq('user_id', uid)
               .maybeSingle();
           if (res != null) {
             if (res['is_premium'] == true) {
@@ -801,6 +801,8 @@ class PocketKidsService {
               await prefs.setString(_keyKidGender, _kidGender);
             }
           }
+          // Restore paired kid profile from parent's cloud account
+          await loadKidProgressFromParentCloud();
         }
       } catch (_) {}
 
@@ -940,18 +942,12 @@ class PocketKidsService {
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
+        await prefs.setString('pm_parent_user_id', user.id);
+        if (user.email != null) {
+          await prefs.setString('pm_parent_user_email', user.email!);
+        }
         await prefs.setBool('is_kid_account_${user.id}', true);
-        await SupaFlow.client
-            .from('profile')
-            .update({
-              'account_type': _isPureKidAccount ? 'pure_kid' : 'kid',
-              'kid_name': _kidName,
-              'kid_age_group': _kidAgeGroup,
-              'gender': _kidGender,
-              'kid_avatar': _kidAvatar,
-            })
-            .eq('user_id', user.id)
-            .catchError((_) {});
+        await syncKidProgressToParentCloud();
       }
     } catch (e) {
       debugPrint('PocketKidsService: Error activating kid account: $e');
@@ -1037,6 +1033,117 @@ class PocketKidsService {
     } catch (_) {}
   }
 
+  /// ☁️ Sync Kid Progress & Stats with Parent's Supabase Profile (Cloud Pairing)
+  static Future<void> syncKidProgressToParentCloud() async {
+    try {
+      final user = SupaFlow.client.auth.currentUser;
+      if (user == null) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final house = prefs.getString('pm_kid_house') ?? 'Rainbow Treehouse';
+
+      final kidPayload = {
+        'kid_name': _kidName,
+        'kid_age_group': _kidAgeGroup,
+        'kid_gender': _kidGender,
+        'kid_avatar': _kidAvatar,
+        'kid_house': house,
+        'kid_stars': _kidStars,
+        'kids_score': _kidsScore,
+        'current_unlocked_day': _currentUnlockedDay,
+        'completed_days': _completedDays.map((k, v) => MapEntry(k.toString(), v)),
+        'last_completed_day': _lastCompletedDay,
+        'last_completed_date': _lastCompletedDate,
+        'parent_user_id': user.id,
+        'synced_at': DateTime.now().toIso8601String(),
+      };
+
+      await SupaFlow.client.from('profile').update({
+        'kid_profile': kidPayload,
+        'gender': _kidGender,
+      }).eq('user_id', user.id).catchError((e) {
+        debugPrint('PocketKidsService: Cloud sync kid_profile error: $e');
+      });
+    } catch (e) {
+      debugPrint('PocketKidsService: Cloud sync kid_profile exception: $e');
+    }
+  }
+
+  /// ☁️ Restore Kid Progress from Parent's Supabase Profile upon Login / Startup
+  static Future<void> loadKidProgressFromParentCloud() async {
+    try {
+      final user = SupaFlow.client.auth.currentUser;
+      if (user == null) return;
+
+      final res = await SupaFlow.client
+          .from('profile')
+          .select('kid_profile')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (res != null && res['kid_profile'] != null && res['kid_profile'] is Map) {
+        final kp = Map<String, dynamic>.from(res['kid_profile'] as Map);
+        final prefs = await SharedPreferences.getInstance();
+
+        if (kp['kid_name'] != null && kp['kid_name'].toString().trim().isNotEmpty) {
+          _kidName = kp['kid_name'].toString().trim();
+          await prefs.setString(_keyKidName, _kidName);
+        }
+        if (kp['kid_age_group'] != null) {
+          _kidAgeGroup = kp['kid_age_group'].toString();
+          await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
+        }
+        if (kp['kid_gender'] != null) {
+          _kidGender = kp['kid_gender'].toString();
+          await prefs.setString(_keyKidGender, _kidGender);
+        }
+        if (kp['kid_avatar'] != null) {
+          _kidAvatar = kp['kid_avatar'].toString();
+          await prefs.setString(_keyKidAvatar, _kidAvatar);
+        }
+        if (kp['kid_house'] != null) {
+          await prefs.setString('pm_kid_house', kp['kid_house'].toString());
+        }
+        if (kp['kid_stars'] is int) {
+          _kidStars = kp['kid_stars'] as int;
+          kidStarsNotifier.value = _kidStars;
+          await prefs.setInt(_keyKidStars, _kidStars);
+        }
+        if (kp['kids_score'] is int) {
+          _kidsScore = kp['kids_score'] as int;
+          kidsScoreNotifier.value = _kidsScore;
+          await prefs.setInt(_keyKidsScore, _kidsScore);
+        }
+        if (kp['current_unlocked_day'] is int) {
+          _currentUnlockedDay = kp['current_unlocked_day'] as int;
+          kidDayNotifier.value = _currentUnlockedDay;
+          await prefs.setInt(_keyKidCurrentDay, _currentUnlockedDay);
+        }
+        if (kp['completed_days'] is Map) {
+          final cd = kp['completed_days'] as Map;
+          _completedDays.clear();
+          cd.forEach((k, v) {
+            final day = int.tryParse(k.toString());
+            final stars = v is int ? v : 3;
+            if (day != null) _completedDays[day] = stars;
+          });
+          final jsonMap = _completedDays.map((k, v) => MapEntry(k.toString(), v));
+          await prefs.setString(_keyKidCompletedDays, jsonEncode(jsonMap));
+        }
+        if (kp['last_completed_day'] is int) {
+          _lastCompletedDay = kp['last_completed_day'] as int;
+          await prefs.setInt(_keyKidLastCompletedDay, _lastCompletedDay!);
+        }
+        if (kp['last_completed_date'] != null) {
+          _lastCompletedDate = kp['last_completed_date'].toString();
+          await prefs.setString(_keyKidLastCompletedDate, _lastCompletedDate!);
+        }
+      }
+    } catch (e) {
+      debugPrint('PocketKidsService: Load kid_profile exception: $e');
+    }
+  }
+
   /// Save updated Kid Profile details (name, avatar & gender)
   static Future<void> saveKidProfile({
     required String name,
@@ -1059,15 +1166,7 @@ class PocketKidsService {
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
-        await SupaFlow.client
-            .from('profile')
-            .update({
-              'kid_name': _kidName,
-              'kid_avatar': _kidAvatar,
-              'gender': _kidGender,
-            })
-            .eq('user_id', user.id)
-            .catchError((_) {});
+        await syncKidProgressToParentCloud();
       }
     } catch (e) {
       debugPrint('PocketKidsService: Error saving kid profile: $e');
@@ -1084,6 +1183,9 @@ class PocketKidsService {
 
   /// Activate Adult Account Mode
   static Future<void> activateAdultAccount() async {
+    // 1. Sync any earned kid stats to cloud before returning to adult mode
+    await syncKidProgressToParentCloud();
+
     _isKidAccount = false;
     _isParentSwitched = false;
     _currentWorldMode = AppWorldMode.adult;
@@ -1120,6 +1222,7 @@ class PocketKidsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_keyKidStars, _kidStars);
     } catch (_) {}
+    syncKidProgressToParentCloud();
   }
 
   /// Alias for addStars
@@ -1146,6 +1249,7 @@ class PocketKidsService {
       final jsonMap = _completedDays.map((k, v) => MapEntry(k.toString(), v));
       await prefs.setString(_keyKidCompletedDays, jsonEncode(jsonMap));
     } catch (_) {}
+    syncKidProgressToParentCloud();
   }
 
   /// Mark day as completed helper

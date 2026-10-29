@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
@@ -187,10 +189,17 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
     if (unlocked && mounted) {
       await PocketKidsService.activateAdultAccount();
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomePageWidget()),
-          (route) => false,
-        );
+        if (SupaFlow.client.auth.currentUser != null) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomePageWidget()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AuthPageWidget()),
+            (route) => false,
+          );
+        }
       }
     }
   }

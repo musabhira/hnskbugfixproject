@@ -7,6 +7,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🌐 Modal Dialog for seamlessly selecting between Kids World (KS), Student World (SS), and Adult Mode (PS)
@@ -309,11 +311,19 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                     Navigator.pop(context);
                     await PocketKidsService.activateAdultAccount();
                     if (context.mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                            builder: (_) => const HomePageWidget()),
-                        (route) => false,
-                      );
+                      if (SupaFlow.client.auth.currentUser != null) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (_) => const HomePageWidget()),
+                          (route) => false,
+                        );
+                      } else {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (_) => const AuthPageWidget()),
+                          (route) => false,
+                        );
+                      }
                     }
                   }
                 },
