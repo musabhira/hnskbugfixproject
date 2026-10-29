@@ -236,6 +236,24 @@ class MyAppState extends State<MyApp> {
         _appStateNotifier.stopShowingSplashImage();
       });
     jwtTokenStream.listen((_) {});
+
+    // Listen for global language changes from Settings, Dialogs, etc.
+    PocketLanguageService.activeLanguageNotifier.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() {
+    debugPrint('Main: Active language changed globally to: ${PocketLanguageService.currentLanguage}. Rebuilding UI tree.');
+    if (mounted) {
+      safeSetState(() {
+        _key = UniqueKey();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    PocketLanguageService.activeLanguageNotifier.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {

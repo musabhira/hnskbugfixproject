@@ -1,3 +1,4 @@
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_master_curriculum_phase1.dart';
 import 'pocket_master_curriculum_phase2.dart';
@@ -13,6 +14,8 @@ class CurriculumVocabItem {
   final String partOfSpeech;
   final String meaningEn;
   final String meaningMl;
+  final String meaningTa;
+  final String meaningHi;
   final String exampleEn;
   final String exampleMl;
 
@@ -22,9 +25,26 @@ class CurriculumVocabItem {
     required this.partOfSpeech,
     required this.meaningEn,
     required this.meaningMl,
+    this.meaningTa = '',
+    this.meaningHi = '',
     required this.exampleEn,
     this.exampleMl = '',
   });
+
+  String get localizedMeaning {
+    if (PocketLanguageService.isMalayalam && meaningMl.isNotEmpty) return meaningMl;
+    if (PocketLanguageService.isTamil) {
+      if (meaningTa.isNotEmpty) return meaningTa;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
+    }
+    if (PocketLanguageService.isHindi) {
+      if (meaningHi.isNotEmpty) return meaningHi;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
+    }
+    return meaningEn.isNotEmpty ? meaningEn : word;
+  }
 }
 
 class MasterCurriculumDay {

@@ -734,6 +734,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         }
       }
 
+      if (profileResponse != null) {
+        await PocketLanguageService.syncWithUserProfile(profileResponse, userId: userId);
+      }
+
       safeSetState(() {
         _preloadedProfile = profileResponse;
         profileId = profileResponse?['id']?.toString() ?? userId;

@@ -4156,7 +4156,12 @@ class _PocketDay1InteractiveFlowPageState
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം സ്വകാര്യമായി പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!',
+                  PocketLanguageService.localize(
+                    en: 'Practice simple words privately with your AI robot tutor. No one will judge, speak without fear!',
+                    ml: 'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം സ്വകാര്യമായി പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!',
+                    ta: 'ரோபோ துணையுடன் எளிய வார்த்தைகளை தனிப்பட்ட முறையில் பேசிப் பழகுங்கள். பயமின்றி பேசலாம்!',
+                    hi: 'रोबोट ट्यूटर के साथ निजी तौर पर सरल शब्दों का अभ्यास करें। बिना किसी डर के बोलें!',
+                  ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
                 ),
@@ -4272,9 +4277,12 @@ class _PocketDay1InteractiveFlowPageState
               ),
               const SizedBox(height: 6),
               Text(
-                _nativeLanguage == 'Malayalam'
-                    ? 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് നിങ്ങളുടെ സ്പോക്കൺ ഇംഗ്ലീഷ് പാർട്ണറെ കണ്ടെത്തുക! 4-ദിവസത്തെ സംസാര പാക്ട് റിക്വസ്റ്റ് അയക്കുക.'
-                    : 'Swipe through learner cards and send a 4-Day Spoken English Pact request to find your dedicated practice buddy!',
+                PocketLanguageService.localize(
+                  en: 'Swipe through learner cards and send a 4-Day Spoken English Pact request to find your dedicated practice buddy!',
+                  ml: 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് നിങ്ങളുടെ സ്പോക്കൺ ഇംഗ്ലീഷ് പാർട്ണറെ കണ്ടെത്തുക! 4-ദിവസത്തെ സംസാര പാക്ട് റിക്വസ്റ്റ് അയക്കുക.',
+                  ta: 'அட்டைகளை ஸ்வைப் செய்து உங்கள் பேசும் ஆங்கில துணையை கண்டறியவும்! 4 நாள் பேச்சு ஒப்பந்த கோரிக்கையை அனுப்பவும்.',
+                  hi: 'कार्ड स्वाइप करके अपना स्पोकन इंग्लिश पार्टनर खोजें! 4-दिवसीय स्पीकिंग पैक्ट का अनुरोध भेजें।',
+                ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
               ),
@@ -4348,9 +4356,12 @@ class _PocketDay1InteractiveFlowPageState
               ),
               const SizedBox(height: 4),
               Text(
-                _nativeLanguage == 'Malayalam'
-                    ? 'കാർഡുകൾ തിരിച്ചു കാണിച്ച് ഒരേ വാക്കുകൾ ജോടിയാക്കുക! ഭയമില്ലാതെ സുരക്ഷിതമായി പരിശീലിക്കാം.'
-                    : 'Tap cards to find matching pairs and hear pronunciations in a friendly, private game!',
+                PocketLanguageService.localize(
+                  en: 'Tap cards to find matching pairs and hear pronunciations in a friendly, private game!',
+                  ml: 'കാർഡുകൾ തിരിച്ചു കാണിച്ച് ഒരേ വാക്കുകൾ ജോടിയാക്കുക! ഭയമില്ലാതെ സുരക്ഷിതമായി പരിശീലിക്കാം.',
+                  ta: 'அட்டைகளைத் திருப்பி ஒரே மாதிரியான வார்த்தைகளை இணையுங்கள்! பயமின்றி எளிதாகப் பயிலலாம்.',
+                  hi: 'कार्ड पलटकर समान शब्दों का मिलान करें! बिना किसी झिझक के आसानी से अभ्यास करें।',
+                ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
               ),
@@ -4584,7 +4595,6 @@ class _PocketDay1InteractiveFlowPageState
   Widget _buildStep9GroupChat(Day1StepModel step) {
     // 🛡️ User Audio Directive: Days 1-10 for Zero track MUST NOT show stranger group chat!
     final isZero = _currentTrack == Day1Track.zero && widget.day <= 10;
-    final isMl = _nativeLanguage.toLowerCase().contains('malay');
 
     if (isZero) {
       return Column(
@@ -4606,9 +4616,12 @@ class _PocketDay1InteractiveFlowPageState
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  isMl
-                      ? 'നിങ്ങളുടെ പേഴ്സണൽ AI റോബോട്ട് ട്യൂട്ടറുമായി വാക്കുകൾ പറഞ്ഞു നോക്കുക. പൂർണ്ണമായും പ്രൈവറ്റ് ആണ്!'
-                      : 'Practice speaking basic words with your private AI Robot Tutor in a safe, zero-pressure space.',
+                  PocketLanguageService.localize(
+                    en: 'Practice speaking basic words with your private AI Robot Tutor in a safe, zero-pressure space.',
+                    ml: 'നിങ്ങളുടെ പേഴ്സണൽ AI റോബോട്ട് ട്യൂട്ടറുമായി വാക്കുകൾ പറഞ്ഞു നോക്കുക. പൂർണ്ണമായും പ്രൈവറ്റ് ആണ്!',
+                    ta: 'உங்கள் பிரத்தியேக AI ரோபோ துணையுடன் எளிய வார்த்தைகளைப் பேசிப் பழகுங்கள். முற்றிலும் தனிப்பட்டது!',
+                    hi: 'सुरक्षित वातावरण में अपने निजी एआई रोबोट ट्यूटर के साथ बुनियादी शब्दों को बोलने का अभ्यास करें।',
+                  ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
                 ),
@@ -4657,9 +4670,12 @@ class _PocketDay1InteractiveFlowPageState
               ),
               const SizedBox(height: 6),
               Text(
-                isMl
-                    ? 'ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പിൽ പ്രവേശിക്കുക! നിങ്ങളുടെ ലെവൽ ഗ്രൂപ്പിലുള്ള കൂട്ടുകാരുമായി ഇന്നത്തെ വാക്കുകൾ ചാറ്റ് ചെയ്തു പരിശീലിക്കുക.'
-                    : 'Enter your dedicated English Hub Group Chat! Connect with learners at your level and send messages to build muscle memory.',
+                PocketLanguageService.localize(
+                  en: 'Enter your dedicated English Hub Group Chat! Connect with learners at your level and send messages to build muscle memory.',
+                  ml: 'ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പിൽ പ്രവേശിക്കുക! നിങ്ങളുടെ ലെവൽ ഗ്രൂപ്പിലുള്ള കൂട്ടുകാരുമായി ഇന്നത്തെ വാക്കുകൾ ചാറ്റ് ചെയ്തു പരിശീലിക്കുക.',
+                  ta: 'ஆங்கிலக் குழு அரட்டையில் இணையுங்கள்! உங்கள் நிலை நண்பர்களுடன் அன்றாட வார்த்தைகளைப் பேசிப் பழகுங்கள்.',
+                  hi: 'इंग्लिश हब ग्रुप चैट में प्रवेश करें! अपने स्तर के साथियों के साथ बातचीत करके अभ्यास करें।',
+                ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
               ),
@@ -4703,8 +4719,6 @@ class _PocketDay1InteractiveFlowPageState
   // STEP 10: FORTIFY HOUSE 1 CITADEL DEFENSE SYSTEM
   // -------------------------------------------------------------
   Widget _buildStep10HouseDefense(Day1StepModel step) {
-    final isMl = _nativeLanguage.toLowerCase().contains('malay');
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -4748,9 +4762,12 @@ class _PocketDay1InteractiveFlowPageState
                 border: Border.all(color: Colors.white12),
               ),
               child: Text(
-                isMl
-                    ? 'നിങ്ങളുടെ വീടിന് ഡിഫെൻസ് സിസ്റ്റം വെക്കണം, അല്ലെങ്കിൽ എതിരാളികൾ വന്ന് നിങ്ങളുടെ വീട് തകർക്കും!'
-                    : 'You must set up a defense system for your house, or rivals will raid and destroy your house!',
+                PocketLanguageService.localize(
+                  en: 'You must set up a defense system for your house, or rivals will raid and destroy your house!',
+                  ml: 'നിങ്ങളുടെ വീടിന് ഡിഫെൻസ് സിസ്റ്റം വെക്കണം, അല്ലെങ്കിൽ എതിരാളികൾ വന്ന് നിങ്ങളുടെ വീട് തകർക്കും!',
+                  ta: 'உங்கள் வீட்டிற்கு பாதுகாப்பு அமைப்பை உருவாக்க வேண்டும், இல்லையெனில் எதிரிகள் உங்கள் வீட்டைத் தகர்த்துவிடுவார்கள்!',
+                  hi: 'आपको अपने घर के लिए एक रक्षा प्रणाली स्थापित करनी होगी, अन्यथा प्रतिद्वंद्वी आकर आपके घर को नष्ट कर देंगे!',
+                ),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   color: Colors.white,

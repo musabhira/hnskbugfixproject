@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🌐 Interactive Native Language Selection Modal
@@ -100,7 +101,8 @@ class _PocketLanguageSelectionDialogState
   Future<void> _confirmAndSave() async {
     HapticFeedback.heavyImpact();
     try {
-      await PocketLanguageService.setNativeLanguage(_selected);
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      await PocketLanguageService.setNativeLanguage(_selected, userId: uid);
     } catch (_) {}
 
     if (mounted) {

@@ -65,22 +65,30 @@ class DailyVocabItem {
       if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
     } else if (lang.contains('hind') || lang == 'hi') {
       if (hindiMeaning.isNotEmpty) return hindiMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     } else if (lang.contains('tamil') || lang == 'ta') {
       if (tamilMeaning.isNotEmpty) return tamilMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     } else if (lang.contains('telug') || lang == 'te') {
       if (teluguMeaning.isNotEmpty) return teluguMeaning;
     } else if (lang.contains('kannad') || lang == 'kn') {
       if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
     }
 
-    if (PocketLanguageService.isMalayalam && malayalamMeaning.isNotEmpty) {
-      return malayalamMeaning;
+    if (PocketLanguageService.isMalayalam) {
+      if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
     }
-    if (PocketLanguageService.isHindi && hindiMeaning.isNotEmpty) {
-      return hindiMeaning;
+    if (PocketLanguageService.isHindi) {
+      if (hindiMeaning.isNotEmpty) return hindiMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
-    if (PocketLanguageService.isTamil && tamilMeaning.isNotEmpty) {
-      return tamilMeaning;
+    if (PocketLanguageService.isTamil) {
+      if (tamilMeaning.isNotEmpty) return tamilMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
     if (PocketLanguageService.isTelugu && teluguMeaning.isNotEmpty) {
       return teluguMeaning;
@@ -88,8 +96,11 @@ class DailyVocabItem {
     if (PocketLanguageService.isKannada && kannadaMeaning.isNotEmpty) {
       return kannadaMeaning;
     }
-    if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
-    if (hindiMeaning.isNotEmpty) return hindiMeaning;
+
+    if (PocketLanguageService.isMalayalam && malayalamMeaning.isNotEmpty) {
+      return malayalamMeaning;
+    }
+
     return definition.isNotEmpty ? definition : word;
   }
 }

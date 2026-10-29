@@ -847,6 +847,11 @@ class PocketLanguageService {
       if (lang == 'english') return wordKey;
     }
 
+    if (_wordTranslations.containsKey(wordKey)) {
+      final entry = _wordTranslations[wordKey]!;
+      if (entry.containsKey(lang)) return entry[lang]!;
+    }
+
     if (lang == 'malayalam') {
       if (itemOrWord is Map && itemOrWord['meaning'] != null) {
         return itemOrWord['meaning'].toString();
@@ -855,10 +860,39 @@ class PocketLanguageService {
     }
 
     if (lang == 'tamil') {
-      if (wordKey.isNotEmpty) return wordKey;
-      return defaultFallback != null && !RegExp(r'[\u0D00-\u0D7F]').hasMatch(defaultFallback)
-          ? defaultFallback
-          : 'சொல்';
+      if (itemOrWord is Map) {
+        final tm = itemOrWord['tamilMeaning'] ??
+            itemOrWord['meaning_ta'] ??
+            itemOrWord['ta'] ??
+            itemOrWord['meaningTa'];
+        if (tm != null && tm.toString().trim().isNotEmpty) {
+          return tm.toString().trim();
+        }
+      }
+      if (defaultFallback != null &&
+          defaultFallback.isNotEmpty &&
+          !RegExp(r'[\u0D00-\u0D7F]').hasMatch(defaultFallback)) {
+        return defaultFallback;
+      }
+      return wordKey.isNotEmpty ? wordKey : 'சொல்';
+    }
+
+    if (lang == 'hindi') {
+      if (itemOrWord is Map) {
+        final hm = itemOrWord['hindiMeaning'] ??
+            itemOrWord['meaning_hi'] ??
+            itemOrWord['hi'] ??
+            itemOrWord['meaningHi'];
+        if (hm != null && hm.toString().trim().isNotEmpty) {
+          return hm.toString().trim();
+        }
+      }
+      if (defaultFallback != null &&
+          defaultFallback.isNotEmpty &&
+          !RegExp(r'[\u0D00-\u0D7F]').hasMatch(defaultFallback)) {
+        return defaultFallback;
+      }
+      return wordKey.isNotEmpty ? wordKey : 'शब्द';
     }
 
     return wordKey.isNotEmpty ? wordKey : (defaultFallback ?? '');

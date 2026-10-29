@@ -611,7 +611,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         await prefs.setString('cached_profile_$_currentUserId', jsonEncode(profilePayload));
         await prefs.setString('profile_cache_$_currentUserId', jsonEncode(profilePayload));
         await prefs.remove('cached_stats_$_currentUserId');
-        await PocketLanguageService.setNativeLanguage(selectedNativeLanguage);
+        await PocketLanguageService.setNativeLanguage(selectedNativeLanguage, userId: _currentUserId);
       } catch (e) {
         debugPrint('Error updating local profile cache: $e');
       }
@@ -2097,7 +2097,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               onChanged: (val) {
                 if (val != null) {
                   safeSetState(() => selectedNativeLanguage = val);
-                  PocketLanguageService.setNativeLanguage(val);
+                  PocketLanguageService.setNativeLanguage(val, userId: _currentUserId);
                 }
               },
             ),

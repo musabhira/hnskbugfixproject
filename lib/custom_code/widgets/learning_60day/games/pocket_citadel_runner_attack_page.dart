@@ -590,8 +590,10 @@ class _PocketCitadelRunnerAttackPageState
               return targetDay <= 20 ? (len >= 3 && len <= 5) : (len >= 5);
             }).toList();
             final item = (filtered.isNotEmpty ? filtered : vocabPool)[_rnd.nextInt(filtered.isNotEmpty ? filtered.length : vocabPool.length)];
-            w = (item['word']?.toString() ?? 'apple').toLowerCase();
-            rawMeaning = item['meaning']?.toString() ?? 'ആപ്പിൾ';
+            rawMeaning = item['meaning']?.toString() ??
+                (PocketLanguageService.isMalayalam
+                    ? 'ആപ്പിൾ'
+                    : (PocketLanguageService.isTamil ? 'ஆப்பிள்' : 'Apple'));
             emoji = item['emoji']?.toString() ?? '🍎';
           }
 

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_citadel_challenge_generator.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🛡️ Curated Educational Defense Shield Configuration Modal
 /// Audio Directive:
@@ -81,12 +82,27 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
   String get _difficultyLabel {
     switch (_difficultyString) {
       case 'easy':
-        return '🟢 Simple / Easy • ലളിതം';
+        return '🟢 ' + PocketLanguageService.localize(
+          en: 'Simple / Easy',
+          ml: 'Simple / Easy • ലളിതം',
+          ta: 'எளிதானது (Simple / Easy)',
+          hi: 'सरल (Simple / Easy)',
+        );
       case 'hard':
-        return '🔴 Hard / Master • കഠിനം';
+        return '🔴 ' + PocketLanguageService.localize(
+          en: 'Hard / Master',
+          ml: 'Hard / Master • കഠിനം',
+          ta: 'கடினமானது (Hard / Master)',
+          hi: 'कठिन (Hard / Master)',
+        );
       case 'normal':
       default:
-        return '🟡 Normal / Medium • ഇടത്തരം';
+        return '🟡 ' + PocketLanguageService.localize(
+          en: 'Normal / Medium',
+          ml: 'Normal / Medium • ഇടത്തരം',
+          ta: 'நடுத்தரமானது (Normal / Medium)',
+          hi: 'मध्यम (Normal / Medium)',
+        );
     }
   }
 
@@ -276,7 +292,12 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
                             ),
                           ),
                           Text(
-                            'ഡിഫൻസ് ഗെയിമും കാഠിന്യവും തിരഞ്ഞെടുക്കുക (Zero Errors)',
+                            PocketLanguageService.localize(
+                              en: 'Choose Defense Game & Difficulty (Zero Errors)',
+                              ml: 'ഡിഫൻസ് ഗെയിമും കാഠിന്യവും തിരഞ്ഞെടുക്കുക (Zero Errors)',
+                              ta: 'பாதுகாப்பு விளையாட்டு மற்றும் கடினத்தன்மையை தேர்வு செய்யவும்',
+                              hi: 'डिफेंस गेम और कठिनाई का चयन करें',
+                            ),
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFD700),
                               fontSize: 11.5,
@@ -560,9 +581,33 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('Simple (ലളിതം)', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10)),
-                                  Text('Normal (ഇടത്തരം)', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10)),
-                                  Text('Hard (കഠിനം)', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10)),
+                                  Text(
+                                    PocketLanguageService.localize(
+                                      en: 'Simple',
+                                      ml: 'Simple (ലളിതം)',
+                                      ta: 'Simple (எளிது)',
+                                      hi: 'Simple (सरल)',
+                                    ),
+                                    style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10),
+                                  ),
+                                  Text(
+                                    PocketLanguageService.localize(
+                                      en: 'Normal',
+                                      ml: 'Normal (ഇടത്തരം)',
+                                      ta: 'Normal (நடுத்தரம்)',
+                                      hi: 'Normal (सामान्य)',
+                                    ),
+                                    style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10),
+                                  ),
+                                  Text(
+                                    PocketLanguageService.localize(
+                                      en: 'Hard',
+                                      ml: 'Hard (കഠിനം)',
+                                      ta: 'Hard (கடினம்)',
+                                      hi: 'Hard (कठिन)',
+                                    ),
+                                    style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10),
+                                  ),
                                 ],
                               ),
                             ],
@@ -688,7 +733,12 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
                               const Text('🛡️', style: TextStyle(fontSize: 18)),
                               const SizedBox(width: 8),
                               Text(
-                                'ADD DEFENSE • ഡേ $_selectedDay ഡിഫൻസ് ആക്കുക',
+                                PocketLanguageService.localize(
+                                  en: 'ADD DEFENSE • Day $_selectedDay Shield',
+                                  ml: 'ADD DEFENSE • ഡേ $_selectedDay ഡിഫൻസ് ആക്കുക',
+                                  ta: 'பாதுகாப்பைச் சேர் • நாள் $_selectedDay',
+                                  hi: 'सुरक्षा जोड़ें • दिन $_selectedDay',
+                                ),
                                 style: GoogleFonts.outfit(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w900,

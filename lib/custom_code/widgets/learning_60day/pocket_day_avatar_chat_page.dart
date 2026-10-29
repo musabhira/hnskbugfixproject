@@ -17,6 +17,7 @@ import 'pocket_master_curriculum_90.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_formula_blueprint_builder_card.dart';
 import 'games/pocket_formula_master_game_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 💬 Chat Message Model for Days 3 to 16 Unified Avatar Conversational Engine
 class DayChatMessage {
@@ -2592,9 +2593,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     final promptEn =
         'Hi $_userName! Welcome to Day ${widget.day}! 🌟 Today we master ${_spec.titleEn}.\n\n'
         'Ready to jump into speaking chat and interactive drills?';
-    final promptMl =
-        'ഹായ് $_userName! ഡേ ${widget.day} ലേക്ക് സ്വാഗതം! 🌟 ഇന്ന് ${_spec.titleMl} നമുക്ക് പഠിക്കാം.\n\n'
-        'സംസാരിച്ചു തുടങ്ങാൻ തയ്യാറാണോ?';
+    final promptNative = PocketLanguageService.localize(
+      en: promptEn,
+      ml: 'ഹായ് $_userName! ഡേ ${widget.day} ലേക്ക് സ്വാഗതം! 🌟 ഇന്ന് ${_spec.titleMl} നമുക്ക് പഠിക്കാം.\n\nസംസാരിച്ചു തുടങ്ങാൻ തയ്യാറാണോ?',
+      ta: 'வணக்கம் $_userName! நாள் ${widget.day}-க்கு நல்வரவு! 🌟 இன்று ${_spec.titleEn} நாம் கற்றுக்கொள்வோம்.\n\nபேசத் தொடங்க நீங்கள் தயாரா?',
+      hi: 'नमस्ते $_userName! दिन ${widget.day} में आपका स्वागत है! 🌟 आज हम ${_spec.titleEn} सीखेंगे।\n\nक्या आप बोलने का अभ्यास शुरू करने के लिए तैयार हैं?',
+    );
 
     _currentExpectedVoicePhrase = 'Speaking Chat';
 
@@ -2605,13 +2609,18 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           id: 'day_${widget.day}_welcome',
           isAvatar: true,
           textEn: promptEn,
-          textNative: promptMl,
+          textNative: promptNative,
           audioText: 'Hi $_userName! ${_spec.greetingAudio}',
           speakThisPrompt: 'Choose your learning mode:',
           inBubbleOptions: [
             DayInBubbleOption(
               labelEn: '🗣️ START SPEAKING LESSON',
-              labelNative: 'സംസാരിച്ചു പഠിക്കാം! 🎙️',
+              labelNative: PocketLanguageService.localize(
+                en: '🗣️ START SPEAKING LESSON',
+                ml: 'സംസാരിച്ചു പഠിക്കാം! 🎙️',
+                ta: 'பேசிப் பழகலாம்! 🎙️',
+                hi: 'बोलकर सीखें! 🎙️',
+              ),
               icon: '🎙️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -2624,7 +2633,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             ),
             DayInBubbleOption(
               labelEn: '⚡ I ALREADY KNOW THIS (TEST ME)',
-              labelNative: 'നേരിട്ട് പരീക്ഷിക്കാം ➔',
+              labelNative: PocketLanguageService.localize(
+                en: '⚡ I ALREADY KNOW THIS (TEST ME)',
+                ml: 'നേരിട്ട് പരീക്ഷിക്കാം ➔',
+                ta: 'நேரடித் தேர்வு ➔',
+                hi: 'सीधे टेस्ट दें ➔',
+              ),
               icon: '⚡',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -2649,7 +2663,13 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     final textEn =
         'Awesome, $_userName! 🚀 Let us master the Day ${widget.day} core blueprint:\n\n'
         '${_spec.blueprintExplanationEn}';
-    final textMl = _spec.blueprintExplanationMl;
+    final textNative = PocketLanguageService.isMalayalam
+        ? _spec.blueprintExplanationMl
+        : (PocketLanguageService.isTamil
+            ? 'அற்புதமான பயிற்சி! நாள் ${widget.day}-ன் விதியை கவனியுங்கள்:\n\n${_spec.blueprintExplanationEn}'
+            : (PocketLanguageService.isHindi
+                ? 'शानदार! दिन ${widget.day} के मुख्य नियम को समझें:\n\n${_spec.blueprintExplanationEn}'
+                : _spec.blueprintExplanationEn));
 
     _currentExpectedVoicePhrase = _spec.drills.first['en']!;
 
@@ -2659,7 +2679,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           id: 'day_${widget.day}_blueprint',
           isAvatar: true,
           textEn: textEn,
-          textNative: textMl,
+          textNative: textNative,
           audioText:
               'Remember this golden rule for Day ${widget.day}. ${_spec.blueprintRules.first['en']}',
           cardContent: _buildBlueprintVisualCard(),
@@ -2667,7 +2687,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           inBubbleOptions: [
             DayInBubbleOption(
               labelEn: '🎙️ START SPEAKING DRILLS ➔',
-              labelNative: 'പരിശീലനം ആരംഭിക്കാം! 🚀',
+              labelNative: PocketLanguageService.localize(
+                en: '🎙️ START SPEAKING DRILLS ➔',
+                ml: 'പരിശീലനം ആരംഭിക്കാം! 🚀',
+                ta: 'பயிற்சியைத் தொடங்குங்கள்! 🚀',
+                hi: 'अभ्यास शुरू करें! 🚀',
+              ),
               icon: '🎙️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -2814,9 +2839,15 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
         'Speak this sentence aloud into the mic below! 👇\n\n'
         '"$target"';
 
-    final promptMl =
-        'പരിശീലനം ${_drillIndex + 1}/${_spec.drills.length}:\n'
-        'ഈ വാചകം മൈക്കിലൂടെ ഉറക്കെ പറയൂ! ($ml)';
+    final promptNative = PocketLanguageService.localize(
+      en: promptEn,
+      ml: 'പരിശീലനം ${_drillIndex + 1}/${_spec.drills.length}:\n'
+          'ഈ വാചകം മൈക്കിലൂടെ ഉറക്കെ പറയൂ! ($ml)',
+      ta: 'பயிற்சி ${_drillIndex + 1}/${_spec.drills.length}:\n'
+          'இந்த வாக்கியத்தை மைக்கில் உரக்கப் பேசுங்கள்!',
+      hi: 'अभ्यास ${_drillIndex + 1}/${_spec.drills.length}:\n'
+          'इस वाक्य को माइक में ज़ੋਰ से बोलें!',
+    );
 
     setState(() {
       _messages.add(
@@ -2824,7 +2855,7 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           id: 'drill_${widget.day}_$_drillIndex',
           isAvatar: true,
           textEn: promptEn,
-          textNative: promptMl,
+          textNative: promptNative,
           audioText: 'Please say: $target',
           cardContent: _buildDrillCard(target, ml, rule),
           speakThisPrompt: '🎙️ Tap the mic below and say: "$target"',
@@ -2882,14 +2913,33 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
-          Text(
-            ml,
-            style: GoogleFonts.notoSansMalayalam(
-              color: const Color(0xFF94A3B8),
-              fontSize: 13,
+          if (PocketLanguageService.isMalayalam)
+            Text(
+              ml,
+              style: GoogleFonts.notoSansMalayalam(
+                color: const Color(0xFF94A3B8),
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            )
+          else if (PocketLanguageService.isTamil)
+            Text(
+              PocketLanguageService.getVocabMeaning(target),
+              style: GoogleFonts.notoSansTamil(
+                color: const Color(0xFF94A3B8),
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
+            )
+          else if (PocketLanguageService.isHindi)
+            Text(
+              PocketLanguageService.getVocabMeaning(target),
+              style: GoogleFonts.notoSansDevanagari(
+                color: const Color(0xFF94A3B8),
+                fontSize: 13,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
@@ -2927,8 +2977,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
     final promptEn =
         'Great speaking! 👏 Now let\'s master the professional formula!\n'
         'Tap the button below to launch the interactive Formula Master Arena! 🧩';
-    final promptMl =
-        'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഫോർമുല കൃത്യമായി ഉറപ്പിക്കാൻ താഴെയുള്ള ബട്ടൺ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ഗെയിമിലേക്ക് പ്രവേശിക്കാം! 🧩';
+    final promptNative = PocketLanguageService.localize(
+      en: promptEn,
+      ml: 'സംസാരിച്ചത് വളരെ നന്നായി! 👏 ഇനി ഫോർമുല കൃത്യമായി ഉറപ്പിക്കാൻ താഴെയുള്ള ബട്ടൺ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ഗെയിമിലേക്ക് പ്രവേശിക്കാം! 🧩',
+      ta: 'அருமையாகப் பேசினீர்கள்! 👏 இப்போது விதியை முழுமையாக அறிய கீழே உள்ள பொத்தானைத் தட்டவும்! 🧩',
+      hi: 'बहुत बढ़िया बोला! 👏 अब फॉर्मूला को पक्का करने के लिए नीचे दिए गए बटन पर टैप करें! 🧩',
+    );
 
     _currentExpectedVoicePhrase = 'Master Formula';
 
@@ -2938,13 +2992,18 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           id: 'formula_builder_${widget.day}',
           isAvatar: true,
           textEn: promptEn,
-          textNative: promptMl,
+          textNative: promptNative,
           audioText: 'Great speaking! Now let\'s master the professional formula! Tap below to begin.',
           speakThisPrompt: 'Tap below to enter Formula Master Arena:',
           inBubbleOptions: [
             DayInBubbleOption(
               labelEn: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
-              labelNative: 'ഫോർമുല മാസ്റ്റർ ചലഞ്ച് തുടങ്ങാം! 🧩',
+              labelNative: PocketLanguageService.localize(
+                en: "NOW LET'S MASTER THE PROFESSIONAL FORMULA ➔",
+                ml: 'ഫോർമുല മാസ്റ്റർ ചലഞ്ച് തുടങ്ങാം! 🧩',
+                ta: 'விதி சவாலைத் தொடங்கவும்! 🧩',
+                hi: 'फॉर्मूला मास्टर चैलेंज शुरू करें! 🧩',
+              ),
               icon: '🧩',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF6366F1),
@@ -3006,7 +3065,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           inBubbleOptions: [
             DayInBubbleOption(
               labelEn: '✅ "$correct"',
-              labelNative: 'ശരിയായ ഉത്തരം ⭐',
+              labelNative: PocketLanguageService.localize(
+                en: 'Correct Answer ⭐',
+                ml: 'ശരിയായ ഉത്തരം ⭐',
+                ta: 'சரியான விடை ⭐',
+                hi: 'सही उत्तर ⭐',
+              ),
               icon: '✅',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -3028,7 +3092,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
             ),
             DayInBubbleOption(
               labelEn: '❌ "$wrong"',
-              labelNative: 'തെറ്റ്',
+              labelNative: PocketLanguageService.localize(
+                en: 'Incorrect',
+                ml: 'തെറ്റ്',
+                ta: 'தவறு',
+                hi: 'गलत',
+              ),
               icon: '❌',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -3083,10 +3152,18 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
         '+25 XP & Fortress Defense Shield Points Awarded! 🛡️⚡\n\n'
         'Step 2: Vocabulary Drive is now unlocked on the open road! 🚗💨';
 
-    final replyMl =
-        'അഭിനന്ദനങ്ങൾ, $_userName! 🏆\n\n'
-        'നിങ്ങൾ ഡേ ${widget.day} ലെ Step 1 വിജയകരമായി പൂർത്തിയാക്കി!\n'
-        '+25 XP നൽകി. റോഡിലേക്ക് മടങ്ങി Step 2 വൊക്കാബുലറി ഡ്രൈവ് ആരംഭിക്കാം!';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'അഭിനന്ദനങ്ങൾ, $_userName! 🏆\n\n'
+          'നിങ്ങൾ ഡേ ${widget.day} ലെ Step 1 വിജയകരമായി പൂർത്തിയാക്കി!\n'
+          '+25 XP നൽകി. റോഡിലേക്ക് മടങ്ങി Step 2 വൊക്കാബുലറി ഡ്രൈവ് ആരംഭിക്കാം!',
+      ta: 'வாழ்த்துகள், $_userName! 🏆\n\n'
+          'நாள் ${widget.day}-ன் நிலை 1-ஐ வெற்றிகரமாக முடித்துவிட்டீர்கள்!\n'
+          '+25 XP வழங்கப்பட்டது. நிலை 2 சொல்லகராதி பயிற்சியைத் தொடங்குங்கள்!',
+      hi: 'बधाई हो, $_userName! 🏆\n\n'
+          'आपने दिन ${widget.day} का चरण 1 सफलतापूर्वक पूरा कर लिया है!\n'
+          '+25 XP दिए गए। चरण 2 शब्दावली ड्राइव शुरू करें!',
+    );
 
     setState(() {
       _messages.add(
@@ -3094,14 +3171,19 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
           id: 'day_${widget.day}_completed',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText:
               'Congratulations, $_userName! You have mastered Day ${widget.day} Step 1. Let us proceed to Step 2!',
           speakThisPrompt: 'Tap below to return to the road: 👇',
           inBubbleOptions: [
             DayInBubbleOption(
               labelEn: 'Step 2: Vocab Drive ➔',
-              labelNative: 'സ്റ്റെപ്പ് 2: വൊക്കാബ് ഡ്രൈവ്',
+              labelNative: PocketLanguageService.localize(
+                en: 'Step 2: Vocab Drive ➔',
+                ml: 'സ്റ്റെപ്പ് 2: വൊക്കാബ് ഡ്രൈവ്',
+                ta: 'படி 2: சொல்லகராதி பயிற்சி ➔',
+                hi: 'चरण 2: शब्दावली ड्राइव ➔',
+              ),
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -3833,7 +3915,12 @@ class _PocketDayAvatarChatPageState extends State<PocketDayAvatarChatPage>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'മൈക്കിൽ തൊട്ട് ഉച്ചരിക്കൂ 🎙️',
+                        PocketLanguageService.localize(
+                          en: 'Tap mic & speak aloud 🎙️',
+                          ml: 'മൈക്കിൽ തൊട്ട് ഉച്ചരിക്കൂ 🎙️',
+                          ta: 'மைக்கைத் தொட்டுப் பேசுங்கள் 🎙️',
+                          hi: 'माइक पर टैप करके बोलें 🎙️',
+                        ),
                         style: GoogleFonts.inter(
                           color: const Color(0xFFA7F3D0),
                           fontSize: 10.5,

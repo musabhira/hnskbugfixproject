@@ -181,7 +181,8 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
                         ? const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8))
                         : null,
                     onTap: () async {
-                      await PocketLanguageService.setNativeLanguage(lang['name']!);
+                      final uid = SupaFlow.client.auth.currentUser?.id;
+                      await PocketLanguageService.setNativeLanguage(lang['name']!, userId: uid);
                       if (ctx.mounted) Navigator.pop(ctx);
                       setState(() {});
                     },

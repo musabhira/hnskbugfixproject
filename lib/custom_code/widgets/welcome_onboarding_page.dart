@@ -1103,8 +1103,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Future<void> _saveOnboardingChoicesLocally() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final user = SupaFlow.client.auth.currentUser;
       await prefs.setString('pm_native_language', _selectedNativeLanguage);
-      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage);
+      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage, userId: user?.id);
       await prefs.setString('pm_target_language', _selectedTargetLanguage);
       await prefs.setString('pm_referral_source', _selectedReferralSource);
       await prefs.setString('pm_english_level', _selectedEnglishLevel);
@@ -1120,7 +1121,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await prefs.setBool('pm_onboarding_completed', true);
       await prefs.setInt('pm_streak_days', 1);
 
-      final user = SupaFlow.client.auth.currentUser;
       final trackStr = (resolvedLvl == LearnerLevel.zero)
           ? 'zero'
           : ((resolvedLvl == LearnerLevel.advanced ||

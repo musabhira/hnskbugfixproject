@@ -33,7 +33,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isProcessing = false;
   bool _canAccessAdmin = false;
   bool _isVip = false;
-  String _selectedLanguage = 'English';
+  String _selectedLanguage = PocketLanguageService.currentLanguage;
   bool _isPowerSaving = false;
   bool _isNotificationsEnabled = true;
   double _voiceSpeed = 1.0;
@@ -951,10 +951,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: Text('${lang['name']} (${lang['native']})', style: const TextStyle(color: Colors.white, fontSize: 14)),
                 trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFFFFFC00)) : null,
                 onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString('preferred_language', lang['name']!);
-                  await PocketLanguageService.setNativeLanguage(lang['name']!);
-                  setState(() => _selectedLanguage = lang['name']!);
+                  final langName = lang['name']!;
+                  final uid = SupaFlow.client.auth.currentUser?.id;
+                  await PocketLanguageService.setNativeLanguage(langName, userId: uid);
+                  if (mounted) setState(() => _selectedLanguage = langName);
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
               );
