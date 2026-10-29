@@ -1229,6 +1229,7 @@ class ChatMessages extends _$ChatMessages {
         metadata: {
           'is_robot_voice': replyAsVoice,
           'transcript': aiReply,
+          'auto_play': replyAsVoice,
         },
         senderProfile: {
           'name': robot.name,

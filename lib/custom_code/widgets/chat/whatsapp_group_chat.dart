@@ -188,6 +188,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   // 🏆 PocketTalk 4-Day Spoken Pact State
   PocketTalkPact? _activePocketTalkPact;
+  // ignore: unused_field
   int _userTrophyCount = 0;
   Timer? _pactActiveTimer;
   DateTime? _lastPactMinuteLogTime;
@@ -8171,6 +8172,16 @@ Draft: "$draft"''';
               );
             },
           ),
+          ListTile(
+            leading:
+                const Icon(Icons.security_rounded, color: Colors.amberAccent),
+            title: const Text('Report Non-English',
+                style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              _showReportNonEnglishDialog();
+            },
+          ),
           if (!isMe &&
               message.senderId.isNotEmpty &&
               message.senderId != _currentUserId)
@@ -8251,11 +8262,13 @@ Draft: "$draft"''';
   }
 
   Widget _buildRobotVoiceMessage(ChatMessage message, bool isMe) {
+    final shouldAutoPlay = !isMe && message.metadata?['auto_play'] == true;
     return RobotVoiceMessagePlayer(
       messageText: message.messageText ?? '',
       durationSeconds: message.voiceDuration ?? 5,
       isFromCurrentUser: isMe,
       metadata: message.metadata,
+      autoPlay: shouldAutoPlay,
     );
   }
 
@@ -8643,8 +8656,11 @@ Draft: "$draft"''';
                     child: Icon(Icons.send, color: Colors.black, size: 18),
                   ),
                 );
-              } else if (_isEnglishHubGroup) {
-                // English Hub: Direct Voice-To-English Speech-To-Text Transcriber
+              } else if (_isEnglishHubGroup ||
+                  (widget.groupId.startsWith('p:') &&
+                      PocketRobotService.isRobotId(
+                          widget.groupId.substring(2)))) {
+                // English Hub & Pocket Robots: Direct Voice-To-English Speech-To-Text Transcriber
                 return GestureDetector(
                   onTap: _toggleEnglishSpeechDictation,
                   child: AnimatedContainer(
@@ -10435,11 +10451,19 @@ Draft: "$draft"''';
       final url =
           _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
 
+      final currentDraft = _messageController.text.trim();
+      if (currentDraft.isNotEmpty) {
+        _messageController.clear();
+      }
+
       await _sendMessage(
-        text: 'Voice Message 🎤',
+        text: currentDraft.isNotEmpty ? currentDraft : 'Voice Message 🎤',
         messageType: 'voice',
         fileUrl: url,
         voiceDuration: duration,
+        metadata: {
+          if (currentDraft.isNotEmpty) 'transcript': currentDraft,
+        },
       );
     } catch (e) {
       debugPrint('Error sending voice: $e');

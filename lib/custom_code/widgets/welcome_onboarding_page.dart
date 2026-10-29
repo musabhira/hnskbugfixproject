@@ -1282,7 +1282,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }
 
   Future<void> _handleEmailAuth() async {
-    if (_isSignUpMode) {
+    if (_isSignUpMode && !_useCustomPassword) {
       _passwordController.text = _generatedPassword;
     }
     if (!_loginFormKey.currentState!.validate()) return;
@@ -1306,14 +1306,18 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       if (!mounted) return;
       GoRouter.of(context).prepareAuthEvent();
       if (_isSignUpMode) {
+        final cleanEmail = _emailController.text.trim();
+        final rawPassword = _passwordController.text;
         final user = await authManager.createAccountWithEmail(
           context,
-          _emailController.text.trim(),
-          _passwordController.text,
+          cleanEmail,
+          rawPassword,
         );
         if (user != null && mounted) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('just_created_account_${user.uid}', true);
+          await prefs.setString(
+              'saved_pm_password_${cleanEmail.toLowerCase()}', rawPassword);
           setState(() {
             _loadingMessage = 'Account created! Starting profile setup...';
           });
@@ -1324,16 +1328,20 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           }
         }
       } else {
+        final cleanEmail = _emailController.text.trim();
+        final rawPassword = _passwordController.text;
         final user = await authManager.signInWithEmail(
           context,
-          _emailController.text.trim(),
-          _passwordController.text,
+          cleanEmail,
+          rawPassword,
         );
         if (user != null && mounted) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('profile_setup_completed_${user.uid}', true);
           await prefs.setBool('profile_setup_prompted_${user.uid}', true);
           await prefs.remove('just_created_account_${user.uid}');
+          await prefs.setString(
+              'saved_pm_password_${cleanEmail.toLowerCase()}', rawPassword);
 
           final isStudent = await PocketKidsService.syncAndVerifyUserAccountType(user.uid ?? '');
           if (isStudent && mounted) {
@@ -5183,6 +5191,26 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               _buildGeneratedPasswordCard(),
                             ],
 
+                            if (!_isSignUpMode) ...[
+                              const SizedBox(height: 6),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: _showForgotPasswordModal,
+                                  icon: const Icon(Icons.key_rounded,
+                                      size: 14, color: Color(0xFFFACC15)),
+                                  label: Text(
+                                    'Forgot Password?',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFFFACC15),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+
                             // 📜 Terms & Conditions Checkbox (App Store & Play Store mandatory)
                             if (_isSignUpMode) ...[
                               const SizedBox(height: 12),
@@ -5471,6 +5499,39 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
         );
       },
+    );
+  }
+
+  void _showForgotPasswordModal() async {
+    HapticFeedback.lightImpact();
+    final currentEmail = _emailController.text.trim();
+    final prefs = await SharedPreferences.getInstance();
+    final savedPassword = currentEmail.isNotEmpty
+        ? prefs.getString('saved_pm_password_${currentEmail.toLowerCase()}')
+        : null;
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ForgotPasswordSheet(
+        initialEmail: currentEmail,
+        cachedPassword: savedPassword,
+        onSuccessLogin: (email, password) async {
+          _emailController.text = email;
+          _passwordController.text = password;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: Color(0xFF10B981),
+              content: Text('🎉 Verified! Logging in to your account...'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          await _handleEmailAuth();
+        },
+      ),
     );
   }
 
@@ -6379,3 +6440,709 @@ class FluffyCloudClusterPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+/// 🔐 Instant Profile Security Verification & Account Recovery Sheet
+class _ForgotPasswordSheet extends StatefulWidget {
+  final String initialEmail;
+  final String? cachedPassword;
+  final Future<void> Function(String email, String password) onSuccessLogin;
+
+  const _ForgotPasswordSheet({
+    required this.initialEmail,
+    required this.cachedPassword,
+    required this.onSuccessLogin,
+  });
+
+  @override
+  State<_ForgotPasswordSheet> createState() => _ForgotPasswordSheetState();
+}
+
+class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
+  late final TextEditingController _emailController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _newPasswordController;
+
+  DateTime? _selectedDob;
+  bool _obscurePassword = true;
+  bool _revealSavedPassword = false;
+  bool _isLoading = false;
+  String? _errorMessage;
+  late bool _showProfileReset;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail);
+    _nameController = TextEditingController();
+    _newPasswordController = TextEditingController();
+    _showProfileReset = widget.cachedPassword == null || widget.cachedPassword!.isEmpty;
+    _selectedDob = DateTime(2000, 1, 1);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _nameController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _generateSuggestedPassword() {
+    HapticFeedback.selectionClick();
+    final rand = math.Random();
+    final num = 1000 + rand.nextInt(9000);
+    setState(() {
+      _newPasswordController.text = 'Poket#$num';
+      _obscurePassword = false;
+    });
+  }
+
+  Future<void> _pickDateOfBirth() async {
+    HapticFeedback.lightImpact();
+    final initialDate = _selectedDob ?? DateTime(2000, 1, 1);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1940),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF10B981),
+              onPrimary: Colors.white,
+              surface: Color(0xFF1E293B),
+              onSurface: Colors.white,
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Color(0xFF0F172A),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedDob = picked);
+    }
+  }
+
+  Future<void> _verifyAndResetPassword() async {
+    final email = _emailController.text.trim().toLowerCase();
+    final name = _nameController.text.trim();
+    final newPass = _newPasswordController.text.trim();
+
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _errorMessage = 'Please enter a valid registered email');
+      return;
+    }
+    if (name.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your profile name');
+      return;
+    }
+    if (_selectedDob == null) {
+      setState(() => _errorMessage = 'Please choose your Date of Birth');
+      return;
+    }
+    if (newPass.length < 6) {
+      setState(() => _errorMessage = 'New password must be at least 6 characters');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final dynamic res = await SupaFlow.client.rpc(
+        'recover_password_with_dob',
+        params: {
+          'p_email': email,
+          'p_name': name,
+          'p_day': _selectedDob!.day,
+          'p_month': _selectedDob!.month,
+          'p_year': _selectedDob!.year,
+          'p_new_password': newPass,
+        },
+      );
+
+      final resMap = (res is Map)
+          ? res
+          : (res is String ? jsonDecode(res) : <String, dynamic>{});
+      final isSuccess = resMap['success'] == true;
+
+      if (isSuccess) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('saved_pm_password_$email', newPass);
+        if (!mounted) return;
+        Navigator.pop(context);
+        await widget.onSuccessLogin(email, newPass);
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = resMap['error']?.toString() ??
+              'Profile verification failed. Check your Name and Date of Birth.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Reset failed: $e';
+      });
+    }
+  }
+
+  String _formatDob(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        border: Border(
+          top: BorderSide(color: Color(0xFF334155), width: 1.2),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 12,
+            bottom: math.max(16, bottomInset + 12),
+          ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Drag Handle
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                        border: Border.all(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.lock_reset_rounded,
+                            color: Color(0xFF10B981), size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _showProfileReset
+                                ? 'Instant Account Recovery'
+                                : 'Saved Password Found',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            _showProfileReset
+                                ? 'Verify your profile to reset password & auto-login'
+                                : 'Found cached password on this device',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFA1A1AA),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white60, size: 22),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // 🌟 Saved Password Card Mode
+                if (!_showProfileReset && widget.cachedPassword != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('📱', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.initialEmail,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF334155)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.key_rounded,
+                                  color: Color(0xFFFACC15), size: 18),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _revealSavedPassword
+                                      ? widget.cachedPassword!
+                                      : '••••••••••••',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    letterSpacing:
+                                        _revealSavedPassword ? 0.5 : 2.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: EdgeInsets.zero,
+                                icon: Icon(
+                                  _revealSavedPassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: const Color(0xFFA1A1AA),
+                                  size: 20,
+                                ),
+                                onPressed: () => setState(() =>
+                                    _revealSavedPassword = !_revealSavedPassword),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // 1-Tap Log In Button
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF059669),
+                          offset: Offset(0, 3.5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          await widget.onSuccessLogin(
+                            widget.initialEmail,
+                            widget.cachedPassword!,
+                          );
+                        },
+                        child: Center(
+                          child: Text(
+                            'LOG IN WITH SAVED PASSWORD 🚀',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () =>
+                          setState(() => _showProfileReset = true),
+                      icon: const Icon(Icons.security_rounded,
+                          size: 15, color: Color(0xFF38BDF8)),
+                      label: Text(
+                        'Change or Reset Password with Profile 🔄',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF38BDF8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // 🛡️ Profile Verification Reset Form
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7F1D1D).withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEF4444)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: Color(0xFFFECACA), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFECACA),
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // Email Input
+                  Text(
+                    'Registered Email',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFA1A1AA),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'name@example.com',
+                      hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF64748B), fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      prefixIcon: const Icon(Icons.mail_outline_rounded,
+                          color: Color(0xFF94A3B8), size: 18),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF10B981), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Profile Name Input
+                  Text(
+                    'Profile Name (as on your account)',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFA1A1AA),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _nameController,
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Rahul Sharma',
+                      hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF64748B), fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      prefixIcon: const Icon(Icons.person_outline_rounded,
+                          color: Color(0xFF94A3B8), size: 18),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF10B981), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Date of Birth Picker
+                  Text(
+                    'Date of Birth',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFA1A1AA),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: _pickDateOfBirth,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 13),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_month_rounded,
+                              color: Color(0xFF10B981), size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _selectedDob != null
+                                  ? _formatDob(_selectedDob!)
+                                  : 'Select Date of Birth',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.edit_calendar_rounded,
+                              color: Color(0xFFA1A1AA), size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // New Password Input
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'New Password (min 6 chars)',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFA1A1AA),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _generateSuggestedPassword,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded,
+                                size: 13, color: Color(0xFF10B981)),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Quick Suggest',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _newPasswordController,
+                    obscureText: _obscurePassword,
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Enter new password',
+                      hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF64748B), fontSize: 13),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      prefixIcon: const Icon(Icons.lock_outline_rounded,
+                          color: Color(0xFF94A3B8), size: 18),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: const Color(0xFFA1A1AA),
+                          size: 19,
+                        ),
+                        onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF10B981), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Reset Submit Button
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF059669),
+                          offset: Offset(0, 3.5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: _isLoading ? null : _verifyAndResetPassword,
+                        child: Center(
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'VERIFY & RESET PASSWORD ⚡',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.6,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (widget.cachedPassword != null) ...[
+                    const SizedBox(height: 10),
+                    Center(
+                      child: TextButton(
+                        onPressed: () =>
+                            setState(() => _showProfileReset = false),
+                        child: Text(
+                          'Back to Saved Device Password ⬅️',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            color: const Color(0xFFA1A1AA),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

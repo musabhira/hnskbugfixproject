@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
 
 class VoiceMessagePlayer extends StatefulWidget {
   final String fileUrl;
@@ -188,6 +189,7 @@ class RobotVoiceMessagePlayer extends StatefulWidget {
   final int durationSeconds;
   final bool isFromCurrentUser;
   final Map<String, dynamic>? metadata;
+  final bool autoPlay;
 
   const RobotVoiceMessagePlayer({
     super.key,
@@ -195,6 +197,7 @@ class RobotVoiceMessagePlayer extends StatefulWidget {
     required this.durationSeconds,
     required this.isFromCurrentUser,
     this.metadata,
+    this.autoPlay = false,
   });
 
   @override
@@ -229,10 +232,7 @@ class _RobotVoiceMessagePlayerState extends State<RobotVoiceMessagePlayer>
 
   Future<void> _initTts() async {
     try {
-      await _flutterTts.setLanguage('en-US');
-      await _flutterTts.setSpeechRate(0.48);
-      await _flutterTts.setVolume(1.0);
-      await _flutterTts.setPitch(1.05);
+      await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts);
 
       _flutterTts.setCompletionHandler(() {
         if (mounted) {
@@ -267,6 +267,16 @@ class _RobotVoiceMessagePlayerState extends State<RobotVoiceMessagePlayer>
           _playbackTimer?.cancel();
         }
       });
+
+      final shouldAutoPlay =
+          widget.autoPlay || widget.metadata?['auto_play'] == true;
+      if (shouldAutoPlay && mounted && !_isPlaying) {
+        Future.delayed(const Duration(milliseconds: 350), () {
+          if (mounted && !_isPlaying) {
+            _togglePlay();
+          }
+        });
+      }
     } catch (e) {
       debugPrint('Robot TTS init error: $e');
     }
