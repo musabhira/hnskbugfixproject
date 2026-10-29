@@ -29,6 +29,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'onboarding/why_no_c_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
+import 'subscription_page.dart';
 
 enum WelcomeMode {
   welcome,
@@ -85,7 +87,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   WelcomeMode _mode = WelcomeMode.welcome;
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 17;
+  static const int _totalSteps = 16;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -136,12 +138,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
   String _selectedLearningGoal = 'Daily Fluency & Real Conversations';
-  int _selectedDailyGoalMins = 30;
+  int _selectedDailyGoalMins = 60;
   String _selectedPlan = 'free'; // 'free' or 'super'
   String _selectedPath = 'scratch'; // 'scratch' or 'placement'
 
   // ⏰ Schedule & Routine Planner State
-  String _selectedOccupation = 'Student';
+  final String _selectedOccupation = 'Student';
   String _selectedStudyTimeSlot = 'Custom';
   TimeOfDay? _customStudyTimeOfDay = const TimeOfDay(hour: 20, minute: 0);
   int _routineVariationIndex = 0;
@@ -232,21 +234,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     },
   ];
 
-  final List<Map<String, dynamic>> _occupations = [
-    {'title': 'Student', 'icon': Icons.school_rounded, 'emoji': '🎓'},
-    {
-      'title': 'Working Professional',
-      'icon': Icons.work_rounded,
-      'emoji': '💼'
-    },
-    {'title': 'Homemaker', 'icon': Icons.home_rounded, 'emoji': '🏡'},
-    {
-      'title': 'Freelancer / Self-Employed',
-      'icon': Icons.laptop_mac_rounded,
-      'emoji': '💻'
-    },
-  ];
-
   final List<Map<String, dynamic>> _studyTimeSlots = [
     {
       'title': 'Morning',
@@ -295,8 +282,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       'minutes': 30,
       'label': '30 Minutes / day',
       'desc': 'Quick bite-sized daily conversational sprint',
-      'badge': 'RECOMMENDED',
-      'badgeColor': Color(0xFF10B981),
+      'badge': 'LIGHT',
+      'badgeColor': Color(0xFF38BDF8),
       'icon': Icons.bolt_rounded,
     },
     {
@@ -311,8 +298,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       'minutes': 60,
       'label': '1 Hour / day',
       'desc': 'Accelerated fluency & daily coffee table discussions',
-      'badge': 'INTENSIVE',
-      'badgeColor': Color(0xFFFACC15),
+      'badge': 'RECOMMENDED',
+      'badgeColor': Color(0xFF10B981),
       'icon': Icons.workspace_premium_rounded,
     },
     {
@@ -908,7 +895,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Future<void> _initTts() async {
     try {
       _flutterTts = FlutterTts();
-      await _flutterTts!.setLanguage("en-US");
+      try {
+        await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts!);
+      } catch (_) {
+        await _flutterTts!.setLanguage("en-IN");
+      }
       await _flutterTts!.setSpeechRate(0.48);
       await _flutterTts!.setPitch(1.05);
       await _flutterTts!.setVolume(1.0);
@@ -935,17 +926,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       case 0:
         return "Notice something missing? There is no C in Poket Mates! No Comparison, No Criticism, No Classroom. The only C you need is Confidence!";
       case 1:
-        return "Let's answer 5 quick questions to personalize your English learning plan.";
-      case 2:
         return "What is your native language?";
+      case 2:
+        return "Who is learning English? Choose the personalized track suited for your learning journey.";
       case 3:
-        return "How did you hear about Pocket Mates?";
+        return "Let's answer quick questions to personalize your English learning plan.";
       case 4:
-        return "What is your current English speaking level?";
+        return "How did you hear about Pocket Mates?";
       case 5:
-        return "What is your primary goal for learning English?";
+        return "What is your current English speaking level?";
       case 6:
-        return "What is your daily routine or occupation?";
+        return "What is your primary goal for learning English?";
       case 7:
         return "What time of day works best for your daily English practice?";
       case 8:
@@ -2076,7 +2067,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       _buildStep3ReferralSource(),
                       _buildStep4EnglishLevel(),
                       _buildStep5LearningGoal(),
-                      _buildStepOccupation(),
                       _buildStepPreferredStudyTime(),
                       _buildStepDailyCommitment(),
                       _buildStepScheduleReview(),
@@ -2411,10 +2401,15 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
           // Option 2: 🎒 Student World (Ages 9 to 18)
           GestureDetector(
-            onTap: () {
+            onTap: () async {
               HapticFeedback.selectionClick();
-              _bgmPlayer?.stop();
-              PocketKidsOnboardingPage.launch(context, initialAgeGroup: '9-18');
+              await PocketKidsService.activateStudentAccount(
+                name: 'Student',
+                ageGroup: '9-18',
+                avatar: '🎒',
+                isPureStudent: false,
+              );
+              _nextStep();
             },
             child: Container(
               width: double.infinity,
@@ -2676,40 +2671,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _selectedLearningGoal = goal['title'] as String);
-            },
-          );
-        },
-      ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
-    );
-  }
-
-  // --- Step 6: Role / Occupation ---
-  Widget _buildStepOccupation() {
-    return _buildStepContainer(
-      title: 'What is your current role?',
-      mascotHint:
-          'Tell us your daily routine style so we can shape your schedule perfectly.',
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _occupations.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final occ = _occupations[index];
-          final isSelected = _selectedOccupation == occ['title'];
-          return _buildOptionCard(
-            title: occ['title'] as String,
-            leadingEmoji: occ['emoji'] as String,
-            leadingIcon: occ['icon'] as IconData,
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() {
-                _selectedOccupation = occ['title'] as String;
-                _generateOnboardingRoutine();
-              });
             },
           );
         },
@@ -4046,6 +4007,99 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
+  // 🌐 Native language translation helper for routine items
+  Map<String, String>? _getLocalizedRoutineItem(String id, String nativeLang) {
+    final lang = nativeLang.toLowerCase();
+    if (lang == 'english') return null;
+
+    final isMl = lang == 'malayalam';
+    final isTa = lang == 'tamil';
+    final isHi = lang == 'hindi';
+    final isKn = lang == 'kannada';
+    final isTe = lang == 'telugu';
+
+    if (id == 'onboarding_study_slot') {
+      if (isMl) return {'title': 'ഇംഗ്ലീഷ് സംഭാഷണ പരിശീലനം 🗣️', 'desc': 'ദിവസേനയുള്ള ഇംഗ്ലീഷ് സംസാര പരിശീലനവും വോയ്സ് റൂമും'};
+      if (isTa) return {'title': 'ஆங்கில பேசும் பயிற்சி 🗣️', 'desc': 'தினசரி உரையாடல் பயிற்சி மற்றும் குரல் அறை'};
+      if (isHi) return {'title': 'अंग्रेजी बोलने का अभ्यास 🗣️', 'desc': 'दैनिक स्पोकन इंग्लिश अभ्यास और वॉयस रूम'};
+      if (isKn) return {'title': 'ಇಂಗ್ಲಿಷ್ ಮಾತನಾಡುವ ಅಭ್ಯಾಸ 🗣️', 'desc': 'ದೈನಂದಿನ ಇಂಗ್ಲಿಷ್ ಸಂಭಾಷಣೆ ಮತ್ತು ಧ್ವನಿ ಕೊಠಡಿ'};
+      if (isTe) return {'title': 'ఇంగ్లీష్ మాట్లాడే సాధన 🗣️', 'desc': 'రోజువారీ స్పోకెన్ ఇంగ్లీష్ సాధన & వాయిస్ రూమ్'};
+    } else if (id == 'routine_wake') {
+      if (isMl) return {'title': 'ഉണരലും പ്രഭാത ഉന്മേഷവും 🌅', 'desc': 'പ്രഭാത വ്യായാമം, ഫ്രഷ് ആകൽ, ശുദ്ധജലം'};
+      if (isTa) return {'title': 'விடியலும் காலை புத்துணர்ச்சியும் 🌅', 'desc': 'காலை உடற்பயிற்சி மற்றும் புத்துணர்ச்சி'};
+      if (isHi) return {'title': 'सुबह जागना और ताजगी 🌅', 'desc': 'सुबह का व्यायाम, फ्रेश होना और पानी पीना'};
+      if (isKn) return {'title': 'ಬೆಳಗ್ಗೆ ಏಳುವುದು & ನವಚೈತನ್ಯ 🌅', 'desc': 'ಬೆಳಗಿನ ವ್ಯಾಯಾಮ, ಮುಖ ತೊಳೆಯುವುದು & ನೀರು'};
+      if (isTe) return {'title': 'మేల్కొలుపు & ఉదయపు ఉత్సాహం 🌅', 'desc': 'ఉదయపు వ్యಾಯామం, ఫ్రెష్ అవ్వడం & నీరు'};
+    } else if (id == 'routine_breakfast') {
+      if (isMl) return {'title': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും 🍳', 'desc': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും'};
+      if (isTa) return {'title': 'குளியல் மற்றும் சத்தான காலை உணவு 🍳', 'desc': 'குளியல், சுவையான காலை உணவு மற்றும் புறப்படுதல்'};
+      if (isHi) return {'title': 'स्नान और पौष्टिक नाश्ता 🍳', 'desc': 'नहाना, सेहतमंद नाश्ता और दिन की तैयारी'};
+      if (isKn) return {'title': 'ಸ್ನಾನ ಮತ್ತು ಪೌಷ್ಟಿಕ ಉಪಹಾರ 🍳', 'desc': 'ಸ್ನಾನ, ಉತ್ತಮ ಉಪಹಾರ ಮತ್ತು ದಿನದ ಆರಂಭ'};
+      if (isTe) return {'title': 'స్నానం & పోషకమైన అల్పాహారం 🍳', 'desc': 'స్నానం, ఆరోగ్యకరమైన టిఫిన్ & తయారీ'};
+    } else if (id == 'routine_classes') {
+      if (isMl) return {'title': 'സ്കൂൾ / കോളേജ് ക്ലാസുകൾ 📚', 'desc': 'ക്ലാസ്സ് ലക്ചറുകൾ, കുറിപ്പുകൾ, സജീവ പങ്കാളിത്തം'};
+      if (isTa) return {'title': 'பள்ளி / கல்லூரி வகுப்புகள் 📚', 'desc': 'பாடங்கள், குறிப்புகள் மற்றும் கலந்துரையாடல்'};
+      if (isHi) return {'title': 'स्कूल / कॉलेज की कक्षाएं 📚', 'desc': 'मुख्य व्याख्यान, नोट्स और पढ़ाई'};
+      if (isKn) return {'title': 'ಶಾಲೆ / ಕಾಲೇಜು ತರಗತಿಗಳು 📚', 'desc': 'ಉಪನ್ಯಾಸಗಳು, ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಅಧ್ಯಯನ'};
+      if (isTe) return {'title': 'పాఠశాల / కళాశాల తరగతులు 📚', 'desc': 'తరగతులు, నోట్స్ మరియు విద్యార్థి భాగస్వామ్యం'};
+    } else if (id == 'routine_work_morn' || id == 'routine_work') {
+      if (isMl) return {'title': 'ഓഫീസ് ജോലിയും ടീം മീറ്റിംഗുകളും 💼', 'desc': 'പ്രധാന പ്രോജക്റ്റുകൾ, ടീം ചർച്ചകൾ'};
+      if (isTa) return {'title': 'அலுவலக வேலை மற்றும் சந்திப்புகள் 💼', 'desc': 'முக்கிய திட்டங்கள் மற்றும் குழு விவாதங்கள்'};
+      if (isHi) return {'title': 'कार्यालय कार्य और टीम मीटिंग 💼', 'desc': 'महत्वपूर्ण प्रोजेक्ट्स और टीम चर्चा'};
+      if (isKn) return {'title': 'ಕಚೇರಿ ಕೆಲಸ ಮತ್ತು ಸಭೆಗಳು 💼', 'desc': 'ಮುಖ್ಯ ಯೋಜನೆಗಳು ಮತ್ತು ತಂಡದ ಚರ್ಚೆಗಳು'};
+      if (isTe) return {'title': 'ఆఫీస్ పని & మీటింగులు 💼', 'desc': 'ముఖ్యమైన ప్రాజెక్ట్‌లు మరియు సమావేశాలు'};
+    } else if (id == 'routine_lunch') {
+      if (isMl) return {'title': 'ഉച്ചഭക്ഷണവും ലഘുവിശ്രമവും 🥗', 'desc': 'രുചികരമായ ഉച്ചഭക്ഷണവും നടപ്പും'};
+      if (isTa) return {'title': 'மதிய உணவு மற்றும் நடைபயிற்சி 🥗', 'desc': 'ஆரோக்கியமான மதிய உணவு மற்றும் ஓய்வு'};
+      if (isHi) return {'title': 'दोपहर का भोजन और थोड़ा आराम 🥗', 'desc': 'पौष्टिक खाना और स्क्रीन से दूरी'};
+      if (isKn) return {'title': 'ಮಧ್ಯಾಹ್ನದ ಊಟ & ವಿಶ್ರಾಂತಿ 🥗', 'desc': 'ಪೌಷ್ಟಿಕ ಊಟ ಮತ್ತು ಸಣ್ಣ ನಡಿಗೆ'};
+      if (isTe) return {'title': 'మధ్యాహ్న భోజనం & విశ్రాంతి 🥗', 'desc': 'ఆరోగ్యకరమైన భోజనం మరియు కొద్దిసేపు నడక'};
+    } else if (id == 'routine_work_aft') {
+      if (isMl) return {'title': 'ഉച്ചകഴിഞ്ഞുള്ള ജോലികൾ 📊', 'desc': 'ഇമെയിലുകൾ, പ്രോജക്റ്റ് പൂർത്തീകരണം'};
+      if (isTa) return {'title': 'பிற்பகல் பணிகள் மற்றும் நிறைவு 📊', 'desc': 'மின்னஞ்சல்கள் மற்றும் வேலைகள்'};
+      if (isHi) return {'title': 'दोपहर का कार्य समापन 📊', 'desc': 'ईमेल, बातचीत और कार्य समापन'};
+      if (isKn) return {'title': 'ಮಧ್ಯಾಹ್ನದ ನಂತರದ ಕೆಲಸ 📊', 'desc': 'ಇಮೇಲ್‌ಗಳು ಮತ್ತು ದಿನದ ಗುರಿಗಳು'};
+      if (isTe) return {'title': 'మధ్యాహ్నపు పనులు & ముగింపు 📊', 'desc': 'ఈమెయిల్స్ మరియు ప్రాజెక్ట్ పనులు'};
+    } else if (id == 'routine_chores') {
+      if (isMl) return {'title': 'വീട്ടുജോലിയും തയ്യാറെടുപ്പുകളും 🥗', 'desc': 'വീട് അടുക്കലും ഉച്ചഭക്ഷണ തയ്യാറെടുപ്പും'};
+      if (isTa) return {'title': 'வீட்டுப் பராமரிப்பு மற்றும் சமையல் 🥗', 'desc': 'வீட்டை ஒழுங்குபடுத்துதல் மற்றும் மதிய உணவு தயாரிப்பு'};
+      if (isHi) return {'title': 'घर की देखभाल और खाना बनाना 🥗', 'desc': 'घर का काम और दोपहर के भोजन की तैयारी'};
+      if (isKn) return {'title': 'ಮನೆ ಕೆಲಸ ಮತ್ತು ಅಡುಗೆ 🥗', 'desc': 'ಮನೆ ಸ್ವಚ್ಛತೆ ಮತ್ತು ಮಧ್ಯಾಹ್ನದ ಊಟದ ತಯಾರಿ'};
+      if (isTe) return {'title': 'ఇంటి పనులు & వంట తయారీ 🥗', 'desc': 'ఇల్లు సర్దుకోవడం మరియు భోజనం సిద్ధం చేయడం'};
+    } else if (id == 'routine_rest') {
+      if (isMl) return {'title': 'വിശ്രമവും വ്യക്തിഗത സമയവും 🧘', 'desc': 'വിശ്രമം, ഹോബികൾ, പുസ്തക വായന'};
+      if (isTa) return {'title': 'ஓய்வு மற்றும் தனிப்பட்ட நேரம் 🧘', 'desc': 'புத்தக வாசிப்பு மற்றும் அமைதியான நேரம்'};
+      if (isHi) return {'title': 'आराम और व्यक्तिगत समय 🧘', 'desc': 'हॉबी, पढ़ना या छोटी झपकी'};
+      if (isKn) return {'title': 'ವಿಶ್ರಾಂತಿ ಮತ್ತು ವೈಯಕ್ತಿಕ ಸಮಯ 🧘', 'desc': 'ವಿಶ್ರಾಂತಿ, ಹವ್ಯಾಸಗಳು ಅಥವಾ ಪುಸ್ತಕ ಓದುವುದು'};
+      if (isTe) return {'title': 'విశ్రాంతి & వ్యక్తిగత సమయం 🧘', 'desc': 'విశ్రాంతి, అభిరుచులు మరియు పుస్తక పఠనం'};
+    } else if (id == 'routine_play') {
+      if (isMl) return {'title': 'വിനോദവും കളിയും വൈകുന്നേര ചായയും ⚽', 'desc': 'കളി, വൈകുന്നേരത്തെ ചായ, സുഹൃത്തുക്കളുമായി സമയം'};
+      if (isTa) return {'title': 'விளையாட்டு, மாலை தேநீர் மற்றும் ஓய்வு ⚽', 'desc': 'நண்பர்களுடன் விளையாட்டு, தேநீர் மற்றும் அரட்டை'};
+      if (isHi) return {'title': 'खेलकूद, शाम की चाय और ताजगी ⚽', 'desc': 'दोस्तों के साथ खेल, शाम की चाय और मौज'};
+      if (isKn) return {'title': 'ಆಟ, ಸಂಜೆಯ ಚಹಾ ಮತ್ತು ಮನರಂಜನೆ ⚽', 'desc': 'ಆಟವಾಡುವುದು, ಚಹಾ ಮತ್ತು ಸ್ನೇಹಿತರೊಂದಿಗೆ ಮಾತುಕತೆ'};
+      if (isTe) return {'title': 'ఆటలు, సాయంత్రపు టీ & సేదదీరడం ⚽', 'desc': 'స్నేహితులతో ఆటలు, టీ మరియు ముచ్చట్లు'};
+    } else if (id == 'routine_homework') {
+      if (isMl) return {'title': 'സ്വയംപഠനവും പുനരവലോകനവും 📝', 'desc': 'ഹോംവർക്ക്, പരീക്ഷാ തയ്യാറെടുപ്പ്, പാഠഭാഗങ്ങൾ'};
+      if (isTa) return {'title': 'சுய படிப்பு மற்றும் வீட்டுப்பாடம் 📝', 'desc': 'வீட்டுப்பாடம் மற்றும் தேர்வுக்கான படிப்பு'};
+      if (isHi) return {'title': 'स्वाध्याय और रिवीजन 📝', 'desc': 'होमवर्क, परीक्षा की तैयारी और पुनरावृत्ति'};
+      if (isKn) return {'title': 'ಸ್ವಯಂ ಅಧ್ಯಯನ ಮತ್ತು ಪುನರಾವರ್ತನೆ 📝', 'desc': 'ಮನೆಕೆಲಸ ಮತ್ತು ಪರೀಕ್ಷೆಯ ತಯಾರಿ'};
+      if (isTe) return {'title': 'స్వీయ అధ్యయనం & పునశ్చరణ 📝', 'desc': 'హోంవర్క్ మరియు పరీక్షల ప్రిపరేషన్'};
+    } else if (id == 'routine_dinner') {
+      if (isMl) return {'title': 'അത്താഴവും കുടുംബത്തോടൊപ്പമുള്ള സമയവും 🍲', 'desc': 'സ്വാദിഷ്ടമായ അത്താഴവും കുടുംബ സല്ലാപവും'};
+      if (isTa) return {'title': 'இரவு உணவு மற்றும் குடும்ப நேரம் 🍲', 'desc': 'சுவையான இரவு உணவு மற்றும் குடும்ப உரையாடல்'};
+      if (isHi) return {'title': 'रात का भोजन और परिवार के साथ समय 🍲', 'desc': 'स्वादिष्ट खाना और परिवार के साथ बातचीत'};
+      if (isKn) return {'title': 'ರಾತ್ರಿಯ ಊಟ ಮತ್ತು ಕುಟುಂಬದ ಸಮಯ 🍲', 'desc': 'ಕುಟುಂಬದೊಂದಿಗೆ ಊಟ ಮತ್ತು ಮಾತುಕತೆ'};
+      if (isTe) return {'title': 'రాత్రి భోజనం & కుటుంబ సమయం 🍲', 'desc': 'కుటుంబ సభ్యులతో భోజనం మరియు ఆనంద సమయం'};
+    } else if (id == 'routine_sleep') {
+      if (isMl) return {'title': 'രാത്രി ഉറക്കവും വിശ്രമവും 🌙', 'desc': 'ഫോൺ മാറ്റി വെച്ചുള്ള സുഖകരമായ ഉറക്കം'};
+      if (isTa) return {'title': 'இரவு நிம்மதியான தூக்கம் 🌙', 'desc': 'திரை இல்லாமல் ஆரோக்கியமான தூக்கம்'};
+      if (isHi) return {'title': 'रात की आरामदायक नींद 🌙', 'desc': 'स्क्रीन बंद करके गहरी और शांतिपूर्ण नींद'};
+      if (isKn) return {'title': 'ರಾತ್ರಿಯ ಸುಖ ನಿದ್ರೆ 🌙', 'desc': 'ಮೊಬೈಲ್ ಬದಿಗಿಟ್ಟು ಶಾಂತ ನಿದ್ರೆ'};
+      if (isTe) return {'title': 'హాయిగా రాత్రి నిద్ర 🌙', 'desc': 'స్క్రీన్ పక్కన పెట్టి ప్రశాంతమైన నిద్ర'};
+    }
+    return null;
+  }
+
   // 📇 Sleek dark schedule card with tap-to-edit, alarm bell, and checkmark
   Widget _buildOnboardingScheduleCard(OnboardingRoutineItem item, int index) {
     final startHour = item.startTime.hour;
@@ -4067,6 +4121,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         '${endHour12.toString().padLeft(2, '0')}:${endMin.toString().padLeft(2, '0')} $endPeriod';
 
     final isStudy = item.isStudySlot;
+    final locItem = _getLocalizedRoutineItem(item.id, _selectedNativeLanguage);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -4181,6 +4236,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             : null,
                       ),
                     ),
+                    if (locItem != null && locItem['title'] != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        locItem['title']!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF38BDF8),
+                        ),
+                      ),
+                    ],
                     if (item.description != null &&
                         item.description!.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -4192,6 +4258,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           height: 1.35,
                         ),
                       ),
+                      if (locItem != null && locItem['desc'] != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          locItem['desc']!,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF64748B),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
@@ -4575,6 +4652,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // --- Step 9: Plan Choice (Super vs Free) ---
   Widget _buildStep9PlanChoice() {
+    final isSuper = _selectedPlan == 'super';
     return _buildStepContainer(
       title: 'How do you want to get started?',
       mascotHint: 'Select your preferred experience (change anytime).',
@@ -4587,7 +4665,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             badge: '⚡ PRO',
             badgeColor: const Color(0xFFFACC15),
             leadingEmoji: '👑',
-            isSelected: _selectedPlan == 'super',
+            isSelected: isSuper,
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _selectedPlan = 'super');
@@ -4601,7 +4679,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             badge: '100% FREE',
             badgeColor: const Color(0xFF38BDF8),
             leadingEmoji: '🌱',
-            isSelected: _selectedPlan == 'free',
+            isSelected: !isSuper,
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _selectedPlan = 'free');
@@ -4609,8 +4687,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
         ],
       ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
+      onContinue: () async {
+        if (_selectedPlan == 'super') {
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+          );
+          _nextStep();
+        } else {
+          _nextStep();
+        }
+      },
+      buttonText: isSuper ? 'CONTINUE WITH SUPER ⚡' : 'CONTINUE FOR FREE',
     );
   }
 
