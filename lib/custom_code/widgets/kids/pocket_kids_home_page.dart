@@ -489,7 +489,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Great job completing today\'s Spoken English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight.',
+                    'Great job completing today\'s Spoken English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight.\n\nIn the meantime, you can attack houses in Buddy Village and earn Kids Score (KS)! Or unlock all days anytime with VIP Pass 👑',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF94A3B8),
@@ -529,34 +529,68 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: const Color(0xFF78350F),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      elevation: 4,
-                    ),
-                    onPressed: () {
-                      ticker?.cancel();
-                      Navigator.pop(ctx);
-                      _showAdventurePassSheet(context, targetDay: day);
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('⚡ ', style: TextStyle(fontSize: 15)),
-                        Text(
-                          'UNLOCK WITH VIP PASS',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13.5,
-                          ),
+                  const SizedBox(height: 14),
+                  // ⚔️ ATTACK HOUSES IN BUDDY VILLAGE (Allowed anytime during cooldown!)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF7043),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ],
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        elevation: 3,
+                      ),
+                      icon: const Text('⚔️🏡', style: TextStyle(fontSize: 16)),
+                      label: Text(
+                        'ATTACK HOUSES IN BUDDY VILLAGE',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      onPressed: () {
+                        ticker?.cancel();
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _selectedNavIndex = 1; // Switch to Village tab
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        foregroundColor: const Color(0xFF78350F),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        elevation: 4,
+                      ),
+                      onPressed: () {
+                        ticker?.cancel();
+                        Navigator.pop(ctx);
+                        _showAdventurePassSheet(context, targetDay: day);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('👑 ', style: TextStyle(fontSize: 15)),
+                          Text(
+                            'UNLOCK ALL DAYS WITH VIP PASS',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),

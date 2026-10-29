@@ -338,10 +338,19 @@ class PocketKidsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyKidIsPremium, value);
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid != null) {
+        await SupaFlow.client
+            .from('profile')
+            .update({'is_premium': value})
+            .eq('user_id', uid)
+            .catchError((_) {});
+      }
     } catch (_) {}
     if (value) {
       kidDayNotifier.value = 300;
     }
+    syncKidProgressToParentCloud();
   }
 
   static String getTodayDateString() {
@@ -354,11 +363,15 @@ class PocketKidsService {
     if (isAdminAccount || isKidPremium) return false;
     if (day <= 1) return false;
 
-    // ⚔️ User Audio Directive: If user raided houses and accumulated the required
-    // Student Score (SS) / Pocket Score for this day, it UNLOCKS IMMEDIATELY bypassing midnight!
-    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
-    if (_studentScore >= reqScore && reqScore > 0) {
-      return false; // Unlocked immediately by earned raid score!
+    // ⚔️ In Student Mode, student score from raiding houses can bypass midnight lock.
+    // BUT in Kids Mode, kids have Kids Score (KS), and house raiding does NOT unlock
+    // next days before 12:00 AM midnight (kids can raid houses in the meantime, but
+    // the learning trail strictly unlocks at 12:00 AM midnight unless Premium is active)!
+    if (!isKidsWorld) {
+      final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+      if (_studentScore >= reqScore && reqScore > 0) {
+        return false; // Unlocked immediately by earned raid score in Student Mode!
+      }
     }
 
     if (_lastCompletedDay != null && day == _lastCompletedDay! + 1) {
@@ -378,12 +391,14 @@ class PocketKidsService {
     if (day == _currentUnlockedDay) {
       return !isDayLockedByMidnightTimer(day);
     }
-    // Also if accumulated score meets future day requirement:
-    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
-    if (_studentScore >= reqScore &&
-        reqScore > 0 &&
-        day <= (_lastCompletedDay ?? 0) + 1) {
-      return true;
+    // Also if accumulated score meets future day requirement (Student Mode only):
+    if (!isKidsWorld) {
+      final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+      if (_studentScore >= reqScore &&
+          reqScore > 0 &&
+          day <= (_lastCompletedDay ?? 0) + 1) {
+        return true;
+      }
     }
     return false;
   }
@@ -423,7 +438,7 @@ class PocketKidsService {
   static String get kidAvatar => _kidAvatar;
   static int get kidStars => _kidStars;
   static int get currentUnlockedDay =>
-      isAdminAccount ? 300 : _currentUnlockedDay;
+      (isAdminAccount || isKidPremium) ? 300 : _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
   static Set<String> get friendIds => Set.unmodifiable(_friendIds);
   static Set<String> get sentRequestIds => Set.unmodifiable(_sentRequestIds);

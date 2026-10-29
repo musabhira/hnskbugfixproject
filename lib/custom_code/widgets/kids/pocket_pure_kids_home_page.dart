@@ -2622,7 +2622,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Great job completing today\'s English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight. Unlock now with Adventure Pass (Premium)!',
+                    'Great job completing today\'s English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight.\n\nIn the meantime, you can attack houses in Buddy Village and earn Kids Score (KS)! Or unlock all 300 levels anytime with VIP Pass 👑',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF94A3B8),
@@ -2662,46 +2662,81 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: const Color(0xFF78350F),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 14),
+                  // ⚔️ ATTACK HOUSES IN BUDDY VILLAGE (Allowed anytime during cooldown!)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF7043), // Candy Coral
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        elevation: 3,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      elevation: 4,
+                      icon: const Text('⚔️🏡', style: TextStyle(fontSize: 16)),
+                      label: Text(
+                        'ATTACK HOUSES IN BUDDY VILLAGE',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      onPressed: () {
+                        ticker?.cancel();
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _currentTab = 0; // Switch to Buddy Village / House Raids!
+                        });
+                      },
                     ),
-                    onPressed: () async {
-                      ticker?.cancel();
-                      final messenger = ScaffoldMessenger.of(context);
-                      Navigator.pop(ctx);
-                      await PocketKidsService.setKidPremium(true);
-                      if (!mounted) return;
-                      setState(() {});
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Adventure Pass Activated! Day $day Unlocked! 🌟',
-                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                          ),
-                          backgroundColor: const Color(0xFF10B981),
+                  ),
+                  const SizedBox(height: 8),
+                  // 👑 UNLOCK ALL 300 DAYS (PREMIUM)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        foregroundColor: const Color(0xFF78350F),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('⚡ ', style: TextStyle(fontSize: 15)),
-                        Text(
-                          'UNLOCK WITH VIP PASS',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13.5,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        elevation: 4,
+                      ),
+                      onPressed: () async {
+                        ticker?.cancel();
+                        final messenger = ScaffoldMessenger.of(context);
+                        Navigator.pop(ctx);
+                        await PocketKidsService.setKidPremium(true);
+                        if (!mounted) return;
+                        setState(() {});
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '👑 Premium Activated! All 300 Days Unlocked Instantly! 🌟',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: const Color(0xFF10B981),
                           ),
-                        ),
-                      ],
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('👑 ', style: TextStyle(fontSize: 15)),
+                          Text(
+                            'UNLOCK ALL 300 DAYS (PREMIUM)',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
