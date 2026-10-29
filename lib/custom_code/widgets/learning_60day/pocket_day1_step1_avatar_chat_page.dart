@@ -140,14 +140,17 @@ class _PocketDay1Step1AvatarChatPageState
   bool _isSpeaking = false;
   bool _isSoundMuted = false;
   bool _isListening = false;
+  // ignore: unused_field
   bool _isAnalyzing = false;
   bool _speechAvailable = false;
+  // ignore: unused_field
   bool _isProcessingVoice = false;
   String _liveRecordedWords = '';
   bool _showMicGuideArrow = false;
   bool _hasShownMicGuide = false;
 
   String _userName = 'Hira'; // Default learner name as instructed in user audio
+  // ignore: unused_field
   String _nativeLanguage = 'Malayalam';
   String _currentExpectedVoicePhrase = 'Yes or No';
   int _currentLetterIndex = 0; // 0 to 25 for A-Z
@@ -340,8 +343,14 @@ class _PocketDay1Step1AvatarChatPageState
   void _startWelcomeDiagnosticFlow() {
     final promptEn =
         'Hi $_userName! I am CyberCat 🐱. Shall we learn the English Alphabet (ABCD) today?';
-    final promptMl =
-        'ഹായ് $_userName! ഞാൻ സൈബർ ക്യാറ്റ് 🐱. നമുക്കിന്ന് ഇംഗ്ലീഷ് ആൽഫബെറ്റ് (ABCD) പഠിച്ചാലോ?';
+    final promptNative = PocketLanguageService.localize(
+      en: promptEn,
+      ml: 'ഹായ് $_userName! ഞാൻ സൈബർ ക്യാറ്റ് 🐱. നമുക്കിന്ന് ഇംഗ്ലീഷ് ആൽഫബെറ്റ് (ABCD) പഠിച്ചാലോ?',
+      ta: 'வணக்கம் $_userName! நான் சைபர் கேட் 🐱. இன்று ஆங்கில எழுத்துக்களை (ABCD) கற்கலாமா?',
+      hi: 'नमस्ते $_userName! मैं साइबरकैट हूँ 🐱। क्या आज हम अंग्रेज़ी वर्णमाला (ABCD) सीखें?',
+      kn: 'ಹಲೋ $_userName! ನಾನು ಸೈಬರ್‌ಕ್ಯಾಟ್ 🐱. ಇಂದು ಇಂಗ್ಲಿಷ್ ವರ್ಣಮಾಲೆಯನ್ನು (ABCD) ಕಲಿಯೋಣವೇ?',
+      te: 'హలో $_userName! నేను సైబర్‌క్యాట్ 🐱. ఈరోజు ఆంగ్ల వర్ణమాల (ABCD) నేర్చుకుందామా?',
+    );
 
     _currentExpectedVoicePhrase = 'Yes or No';
     _currentLetterIndex = 0;
@@ -353,14 +362,14 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'welcome_diag',
           isAvatar: true,
           textEn: promptEn,
-          textNative: promptMl,
+          textNative: promptNative,
           audioText:
               'Hi $_userName! I am CyberCat. Shall we learn the English Alphabet today?',
           speakThisPrompt: 'Speak or Tap the Answer:',
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '✅ YES, LET\'S LEARN ABCD!',
-              labelNative: 'പഠിക്കാം! 🔤',
+              labelNative: PocketLanguageService.getAppPhrase('lets_learn_abcd', fallback: '✅ Learn! 🔤'),
               icon: '✅',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857), // Distinct Emerald Green
@@ -373,7 +382,7 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '⚡ SKIP TO LEVEL 2',
-              labelNative: 'അറിയാം (Next Level) ➔',
+              labelNative: PocketLanguageService.getAppPhrase('know_next_level', fallback: '⚡ Next Level ➔'),
               icon: '⚡',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -397,8 +406,14 @@ class _PocketDay1Step1AvatarChatPageState
   void _onUserAlreadyKnowsAlphabet() {
     final replyEn =
         'Awesome, $_userName! 🎉 You already know the alphabet! Step 1 is complete! Let\'s drive to Level 2: Vocabulary Words! 🚗';
-    final replyMl =
-        'വളരെ നല്ലത്, $_userName! നിങ്ങൾക്ക് അക്ഷരങ്ങൾ അറിയാവുന്നതിനാൽ Step 1 പൂർത്തിയായി. നമുക്ക് ലെവൽ 2-ലേക്ക് പോകാം!';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'വളരെ നല്ലത്, $_userName! നിങ്ങൾക്ക് അക്ഷരങ്ങൾ അറിയാവുന്നതിനാൽ Step 1 പൂർത്തിയായി. നമുക്ക് ലെവൽ 2-ലേക്ക് പോകാം! 🚗',
+      ta: 'அருமை, $_userName! உங்களுக்கு எழுத்துக்கள் ஏற்கனவே தெரியும் என்பதால் படி 1 முடிந்தது. நிலை 2-க்கு செல்வோம்! 🚗',
+      hi: 'बहुत बढ़िया, $_userName! आपको पहले से वर्णमाला आती है, स्टेप 1 पूरा हुआ। चलिए लेवल 2 पर चलते हैं! 🚗',
+      kn: 'ಅದ್ಭುತ, $_userName! ನಿಮಗೆ ಈಗಾಗಲೇ ವರ್ಣಮಾಲೆ ತಿಳಿದಿರುವುದರಿಂದ ಹಂತ 1 ಮುಗಿದಿದೆ. ಹಂತ 2 ಕ್ಕೆ ಹೋಗೋಣ! 🚗',
+      te: 'చాలా బాగుంది, $_userName! మీకు ముందే అక్షరాలు తెలుసు కాబట్టి దశ 1 పూర్తయింది. లెవెల్ 2 కి వెళ్దాం! 🚗',
+    );
 
     _currentExpectedVoicePhrase = 'Proceed to Level 2';
 
@@ -408,14 +423,14 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'avatar_congrats_skip',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText:
               'Awesome, $_userName! You already know the alphabet. Step 1 is complete! Let\'s drive to Level 2!',
           speakThisPrompt: 'Tap below to exit & drive to Level 2 🚗',
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚗 PROCEED TO LEVEL 2 (NEXT) ➔',
-              labelNative: 'ലെവൽ 2-ലേക്ക് ഡ്രൈവ് ചെയ്യാം',
+              labelNative: PocketLanguageService.getAppPhrase('drive_to_level_2', fallback: 'Drive to Level 2 🚗'),
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -436,8 +451,14 @@ class _PocketDay1Step1AvatarChatPageState
   void _onUserWantsToLearnAlphabet() {
     final replyEn =
         'Fantastic, $_userName! Would you like to learn by playing a game or by speaking in chat? 🎈🗣️';
-    final replyMl =
-        'ഗംഭീരം, $_userName! നമുക്ക് ഗെയിം കളിച്ച് പഠിക്കണോ, അതോ സംസാരിച്ച് പഠിക്കണോ?';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'ഗംഭീരം, $_userName! നമുക്ക് ഗെയിം കളിച്ച് പഠിക്കണോ, അതോ സംസാരിച്ച് പഠിക്കണോ? 🎈🗣️',
+      ta: 'அற்புதம், $_userName! விளையாட்டு விளையாடிக் கற்கலாமா, அல்லது அரட்டையில் பேசிக் கற்கலாமா? 🎈🗣️',
+      hi: 'शानदार, $_userName! क्या आप गेम खेलकर सीखना चाहते हैं या चैट में बोलकर? 🎈🗣️',
+      kn: 'ಅದ್ಭುತ, $_userName! ಆಟವಾಡಿ ಕಲಿಯಲು ಬಯಸುತ್ತೀರಾ ಅಥವಾ ಚಾಟ್‌ನಲ್ಲಿ ಮಾತನಾಡಿಯೇ? 🎈🗣️',
+      te: 'అద్భుతం, $_userName! గేమ్ ఆడి నేర్చుకుంటారా లేక చాట్‌లో మాట్లాడి నేర్చుకుంటారా? 🎈🗣️',
+    );
 
     _currentExpectedVoicePhrase = 'Balloon Game or Speaking';
 
@@ -447,14 +468,14 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'learning_preference_choice',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText:
               'Fantastic, $_userName! Would you like to play the Balloon Pop game, or practice speaking in chat?',
           speakThisPrompt: 'Choose your learning style:',
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🎈 PLAY BALLOON GAME',
-              labelNative: 'ബലൂൺ പൊട്ടിച്ചു പഠിക്കാം! 💥',
+              labelNative: PocketLanguageService.getAppPhrase('balloon_pop_learn', fallback: 'Pop Balloons! 💥'),
               icon: '🎈',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF9333EA), // Vibrant Purple
@@ -467,7 +488,7 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '🗣️ SPEAKING CHAT',
-              labelNative: 'സംസാരിച്ചു പഠിക്കാം! 🎙️',
+              labelNative: PocketLanguageService.getAppPhrase('speak_to_learn', fallback: 'Speak & Learn! 🎙️'),
               icon: '🗣️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF0284C7), // Vibrant Cyan Blue
@@ -500,9 +521,14 @@ class _PocketDay1Step1AvatarChatPageState
     final replyEn =
         '🎈 Ready for the Balloon Sky Pop Adventure, $_userName?\n\n'
         'Tap the button below to launch into the open sky! Pop floating A-Z balloons, hear phonics, and repeat words to master the alphabet! 🌟';
-    final replyMl =
-        '$_userName, ആകാശത്തേക്ക് പറന്നുയരുന്ന ബലൂണുകൾ പൊട്ടിച്ച് A-Z പഠിക്കാം!\n\n'
-        'താഴെയുള്ള ബട്ടണിൽ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ബലൂൺ ഗെയിമിലേക്ക് പോകൂ! 🎈⛅';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: '$_userName, ആകാശത്തേക്ക് പറന്നുയരുന്ന ബലൂണുകൾ പൊട്ടിച്ച് A-Z പഠിക്കാം!\n\nതാഴെയുള്ള ബട്ടണിൽ ടാപ്പ് ചെയ്ത് ഫുൾ-സ്ക്രീൻ ബലൂൺ ഗെയിമിലേക്ക് പോകൂ! 🎈⛅',
+      ta: '$_userName, வானத்தில் மிதக்கும் பலூன்களை உடைத்து A-Z கற்கலாம்!\n\nகீழே உள்ள பட்டனைத் தட்டி முழுத்திரை விளையாட்டைத் தொடங்குங்கள்! 🎈⛅',
+      hi: '$_userName, आसमान में तैरते गुब्बारे फोड़कर A-Z सीखें!\n\nनीचे दिए गए बटन पर टैप करके फुल-स्क्रीन गेम शुरू करें! 🎈⛅',
+      kn: '$_userName, ಆಕಾಶದಲ್ಲಿ ತೇಲುವ ಬಲೂನ್‌ಗಳನ್ನು ಒಡೆದು A-Z ಕಲಿಯಿರಿ!\n\nಕೆಳಗಿನ ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡಿ ಪೂರ್ಣ-ಪರದೆ ಆಟವನ್ನು ಪ್ರಾರಂಭಿಸಿ! 🎈⛅',
+      te: '$_userName, ఆకాశంలో తేలియాడే బెలూన్లను పగలగొట్టి A-Z నేర్చుకోండి!\n\nక్రింది బటన్‌పై నొక్కి పూర్తి-స్క్రీన్ గేమ్‌ను ప్రారంభించండి! 🎈⛅',
+    );
 
     setState(() {
       _messages.add(
@@ -510,7 +536,7 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'balloon_sky_launch_card',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText:
               'Ready for the Balloon Sky Pop Adventure, $_userName? Tap the button below to launch into the open sky!',
           cardContent: _buildBalloonSkyLaunchCard(),
@@ -518,7 +544,7 @@ class _PocketDay1Step1AvatarChatPageState
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚀 START BALLOON SKY POP ADVENTURE 🎈',
-              labelNative: 'ഫുൾ-സ്ക്രീൻ ഗെയിം ആരംഭിക്കുക ➔',
+              labelNative: PocketLanguageService.getAppPhrase('start_fullscreen_game', fallback: 'Start Game ➔'),
               icon: '🎈',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -528,7 +554,7 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '🗣️ SWITCH TO SPEAKING CHAT',
-              labelNative: 'സംസാരിച്ചു പഠിക്കുന്നതിലേക്ക് മാറ്റുക',
+              labelNative: PocketLanguageService.getAppPhrase('switch_to_speaking', fallback: 'Switch to Speaking'),
               icon: '💬',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -551,6 +577,7 @@ class _PocketDay1Step1AvatarChatPageState
   Future<void> _launchBalloonSkyGame() async {
     HapticFeedback.heavyImpact();
     await _tts.stop();
+    if (!mounted) return;
     setState(() => _isSpeaking = false);
 
     await PocketAlphabetBalloonSkyGamePage.show(
@@ -722,6 +749,7 @@ class _PocketDay1Step1AvatarChatPageState
     );
   }
 
+  // ignore: unused_element
   Widget _buildBalloonPopGameCard() {
     final letters = Day1AlphabetData.lettersAtoZ;
     final balloonColors = [
@@ -884,7 +912,6 @@ class _PocketDay1Step1AvatarChatPageState
                     final ltr = item['letter']?.toString() ?? '';
                     final wrd = item['word']?.toString() ?? '';
                     final em = item['emoji']?.toString() ?? '';
-                    final snd = item['sound']?.toString() ?? '';
                     final isPopped = _poppedLetters.contains(ltr);
                     final color = balloonColors[i % balloonColors.length];
 
@@ -1024,17 +1051,19 @@ class _PocketDay1Step1AvatarChatPageState
     final item = letters[safeIndex];
     final letter = item['letter']?.toString() ?? 'A';
     final word = item['word']?.toString() ?? 'Apple';
-    final sound = item['sound']?.toString() ?? '';
     final emoji = item['emoji']?.toString() ?? '🍎';
-    final voicePhrase = item['voice']?.toString() ?? '$letter for $word';
-    final meaningMl = item['meaning']?['ml']?.toString() ?? '';
-    final exampleEn = item['exampleEn']?.toString() ?? '';
-    final exampleMl = item['exampleMl']?.toString() ?? '';
 
     _currentExpectedVoicePhrase = '$letter for $word';
 
     final replyEn = '$letter! $emoji\nRepeat after me: "$letter for $word"';
-    final replyMl = '$letter! $emoji എന്റെ കൂടെ പറയൂ: "$letter for $word"';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: '$letter! $emoji എന്റെ കൂടെ പറയൂ: "$letter for $word"',
+      ta: '$letter! $emoji என் பின்னால் சொல்லுங்கள்: "$letter for $word"',
+      hi: '$letter! $emoji मेरे पीछे दोहराएं: "$letter for $word"',
+      kn: '$letter! $emoji ನನ್ನ ನಂತರ ಪುನರಾವರ್ತಿಸಿ: "$letter for $word"',
+      te: '$letter! $emoji నా తర్వాత పునరావృతం చేయండి: "$letter for $word"',
+    );
 
     setState(() {
       _messages.add(
@@ -1042,7 +1071,7 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'teach_letter_$letter',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText: '$letter! Repeat after me: $letter for $word!',
           speakThisPrompt: '🎙️ Tap the mic below & say: "$letter for $word"',
           inBubbleOptions: null, // NO tap answer button - learner must speak into mic!
@@ -1066,8 +1095,14 @@ class _PocketDay1Step1AvatarChatPageState
   void _showFinalCompletionDialogue() {
     final replyEn =
         'Congratulations, $_userName! 🏆 You spoke and learned the letters with CyberCat! Step 1 is completed! Let\'s drive to Level 2! 🚗';
-    final replyMl =
-        'അഭിനന്ദനങ്ങൾ, $_userName! 🏆 നിങ്ങൾ അക്ഷരങ്ങൾ സംസാരിച്ചു പഠിച്ചു! Step 1 പൂർത്തിയായി. രണ്ടാമത്തെ ലെവലിലേക്ക് വണ്ടി ഓടിച്ചു പോകാം!';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'അഭിനന്ദനങ്ങൾ, $_userName! 🏆 നിങ്ങൾ അക്ഷരങ്ങൾ സംസാരിച്ചു പഠിച്ചു! Step 1 പൂർത്തിയായി. രണ്ടാമത്തെ ലെവലിലേക്ക് വണ്ടി ഓടിച്ചു പോകാം! 🚗',
+      ta: 'வாழ்த்துகள், $_userName! 🏆 நீங்கள் எழுத்துக்களை பேசி கற்றுக்கொண்டீர்கள்! படி 1 முடிந்தது. நிலை 2-க்கு செல்வோம்! 🚗',
+      hi: 'बधाई हो, $_userName! 🏆 आपने साइबरकैट के साथ बोलकर अक्षर सीखे! स्टेप 1 पूरा हुआ। चलिए लेवल 2 पर चलते हैं! 🚗',
+      kn: 'ಅಭಿನಂದನೆಗಳು, $_userName! 🏆 ನೀವು ಅಕ್ಷರಗಳನ್ನು ಮಾತನಾಡಿ ಕಲಿತಿದ್ದೀರಿ! ಹಂತ 1 ಮುಗಿದಿದೆ. ಹಂತ 2 ಕ್ಕೆ ಹೋಗೋಣ! 🚗',
+      te: 'అభినందనలు, $_userName! 🏆 మీరు అక్షరాలను మాట్లాడి నేర్చుకున్నారు! దశ 1 పూర్తయింది. లెవెల్ 2 కి వెళ్దాం! 🚗',
+    );
 
     _currentExpectedVoicePhrase = 'Drive to Level 2';
 
@@ -1077,14 +1112,14 @@ class _PocketDay1Step1AvatarChatPageState
           id: 'congrats_final',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
+          textNative: replyNative,
           audioText:
               'Congratulations, $_userName! You completed Step 1! Step 2 Vocabulary is now unlocked. Let\'s drive to Level 2!',
           speakThisPrompt: 'Tap below to exit to mountain map & drive to Level 2 🚗',
           inBubbleOptions: [
             Step1InBubbleOption(
               labelEn: '🚗 DRIVE TO LEVEL 2 (NEXT) ➔',
-              labelNative: 'പുറത്തേക്ക് പോയി വണ്ടി ലെവൽ 2-ലേക്ക് ഡ്രൈവ് ചെയ്യും',
+              labelNative: PocketLanguageService.getAppPhrase('drive_to_level_2', fallback: 'Drive to Level 2 🚗'),
               icon: '🏎️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -1094,7 +1129,14 @@ class _PocketDay1Step1AvatarChatPageState
             ),
             Step1InBubbleOption(
               labelEn: '🔠 BROWSE FULL A-Z ALPHABET (26 LETTERS)',
-              labelNative: 'ബാക്കി എല്ലാ അക്ഷരങ്ങളും കേൾക്കുക',
+              labelNative: PocketLanguageService.localize(
+                en: '🔠 Browse Full A-Z Alphabet',
+                ml: 'ബാക്കി എല്ലാ അക്ഷരങ്ങളും കേൾക്കുക 🔠',
+                ta: 'அனைத்து எழுத்துக்களையும் பார்க்கவும் 🔠',
+                hi: 'पूरी वर्णमाला देखें 🔠',
+                kn: 'ಎಲ್ಲಾ ಅಕ್ಷರಗಳನ್ನು ನೋಡಿ 🔠',
+                te: 'అన్ని అక్షరాలను చూడండి 🔠',
+              ),
               icon: '📚',
               isHighlightedAnswer: false,
               backgroundColor: const Color(0xFF1E293B),
@@ -1333,6 +1375,7 @@ class _PocketDay1Step1AvatarChatPageState
     );
   }
 
+  // ignore: unused_element
   void _showMisunderstoodDialogue({
     required String spokenText,
     required String expectedText,
@@ -1367,6 +1410,7 @@ class _PocketDay1Step1AvatarChatPageState
     _scrollToBottom();
   }
 
+  // ignore: unused_element
   VoidCallback _getNextVoiceAction() {
     if (_messages.length <= 1) {
       if (_currentExpectedVoicePhrase.toLowerCase().contains('no')) {
@@ -2169,6 +2213,7 @@ class _PocketDay1Step1AvatarChatPageState
   }
 
   /// 🔤 Visual Letter Showcase Card
+  // ignore: unused_element
   Widget _buildLetterVisualCard({
     required String letter,
     required String sound,

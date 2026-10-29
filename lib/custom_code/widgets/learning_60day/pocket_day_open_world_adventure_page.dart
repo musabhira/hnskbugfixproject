@@ -44,7 +44,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negat
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_realm_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
@@ -310,12 +309,9 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    final preGateMax = _totalSteps - 1;
-    for (int s = 1; s <= preGateMax; s++) {
+    for (int s = 1; s <= _totalSteps; s++) {
       if (!(flags['step_$s'] ?? false)) return s;
     }
-    if (!_isGateExamPassed) return preGateMax;
-    if (!(flags['step_$_totalSteps'] ?? false)) return _totalSteps;
     return _totalSteps;
   }
 
@@ -476,18 +472,16 @@ class _PocketDayOpenWorldAdventurePageState
       }
 
       if (stepIndex == _totalSteps) {
-        await prefs.setBool('pocket_day_${uid}_${widget.day}_completed', true);
-        await prefs.setInt('learning_last_completed_day_$uid', widget.day);
-        final now = DateTime.now();
-        await prefs.setString('learning_day_${uid}_${widget.day}_completed_date',
-            '${now.year}-${now.month}-${now.day}');
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_steps_completed', true);
+        await prefs.setBool('pocket_day_${uid}_${widget.day}_step_${_totalSteps}_done', true);
       }
     }
 
     // Always persist to fallback guest key as well
     await prefs.setBool('pocket_day_guest_${widget.day}_step_${stepIndex}_done', true);
     if (stepIndex == _totalSteps) {
-      await prefs.setBool('pocket_day_guest_${widget.day}_completed', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_steps_completed', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${_totalSteps}_done', true);
     }
 
     HapticFeedback.heavyImpact();
@@ -504,8 +498,8 @@ class _PocketDayOpenWorldAdventurePageState
               Expanded(
                 child: Text(
                   stepIndex == _totalSteps
-                      ? '🎉 Day ${widget.day} Mastered! +$pointsAwarded PS 🪙 • House ${widget.day + 1} Summit Unlocked!'
-                      : 'Step $stepIndex / $_totalSteps Done! +$pointsAwarded PS 🪙 Driving to next step 🚀',
+                      ? PocketLanguageService.getAppPhrase('day_mastered')
+                      : 'Step $stepIndex / $_totalSteps Done! +$pointsAwarded PS 🪙 Driving forward 🚀',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -520,17 +514,11 @@ class _PocketDayOpenWorldAdventurePageState
         ),
       );
 
-      // Auto-drive forward to next step from current location
-      if (stepIndex == (_totalSteps - 1) && !_isGateExamPassed) {
-        _driveToGate(openExamOnArrival: true);
-      } else if (stepIndex < _totalSteps) {
+      // Auto-drive forward strictly to next step from current location
+      if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
-        if (!_isGateExamPassed) {
-          _driveToGate(openExamOnArrival: true);
-        } else {
-          widget.onCompleted?.call();
-        }
+        _launchStepActivity(_totalSteps);
       }
     }
   }
@@ -2440,9 +2428,7 @@ class _PocketDayOpenWorldAdventurePageState
   Widget _buildMountainStepNode(int stepIndex) {
     final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
-    final isPrevDone = (stepIndex == _totalSteps)
-        ? _isGateExamPassed
-        : (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
+    final isPrevDone = (stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false));
     // Strict sequential unlocking:
     // A step is ONLY visually unlocked if the immediate previous step is done.
     final isUnlocked = isPrevDone;
@@ -2949,20 +2935,20 @@ class _PocketDayOpenWorldAdventurePageState
           await PocketDay1Step1AvatarChatPage.show(
             context,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(1),
           );
         } else if (day == 2) {
           await PocketDay2Step1AvatarChatPage.show(
             context,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(1),
           );
         } else {
           await PocketDayAvatarChatPage.show(
             context,
             day: day,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(1),
           );
         }
         await _syncStepCompletionIfDone(1);
@@ -2971,10 +2957,10 @@ class _PocketDayOpenWorldAdventurePageState
       }
       if (s == 2) {
         await PocketSentenceBuilderGamePage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (_) => _onStepCompleted(2),
         );
         await _syncStepCompletionIfDone(2);
         await _loadState(preserveCarPosition: true);
@@ -2982,10 +2968,10 @@ class _PocketDayOpenWorldAdventurePageState
       }
       if (s == 3) {
         await PocketEssentialSpellingPage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            context,
+            day: day,
+            userId: uid,
+            onStepFinished: (_) => _onStepCompleted(3),
         );
         await _syncStepCompletionIfDone(3);
         await _loadState(preserveCarPosition: true);
@@ -2999,7 +2985,7 @@ class _PocketDayOpenWorldAdventurePageState
               builder: (_) => PocketDay1Step2AvatarChatPage(
                 userId: uid,
                 stepIndex: 4,
-                onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+                onStepFinished: (_) => _onStepCompleted(4),
               ),
             ),
           );
@@ -3007,14 +2993,15 @@ class _PocketDayOpenWorldAdventurePageState
           await PocketDay2Step4AvatarChatPage.show(
             context,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(4),
           );
         } else {
           await PocketDay1Step4AvatarChatPage.show(
             context,
             day: day,
+            stepIndex: 4,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(4),
           );
         }
         await _syncStepCompletionIfDone(4);
@@ -3026,8 +3013,9 @@ class _PocketDayOpenWorldAdventurePageState
           await PocketDay1Step3AvatarChatPage.show(
             context,
             day: day,
+            stepIndex: 5,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(5),
           );
         } else {
           await PocketDay1Step5AvatarChatPage.show(
@@ -3035,7 +3023,7 @@ class _PocketDayOpenWorldAdventurePageState
             day: day,
             stepIndex: 5,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(5),
           );
         }
         await _syncStepCompletionIfDone(5);
@@ -3048,7 +3036,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 6,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(6),
         );
         await _syncStepCompletionIfDone(6);
         await _loadState(preserveCarPosition: true);
@@ -3060,7 +3048,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 7,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(7),
         );
         await _syncStepCompletionIfDone(7);
         await _loadState(preserveCarPosition: true);
@@ -3072,7 +3060,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 8,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(8),
         );
         await _syncStepCompletionIfDone(8);
         await _loadState(preserveCarPosition: true);
@@ -3084,7 +3072,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 9,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(9),
         );
         await _syncStepCompletionIfDone(9);
         await _loadState(preserveCarPosition: true);
@@ -3096,7 +3084,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 10,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(10),
         );
         await _syncStepCompletionIfDone(10);
         await _loadState(preserveCarPosition: true);
@@ -3108,7 +3096,7 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 11,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(11),
         );
         await _syncStepCompletionIfDone(11);
         await _loadState(preserveCarPosition: true);
@@ -3119,8 +3107,9 @@ class _PocketDayOpenWorldAdventurePageState
           await PocketDay1Step4AvatarChatPage.show(
             context,
             day: day,
+            stepIndex: 12,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(12),
+            onStepFinished: (_) => _onStepCompleted(12),
           );
         } else {
           final res = await PocketSpokenAvatarSimulatorPage.launch(
@@ -3143,7 +3132,7 @@ class _PocketDayOpenWorldAdventurePageState
             day: day,
             stepIndex: 13,
             userId: uid,
-            onStepFinished: (finishedStep) => _onStepCompleted(13),
+            onStepFinished: (_) => _onStepCompleted(13),
           );
         } else {
           await PocketVocabOpenWorldDrivePage.show(
@@ -3163,7 +3152,7 @@ class _PocketDayOpenWorldAdventurePageState
           context,
           day: day,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(14),
+          onStepFinished: (_) => _onStepCompleted(14),
         );
         await _syncStepCompletionIfDone(14);
         await _loadState(preserveCarPosition: true);
@@ -3174,7 +3163,7 @@ class _PocketDayOpenWorldAdventurePageState
           context,
           day: day,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(15),
+          onStepFinished: (_) => _onStepCompleted(15),
         );
         await _syncStepCompletionIfDone(15);
         await _loadState(preserveCarPosition: true);
@@ -3185,7 +3174,7 @@ class _PocketDayOpenWorldAdventurePageState
           context,
           day: day,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(16),
+          onStepFinished: (_) => _onStepCompleted(16),
         );
         await _syncStepCompletionIfDone(16);
         await _loadState(preserveCarPosition: true);
@@ -3196,7 +3185,7 @@ class _PocketDayOpenWorldAdventurePageState
           context,
           day: day,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(17),
+          onStepFinished: (_) => _onStepCompleted(17),
         );
         await _syncStepCompletionIfDone(17);
         await _loadState(preserveCarPosition: true);
@@ -3208,21 +3197,33 @@ class _PocketDayOpenWorldAdventurePageState
           day: day,
           stepIndex: 18,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(18),
+          onStepFinished: (_) => _onStepCompleted(18),
         );
         await _syncStepCompletionIfDone(18);
         await _loadState(preserveCarPosition: true);
         return;
       }
       if (s == 19) {
-        await PocketDay1ReviewCardPage.show(
+        final res = await PocketDay1ReviewCardPage.showBottomSheet(
           context,
           day: day,
           userId: uid,
-          onProceedToNextDay: () {
+          onProceedToNextDay: () async {
+            await _onStepCompleted(19);
             widget.onCompleted?.call();
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
           },
         );
+        if (res == true) {
+          await _onStepCompleted(19);
+          widget.onCompleted?.call();
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
+          return;
+        }
         await _syncStepCompletionIfDone(19);
         await _loadState(preserveCarPosition: true);
         return;
@@ -3235,20 +3236,20 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketDay1Step1AvatarChatPage.show(
           context,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(1),
         );
       } else if (day == 2) {
         await PocketDay2Step1AvatarChatPage.show(
           context,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(1),
         );
       } else {
         await PocketDayAvatarChatPage.show(
           context,
           day: day,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(1),
         );
       }
       await _syncStepCompletionIfDone(1);
@@ -3262,7 +3263,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(2),
       );
       await _syncStepCompletionIfDone(2);
       await _loadState(preserveCarPosition: true);
@@ -3275,7 +3276,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(3),
       );
       await _syncStepCompletionIfDone(3);
       await _loadState(preserveCarPosition: true);
@@ -3290,7 +3291,7 @@ class _PocketDayOpenWorldAdventurePageState
           builder: (_) => PocketDay1Step2AvatarChatPage(
             userId: uid,
             stepIndex: 4,
-            onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+            onStepFinished: (_) => _onStepCompleted(4),
           ),
         ),
       );
@@ -3304,8 +3305,9 @@ class _PocketDayOpenWorldAdventurePageState
       await PocketDay1Step3AvatarChatPage.show(
         context,
         day: day,
+        stepIndex: 5,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(5),
       );
       await _syncStepCompletionIfDone(5);
       await _loadState(preserveCarPosition: true);
@@ -3317,8 +3319,9 @@ class _PocketDayOpenWorldAdventurePageState
       await PocketDay1Step4AvatarChatPage.show(
         context,
         day: day,
+        stepIndex: 6,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(6),
       );
       await _syncStepCompletionIfDone(6);
       await _loadState(preserveCarPosition: true);
@@ -3332,7 +3335,7 @@ class _PocketDayOpenWorldAdventurePageState
         day: day,
         stepIndex: 7,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(7),
       );
       await _syncStepCompletionIfDone(7);
       await _loadState(preserveCarPosition: true);
@@ -3345,7 +3348,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(8),
       );
       await _syncStepCompletionIfDone(8);
       await _loadState(preserveCarPosition: true);
@@ -3358,14 +3361,15 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketDay2Step4AvatarChatPage.show(
           context,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(4),
         );
       } else {
         await PocketDay1Step4AvatarChatPage.show(
           context,
           day: day,
+          stepIndex: 4,
           userId: uid,
-          onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+          onStepFinished: (_) => _onStepCompleted(4),
         );
       }
       await _syncStepCompletionIfDone(4);
@@ -3379,7 +3383,7 @@ class _PocketDayOpenWorldAdventurePageState
         day: day,
         stepIndex: 5,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(5),
       );
       await _syncStepCompletionIfDone(5);
       await _loadState(preserveCarPosition: true);
@@ -3419,7 +3423,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(9),
       );
       await _syncStepCompletionIfDone(9);
       await _loadState(preserveCarPosition: true);
@@ -3432,7 +3436,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(10),
       );
       await _syncStepCompletionIfDone(10);
       await _loadState(preserveCarPosition: true);
@@ -3445,7 +3449,7 @@ class _PocketDayOpenWorldAdventurePageState
         context,
         day: day,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(11),
       );
       await _syncStepCompletionIfDone(11);
       await _loadState(preserveCarPosition: true);
@@ -3480,7 +3484,7 @@ class _PocketDayOpenWorldAdventurePageState
         day: day,
         stepIndex: s,
         userId: uid,
-        onStepFinished: (finishedStep) => _onStepCompleted(finishedStep),
+        onStepFinished: (_) => _onStepCompleted(13),
       );
       await _syncStepCompletionIfDone(s);
       await _loadState(preserveCarPosition: true);
@@ -3489,20 +3493,32 @@ class _PocketDayOpenWorldAdventurePageState
 
     // Step 14: Grand Review & Performance Card (Step 14 on All Days 1 to 90)
     if (s == 14) {
-      await PocketDay1ReviewCardPage.show(
+      final res = await PocketDay1ReviewCardPage.showBottomSheet(
         context,
         day: day,
         userId: uid,
-        onProceedToNextDay: () {
+        onProceedToNextDay: () async {
+          await _onStepCompleted(14);
           widget.onCompleted?.call();
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
         },
       );
+      if (res == true) {
+        await _onStepCompleted(14);
+        widget.onCompleted?.call();
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+        return;
+      }
       await _syncStepCompletionIfDone(14);
       await _loadState(preserveCarPosition: true);
       return;
     }
 
-    _onStepCompleted(s);
+    await _onStepCompleted(s);
     await _loadState(preserveCarPosition: true);
   }
 }

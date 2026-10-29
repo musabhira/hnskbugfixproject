@@ -63,5 +63,7 @@ speaknow_scraper/
 *.keystore
 key.properties
 *.txt
+!app-ads.txt
+!**/app-ads.txt
 *.ps1
 store_assets/

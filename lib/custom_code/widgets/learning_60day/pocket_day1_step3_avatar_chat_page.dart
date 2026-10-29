@@ -67,12 +67,14 @@ class Step3InBubbleOption {
 /// 🔍 Step 3: Conversational Avatar Chat for Letter & Word Hunt
 class PocketDay1Step3AvatarChatPage extends StatefulWidget {
   final int day;
+  final int stepIndex;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step3AvatarChatPage({
     super.key,
     this.day = 1,
+    this.stepIndex = 5,
     this.userId,
     this.onStepFinished,
   });
@@ -80,6 +82,7 @@ class PocketDay1Step3AvatarChatPage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
+    int stepIndex = 5,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -88,6 +91,7 @@ class PocketDay1Step3AvatarChatPage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketDay1Step3AvatarChatPage(
           day: day,
+          stepIndex: stepIndex,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -625,34 +629,20 @@ class _PocketDay1Step3AvatarChatPageState
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
-      (g) => g.day == widget.day && g.gameIndex == 1,
-      orElse: () => DayGameSpec(
-        day: widget.day,
-        gameIndex: 1,
-        title: 'Day ${widget.day} English Quest',
-        emoji: '🎮',
-        genre: GameGenre.runner,
-        englishTarget: 'Sentence Structure & Spoken English',
-        descriptionEn: '',
-        descriptionMl: '',
-        controlMechanism: '',
-      ),
+    final nextStep = widget.stepIndex + 1;
+    final replyEn = '🏆 OUTSTANDING, $_userName! You mastered Step ${widget.stepIndex}!\n\n'
+        'Step ${widget.stepIndex} is complete! Now let\'s proceed to Step $nextStep! 🎙️';
+
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'അഭിനന്ദനങ്ങൾ, $_userName! സ്റ്റെപ്പ് ${widget.stepIndex} പൂർത്തിയായി!\n\nഇനി നമുക്ക് സ്റ്റെപ്പ് $nextStep-ലേക്ക് കടക്കാം! 🎙️',
+      ta: 'வாழ்த்துகள், $_userName! படி ${widget.stepIndex} முடிந்தது!\n\nஇப்போது படி $nextStep-க்கு செல்வோம்! 🎙️',
+      hi: 'बधाई हो, $_userName! स्टेप ${widget.stepIndex} पूरा हुआ!\n\nअब स्टेप $nextStep पर चलते हैं! 🎙️',
+      kn: 'ಅಭಿನಂದನೆಗಳು, $_userName! ಹಂತ ${widget.stepIndex} ಮುಗಿದಿದೆ!\n\nಈಗ ಹಂತ $nextStep ಗೆ ಹೋಗೋಣ! 🎙️',
+      te: 'అభినందనలు, $_userName! దశ ${widget.stepIndex} పూర్తయింది!\n\nఇప్పుడు దశ $nextStep కి వెళ్దాం! 🎙️',
     );
 
-    final replyEn = widget.day == 1
-        ? '🏆 OUTSTANDING, $_userName! You mastered all 6 rounds of Letter & Word Hunt!\n\n'
-            'Step 3 is complete! Now let\'s proceed to Step 4: Spoken English Chat! 🎙️'
-        : '🏆 OUTSTANDING, $_userName! You mastered Day ${widget.day} Step 3: ${gameSpec.title} ${gameSpec.emoji}!\n\n'
-            'Target "${gameSpec.englishTarget}" is complete! Now let\'s proceed to Step 4: Spoken English Chat! 🎙️';
-
-    final replyMl = widget.day == 1
-        ? 'അഭിനന്ദനങ്ങൾ, $_userName! സ്റ്റെപ്പ് 3 പൂർത്തിയായി!\n\n'
-            'ഇനി നമുക്ക് സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് കടക്കാം! 🎙️'
-        : 'അഭിനന്ദനങ്ങൾ, $_userName! ഡേ ${widget.day} സ്റ്റെപ്പ് 3 (${gameSpec.title}) വിജയകരമായി പൂർത്തിയായി!\n\n'
-            'ഇനി നമുക്ക് സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റിലേക്ക് കടക്കാം! 🎙️';
-
-    _currentExpectedVoicePhrase = 'Proceed to Step 4';
+    _currentExpectedVoicePhrase = 'Proceed to Step $nextStep';
 
     setState(() {
       _messages.add(
@@ -660,13 +650,20 @@ class _PocketDay1Step3AvatarChatPageState
           id: 'hunt_finish',
           isAvatar: true,
           textEn: replyEn,
-          textNative: replyMl,
-          audioText: 'Outstanding, $_userName! You completed Step 3! Let\'s go to Step 4 Spoken English!',
-          speakThisPrompt: 'Tap below to enter Step 4: Spoken English 🎙️',
+          textNative: replyNative,
+          audioText: 'Outstanding, $_userName! You completed Step ${widget.stepIndex}! Let\'s go to Step $nextStep!',
+          speakThisPrompt: 'Tap below to enter Step $nextStep 🎙️',
           inBubbleOptions: [
             Step3InBubbleOption(
-              labelEn: 'Step 4: Spoken English ➔',
-              labelNative: 'സ്റ്റെപ്പ് 4: സ്പോക്കൺ ഇംഗ്ലീഷ്',
+              labelEn: 'Step $nextStep ➔',
+              labelNative: PocketLanguageService.localize(
+                en: 'Step $nextStep ➔',
+                ml: 'സ്റ്റെപ്പ് $nextStep ➔',
+                ta: 'படி $nextStep ➔',
+                hi: 'स्टेप $nextStep ➔',
+                kn: 'ಹಂತ $nextStep ➔',
+                te: 'దశ $nextStep ➔',
+              ),
               icon: '🎙️',
               isHighlightedAnswer: true,
               backgroundColor: const Color(0xFF047857),
@@ -771,14 +768,25 @@ class _PocketDay1Step3AvatarChatPageState
     );
   }
 
-  void _completeStep3AndProceedToStep4() {
+  Future<void> _completeStep3AndProceedToStep4() async {
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentUid = widget.userId;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_step_${widget.stepIndex}_done', true);
+      }
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
+    } catch (_) {}
+
     if (widget.onStepFinished != null) {
-      widget.onStepFinished!(3);
+      widget.onStepFinished!(widget.stepIndex);
     }
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _handleVoiceSubmission({

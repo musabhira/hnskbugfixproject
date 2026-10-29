@@ -81,12 +81,14 @@ class Step4InBubbleOption {
 /// 6. Fully responsive text wrapping with zero clipping or overflow.
 class PocketDay1Step4AvatarChatPage extends StatefulWidget {
   final int day;
+  final int stepIndex;
   final String? userId;
   final Function(int stepIndex)? onStepFinished;
 
   const PocketDay1Step4AvatarChatPage({
     super.key,
     this.day = 1,
+    this.stepIndex = 6,
     this.userId,
     this.onStepFinished,
   });
@@ -94,6 +96,7 @@ class PocketDay1Step4AvatarChatPage extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     int day = 1,
+    int stepIndex = 6,
     String? userId,
     Function(int stepIndex)? onStepFinished,
   }) {
@@ -102,6 +105,7 @@ class PocketDay1Step4AvatarChatPage extends StatefulWidget {
       MaterialPageRoute(
         builder: (_) => PocketDay1Step4AvatarChatPage(
           day: day,
+          stepIndex: stepIndex,
           userId: userId,
           onStepFinished: onStepFinished,
         ),
@@ -146,8 +150,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'Hello! How are you feeling today? 🌅',
           'questionMl': 'ഹലോ! ഇന്ന് സുഖമാണോ?',
+          'questionTa': 'வணக்கம்! இன்று எப்படி உணர்கிறீர்கள்?',
+          'questionHi': 'नमस्ते! आज आप कैसा महसूस कर रहे हैं?',
+          'questionKn': 'ಹಲೋ! ಇಂದು ನಿಮಗೆ ಹೇಗನಿಸುತ್ತಿದೆ?',
+          'questionTe': 'హలో! ఈరోజు మీకు ఎలా ఉంది?',
           'targetReply': 'I am fine, thank you.',
           'targetReplyMl': 'എനിക്ക് സുഖമാണ്, നന്ദി.',
+          'targetReplyTa': 'நான் நலமாக இருக்கிறேன், நன்றி.',
+          'targetReplyHi': 'मैं ठीक हूँ, धन्यवाद।',
+          'targetReplyKn': 'ನಾನು ಚೆನ್ನಾಗಿದ್ದೇನೆ, ಧನ್ಯವಾದ.',
+          'targetReplyTe': 'నేను బాగున్నాను, ధన్యవాదాలు.',
         },
         {
           'avatar': 'CyberCat',
@@ -155,8 +167,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'What is your name, my friend? 🤝',
           'questionMl': 'നിന്റെ പേരെന്താണ്?',
+          'questionTa': 'உங்கள் பெயர் என்ன, என் நண்பரே?',
+          'questionHi': 'आपका नाम क्या है, मेरे दोस्त?',
+          'questionKn': 'ನಿಮ್ಮ ಹೆಸರೇನು, ನನ್ನ ಸ್ನೇಹಿತರೇ?',
+          'questionTe': 'మీ పేరేమిటి, నా మిత్రమా?',
           'targetReply': 'My name is Alex.',
           'targetReplyMl': 'എന്റെ പേര് അലക്സ് എന്നാണ്.',
+          'targetReplyTa': 'என் பெயர் அலெக்ஸ்.',
+          'targetReplyHi': 'मेरा नाम एलेक्स है।',
+          'targetReplyKn': 'ನನ್ನ ಹೆಸರು ಅಲೆಕ್ಸ್.',
+          'targetReplyTe': 'నా పేరు అలెక్స్.',
         },
         {
           'avatar': 'CyberCat',
@@ -164,8 +184,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'Are you a student? 🎒',
           'questionMl': 'നീ ഒരു വിദ്യാർത്ഥിയാണോ?',
+          'questionTa': 'நீங்கள் ஒரு மாணவரா?',
+          'questionHi': 'क्या आप एक छात्र हैं?',
+          'questionKn': 'ನೀವು ವಿದ್ಯಾರ್ಥಿಯೇ?',
+          'questionTe': 'మీరు విద్యార్థినా?',
           'targetReply': 'Yes, I am a student.',
           'targetReplyMl': 'അതെ, ഞാൻ ഒരു വിദ്യാർത്ഥിയാണ്.',
+          'targetReplyTa': 'ஆம், நான் ஒரு மாணவன்.',
+          'targetReplyHi': 'हाँ, मैं एक छात्र हूँ।',
+          'targetReplyKn': 'ಹೌದು, ನಾನು ವಿದ್ಯಾರ್ಥಿ.',
+          'targetReplyTe': 'అవును, నేను విద్యార్థిని.',
         },
         {
           'avatar': 'CyberCat',
@@ -173,8 +201,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'Do you like sweet green grapes? 🍇',
           'questionMl': 'നിനക്ക് മധുരമുള്ള മുന്തിരി ഇഷ്ടമാണോ?',
+          'questionTa': 'உங்களுக்கு இனிப்பு திராட்சை பிடிக்குமா?',
+          'questionHi': 'क्या आपको मीठे अंगूर पसंद हैं?',
+          'questionKn': 'ನಿಮಗೆ ಸಿಹಿ ದ್ರಾಕ್ಷಿ ಇಷ್ಟವೇ?',
+          'questionTe': 'మీకు తీపి ద్రాక్ష ఇష్టమా?',
           'targetReply': 'Yes, I like grapes.',
           'targetReplyMl': 'അതെ, എനിക്ക് മുന്തിരി ഇഷ്ടമാണ്.',
+          'targetReplyTa': 'ஆம், எனக்கு திராட்சை பிடிக்கும்.',
+          'targetReplyHi': 'हाँ, मुझे अंगूर पसंद हैं।',
+          'targetReplyKn': 'ಹೌದು, ನನಗೆ ದ್ರಾಕ್ಷಿ ಇಷ್ಟ.',
+          'targetReplyTe': 'అవును, నాకు ద్రాక్ష ఇష్టం.',
         },
         {
           'avatar': 'CyberCat',
@@ -182,8 +218,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'Are you feeling thirsty? 💧',
           'questionMl': 'നിനക്ക് ദാഹിക്കുന്നുണ്ടോ?',
+          'questionTa': 'உங்களுக்கு தாகமாக இருக்கிறதா?',
+          'questionHi': 'क्या आपको प्यास लगी है?',
+          'questionKn': 'ನಿಮಗೆ ಬಾಯಾರಿಕೆಯಾಗಿದೆಯೇ?',
+          'questionTe': 'మీకు దాహం వేస్తుందా?',
           'targetReply': 'Yes, please give me water.',
           'targetReplyMl': 'അതെ, എനിക്ക് വെള്ളം തരൂ.',
+          'targetReplyTa': 'ஆம், தயவுசெய்து எனக்கு தண்ணீர் கொடுங்கள்.',
+          'targetReplyHi': 'हाँ, कृपया मुझे पानी दें।',
+          'targetReplyKn': 'ಹೌದು, ದಯವಿಟ್ಟು ನನಗೆ ನೀರು ಕೊಡಿ.',
+          'targetReplyTe': 'అవును, దయచేసి నాకు నీరు ఇవ్వండి.',
         },
         {
           'avatar': 'CyberCat',
@@ -191,8 +235,16 @@ class _PocketDay1Step4AvatarChatPageState
           'color': Color(0xFF0284C7),
           'questionEn': 'What is on your study table? 📖',
           'questionMl': 'നിന്റെ മേശപ്പുറത്ത് എന്താണുള്ളത്?',
+          'questionTa': 'உங்கள் மேஜையில் என்ன இருக்கிறது?',
+          'questionHi': 'आपकी मेज़ पर क्या है?',
+          'questionKn': 'ನಿಮ್ಮ ಮೇಜಿನ ಮೇಲೆ ಏನಿದೆ?',
+          'questionTe': 'మీ బల్లపై ఏముంది?',
           'targetReply': 'This is a book.',
           'targetReplyMl': 'ഇത് ഒരു പുസ്തകമാണ്.',
+          'targetReplyTa': 'இது ஒரு புத்தகம்.',
+          'targetReplyHi': 'यह एक किताब है।',
+          'targetReplyKn': 'ಇದು ಪುಸ್ತಕ.',
+          'targetReplyTe': 'ఇది ఒక పుస్తకం.',
         },
       ];
     }
@@ -738,9 +790,23 @@ class _PocketDay1Step4AvatarChatPageState
     final icon = drill['icon'] as String;
     final color = drill['color'] as Color;
     final qEn = drill['questionEn'] as String;
-    final qMl = drill['questionMl'] as String;
+    final qNative = PocketLanguageService.localize(
+      en: qEn,
+      ml: drill['questionMl'] as String?,
+      ta: drill['questionTa'] as String?,
+      hi: drill['questionHi'] as String?,
+      kn: drill['questionKn'] as String?,
+      te: drill['questionTe'] as String?,
+    );
     final target = drill['targetReply'] as String;
-    final targetMl = drill['targetReplyMl'] as String;
+    final targetNative = PocketLanguageService.localize(
+      en: target,
+      ml: drill['targetReplyMl'] as String?,
+      ta: drill['targetReplyTa'] as String?,
+      hi: drill['targetReplyHi'] as String?,
+      kn: drill['targetReplyKn'] as String?,
+      te: drill['targetReplyTe'] as String?,
+    );
 
     // 🛑 Note: As explicitly instructed by user, DO NOT add answer buttons inside bubble!
     setState(() {
@@ -752,10 +818,10 @@ class _PocketDay1Step4AvatarChatPageState
           avatarIcon: icon,
           avatarColor: color,
           textEn: qEn,
-          textNative: qMl,
+          textNative: qNative,
           audioText: qEn,
           targetSentenceHint: target,
-          targetSentenceHintMl: targetMl,
+          targetSentenceHintMl: targetNative,
         ),
       );
     });
@@ -892,12 +958,12 @@ class _PocketDay1Step4AvatarChatPageState
       final prefs = await SharedPreferences.getInstance();
       final currentUid = widget.userId ?? Supabase.instance.client.auth.currentUser?.id;
       if (currentUid != null && currentUid.isNotEmpty) {
-        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_step_4_done', true);
+        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_step_${widget.stepIndex}_done', true);
       }
-      await prefs.setBool('pocket_day_guest_${widget.day}_step_4_done', true);
+      await prefs.setBool('pocket_day_guest_${widget.day}_step_${widget.stepIndex}_done', true);
     } catch (_) {}
     try {
-      widget.onStepFinished?.call(4);
+      widget.onStepFinished?.call(widget.stepIndex);
     } catch (_) {}
   }
 
@@ -905,16 +971,22 @@ class _PocketDay1Step4AvatarChatPageState
     HapticFeedback.heavyImpact();
     PocketGameAudioService.instance.playCoinSound();
 
-    // 🟢 Immediately persist Step 4 completion
+    // 🟢 Immediately persist Step completion
     _recordStep4Completion();
 
+    final nextStep = widget.stepIndex + 1;
     final replyEn =
         '🎉 BRILLIANT CONVERSATION, $_userName!\n\n'
-        'You spoke every sentence into the mic with confidence! Step 4 is complete!\n\n'
-        'Now let\'s proceed to Step 5: Reading Room! 📖';
-    final replyMl =
-        'ഗംഭീരം, $_userName! നിങ്ങൾ എല്ലാ സംഭാഷണങ്ങളും മൈക്കിലൂടെ ഉറക്കെ പറഞ്ഞു പരിശീലിച്ചു!\n\n'
-        'ഇനി നമുക്ക് സ്റ്റെപ്പ് 5: റീഡിംഗ് റൂമിലേക്ക് കടക്കാം! 📖';
+        'You spoke every sentence into the mic with confidence! Step ${widget.stepIndex} is complete!\n\n'
+        'Now let\'s proceed to Step $nextStep! 🚀';
+    final replyNative = PocketLanguageService.localize(
+      en: replyEn,
+      ml: 'ഗംഭീരം, $_userName! നിങ്ങൾ എല്ലാ സംഭാഷണങ്ങളും മൈക്കിലൂടെ ഉറക്കെ പറഞ്ഞു പരിശീലിച്ചു! സ്റ്റെപ്പ് ${widget.stepIndex} പൂർത്തിയായി!\n\nഇനി നമുക്ക് സ്റ്റെപ്പ് $nextStep-ലേക്ക് കടക്കാം! 🚀',
+      ta: 'அருமை, $_userName! நீங்கள் ஒவ்வொரு வாக்கியத்தையும் நம்பிக்கையுடன் பேசினீர்கள்! படி ${widget.stepIndex} முடிந்தது!\n\nஇப்போது படி $nextStep-க்கு செல்வோம்! 🚀',
+      hi: 'शानदार, $_userName! आपने आत्मविश्वास से माइक में बात की! स्टेप ${widget.stepIndex} पूरा हुआ!\n\nअब स्टेप $nextStep पर चलते हैं! 🚀',
+      kn: 'ಅದ್ಭುತ, $_userName! ನೀವು ಆತ್ಮವಿಶ್ವಾಸದಿಂದ ಮಾತನಾಡಿದ್ದೀರಿ! ಹಂತ ${widget.stepIndex} ಮುಗಿದಿದೆ!\n\nಈಗ ಹಂತ $nextStep ಗೆ ಹೋಗೋಣ! 🚀',
+      te: 'అద్భుతం, $_userName! మీరు మైక్‌లో నమ్మకంగా మాట్లాడారు! దశ ${widget.stepIndex} పూర్తయింది!\n\nఇప్పుడు దశ $nextStep కి వెళ్దాం! 🚀',
+    );
 
     setState(() {
       _messages.add(
@@ -925,13 +997,20 @@ class _PocketDay1Step4AvatarChatPageState
           avatarIcon: '🐱',
           avatarColor: const Color(0xFF0284C7),
           textEn: replyEn,
-          textNative: replyMl,
-          audioText: 'Brilliant conversation, $_userName! You completed Step 4! Now let\'s go to Step 5 Reading Room!',
+          textNative: replyNative,
+          audioText: 'Brilliant conversation, $_userName! You completed Step ${widget.stepIndex}! Now let\'s go to Step $nextStep!',
           inBubbleOptions: [
             Step4InBubbleOption(
-              labelEn: 'Step 5: Reading Room ➔',
-              labelNative: 'സ്റ്റെപ്പ് 5: റീഡിംഗ് റൂം',
-              icon: '📖',
+              labelEn: 'Step $nextStep ➔',
+              labelNative: PocketLanguageService.localize(
+                en: 'Step $nextStep ➔',
+                ml: 'സ്റ്റെപ്പ് $nextStep ➔',
+                ta: 'படி $nextStep ➔',
+                hi: 'स्टेप $nextStep ➔',
+                kn: 'ಹಂತ $nextStep ➔',
+                te: 'దశ $nextStep ➔',
+              ),
+              icon: '🚀',
               isHighlighted: true,
               backgroundColor: const Color(0xFF047857),
               borderColor: const Color(0xFFFFD700),
@@ -952,9 +1031,8 @@ class _PocketDay1Step4AvatarChatPageState
     PocketGameAudioService.instance.playCoinSound();
 
     await _recordStep4Completion();
-    if (mounted) {
-      Navigator.pop(context, true);
-    }
+    if (!mounted) return;
+    Navigator.pop(context, true);
   }
 
   Future<void> _startListeningToCentralMic() async {

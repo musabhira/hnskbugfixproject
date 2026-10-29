@@ -327,6 +327,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   static const double _bottomPadding = 320.0;
   double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
+  final Set<int> _daysWithStepsCompleted = {};
+
+  bool _isDayStepsCompleted(int day) {
+    if (_isMasterAdmin) return true;
+    if (_isDayCompleted(day)) return true;
+    return _daysWithStepsCompleted.contains(day);
+  }
+
   bool _hasInitiallyScrolled = false;
   int? _adminSelectedDay;
 
@@ -411,6 +419,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     if (day == 1) return _hasAcceptedRules;
     // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
+    // VIP Subscribers bypass score requirement and midnight lock, but still play sequentially!
+    if (_isSubscribed) return true;
     // Pocket Score threshold check (Audio Directive: pocket score base cheythu level unlock)
     final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
     if (_unifiedPocketScore < reqScore) return false;
@@ -436,6 +446,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     // Collect all actually completed days and completion dates for this user
     final Set<int> completed = {};
+    final Set<int> stepsCompleted = {};
     final Map<int, String> compDates = {};
     for (int d = 1; d <= _totalDays; d++) {
       if (prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
@@ -444,6 +455,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         if (dDate != null && dDate.isNotEmpty) {
           compDates[d] = dDate;
         }
+      }
+      if (prefs.getBool('pocket_day_${uid}_${d}_steps_completed') == true ||
+          prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
+        stepsCompleted.add(d);
       }
     }
 
@@ -504,6 +519,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _completedDays
           ..clear()
           ..addAll(completed);
+        _daysWithStepsCompleted
+          ..clear()
+          ..addAll(stepsCompleted);
         _completedDates
           ..clear()
           ..addAll(compDates);
@@ -1575,8 +1593,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// 🎯 Opens the dedicated Open World Level Adventure Page for the Day!
   /// User Audio Directive: "ഡീറ്റെയിൽ പേജ് ഇപ്പോഴത്തെ തന്നെ മതി, ഓരോ ദിവസത്തിലും കാർ ഡ്രൈവ് ചെയ്തു പോയി ടാസ്കുകളിൽ പോകുന്ന സാധനം!"
-  void _startActiveSubStep(int day) {
-    Navigator.push(
+  Future<void> _startActiveSubStep(int day) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => PocketDayOpenWorldAdventurePage(
@@ -1586,6 +1604,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
       ),
     );
+    await _loadData();
   }
 
   void _navigateToMissionPage(int day) {
@@ -5437,14 +5456,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCompleted = _isDayCompleted(day);
     final isCurrent = (day == currentDay);
 
-    final int requiredTasks = (day == 1) ? 10 : 16;
     int completedTasks = 0;
     if (isCurrent) {
-      for (int s = 1; s <= requiredTasks; s++) {
+      for (int s = 1; s <= 14; s++) {
         if (_subStepFlags['step_$s'] == true) completedTasks++;
       }
     }
-    final bool areHouseTasksDone = _isMasterAdmin || isCompleted || (isCurrent && (_subStepFlags['step_$requiredTasks'] == true || completedTasks >= requiredTasks));
+    final bool areHouseTasksDone = _isMasterAdmin ||
+        isCompleted ||
+        _isDayStepsCompleted(day) ||
+        (isCurrent && (_subStepFlags['step_14'] == true || completedTasks >= 14));
     final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
@@ -5506,7 +5527,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/$requiredTasks done)',
+                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/14 done)',
                         style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -5714,7 +5735,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             : (isAttackReady
                                 ? 'GATE $day • ATTACK TO BREACH ⚔️'
                                 : (day == currentDay
-                                    ? 'GATE $day LOCKED • $completedTasks/16 TASKS'
+                                    ? 'GATE $day LOCKED • $completedTasks/14 MISSIONS'
                                     : 'GATE $day LOCKED')),
                         style: GoogleFonts.outfit(
                           color: isCompleted
@@ -7251,12 +7272,32 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       x = (screenWidth / 2) + 54;
       y = _ruleNodeY + 12;
     } else {
-      x = _getNodeX(effectiveAvatarDay, screenWidth);
-      y = _getNodeY(effectiveAvatarDay);
+      final bool currentHouseDone = _isMasterAdmin ||
+          _isDayStepsCompleted(effectiveAvatarDay) ||
+          (_subStepFlags['step_14'] == true);
+      final bool gateBreached = _isDayCompleted(effectiveAvatarDay);
+      final bool sittingAtGate = currentHouseDone && !gateBreached;
+
+      if (sittingAtGate) {
+        x = _getNodeXFractional(effectiveAvatarDay + 0.50, screenWidth);
+        y = _getNodeY(effectiveAvatarDay) - (_nodeSpacingY * 0.50);
+      } else {
+        x = _getNodeX(effectiveAvatarDay, screenWidth);
+        y = _getNodeY(effectiveAvatarDay);
+      }
     }
+
+    final bool currentHouseDone = _isMasterAdmin ||
+        _isDayStepsCompleted(effectiveAvatarDay) ||
+        (_subStepFlags['step_14'] == true);
+    final bool gateBreached = _isDayCompleted(effectiveAvatarDay);
+    final bool sittingAtGate = currentHouseDone && !gateBreached && !atRuleNode;
+
     final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : effectiveAvatarDay);
 
-    return Positioned(
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeInOutCubic,
       left: x - 54,
       top: y - 128,
       child: AnimatedBuilder(
@@ -7268,7 +7309,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Speech bubble - Tap to view Rules or Enter Estate!
+              // Speech bubble - Tap to view Rules, Attack Gate, or Enter Estate!
               GestureDetector(
                 onTap: () {
                   if (atRuleNode) {
@@ -7280,6 +7321,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         _loadData();
                       },
                     );
+                  } else if (sittingAtGate) {
+                    _showGateCitadelAttackDialog(effectiveAvatarDay);
                   } else {
                     final isWaitingForMidnight = _isDayWaitingForMidnight(effectiveAvatarDay);
                     final isUnlocked = _isDayUnlocked(effectiveAvatarDay, effectiveAvatarDay);
@@ -7297,12 +7340,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: sittingAtGate ? const Color(0xFFEF4444) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
+                    border: sittingAtGate ? Border.all(color: const Color(0xFFFFD700), width: 1.5) : null,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 8,
+                        color: sittingAtGate ? const Color(0xFFEF4444).withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.35),
+                        blurRadius: sittingAtGate ? 12 : 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -7310,15 +7354,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(atRuleNode ? '📜' : '🏡',
+                      Text(atRuleNode ? '📜' : (sittingAtGate ? '⚔️' : '🏡'),
                           style: const TextStyle(fontSize: 11)),
                       const SizedBox(width: 4),
                       Text(
                         atRuleNode
                             ? 'Rules & Pledge • Tap to Start 📜'
-                            : 'Day $currentDay • Enter Estate 🚀',
+                            : (sittingAtGate
+                                ? 'Gate $effectiveAvatarDay • Tap to Attack! ⚔️'
+                                : 'Day $currentDay • Enter Estate 🚀'),
                         style: GoogleFonts.outfit(
-                          color: Colors.black,
+                          color: sittingAtGate ? Colors.white : Colors.black,
                           fontWeight: FontWeight.w900,
                           fontSize: 11,
                         ),
@@ -7343,6 +7389,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           _loadData();
                         },
                       );
+                    } else if (sittingAtGate) {
+                      _showGateCitadelAttackDialog(effectiveAvatarDay);
                     } else {
                       _showAvatarAchievementDialog(currentDay);
                     }
@@ -7353,10 +7401,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: const Color(0xFFFFFC00), width: 3.0),
+                          color: sittingAtGate ? const Color(0xFFFF5252) : const Color(0xFFFFFC00), width: 3.0),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                          color: sittingAtGate
+                              ? const Color(0xFFEF4444).withValues(alpha: 0.75)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.65),
                           blurRadius: 18,
                           spreadRadius: 2,
                         ),
