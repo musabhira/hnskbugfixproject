@@ -151,19 +151,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final Map<String, String> _aiAnalyses = {};
   final Set<String> _loadingAnalysisMessageIds = {};
 
+  // Active group identity (supports in-place instant shuffling without route replacement!)
+  late String _currentGroupId;
+  late String _currentGroupName;
+  bool _isShuffling = false;
+
   bool _isAdminBlockedFromHub = false;
 
   bool get _isKidMode =>
       PocketKidsService.isKidAccount ||
-      widget.groupId.startsWith('kid_') ||
-      widget.groupId.startsWith('p:kid_') ||
-      (widget.groupId.startsWith('p:') &&
-          PocketKidsService.isAllowedKidMateId(widget.groupId.substring(2)));
+      _currentGroupId.startsWith('kid_') ||
+      _currentGroupId.startsWith('p:kid_') ||
+      (_currentGroupId.startsWith('p:') &&
+          PocketKidsService.isAllowedKidMateId(_currentGroupId.substring(2)));
 
   bool get _isEnglishHubGroup {
     if (_isKidMode) return false; // Strict separation: Kids mode has NO English Hub!
-    final name = widget.groupName.toLowerCase();
-    final id = widget.groupId.toLowerCase();
+    final name = _currentGroupName.toLowerCase();
+    final id = _currentGroupId.toLowerCase();
     return name.contains('english hub') ||
         name.contains('english learning') ||
         name.contains('english practice') ||
@@ -610,13 +615,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
+    _currentGroupId = widget.groupId;
+    _currentGroupName = widget.groupName;
     _chatTabPageController = PageController(initialPage: 0);
-    InAppNotificationService.currentActiveChatId = widget.groupId;
+    InAppNotificationService.currentActiveChatId = _currentGroupId;
     // Audio Directive: Chat conversations should be silent (no game BGM)
     PocketGameAudioService.instance.pause();
     _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
     // Seed avatar cache from widget argument if provided
-    if (widget.avatarConfig != null && widget.groupId.startsWith('p:')) {
+    if (widget.avatarConfig != null && _currentGroupId.startsWith('p:')) {
       final targetId = widget.groupId.substring(2);
       final cfg = widget.avatarConfig!;
       final stage = cfg['stage'] ?? cfg['learning_day'] ?? cfg['level'];
@@ -1155,13 +1162,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _fetchMembers() async {
-    if (widget.groupId.startsWith('p:')) return;
+    if (_currentGroupId.startsWith('p:')) return;
     try {
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''
             *,
             profile:profile!profile_id(name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id)
-          ''').eq('group_id', widget.groupId).eq('is_active', true);
+          ''').eq('group_id', _currentGroupId).eq('is_active', true);
 
       final List rawMembers = response as List;
       final members = rawMembers.map((m) {
@@ -3386,7 +3393,7 @@ Draft: "$draft"''';
 
     try {
       final message = await ref
-          .read(chatMessagesProvider(widget.groupId).notifier)
+          .read(chatMessagesProvider(_currentGroupId).notifier)
           .sendMessage(
             text: text ?? '',
             messageType: messageType,
@@ -3398,8 +3405,8 @@ Draft: "$draft"''';
             metadata: metadata,
           );
 
-      if (widget.groupId.startsWith('p:') && _currentUserId.isNotEmpty) {
-        final otherUid = widget.groupId.substring(2);
+      if (_currentGroupId.startsWith('p:') && _currentUserId.isNotEmpty) {
+        final otherUid = _currentGroupId.substring(2);
         PocketTrophyService.recordUserDailyChatActivity(
           senderId: _currentUserId,
           receiverId: otherUid,
@@ -4926,7 +4933,7 @@ Draft: "$draft"''';
     const appBarColor = Color(0xFF121B22);
     const accentColor = Color(0xFFFFD600);
 
-    final chatMessagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
+    final chatMessagesAsync = ref.watch(chatMessagesProvider(_currentGroupId));
 
     return Theme(
       data: ThemeData.dark().copyWith(
@@ -5036,7 +5043,7 @@ Draft: "$draft"''';
                                 child: VectorAvatarWidget(
                                   config: EnglishHubLevelGroupService
                                       .getEnglishHubAvatarConfig(
-                                          widget.groupName),
+                                          _currentGroupName),
                                   size: 34,
                                   showAura: true,
                                 ),
@@ -5078,9 +5085,9 @@ Draft: "$draft"''';
               children: [
                 Builder(
                   builder: (context) {
-                    final targetId = widget.groupId.startsWith('p:')
-                        ? widget.groupId.substring(2)
-                        : widget.groupId;
+                    final targetId = _currentGroupId.startsWith('p:')
+                        ? _currentGroupId.substring(2)
+                        : _currentGroupId;
                     final isPresident =
                         PocketPresidentService.isPresidentId(targetId);
                     final isKidKing =
@@ -5096,12 +5103,12 @@ Draft: "$draft"''';
                                 ? 'President'
                                 : (isKidKing
                                     ? 'King'
-                                    : (widget.groupId.startsWith('p:')
+                                    : (_currentGroupId.startsWith('p:')
                                         ? ContactsNameService().getDisplayName(
                                             userId: targetId,
-                                            fallbackName: widget.groupName,
+                                            fallbackName: _currentGroupName,
                                           )
-                                        : widget.groupName)),
+                                        : _currentGroupName)),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -5314,10 +5321,10 @@ Draft: "$draft"''';
               ),
             if (!_isKidMode &&
                 !PocketPresidentService.isPresidentId(
-                    widget.groupId.startsWith('p:')
-                        ? widget.groupId.substring(2)
-                        : widget.groupId)) ...[
-              if (widget.groupId.startsWith('p:')) ...[
+                    _currentGroupId.startsWith('p:')
+                        ? _currentGroupId.substring(2)
+                        : _currentGroupId)) ...[
+              if (_currentGroupId.startsWith('p:')) ...[
                 IconButton(
                   icon: const Text('🔥', style: TextStyle(fontSize: 18)),
                   tooltip: 'Fluency Streak 🔥',
@@ -5330,168 +5337,67 @@ Draft: "$draft"''';
                   onPressed: () => _showFriendshipDashboardSheet(context),
                 ),
               ],
-              IconButton(
-                icon: const Icon(Icons.casino_outlined,
-                    color: Color(0xFFFFFC00), size: 21),
-                tooltip: 'Daily Topic 🎲',
-                onPressed: _showDailyIcebreakerModal,
-              ),
             ],
             if (_isEnglishHubGroup) ...[
+              // 🎲 MINIMAL IN-PLACE SHUFFLE BUTTON (User Audio Directive: No page route change, in-place reload with smooth feedback)
               IconButton(
-                icon: const Icon(Icons.hub_outlined,
-                    color: Colors.lightBlueAccent),
-                tooltip: 'English Hub',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EnglishLearningHubPage(),
-                    ),
-                  );
-                },
-              ),
-              Center(
-                child: GestureDetector(
-                  onTap: () async {
-                    HapticFeedback.selectionClick();
-                    final newState = !_isEnglishHubRobotsEnabled;
-                    safeSetState(() {
-                      _isEnglishHubRobotsEnabled = newState;
-                    });
-                    try {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool(
-                          'pocket_english_hub_robots_enabled', newState);
-                    } catch (_) {}
-
-                    if (!newState) {
-                      _hubRobotIdleConversationTimer?.cancel();
-                      _hubRobotReplyCooldownTimer?.cancel();
-                      PocketRobotService.clearAllTyping();
-                    } else {
-                      _scheduleEnglishHubIdleRobotCheck(initial: true);
-                    }
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              Text(
-                                newState ? '🤖' : '⏸️',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  newState
-                                      ? 'Robots: ON (Active in group)'
-                                      : 'Robots: OFF (Silenced in group)',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          backgroundColor: newState
-                              ? const Color(0xFF059669)
-                              : const Color(0xFF475569),
-                          duration: const Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: _isEnglishHubRobotsEnabled
-                          ? const Color(0xFF059669).withValues(alpha: 0.25)
-                          : const Color(0xFF475569).withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: _isEnglishHubRobotsEnabled
-                            ? const Color(0xFF34D399)
-                            : const Color(0xFF94A3B8),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _isEnglishHubRobotsEnabled ? '🤖 ON' : '🤖 OFF',
-                          style: GoogleFonts.outfit(
-                            color: _isEnglishHubRobotsEnabled
-                                ? const Color(0xFF34D399)
-                                : const Color(0xFF94A3B8),
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // 🎲 SHUFFLE BUTTON (User Audio Directive: Instant switch to another active room)
-              IconButton(
-                icon: const Icon(Icons.casino_rounded, color: Color(0xFFFFD600), size: 21),
+                icon: const Icon(Icons.casino_rounded, color: Color(0xFFFFD600), size: 22),
                 tooltip: 'Shuffle English Hub Room 🎲',
-                onPressed: () async {
-                  HapticFeedback.mediumImpact();
-                  final isStudent = PocketKidsService.isStudentWorld;
-                  final nav = Navigator.of(context);
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Row(
-                        children: [
-                          Text('🎲 ', style: TextStyle(fontSize: 16)),
-                          Text('Shuffling to an active English Hub room...'),
-                        ],
-                      ),
-                      backgroundColor: Color(0xFF1E293B),
-                      duration: Duration(milliseconds: 1200),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                onPressed: _isShuffling
+                    ? null
+                    : () async {
+                        HapticFeedback.mediumImpact();
+                        final isStudent = PocketKidsService.isStudentWorld;
+                        safeSetState(() {
+                          _isShuffling = true;
+                        });
 
-                  final newGroup = await EnglishHubLevelGroupService.shuffleAndAssignEnglishHubGroup(
-                    userId: _currentUserId,
-                    isStudentMode: isStudent,
-                    forceNewRoom: true,
-                    currentGroupId: widget.groupId,
-                  );
+                        try {
+                          final newGroup =
+                              await EnglishHubLevelGroupService.shuffleAndAssignEnglishHubGroup(
+                            userId: _currentUserId,
+                            isStudentMode: isStudent,
+                            forceNewRoom: true,
+                            currentGroupId: _currentGroupId,
+                          );
 
-                  if (mounted) {
-                    nav.pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => WhatsAppGroupChat(
-                          groupId: newGroup.groupId,
-                          groupName: newGroup.groupName,
-                          showBackButton: true,
-                        ),
-                      ),
-                    );
-                  }
-                },
+                          // In-place identity switch without route replacement!
+                          safeSetState(() {
+                            _currentGroupId = newGroup.groupId;
+                            _currentGroupName = newGroup.groupName;
+                          });
+
+                          InAppNotificationService.currentActiveChatId = _currentGroupId;
+                          // Invalidate & refresh chat messages provider for this group
+                          ref.invalidate(chatMessagesProvider(_currentGroupId));
+                          _fetchMembers();
+
+                          // Smooth visual transition delay
+                          await Future.delayed(const Duration(milliseconds: 300));
+                        } catch (e) {
+                          debugPrint('Error shuffling English Hub in-place: $e');
+                        } finally {
+                          if (mounted) {
+                            safeSetState(() {
+                              _isShuffling = false;
+                            });
+                          }
+                        }
+                      },
               ),
             ],
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
               color: appBarColor,
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == 'switch_world') {
                   PocketWorldModeSelectionDialog.show(context);
                 }
                 if (value == 'refresh') _handleRefresh();
                 if (value == 'info') _showGroupInfo();
+                if (value == 'topics') {
+                  _showDailyIcebreakerModal();
+                }
                 if (value == 'ai_tutor') {
                   showModalBottomSheet(
                     context: context,
@@ -5506,23 +5412,82 @@ Draft: "$draft"''';
                     },
                   );
                 }
+                if (value == 'toggle_robots') {
+                  final newState = !_isEnglishHubRobotsEnabled;
+                  safeSetState(() {
+                    _isEnglishHubRobotsEnabled = newState;
+                  });
+                  try {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool(
+                        'pocket_english_hub_robots_enabled', newState);
+                  } catch (_) {}
+
+                  if (!newState) {
+                    _hubRobotIdleConversationTimer?.cancel();
+                    _hubRobotReplyCooldownTimer?.cancel();
+                    PocketRobotService.clearAllTyping();
+                  } else {
+                    _scheduleEnglishHubIdleRobotCheck(initial: true);
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Text(newState ? '🤖' : '⏸️',
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Text(
+                              newState
+                                  ? 'Robots: ON (Active in group)'
+                                  : 'Robots: OFF (Silenced in group)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: newState
+                            ? const Color(0xFF059669)
+                            : const Color(0xFF475569),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+                if (value == 'hub_page') {
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EnglishLearningHubPage(),
+                      ),
+                    );
+                  }
+                }
                 if (value == 'leave') _showLeaveGroupDialog();
                 if (value == 'report') {
-                  ReportHelper.showReportDialog(
-                    context: context,
-                    contentType: 'user',
-                    contentId: widget.groupId.startsWith('p:')
-                        ? widget.groupId.substring(2)
-                        : widget.groupId,
-                    contentTitle: widget.groupName,
-                  );
+                  if (mounted) {
+                    ReportHelper.showReportDialog(
+                      context: context,
+                      contentType: 'user',
+                      contentId: _currentGroupId.startsWith('p:')
+                          ? _currentGroupId.substring(2)
+                          : _currentGroupId,
+                      contentTitle: _currentGroupName,
+                    );
+                  }
                 }
                 if (value == 'block') {
-                  final otherUserId = widget.groupId.startsWith('p:')
-                      ? widget.groupId.substring(2)
+                  final otherUserId = _currentGroupId.startsWith('p:')
+                      ? _currentGroupId.substring(2)
                       : '';
                   if (otherUserId.isNotEmpty) {
-                    _showBlockUserDialog(otherUserId, widget.groupName);
+                    _showBlockUserDialog(otherUserId, _currentGroupName);
                   }
                 }
                 if (value == 'clear') {
@@ -5530,31 +5495,93 @@ Draft: "$draft"''';
                 }
               },
               itemBuilder: (context) {
-                final isPersonalChat = widget.groupId.startsWith('p:');
+                final isPersonalChat = _currentGroupId.startsWith('p:');
                 return [
                   if (!isPersonalChat)
                     const PopupMenuItem(
                       value: 'info',
-                      child: Text('Group Info',
-                          style: TextStyle(color: Colors.white)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              color: Colors.white70, size: 18),
+                          SizedBox(width: 10),
+                          Text('Group Info',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
                     ),
-                  if (_isEnglishHubGroup)
+                  if (_isEnglishHubGroup) ...[
+                    const PopupMenuItem(
+                      value: 'topics',
+                      child: Row(
+                        children: [
+                          Icon(Icons.lightbulb_outline_rounded,
+                              color: Color(0xFFFFD600), size: 18),
+                          SizedBox(width: 10),
+                          Text('Daily Topic Starters',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'ai_tutor',
                       child: Row(
                         children: [
                           Icon(Icons.psychology_alt_rounded,
-                              color: Color(0xFFFFD600), size: 18),
-                          SizedBox(width: 8),
+                              color: Color(0xFF38BDF8), size: 18),
+                          SizedBox(width: 10),
                           Text('AI English Tutor',
                               style: TextStyle(color: Colors.white)),
                         ],
                       ),
                     ),
+                    PopupMenuItem(
+                      value: 'toggle_robots',
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isEnglishHubRobotsEnabled
+                                ? Icons.smart_toy_rounded
+                                : Icons.smart_toy_outlined,
+                            color: _isEnglishHubRobotsEnabled
+                                ? const Color(0xFF34D399)
+                                : Colors.white60,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            _isEnglishHubRobotsEnabled
+                                ? 'AI Mates: ON'
+                                : 'AI Mates: OFF',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'hub_page',
+                      child: Row(
+                        children: [
+                          Icon(Icons.hub_outlined,
+                              color: Colors.lightBlueAccent, size: 18),
+                          SizedBox(width: 10),
+                          Text('English Hub Activities',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ],
                   const PopupMenuItem(
                     value: 'refresh',
-                    child:
-                        Text('Refresh', style: TextStyle(color: Colors.white)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh_rounded,
+                            color: Colors.white70, size: 18),
+                        SizedBox(width: 10),
+                        Text('Refresh Chat',
+                            style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
                   ),
                   if (AppStoreReviewService.isWorldSwitchVisible)
                     const PopupMenuItem(
@@ -5562,39 +5589,74 @@ Draft: "$draft"''';
                       child: Row(
                         children: [
                           Text('🌐', style: TextStyle(fontSize: 16)),
-                          SizedBox(width: 8),
+                          SizedBox(width: 10),
                           Text('Switch World Mode',
                               style: TextStyle(color: Color(0xFFFFD700))),
                         ],
                       ),
                     ),
-                  if (!isPersonalChat && !_isEnglishHub)
+                  if (!isPersonalChat && !_isEnglishHubGroup)
                     const PopupMenuItem(
                       value: 'leave',
-                      child: Text('Leave Group',
-                          style: TextStyle(color: Colors.red)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.exit_to_app_rounded,
+                              color: Colors.red, size: 18),
+                          SizedBox(width: 10),
+                          Text('Leave Group',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
                     ),
                   if (!isPersonalChat)
                     const PopupMenuItem(
-                      value: 'report_group',
-                      child: Text('Report Group',
-                          style: TextStyle(color: Colors.orange)),
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag_outlined,
+                              color: Colors.orange, size: 18),
+                          SizedBox(width: 10),
+                          Text('Report Group',
+                              style: TextStyle(color: Colors.orange)),
+                        ],
+                      ),
                     ),
                   if (isPersonalChat) ...[
                     const PopupMenuItem(
                       value: 'clear',
-                      child: Text('Clear Chat',
-                          style: TextStyle(color: Colors.red)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline_rounded,
+                              color: Colors.red, size: 18),
+                          SizedBox(width: 10),
+                          Text('Clear Chat',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
                     ),
                     const PopupMenuItem(
                       value: 'report',
-                      child: Text('Report User',
-                          style: TextStyle(color: Colors.orange)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag_outlined,
+                              color: Colors.orange, size: 18),
+                          SizedBox(width: 10),
+                          Text('Report User',
+                              style: TextStyle(color: Colors.orange)),
+                        ],
+                      ),
                     ),
                     const PopupMenuItem(
                       value: 'block',
-                      child: Text('Block User',
-                          style: TextStyle(color: Colors.red)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.block_rounded,
+                              color: Colors.red, size: 18),
+                          SizedBox(width: 10),
+                          Text('Block User',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
                     ),
                   ],
                 ];
@@ -5854,7 +5916,7 @@ Draft: "$draft"''';
                           final isErrorInitial = chatMessagesAsync.hasError &&
                               !chatMessagesAsync.hasValue;
 
-                          if (isLoadingInitial) return _buildShimmerLoading();
+                          if (_isShuffling || isLoadingInitial) return _buildShimmerLoading();
 
                           if (isErrorInitial) {
                             return Center(
@@ -5870,7 +5932,7 @@ Draft: "$draft"''';
                                   TextButton(
                                     onPressed: () {
                                       ref.invalidate(
-                                          chatMessagesProvider(widget.groupId));
+                                          chatMessagesProvider(_currentGroupId));
                                     },
                                     child: const Text('Retry'),
                                   ),
@@ -8320,37 +8382,40 @@ Draft: "$draft"''';
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 14, bottom: 4),
       child: Material(
-        color: const Color(0xFF0F766E),
-        borderRadius: BorderRadius.circular(12),
-        elevation: 3,
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           onTap: _isCorrectingText ? null : _polishEnglishDraft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white24, width: 0.8),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_isCorrectingText)
                   const SizedBox(
-                    width: 12,
-                    height: 12,
+                    width: 11,
+                    height: 11,
                     child: CircularProgressIndicator(
-                      strokeWidth: 1.5,
+                      strokeWidth: 1.4,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                          AlwaysStoppedAnimation<Color>(Color(0xFFFFD600)),
                     ),
                   )
                 else
-                  const Icon(Icons.auto_awesome,
-                      color: Color(0xFFFFFC00), size: 14),
-                const SizedBox(width: 5),
+                  const Icon(Icons.auto_fix_high_rounded,
+                      color: Color(0xFFFFD600), size: 13),
+                const SizedBox(width: 4.5),
                 Text(
-                  _isCorrectingText ? 'Polishing...' : '✨ Polish My English',
+                  _isCorrectingText ? 'Polishing...' : 'Polish English',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
                   ),
                 ),
               ],
