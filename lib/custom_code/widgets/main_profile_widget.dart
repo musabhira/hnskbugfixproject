@@ -263,8 +263,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    // 3 clean Instagram-style tabs: Cards, Thoughts, Citadel
-    _profileTabController = material.TabController(length: 3, vsync: this);
+    // 4 clean Instagram-style tabs: Cards, Thoughts, Citadel, Companions (Audio Directive)
+    _profileTabController = material.TabController(length: 4, vsync: this);
     _profileTabController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -273,6 +273,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadEquippedTalisman();
     _loadFortressDefenseData();
     _loadPocketScore();
+    _loadGlobalRank();
   }
 
   @override
@@ -292,9 +293,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _silverTrophies = 0;
   // ⚔️ Successful Attacks (Raids won / gates breached)
   int _attacksWon = 0;
+  // 🌐 Live user Global Rank (Computed directly via PocketRankingService)
+  int? _fetchedGlobalRank;
 
-  // 🛡️ Adult MainProfileWidget is dedicated to Adult accounts; always strictly false to guarantee adult PS & Global Rank!
-  bool get _isStudentProfile => false;
+  Future<void> _loadGlobalRank() async {
+    try {
+      final rank = await PocketRankingService.fetchUserGlobalRank(
+        userId,
+        _pocketScore > 0 ? _pocketScore : null,
+      );
+      if (mounted && rank > 0) {
+        setState(() {
+          _fetchedGlobalRank = rank;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading user global rank: $e');
+    }
+  }
+
+  // 🛡️ Student / Teen profile detection matching audio directive
+  bool get _isStudentProfile {
+    if (PocketKidsService.isStudentWorld) return true;
+    final accType = _profileData?['account_type']?.toString().toLowerCase();
+    if (accType == 'student' || accType == 'teen') return true;
+    final age = _profileData?['age'];
+    if (age is num && age > 0 && age <= 18) return true;
+    return false;
+  }
 
   Future<void> _loadPocketScore() async {
     try {
@@ -478,6 +504,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadLocalUserStage();
     _fetchFreshData();
     _fetchEnglishHubData();
+    _loadGlobalRank();
   }
 
   Future<void> _handleProfileRefresh() async {
@@ -490,6 +517,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _loadEquippedTalisman(),
         _fetchEnglishHubData(),
         _loadPocketScore(),
+        _loadGlobalRank(),
       ]);
     } catch (e) {
       debugPrint('Profile refresh error: $e');
@@ -610,23 +638,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       _btnTextColor = stage.buttonTextColor;
     }
 
-    // When viewing another user, default to showing their real profile picture if available
-    if (!isMe) {
-      final pUrl = data['profile_picture_url'] ??
-          data['photo_url'] ??
-          data['avatar_url'] ??
-          data['image_url'];
-      if (pUrl != null && pUrl.toString().trim().isNotEmpty) {
-        _showAvatarMode = false;
-      }
-    } else {
-      SharedPreferences.getInstance().then((prefs) {
-        final savedMode = prefs.getBool('show_avatar_mode_$userId');
-        if (savedMode != null && mounted) {
-          setState(() => _showAvatarMode = savedMode);
-        }
-      });
-    }
+    // Default to showing Vector Avatar profile for all users (Audio directive: "അവതാർ പ്രൊഫൈൽ ആണ് കൊടുക്കേണ്ടത്")
+    _showAvatarMode = true;
   }
 
   Future<void> _fetchFreshData() async {
@@ -1484,6 +1497,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final dynLvl = _getEffectiveDay();
       return dynLvl.clamp(1, 90);
     }
+    if (_fetchedGlobalRank != null && _fetchedGlobalRank! > 0) {
+      return _fetchedGlobalRank!;
+    }
     final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
     if (cachedRank != null && cachedRank > 0) return cachedRank;
     return 0;
@@ -1587,7 +1603,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 centerTitle: false,
                 actions: [
-                  if (isMe)
+                  if (isMe) ...[
+                    material.IconButton(
+                      icon: const Icon(material.Icons.gps_fixed_rounded, size: 21),
+                      color: const Color(0xFFFFD700),
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        PocketCitadelAttackPage.openForUser(
+                          context,
+                          userId: userId,
+                          isDefenseMode: true,
+                          attackerDay: _getEffectiveDay(),
+                        );
+                      },
+                      tooltip: 'Preview Attack Profile / Citadel Defense',
+                    ),
                     material.IconButton(
                       icon:
                           const Icon(material.Icons.settings_rounded, size: 22),
@@ -1602,6 +1632,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       },
                       tooltip: 'Settings',
                     ),
+                  ],
                   if (!isMe)
                     PopupMenuButton<String>(
                       icon: const Icon(material.Icons.more_vert),
@@ -1713,6 +1744,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         material.Tab(
                           icon: Icon(material.Icons.fort_rounded, size: 22),
                         ),
+                        material.Tab(
+                          icon: Icon(material.Icons.face_retouching_natural_rounded, size: 22),
+                        ),
                       ],
                     ),
                     bgColor,
@@ -1804,6 +1838,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         btnTextColor: btnTextColor,
                       ),
                       _buildCitadelHouseTab(textColor, btnColor, isMe),
+                      _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
                     ],
                   ),
           ),
@@ -1901,7 +1936,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               1,
                           isDamaged: _fortressStatus?.isDamaged ?? false,
                           houseId: isMe ? 'me' : (widget.userId ?? ''),
-                          showTestingControls: isMe && _isAdminUser(),
+                          showTestingControls: false,
                           onDayChanged: (d) => _jumpToDay(d),
                         ),
                         if (_recentRaids.isNotEmpty) ...[
@@ -2245,7 +2280,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           _buildJailSentenceBanner(),
                           const SizedBox(height: 16),
                         ],
-                        _buildMinimalDefenseSection(textColor, btnColor),
                         if (isMe) ...[
                           const SizedBox(height: 16),
                           _buildMinimalAttackersSection(),
@@ -4518,12 +4552,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       borderColor = const Color(0xFF34D399).withValues(alpha: 0.5);
       textColor = const Color(0xFF6EE7B7);
     } else {
-      final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
-      if (isPresident) {
-        rank = 1;
-        label = 'Rank #1';
-      } else if (cachedRank != null && cachedRank > 0) {
-        rank = cachedRank;
+      final activeRank = _getUserGlobalRank();
+      if (activeRank > 0) {
+        rank = activeRank;
         label = 'Rank #$rank';
       } else {
         rank = 0;
@@ -5420,69 +5451,350 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     return GestureDetector(
       onTap: () {
-        if (isMe) {
-          _showAvatarQuickPicker(context);
-        } else {
-          if (profileUrl != null && profileUrl.isNotEmpty) {
-            showDialog(
-              context: context,
-              builder: (ctx) => Dialog(
-                backgroundColor: Colors.transparent,
-                insetPadding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: CachedNetworkImage(
-                        imageUrl: profileUrl,
-                        fit: BoxFit.contain,
-                        placeholder: (_, __) =>
-                            const Center(child: CircularProgressIndicator()),
-                        errorWidget: (_, __, ___) => Container(
-                          padding: const EdgeInsets.all(20),
-                          color: const Color(0xFF1E2235),
-                          child: const Icon(Icons.broken_image,
-                              color: Colors.white54, size: 48),
-                        ),
+        if (!_showAvatarMode && profileUrl != null && profileUrl.isNotEmpty) {
+          showDialog(
+            context: context,
+            builder: (ctx) => Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: CachedNetworkImage(
+                      imageUrl: profileUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (_, __) =>
+                          const Center(child: CircularProgressIndicator()),
+                      errorWidget: (_, __, ___) => Container(
+                        padding: const EdgeInsets.all(20),
+                        color: const Color(0xFF1E2235),
+                        child: const Icon(Icons.broken_image,
+                            color: Colors.white54, size: 48),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    IconButton(
-                      icon: const Icon(Icons.close,
-                          color: Colors.white, size: 28),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 12),
+                  IconButton(
+                    icon: const Icon(Icons.close,
+                        color: Colors.white, size: 28),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
               ),
-            );
-          } else {
-            setState(() => _showAvatarMode = !_showAvatarMode);
-            if (isMe) {
-              SharedPreferences.getInstance().then((p) =>
-                  p.setBool('show_avatar_mode_$userId', _showAvatarMode));
-            }
+            ),
+          );
+        } else {
+          // Tap navigates directly to the Companions Milestone Cards Tab (Tab index 3)
+          HapticFeedback.selectionClick();
+          _profileTabController.animateTo(3);
+        }
+      },
+      onDoubleTap: () {
+        HapticFeedback.mediumImpact();
+        if (profileUrl != null && profileUrl.isNotEmpty) {
+          setState(() => _showAvatarMode = !_showAvatarMode);
+          if (isMe) {
+            SharedPreferences.getInstance().then((p) =>
+                p.setBool('show_avatar_mode_$userId', _showAvatarMode));
           }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_showAvatarMode
+                  ? '🎨 Showing Pocket Mate Avatar'
+                  : '📷 Showing Real Profile Photo'),
+              duration: const Duration(milliseconds: 700),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🎨 Showing Avatar • No real photo uploaded yet'),
+              duration: Duration(milliseconds: 700),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
       },
       onLongPress: () {
-        setState(() => _showAvatarMode = !_showAvatarMode);
-        if (isMe) {
-          SharedPreferences.getInstance().then(
-              (p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+        if (profileUrl != null && profileUrl.isNotEmpty) {
+          setState(() => _showAvatarMode = !_showAvatarMode);
+          if (isMe) {
+            SharedPreferences.getInstance().then(
+                (p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_showAvatarMode
+                  ? '🎨 Showing Pocket Mate Avatar'
+                  : '📷 Showing Real Profile Photo'),
+              duration: const Duration(milliseconds: 700),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_showAvatarMode
-                ? '🎨 Showing Pocket Mate Avatar'
-                : '📷 Showing Real Profile Photo'),
-            duration: const Duration(milliseconds: 700),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
       },
       child: displayAvatar,
+    );
+  }
+
+  /// 🐾 4th Tab: Pocket Mates Avatar Milestone Companions & Progression Prestige Ribbon (Audio Directive)
+  Widget _buildCompanionsMilestoneTab(Color textColor, Color btnColor, bool isMe) {
+    final int userLevel = _getEffectiveDay();
+    var currentCfg = _getAvatarConfig();
+    final animals90 = VectorAvatarConfig.get90DayAnimals();
+
+    int unlockedCount = 0;
+    for (int i = 0; i < animals90.length; i++) {
+      if (VectorAvatarConfig.isCompanionUnlocked(i + 1, userLevel)) {
+        unlockedCount++;
+      }
+    }
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 🛡️ Progression Prestige Status Ribbon (Audio Directive: "Pocket Mate Progress Prestige അതും ബോട്ടം ഷീറ്റിൽ കൊടുക്കാതെ ഒരു ടാബ് ആയിട്ട് ഇപ്പുറത്ത് കൊടുക്കുക")
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131522),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pocket Mates Progression Prestige',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Level $userLevel Mate • $unlockedCount/90 Unlocked 🌱',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (userLevel >= 90 && isMe)
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VectorAvatarStudioPage(
+                                initialConfig: currentCfg,
+                                onAvatarSaved: (newCfg) {
+                                  setState(() {
+                                    _profileData ??= {};
+                                    _profileData!['avatar_config'] = newCfg.toMap();
+                                    _showAvatarMode = true;
+                                  });
+                                },
+                              ),
+                            ),
+                          ).then((_) => _loadInitialData());
+                        },
+                        icon: const Icon(Icons.tune_rounded, size: 15, color: Color(0xFFFFFC00)),
+                        label: Text(
+                          'Studio 👑',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  userLevel >= 90
+                      ? '👑 DAY 90 MASTER: Unrestricted Avatar Studio styling privileges unlocked!'
+                      : 'Level $userLevel progression aura & armor are locked to earned rank. Advance daily levels to unlock milestone companions!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Milestone Companions Grid
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 0.78,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemCount: animals90.length,
+            itemBuilder: (context, index) {
+              final companionDay = index + 1;
+              final a = animals90[index];
+              final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
+              final isEquipped = currentCfg.species == a.species;
+
+              final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+                companionDay,
+                talismanId: _equippedTalismanId,
+              ).copyWith(
+                skinColor: isEquipped ? currentCfg.skinColor : null,
+                hairColor: isEquipped ? currentCfg.hairColor : null,
+              );
+
+              return GestureDetector(
+                onTap: () async {
+                  if (!isUnlocked) {
+                    HapticFeedback.heavyImpact();
+                    NftTradingCardDialog.show(
+                      context,
+                      day: companionDay,
+                      config: previewCfg,
+                      userId: userId,
+                      isOwner: false,
+                    );
+                    return;
+                  }
+
+                  if (!isMe) return;
+
+                  HapticFeedback.selectionClick();
+                  final newCfg = userLevel >= 90
+                      ? previewCfg
+                      : VectorAvatarConfig.getEvolutionAvatarForStage(
+                          userLevel,
+                          talismanId: _equippedTalismanId,
+                        ).copyWith(species: a.species);
+
+                  setState(() {
+                    _profileData ??= {};
+                    _profileData!['avatar_config'] = newCfg.toMap();
+                    _showAvatarMode = true;
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('🎉 Equipped ${a.rarityTier}!'),
+                      backgroundColor: const Color(0xFFFFFC00),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(milliseconds: 900),
+                    ),
+                  );
+
+                  try {
+                    final uid = _supabase.auth.currentUser?.id;
+                    if (uid != null) {
+                      await _supabase.from('profile').update({
+                        'avatar_config': newCfg.toMap(),
+                      }).eq('user_id', uid);
+                    }
+                  } catch (_) {}
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isEquipped
+                        ? const Color(0xFF1E2238)
+                        : (isUnlocked ? const Color(0xFF151824) : const Color(0xFF0C0E17)),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isEquipped
+                          ? const Color(0xFFFFFC00)
+                          : (isUnlocked ? Colors.white24 : Colors.white10),
+                      width: isEquipped ? 2 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              VectorAvatarWidget(
+                                config: previewCfg,
+                                size: 58,
+                                showAura: isEquipped,
+                              ),
+                              if (!isUnlocked)
+                                Container(
+                                  width: 58,
+                                  height: 58,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.lock_rounded, size: 20, color: Colors.white54),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+                        child: Column(
+                          children: [
+                            Text(
+                              a.species.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
+                              style: GoogleFonts.outfit(
+                                color: isUnlocked ? Colors.white : Colors.white60,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              isUnlocked
+                                  ? (isEquipped
+                                      ? 'EQUIPPED'
+                                      : (companionDay <= 5 ? 'STARTER' : 'UNLOCKED'))
+                                  : 'DAY $companionDay CARD 💎',
+                              style: GoogleFonts.outfit(
+                                color: isEquipped
+                                    ? const Color(0xFFFFFC00)
+                                    : (isUnlocked ? const Color(0xFF10B981) : Colors.amber),
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
