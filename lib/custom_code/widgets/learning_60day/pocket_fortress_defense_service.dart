@@ -472,7 +472,7 @@ class PocketFortressDefenseService {
   static const String _jailedHousesListKey = 'pocket_jailed_houses_list';
 
   /// 🪙 Unified Pocket Score (Single coherent currency & progression score strictly scoped per user)
-  static Future<int> getUnifiedScore([String? uid]) async {
+  static Future<int> getUnifiedScore([String? uid, bool forceRefresh = false]) async {
     final prefs = await SharedPreferences.getInstance();
     final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
     if (myId == null || myId.isEmpty) {
@@ -490,7 +490,7 @@ class PocketFortressDefenseService {
     final userScoreKey = 'user_pocket_score_$myId';
     int? userScore = prefs.getInt(userScoreKey);
 
-    if (userScore == null) {
+    if (forceRefresh || userScore == null || userScore == 0) {
       // Fetch user-specific score from Supabase
       try {
         final profile = await SupaFlow.client
@@ -499,8 +499,11 @@ class PocketFortressDefenseService {
             .eq('user_id', myId)
             .maybeSingle();
         if (profile != null) {
-          final ps = (profile['pocket_score'] as num?)?.toInt();
-          userScore = ps ?? 0;
+          final ps = (profile['pocket_score'] as num?)?.toInt() ?? 0;
+          final xp = (profile['xp'] as num?)?.toInt() ?? 0;
+          final lp = (profile['learning_points'] as num?)?.toInt() ?? 0;
+          final maxDb = math.max(ps, math.max(xp, lp));
+          userScore = math.max(userScore ?? 0, maxDb);
         }
       } catch (_) {}
 

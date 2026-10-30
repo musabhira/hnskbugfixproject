@@ -357,11 +357,37 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         }
         return;
       }
-      final score = await PocketFortressDefenseService.getUnifiedScore(userId);
+
+      // Query real profile score directly from Supabase to prevent stale 215 cache
+      final pRes = await _supabase
+          .from('profile')
+          .select('pocket_score, xp, learning_points')
+          .eq('user_id', userId)
+          .maybeSingle();
+      int dbScore = 0;
+      if (pRes != null) {
+        final ps = (pRes['pocket_score'] as num?)?.toInt() ?? 0;
+        final xp = (pRes['xp'] as num?)?.toInt() ?? 0;
+        final lp = (pRes['learning_points'] as num?)?.toInt() ?? 0;
+        dbScore = math.max(ps, math.max(xp, lp));
+      }
+
+      final unifiedScore = await PocketFortressDefenseService.getUnifiedScore(userId, true);
+      final finalScore = math.max(dbScore, math.max(unifiedScore, _pocketScore));
+
+      // Sync local cache
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('user_pocket_score_$userId', finalScore);
+
+      // Sync local mates
+      final localMates = prefs.getStringList('pocket_mates_$userId') ?? [];
+      final dynamicMates = math.max(_friendsCount, localMates.length);
+
       if (mounted) {
         setState(() {
-          _pocketScore = score;
-          final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(score);
+          _pocketScore = finalScore;
+          _friendsCount = dynamicMates;
+          final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(finalScore);
           _localUserStage = scoreLvl;
         });
       }
@@ -621,7 +647,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           PocketRobotService.getRobotByLevel(1);
       effectiveStage = PocketRobotService.getDynamicLevel(robot);
     } else {
-      final score = (data['pocket_score'] as num?)?.toInt() ?? 0;
+      final rawScore = (data['pocket_score'] as num?)?.toInt() ?? 0;
+      final xpScore = (data['xp'] as num?)?.toInt() ?? 0;
+      final score = math.max(_pocketScore, math.max(rawScore, xpScore));
       _pocketScore = score;
       effectiveStage = PocketScoreLevelEngine.getLevelFromScore(score);
     }
@@ -1544,21 +1572,71 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final Color btnTextColor;
 
     if (isTop10) {
-      if (userRank == 1) {
-        // #1 Global Champion (Royal Obsidian Gold Prestige)
-        bgColor = const Color(0xFF0C0A06);
-        btnColor = const Color(0xFFFFD700);
-        btnTextColor = const Color(0xFF000000);
-      } else if (userRank <= 3) {
-        // #2 & #3 (Radiant Amber Gold)
-        bgColor = const Color(0xFF0D0B08);
-        btnColor = const Color(0xFFF59E0B);
-        btnTextColor = const Color(0xFF000000);
-      } else {
-        // #4 - #10 (Top 10 Winner Accent)
-        bgColor = const Color(0xFF0A0C14);
-        btnColor = const Color(0xFF38BDF8);
-        btnTextColor = const Color(0xFF000000);
+      switch (userRank) {
+        case 1:
+          // #1 Royal Obsidian Gold (Crown Gold)
+          bgColor = const Color(0xFF0F0D06);
+          btnColor = const Color(0xFFFFD700);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 2:
+          // #2 Radiant Platinum Silver
+          bgColor = const Color(0xFF0B0D12);
+          btnColor = const Color(0xFFE2E8F0);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 3:
+          // #3 Radiant Amber Bronze
+          bgColor = const Color(0xFF120B06);
+          btnColor = const Color(0xFFF59E0B);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 4:
+          // #4 Emerald Sovereign
+          bgColor = const Color(0xFF05120B);
+          btnColor = const Color(0xFF10B981);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 5:
+          // #5 Sapphire Imperial
+          bgColor = const Color(0xFF060D1A);
+          btnColor = const Color(0xFF38BDF8);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 6:
+          // #6 Amethyst Royal
+          bgColor = const Color(0xFF0E0717);
+          btnColor = const Color(0xFFA855F7);
+          btnTextColor = const Color(0xFFFFFFFF);
+          break;
+        case 7:
+          // #7 Ruby Crimson
+          bgColor = const Color(0xFF140609);
+          btnColor = const Color(0xFFF43F5E);
+          btnTextColor = const Color(0xFFFFFFFF);
+          break;
+        case 8:
+          // #8 Topaz Flame
+          bgColor = const Color(0xFF140A04);
+          btnColor = const Color(0xFFFB923C);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 9:
+          // #9 Cyan Vanguard
+          bgColor = const Color(0xFF041214);
+          btnColor = const Color(0xFF06B6D4);
+          btnTextColor = const Color(0xFF000000);
+          break;
+        case 10:
+          // #10 Prism Champion
+          bgColor = const Color(0xFF090A14);
+          btnColor = const Color(0xFF818CF8);
+          btnTextColor = const Color(0xFFFFFFFF);
+          break;
+        default:
+          bgColor = const Color(0xFF0A0C14);
+          btnColor = const Color(0xFF38BDF8);
+          btnTextColor = const Color(0xFF000000);
       }
     } else {
       // Standard Minimal Instagram Pure Black Mode for all users (Days 1 to 90)
@@ -4603,6 +4681,24 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ),
         ),
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E2235),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: Colors.white24, width: 0.9),
+          ),
+          child: Text(
+            'Stage ${activeStage.stageNumber}',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 10.5,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
         if (fScore != null) ...[
           const SizedBox(width: 6),
           GestureDetector(
@@ -5388,41 +5484,68 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (isTop10) {
       final Gradient ringGradient;
       final Color glowColor;
-      if (rank == 1) {
-        // #1 Champion Royal Golden Ring
-        ringGradient = const SweepGradient(
-          colors: [
-            Color(0xFFFFDF00),
-            Color(0xFFD4AF37),
-            Color(0xFFFFF8DC),
-            Color(0xFFFFB300),
-            Color(0xFFFFDF00),
-          ],
-        );
-        glowColor = const Color(0xFFFFD700);
-      } else if (rank <= 3) {
-        // #2 - #3 Radiant Amber Gold Ring
-        ringGradient = const SweepGradient(
-          colors: [
-            Color(0xFFF59E0B),
-            Color(0xFFFBBF24),
-            Color(0xFFFEF3C7),
-            Color(0xFFD97706),
-            Color(0xFFF59E0B),
-          ],
-        );
-        glowColor = const Color(0xFFF59E0B);
-      } else {
-        // #4 - #10 Instagram Top 10 Winner Ring
-        ringGradient = const SweepGradient(
-          colors: [
-            Color(0xFF38BDF8),
-            Color(0xFF818CF8),
-            Color(0xFFC084FC),
-            Color(0xFF38BDF8),
-          ],
-        );
-        glowColor = const Color(0xFF38BDF8);
+      switch (rank) {
+        case 1:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFFFF8DC), Color(0xFFFFB300), Color(0xFFFFDF00)],
+          );
+          glowColor = const Color(0xFFFFD700);
+          break;
+        case 2:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8), Color(0xFFFFFFFF), Color(0xFFCBD5E1), Color(0xFFE2E8F0)],
+          );
+          glowColor = const Color(0xFFE2E8F0);
+          break;
+        case 3:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFF59E0B), Color(0xFFFBBF24), Color(0xFFFEF3C7), Color(0xFFD97706), Color(0xFFF59E0B)],
+          );
+          glowColor = const Color(0xFFF59E0B);
+          break;
+        case 4:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFF10B981), Color(0xFF34D399), Color(0xFFA7F3D0), Color(0xFF059669), Color(0xFF10B981)],
+          );
+          glowColor = const Color(0xFF10B981);
+          break;
+        case 5:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFF38BDF8), Color(0xFF60A5FA), Color(0xFFBAE6FD), Color(0xFF2563EB), Color(0xFF38BDF8)],
+          );
+          glowColor = const Color(0xFF38BDF8);
+          break;
+        case 6:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFA855F7), Color(0xFFC084FC), Color(0xFFF3E8FF), Color(0xFF7E22CE), Color(0xFFA855F7)],
+          );
+          glowColor = const Color(0xFFA855F7);
+          break;
+        case 7:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFF43F5E), Color(0xFFFB7185), Color(0xFFFFE4E6), Color(0xFFBE123C), Color(0xFFF43F5E)],
+          );
+          glowColor = const Color(0xFFF43F5E);
+          break;
+        case 8:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFFFB923C), Color(0xFFFDBA74), Color(0xFFFFEDD5), Color(0xFFC2410C), Color(0xFFFB923C)],
+          );
+          glowColor = const Color(0xFFFB923C);
+          break;
+        case 9:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFF06B6D4), Color(0xFF22D3EE), Color(0xFFCFFAFE), Color(0xFF0E7490), Color(0xFF06B6D4)],
+          );
+          glowColor = const Color(0xFF06B6D4);
+          break;
+        case 10:
+        default:
+          ringGradient = const SweepGradient(
+            colors: [Color(0xFF818CF8), Color(0xFFA78BFA), Color(0xFFE0E7FF), Color(0xFF4F46E5), Color(0xFF818CF8)],
+          );
+          glowColor = const Color(0xFF818CF8);
+          break;
       }
 
       displayAvatar = Container(
@@ -5540,260 +5663,164 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  /// 🐾 4th Tab: Pocket Mates Avatar Milestone Companions & Progression Prestige Ribbon (Audio Directive)
+  /// 🐾 4th Tab: Pocket Mates Avatar Milestone Companions (Audio Directive: larger avatars, glowing aura, no top ribbon, tap opens 3D NFT Card Dialog)
   Widget _buildCompanionsMilestoneTab(Color textColor, Color btnColor, bool isMe) {
     final int userLevel = _getEffectiveDay();
     var currentCfg = _getAvatarConfig();
     final animals90 = VectorAvatarConfig.get90DayAnimals();
 
-    int unlockedCount = 0;
-    for (int i = 0; i < animals90.length; i++) {
-      if (VectorAvatarConfig.isCompanionUnlocked(i + 1, userLevel)) {
-        unlockedCount++;
-      }
-    }
-
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🛡️ Progression Prestige Status Ribbon (Audio Directive: "Pocket Mate Progress Prestige അതും ബോട്ടം ഷീറ്റിൽ കൊടുക്കാതെ ഒരു ടാബ് ആയിട്ട് ഇപ്പുറത്ത് കൊടുക്കുക")
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF131522),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 32),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 0.69,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: animals90.length,
+        itemBuilder: (context, index) {
+          final companionDay = index + 1;
+          final a = animals90[index];
+          final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
+          final isEquipped = currentCfg.species == a.species;
+
+          final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+            companionDay,
+            talismanId: _equippedTalismanId,
+          ).copyWith(
+            skinColor: isEquipped ? currentCfg.skinColor : null,
+            hairColor: isEquipped ? currentCfg.hairColor : null,
+          );
+
+          return GestureDetector(
+            onTap: () async {
+              HapticFeedback.mediumImpact();
+              // Open 3D Holographic NFT Card Dialog (User audio: "അതിൽ ടാപ്പ് ചെയ്യുന്ന സമയത്ത് എക്വിപ്ഡ് അവതാർ എന്ന് പറഞ്ഞിട്ട് ഒരു അലർട്ട് ബോക്സ് വരുക")
+              await NftTradingCardDialog.show(
+                context,
+                day: companionDay,
+                config: previewCfg,
+                userId: userId,
+                isOwner: isMe && isUnlocked,
+              );
+
+              if (isUnlocked && isMe) {
+                final newCfg = userLevel >= 90
+                    ? previewCfg
+                    : VectorAvatarConfig.getEvolutionAvatarForStage(
+                        userLevel,
+                        talismanId: _equippedTalismanId,
+                      ).copyWith(species: a.species);
+
+                setState(() {
+                  _profileData ??= {};
+                  _profileData!['avatar_config'] = newCfg.toMap();
+                  _showAvatarMode = true;
+                });
+
+                try {
+                  final uid = _supabase.auth.currentUser?.id;
+                  if (uid != null) {
+                    await _supabase.from('profile').update({
+                      'avatar_config': newCfg.toMap(),
+                    }).eq('user_id', uid);
+                  }
+                } catch (_) {}
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: isEquipped
+                    ? const Color(0xFF1E2238)
+                    : (isUnlocked ? const Color(0xFF141724) : const Color(0xFF0C0E17)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isEquipped
+                      ? const Color(0xFFFFD700)
+                      : (isUnlocked ? Colors.white24 : Colors.white10),
+                  width: isEquipped ? 2 : 1,
+                ),
+                boxShadow: isEquipped
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 8),
+                  // 🌟 Larger Avatar with Active Animated Aura (Audio Directive: "കുറച്ചുകൂടി വലിപ്പത്തിൽ പ്ലേസ് ചെയ്യുക... ബാക്കിൽ ഒരു ആനിമേഷൻ ഉണ്ട്, അതേ ആനിമേഷൻ ഇവിടെയും കൊടുക്കുക")
+                  Expanded(
+                    child: Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          VectorAvatarWidget(
+                            config: previewCfg,
+                            size: 74,
+                            showAura: isUnlocked,
+                          ),
+                          if (!isUnlocked)
+                            Container(
+                              width: 74,
+                              height: 74,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.65),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.lock_rounded, size: 24, color: Colors.white54),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+                    child: Column(
                       children: [
                         Text(
-                          'Pocket Mates Progression Prestige',
+                          a.species.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
                           style: GoogleFonts.outfit(
-                            color: Colors.white,
+                            color: isUnlocked ? Colors.white : Colors.white60,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            fontSize: 15,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Level $userLevel Mate • $unlockedCount/90 Unlocked 🌱',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFFFFFC00),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11.5,
+                          isUnlocked
+                              ? (isEquipped ? 'EQUIPPED ✨' : 'UNLOCKED 🌱')
+                              : 'DAY $companionDay 🔒',
+                          style: GoogleFonts.outfit(
+                            color: isEquipped
+                                ? const Color(0xFFFFD700)
+                                : (isUnlocked ? const Color(0xFF10B981) : Colors.white38),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
                           ),
                         ),
                       ],
                     ),
-                    if (userLevel >= 90 && isMe)
-                      TextButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => VectorAvatarStudioPage(
-                                initialConfig: currentCfg,
-                                onAvatarSaved: (newCfg) {
-                                  setState(() {
-                                    _profileData ??= {};
-                                    _profileData!['avatar_config'] = newCfg.toMap();
-                                    _showAvatarMode = true;
-                                  });
-                                },
-                              ),
-                            ),
-                          ).then((_) => _loadInitialData());
-                        },
-                        icon: const Icon(Icons.tune_rounded, size: 15, color: Color(0xFFFFFC00)),
-                        label: Text(
-                          'Studio 👑',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFFC00),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  userLevel >= 90
-                      ? '👑 DAY 90 MASTER: Unrestricted Avatar Studio styling privileges unlocked!'
-                      : 'Level $userLevel progression aura & armor are locked to earned rank. Advance daily levels to unlock milestone companions!',
-                  style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    height: 1.35,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          // Milestone Companions Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.78,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: animals90.length,
-            itemBuilder: (context, index) {
-              final companionDay = index + 1;
-              final a = animals90[index];
-              final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
-              final isEquipped = currentCfg.species == a.species;
-
-              final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
-                companionDay,
-                talismanId: _equippedTalismanId,
-              ).copyWith(
-                skinColor: isEquipped ? currentCfg.skinColor : null,
-                hairColor: isEquipped ? currentCfg.hairColor : null,
-              );
-
-              return GestureDetector(
-                onTap: () async {
-                  if (!isUnlocked) {
-                    HapticFeedback.heavyImpact();
-                    NftTradingCardDialog.show(
-                      context,
-                      day: companionDay,
-                      config: previewCfg,
-                      userId: userId,
-                      isOwner: false,
-                    );
-                    return;
-                  }
-
-                  if (!isMe) return;
-
-                  HapticFeedback.selectionClick();
-                  final newCfg = userLevel >= 90
-                      ? previewCfg
-                      : VectorAvatarConfig.getEvolutionAvatarForStage(
-                          userLevel,
-                          talismanId: _equippedTalismanId,
-                        ).copyWith(species: a.species);
-
-                  setState(() {
-                    _profileData ??= {};
-                    _profileData!['avatar_config'] = newCfg.toMap();
-                    _showAvatarMode = true;
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('🎉 Equipped ${a.rarityTier}!'),
-                      backgroundColor: const Color(0xFFFFFC00),
-                      behavior: SnackBarBehavior.floating,
-                      duration: const Duration(milliseconds: 900),
-                    ),
-                  );
-
-                  try {
-                    final uid = _supabase.auth.currentUser?.id;
-                    if (uid != null) {
-                      await _supabase.from('profile').update({
-                        'avatar_config': newCfg.toMap(),
-                      }).eq('user_id', uid);
-                    }
-                  } catch (_) {}
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isEquipped
-                        ? const Color(0xFF1E2238)
-                        : (isUnlocked ? const Color(0xFF151824) : const Color(0xFF0C0E17)),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isEquipped
-                          ? const Color(0xFFFFFC00)
-                          : (isUnlocked ? Colors.white24 : Colors.white10),
-                      width: isEquipped ? 2 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              VectorAvatarWidget(
-                                config: previewCfg,
-                                size: 58,
-                                showAura: isEquipped,
-                              ),
-                              if (!isUnlocked)
-                                Container(
-                                  width: 58,
-                                  height: 58,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.lock_rounded, size: 20, color: Colors.white54),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-                        child: Column(
-                          children: [
-                            Text(
-                              a.species.replaceAll('_', ' ').split(' ').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' '),
-                              style: GoogleFonts.outfit(
-                                color: isUnlocked ? Colors.white : Colors.white60,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              isUnlocked
-                                  ? (isEquipped
-                                      ? 'EQUIPPED'
-                                      : (companionDay <= 5 ? 'STARTER' : 'UNLOCKED'))
-                                  : 'DAY $companionDay CARD 💎',
-                              style: GoogleFonts.outfit(
-                                color: isEquipped
-                                    ? const Color(0xFFFFFC00)
-                                    : (isUnlocked ? const Color(0xFF10B981) : Colors.amber),
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -6795,7 +6822,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         Expanded(
           child: _buildInstagramStatColumn(
             label: 'Mates',
-            count: _followersCount > 0 ? _followersCount : _friendsCount,
+            count: _friendsCount > 0 ? _friendsCount : _followersCount,
             textColor: textColor,
           ),
         ),
