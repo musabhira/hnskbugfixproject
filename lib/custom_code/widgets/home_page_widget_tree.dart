@@ -56,6 +56,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_sele
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -4827,12 +4828,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       }
                                     }
                                   } else if (conversation.isGroup) {
+                                    String targetGid = conversation.id;
+                                    String targetGname = conversation.name;
+
+                                    if (EnglishHubLevelGroupService.isEnglishHub(conversation.id, groupName: conversation.name)) {
+                                      if (_currentUserId != null && _currentUserId!.isNotEmpty) {
+                                        final activeHub = await EnglishHubLevelGroupService.getOrAssignEnglishHubGroup(
+                                          userId: _currentUserId!,
+                                          isStudentMode: PocketKidsService.isStudentWorld,
+                                        );
+                                        targetGid = activeHub.groupId;
+                                        targetGname = activeHub.groupName;
+                                      }
+                                    }
+
                                     await Navigator.push(
                                       context,
                                       material.MaterialPageRoute(
                                         builder: (context) => WhatsAppGroupChat(
-                                          groupId: conversation.id,
-                                          groupName: conversation.name,
+                                          groupId: targetGid,
+                                          groupName: targetGname,
                                           groupImage: conversation.imageUrl,
                                           avatarConfig:
                                               conversation.avatarConfig,

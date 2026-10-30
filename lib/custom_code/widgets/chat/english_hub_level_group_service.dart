@@ -1119,4 +1119,219 @@ class EnglishHubLevelGroupService {
       return false;
     }
   }
+
+  /// 🎲 SHUFFLE & DYNAMIC ROOM BALANCING (User Audio Directives)
+  ///
+  /// 1. Strict Student vs Adult separation (Students only in student hub, adults only in adult hub).
+  /// 2. Mixed levels in rooms (Levels 1–90 mixed naturally).
+  /// 3. Max capacity target (e.g. 50 active learners per room, minimum 10-25).
+  /// 4. When a user taps "🎲 SHUFFLE", or when their current room is inactive,
+  ///    silently and seamlessly migrate them to another active room without disturbing others!
+  /// 5. Scalable to 1 Million+ users without manual admin intervention.
+  static Future<EnglishHubLevelGroup> shuffleAndAssignEnglishHubGroup({
+    required String userId,
+    bool isStudentMode = false,
+    bool forceNewRoom = false,
+    String? currentGroupId,
+  }) async {
+    try {
+      final String prefix = isStudentMode ? 'student_english_hub' : 'english_hub';
+      final String baseTitle = isStudentMode ? 'English Hub (Students)' : 'English Hub';
+
+      // 1. Fetch all active groups with this prefix
+      var dbGroups = await _supabase
+          .from('groups')
+          .select('id, name, is_active')
+          .like('id', '$prefix%')
+          .eq('is_active', true);
+
+      List<Map<String, dynamic>> candidateGroups = List<Map<String, dynamic>>.from(dbGroups as List);
+
+      // If no rooms exist at all, initialize Group 1 immediately!
+      if (candidateGroups.isEmpty) {
+        final initialGroupId = '${prefix}_group_1';
+        try {
+          await _supabase.from('groups').upsert({
+            'id': initialGroupId,
+            'name': '$baseTitle • Group 1',
+            'is_active': true,
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        } catch (_) {}
+
+        candidateGroups = [
+          {'id': initialGroupId, 'name': '$baseTitle • Group 1'}
+        ];
+      }
+
+      // 2. Count active members in candidate groups (Limit to max 50 per room)
+      final candidateIds = candidateGroups.map((g) => g['id'].toString()).toList();
+      final memberCountsRes = await _supabase
+          .from('group_members')
+          .select('group_id')
+          .filter('group_id', 'in', '(${candidateIds.join(',')})')
+          .eq('is_active', true);
+
+      final Map<String, int> counts = {};
+      for (final r in (memberCountsRes as List)) {
+        final gid = r['group_id']?.toString() ?? '';
+        counts[gid] = (counts[gid] ?? 0) + 1;
+      }
+
+      // If user wants to shuffle to a different room, exclude their current room
+      List<Map<String, dynamic>> eligible = candidateGroups.where((g) {
+        final gid = g['id'].toString();
+        if (forceNewRoom && currentGroupId != null && gid == currentGroupId && candidateGroups.length > 1) {
+          return false;
+        }
+        return (counts[gid] ?? 0) < 50; // Room capacity limit: max 50
+      }).toList();
+
+      String targetGroupId;
+      String targetGroupName;
+
+      if (eligible.isNotEmpty) {
+        // Pick an eligible room with good activity (or random among eligible for organic distribution)
+        eligible.shuffle();
+        final selected = eligible.first;
+        targetGroupId = selected['id'].toString();
+        targetGroupName = selected['name']?.toString() ?? baseTitle;
+      } else {
+        // All existing rooms are full (> 50)! Auto-scale and provision next group!
+        final nextGroupNumber = candidateGroups.length + 1;
+        targetGroupId = '${prefix}_group_$nextGroupNumber';
+        targetGroupName = '$baseTitle • Group $nextGroupNumber';
+
+        try {
+          await _supabase.from('groups').insert({
+            'id': targetGroupId,
+            'name': targetGroupName,
+            'is_active': true,
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        } catch (e) {
+          debugPrint('EnglishHub auto-provisioning room note: $e');
+        }
+      }
+
+      // Register dynamically into known hub groups set
+      registerHubGroupId(targetGroupId);
+
+      // 3. Resolve profile ID
+      final profRes = await _supabase
+          .from('profile')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+      final profileId = profRes?['id']?.toString() ?? userId;
+
+      // 4. Leave/Deactivate from all other English Hub rooms (Enforce Single Room Membership)
+      // Note: User audio explicitly requested silent migration - no left/joined messages needed!
+      if (candidateIds.isNotEmpty) {
+        await _supabase
+            .from('group_members')
+            .update({'is_active': false})
+            .eq('user_id', userId)
+            .filter('group_id', 'in', '(${candidateIds.join(',')})');
+      }
+
+      // 5. Activate or insert membership into the target room
+      final existing = await _supabase
+          .from('group_members')
+          .select('id')
+          .eq('group_id', targetGroupId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (existing != null) {
+        await _supabase
+            .from('group_members')
+            .update({'is_active': true})
+            .eq('id', existing['id']);
+      } else {
+        await _supabase.from('group_members').insert({
+          'group_id': targetGroupId,
+          'user_id': userId,
+          'profile_id': profileId,
+          'role': 'member',
+          'is_active': true,
+        });
+      }
+
+      return EnglishHubLevelGroup(
+        id: targetGroupId,
+        groupId: targetGroupId,
+        groupName: targetGroupName,
+        minLevel: 1,
+        maxLevel: 90,
+        stageTitle: isStudentMode ? 'Student English Commonwealth' : 'The Sovereign English Commonwealth',
+        tagBadge: 'Active Cohort',
+        iconEmoji: isStudentMode ? '🎓' : '🌟',
+      );
+    } catch (e) {
+      debugPrint('Error in shuffleAndAssignEnglishHubGroup: $e');
+      final fallbackId = isStudentMode ? 'student_english_hub_group_1' : 'english_hub_all_learners';
+      return EnglishHubLevelGroup(
+        id: fallbackId,
+        groupId: fallbackId,
+        groupName: isStudentMode ? 'English Hub (Students)' : 'English Hub',
+        minLevel: 1,
+        maxLevel: 90,
+        stageTitle: 'Language Community',
+        tagBadge: 'All Learners',
+        iconEmoji: '💬',
+      );
+    }
+  }
+
+  /// 🔍 Fetch the user's current assigned English Hub group (or assign if not joined yet)
+  static Future<EnglishHubLevelGroup> getOrAssignEnglishHubGroup({
+    required String userId,
+    bool isStudentMode = false,
+  }) async {
+    try {
+      final prefix = isStudentMode ? 'student_english_hub' : 'english_hub';
+
+      // Check existing active membership
+      final activeRes = await _supabase
+          .from('group_members')
+          .select('group_id, groups:group_id(id, name, is_active)')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .like('group_id', '$prefix%')
+          .maybeSingle();
+
+      if (activeRes != null && activeRes['group_id'] != null) {
+        final gId = activeRes['group_id'].toString();
+        final gData = activeRes['groups'] as Map<String, dynamic>?;
+        final gName = gData?['name']?.toString() ?? (isStudentMode ? 'English Hub (Students)' : 'English Hub');
+
+        registerHubGroupId(gId);
+
+        return EnglishHubLevelGroup(
+          id: gId,
+          groupId: gId,
+          groupName: gName,
+          minLevel: 1,
+          maxLevel: 90,
+          stageTitle: isStudentMode ? 'Student English Commonwealth' : 'The Sovereign English Commonwealth',
+          tagBadge: 'Active Room',
+          iconEmoji: isStudentMode ? '🎓' : '🌟',
+        );
+      }
+
+      // Not assigned yet: run shuffle & balance!
+      return await shuffleAndAssignEnglishHubGroup(
+        userId: userId,
+        isStudentMode: isStudentMode,
+      );
+    } catch (e) {
+      debugPrint('Error in getOrAssignEnglishHubGroup: $e');
+      return await shuffleAndAssignEnglishHubGroup(
+        userId: userId,
+        isStudentMode: isStudentMode,
+      );
+    }
+  }
 }
+

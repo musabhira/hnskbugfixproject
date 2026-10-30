@@ -39,6 +39,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_nature_sce
 import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 /// 💬 Pocket Kids Chat Hub - Ported Directly from Adult Chat System
 /// Features:
@@ -1237,12 +1238,27 @@ class _PocketStudentChatHubWidgetState
     HapticFeedback.lightImpact();
     PocketGameAudioService.instance.playCoinSound();
     if (conversation.isGroup) {
+      String targetGid = conversation.id;
+      String targetGname = conversation.name;
+
+      if (EnglishHubLevelGroupService.isEnglishHub(conversation.id, groupName: conversation.name)) {
+        final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+        if (uid.isNotEmpty) {
+          final activeHub = await EnglishHubLevelGroupService.getOrAssignEnglishHubGroup(
+            userId: uid,
+            isStudentMode: true,
+          );
+          targetGid = activeHub.groupId;
+          targetGname = activeHub.groupName;
+        }
+      }
+
       await Navigator.push(
         context,
         material.MaterialPageRoute(
           builder: (context) => WhatsAppGroupChat(
-            groupId: conversation.id,
-            groupName: conversation.name,
+            groupId: targetGid,
+            groupName: targetGname,
             groupImage: conversation.imageUrl,
             avatarConfig: conversation.avatarConfig,
           ),

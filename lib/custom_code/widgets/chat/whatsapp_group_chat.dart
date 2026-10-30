@@ -5439,6 +5439,49 @@ Draft: "$draft"''';
                   ),
                 ),
               ),
+              // 🎲 SHUFFLE BUTTON (User Audio Directive: Instant switch to another active room)
+              IconButton(
+                icon: const Icon(Icons.casino_rounded, color: Color(0xFFFFD600), size: 21),
+                tooltip: 'Shuffle English Hub Room 🎲',
+                onPressed: () async {
+                  HapticFeedback.mediumImpact();
+                  final isStudent = PocketKidsService.isStudentWorld;
+                  final nav = Navigator.of(context);
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Row(
+                        children: [
+                          Text('🎲 ', style: TextStyle(fontSize: 16)),
+                          Text('Shuffling to an active English Hub room...'),
+                        ],
+                      ),
+                      backgroundColor: Color(0xFF1E293B),
+                      duration: Duration(milliseconds: 1200),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+
+                  final newGroup = await EnglishHubLevelGroupService.shuffleAndAssignEnglishHubGroup(
+                    userId: _currentUserId,
+                    isStudentMode: isStudent,
+                    forceNewRoom: true,
+                    currentGroupId: widget.groupId,
+                  );
+
+                  if (mounted) {
+                    nav.pushReplacement(
+                      MaterialPageRoute(
+                        builder: (_) => WhatsAppGroupChat(
+                          groupId: newGroup.groupId,
+                          groupName: newGroup.groupName,
+                          showBackButton: true,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
             ],
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
