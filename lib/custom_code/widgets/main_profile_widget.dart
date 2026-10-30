@@ -37,7 +37,6 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_quick_account_access_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_friendship_score_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
@@ -1473,17 +1472,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
+  int _getUserGlobalRank() {
+    final targetId =
+        widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(targetId);
+    final isRobot = PocketRobotService.isRobotId(targetId) || !isUuid;
+    final isPresident = _profileData?['is_president'] == true ||
+        _profileData?['role'] == 'president';
+    if (isPresident) return 1;
+    if (isRobot) {
+      final dynLvl = _getEffectiveDay();
+      return dynLvl.clamp(1, 90);
+    }
+    final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
+    if (cachedRank != null && cachedRank > 0) return cachedRank;
+    return 0;
+  }
+
   // --- UI Construction ---
 
   @override
   Widget build(BuildContext context) {
     if (_isBlocked) {
       return material.Scaffold(
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFF000000),
         body: Center(
           child: Text(
             "You have blocked this user.",
-            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+            style: const TextStyle(color: Colors.white70),
           ),
         ),
       );
@@ -1491,7 +1507,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     if (_isLoading && _profileData == null) {
       return material.Scaffold(
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: const Color(0xFF000000),
         body: Center(
           child: material.CircularProgressIndicator(
             valueColor: material.AlwaysStoppedAnimation<Color>(
@@ -1502,31 +1518,38 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
-    int day = _getEffectiveDay();
-    final activeStage = LearningMilestoneStage.getStageForDay(day);
+    final int userRank = _getUserGlobalRank();
+    final bool isTop10 = userRank > 0 && userRank <= 10;
 
-    final rawBgColor = activeStage.bgColor;
-    final rawTextColor = activeStage.textColor;
-    final rawBtnColor = activeStage.buttonColor;
-    final rawBtnTextColor = activeStage.buttonTextColor;
+    // Fixed Instagram Dark Theme (Pure #000000 Dark Mode for Days 1 to 90)
+    final Color bgColor;
+    final Color textColor = const Color(0xFFFFFFFF);
+    final Color btnColor;
+    final Color btnTextColor;
 
-    // Contrast check: if background and text colors are same or too close, override text color
-    var finalBtnTextColor = rawBtnTextColor;
-    if ((rawBtnColor.toARGB32() & 0xFFFFFF) ==
-            (rawBtnTextColor.toARGB32() & 0xFFFFFF) ||
-        (rawBtnColor.computeLuminance() - rawBtnTextColor.computeLuminance())
-                .abs() <
-            0.15) {
-      finalBtnTextColor = rawBtnColor.computeLuminance() > 0.5
-          ? const Color(0xFF1E293B)
-          : const Color(0xFFFFFFFF);
+    if (isTop10) {
+      if (userRank == 1) {
+        // #1 Global Champion (Royal Obsidian Gold Prestige)
+        bgColor = const Color(0xFF0C0A06);
+        btnColor = const Color(0xFFFFD700);
+        btnTextColor = const Color(0xFF000000);
+      } else if (userRank <= 3) {
+        // #2 & #3 (Radiant Amber Gold)
+        bgColor = const Color(0xFF0D0B08);
+        btnColor = const Color(0xFFF59E0B);
+        btnTextColor = const Color(0xFF000000);
+      } else {
+        // #4 - #10 (Top 10 Winner Accent)
+        bgColor = const Color(0xFF0A0C14);
+        btnColor = const Color(0xFF38BDF8);
+        btnTextColor = const Color(0xFF000000);
+      }
+    } else {
+      // Standard Minimal Instagram Pure Black Mode for all users (Days 1 to 90)
+      bgColor = const Color(0xFF000000);
+      btnColor = const Color(0xFF262626);
+      btnTextColor = const Color(0xFFFFFFFF);
     }
-
-    final bgColor = rawBgColor;
-    final btnColor = _ensureContrast(rawBtnColor, bgColor, isButton: true);
-    final textColor = _ensureContrast(rawTextColor, bgColor, isButton: false);
-    final btnTextColor =
-        _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
 
     return material.Scaffold(
       backgroundColor: bgColor,
@@ -1564,108 +1587,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 centerTitle: false,
                 actions: [
-                  if (isMe && _isAdminUser())
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            final next = (_getEffectiveDay() % 90) + 1;
-                            _jumpToDay(next);
-                          },
-                          onLongPress: () {
-                            _showStageTestingSwitcher(context);
-                          },
-                          child: Tooltip(
-                            message:
-                                '⚡ Admin Level Tester (Tap: +1 Level, Long-press: Pick 1-90)',
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 9, vertical: 5),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFF59E0B),
-                                    Color(0xFFFFD700)
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('🧪',
-                                      style: TextStyle(fontSize: 12)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'LVL ${_getEffectiveDay()}',
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.black,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (isMe) ...[
-                    FutureBuilder<bool>(
-                      future:
-                          PocketQuickAccountAccessService.canAccessQuickSwitch(
-                        userId: widget.userId ?? _supabase.auth.currentUser?.id,
-                        email: _profileData?['email']?.toString() ??
-                            _supabase.auth.currentUser?.email,
-                      ),
-                      builder: (context, snapshot) {
-                        if (snapshot.data == true) {
-                          return material.IconButton(
-                            icon: const Icon(
-                                material.Icons.switch_account_rounded,
-                                size: 22,
-                                color: Color(0xFFFFFC00)),
-                            onPressed: () {
-                              HapticFeedback.mediumImpact();
-                              AutoLoginBottomSheet.show(context);
-                            },
-                            tooltip: 'Quick Switch Account ⚡',
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    material.IconButton(
-                      icon: const Icon(material.Icons.fort_rounded,
-                          size: 22, color: Color(0xFFFFD700)),
-                      onPressed: () {
-                        final currentUid = widget.userId ??
-                            _supabase.auth.currentUser?.id ??
-                            '';
-                        final currentName = _profileData?['name'] ??
-                            _profileData?['username'] ??
-                            'Learner';
-                        PocketCitadelAttackPage.openForUser(
-                          context,
-                          userId: currentUid,
-                          targetName: currentName,
-                          isDefenseMode: true,
-                        );
-                      },
-                      tooltip: 'My House & Citadel Profile 🏰',
-                    ),
+                  if (isMe)
                     material.IconButton(
                       icon:
                           const Icon(material.Icons.settings_rounded, size: 22),
@@ -1680,7 +1602,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       },
                       tooltip: 'Settings',
                     ),
-                  ],
                   if (!isMe)
                     PopupMenuButton<String>(
                       icon: const Icon(material.Icons.more_vert),
@@ -1779,23 +1700,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       key: ValueKey('tab_bar_profile_$isMe'),
                       controller: _profileTabController,
                       labelColor: textColor,
-                      unselectedLabelColor: textColor.withValues(alpha: 0.5),
-                      indicatorColor: btnColor,
-                      indicatorWeight: 3,
-                      labelStyle:
-                          GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                      unselectedLabelColor: textColor.withValues(alpha: 0.4),
+                      indicatorColor: isTop10 ? btnColor : textColor,
+                      indicatorWeight: 1.5,
                       tabs: const [
                         material.Tab(
-                          icon: Icon(material.Icons.grid_on_rounded, size: 20),
-                          text: "Cards",
+                          icon: Icon(material.Icons.grid_on_rounded, size: 22),
                         ),
                         material.Tab(
-                          icon: Icon(material.Icons.forum_outlined, size: 20),
-                          text: "Thoughts",
+                          icon: Icon(material.Icons.forum_outlined, size: 22),
                         ),
                         material.Tab(
-                          icon: Icon(material.Icons.fort_rounded, size: 20),
-                          text: "Citadel",
+                          icon: Icon(material.Icons.fort_rounded, size: 22),
                         ),
                       ],
                     ),
@@ -4545,73 +4461,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     const secondaryTextColor = Color(0xFFA8A8A8);
     const dividerColor = Color(0xFF262626);
 
-    // Render one of 4 clean, progressive standard layouts based on learning day
-    Widget headerContent;
-    if (day <= 15) {
-      // Layout 1: Classic Instagram Layout (Left Avatar, Right Stats)
-      headerContent = _buildLayoutGenesis(
-        name: name,
-        shopName: shopName,
-        bio: bio,
-        profileUrl: profileUrl,
-        isVerified: isVerified,
-        slug: slug,
-        activeStage: activeStage,
-        textColor: textColor,
-        secondaryTextColor: secondaryTextColor,
-        dividerColor: dividerColor,
-        btnColor: btnColor,
-        btnTextColor: btnTextColor,
-      );
-    } else if (day <= 30) {
-      // Layout 2: Modern Split Deck (Left Stats Capsules, Right Avatar)
-      headerContent = _buildLayoutSplitRight(
-        name: name,
-        shopName: shopName,
-        bio: bio,
-        profileUrl: profileUrl,
-        isVerified: isVerified,
-        slug: slug,
-        activeStage: activeStage,
-        textColor: textColor,
-        secondaryTextColor: secondaryTextColor,
-        dividerColor: dividerColor,
-        btnColor: btnColor,
-        btnTextColor: btnTextColor,
-      );
-    } else if (day <= 60) {
-      // Layout 3: Center Spotlight Hero (Centered Avatar, Centered Name & Stage Badge, Floating Stats Bar)
-      headerContent = _buildLayoutCenterSpotlight(
-        name: name,
-        shopName: shopName,
-        bio: bio,
-        profileUrl: profileUrl,
-        isVerified: isVerified,
-        slug: slug,
-        activeStage: activeStage,
-        textColor: textColor,
-        secondaryTextColor: secondaryTextColor,
-        dividerColor: dividerColor,
-        btnColor: btnColor,
-        btnTextColor: btnTextColor,
-      );
-    } else {
-      // Layout 4: Celestial Grandmaster Deck (Grandmaster Obsidian Card, Left Holographic Avatar, Glowing Stats, Diamond Crown)
-      headerContent = _buildLayoutCelestialShowcase(
-        name: name,
-        shopName: shopName,
-        bio: bio,
-        profileUrl: profileUrl,
-        isVerified: isVerified,
-        slug: slug,
-        activeStage: activeStage,
-        textColor: textColor,
-        secondaryTextColor: secondaryTextColor,
-        dividerColor: dividerColor,
-        btnColor: btnColor,
-        btnTextColor: btnTextColor,
-      );
-    }
+    // Layout 1: Unified Classic Instagram Layout (Left Avatar, Right Stats) across all 90 levels (Audio directive)
+    final headerContent = _buildLayoutGenesis(
+      name: name,
+      shopName: shopName,
+      bio: bio,
+      profileUrl: profileUrl,
+      isVerified: isVerified,
+      slug: slug,
+      activeStage: activeStage,
+      textColor: textColor,
+      secondaryTextColor: secondaryTextColor,
+      dividerColor: dividerColor,
+      btnColor: btnColor,
+      btnTextColor: btnTextColor,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -4643,36 +4507,43 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       // 🎓 Strictly Student Rank (Ages up to 17) - isolated from adult leaderboard
       rank = PocketKidsService.getStudentGlobalRank(
           _studentScore, activeStage.day, targetId);
-      label = rank > 0 ? '🎓 Student Rank #$rank' : '🌱 Student Challenger';
-      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
+      label = rank > 0 ? 'Student Rank #$rank' : 'Student Rank #--';
+      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.15);
+      borderColor = const Color(0xFF34D399).withValues(alpha: 0.5);
       textColor = const Color(0xFF6EE7B7);
     } else if (isRobot) {
       rank = activeStage.day.clamp(1, 90);
-      label = '🤖 Robot Rank #$rank';
-      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.18);
-      borderColor = const Color(0xFF34D399).withValues(alpha: 0.6);
+      label = 'Robot Rank #$rank';
+      badgeColor = const Color(0xFF10B981).withValues(alpha: 0.15);
+      borderColor = const Color(0xFF34D399).withValues(alpha: 0.5);
       textColor = const Color(0xFF6EE7B7);
     } else {
       final cachedRank = PocketRankingService.getCachedGlobalRank(targetId);
       if (isPresident) {
         rank = 1;
-        label = '👑 Global Rank #1';
-      } else if (cachedRank != null) {
+        label = 'Rank #1';
+      } else if (cachedRank != null && cachedRank > 0) {
         rank = cachedRank;
-        label = '🏆 Global Rank #$rank';
+        label = 'Rank #$rank';
       } else {
         rank = 0;
-        label = '🏆 Global Challenger';
+        label = 'Rank #--';
       }
       final isTop3 = (rank > 0 && rank <= 3) || isPresident;
-      badgeColor = isTop3
-          ? const Color(0xFFFFD700).withValues(alpha: 0.20)
-          : const Color(0xFF0284C7).withValues(alpha: 0.18);
-      borderColor = isTop3
-          ? const Color(0xFFFFD700).withValues(alpha: 0.70)
-          : const Color(0xFF38BDF8).withValues(alpha: 0.55);
-      textColor = isTop3 ? const Color(0xFFFFD700) : const Color(0xFF7DD3FC);
+      final isTop10 = (rank > 0 && rank <= 10) || isPresident;
+      if (isTop3) {
+        badgeColor = const Color(0xFFFFD700).withValues(alpha: 0.18);
+        borderColor = const Color(0xFFFFD700).withValues(alpha: 0.65);
+        textColor = const Color(0xFFFFD700);
+      } else if (isTop10) {
+        badgeColor = const Color(0xFF38BDF8).withValues(alpha: 0.15);
+        borderColor = const Color(0xFF38BDF8).withValues(alpha: 0.50);
+        textColor = const Color(0xFF7DD3FC);
+      } else {
+        badgeColor = const Color(0xFF262626);
+        borderColor = const Color(0xFF383838);
+        textColor = const Color(0xFFA8A8A8);
+      }
     }
 
     final fScore = (!isMe && isStudent)
@@ -5443,6 +5314,110 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required LearningMilestoneStage activeStage,
     required double size,
   }) {
+    final rank = _getUserGlobalRank();
+    final isTop10 = rank > 0 && rank <= 10;
+
+    Widget avatarCircle = SizedBox(
+      width: size,
+      height: size,
+      child: _showAvatarMode
+          ? VectorAvatarWidget(
+              config: _getAvatarConfig(),
+              size: size,
+              showAura: true,
+            )
+          : (profileUrl != null && profileUrl.isNotEmpty)
+              ? ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: profileUrl,
+                    width: size,
+                    height: size,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                        Container(color: dividerColor),
+                    errorWidget: (_, __, ___) => Container(
+                      color: dividerColor,
+                      child: Icon(Icons.person,
+                          size: size * 0.45,
+                          color: textColor.withValues(alpha: 0.5)),
+                    ),
+                  ),
+                )
+              : ClipOval(
+                  child: Container(
+                    color: dividerColor,
+                    child: Icon(Icons.person,
+                        size: size * 0.45,
+                        color: textColor.withValues(alpha: 0.5)),
+                  ),
+                ),
+    );
+
+    Widget displayAvatar = avatarCircle;
+    if (isTop10) {
+      final Gradient ringGradient;
+      final Color glowColor;
+      if (rank == 1) {
+        // #1 Champion Royal Golden Ring
+        ringGradient = const SweepGradient(
+          colors: [
+            Color(0xFFFFDF00),
+            Color(0xFFD4AF37),
+            Color(0xFFFFF8DC),
+            Color(0xFFFFB300),
+            Color(0xFFFFDF00),
+          ],
+        );
+        glowColor = const Color(0xFFFFD700);
+      } else if (rank <= 3) {
+        // #2 - #3 Radiant Amber Gold Ring
+        ringGradient = const SweepGradient(
+          colors: [
+            Color(0xFFF59E0B),
+            Color(0xFFFBBF24),
+            Color(0xFFFEF3C7),
+            Color(0xFFD97706),
+            Color(0xFFF59E0B),
+          ],
+        );
+        glowColor = const Color(0xFFF59E0B);
+      } else {
+        // #4 - #10 Instagram Top 10 Winner Ring
+        ringGradient = const SweepGradient(
+          colors: [
+            Color(0xFF38BDF8),
+            Color(0xFF818CF8),
+            Color(0xFFC084FC),
+            Color(0xFF38BDF8),
+          ],
+        );
+        glowColor = const Color(0xFF38BDF8);
+      }
+
+      displayAvatar = Container(
+        padding: const EdgeInsets.all(2.5),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: ringGradient,
+          boxShadow: [
+            BoxShadow(
+              color: glowColor.withValues(alpha: 0.4),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(2.0),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Color(0xFF000000),
+          ),
+          child: avatarCircle,
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         if (isMe) {
@@ -5507,112 +5482,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         );
       },
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        clipBehavior: Clip.none,
-        children: [
-          SizedBox(
-            width: size,
-            height: size,
-            child: _showAvatarMode
-                ? VectorAvatarWidget(
-                    config: _getAvatarConfig(),
-                    size: size,
-                    showAura: true,
-                  )
-                : (profileUrl != null && profileUrl.isNotEmpty)
-                    ? ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: profileUrl,
-                          width: size,
-                          height: size,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) =>
-                              Container(color: dividerColor),
-                          errorWidget: (_, __, ___) => Container(
-                            color: dividerColor,
-                            child: Icon(Icons.person,
-                                size: size * 0.45,
-                                color: textColor.withValues(alpha: 0.5)),
-                          ),
-                        ),
-                      )
-                    : ClipOval(
-                        child: Container(
-                          color: dividerColor,
-                          child: Icon(Icons.person,
-                              size: size * 0.45,
-                              color: textColor.withValues(alpha: 0.5)),
-                        ),
-                      ),
-          ),
-          Positioned(
-            left: -2,
-            bottom: -2,
-            child: GestureDetector(
-              onTap: () async {
-                HapticFeedback.mediumImpact();
-                final currentDay = _getEffectiveDay();
-                await JackieChanTalismanVaultModal.show(context,
-                    currentDay: currentDay);
-                final talisman =
-                    await JackieChanTalismanService.getEquippedTalisman();
-                if (mounted) setState(() => _equippedTalismanId = talisman.id);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A),
-                  shape: BoxShape.circle,
-                  border:
-                      Border.all(color: const Color(0xFFF59E0B), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  kJackieChanTalismans
-                      .firstWhere(
-                        (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
-                        orElse: () => kJackieChanTalismans.first,
-                      )
-                      .emoji,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: -2,
-            bottom: -2,
-            child: GestureDetector(
-              onTap: () {
-                if (isMe) {
-                  _showAvatarQuickPicker(context);
-                } else {
-                  setState(() => _showAvatarMode = !_showAvatarMode);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: activeStage.buttonColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 1.5),
-                ),
-                child: const Icon(
-                  Icons.auto_awesome,
-                  size: 13,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: displayAvatar,
     );
   }
 
@@ -6033,7 +5903,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
               if (isVerified) _buildVerifiedGoldenTick(),
-              if (!hideStageBadge) _buildProfileStageBadge(activeStage),
             ],
           ),
           const SizedBox(height: 5),
@@ -6063,113 +5932,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ),
           ],
-          // English Learning & Language Badges
-          () {
-            final nativeLang = _profileData?['native_language']?.toString();
-            final englishLvl = _profileData?['english_level']?.toString();
-            final learningGoal = _profileData?['learning_goal']?.toString();
-
-            if ((nativeLang == null || nativeLang.isEmpty) &&
-                (englishLvl == null || englishLvl.isEmpty) &&
-                (learningGoal == null || learningGoal.isEmpty)) {
-              return const SizedBox.shrink();
-            }
-
-            return Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                alignment: alignment == CrossAxisAlignment.center
-                    ? WrapAlignment.center
-                    : WrapAlignment.start,
-                children: [
-                  if (nativeLang != null && nativeLang.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.language_rounded,
-                              size: 12, color: Color(0xFFFFD700)),
-                          const SizedBox(width: 4),
-                          Text(
-                            nativeLang,
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (englishLvl != null && englishLvl.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.4)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.school_rounded,
-                              size: 12, color: Color(0xFF818CF8)),
-                          const SizedBox(width: 4),
-                          Text(
-                            englishLvl,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFC7D2FE),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (learningGoal != null && learningGoal.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                            color:
-                                const Color(0xFF10B981).withValues(alpha: 0.4)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.flag_rounded,
-                              size: 12, color: Color(0xFF34D399)),
-                          const SizedBox(width: 4),
-                          Text(
-                            learningGoal,
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFA7F3D0),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }(),
           // Hand Skill 3D Web link hidden per user request
         ],
       ),
