@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_study_tools_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_student_chat_hub_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_homes_showcase_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
@@ -554,8 +555,13 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       onPressed: () {
                         ticker?.cancel();
                         Navigator.pop(ctx);
-                        setState(() {
-                          _selectedNavIndex = 1; // Switch to Village tab
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PocketKidsHomesShowcasePage(),
+                          ),
+                        ).then((_) {
+                          if (mounted) setState(() {});
                         });
                       },
                     ),
