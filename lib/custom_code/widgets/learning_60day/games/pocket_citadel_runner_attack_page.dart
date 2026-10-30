@@ -22,8 +22,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_cards_viewer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';

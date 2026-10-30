@@ -60,6 +60,18 @@ import 'pocket_home_visit_modal.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
 import 'pocket_world_ranking_trail_widget.dart';
 import 'pocket_global_rank_list_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_email_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/student_spelling_detective_game_page.dart';
+import 'pocket_chat_reply_builder_page.dart';
+import 'pocket_negative_sentence_builder_page.dart';
+import 'pocket_mini_speech_practice_page.dart';
+import 'pocket_day1_review_card_page.dart';
+import 'games/verb_timeline_flame_game.dart';
+import 'pocket_house_attack_page.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -460,6 +472,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
         stepsCompleted.add(d);
       }
+    }
+
     // If a brand new user (Day 1 with 0 score), ensure Day 1 is pristine and uncompleted
     if (progRaw.currentDay <= 1 && score == 0) {
       completed.remove(1);
@@ -1303,6 +1317,135 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             }
             if (!mounted) return;
             final activeUid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+
+            if (step.type == 'letter_writing') {
+              await StudentLetterWritingGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'diary_entry') {
+              await StudentDiaryEntryGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'bio_creator') {
+              await StudentBioCreatorGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'notice_writing') {
+              await StudentNoticeGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'email_writing') {
+              await StudentEmailGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'spelling_detective') {
+              await StudentSpellingDetectiveGamePage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'verb_timeline_game') {
+              await PocketVerbTimelineGamePage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'chat_reply_builder') {
+              await PocketChatReplyBuilderPage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'negative_sentence_builder') {
+              await PocketNegativeSentenceBuilderPage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'mini_speech_practice') {
+              await PocketMiniSpeechPracticePage.show(
+                context,
+                day: day,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'house_attack_quest') {
+              await PocketHouseAttackPage.show(
+                context,
+                day: day,
+                stepIndex: step.stepNumber,
+                userId: activeUid,
+                onStepFinished: (_) => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+            if (step.type == 'day_review_card') {
+              await PocketDay1ReviewCardPage.showBottomSheet(
+                context,
+                day: day,
+                userId: activeUid,
+                onProceedToNextDay: () async => _onSubStepFinished(day, step.stepNumber),
+              );
+              await _loadData();
+              return;
+            }
+
             await Navigator.push(
               context,
               MaterialPageRoute(

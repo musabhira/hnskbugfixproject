@@ -5,7 +5,6 @@ import 'daily_vocab_item.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'curriculum_data/day_1_curriculum_data.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
-import 'games/pocket_20days_40games_spec.dart';
 
 /// 🎯 3 Clear Syllabus Tracks for Day 1
 /// User Directive:
@@ -162,25 +161,43 @@ class Day1StepModel {
   Color get color {
     switch (stepNumber) {
       case 1:
-        return const Color(0xFF38BDF8); // Sky blue
+        return const Color(0xFF00F0FF); // Meet letters
       case 2:
-        return const Color(0xFF3B82F6); // Royal blue
+        return const Color(0xFF00E5FF); // Sentence builder
       case 3:
-        return const Color(0xFFF59E0B); // Amber
+        return const Color(0xFF38BDF8); // Spelling
       case 4:
-        return const Color(0xFF10B981); // Emerald
+        return const Color(0xFF10B981); // Vocab vault
       case 5:
-        return const Color(0xFF06B6D4); // Cyan (Reading)
+        return const Color(0xFFF59E0B); // Game hunt / Quest
       case 6:
-        return const Color(0xFFEC4899); // Pink (Vocab)
+        return const Color(0xFF38BDF8); // Letter writing
       case 7:
-        return const Color(0xFF8B5CF6); // Purple (Voice)
+        return const Color(0xFFFFD700); // Diary entry
       case 8:
-        return const Color(0xFF6366F1); // Indigo (Community Chat)
+        return const Color(0xFF10B981); // Bio creator
       case 9:
-        return const Color(0xFFE11D48); // Crimson Rose (House Defense)
+        return const Color(0xFFEF4444); // Notice
       case 10:
-        return const Color(0xFFF59E0B); // Golden Amber (Gate Exam)
+        return const Color(0xFF38BDF8); // Email
+      case 11:
+        return const Color(0xFFFFD700); // Spelling detective
+      case 12:
+        return const Color(0xFFEC4899); // Spoken lab
+      case 13:
+        return const Color(0xFF60A5FA); // Reading room
+      case 14:
+        return const Color(0xFFFF9100); // Verb timeline
+      case 15:
+        return const Color(0xFF00E676); // Chat reply
+      case 16:
+        return const Color(0xFFA855F7); // Negative builder
+      case 17:
+        return const Color(0xFFE11D48); // Mini speech
+      case 18:
+        return const Color(0xFFEF4444); // House attack
+      case 19:
+        return const Color(0xFFFFD700); // Day review
       default:
         return const Color(0xFF3B82F6);
     }
@@ -669,449 +686,280 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   static List<Day1StepModel> getSteps([Day1Track? track, int day = 1]) {
     final cachedDay = PocketDayCurriculumService.getCachedDay(day) ?? (day == 1 ? Day1CurriculumJsonData.rawMap : null);
-    if (cachedDay != null && cachedDay['steps'] != null) {
-        final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
-        return rawSteps.map((s) {
-          final map = Map<String, dynamic>.from(s as Map<String, dynamic>);
-          final stepNum = map['stepNumber'] as int? ?? 1;
-          var titleEn = PocketDayCurriculumService.getLocalizedText(map['title'], lang: 'en');
-          var titleMl = PocketDayCurriculumService.getLocalizedText(map['title'], lang: 'ml');
-          var descEn = PocketDayCurriculumService.getLocalizedText(map['description'], lang: 'en');
-          var descMl = PocketDayCurriculumService.getLocalizedText(map['description'], lang: 'ml');
-          var icon = map['icon']?.toString() ?? '📚';
-          var gameType = map['gameType']?.toString() ?? 'generic';
 
-          // Step 5 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
-          if (stepNum == 5 && day > 1) {
-            final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
-              (g) => g.day == day && g.gameIndex == 1,
-              orElse: () => DayGameSpec(
-                day: day,
-                gameIndex: 1,
-                title: 'Day $day English Quest',
-                emoji: '🎮',
-                genre: GameGenre.runner,
-                englishTarget: 'Sentence Structure & Spoken English',
-                descriptionEn: 'Interactive action gaming applied to English mastery.',
-                descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
-                controlMechanism: 'Touch controls',
-              ),
-            );
-            titleEn = '${gameSpec.title} ${gameSpec.emoji}';
-            titleMl = '${gameSpec.title} ${gameSpec.emoji}';
-            descEn = '${gameSpec.englishTarget} - ${gameSpec.descriptionEn}';
-            descMl = gameSpec.descriptionMl;
-            icon = gameSpec.emoji;
-            gameType = 'game_arena';
-          } else if (stepNum == 5 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
-            final targetObjects = (map['targetObjects'] as List?)?.map((e) => e.toString()).toList() ?? [];
-            final nounsList = (cachedDay['vocabulary']?['nouns'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-            final nounMeaningMap = {
-              for (final n in nounsList)
-                n['word']?.toString().toLowerCase(): PocketDayCurriculumService.getLocalizedText(n['meaning'], lang: 'ml'),
-            };
-            final synthesizedRounds = <Map<String, dynamic>>[];
-            for (int i = 0; i < targetObjects.length; i++) {
-              final obj = targetObjects[i];
-              final meaning = nounMeaningMap[obj.toLowerCase()] ?? obj;
-              synthesizedRounds.add({
-                'targetLetter': obj.isNotEmpty ? obj[0].toUpperCase() : 'A',
-                'targetWord': obj,
-                'meaning': meaning,
-                'prompt': 'Catch "$obj" ($meaning)',
-                'options': [
-                  obj,
-                  if (i + 1 < targetObjects.length) targetObjects[i + 1] else 'Book',
-                  'Water',
-                  'House',
-                ]..shuffle(),
-                'correct': obj,
-              });
-            }
-            map['rounds'] = synthesizedRounds;
-          }
+    return [
+      // Step 1: Meet Letters / Concept Room
+      Day1StepModel(
+        stepNumber: 1,
+        titleEn: day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+        titleMl: day == 1 ? 'അക്ഷരങ്ങളും ശബ്ദങ്ങളും' : 'കൺസെപ്റ്റ് റൂം & അവതാർ ചാറ്റ്',
+        icon: '🔤',
+        type: day == 1 ? 'tutor_alphabet' : 'avatar_chat',
+        descriptionEn: day == 1
+            ? 'Tutor guides you through fundamental letters, sounds, and native pronunciations.'
+            : 'Interactive 1-on-1 dialogue with your personal AI tutor.',
+        descriptionMl: day == 1
+            ? 'ട്യൂട്ടർ അക്ഷരങ്ങളും അവയുടെ ഉച്ചാരണവും പഠിപ്പിക്കുന്നു.'
+            : 'നിങ്ങളുടെ സ്വകാര്യ AI ട്യൂട്ടറുമായി സംസാരിച്ചു തുടങ്ങുക.',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['stepNumber'] == 1,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-          // Step 4 Word catcher & sentence builder synthesis
-          if (stepNum == 4 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
-            final challengePatterns = (map['challengePatterns'] as List?)?.map((e) => e.toString()).toList() ?? [];
-            final verbsList = (cachedDay['vocabulary']?['verbs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-            final synthesizedRounds = <Map<String, dynamic>>[];
-            for (final v in verbsList.take(2)) {
-              final v1 = v['v1']?.toString() ?? '';
-              final meaning = PocketDayCurriculumService.getLocalizedText(v['meaning'], lang: 'ml');
-              synthesizedRounds.add({
-                'type': 'match',
-                'prompt': 'Find the meaning of "$v1":',
-                'options': [meaning, 'പോവുക', 'വരുക', 'ഓടുക']..shuffle(),
-                'correct': meaning,
-              });
-            }
-            for (final pat in challengePatterns) {
-              final clean = pat.replaceAll('.', '').trim();
-              final words = clean.split(' ').where((w) => w.isNotEmpty).toList();
-              synthesizedRounds.add({
-                'type': 'sentence',
-                'prompt': 'Build the sentence: "$clean."',
-                'scrambled': (List<String>.from(words)..shuffle()),
-                'expected': words.join(' '),
-              });
-            }
-            map['rounds'] = synthesizedRounds;
-          }
+      // Step 2: Sentence Builder Game
+      Day1StepModel(
+        stepNumber: 2,
+        titleEn: '🧩 Sentence Builder Game (Flame Engine)',
+        titleMl: '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)',
+        icon: '🧩',
+        type: 'flame_sentence_builder',
+        descriptionEn: 'Assemble conversational English sentences with interactive Flame engine touch tiles!',
+        descriptionMl: 'ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['stepNumber'] == 2,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-          // Step 5 Reading room synthesis
-          if (stepNum == 5) {
-            final sentences = (map['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-            map['passage'] = {
-              'bookTitle': cachedDay['course']?['topic'] ?? {'en': 'Daily Reading', 'ml': 'ദിവസേന വായന'},
-              'sentences': sentences.map((e) => {'en': e['text'] ?? '', 'ml': e['meaningMl'] ?? ''}).toList(),
-              'comprehensionQuestions': [
-                if (sentences.isNotEmpty) {
-                  'question': {'en': 'What did we practice today?', 'ml': 'ഇന്ന് നമ്മൾ എന്താണ് പരിശീലിച്ചത്?'},
-                  'options': [sentences.first['text']?.toString() ?? '', 'Fly away', 'Sleep now'],
-                  'correctIndex': 0,
-                  'explanation': {'en': 'Today focus sentence.', 'ml': 'ഇന്നത്തെ പാഠം.'},
-                }
-              ],
-            };
-          }
+      // Step 3: Spelling
+      Day1StepModel(
+        stepNumber: 3,
+        titleEn: '🔤 Step 3: Spelling',
+        titleMl: '🔤 സ്റ്റെപ്പ് 3: സ്പെല്ലിംഗ്',
+        icon: '🔤',
+        type: 'essential_spelling',
+        descriptionEn: 'Listen to native pronunciation for core words and pass the spelling challenge exam!',
+        descriptionMl: 'വാക്കുകൾ കേട്ട് ശരിയായ സ്പെല്ലിംഗ് ടൈപ്പ് ചെയ്ത് എക്സാം പൂർത്തിയാക്കുക!',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['stepNumber'] == 3,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-          // Step 2 on ALL DAYS (1 to 90): Flame Sentence Builder Game (User Audio Directive!)
-          if (stepNum == 2) {
-            titleEn = '🧩 Sentence Builder Game (Flame Engine)';
-            titleMl = '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)';
-            descEn = 'Assemble conversational English sentences with interactive Flame engine touch tiles!';
-            descMl = 'ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
-            icon = '🧩';
-            gameType = 'flame_sentence_builder';
-          }
+      // Step 4: Vocab
+      Day1StepModel(
+        stepNumber: 4,
+        titleEn: day == 1 ? '50+ Essential Beginner Words' : 'Core Vocabulary Vault',
+        titleMl: day == 1 ? '50+ പ്രധാനപ്പെട്ട വാക്കുകൾ' : 'പ്രധാന വാക്കുകൾ',
+        icon: '📚',
+        type: day == 1 ? 'vocab_50' : 'vocab_quest',
+        descriptionEn: day == 1
+            ? 'Essential starter vocabulary bank with flashcards, audio pronunciation, and native meaning.'
+            : 'Master 10 progressive high-utility English words for Day $day!',
+        descriptionMl: day == 1
+            ? 'അടിസ്ഥാന വാക്കുകളും അവയുടെ ശബ്ദങ്ങളും മലയാളം അർത്ഥവും.'
+            : 'ദിവസം $day ലെ പ്രധാന വാക്കുകൾ പഠിക്കുക!',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['stepNumber'] == 4,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-          // Step 3 on ALL DAYS (1 to 90): Spelling Challenge (User Audio Directive!)
-          if (stepNum == 3) {
-            titleEn = '🔤 Step 3: Spelling';
-            titleMl = '🔤 സ്റ്റെപ്പ് 3: സ്പെല്ലിംഗ്';
-            descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
-            descMl = 'വാക്കുകൾ കേട്ട് ശരിയായ സ്പെല്ലിംഗ് ടൈപ്പ് ചെയ്ത് എക്സാം പൂർത്തിയാക്കുക!';
-            icon = '🔤';
-            gameType = 'essential_spelling';
-          }
+      // Step 5: Game Hunt / 2D Quest
+      Day1StepModel(
+        stepNumber: 5,
+        titleEn: day == 1 ? 'Letter & Word Hunt' : 'Day $day English Quest',
+        titleMl: day == 1 ? 'അക്ഷരങ്ങളും വാക്കുകളും കണ്ടെത്താം' : 'ഡേ $day ഇംഗ്ലീഷ് ക്വസ്റ്റ്',
+        icon: day == 1 ? '🔍' : '🎮',
+        type: day == 1 ? 'game_hunt' : 'game_arena',
+        descriptionEn: day == 1
+            ? 'Catch target letters and words falling into your word basket.'
+            : 'Interactive action gaming applied to English mastery.',
+        descriptionMl: day == 1
+            ? 'ശരിയായ അക്ഷരങ്ങളും വാക്കുകളും കണ്ടെത്തി ബോക്സിലിടുക.'
+            : 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['stepNumber'] == 5,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-          // Step 4 on Days 2 to 90: Core Vocabulary Vault / Open World Drive
-          if (day > 1 && stepNum == 4) {
-            titleEn = '📚 Core Vocabulary Vault';
-            titleMl = '📚 പ്രധാന വാക്കുകൾ';
-            descEn = 'Master 10 progressive high-utility English words for Day $day!';
-            descMl = 'ദിവസം $day ലെ പ്രധാന വാക്കുകൾ പഠിക്കുക!';
-            icon = '📚';
-            gameType = 'vocab_quest';
-          }
+      // Step 6: ✉️ Letter Writing Quest (User Audio Directive: Student mode steps added to Adults!)
+      Day1StepModel(
+        stepNumber: 6,
+        titleEn: '✉️ Letter Writing Quest',
+        titleMl: '✉️ ലെറ്റർ റൈറ്റിംഗ് ക്വസ്റ്റ്',
+        icon: '✉️',
+        type: 'letter_writing',
+        descriptionEn: 'Compose handwritten formal and informal letters with guided word blocks.',
+        descriptionMl: 'കത്തുകൾ എഴുതി പരിശീലിക്കുകയും ശരിയായ വാചകങ്ങൾ തയ്യാറാക്കുകയും ചെയ്യുക.',
+        data: {'id': 'step_6_letter_writing', 'day': day},
+      ),
 
-          // Step 6 on Days 1 to 90: Spoken English Conversational Chat
-          if (stepNum == 6) {
-            titleEn = '🎙️ Spoken English Conversational Chat';
-            titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
-            descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
-            descMl = 'യഥാർത്ഥ ജീവിതത്തിലെ സംഭാഷണങ്ങൾ മൈക്കിലൂടെ സംസാരിച്ച് പരിശീലിക്കുക!';
-            icon = '🎙️';
-            gameType = 'spoken_chat';
-          }
+      // Step 7: 📖 Diary Entry Adventure
+      Day1StepModel(
+        stepNumber: 7,
+        titleEn: '📖 Diary Entry Adventure',
+        titleMl: '📖 ഡയറി എൻട്രി അഡ്വഞ്ചർ',
+        icon: '📖',
+        type: 'diary_entry',
+        descriptionEn: 'Write your daily personal journal entry with thoughts, feelings, and mood reflections.',
+        descriptionMl: 'ദിവസേനയുള്ള അനുഭവങ്ങളും ചിന്തകളും ഡയറിയായി എഴുതുക.',
+        data: {'id': 'step_7_diary_entry', 'day': day},
+      ),
 
-          // Step 8 on ALL DAYS (1 to 90): Verb Timeline & Tenses Arcade (User Audio Directive!)
-          if (stepNum == 8) {
-            titleEn = '⏳ Verb Timeline & Tenses Arcade';
-            titleMl = '⏳ വെർബ് ടൈംലൈൻ ആർക്കേഡ്';
-            descEn = 'Master Past, Present and Future action verb tenses on the interactive timeline shelves!';
-            descMl = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
-            icon = '⏳';
-            gameType = 'verb_timeline_game';
-          }
+      // Step 8: 👤 Legend Bio Creator
+      Day1StepModel(
+        stepNumber: 8,
+        titleEn: '👤 Legend Bio Creator',
+        titleMl: '👤 ലെജൻഡ് ബയോ ക്രിയേറ്റർ',
+        icon: '👤',
+        type: 'bio_creator',
+        descriptionEn: 'Build an inspiring personal profile and biography card with key vocabulary.',
+        descriptionMl: 'സ്വയം പരിചയപ്പെടുത്തുന്ന പ്രൊഫൈൽ കാർഡ് നിർമ്മിക്കുക.',
+        data: {'id': 'step_8_bio_creator', 'day': day},
+      ),
 
-          if (day == 1) {
-            if (stepNum == 9) {
-              titleEn = '💬 Chat Reply Builder';
-              titleMl = '💬 ചാറ്റ് റിപ്ലൈ ബിൽഡർ';
-              descEn = 'Formulate quick, natural English chat replies using sequential word-bank tap mechanics!';
-              descMl = 'വേർഡ് ബാങ്ക് ഉപയോഗിച്ച് ചാറ്റിംഗിൽ കൃത്യമായ ഇംഗ്ലീഷ് മറുപടികൾ നൽകാൻ പഠിക്കുക!';
-              icon = '💬';
-              gameType = 'chat_reply_builder';
-            } else if (stepNum == 10) {
-              titleEn = '🔄 Negative Sentence Builder';
-              titleMl = '🔄 നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ';
-              descEn = 'Transform positive statements into flawless negative sentences with "not", "do not", and "does not"!';
-              descMl = 'വാക്യങ്ങളെ നെഗറ്റീവ് വാക്യങ്ങളാക്കി മാറ്റാൻ പഠിക്കുക!';
-              icon = '🔄';
-              gameType = 'negative_sentence_builder';
-            } else if (stepNum == 11) {
-              titleEn = '📢 Mini Speech Practice';
-              titleMl = '📢 മിനി സ്പീച്ച് പ്രാക്ടീസ്';
-              descEn = 'Overcome speaking hesitation by listening to native cadence and delivering short spoken speeches!';
-              descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് സ്പീക്കിംഗ് ആത്മവിശ്വാസം വളർത്തുക!';
-              icon = '📢';
-              gameType = 'mini_speech_practice';
-            } else if (stepNum == 12) {
-              titleEn = '💬 English Hub Community Chat';
-              titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-              descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-              descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-              icon = '💬';
-              gameType = 'group_chat_action';
-            } else if (stepNum == 13) {
-              titleEn = '🛡️ House Defense Shield Command';
-              titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-              descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
-              descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
-              icon = '🛡️';
-              gameType = 'house_defense_chat';
-            } else if (stepNum == 14) {
-              titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-              titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-              descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
-              descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-              icon = '📞';
-              gameType = 'pocket_talk_action';
-            } else if (stepNum == 15) {
-              titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-              titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-              descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
-              descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
-              icon = '⚔️';
-              gameType = 'house_attack_quest';
-            } else if (stepNum == 16) {
-              titleEn = '🏆 Day 1 Review & Performance Card';
-              titleMl = '🏆 ഡേ 1 പെർഫോമൻസ് അവലോകനം';
-              descEn = 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and Day 2 roadmap!';
-              descMl = 'ഡേ 1 ലെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും വീക്ക് പോയിന്റുകൾ തിരുത്തുകയും ചെയ്യുക!';
-              icon = '🏆';
-              gameType = 'day_review_card';
-            }
-          } else {
-            // Days > 1
-            if (stepNum == 9) {
-              titleEn = '💬 English Hub Community Chat';
-              titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-              descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-              descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-              icon = '💬';
-              gameType = 'group_chat_action';
-            } else if (stepNum == 10) {
-              titleEn = '🛡️ House Defense Shield Command';
-              titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-              descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
-              descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
-              icon = '🛡️';
-              gameType = 'house_defense_chat';
-            } else if (stepNum == 11) {
-              titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-              titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-              descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
-              descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-              icon = '📞';
-              gameType = 'pocket_talk_action';
-            } else if (stepNum == 12) {
-              titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-              titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-              descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
-              descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
-              icon = '⚔️';
-              gameType = 'house_attack_quest';
-            }
-          }
+      // Step 9: 📢 Notice Masterclass
+      Day1StepModel(
+        stepNumber: 9,
+        titleEn: '📢 Notice Masterclass',
+        titleMl: '📢 നോട്ടീസ് മാസ്റ്റർക്ലാസ്',
+        icon: '📢',
+        type: 'notice_writing',
+        descriptionEn: 'Draft official announcements, school circulars, and community notices.',
+        descriptionMl: 'ഔദ്യോഗിക നോട്ടീസുകൾ വ്യക്തമായി എഴുതാൻ പരിശീലിക്കുക.',
+        data: {'id': 'step_9_notice_writing', 'day': day},
+      ),
 
-          return Day1StepModel(
-            stepNumber: stepNum,
-            titleEn: titleEn,
-            titleMl: titleMl,
-            icon: icon,
-            type: gameType,
-            descriptionEn: descEn,
-            descriptionMl: descMl,
-            data: map,
-          );
-        }).toList();
-      }
+      // Step 10: 📧 Email Etiquette
+      Day1StepModel(
+        stepNumber: 10,
+        titleEn: '📧 Email Etiquette',
+        titleMl: '📧 ഇമെയിൽ മര്യാദകൾ',
+        icon: '📧',
+        type: 'email_writing',
+        descriptionEn: 'Master formal and conversational email communications, subjects, and polite sign-offs.',
+        descriptionMl: 'പ്രൊഫഷണൽ രീതിയിൽ ഇമെയിൽ തയ്യാറാക്കാനും അയക്കാനും പഠിക്കുക.',
+        data: {'id': 'step_10_email_writing', 'day': day},
+      ),
 
-    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+      // Step 11: 🔍 Spelling Detective
+      Day1StepModel(
+        stepNumber: 11,
+        titleEn: '🔍 Spelling Detective',
+        titleMl: '🔍 സ്പെല്ലിംഗ് ഡിറ്റക്ടീവ്',
+        icon: '🔍',
+        type: 'spelling_detective',
+        descriptionEn: 'Find and fix tricky spelling errors and sharpen your English writing precision.',
+        descriptionMl: 'വാക്കുകളിലെ തെറ്റുകൾ കണ്ടെത്തി തിരുത്തുക.',
+        data: {'id': 'step_11_spelling_detective', 'day': day},
+      ),
 
-    return rawSteps.map((s) {
-      final map = s as Map<String, dynamic>;
-      final stepNum = map['stepNumber'] as int? ?? 1;
-      var titleEn = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'en');
-      var titleMl = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'ml');
-      var descEn = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'en');
-      var descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
-      var icon = map['icon']?.toString() ?? '📚';
-      var gameType = map['gameType']?.toString() ?? 'generic';
-      // Step 2 on ALL DAYS (1 to 90): Flame Sentence Builder Game (User Audio Directive!)
-      if (stepNum == 2) {
-        titleEn = '🧩 Sentence Builder Game (Flame Engine)';
-        titleMl = '🧩 സെന്റൻസ് ബിൽഡിങ് (Flame ഗെയിം)';
-        descEn = 'Assemble conversational English sentences with interactive Flame engine touch tiles!';
-        descMl = 'ഫുൾ സ്ക്രീൻ Flame ഗെയിം ഉപയോഗിച്ച് ശരിയായ ക്രമത്തിൽ വാക്യങ്ങൾ നിർമ്മിക്കുക!';
-        icon = '🧩';
-        gameType = 'flame_sentence_builder';
-      }
+      // Step 12: 🎙️ Spoken English Conversational Chat / Simulator
+      Day1StepModel(
+        stepNumber: 12,
+        titleEn: day == 1 ? '🎙️ Spoken English Conversational Chat' : '🎙️ 20-Turn Spoken Simulator',
+        titleMl: day == 1 ? '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം' : '🎙️ സ്പോക്കൺ സിമുലേറ്റർ',
+        icon: '🎙️',
+        type: 'spoken_chat',
+        descriptionEn: 'Voice-first 1-on-1 spoken conversation to build real-world speaking confidence!',
+        descriptionMl: 'യഥാർത്ഥ ജീവിതത്തിലെ സംഭാഷണങ്ങൾ മൈക്കിലൂടെ സംസാരിച്ച് പരിശീലിക്കുക!',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['id'] == 'step_6_spoken_english' || s['stepNumber'] == 6,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-      // Step 3 on ALL DAYS (1 to 90): Spelling Challenge (User Audio Directive!)
-      if (stepNum == 3) {
-        titleEn = '🔤 Step 3: Spelling';
-        titleMl = '🔤 സ്റ്റെപ്പ് 3: സ്പെല്ലിംഗ്';
-        descEn = 'Listen to native pronunciation for core words and pass the spelling challenge exam!';
-        descMl = 'വാക്കുകൾ കേട്ട് ശരിയായ സ്പെല്ലിംഗ് ടൈപ്പ് ചെയ്ത് എക്സാം പൂർത്തിയാക്കുക!';
-        icon = '🔤';
-        gameType = 'essential_spelling';
-      }
+      // Step 13: 📖 Reading Room / Vocab Drive
+      Day1StepModel(
+        stepNumber: 13,
+        titleEn: day == 1 ? '📖 Reading Room: The Crow' : '📖 Open-World Vocab Quest',
+        titleMl: day == 1 ? '📖 വായന മുറി: കാക്കയുടെ കഥ' : '📖 വേഡ് ക്വസ്റ്റ് ഡ്രൈവ്',
+        icon: '📖',
+        type: day == 1 ? 'reading_room' : 'vocab_drive',
+        descriptionEn: 'Engaging short story with audio narration, sentence shadowing, and quiz.',
+        descriptionMl: 'കഥകൾ വായിക്കുകയും ഉച്ചാരണം ശരിയാക്കുകയും ചെയ്യുക.',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['id'] == 'step_7_reading_book' || s['stepNumber'] == 7,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-      // Step 4 on Days 2 to 90: Core Vocabulary Vault
-      if (day > 1 && stepNum == 4) {
-        titleEn = '📚 Core Vocabulary Vault';
-        titleMl = '📚 പ്രധാന വാക്കുകൾ';
-        descEn = 'Master 10 progressive high-utility English words for Day $day!';
-        descMl = 'ദിവസം $day ലെ പ്രധാന വാക്കുകൾ പഠിക്കുക!';
-        icon = '📚';
-        gameType = 'vocab_quest';
-      }
+      // Step 14: ⏳ Verb Timeline & Tenses Arcade
+      Day1StepModel(
+        stepNumber: 14,
+        titleEn: '⏳ Verb Timeline & Tenses Arcade',
+        titleMl: '⏳ വെർബ് ടൈംലൈൻ ആർക്കേഡ്',
+        icon: '⏳',
+        type: 'verb_timeline_game',
+        descriptionEn: 'Master Past, Present and Future action verb tenses on the interactive timeline shelves!',
+        descriptionMl: 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ അടുക്കി വാക്യങ്ങൾ നിർമ്മിക്കുക!',
+        data: (cachedDay?['steps'] as List?)?.firstWhere(
+              (s) => s['id'] == 'step_8_verb_timeline' || s['stepNumber'] == 8,
+              orElse: () => const <String, dynamic>{},
+            ) as Map<String, dynamic>? ??
+            const {},
+      ),
 
-      // Step 5 on Days 2 to 90: Dedicated unique 2D game & Sentence/Grammar Quest (Zero duplicates!)
-      if (stepNum == 5 && day > 1) {
-        final gameSpec = Pocket20Days40GamesRegistry.allGames.firstWhere(
-          (g) => g.day == day && g.gameIndex == 1,
-          orElse: () => DayGameSpec(
-            day: day,
-            gameIndex: 1,
-            title: 'Day $day English Quest',
-            emoji: '🎮',
-            genre: GameGenre.runner,
-            englishTarget: 'Sentence Structure & Spoken English',
-            descriptionEn: 'Interactive action gaming applied to English mastery.',
-            descriptionMl: 'ഗെയിം കളിച്ചുകൊണ്ട് ഇംഗ്ലീഷ് പഠിക്കുക.',
-            controlMechanism: 'Touch controls',
-          ),
-        );
-        titleEn = '${gameSpec.title} ${gameSpec.emoji}';
-        titleMl = '${gameSpec.title} ${gameSpec.emoji}';
-        descEn = '${gameSpec.englishTarget} - ${gameSpec.descriptionEn}';
-        descMl = gameSpec.descriptionMl;
-        icon = gameSpec.emoji;
-        gameType = 'game_arena';
-      }
+      // Step 15: 💬 Chat Reply Builder
+      Day1StepModel(
+        stepNumber: 15,
+        titleEn: '💬 Chat Reply Builder',
+        titleMl: '💬 ചാറ്റ് റിപ്ലൈ ബിൽഡർ',
+        icon: '💬',
+        type: 'chat_reply_builder',
+        descriptionEn: 'Formulate quick, natural English chat replies using sequential word-bank tap mechanics!',
+        descriptionMl: 'വേർഡ് ബാങ്ക് ഉപയോഗിച്ച് ചാറ്റിംഗിൽ കൃത്യമായ ഇംഗ്ലീഷ് മറുപടികൾ നൽകാൻ പഠിക്കുക!',
+        data: {'id': 'step_15_chat_reply', 'day': day},
+      ),
 
-      // Step 6 on Days 1 to 90: Spoken English Conversational Chat
-      if (stepNum == 6) {
-        titleEn = '🎙️ Spoken English Conversational Chat';
-        titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് സംഭാഷണം';
-        descEn = 'Voice-first 1-on-1 spoken conversation with CyberCat to build real-world speaking confidence!';
-        descMl = 'യഥാർത്ഥ ജീവിതത്തിലെ സംഭാഷണങ്ങൾ മൈക്കിലൂടെ സംസാരിച്ച് പരിശീലിക്കുക!';
-        icon = '🎙️';
-        gameType = 'spoken_chat';
-      }
+      // Step 16: 🔄 Negative Sentence Builder
+      Day1StepModel(
+        stepNumber: 16,
+        titleEn: '🔄 Negative Sentence Builder',
+        titleMl: '🔄 നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ',
+        icon: '🔄',
+        type: 'negative_sentence_builder',
+        descriptionEn: 'Transform positive statements into flawless negative sentences with "not", "do not", and "does not"!',
+        descriptionMl: 'വാക്യങ്ങളെ നെഗറ്റീവ് വാക്യങ്ങളാക്കി മാറ്റാൻ പഠിക്കുക!',
+        data: {'id': 'step_16_negative_builder', 'day': day},
+      ),
 
-      // Step 8 on ALL DAYS (1 to 90): Verb Timeline & Tenses Arcade (User Audio Directive!)
-      if (stepNum == 8) {
-        titleEn = '⏳ Verb Timeline & Tenses Arcade';
-        titleMl = '⏳ വെർബ് ടൈംലൈൻ ആർക്കേഡ്';
-        descEn = 'Master Past, Present and Future action verb tenses on the interactive timeline shelves!';
-        descMl = 'മേലെ കഴിഞ്ഞത് (Past), ഇടയിൽ ഇപ്പോൾ (Present), താഴെ നാളെ (Future) — മൂന്ന് തട്ടുകളിൽ വാക്കുകൾ അടുക്കി വാക്യങ്ങൾ നിർമ്മിക്കുക!';
-        icon = '⏳';
-        gameType = 'verb_timeline_game';
-      } else if (day == 1) {
-        if (stepNum == 9) {
-          titleEn = '💬 Chat Reply Builder';
-          titleMl = '💬 ചാറ്റ് റിപ്ലൈ ബിൽഡർ';
-          descEn = 'Formulate quick, natural English chat replies using sequential word-bank tap mechanics!';
-          descMl = 'വേർഡ് ബാങ്ക് ഉപയോഗിച്ച് ചാറ്റിംഗിൽ കൃത്യമായ ഇംഗ്ലീഷ് മറുപടികൾ നൽകാൻ പഠിക്കുക!';
-          icon = '💬';
-          gameType = 'chat_reply_builder';
-        } else if (stepNum == 10) {
-          titleEn = '🔄 Negative Sentence Builder';
-          titleMl = '🔄 നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ';
-          descEn = 'Transform positive statements into flawless negative sentences with "not", "do not", and "does not"!';
-          descMl = 'വാക്യങ്ങളെ നെഗറ്റീവ് വാക്യങ്ങളാക്കി മാറ്റാൻ പഠിക്കുക!';
-          icon = '🔄';
-          gameType = 'negative_sentence_builder';
-        } else if (stepNum == 11) {
-          titleEn = '📢 Mini Speech Practice';
-          titleMl = '📢 മിനി സ്പീച്ച് പ്രാക്ടീസ്';
-          descEn = 'Overcome speaking hesitation by listening to native cadence and delivering short spoken speeches!';
-          descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് സ്പീക്കിംഗ് ആത്മവിശ്വാസം വളർത്തുക!';
-          icon = '📢';
-          gameType = 'mini_speech_practice';
-        } else if (stepNum == 12) {
-          titleEn = '💬 English Hub Community Chat';
-          titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-          descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-          descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-          icon = '💬';
-          gameType = 'group_chat_action';
-        } else if (stepNum == 13) {
-          titleEn = '🛡️ House Defense Shield Command';
-          titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-          descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
-          descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
-          icon = '🛡️';
-          gameType = 'house_defense_chat';
-        } else if (stepNum == 14) {
-          titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-          titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-          descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
-          descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-          icon = '📞';
-          gameType = 'pocket_talk_action';
-        } else if (stepNum == 15) {
-          titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-          titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-          descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
-          descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
-          icon = '⚔️';
-          gameType = 'house_attack_quest';
-        } else if (stepNum == 16) {
-          titleEn = '🏆 Day 1 Review & Performance Card';
-          titleMl = '🏆 ഡേ 1 പെർഫോമൻസ് അവലോകനം';
-          descEn = 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and Day 2 roadmap!';
-          descMl = 'ഡേ 1 ലെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും വീക്ക് പോയിന്റുകൾ തിരുത്തുകയും ചെയ്യുക!';
-          icon = '🏆';
-          gameType = 'day_review_card';
-        }
-      } else if (stepNum == 9) {
-        titleEn = '💬 English Hub Community Chat';
-        titleMl = '💬 ഇംഗ്ലീഷ് ഹബ്ബ് കമ്മ്യൂണിറ്റി ചാറ്റ്';
-        descEn = 'Enter the English Hub community chat to say hello and practice with fellow learners!';
-        descMl = 'ഇംഗ്ലീഷ് ഹബ്ബിൽ പ്രവേശിച്ച് കൂട്ടുകാരുമായി സംസാരിക്കുക!';
-        icon = '💬';
-        gameType = 'group_chat_action';
-      } else if (stepNum == 10) {
-        titleEn = '🛡️ House Defense Shield Command';
-        titleMl = '🛡️ ഹൗസ് ഡിഫൻസ് ഷീൽഡ് കമാൻഡ്';
-        descEn = 'Equip 5 Spoken English defense questions with CyberCat to shield your house from rival attacks!';
-        descMl = 'ഹൗസ് സംരക്ഷിക്കാൻ ഡിഫൻസ് ഷീൽഡ് ചോദ്യങ്ങൾ സജ്ജമാക്കുക!';
-        icon = '🛡️';
-        gameType = 'house_defense_chat';
-      } else if (stepNum == 11) {
-        titleEn = '📞 Poketalk: 4-Day Spoken Pact';
-        titleMl = '📞 പോക്കറ്റ് ടോക്ക്: 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട്';
-        descEn = 'Swipe learner cards and send a 4-Day Spoken English Pact request or connect on a live practice call!';
-        descMl = 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് 4-ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് പ്രാക്ടീസ് പാർട്ണറെ കണ്ടെത്തുക!';
-        icon = '📞';
-        gameType = 'pocket_talk_action';
-      } else if (stepNum == 12) {
-        titleEn = '⚔️ House Attack Quest: Raid Rival Citadel';
-        titleMl = '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം';
-        descEn = 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!';
-        descMl = 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!';
-        icon = '⚔️';
-        gameType = 'house_attack_quest';
-      }
+      // Step 17: 📢 Mini Speech Practice
+      Day1StepModel(
+        stepNumber: 17,
+        titleEn: '📢 Mini Speech Practice',
+        titleMl: '📢 മിനി സ്പീച്ച് പ്രാക്ടീസ്',
+        icon: '📢',
+        type: 'mini_speech_practice',
+        descriptionEn: 'Overcome speaking hesitation by listening to native cadence and delivering short spoken speeches!',
+        descriptionMl: 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് സ്പീക്കിംഗ് ആത്മവിശ്വാസം വളർത്തുക!',
+        data: {'id': 'step_17_mini_speech', 'day': day},
+      ),
 
-      return Day1StepModel(
-        stepNumber: stepNum,
-        titleEn: titleEn,
-        titleMl: titleMl,
-        icon: icon,
-        type: gameType,
-        descriptionEn: descEn,
-        descriptionMl: descMl,
-        data: Map<String, dynamic>.from(map),
-      );
-    }).toList();
+      // Step 18: ⚔️ House Attack Quest: Raid Rival Citadel
+      Day1StepModel(
+        stepNumber: 18,
+        titleEn: '⚔️ House Attack Quest: Raid Rival Citadel',
+        titleMl: '⚔️ ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ ആക്രമണം',
+        icon: '⚔️',
+        type: 'house_attack_quest',
+        descriptionEn: 'Raid a rival citadel, answer defense questions, and breach shields for Pocket Score!',
+        descriptionMl: 'മറ്റ് വീടുകളെ അറ്റാക്ക് ചെയ്ത് സ്കോർ നേടുക!',
+        data: {'id': 'step_18_house_attack', 'day': day},
+      ),
+
+      // Step 19: 🏆 Day Review & Performance Card
+      Day1StepModel(
+        stepNumber: 19,
+        titleEn: '🏆 Day $day Summary & Review',
+        titleMl: '🏆 ഡേ $day അവലോകനം',
+        icon: '🏆',
+        type: 'day_review_card',
+        descriptionEn: 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and next-day roadmap!',
+        descriptionMl: 'ഇന്നത്തെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും അടുത്ത ദിവസത്തെ അൺലോക്ക് ചെയ്യുകയും ചെയ്യുക!',
+        data: {'id': 'step_19_day_review', 'day': day},
+      ),
+    ];
   }
 
   // -------------------------------------------------------------
