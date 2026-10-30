@@ -43,21 +43,17 @@ class AppStoreReviewService {
 
     final currentUser = SupaFlow.client.auth.currentUser;
     String userEmail = currentUser?.email?.toLowerCase().trim() ?? '';
-    if (userEmail.isEmpty && _cachedUserEmail.isNotEmpty) {
+    if (userEmail.isEmpty && currentUser != null && _cachedUserEmail.isNotEmpty) {
       userEmail = _cachedUserEmail;
     }
     final targetReviewEmail = _reviewerEmail.toLowerCase().trim();
 
-    // 1. Email Specific Hide Check (e.g., hira@gmail.com)
+    // 1. Email Specific Hide Check (strictly for the exact review email, e.g. hira@gmail.com)
     if (_hideForReviewerEmail) {
       if (userEmail.isNotEmpty &&
-          (userEmail == defaultReviewerEmail ||
-              userEmail.startsWith('hira@') ||
-              userEmail.contains('hira@') ||
-              (targetReviewEmail.isNotEmpty &&
-                  (userEmail == targetReviewEmail ||
-                      userEmail.contains(targetReviewEmail))))) {
-        return false; // HIDE for review account!
+          (userEmail == defaultReviewerEmail.toLowerCase().trim() ||
+              (targetReviewEmail.isNotEmpty && userEmail == targetReviewEmail))) {
+        return false; // HIDE strictly for the exact review account!
       }
     }
 
@@ -82,8 +78,15 @@ class AppStoreReviewService {
       _hideOnIos = prefs.getBool(_kPrefsHideIos) ?? false;
       _hideForReviewerEmail = prefs.getBool(_kPrefsHideReviewEmail) ?? true;
       _reviewerEmail = prefs.getString(_kPrefsReviewEmail) ?? defaultReviewerEmail;
-      _cachedUserEmail = prefs.getString(_kPrefsCachedUserEmail) ??
-          (SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim() ?? '');
+      
+      final currentAuthEmail = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim();
+      if (currentAuthEmail != null && currentAuthEmail.isNotEmpty) {
+        _cachedUserEmail = currentAuthEmail;
+        await prefs.setString(_kPrefsCachedUserEmail, _cachedUserEmail);
+      } else {
+        _cachedUserEmail = '';
+        await prefs.remove(_kPrefsCachedUserEmail);
+      }
       _initialized = true;
       _updateNotifier();
 
@@ -94,6 +97,9 @@ class AppStoreReviewService {
           if (email != null && email.isNotEmpty) {
             _cachedUserEmail = email.toLowerCase().trim();
             prefs.setString(_kPrefsCachedUserEmail, _cachedUserEmail);
+          } else {
+            _cachedUserEmail = '';
+            prefs.remove(_kPrefsCachedUserEmail);
           }
           _updateNotifier();
         });

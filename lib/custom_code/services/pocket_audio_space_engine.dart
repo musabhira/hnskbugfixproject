@@ -186,7 +186,7 @@ class SpaceChatMessage {
   }) : readBy = readBy ?? {};
 
   bool get isExpired =>
-      DateTime.now().difference(sentAt).inMinutes >= 30;
+      DateTime.now().difference(sentAt).inMinutes >= 10;
 
   bool get isVoice => voiceUrl != null && voiceUrl!.isNotEmpty;
 
@@ -305,6 +305,15 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     _pruneExpiredMessages();
     notifyListeners();
 
+    // Touch updated_at so active chatting tables stay alive in Supabase
+    if (_currentSpace != null) {
+      _supabase
+          .from('live_audio_spaces')
+          .update({'updated_at': DateTime.now().toIso8601String()})
+          .eq('id', _currentSpace!.id)
+          .catchError((_) {});
+    }
+
     _roomChannel?.sendBroadcastMessage(
       event: 'chat_message',
       payload: msg.toMap(),
@@ -345,6 +354,15 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       _chatMessages.add(msg);
       _pruneExpiredMessages();
       notifyListeners();
+
+      // Touch updated_at so active chatting tables stay alive in Supabase
+      if (_currentSpace != null) {
+        _supabase
+            .from('live_audio_spaces')
+            .update({'updated_at': DateTime.now().toIso8601String()})
+            .eq('id', _currentSpace!.id)
+            .catchError((_) {});
+      }
 
       _roomChannel?.sendBroadcastMessage(
         event: 'chat_message',
@@ -516,12 +534,8 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     PocketGameAudioService.instance.pause();
 
     try {
-      // 1. If starting as host or speaker, acquire microphone
-      if (_myRole == AudioRole.host || _myRole == AudioRole.speaker) {
-        await _acquireMicrophone();
-      }
-
-      // 2. Set up Supabase Realtime channel
+      // 1. Supabase Realtime channel for presence, text messages & ephemeral voice notes
+      // (Live peer-to-peer audio mesh is bypassed for 4-seat chit-chat to avoid hardware audio device conflicts)
       final channelName = 'audio_space_${space.id}';
       _roomChannel = _supabase.channel(channelName);
 
@@ -600,7 +614,6 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
               _isInRoom = true;
               _isConnecting = false;
               _applySpeakerphone();
-              _startVolumeDetection();
 
               // Track self presence in room
               final myPresence = AudioParticipant(
@@ -850,13 +863,6 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     _participants.clear();
     _participants.addAll(updated);
 
-    // Connect with all discovered participants so audio flows bidirectionally to/from all peers
-    for (final peerId in _participants.keys) {
-      if (peerId != _myUserId && !_peerConnections.containsKey(peerId)) {
-        _setupPeerConnectionForUser(peerId);
-      }
-    }
-
     notifyListeners();
   }
 
@@ -1053,28 +1059,6 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     }
   }
 
-  /// Active voice volume detection for green speaking indicator
-  void _startVolumeDetection() {
-    _volumeCheckTimer?.cancel();
-    _volumeCheckTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
-      if (!_isInRoom) return;
-
-      // Check if self is speaking (if not muted and on stage)
-      if (isSpeaker && !_isMicMuted && _localStream != null) {
-        final self = _participants[_myUserId];
-        if (self != null && !self.isSpeaking) {
-          _participants[_myUserId!] = self.copyWith(isSpeaking: true);
-          notifyListeners();
-        }
-      } else if (_myUserId != null && _participants.containsKey(_myUserId)) {
-        final self = _participants[_myUserId]!;
-        if (self.isSpeaking) {
-          _participants[_myUserId!] = self.copyWith(isSpeaking: false);
-          notifyListeners();
-        }
-      }
-    });
-  }
 
   /// Leave the active Audio Space
   Future<void> leaveSpace({bool wasEndedByHost = false}) async {
@@ -1101,6 +1085,14 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       }
     } else if (spaceId != null) {
       _incrementParticipantCount(spaceId, -1);
+      if (_participants.length <= 1) {
+        // Last member leaving, mark table inactive in Supabase
+        _supabase
+            .from('live_audio_spaces')
+            .update({'is_active': false})
+            .eq('id', spaceId)
+            .catchError((_) {});
+      }
     }
 
     // Teardown WebRTC peer connections

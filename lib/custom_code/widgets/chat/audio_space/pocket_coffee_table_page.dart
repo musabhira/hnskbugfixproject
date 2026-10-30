@@ -69,16 +69,39 @@ class _PocketCoffeeTablePageState extends State<PocketCoffeeTablePage>
 
   Future<void> _loadActiveTables() async {
     try {
+      final now = DateTime.now();
+      final tenMinutesAgo = now.subtract(const Duration(minutes: 10));
+      final tenMinutesAgoIso = tenMinutesAgo.toIso8601String();
+
+      // 1. Proactively deactivate stale tables older than 10 minutes in Supabase
+      _supabase
+          .from('live_audio_spaces')
+          .update({'is_active': false})
+          .eq('is_active', true)
+          .lt('updated_at', tenMinutesAgoIso)
+          .catchError((_) {});
+
+      // 2. Fetch active coffee tables
       final rows = await _supabase
           .from('live_audio_spaces')
           .select('*')
           .eq('is_active', true)
           .eq('category', _coffeeCategory)
-          .order('created_at', ascending: true)
+          .order('updated_at', ascending: false)
           .limit(20);
+
+      // 3. Filter strictly in-memory so no table inactive for >10 minutes ever displays
+      final validRows = rows.where((r) {
+        final updatedStr = r['updated_at']?.toString() ?? r['created_at']?.toString();
+        if (updatedStr == null) return false;
+        final dt = DateTime.tryParse(updatedStr);
+        if (dt == null) return false;
+        return now.difference(dt).inMinutes < 10;
+      }).toList();
+
       if (mounted) {
         setState(() {
-          _activeTables = List<Map<String, dynamic>>.from(rows);
+          _activeTables = List<Map<String, dynamic>>.from(validRows);
           _isLoading = false;
         });
       }

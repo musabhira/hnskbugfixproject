@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:just_audio/just_audio.dart';
@@ -12,6 +13,7 @@ import 'package:record/record.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_audio_space_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 
@@ -236,11 +238,38 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
 
   void _sendTextMessage() {
     final text = _chatController.text.trim();
-    if (text.isNotEmpty) {
-      _engine.sendChatMessage(text);
-      _chatController.clear();
-      _scrollToBottom();
+    if (text.isEmpty) return;
+
+    // 🇬🇧 Strict English-only verification
+    final check = PocketLanguageGuardService.checkMessage(text);
+    if (!check.isValid) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.g_translate_rounded, color: Color(0xFFFFD700), size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚠️ English Only! Please type in English at the table (${check.detectedWord ?? "Non-English text detected"}).',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12.5),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
     }
+
+    _engine.sendChatMessage(text);
+    _chatController.clear();
+    _scrollToBottom();
   }
 
   Future<void> _confirmLeaveTable() async {

@@ -42,6 +42,22 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _pruneStaleRoomsBackground();
+  }
+
+  void _pruneStaleRoomsBackground() {
+    final tenMinutesAgoIso = DateTime.now().subtract(const Duration(minutes: 10)).toIso8601String();
+    _supabase
+        .from('live_audio_spaces')
+        .update({'is_active': false})
+        .eq('is_active', true)
+        .lt('updated_at', tenMinutesAgoIso)
+        .catchError((_) {});
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -266,7 +282,16 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
 
         final rawList = snapshot.data ?? [];
         final query = _searchQuery.trim().toLowerCase();
+        final now = DateTime.now();
         final filteredList = rawList.where((room) {
+          // Check 10-minute inactivity expiry
+          final updatedStr = room['updated_at']?.toString() ?? room['created_at']?.toString();
+          if (updatedStr != null) {
+            final dt = DateTime.tryParse(updatedStr);
+            if (dt != null && now.difference(dt).inMinutes >= 10) {
+              return false; // Skip stale rooms
+            }
+          }
           if (_selectedCategory != 'All') {
             final roomCategory = room['category']?.toString() ?? '';
             final matchesCat = _selectedCategory.contains(roomCategory) ||

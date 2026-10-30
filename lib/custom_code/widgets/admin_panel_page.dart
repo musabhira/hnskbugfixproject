@@ -2940,6 +2940,21 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                         ],
                       ),
                     ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                      tooltip: 'Reload from Supabase',
+                      onPressed: () async {
+                        await _loadReviewModeConfig();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Synced latest settings from Supabase!'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 14),
