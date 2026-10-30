@@ -74,8 +74,7 @@ class MainProfileWidget extends StatefulWidget {
 class _MainProfileWidgetState extends State<MainProfileWidget>
     with material.TickerProviderStateMixin {
   final _supabase = SupaFlow.client;
-  late material.TabController _myAccountTabController;
-  late material.TabController _publicTabController;
+  late material.TabController _profileTabController;
   final ScrollController _scrollController = ScrollController();
 
   // Data State
@@ -266,18 +265,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    // Default to Account view for both own and searched profiles
-    _isPublicProfileView = false;
-    // Independent tab controllers: My Account (1 tab) and Public Profile.
-    // Show Posters only in Main Profile (isMe: 3 tabs: Gallery, Thoughts, Posters).
-    // In Search / Other Profile (!isMe: 2 tabs: Gallery, Thoughts).
-    _myAccountTabController = material.TabController(length: 1, vsync: this);
-    // Public profile tabs: Thoughts + Collectible Milestone Cards (Audio Directive!)
-    _publicTabController = material.TabController(length: 2, vsync: this);
-    _myAccountTabController.addListener(() {
-      if (mounted) setState(() {});
-    });
-    _publicTabController.addListener(() {
+    // 3 clean Instagram-style tabs: Cards, Thoughts, Citadel
+    _profileTabController = material.TabController(length: 3, vsync: this);
+    _profileTabController.addListener(() {
       if (mounted) setState(() {});
     });
     _loadInitialData(); // Instant load strategy
@@ -287,25 +277,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadPocketScore();
   }
 
-  void _ensurePublicTabController() {
-    const expectedLength = 2;
-    if (_publicTabController.length != expectedLength) {
-      final oldIndex = _publicTabController.index.clamp(0, expectedLength - 1);
-      _publicTabController.dispose();
-      _publicTabController = material.TabController(
-        length: expectedLength,
-        vsync: this,
-        initialIndex: oldIndex,
-      )..addListener(() {
-          if (mounted) setState(() {});
-        });
-    }
-  }
-
   @override
   void didUpdateWidget(MainProfileWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _ensurePublicTabController();
   }
 
   // 🪙 Unified Pocket Score state (highest priority on user profile)
@@ -465,8 +439,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   @override
   void dispose() {
-    _myAccountTabController.dispose();
-    _publicTabController.dispose();
+    _profileTabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -1556,8 +1529,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final btnTextColor =
         _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
 
-    _ensurePublicTabController();
-
     return material.Scaffold(
       backgroundColor: bgColor,
       body: PocketSnapFlameRefresh(
@@ -1574,29 +1545,25 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             return [
               material.SliverAppBar(
                 elevation: 0,
-                expandedHeight: 220.0,
                 pinned: true,
-                stretch: false,
-                backgroundColor:
-                    innerBoxIsScrolled ? bgColor : material.Colors.transparent,
+                backgroundColor: bgColor,
                 leading: material.IconButton(
                   icon: const Icon(material.Icons.arrow_back, size: 22),
                   color: textColor,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                title: innerBoxIsScrolled
-                    ? Text(
-                        _profileData?['shop_name'] ??
-                            _profileData?['name'] ??
-                            '',
-                        style: GoogleFonts.outfit(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      )
-                    : null,
-                centerTitle: true,
+                title: Text(
+                  _profileData?['username'] ??
+                      _profileData?['shop_name'] ??
+                      _profileData?['name'] ??
+                      '',
+                  style: GoogleFonts.outfit(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                centerTitle: false,
                 actions: [
                   if (isMe && _isAdminUser())
                     Padding(
@@ -1798,10 +1765,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ],
                     ),
                 ],
-                flexibleSpace: material.FlexibleSpaceBar(
-                  background: _buildBanner(),
-                  collapseMode: material.CollapseMode.parallax,
-                ),
               ),
               material.SliverToBoxAdapter(
                 child: _buildProfileHeader(
@@ -1809,14 +1772,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
               if (!(_profileData?['is_private'] == true &&
                       !_isFollowing &&
-                      !isMe) &&
-                  _isPublicProfileView)
+                      !isMe))
                 material.SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
                     material.TabBar(
-                      key: ValueKey('tab_bar_public_$isMe'),
-                      controller: _publicTabController,
+                      key: ValueKey('tab_bar_profile_$isMe'),
+                      controller: _profileTabController,
                       labelColor: textColor,
                       unselectedLabelColor: textColor.withValues(alpha: 0.5),
                       indicatorColor: btnColor,
@@ -1824,8 +1786,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       labelStyle:
                           GoogleFonts.outfit(fontWeight: FontWeight.bold),
                       tabs: const [
-                        material.Tab(text: "💭 Thoughts"),
-                        material.Tab(text: "🎴 Cards"),
+                        material.Tab(
+                          icon: Icon(material.Icons.grid_on_rounded, size: 20),
+                          text: "Cards",
+                        ),
+                        material.Tab(
+                          icon: Icon(material.Icons.forum_outlined, size: 20),
+                          text: "Thoughts",
+                        ),
+                        material.Tab(
+                          icon: Icon(material.Icons.fort_rounded, size: 20),
+                          text: "Citadel",
+                        ),
                       ],
                     ),
                     bgColor,
@@ -1835,11 +1807,105 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           },
           body: Container(
             color: bgColor,
-            child: !_isPublicProfileView
-                ? SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
+            child: ((_profileData?['is_private'] == true || !_isMate) && !isMe)
+                ? Center(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Container(
+                          padding: const EdgeInsets.all(22),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E1B4B),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.4),
+                                width: 1.5),
+                          ),
+                          child: const Text('🔒',
+                              style: TextStyle(fontSize: 40)),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "Profile Locked: PocketTalk in Progress",
+                          style: GoogleFonts.outfit(
+                            color: textColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: textColor.withValues(alpha: 0.65),
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                            elevation: 6,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          onPressed: _isMateRequested
+                              ? null
+                              : () =>
+                                  _sendPocketTalkChallengeFromProfile(),
+                          icon: const Icon(Icons.bolt_rounded, size: 20),
+                          label: Text(
+                            _isMateRequested
+                                ? 'Request Pending ⏳'
+                                : 'Challenge to Pocket Talk ⚡',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : material.TabBarView(
+                    key: ValueKey('tab_view_profile_$isMe'),
+                    controller: _profileTabController,
+                    children: [
+                      _buildAdultCardsTab(textColor, bgColor),
+                      _ThreadsTab(
+                        items: _threadItems,
+                        textColor: textColor,
+                        btnColor: btnColor,
+                        btnTextColor: btnTextColor,
+                      ),
+                      _buildCitadelHouseTab(textColor, btnColor, isMe),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
+    );
+  }
+
+  /// 🏰 Citadel, English House & Defense Tab (3rd Tab of Adult Profile)
+  Widget _buildCitadelHouseTab(Color textColor, Color btnColor, bool isMe) {
+    int day = _getEffectiveDay();
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
                         if (_isHouseProtected) ...[
                           // 🚧 Yellow & Black Police Crime Scene Tape & Sentries (User Audio Directive)
                           Container(
@@ -2270,103 +2336,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           _buildMinimalAttackersSection(),
                           const SizedBox(height: 16),
                           _buildCitadelFightArenaDesk(),
+                        ] else ...[
+                          const SizedBox(height: 16),
+                          _buildOtherUserCitadelSection(day, textColor, btnColor),
                         ],
                         const SizedBox(height: 32),
                       ],
                     ),
-                  )
-                : ((_profileData?['is_private'] == true || !_isMate) && !isMe)
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(22),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E1B4B),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.4),
-                                    width: 1.5),
-                              ),
-                              child: const Text('🔒',
-                                  style: TextStyle(fontSize: 40)),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              "Profile Locked: PocketTalk in Progress",
-                              style: GoogleFonts.outfit(
-                                color: textColor,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 32),
-                              child: Text(
-                                "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  color: textColor.withValues(alpha: 0.65),
-                                  fontSize: 13,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFFFC00),
-                                foregroundColor: Colors.black,
-                                elevation: 6,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              ),
-                              onPressed: _isMateRequested
-                                  ? null
-                                  : () => _sendPocketTalkChallengeFromProfile(),
-                              icon: const Icon(Icons.bolt_rounded, size: 20),
-                              label: Text(
-                                _isMateRequested
-                                    ? 'Request Pending ⏳'
-                                    : 'Challenge to Pocket Talk ⚡',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          Expanded(
-                            child: material.TabBarView(
-                              key: ValueKey('tab_view_public_$isMe'),
-                              controller: _publicTabController,
-                              children: [
-                                _ThreadsTab(
-                                  items: _threadItems,
-                                  textColor: textColor,
-                                  btnColor: btnColor,
-                                  btnTextColor: btnTextColor,
-                                ),
-                                _buildAdultCardsTab(textColor, bgColor),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
-    );
+                  );
   }
 
   /// 🎴 Collectible Milestone PopArt Cards Tab for Public Profiles (User Audio Directive!)
@@ -4640,33 +4617,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDualProfileSegmentSwitcher(
-            textColor, btnColor, btnTextColor, isDark),
         headerContent,
-        if (!_isPublicProfileView) ...[
-          Learning60DayProfileCard(
-            userId: userId,
-            currentDay: day,
-            userName: name,
-            onProgressUpdated: () => _loadInitialData(),
-          ),
-          FlameCompanionShowcaseCard(
-            day: day,
-            stage: activeStage,
-            avatar: VectorAvatarConfig.getEvolutionAvatarForStage(day),
-            userId: userId,
-            isMe: isMe,
-            equippedTalismanId: _equippedTalismanId,
-            onTalismanChanged: (talismanId) {
-              if (mounted) setState(() => _equippedTalismanId = talismanId);
-            },
-          ),
-        ],
         _buildActionButtons(
             textColor, btnColor, btnTextColor, isMe, isDark, name, profileUrl),
-        if (!isMe) ...[
-          _buildOtherUserCitadelSection(day, textColor, btnColor),
-        ],
       ],
     );
   }
