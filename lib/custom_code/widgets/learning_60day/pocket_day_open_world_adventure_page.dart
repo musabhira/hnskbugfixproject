@@ -21,7 +21,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day2_step4_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_house_defense_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day_avatar_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/spoken/pocket_spoken_avatar_simulator_page.dart';
@@ -43,7 +42,6 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_chat_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negative_sentence_builder_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
@@ -231,15 +229,10 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps {
-    if (PocketKidsService.isKidAccount) {
-      return 19;
-    }
-    return 14;
-  }
+  int get _totalSteps => 19;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 14}) {
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 19}) {
     if (stepIndex == totalSteps) {
       // Summit Review Milestone right past the Gate!
       const x = 4350.0;
@@ -2772,135 +2765,64 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
-    if (PocketKidsService.isKidAccount) {
-      switch (s) {
-        case 1:
-          return _StepInfo(
-            widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
-            '🔤',
-            const Color(0xFF00F0FF),
-          );
-        case 2:
-          return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
-        case 3:
-          return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
-        case 4:
-          return _StepInfo(
-            widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
-            '📚',
-            const Color(0xFF10B981),
-          );
-        case 5:
-          return _StepInfo(
-            widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
-            '🔍',
-            const Color(0xFFF59E0B),
-          );
-        case 6:
-          return const _StepInfo('Letter Writing Quest', '✉️', Color(0xFF38BDF8));
-        case 7:
-          return const _StepInfo('Diary Entry Adventure', '📖', Color(0xFFFFD700));
-        case 8:
-          return const _StepInfo('Legend Bio Creator', '👤', Color(0xFF10B981));
-        case 9:
-          return const _StepInfo('Notice Masterclass', '📢', Color(0xFFEF4444));
-        case 10:
-          return const _StepInfo('Email Etiquette', '📧', Color(0xFF38BDF8));
-        case 11:
-          return const _StepInfo('Spelling Detective', '🔍', Color(0xFFFFD700));
-        case 12:
-          return _StepInfo(
-            widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
-            '🎙️',
-            const Color(0xFFEC4899),
-          );
-        case 13:
-          return _StepInfo(
-            widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
-            '📖',
-            const Color(0xFF60A5FA),
-          );
-        case 14:
-          return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
-        case 15:
-          return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
-        case 16:
-          return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
-        case 17:
-          return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
-        case 18:
-          return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-        case 19:
-          return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
-        default:
-          return const _StepInfo('Practice Ledge', '⭐', Colors.white);
-      }
-    }
-
-    if (widget.day == 1) {
-
-      switch (s) {
-        case 1:
-          return const _StepInfo('Meet Letters & Phonics', '🔤', Color(0xFF00F0FF));
-        case 2:
-          return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
-        case 3:
-          return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
-        case 4:
-          return const _StepInfo('50+ Essential Beginner Words', '📚', Color(0xFF10B981));
-        case 5:
-          return const _StepInfo('Letter & Word Hunt', '🔍', Color(0xFFF59E0B));
-        case 6:
-          return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFFEC4899));
-        case 7:
-          return const _StepInfo('Reading Room: The Crow', '📖', Color(0xFF60A5FA));
-        case 8:
-          return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
-        case 9:
-          return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
-        case 10:
-          return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
-        case 11:
-          return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
-        case 12:
-          return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
-        case 13:
-          return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
-        case 14:
-          return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
-        default:
-          return const _StepInfo('Practice Ledge', '⭐', Colors.white);
-      }
-    }
-
     switch (s) {
       case 1:
-        return const _StepInfo('Concept Room & Avatar Chat', '🏛️', Color(0xFF00F0FF));
+        return _StepInfo(
+          widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+          '🔤',
+          const Color(0xFF00F0FF),
+        );
       case 2:
         return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
       case 3:
         return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
       case 4:
-        return const _StepInfo('Spoken English Chat', '🎙️', Color(0xFF10B981));
+        return _StepInfo(
+          widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          '📚',
+          const Color(0xFF10B981),
+        );
       case 5:
-        return const _StepInfo('Reading Room', '📖', Color(0xFF60A5FA));
+        return _StepInfo(
+          widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
+          '🔍',
+          const Color(0xFFF59E0B),
+        );
       case 6:
-        return const _StepInfo('20-Turn Spoken Simulator', '🗣️', Color(0xFFEC4899));
+        return const _StepInfo('Letter Writing Quest', '✉️', Color(0xFF38BDF8));
       case 7:
-        return const _StepInfo('Open-World Vocab Quest', '🚗', Color(0xFFFF8906));
+        return const _StepInfo('Diary Entry Adventure', '📖', Color(0xFFFFD700));
       case 8:
-        return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+        return const _StepInfo('Legend Bio Creator', '👤', Color(0xFF10B981));
       case 9:
-        return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
+        return const _StepInfo('Notice Masterclass', '📢', Color(0xFFEF4444));
       case 10:
-        return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
+        return const _StepInfo('Email Etiquette', '📧', Color(0xFF38BDF8));
       case 11:
-        return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
+        return const _StepInfo('Spelling Detective', '🔍', Color(0xFFFFD700));
       case 12:
-        return const _StepInfo('English Hub Community Chat', '🌐', Color(0xFFFFFC00));
+        return _StepInfo(
+          widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
+          '🎙️',
+          const Color(0xFFEC4899),
+        );
       case 13:
-        return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+        return _StepInfo(
+          widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+          '📖',
+          const Color(0xFF60A5FA),
+        );
       case 14:
+        return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+      case 15:
+        return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
+      case 16:
+        return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
+      case 17:
+        return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
+      case 18:
+        return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+      case 19:
         return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
       default:
         return const _StepInfo('Practice Ledge', '⭐', Colors.white);
@@ -2927,9 +2849,7 @@ class _PocketDayOpenWorldAdventurePageState
     final day = widget.day;
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
 
-    // Kids specific step mappings (1-19) for ALL 90 days
-    final isKid = PocketKidsService.isKidAccount;
-    if (isKid) {
+    // Comprehensive step mappings (1-19) for ALL 90 days across all users
       if (s == 1) {
         if (day == 1) {
           await PocketDay1Step1AvatarChatPage.show(
@@ -3228,295 +3148,7 @@ class _PocketDayOpenWorldAdventurePageState
         await _loadState(preserveCarPosition: true);
         return;
       }
-    }
 
-    // Step 1 on ALL DAYS (1 to 90): Concept Room & Avatar Chat
-    if (s == 1) {
-      if (day == 1) {
-        await PocketDay1Step1AvatarChatPage.show(
-          context,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(1),
-        );
-      } else if (day == 2) {
-        await PocketDay2Step1AvatarChatPage.show(
-          context,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(1),
-        );
-      } else {
-        await PocketDayAvatarChatPage.show(
-          context,
-          day: day,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(1),
-        );
-      }
-      await _syncStepCompletionIfDone(1);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 2 on ALL DAYS (1 to 90): Flame Sentence Builder Game
-    if (s == 2) {
-      await PocketSentenceBuilderGamePage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(2),
-      );
-      await _syncStepCompletionIfDone(2);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 3 on ALL DAYS (1 to 90): Essential Words & Spelling Challenge Game
-    if (s == 3) {
-      await PocketEssentialSpellingPage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(3),
-      );
-      await _syncStepCompletionIfDone(3);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Day 1 Step 4: 50+ Essential Beginner Words
-    if (day == 1 && s == 4) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PocketDay1Step2AvatarChatPage(
-            userId: uid,
-            stepIndex: 4,
-            onStepFinished: (_) => _onStepCompleted(4),
-          ),
-        ),
-      );
-      await _syncStepCompletionIfDone(4);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Day 1 Step 5: Letter & Word Hunt
-    if (day == 1 && s == 5) {
-      await PocketDay1Step3AvatarChatPage.show(
-        context,
-        day: day,
-        stepIndex: 5,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(5),
-      );
-      await _syncStepCompletionIfDone(5);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Day 1 Step 6: Spoken English Conversational Chat (1-on-1 Voice Chat)
-    if (day == 1 && s == 6) {
-      await PocketDay1Step4AvatarChatPage.show(
-        context,
-        day: day,
-        stepIndex: 6,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(6),
-      );
-      await _syncStepCompletionIfDone(6);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Day 1 Step 7: Reading Room (The Crow and the Grapes)
-    if (day == 1 && s == 7) {
-      await PocketDay1Step5AvatarChatPage.show(
-        context,
-        day: day,
-        stepIndex: 7,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(7),
-      );
-      await _syncStepCompletionIfDone(7);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // All Days (1 to 90) Step 8: Verb Timeline & Tenses Arcade (Past, Present & Future)
-    if (s == 8) {
-      await PocketVerbTimelineGamePage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(8),
-      );
-      await _syncStepCompletionIfDone(8);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Days > 1 Steps 4 to 7
-    if (day > 1 && s == 4) {
-      if (day == 2) {
-        await PocketDay2Step4AvatarChatPage.show(
-          context,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(4),
-        );
-      } else {
-        await PocketDay1Step4AvatarChatPage.show(
-          context,
-          day: day,
-          stepIndex: 4,
-          userId: uid,
-          onStepFinished: (_) => _onStepCompleted(4),
-        );
-      }
-      await _syncStepCompletionIfDone(4);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    if (day > 1 && s == 5) {
-      await PocketDay1Step5AvatarChatPage.show(
-        context,
-        day: day,
-        stepIndex: 5,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(5),
-      );
-      await _syncStepCompletionIfDone(5);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    if (day > 1 && s == 6) {
-      final res = await PocketSpokenAvatarSimulatorPage.launch(
-        context,
-        day: day,
-        onCompleted: () => _onStepCompleted(6),
-      );
-      if (res == true) {
-        await _onStepCompleted(6);
-      }
-      await _syncStepCompletionIfDone(6);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    if (day > 1 && s == 7) {
-      await PocketVocabOpenWorldDrivePage.show(
-        context,
-        day: day,
-        stepIndex: 7,
-        userId: uid,
-        onCompleted: () => _onStepCompleted(7),
-      );
-      await _syncStepCompletionIfDone(7);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 9: Chat Reply Builder (All Days 1 to 90)
-    if (s == 9) {
-      await PocketChatReplyBuilderPage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(9),
-      );
-      await _syncStepCompletionIfDone(9);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 10: Negative Sentence Builder (All Days 1 to 90)
-    if (s == 10) {
-      await PocketNegativeSentenceBuilderPage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(10),
-      );
-      await _syncStepCompletionIfDone(10);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 11: Mini Speech Practice (All Days 1 to 90)
-    if (s == 11) {
-      await PocketMiniSpeechPracticePage.show(
-        context,
-        day: day,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(11),
-      );
-      await _syncStepCompletionIfDone(11);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // English Hub Community Chat (Step 12 on All Days 1 to 90)
-    if (s == 12) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => Scaffold(
-            backgroundColor: const Color(0xFF0A1118),
-            body: SafeArea(
-              child: EnglishLearningGroupChatWidget(
-                onCancel: () => Navigator.pop(ctx),
-              ),
-            ),
-          ),
-        ),
-      );
-      await _onStepCompleted(s);
-      await _syncStepCompletionIfDone(s);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // House Attack Quest: Citadel Raid (Step 13 on All Days 1 to 90)
-    if (s == 13) {
-      await PocketHouseAttackPage.show(
-        context,
-        day: day,
-        stepIndex: s,
-        userId: uid,
-        onStepFinished: (_) => _onStepCompleted(13),
-      );
-      await _syncStepCompletionIfDone(s);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
-
-    // Step 14: Grand Review & Performance Card (Step 14 on All Days 1 to 90)
-    if (s == 14) {
-      final res = await PocketDay1ReviewCardPage.showBottomSheet(
-        context,
-        day: day,
-        userId: uid,
-        onProceedToNextDay: () async {
-          await _onStepCompleted(14);
-          widget.onCompleted?.call();
-          if (mounted) {
-            Navigator.pop(context, true);
-          }
-        },
-      );
-      if (res == true) {
-        await _onStepCompleted(14);
-        widget.onCompleted?.call();
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-        return;
-      }
-      await _syncStepCompletionIfDone(14);
-      await _loadState(preserveCarPosition: true);
-      return;
-    }
 
     await _onStepCompleted(s);
     await _loadState(preserveCarPosition: true);

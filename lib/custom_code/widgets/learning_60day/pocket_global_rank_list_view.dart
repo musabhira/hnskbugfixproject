@@ -38,12 +38,14 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _humansScrollController = ScrollController();
   final ScrollController _robotsScrollController = ScrollController();
+  final ScrollController _animalsScrollController = ScrollController();
 
   late TabController _tabController;
-  int _currentTabIndex = 0; // 0 = Humans, 1 = Robots
+  int _currentTabIndex = 0; // 0 = Humans, 1 = Robots, 2 = Animals
 
   List<PocketRankedUser> _humansList = [];
   List<PocketRankedUser> _robotsList = [];
+  List<PocketRankedUser> _animalsList = [];
   Set<String> _hiddenUserIds = {};
 
   bool _isLoading = true;
@@ -60,7 +62,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging && mounted) {
         setState(() {
@@ -79,6 +81,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
     _searchController.dispose();
     _humansScrollController.dispose();
     _robotsScrollController.dispose();
+    _animalsScrollController.dispose();
     super.dispose();
   }
 
@@ -146,7 +149,12 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         isUnder17: isKid,
       );
 
-      // 3. Load hidden IDs
+      // 3. Fetch Animal Companions (User Audio Directive: "ഹ്യൂമൻസ്, റോബോട്ട്, അനിമൽസ്")
+      final animals = await PocketRankingService.fetchAnimalsOnlyLeaderboard(
+        forceRefresh: forceRefresh,
+      );
+
+      // 4. Load hidden IDs
       final hidden = await PocketRankingService.getHiddenRankingUserIds();
 
       int? myRank;
@@ -162,6 +170,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         setState(() {
           _humansList = humans;
           _robotsList = robots;
+          _animalsList = animals;
           _hiddenUserIds = hidden;
           _myHumanRank = myRank;
           _isLoading = false;
@@ -175,7 +184,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   }
 
   List<PocketRankedUser> get _activeList {
-    return _currentTabIndex == 0 ? _humansList : _robotsList;
+    if (_currentTabIndex == 0) return _humansList;
+    if (_currentTabIndex == 1) return _robotsList;
+    return _animalsList;
   }
 
   List<PocketRankedUser> get _filteredUsers {
@@ -302,7 +313,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                             : ListView.builder(
                                 controller: _currentTabIndex == 0
                                     ? _humansScrollController
-                                    : _robotsScrollController,
+                                    : (_currentTabIndex == 1
+                                        ? _robotsScrollController
+                                        : _animalsScrollController),
                                 physics: const AlwaysScrollableScrollPhysics(
                                   parent: BouncingScrollPhysics(),
                                 ),
@@ -340,6 +353,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
   Widget _buildTabsHeader() {
     final humanCount = _humansList.length;
     final robotCount = _robotsList.length;
+    final animalCount = _animalsList.length;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 10, 14, 4),
@@ -379,18 +393,18 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('👤', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Text(
                       'Humans',
                       style: GoogleFonts.outfit(
                         color: _currentTabIndex == 0 ? Colors.white : Colors.white60,
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 12.5,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: _currentTabIndex == 0
                             ? const Color(0xFF10B981)
@@ -401,7 +415,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                         humanCount > 0 ? '$humanCount' : '...',
                         style: GoogleFonts.outfit(
                           color: _currentTabIndex == 0 ? Colors.black : Colors.white70,
-                          fontSize: 10,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -411,7 +425,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 3),
 
           // 🤖 Robots Tab
           Expanded(
@@ -441,18 +455,18 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('🤖', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Text(
                       'Robots',
                       style: GoogleFonts.outfit(
                         color: _currentTabIndex == 1 ? Colors.white : Colors.white60,
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 12.5,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: _currentTabIndex == 1
                             ? const Color(0xFF818CF8)
@@ -463,7 +477,69 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                         robotCount > 0 ? '$robotCount' : '90',
                         style: GoogleFonts.outfit(
                           color: _currentTabIndex == 1 ? Colors.black : Colors.white70,
-                          fontSize: 10,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 3),
+
+          // 🐾 Animals Tab (User Audio Directive: "ഹ്യൂമൻസ്, റോബോട്ട്, അനിമൽസ്")
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                _tabController.animateTo(2);
+                setState(() => _currentTabIndex = 2);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: _currentTabIndex == 2
+                      ? const LinearGradient(
+                          colors: [Color(0xFFD97706), Color(0xFFB45309)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(10),
+                  border: _currentTabIndex == 2
+                      ? Border.all(color: const Color(0xFFF59E0B), width: 1.2)
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('🐾', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Animals',
+                      style: GoogleFonts.outfit(
+                        color: _currentTabIndex == 2 ? Colors.white : Colors.white60,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: _currentTabIndex == 2
+                            ? const Color(0xFFF59E0B)
+                            : Colors.white12,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        animalCount > 0 ? '$animalCount' : '100',
+                        style: GoogleFonts.outfit(
+                          color: _currentTabIndex == 2 ? Colors.black : Colors.white70,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -522,7 +598,6 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
 
   /// 🔍 Search Bar for looking up users or #rank
   Widget _buildSearchBar() {
-    final isHumanTab = _currentTabIndex == 0;
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 6, 14, 6),
       height: 42,
@@ -532,7 +607,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _searchQuery.isNotEmpty
-              ? (isHumanTab ? const Color(0xFF10B981) : const Color(0xFF818CF8))
+              ? (_currentTabIndex == 0
+                  ? const Color(0xFF10B981)
+                  : (_currentTabIndex == 1
+                      ? const Color(0xFF818CF8)
+                      : const Color(0xFFF59E0B)))
               : Colors.white12,
           width: 1.0,
         ),
@@ -548,7 +627,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         children: [
           Icon(
             Icons.search_rounded,
-            color: isHumanTab ? const Color(0xFF10B981) : const Color(0xFF818CF8),
+            color: _currentTabIndex == 0
+                ? const Color(0xFF10B981)
+                : (_currentTabIndex == 1
+                    ? const Color(0xFF818CF8)
+                    : const Color(0xFFF59E0B)),
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -564,9 +647,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
               decoration: InputDecoration(
                 hintText: widget.isMatesOnly
                     ? 'Search mates by name or #rank...'
-                    : (isHumanTab
+                    : (_currentTabIndex == 0
                         ? 'Search real players by name or #rank...'
-                        : 'Search AI robots by name or #rank...'),
+                        : (_currentTabIndex == 1
+                            ? 'Search AI robots by name or #rank...'
+                            : 'Search animals by name or #rank...')),
                 hintStyle: GoogleFonts.outfit(
                   color: Colors.white38,
                   fontSize: 12,
@@ -599,7 +684,28 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
 
   /// 📊 Header Ribbon showing global rankings header
   Widget _buildRankingHeaderRibbon() {
-    final isHumanTab = _currentTabIndex == 0;
+    String emoji;
+    String title;
+    Color titleColor;
+
+    if (widget.isMatesOnly) {
+      emoji = '👥';
+      title = 'MATES LEADERBOARD';
+      titleColor = const Color(0xFFFFD700);
+    } else if (_currentTabIndex == 0) {
+      emoji = '👤';
+      title = 'HUMAN GLOBAL RANKINGS';
+      titleColor = const Color(0xFF34D399);
+    } else if (_currentTabIndex == 1) {
+      emoji = '🤖';
+      title = 'AI ROBOT LEAGUE';
+      titleColor = const Color(0xFFA5B4FC);
+    } else {
+      emoji = '🐾';
+      title = 'ANIMAL COMPANIONS';
+      titleColor = const Color(0xFFFBBF24);
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -609,16 +715,12 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       ),
       child: Row(
         children: [
-          Text(widget.isMatesOnly ? '👥' : (isHumanTab ? '👤' : '🤖'), style: const TextStyle(fontSize: 13)),
+          Text(emoji, style: const TextStyle(fontSize: 13)),
           const SizedBox(width: 6),
           Text(
-            widget.isMatesOnly
-                ? 'MATES LEADERBOARD'
-                : (isHumanTab ? 'HUMAN GLOBAL RANKINGS' : 'AI ROBOT LEAGUE'),
+            title,
             style: GoogleFonts.outfit(
-              color: widget.isMatesOnly
-                  ? const Color(0xFFFFD700)
-                  : (isHumanTab ? const Color(0xFF34D399) : const Color(0xFFA5B4FC)),
+              color: titleColor,
               fontWeight: FontWeight.w900,
               fontSize: 11,
               letterSpacing: 0.5,

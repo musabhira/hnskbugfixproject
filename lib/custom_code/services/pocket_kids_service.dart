@@ -317,7 +317,7 @@ class PocketKidsService {
   /// Pure Kid / Student accounts cannot exit to Adult Mode!
   /// Only parents who switched from Adult Mode can return to Adult Mode smoothly with Parental Pattern Lock.
   static bool get canExitToAdultAccount => !_isPureKidAccount && !_isPureStudentAccount;
-  static bool get canEnterStudentWorld => !_isPureKidAccount;
+  static bool get canEnterStudentWorld => false; // Merged into Adult Mode
   static bool get canEnterKidsWorld => true;
 
   static void setAdminMode(bool enabled) {
@@ -423,7 +423,7 @@ class PocketKidsService {
 
   static AppWorldMode get currentWorldMode => _currentWorldMode;
   static bool get isAdultWorld => _currentWorldMode == AppWorldMode.adult;
-  static bool get isStudentWorld => _currentWorldMode == AppWorldMode.student;
+  static bool get isStudentWorld => false; // Merged into Adult Mode per User Directive
   static bool get isKidsWorld => _currentWorldMode == AppWorldMode.kids;
 
   static bool get isKidAccount => _isKidAccount;
@@ -883,16 +883,19 @@ class PocketKidsService {
       final myUid = SupaFlow.client.auth.currentUser?.id ?? '';
       _attackCount = prefs.getInt('pocket_kids_attack_count_$myUid') ?? 0;
 
-      // Determine active World Mode
+      // Determine active World Mode (Only Kids World or Adult World)
       final savedWorldMode = prefs.getString(_keyAppWorldMode);
       if (savedWorldMode == 'kids') {
         _currentWorldMode = AppWorldMode.kids;
         _isKidAccount = true;
       } else if (savedWorldMode == 'student') {
-        _currentWorldMode = AppWorldMode.student;
-        _isKidAccount = true;
+        // Merged into Adult Mode per User Directive
+        _currentWorldMode = AppWorldMode.adult;
+        _isKidAccount = false;
+        await prefs.setString(_keyAppWorldMode, 'adult');
       } else {
-        _currentWorldMode = _isKidAccount ? AppWorldMode.student : AppWorldMode.adult;
+        _currentWorldMode = AppWorldMode.adult;
+        _isKidAccount = false;
       }
       currentWorldModeNotifier.value = _currentWorldMode;
 

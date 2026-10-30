@@ -344,6 +344,66 @@ class PocketRankingService {
     return finalizedBots;
   }
 
+  /// 🐾 Fetch Animals Leaderboard (The 100 Animal Companions)
+  /// User Audio Directive: "ഹ്യൂമൻസ്, റോബോട്ട്, അനിമൽസ്... അപ്പൊ അനിമൽസിന്റെ ഒരു സെറ്റപ്പ് അഡൽറ്റിൽ ഗ്ലോബൽ റാങ്കിന്റെ അവിടെ ഹ്യൂമൻസ്, റോബോട്ട് അതിന്റെ അപ്പുറത്ത് ആഡ് ചെയ്യുക, 'Animals' എന്ന് പറഞ്ഞിട്ട്."
+  /// "കിംഗ് അല്ല പ്രസിഡന്റ് അല്ലേ? പ്രസിഡന്റ് ആണ് നമ്മുടെ അഡൽറ്റിലുള്ള പ്രസിഡന്റ് ആണ്, കിംഗ് ഒഴിവാക്കുക."
+  static Future<List<PocketRankedUser>> fetchAnimalsOnlyLeaderboard({
+    bool forceRefresh = false,
+  }) async {
+    final hiddenIds = await getHiddenRankingUserIds();
+    final List<PocketRankedUser> animalList = [];
+    final animals = PocketKidsRobotsData.robotsAndHomies;
+
+    for (final animal in animals) {
+      if (hiddenIds.contains(animal.id)) continue;
+      final dynLvl = animal.dayLevel;
+      final rScore = getSimulatedBotScore(
+        botId: animal.id,
+        baseLevel: dynLvl,
+        isUnder17: false,
+      );
+      final isPrestige = dynLvl >= 90;
+
+      // In Adult Mode, King is President! (User Audio Directive: "കിംഗ് അല്ല പ്രസിഡന്റ് ആണ്, കിംഗ് ഒഴിവാക്കുക")
+      String displayName = animal.name;
+      if (displayName.contains('King')) {
+        displayName = displayName
+            .replaceAll('Supreme Lion King', 'The President 🦁')
+            .replaceAll('Lion King', 'President Lion')
+            .replaceAll('King', 'President');
+      }
+
+      animalList.add(PocketRankedUser(
+        userId: animal.id,
+        name: displayName,
+        profileImageUrl: null,
+        pocketScore: rScore,
+        level: dynLvl.clamp(1, 99),
+        globalRank: 0,
+        avatarConfig: _resolveAvatarConfig(animal.id, dynLvl),
+        isCurrentUser: false,
+        isRobot: true,
+        isPrestigeSovereign: isPrestige,
+        prestigeStars: animal.stars,
+      ));
+    }
+
+    // Sort animals descending by simulated score
+    animalList.sort((a, b) {
+      final diff = b.pocketScore.compareTo(a.pocketScore);
+      if (diff != 0) return diff;
+      return a.name.compareTo(b.name);
+    });
+
+    final List<PocketRankedUser> finalizedAnimals = [];
+    for (int i = 0; i < animalList.length; i++) {
+      final a = animalList[i];
+      finalizedAnimals.add(a.copyWith(globalRank: i + 1));
+    }
+
+    return finalizedAnimals;
+  }
+
   /// 🌐 Fetch Global Leaderboard (App-Wide 1 to N Ranking)
   static Future<List<PocketRankedUser>> fetchGlobalLeaderboard({
     int limit = 500,

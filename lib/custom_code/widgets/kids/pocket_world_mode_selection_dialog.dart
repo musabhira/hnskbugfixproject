@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_profile_setup_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
@@ -61,10 +60,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isKids = PocketKidsService.isKidsWorld;
-    final isStudent = PocketKidsService.isStudentWorld;
     final isAdult = PocketKidsService.isAdultWorld;
-
-    final canEnterStudent = PocketKidsService.canEnterStudentWorld;
     final canEnterAdult = PocketKidsService.canExitToAdultAccount;
 
     return Dialog(
@@ -201,74 +197,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 },
               ),
 
-              const SizedBox(height: 10),
 
-              // =============================================================
-              // Card 2: 🎒 STUDENT WORLD (Ages 9–16) - Blocked for Pure Kids!
-              // =============================================================
-              _buildWorldCard(
-                context,
-                emoji: '🎒',
-                title: 'STUDENT WORLD',
-                subtitle: 'Ages 9–16',
-                gradientColors: const [Color(0xFF312E81), Color(0xFF1E1B4B)],
-                borderColor: const Color(0xFF818CF8),
-                description:
-                    'Student English Hub, 100-Day Mountain Trail, Assembly Speech, PopArt Cards & Citadel Fights',
-                isActive: isStudent,
-                isLocked: !canEnterStudent,
-                onTap: () async {
-                  if (!canEnterStudent) {
-                    _showRestrictionToast(context,
-                        'Kid accounts cannot switch to Student Mode 🔒');
-                    return;
-                  }
-
-                  HapticFeedback.heavyImpact();
-                  if (isStudent) {
-                    Navigator.pop(context);
-                    return;
-                  }
-
-                  // 🔒 Parental Gate Lock Check:
-                  // Switching from Adult Mode to Student Mode REQUIRES configuring the pattern lock first!
-                  final hasPattern = await PocketParentalPatternLock.hasPattern();
-                  if (!hasPattern) {
-                    if (!context.mounted) return;
-                    final setupOk = await PocketParentalPatternLock.showSetupDialog(
-                      context,
-                      title: 'Set Parental Lock First 🔒',
-                      subtitle: 'Create your 3x3 pattern lock now so only you can return to Adult Mode.',
-                    );
-                    if (!setupOk) {
-                      if (context.mounted) {
-                        _showRestrictionToast(context, 'Parental pattern lock is required to enter Student Mode 🔒');
-                      }
-                      return;
-                    }
-                  }
-
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-
-                  await PocketKidsService.activateStudentAccount(
-                    name: PocketKidsService.kidName.isNotEmpty
-                        ? PocketKidsService.kidName
-                        : 'Student Explorer',
-                    ageGroup: '9-12',
-                    avatar: PocketKidsService.kidAvatar.isNotEmpty
-                        ? PocketKidsService.kidAvatar
-                        : '🦁',
-                    isParentSwitched: true,
-                  );
-                  if (context.mounted) {
-                    PocketKidsHomePage.launch(context,
-                        promptProfileSetup: false);
-                  }
-                },
-              ),
-
-              const SizedBox(height: 10),
 
               // =============================================================
               // Card 3: 🛡️ ADULT MODE (17+) - Blocked for Pure Kids & Students!

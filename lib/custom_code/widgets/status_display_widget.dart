@@ -470,53 +470,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         }
       }
 
-      // 4.2 Robot Vibes (Strict Isolation between Kids Animal Companions & Adult Robot Coaches)
+      // 4.2 Robot Vibes (Animal Companions in Kids Mode, and Robots + Animal Companions in Adult Mode)
       if (PocketKidsService.isKidAccount) {
         // 🐾 Kids Mode: Clean educational English story vibes from Animal Companions
-        final kidAnimalVibes = [
-          {
-            'profile_id': 'kid_bot_1',
-            'profile': {
-              'id': 'kid_bot_1',
-              'name': 'Sparky Tiger 🐯',
-              'avatar': '🐯',
-              'profile_image_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
-            },
-            'media_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
-            'media_type': 'image',
-            'caption': '🐾 Phonics Fun! Letter "T" is for Tiger! Can you say: Tiger, Tree, Treasure? 🌟',
-            'created_at': DateTime.now().toIso8601String(),
-            'id': 'kid_vibe_st_1',
-          },
-          {
-            'profile_id': 'kid_bot_2',
-            'profile': {
-              'id': 'kid_bot_2',
-              'name': 'Pandy Panda 🐼',
-              'avatar': '🐼',
-              'profile_image_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
-            },
-            'media_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
-            'media_type': 'image',
-            'caption': '✨ Manners Matter! Always say "Please" and "Thank You" with a smile! 🎋',
-            'created_at': DateTime.now().toIso8601String(),
-            'id': 'kid_vibe_pp_1',
-          },
-          {
-            'profile_id': 'kid_bot_3',
-            'profile': {
-              'id': 'kid_bot_3',
-              'name': 'Bouncy Bunny 🐰',
-              'avatar': '🐰',
-              'profile_image_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
-            },
-            'media_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
-            'media_type': 'image',
-            'caption': '🥕 Word Quest: "An apple a day keeps the doctor away!" Hop into English learning! 🍎',
-            'created_at': DateTime.now().toIso8601String(),
-            'id': 'kid_vibe_bb_1',
-          },
-        ];
+        final kidAnimalVibes = _getStaticAnimalVibes();
 
         for (final v in kidAnimalVibes) {
           final rId = v['profile_id']?.toString() ?? '';
@@ -534,14 +491,17 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           followingGroups[rId] = publicGroups[rId]!;
         }
       } else {
-        // Adult Autonomous Robot Engine Vibes
+        // Adult Autonomous Robot Engine Vibes & Animal Companion Vibes (User Audio Directive)
         try {
           final robotVibes = await PocketRobotService.getAllActiveRobotVibes();
-          for (final v in robotVibes) {
+          final animalVibes = _getStaticAnimalVibes();
+          final combinedBotVibes = [...robotVibes, ...animalVibes];
+
+          for (final v in combinedBotVibes) {
             final rId = v['profile_id']?.toString() ?? '';
             final rProfile = v['profile'] ?? {
               'id': rId,
-              'name': 'Pocket Robot',
+              'name': 'Pocket Mate',
               'profile_image_url': v['media_url'],
             };
             if (!publicGroups.containsKey(rId)) {
@@ -555,7 +515,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             }
             (publicGroups[rId]!['statuses'] as List).add(v);
 
-            // If robot is in following/mates, also add to followingGroups
+            // If robot/animal is in following/mates, also add to followingGroups
             if (allFollowingIds.contains(rId)) {
               if (!followingGroups.containsKey(rId)) {
                 followingGroups[rId] = {
@@ -570,7 +530,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             }
           }
         } catch (e) {
-          debugPrint('Error loading robot vibes: $e');
+          debugPrint('Error loading robot/animal vibes: $e');
         }
       }
 
@@ -696,6 +656,53 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         });
       }
     }
+  }
+
+  static List<Map<String, dynamic>> _getStaticAnimalVibes() {
+    return [
+      {
+        'profile_id': 'kid_bot_1',
+        'profile': {
+          'id': 'kid_bot_1',
+          'name': 'Sparky Tiger 🐯',
+          'avatar': '🐯',
+          'profile_image_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+        },
+        'media_url': 'https://images.unsplash.com/photo-1538099130811-745e64318258?w=800&q=80',
+        'media_type': 'image',
+        'caption': '🐾 Phonics Fun! Letter "T" is for Tiger! Can you say: Tiger, Tree, Treasure? 🌟',
+        'created_at': DateTime.now().toIso8601String(),
+        'id': 'kid_vibe_st_1',
+      },
+      {
+        'profile_id': 'kid_bot_2',
+        'profile': {
+          'id': 'kid_bot_2',
+          'name': 'Pandy Panda 🐼',
+          'avatar': '🐼',
+          'profile_image_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+        },
+        'media_url': 'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80',
+        'media_type': 'image',
+        'caption': '✨ Manners Matter! Always say "Please" and "Thank You" with a smile! 🎋',
+        'created_at': DateTime.now().toIso8601String(),
+        'id': 'kid_vibe_pp_1',
+      },
+      {
+        'profile_id': 'kid_bot_3',
+        'profile': {
+          'id': 'kid_bot_3',
+          'name': 'Bouncy Bunny 🐰',
+          'avatar': '🐰',
+          'profile_image_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+        },
+        'media_url': 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800&q=80',
+        'media_type': 'image',
+        'caption': '🥕 Word Quest: "An apple a day keeps the doctor away!" Hop into English learning! 🍎',
+        'created_at': DateTime.now().toIso8601String(),
+        'id': 'kid_vibe_bb_1',
+      },
+    ];
   }
 
   void _precacheAllStatuses() {
