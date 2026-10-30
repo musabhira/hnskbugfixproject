@@ -460,6 +460,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
         stepsCompleted.add(d);
       }
+    // If a brand new user (Day 1 with 0 score), ensure Day 1 is pristine and uncompleted
+    if (progRaw.currentDay <= 1 && score == 0) {
+      completed.remove(1);
+      stepsCompleted.remove(1);
+      prefs.remove('pocket_day_${uid}_1_completed');
+      prefs.remove('pocket_day_${uid}_1_steps_completed');
     }
 
     final int effectiveLastCompDay = completed.isNotEmpty
@@ -1275,10 +1281,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             int targetStepNumber = step.stepNumber;
             if (day == 1 && step.stepNumber == 1 && !isComp) {
               final prefs = await SharedPreferences.getInstance();
-              final uid = widget.userId ?? 'guest';
-              final diagDone = prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false;
+              final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+              final diagDone = uid.isNotEmpty
+                  ? (prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false)
+                  : false;
               if (!diagDone && mounted) {
-                final diag = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+                final diag = await PocketDay1DiagnosticSheet.show(context, userId: uid);
                 if (diag != null) {
                   final skip1 = diag['skipStep1'] ?? false;
                   final skip2 = diag['skipStep2'] ?? false;
@@ -1294,6 +1302,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               }
             }
             if (!mounted) return;
+            final activeUid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
             await Navigator.push(
               context,
               MaterialPageRoute(
@@ -1301,6 +1310,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   initialTrack: track,
                   initialStep: targetStepNumber,
                   day: day,
+                  userId: activeUid,
                   onStepFinished: (s) => _onSubStepFinished(day, s),
                   onCompleted: () => _completeTodayTasks(),
                 ),

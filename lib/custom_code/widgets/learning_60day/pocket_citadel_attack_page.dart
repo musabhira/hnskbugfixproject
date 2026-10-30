@@ -206,7 +206,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
         final res = await SupaFlow.client
             .from('profile')
             .select(
-                'user_id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo')
+                'user_id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score')
             .eq('user_id', userId)
             .maybeSingle();
         if (res != null) data = res;
@@ -223,6 +223,11 @@ class PocketCitadelAttackPage extends StatefulWidget {
     int effectiveDay = targetDay ??
         (p['learning_day'] as num?)?.toInt() ??
         (p['level'] as num?)?.toInt() ??
+        (p['stage'] as num?)?.toInt() ??
+        (p['pocket_score'] != null
+            ? PocketScoreLevelEngine.getLevelFromScore(
+                (p['pocket_score'] as num).toInt())
+            : null) ??
         1;
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;
@@ -251,13 +256,26 @@ class PocketCitadelAttackPage extends StatefulWidget {
       maxHp: 100,
     );
 
+    int effectiveAttackerDay = attackerDay;
+    if (effectiveAttackerDay <= 1) {
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null && myId.isNotEmpty) {
+          final myScore =
+              await PocketFortressDefenseService.getUnifiedScore(myId);
+          effectiveAttackerDay =
+              PocketScoreLevelEngine.getLevelFromScore(myScore);
+        }
+      } catch (_) {}
+    }
+
     if (!context.mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PocketCitadelAttackPage(
           neighbor: neighbor ?? userNeighbor,
-          attackerDay: attackerDay,
+          attackerDay: effectiveAttackerDay,
           isDefenseMode: isDefenseMode,
           isKidMode: isKidMode,
         ),
@@ -470,6 +488,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
+  bool _hasAwardedAttackThisSession = false;
   late int _attackerDay;
   bool _canInitiatePocketTalk = true;
 
@@ -919,18 +938,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     // ⚔️ Audio Directive: Raider earns 10 to 15 Score points (15 SS for kids, 15 PS for adults)
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
-    if (looted > 0) {
-      if (!isPostRunnerAnimation) {
-        if (widget.isKidMode) {
-          await PocketKidsService.addStudentScore(looted);
-          await PocketKidsService.incrementAttackCount();
-        } else {
+    if (!_hasAwardedAttackThisSession) {
+      _hasAwardedAttackThisSession = true;
+      if (widget.isKidMode) {
+        await PocketKidsService.addStudentScore(looted > 0 ? looted : 15);
+        await PocketKidsService.incrementAttackCount();
+      } else {
+        if (looted > 0) {
           await PocketFortressDefenseService.awardRaidLoot(looted);
           await PocketFortressDefenseService.awardPoints(looted);
         }
-        final myId = SupaFlow.client.auth.currentUser?.id ?? 'me';
-        await PocketTrophyService.recordSuccessfulAttack(myId);
-        await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null && myId.isNotEmpty) {
+          await PocketTrophyService.recordSuccessfulAttack(myId);
+          await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
+        }
       }
     }
 

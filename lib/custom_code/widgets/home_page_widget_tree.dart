@@ -1099,7 +1099,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'English Tasks':
       case 'English Learning Tasks':
       case '90-Day Tasks':
-        page = EnglishTasksMasterHubPage(userId: _currentUserId);
+        page = EnglishTasksMasterHubPage(
+            userId: _currentUserId ?? supabase.auth.currentUser?.id);
         break;
       case '1-on-1 English Match':
       case 'Stage Match':
@@ -1233,7 +1234,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               )
                             : _currentIndex == 3
                                 ? EnglishTasksMasterHubPage(
-                                    userId: _currentUserId)
+                                    userId: _currentUserId ??
+                                        supabase.auth.currentUser?.id)
                                 : PocketSnapFlameRefresh(
                                     onRefresh: _handleRefresh,
                                     triggerDistance: 85.0,

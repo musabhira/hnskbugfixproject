@@ -568,7 +568,11 @@ class PocketKidsService {
   static Future<int> loadAttackCount() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _attackCount = prefs.getInt('pocket_kids_attack_count') ?? 0;
+      if (prefs.containsKey('pocket_kids_attack_count')) {
+        prefs.remove('pocket_kids_attack_count');
+      }
+      final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+      _attackCount = prefs.getInt('pocket_kids_attack_count_$uid') ?? 0;
     } catch (_) {}
     return _attackCount;
   }
@@ -577,7 +581,8 @@ class PocketKidsService {
     _attackCount++;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('pocket_kids_attack_count', _attackCount);
+      final uid = SupaFlow.client.auth.currentUser?.id ?? '';
+      await prefs.setInt('pocket_kids_attack_count_$uid', _attackCount);
     } catch (_) {}
   }
 
@@ -875,8 +880,8 @@ class PocketKidsService {
         }
       }
 
-      _isPureStudentAccount = prefs.getBool(_keyIsPureStudentAccount) ?? false;
-      _attackCount = prefs.getInt('pocket_kids_attack_count') ?? 0;
+      final myUid = SupaFlow.client.auth.currentUser?.id ?? '';
+      _attackCount = prefs.getInt('pocket_kids_attack_count_$myUid') ?? 0;
 
       // Determine active World Mode
       final savedWorldMode = prefs.getString(_keyAppWorldMode);

@@ -1057,12 +1057,6 @@ class _PocketCitadelRunnerAttackPageState
     if (_won) {
       if (widget.isKidMode) {
         await PocketKidsService.addStars(15);
-        await PocketKidsService.incrementAttackCount();
-      } else {
-        final myId = SupaFlow.client.auth.currentUser?.id;
-        if (myId != null && myId.isNotEmpty) {
-          await PocketTrophyService.recordSuccessfulAttack(myId);
-        }
       }
     }
     widget.onRaidFinished?.call(m);

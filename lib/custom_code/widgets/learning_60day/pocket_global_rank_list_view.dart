@@ -691,6 +691,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
               context,
               userId: user.userId,
               targetName: user.name,
+              targetDay: user.level,
             );
           },
           child: Padding(

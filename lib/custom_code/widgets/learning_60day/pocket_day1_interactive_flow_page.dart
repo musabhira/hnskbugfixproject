@@ -302,10 +302,20 @@ class _PocketDay1InteractiveFlowPageState
 
   Future<void> _loadState() async {
     final lang = PocketLanguageService.currentLanguage;
-    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
     final prefs = await SharedPreferences.getInstance();
 
-    final trackKey = 'pocket_day1_selected_track_${uid ?? "guest"}';
+    // Clean up legacy unscoped guest keys so they never cross-contaminate accounts
+    for (int s = 1; s <= 20; s++) {
+      if (prefs.containsKey('pocket_day_guest_1_step_${s}_done')) {
+        prefs.remove('pocket_day_guest_1_step_${s}_done');
+      }
+      if (prefs.containsKey('pocket_day_guest_${widget.day}_step_${s}_done')) {
+        prefs.remove('pocket_day_guest_${widget.day}_step_${s}_done');
+      }
+    }
+
+    final trackKey = uid.isNotEmpty ? 'pocket_day1_selected_track_$uid' : 'pocket_day1_selected_track';
     final savedTrackStr = prefs.getString(trackKey);
     Day1Track resolved = widget.initialTrack ?? Day1Track.middle;
     if (savedTrackStr != null && widget.initialTrack == null) {
@@ -319,8 +329,8 @@ class _PocketDay1InteractiveFlowPageState
 
     final Map<int, bool> completed = {};
     for (int s = 1; s <= 12; s++) {
-      final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_done';
-      completed[s] = prefs.getBool(key) ?? false;
+      final key = 'pocket_day_${uid}_${widget.day}_step_${s}_done';
+      completed[s] = (uid.isNotEmpty) ? (prefs.getBool(key) ?? false) : false;
     }
 
     if (mounted) {
@@ -387,14 +397,13 @@ class _PocketDay1InteractiveFlowPageState
 
   Future<void> _markStepCompleted(int stepIndex) async {
     HapticFeedback.heavyImpact();
-    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
     final prefs = await SharedPreferences.getInstance();
 
-    final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${stepIndex}_done';
-    await prefs.setBool(key, true);
-
-    const xp = 30;
-    if (uid != null && uid.isNotEmpty) {
+    if (uid.isNotEmpty) {
+      final key = 'pocket_day_${uid}_${widget.day}_step_${stepIndex}_done';
+      await prefs.setBool(key, true);
+      const xp = 30;
       await PocketFortressDefenseService.recordTrainingPoints(xp, uid);
     }
 
@@ -474,16 +483,15 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   Future<void> _onDay1FullyCompleted() async {
-    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_completed', true);
-    await prefs.setInt('learning_last_completed_day_${uid ?? "guest"}', widget.day);
-    final now = DateTime.now();
-    await prefs.setString(
-        'learning_day_${uid ?? "guest"}_${widget.day}_completed_date', '${now.year}-${now.month}-${now.day}');
-
-    if (uid != null && uid.isNotEmpty) {
+    if (uid.isNotEmpty) {
+      await prefs.setBool('pocket_day_${uid}_${widget.day}_completed', true);
+      await prefs.setInt('learning_last_completed_day_$uid', widget.day);
+      final now = DateTime.now();
+      await prefs.setString(
+          'learning_day_${uid}_${widget.day}_completed_date', '${now.year}-${now.month}-${now.day}');
       await PocketFortressDefenseService.recordTrainingPoints(150, uid);
     }
 

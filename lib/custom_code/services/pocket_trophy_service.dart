@@ -169,7 +169,21 @@ class PocketTrophyService {
     if (userId.isEmpty) return 0;
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getInt('$kPrefsGoldTrophiesPrefix$userId') ?? 0;
+      final local = prefs.getInt('$kPrefsGoldTrophiesPrefix$userId');
+      if (local != null) return local;
+
+      // Fetch from Supabase profile table
+      final res = await _supabase
+          .from('profile')
+          .select('gold_trophies_count')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (res != null && res['gold_trophies_count'] != null) {
+        final count = (res['gold_trophies_count'] as num).toInt();
+        await prefs.setInt('$kPrefsGoldTrophiesPrefix$userId', count);
+        return count;
+      }
+      return 0;
     } catch (_) {
       return 0;
     }
@@ -180,7 +194,7 @@ class PocketTrophyService {
     if (userId.isEmpty) return 0;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final current = prefs.getInt('$kPrefsGoldTrophiesPrefix$userId') ?? 0;
+      final current = await getGoldTrophies(userId);
       final updated = current + count;
       await prefs.setInt('$kPrefsGoldTrophiesPrefix$userId', updated);
       try {
@@ -201,6 +215,18 @@ class PocketTrophyService {
       final prefs = await SharedPreferences.getInstance();
       final explicit = prefs.getInt('$kPrefsSilverTrophiesPrefix$userId');
       if (explicit != null) return explicit;
+
+      // Fetch from Supabase profile table
+      final res = await _supabase
+          .from('profile')
+          .select('silver_trophies_count')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (res != null && res['silver_trophies_count'] != null) {
+        final count = (res['silver_trophies_count'] as num).toInt();
+        await prefs.setInt('$kPrefsSilverTrophiesPrefix$userId', count);
+        return count;
+      }
       return await getTrophyCount(userId);
     } catch (_) {
       return 0;
@@ -228,15 +254,31 @@ class PocketTrophyService {
     }
   }
 
-  /// ⚔️ Get Successful Attacks Count (Only counts when raid is won / gate breached)
+  /// ⚔️ Get Successful Attacks Count (Strictly scoped per user from Supabase profile table)
   static Future<int> getSuccessfulAttacks(String userId) async {
     if (userId.isEmpty) return 0;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final count = prefs.getInt('$kPrefsSuccessfulAttacksPrefix$userId') ??
-          prefs.getInt('pocket_kids_attack_count') ??
-          0;
-      return count;
+      // Clean up legacy unscoped key so it never pollutes accounts
+      if (prefs.containsKey('pocket_kids_attack_count')) {
+        prefs.remove('pocket_kids_attack_count');
+      }
+
+      final local = prefs.getInt('$kPrefsSuccessfulAttacksPrefix$userId');
+      if (local != null) return local;
+
+      // Query Supabase profile table
+      final res = await _supabase
+          .from('profile')
+          .select('successful_attacks_count')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (res != null && res['successful_attacks_count'] != null) {
+        final count = (res['successful_attacks_count'] as num).toInt();
+        await prefs.setInt('$kPrefsSuccessfulAttacksPrefix$userId', count);
+        return count;
+      }
+      return 0;
     } catch (_) {
       return 0;
     }
@@ -250,7 +292,6 @@ class PocketTrophyService {
       final current = await getSuccessfulAttacks(userId);
       final updated = current + 1;
       await prefs.setInt('$kPrefsSuccessfulAttacksPrefix$userId', updated);
-      await prefs.setInt('pocket_kids_attack_count', updated);
       try {
         await _supabase.from('profile').update({
           'successful_attacks_count': updated,
