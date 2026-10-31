@@ -1186,72 +1186,16 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       children: [
                         _buildNativeLanguageSection(theme),
                         const SizedBox(height: 14),
-                        _buildEnglishLevelSection(theme),
-                        const SizedBox(height: 14),
                         _buildLearningGoalSection(theme),
-                        const SizedBox(height: 14),
-                        _buildLevelThemeCard(),
                       ],
                     ),
 
-                    // Card 3: 📱 Social, Contact & Privacy
+                    // Card 3: 📱 Social & Contact
                     _buildCardContainer(
-                      title: 'Social & Privacy',
-                      icon: Icons.security_rounded,
+                      title: 'Social & Contact',
+                      icon: Icons.contacts_rounded,
                       accentColor: const Color(0xFF10B981),
                       children: [
-                        // Privacy toggle
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: theme.primaryBackground,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: theme.alternate),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(7),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white10,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.lock_outline_rounded, color: theme.primaryText, size: 16),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Private Account',
-                                      style: TextStyle(
-                                        color: theme.primaryText,
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Only approved mates can see your activity',
-                                      style: TextStyle(
-                                        color: theme.secondaryText,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Switch(
-                                value: _isPrivate,
-                                onChanged: (v) => safeSetState(() => _isPrivate = v),
-                                activeThumbColor: const Color(0xFFFFD700),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
                         // Phone Number
                         CustomPhoneTextField(
                           width: double.infinity,
@@ -1462,87 +1406,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   Widget _buildVisualIdentitySection(DarkModeTheme theme) {
     return Column(
       children: [
-        // 1. Cover Banner Image
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16.0),
-                child: AspectRatio(
-                  aspectRatio: 2.8,
-                  child: _selectedImageBytesBanner != null
-                      ? Image.memory(
-                          _selectedImageBytesBanner!,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : CachedNetworkImage(
-                          imageUrl: _imageUrlBanner ?? 'https://picsum.photos/seed/463/600',
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(color: theme.secondaryBackground),
-                          errorWidget: (context, url, error) => Container(
-                            color: const Color(0xFF1E293B),
-                            child: const Center(
-                              child: Icon(Icons.landscape_rounded, color: Colors.white24, size: 36),
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-              Positioned(
-                right: 12,
-                bottom: 12,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if ((_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty) || _selectedImageBytesBanner != null)
-                      GestureDetector(
-                        onTap: _isLoading
-                            ? null
-                            : () => safeSetState(() {
-                                  _imageUrlBanner = null;
-                                  _selectedImageBytesBanner = null;
-                                }),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 16),
-                        ),
-                      ),
-                    GestureDetector(
-                      onTap: (_isLoading || _isCompressingBanner) ? null : _selectImageBanner,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
-                          ],
-                        ),
-                        child: _isCompressingBanner
-                            ? const SizedBox(
-                                height: 14,
-                                width: 14,
-                                child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
-                              )
-                            : const Icon(Icons.camera_alt_rounded, color: Colors.black, size: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // 2. Dual Identity Container (Public Profile Photo & Pocket Mate Avatar)
+        // Dual Identity Container (Public Profile Photo & Pocket Mate Avatar)
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           padding: const EdgeInsets.all(14),

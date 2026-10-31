@@ -6565,6 +6565,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             count: _friendsCount > 0 ? _friendsCount : _followersCount,
             textColor: textColor,
             labelColor: effectiveLabelColor,
+            onTap: isMe ? () => _showMatesListBottomSheet() : null,
           ),
         ),
         Expanded(
@@ -6652,6 +6653,259 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         ),
       ],
+    );
+  }
+
+  void _showMatesListBottomSheet() {
+    HapticFeedback.mediumImpact();
+    final targetUid = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    if (targetUid.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(ctx).size.height * 0.72,
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header Drag Handle & Title
+              Container(
+                margin: const EdgeInsets.only(top: 10, bottom: 6),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Text('🤝', style: TextStyle(fontSize: 18)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Pocket Mates',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Companions, learning partners & lifelong mates',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white10, height: 1),
+
+              // Mates List
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: PocketMateService.getDetailedMatesList(targetUid),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+                      );
+                    }
+                    final mates = snapshot.data ?? [];
+                    if (mates.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🤝', style: TextStyle(fontSize: 36)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No Mates Connected Yet',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Start PocketTalk 4-day pacts or add mates to connect!',
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      itemCount: mates.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final mate = mates[index];
+                        final mId = mate['id']?.toString() ?? '';
+                        final name = mate['name']?.toString() ?? 'Pocket Mate';
+                        final subtitle = mate['subtitle']?.toString() ?? '';
+                        final avatarUrl = mate['avatar_url']?.toString();
+                        final isRobot = mate['is_robot'] == true;
+                        final isPresident = mate['is_president'] == true;
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isPresident
+                                  ? const Color(0xFFFFD700)
+                                  : (isRobot ? const Color(0xFF06B6D4) : Colors.white12),
+                              width: isPresident ? 1.4 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              // Avatar
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isPresident
+                                        ? const Color(0xFFFFD700)
+                                        : (isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00)),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: (avatarUrl != null && avatarUrl.isNotEmpty)
+                                      ? CachedNetworkImage(
+                                          imageUrl: avatarUrl,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (_, __, ___) => Center(
+                                            child: Text(
+                                              name.isNotEmpty ? name[0].toUpperCase() : 'M',
+                                              style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            isRobot ? '🤖' : (isPresident ? '🏛️' : '👤'),
+                                            style: const TextStyle(fontSize: 20),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      subtitle,
+                                      style: GoogleFonts.inter(
+                                        color: isPresident
+                                            ? const Color(0xFFFFD700)
+                                            : (isRobot ? const Color(0xFF67E8F9) : Colors.white60),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              // Chat Button
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFFC00),
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  minimumSize: const Size(64, 32),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WhatsAppGroupChat(
+                                        groupId: isPresident ? 'president' : (isRobot ? 'r:$mId' : 'm:$mId'),
+                                        groupName: name,
+                                        groupImage: avatarUrl,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Chat 💬',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -784,4 +784,96 @@ class PocketMateService {
       }
     } catch (_) {}
   }
+
+  /// Get detailed list of all Mates (Humans, Robots, President) with profiles
+  static Future<List<Map<String, dynamic>>> getDetailedMatesList(String userId) async {
+    if (userId.isEmpty) return [];
+    final List<Map<String, dynamic>> detailedMates = [];
+    final Set<String> seenIds = {};
+
+    try {
+      final mateIds = await getMatesList(userId);
+      for (final mateId in mateIds) {
+        if (mateId == userId || seenIds.contains(mateId)) continue;
+        seenIds.add(mateId);
+
+        // 1. The President
+        if (PocketPresidentService.isPresidentId(mateId) || mateId == 'pocket_president') {
+          detailedMates.add({
+            'id': mateId,
+            'user_id': mateId,
+            'name': 'The President',
+            'avatar_url': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            'is_robot': false,
+            'is_president': true,
+            'stage': 90,
+            'subtitle': 'Sovereign of Pocket World 🏛️',
+          });
+          continue;
+        }
+
+        // 2. Robot Mate
+        if (PocketRobotService.isRobotId(mateId)) {
+          final bot = PocketRobotService.getRobotById(mateId);
+          detailedMates.add({
+            'id': mateId,
+            'user_id': mateId,
+            'name': bot?.name ?? 'Companion Bot',
+            'avatar_url': bot?.avatarUrl,
+            'is_robot': true,
+            'is_president': false,
+            'stage': bot?.level ?? 1,
+            'subtitle': 'Companion Robot • Level ${bot?.level ?? 1} 🤖',
+          });
+          continue;
+        }
+
+        // 3. Human Mate
+        try {
+          final resolvedName = ContactsNameService().getDisplayName(userId: mateId, fallbackName: '');
+          final profileRes = await _supabase
+              .from('profile')
+              .select('name, display_name, profile_picture_url, profile_image_url, avatar_url, learning_day, level')
+              .eq('user_id', mateId)
+              .maybeSingle();
+
+          String displayName = resolvedName.isNotEmpty
+              ? resolvedName
+              : (profileRes?['display_name'] ?? profileRes?['name'] ?? 'Pocket Mate');
+          String? avatarUrl = profileRes?['profile_picture_url'] ??
+              profileRes?['profile_image_url'] ??
+              profileRes?['avatar_url'];
+          int level = (profileRes?['learning_day'] as num?)?.toInt() ??
+              (profileRes?['level'] as num?)?.toInt() ??
+              1;
+
+          detailedMates.add({
+            'id': mateId,
+            'user_id': mateId,
+            'name': displayName,
+            'avatar_url': avatarUrl,
+            'is_robot': false,
+            'is_president': false,
+            'stage': level,
+            'subtitle': 'Day $level Learner 🌟',
+          });
+        } catch (_) {
+          detailedMates.add({
+            'id': mateId,
+            'user_id': mateId,
+            'name': 'Pocket Mate',
+            'avatar_url': null,
+            'is_robot': false,
+            'is_president': false,
+            'stage': 1,
+            'subtitle': 'Pocket Mate 🌟',
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting detailed mates: $e');
+    }
+
+    return detailedMates;
+  }
 }
