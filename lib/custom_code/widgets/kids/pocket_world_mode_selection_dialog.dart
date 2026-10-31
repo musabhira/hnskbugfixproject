@@ -197,7 +197,7 @@ class PocketWorldModeSelectionDialog extends StatelessWidget {
                 },
               ),
 
-
+              const SizedBox(height: 14),
 
               // =============================================================
               // Card 3: 🛡️ ADULT MODE (17+) - Blocked for Pure Kids & Students!

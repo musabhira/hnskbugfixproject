@@ -106,6 +106,7 @@ class _PocketKidsVehiclesAndWheelsGameState
   }
 
   void _setupCurrentRound() {
+    _driveController.reset();
     _isAnswered = false;
     _isCorrect = false;
     final current = _rounds[_roundIndex];
@@ -276,7 +277,7 @@ class _PocketKidsVehiclesAndWheelsGameState
                         Text(
                           'Round ${_roundIndex + 1} of ${_rounds.length}',
                           style: GoogleFonts.fredoka(
-                            color: const Color(0xFF1E293B),
+                            color: Colors.black,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),

@@ -993,29 +993,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   _pickMedia(source);
                 },
               ),
-              const Divider(color: Colors.white10),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF9800).withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.videocam_rounded, color: Color(0xFFFF9800), size: 22),
-                ),
-                title: Text(
-                  'Video Vibe (10s Auto-Slicing)',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  'Up to 60s • Auto-splits into 10s compressed clips',
-                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickVideo(source);
-                },
-              ),
+              // 🚫 User Audio Directive: Video Vibes hidden for now
             ],
           ),
         ),
@@ -2008,19 +1986,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       ),
                                     ),
-                                    OutlinedButton.icon(
-                                      onPressed: () => _pickVideo(ImageSource.gallery),
-                                      icon: const Icon(Icons.videocam_rounded, size: 16, color: Color(0xFFFF9800)),
-                                      label: Text(
-                                        'Video (10s Slicing)',
-                                        style: GoogleFonts.outfit(color: const Color(0xFFFF9800), fontSize: 12, fontWeight: FontWeight.w600),
-                                      ),
-                                      style: OutlinedButton.styleFrom(
-                                        side: BorderSide(color: const Color(0xFFFF9800).withValues(alpha: 0.35)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                      ),
-                                    ),
+                                    // 🚫 User Audio Directive: Video Vibes hidden for now
                                     ElevatedButton.icon(
                                       onPressed: () => setState(() => _isAddingText = true),
                                       icon: const Icon(Icons.title_rounded, size: 16, color: Colors.black),

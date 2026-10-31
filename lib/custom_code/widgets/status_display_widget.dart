@@ -9099,12 +9099,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                           color: Colors.pink,
                           onTap: _pickImage,
                         ),
-                        _buildUploadOption(
-                          icon: Icons.videocam_rounded,
-                          label: 'Video',
-                          color: Colors.orange,
-                          onTap: _pickVideo,
-                        ),
+                        // 🚫 User Audio Directive: Video Vibes hidden for now
                         _buildUploadOption(
                           icon: Icons.lightbulb_outline,
                           label: 'Thought',

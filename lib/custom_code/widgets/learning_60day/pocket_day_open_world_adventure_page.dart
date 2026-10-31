@@ -520,7 +520,8 @@ class _PocketDayOpenWorldAdventurePageState
       if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
-        _launchStepActivity(_totalSteps);
+        // Day fully mastered! Notify parent and do not re-launch activity in loop
+        widget.onCompleted?.call();
       }
     }
   }
@@ -3320,13 +3321,10 @@ class _PocketDayOpenWorldAdventurePageState
           onProceedToNextDay: () async {
             await _onStepCompleted(19);
             widget.onCompleted?.call();
-            if (mounted) {
-              Navigator.pop(context, true);
-            }
           },
         );
         if (res == true) {
-          await _onStepCompleted(19);
+          await _syncStepCompletionIfDone(19);
           widget.onCompleted?.call();
           if (mounted) {
             Navigator.pop(context, true);

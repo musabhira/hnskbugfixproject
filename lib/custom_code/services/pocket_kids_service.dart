@@ -778,10 +778,13 @@ class PocketKidsService {
   }
 
   /// Load cached account mode from SharedPreferences
-  static Future<void> initialize() async {
-    if (_initialized) return;
+  static Future<void> initialize({bool force = false}) async {
+    if (_initialized && !force) return;
     try {
       final prefs = await SharedPreferences.getInstance();
+      final currentUid = SupaFlow.client.auth.currentUser?.id;
+      final uidSuffix = (currentUid != null && currentUid.isNotEmpty) ? '_$currentUid' : '';
+
       _isKidAccount = prefs.getBool(_keyIsKidAccount) ?? false;
       _isPureKidAccount = prefs.getBool(_keyIsPureKidAccount) ?? false;
       _isParentSwitched = prefs.getBool(_keyIsParentSwitched) ?? false;
@@ -789,8 +792,12 @@ class PocketKidsService {
       _kidAgeGroup = prefs.getString(_keyKidAgeGroup) ?? '4-6';
       _kidGender = prefs.getString(_keyKidGender) ?? 'female';
       _kidAvatar = prefs.getString(_keyKidAvatar) ?? '🦁';
-      _kidStars = prefs.getInt(_keyKidStars) ?? 0;
-      _currentUnlockedDay = prefs.getInt(_keyKidCurrentDay) ?? 1;
+
+      // Load user-scoped stats if available, otherwise global fallback
+      _kidStars = (currentUid != null ? prefs.getInt('${_keyKidStars}$uidSuffix') : null) ??
+          prefs.getInt(_keyKidStars) ?? 0;
+      _currentUnlockedDay = (currentUid != null ? prefs.getInt('${_keyKidCurrentDay}$uidSuffix') : null) ??
+          prefs.getInt(_keyKidCurrentDay) ?? 1;
       _isKidPremium = prefs.getBool(_keyKidIsPremium) ?? false;
       _lastCompletedDate = prefs.getString(_keyKidLastCompletedDate);
       _lastCompletedDay = prefs.getInt(_keyKidLastCompletedDay);
@@ -826,11 +833,12 @@ class PocketKidsService {
         }
       } catch (_) {}
 
-      final savedDaysJson = prefs.getString(_keyKidCompletedDays);
+      _completedDays.clear();
+      final savedDaysJson = (currentUid != null ? prefs.getString('${_keyKidCompletedDays}$uidSuffix') : null) ??
+          prefs.getString(_keyKidCompletedDays);
       if (savedDaysJson != null && savedDaysJson.isNotEmpty) {
         try {
           final decoded = jsonDecode(savedDaysJson) as Map<String, dynamic>;
-          _completedDays.clear();
           decoded.forEach((k, v) {
             final day = int.tryParse(k);
             final stars = v is int ? v : 3;
@@ -870,10 +878,12 @@ class PocketKidsService {
       studentScoreNotifier.value = _studentScore;
       
       // Load isolated Kids Score (KS) - Starts at 0
-      _kidsScore = prefs.getInt(_keyKidsScore) ?? 0;
+      _kidsScore = (currentUid != null ? prefs.getInt('pocket_kids_score_$currentUid') : null) ??
+          prefs.getInt(_keyKidsScore) ?? 0;
       kidsScoreNotifier.value = _kidsScore;
 
       // Load completed day steps
+      _completedDaySteps.clear();
       for (final k in prefs.getKeys()) {
         if (k.startsWith('pm_kid_day_') && prefs.getBool(k) == true) {
           _completedDaySteps[k] = true;
@@ -918,6 +928,92 @@ class PocketKidsService {
       _initialized = true;
     } catch (e) {
       debugPrint('PocketKidsService: Error initializing: $e');
+    }
+  }
+
+  /// 🔄 Reset in-memory session on account switch / logout
+  static void resetSession() {
+    _initialized = false;
+    _completedDays.clear();
+    _currentUnlockedDay = 1;
+    _kidStars = 0;
+    _studentScore = 0;
+    _kidsScore = 0;
+    _attackCount = 0;
+    _completedDaySteps.clear();
+    _friendIds.clear();
+    _sentRequestIds.clear();
+    _receivedRequestIds.clear();
+    _friendshipScores.clear();
+    _lastCompletedDate = null;
+    _lastCompletedDay = null;
+    _isKidPremium = false;
+    kidStarsNotifier.value = 0;
+    kidDayNotifier.value = 1;
+    kidsScoreNotifier.value = 0;
+    studentScoreNotifier.value = 0;
+    kidPremiumNotifier.value = false;
+  }
+
+  /// 🗑️ Reset Kids World Progress back to Day 1 with 0 score & stars
+  static Future<void> resetKidsProgress({String? userId}) async {
+    final effectiveUid = userId ?? SupaFlow.client.auth.currentUser?.id;
+    final prefs = await SharedPreferences.getInstance();
+
+    _completedDays.clear();
+    _currentUnlockedDay = 1;
+    _kidStars = 0;
+    _kidsScore = 0;
+    _lastCompletedDate = null;
+    _lastCompletedDay = null;
+
+    kidStarsNotifier.value = 0;
+    kidDayNotifier.value = 1;
+    kidsScoreNotifier.value = 0;
+
+    final keysToRemove = [
+      _keyKidCurrentDay,
+      _keyKidCompletedDays,
+      _keyKidStars,
+      _keyKidsScore,
+      _keyKidLastCompletedDate,
+      _keyKidLastCompletedDay,
+    ];
+
+    for (final k in keysToRemove) {
+      await prefs.remove(k);
+      if (effectiveUid != null) {
+        await prefs.remove('${k}_$effectiveUid');
+      }
+    }
+    if (effectiveUid != null) {
+      await prefs.remove('pocket_kids_score_$effectiveUid');
+    }
+
+    final allKeys = prefs.getKeys().toList();
+    for (final k in allKeys) {
+      if (k.startsWith('pm_kid_day_')) {
+        await prefs.remove(k);
+      }
+    }
+    _completedDaySteps.clear();
+
+    if (effectiveUid != null) {
+      try {
+        await SupaFlow.client.from('profile').update({
+          'kids_score': 0,
+          'kid_current_day': 1,
+          'kid_stars': 0,
+          'kid_profile': {
+            'current_unlocked_day': 1,
+            'completed_days': {},
+            'kid_stars': 0,
+            'kids_score': 0,
+          },
+        }).eq('user_id', effectiveUid);
+      } catch (e) {
+        debugPrint('PocketKidsService: Error resetting Supabase kid progress: $e');
+      }
     }
   }
 
@@ -1271,6 +1367,12 @@ class PocketKidsService {
       await prefs.setString(_keyKidLastCompletedDate, _lastCompletedDate!);
       final jsonMap = _completedDays.map((k, v) => MapEntry(k.toString(), v));
       await prefs.setString(_keyKidCompletedDays, jsonEncode(jsonMap));
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setInt('${_keyKidCurrentDay}_$uid', _currentUnlockedDay);
+        await prefs.setString('${_keyKidCompletedDays}_$uid', jsonEncode(jsonMap));
+        await prefs.setInt('${_keyKidStars}_$uid', _kidStars);
+      }
     } catch (_) {}
     syncKidProgressToParentCloud();
   }

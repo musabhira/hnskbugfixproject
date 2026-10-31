@@ -952,7 +952,7 @@ class Day1Curriculum {
       Day1StepModel(
         stepNumber: 19,
         titleEn: '🏆 Day $day Summary & Review',
-        titleMl: '🏆 ഡേ $day അവലോകനം',
+        titleMl: '🏆 Day $day Summary & Review',
         icon: '🏆',
         type: 'day_review_card',
         descriptionEn: 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and next-day roadmap!',

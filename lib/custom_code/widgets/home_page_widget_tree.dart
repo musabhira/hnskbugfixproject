@@ -2945,6 +2945,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         final dt = DateTime.tryParse(req['created_at']?.toString() ?? '') ?? DateTime.now();
         items.add(_UnifiedRequestItem(id: id, type: 'mate', createdAt: dt, data: req));
       }
+      for (final sReq in _sentRequests) {
+        final id = sReq['id']?.toString() ?? UniqueKey().toString();
+        final dt = DateTime.tryParse(sReq['created_at']?.toString() ?? '') ?? DateTime.now();
+        final map = Map<String, dynamic>.from(sReq);
+        map['is_sent'] = true;
+        map['sender_name'] = map['receiver_name'] ?? 'Poket Mate';
+        map['sender_profile_image'] = map['receiver_profile_image'] ?? map['receiver_avatar'];
+        map['avatar_url'] = map['receiver_profile_image'] ?? map['receiver_avatar'];
+        map['message'] = 'Sent • Waiting for acceptance ⏳';
+        items.add(_UnifiedRequestItem(id: 'sent_$id', type: 'mate', createdAt: dt, data: map));
+      }
     }
 
     // PocketTalk pacts (show under All or PocketTalk tab)
@@ -3168,7 +3179,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 children: [
                   Flexible(
                     child: Text(
-                      req['sender_name'] ?? 'Pocket Mate',
+                      req['sender_name'] ?? 'Poket Mate',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -3212,34 +3223,52 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ),
         ),
         const SizedBox(width: 8),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFFC00),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                minimumSize: const Size(60, 32),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
-              ),
-              onPressed: () => _acceptMateRequest(req),
-              child: Text(
-                'Accept',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+        if (req['is_sent'] == true)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.35)),
+            ),
+            child: Text(
+              'Sent ⏳',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFFC00),
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
               ),
             ),
-            const SizedBox(width: 6),
-            IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              padding: EdgeInsets.zero,
-              onPressed: () => _declineMateRequest(req),
-              tooltip: 'Decline',
-            ),
-          ],
-        ),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: const Size(60, 32),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                ),
+                onPressed: () => _acceptMateRequest(req),
+                child: Text(
+                  'Accept',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 6),
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
+                onPressed: () => _declineMateRequest(req),
+                tooltip: 'Decline',
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -4608,34 +4637,45 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             .where((c) => !pendingSenderIds.contains(c.id))
                             .toList();
                     if (_chatCategoryFilterIndex == 0) {
-                      // Under 'All': hide pending/unaccepted auto-dispatched Pocket Talk invites.
-                      // Once accepted, they appear in 'All'!
+                      // 🌟 User Audio Directive: Under 'All' (Category 0), ONLY show:
+                      // 1. Groups, President, Tools, Active Timers, Notifications
+                      // 2. Verified Mates (_localMateIds.contains(c.id))
+                      // 3. Active accepted PoketTalk pacts (_pocketTalkActivePeerIds.contains(c.id))
+                      // NEVER show:
+                      // - Pending sent or incoming mate requests (they belong in Requests tab!)
+                      // - Pending sent or incoming PoketTalk pacts (they belong in Requests / Poket Talk tab!)
+                      // - Expired/completed temporary PoketTalk chats where users are not mutual mates
+                      final sentPendingIds = _sentRequests
+                          .map((r) => r['user_id']?.toString() ?? r['receiver_id']?.toString())
+                          .whereType<String>()
+                          .toSet();
+
                       activeFiltered = activeFiltered.where((c) {
                         if (PocketPresidentService.isPresidentId(c.id) ||
-                            c.isGroup) {
+                            c.isGroup ||
+                            c.isTool ||
+                            c.isNotification ||
+                            c.isActiveTimer) {
                           return true;
                         }
-                        if (PocketRobotService.isRobotId(c.id)) {
-                          // Robots only appear under 'All' once accepted as Mates or in active pacts!
-                          return _localMateIds.contains(c.id) ||
-                              _pocketTalkActivePeerIds.contains(c.id);
-                        }
-                        final isPendingPact = _pocketTalkPendingPeerIds
-                                .contains(c.id) ||
+
+                        // Exclude any pending sent requests
+                        if (sentPendingIds.contains(c.id) ||
                             _pocketTalkPendingSentPeerIds.contains(c.id) ||
-                            (c.lastMessage?.contains('Pocket Talk') == true &&
-                                !_pocketTalkActivePeerIds.contains(c.id)) ||
-                            (c.lastMessage?.contains('PocketTalk') == true &&
-                                !_pocketTalkActivePeerIds.contains(c.id)) ||
-                            (c.lastMessage?.contains('Spoken English Pact') == true &&
-                                !_pocketTalkActivePeerIds.contains(c.id));
-                        if (isPendingPact &&
-                            !_pocketTalkActivePeerIds.contains(c.id)) {
-                          // Isolate pending unaccepted PocketTalk requests:
-                          // Keep them strictly in Requests / Poket Talk tabs until accepted!
+                            _poketTalkLocalSent.any((r) => (r['user_id'] == c.id || r['receiver_id'] == c.id))) {
                           return false;
                         }
-                        return true;
+
+                        // Exclude any pending incoming requests
+                        if (pendingSenderIds.contains(c.id) ||
+                            _pocketTalkPendingPeerIds.contains(c.id)) {
+                          return false;
+                        }
+
+                        // Must be either verified Mates OR an active accepted PoketTalk pact
+                        final isMate = _localMateIds.contains(c.id);
+                        final isActivePact = _pocketTalkActivePeerIds.contains(c.id);
+                        return isMate || isActivePact;
                       }).toList();
 
                     } else if (_chatCategoryFilterIndex == 1) {

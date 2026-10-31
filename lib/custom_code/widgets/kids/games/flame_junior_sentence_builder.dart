@@ -8,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
 // ============================================================================
@@ -32,6 +33,9 @@ class JuniorSentenceChallenge {
   final int day;
   final String fullSentence;
   final String translationMl;
+  final String? translationHi;
+  final String? translationTa;
+  final String? translationKn;
   final String hint;
   final List<JuniorSentenceTile> tiles;
 
@@ -39,9 +43,22 @@ class JuniorSentenceChallenge {
     required this.day,
     required this.fullSentence,
     required this.translationMl,
+    this.translationHi,
+    this.translationTa,
+    this.translationKn,
     required this.hint,
     required this.tiles,
   });
+
+  String getLocalizedMeaning() {
+    return PocketLanguageService.localize(
+      en: fullSentence,
+      ml: translationMl,
+      hi: translationHi ?? translationMl,
+      ta: translationTa ?? translationMl,
+      kn: translationKn ?? translationMl,
+    );
+  }
 }
 
 /// 📚 Progressive 90-Day Junior Sentence Database for Young Learners
@@ -52,6 +69,9 @@ class KidsSentenceCurriculum {
       day: 1,
       fullSentence: "I see a cute cat",
       translationMl: "ഞാൻ ഒരു കൊച്ചു പൂച്ചയെ കാണുന്നു 🐱",
+      translationTa: "நான் ஒரு அழகான பூனையைப் பார்க்கிறேன் 🐱",
+      translationHi: "मुझे एक प्यारी बिल्ली दिख रही है 🐱",
+      translationKn: "ನಾನು ಮುದ್ದಾದ ಬೆಕ್ಕನ್ನು ನೋಡುತ್ತಿದ್ದೇನೆ 🐱",
       hint: "Start with who is looking! (I see...)",
       tiles: [
         JuniorSentenceTile(
@@ -896,8 +916,8 @@ class _PocketKidsSentenceBuilderPageState
     setState(() {
       _highlightedWordIndex = -1;
     });
-    // Speak Malayalam meaning
-    await _tts.speak(_currentChallenge.translationMl);
+    // Speak full sentence cleanly
+    await _tts.speak(_currentChallenge.fullSentence);
   }
 
   @override
@@ -936,11 +956,13 @@ class _PocketKidsSentenceBuilderPageState
             ),
           ),
 
-          // 📱 3. Top Navigation & Header Bar
+          // 📱 3. Top Navigation, Train & Meaning Card (Linear Non-Overlapping Layout)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1010,7 +1032,7 @@ class _PocketKidsSentenceBuilderPageState
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   // 🌟 10-Round Progress Dots
                   Row(
@@ -1044,191 +1066,195 @@ class _PocketKidsSentenceBuilderPageState
                     }),
                   ),
 
-                  // Malayalam Translation Card
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text("💡", style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Text(
-                          _currentChallenge.translationMl,
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                  const SizedBox(height: 16),
+
+                  // 🚂 Cartoon Locomotive Engine
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF2D55).withValues(alpha: 0.4),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text("🚂", style: TextStyle(fontSize: 22)),
+                            const SizedBox(width: 6),
+                            Text(
+                              "EXPRESS",
+                              style: GoogleFonts.fredoka(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
 
-          // 🚂 4. Toy Train Slots Track (Magnetic Snapping Line)
-          Positioned(
-            top: 135,
-            left: 16,
-            right: 16,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Cartoon Locomotive Engine
-                Row(
-                  children: [
-                    Container(
+                  const SizedBox(height: 12),
+
+                  // 🚂 Wagon Slots
+                  Row(
+                    children: List.generate(_placedTiles.length, (index) {
+                      final tile = _placedTiles[index];
+                      final isHighlighted = (_highlightedWordIndex == index);
+
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () => _onTapPlacedSlot(index),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              height: 85,
+                              decoration: BoxDecoration(
+                                color: tile != null
+                                    ? tile.cardColor
+                                    : Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isHighlighted
+                                      ? const Color(0xFFFFD700)
+                                      : (tile != null
+                                          ? Colors.white
+                                          : Colors.white30),
+                                  width: isHighlighted ? 3.5 : 2.0,
+                                ),
+                                boxShadow: isHighlighted
+                                    ? [
+                                        const BoxShadow(
+                                          color: Color(0xFFFFD700),
+                                          blurRadius: 20,
+                                          spreadRadius: 2,
+                                        ),
+                                      ]
+                                    : (tile != null
+                                        ? [
+                                            BoxShadow(
+                                              color: tile.cardColor.withValues(alpha: 0.4),
+                                              blurRadius: 12,
+                                            ),
+                                          ]
+                                        : []),
+                              ),
+                              child: tile != null
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            tile.emoji,
+                                            style: const TextStyle(fontSize: 22),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            tile.text,
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.fredoka(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_circle_outline_rounded,
+                                            color: Colors.white.withValues(alpha: 0.4),
+                                            size: 26,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            "Slot ${index + 1}",
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white38,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+
+                  // 💡 Native Translation & Hint Card
+                  const SizedBox(height: 14),
+                  Center(
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                        horizontal: 18,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF2D55), Color(0xFFFF9500)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: Colors.white12),
+                        boxShadow: const [
                           BoxShadow(
-                            color: const Color(0xFFFF2D55).withValues(alpha: 0.4),
-                            blurRadius: 10,
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("🚂", style: TextStyle(fontSize: 24)),
-                          const SizedBox(width: 6),
-                          Text(
-                            "EXPRESS",
-                            style: GoogleFonts.fredoka(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              letterSpacing: 1.1,
+                          const Text("💡", style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              _currentChallenge.getLocalizedMeaning(),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Wagon Slots
-                Row(
-                  children: List.generate(_placedTiles.length, (index) {
-                    final tile = _placedTiles[index];
-                    final isHighlighted = (_highlightedWordIndex == index);
-
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: GestureDetector(
-                          onTap: () => _onTapPlacedSlot(index),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            height: 85,
-                            decoration: BoxDecoration(
-                              color: tile != null
-                                  ? tile.cardColor
-                                  : Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isHighlighted
-                                    ? const Color(0xFFFFD700)
-                                    : (tile != null
-                                        ? Colors.white
-                                        : Colors.white30),
-                                width: isHighlighted ? 3.5 : 2.0,
-                              ),
-                              boxShadow: isHighlighted
-                                  ? [
-                                      const BoxShadow(
-                                        color: Color(0xFFFFD700),
-                                        blurRadius: 20,
-                                        spreadRadius: 2,
-                                      ),
-                                    ]
-                                  : (tile != null
-                                      ? [
-                                          BoxShadow(
-                                            color: tile.cardColor.withValues(alpha: 0.4),
-                                            blurRadius: 12,
-                                          ),
-                                        ]
-                                      : []),
-                            ),
-                            child: tile != null
-                                ? Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          tile.emoji,
-                                          style: const TextStyle(fontSize: 22),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          tile.text,
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.fredoka(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.add_circle_outline_rounded,
-                                          color: Colors.white.withValues(alpha: 0.4),
-                                          size: 26,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "Slot ${index + 1}",
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white38,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
 

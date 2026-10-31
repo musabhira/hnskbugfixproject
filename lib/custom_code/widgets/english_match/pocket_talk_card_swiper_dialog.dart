@@ -167,214 +167,254 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     final Set<String> seenNames = {};
     final Set<String> seenFirstNames = {};
 
-    // ⚡ User Audio Directive: Anyone who has already been sent a PocketTalk invite
-    // (from Day 1, Day 2, or manually) MUST NEVER be shown again in the swiper cards!
-    final Set<String> alreadySentUserIds = {};
-    if (myId.isNotEmpty) {
-      try {
-        final sentMates = await _supabase
-            .from('pocket_mate')
-            .select('receiver_id')
-            .eq('sender_id', myId);
-        for (final sm in (sentMates as List<dynamic>)) {
-          final rid = sm['receiver_id']?.toString() ?? '';
-          if (rid.isNotEmpty) alreadySentUserIds.add(rid);
-        }
-      } catch (_) {}
-
-      try {
-        final sentKey = 'poket_talk_sent_candidates_$myId';
-        final localSent = prefs.getStringList(sentKey) ?? [];
-        for (final item in localSent) {
-          try {
-            final decoded = jsonDecode(item) as Map<String, dynamic>;
-            final uid = decoded['user_id']?.toString() ??
-                decoded['receiver_id']?.toString() ??
-                '';
-            if (uid.isNotEmpty) alreadySentUserIds.add(uid);
-          } catch (_) {}
-        }
-      } catch (_) {}
-    }
-
     try {
-      // 1. Fetch real community profiles
-      final profiles = await _supabase
-          .from('profile')
-          .select('user_id, name, profile_image_url, avatar_config, bio, pocket_score, learning_day')
-          .limit(50);
+      // ⚡ User Audio Directive: Anyone who has already been sent a PocketTalk invite
+      // (from Day 1, Day 2, or manually) MUST NEVER be shown again in the swiper cards!
+      final Set<String> alreadySentUserIds = {};
+      final Set<String> existingPactPeerIds = {};
 
-      final existingList = profiles as List<dynamic>? ?? [];
+      if (myId.isNotEmpty) {
+        // Fast batch query for all active/pending pacts for currentUser (1 single DB roundtrip)
+        try {
+          final pacts = await _supabase
+              .from('pocket_talk_pacts')
+              .select('user1_id, user2_id')
+              .or('user1_id.eq.$myId,user2_id.eq.$myId')
+              .timeout(const Duration(seconds: 3));
+          for (final p in (pacts as List<dynamic>)) {
+            final u1 = p['user1_id']?.toString() ?? '';
+            final u2 = p['user2_id']?.toString() ?? '';
+            if (u1 == myId && u2.isNotEmpty) existingPactPeerIds.add(u2);
+            if (u2 == myId && u1.isNotEmpty) existingPactPeerIds.add(u1);
+          }
+        } catch (_) {}
 
-      for (var p in existingList) {
-        final uid = p['user_id']?.toString().trim() ?? '';
-        if (uid.isEmpty || uid == myId) continue;
-        if (PocketRobotService.isRobotId(uid)) continue;
-        if (seenUserIds.contains(uid)) continue;
-        if (swipedIds.contains(uid)) continue;
-        if (alreadySentUserIds.contains(uid)) continue;
+        try {
+          final sentMates = await _supabase
+              .from('pocket_mate')
+              .select('receiver_id')
+              .eq('sender_id', myId)
+              .timeout(const Duration(seconds: 3));
+          for (final sm in (sentMates as List<dynamic>)) {
+            final rid = sm['receiver_id']?.toString() ?? '';
+            if (rid.isNotEmpty) alreadySentUserIds.add(rid);
+          }
+        } catch (_) {}
 
-        final rawName = (p['name']?.toString() ?? '').trim();
-        if (rawName.isEmpty) continue;
+        try {
+          final sentKey = 'poket_talk_sent_candidates_$myId';
+          final localSent = prefs.getStringList(sentKey) ?? [];
+          for (final item in localSent) {
+            try {
+              final decoded = jsonDecode(item) as Map<String, dynamic>;
+              final uid = decoded['user_id']?.toString() ??
+                  decoded['receiver_id']?.toString() ??
+                  '';
+              if (uid.isNotEmpty) alreadySentUserIds.add(uid);
+            } catch (_) {}
+          }
+        } catch (_) {}
+      }
 
-        // Clean name of zero-width characters, numbers, and symbols
-        final cleanName = rawName
-            .replaceAll(RegExp(r'[\u200B-\u200D\uFEFF]'), '')
-            .replaceAll(RegExp(r'[^a-zA-Z\s]'), '')
-            .trim();
-        if (cleanName.length < 2) continue;
+      // 1. Fetch real community profiles (with 4s timeout)
+      try {
+        final profiles = await _supabase
+            .from('profile')
+            .select('user_id, name, profile_image_url, avatar_config, bio, pocket_score, learning_day')
+            .limit(50)
+            .timeout(const Duration(seconds: 4));
 
-        final fullNameLower = cleanName.toLowerCase();
+        final existingList = profiles as List<dynamic>? ?? [];
+
+        for (var p in existingList) {
+          final uid = p['user_id']?.toString().trim() ?? '';
+          if (uid.isEmpty || uid == myId) continue;
+          if (PocketRobotService.isRobotId(uid)) continue;
+          if (seenUserIds.contains(uid)) continue;
+          if (swipedIds.contains(uid)) continue;
+          if (alreadySentUserIds.contains(uid)) continue;
+          if (existingPactPeerIds.contains(uid)) continue;
+
+          final rawName = (p['name']?.toString() ?? '').trim();
+          if (rawName.isEmpty) continue;
+
+          // Clean name of zero-width characters, numbers, and symbols
+          final cleanName = rawName
+              .replaceAll(RegExp(r'[\u200B-\u200D\uFEFF]'), '')
+              .replaceAll(RegExp(r'[^a-zA-Z\s]'), '')
+              .trim();
+          if (cleanName.length < 2) continue;
+
+          final fullNameLower = cleanName.toLowerCase();
+          final firstNameLower = fullNameLower.split(RegExp(r'\s+')).first;
+
+          // Block generic dummy names from repeating
+          const blockedNames = {
+            'community', 'learner', 'user', 'test', 'tester', 'admin',
+            'unknown', 'anonymous', 'guest', 'student', 'demo', 'null', 'sample'
+          };
+          if (blockedNames.contains(firstNameLower) || blockedNames.contains(fullNameLower)) {
+            continue;
+          }
+
+          // Strict first-name and full-name de-duplication: NO TWO USERS SHARE SAME FIRST NAME
+          if (seenNames.contains(fullNameLower) || seenFirstNames.contains(firstNameLower)) {
+            continue;
+          }
+
+          seenUserIds.add(uid);
+          seenNames.add(fullNameLower);
+          seenFirstNames.add(firstNameLower);
+
+          // Candidate's level & avatar strictly match their real level
+          final rawScore = (p['pocket_score'] as num?)?.toInt() ?? 0;
+          final rawDay = (p['learning_day'] as num?)?.toInt();
+          final calculatedLevel = PocketScoreLevelEngine.getLevelFromScore(rawScore);
+          final candidateDay = (rawDay != null && rawDay > 0)
+              ? rawDay.clamp(1, 90)
+              : calculatedLevel.clamp(1, 90);
+
+          VectorAvatarConfig config;
+          if (p['avatar_config'] != null) {
+            try {
+              config = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(p['avatar_config']));
+            } catch (_) {
+              config = VectorAvatarConfig.getEvolutionAvatarForStage(candidateDay);
+            }
+          } else {
+            config = VectorAvatarConfig.getEvolutionAvatarForStage(candidateDay);
+          }
+
+          list.add(
+            PocketTalkCandidate(
+              id: uid,
+              userId: uid,
+              name: cleanName,
+              avatarUrl: p['profile_image_url']?.toString(),
+              avatarConfig: config,
+              dayLevel: candidateDay,
+              pocketScore: rawScore > 0 ? rawScore : candidateDay * 120,
+              speciesTitle: _getSpeciesTitle(config.species, candidateDay),
+              goals: _getLearnerGoal(candidateDay),
+              bio: (p['bio'] != null && p['bio'].toString().isNotEmpty)
+                  ? p['bio'].toString()
+                  : 'Passionate about English fluency & 4-day spoken challenges.',
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error fetching candidate profiles: $e');
+      }
+
+      // 2. Supplement with distinct unique Cyber Cat & Mythic Evolution Deck candidates
+      // Expanded unique name pool with zero repetition across first names
+      final samplePool = [
+        'Aarav Sharma', 'Meera Nair', 'Rohan Varma', 'Ananya Menon',
+        'Devika Pillai', 'Kiran Kumar', 'Siddharth Roy', 'Sneha Patel',
+        'Aditi Rao', 'Farhan Ali', 'Tara Joshi', 'Vivek Iyer',
+        'Nandita Bose', 'Arjun Das', 'Rhea Sen', 'Gautam Nambiar',
+        'Pooja Hegde', 'Nikhil Chandran', 'Aparna Balan', 'Kavya Madhavan',
+        'Pranav Mohan', 'Lakshmi Prasad', 'Vikram Seth', 'Sanjana Reddy',
+        'Harish Kurup', 'Deepa Warrier', 'Suraj Varma', 'Gayathri Suresh',
+        'Ashwin Menon', 'Reshma R Nair', 'Naveen George', 'Anjali Thomas',
+      ];
+
+      final stageDistribution = [
+        14, 28, 42, 15, 35, 21, 50, 12, 65, 18, 77, 31, 25, 82, 44,
+        19, 58, 22, 39, 48, 16, 88, 27, 33, 61, 53, 29, 70, 24, 38, 45, 14
+      ];
+
+      for (int i = 0; i < samplePool.length; i++) {
+        if (list.length >= 28) break;
+        final name = samplePool[i].trim();
+        final fullNameLower = name.toLowerCase();
         final firstNameLower = fullNameLower.split(RegExp(r'\s+')).first;
 
-        // Block generic dummy names from repeating
-        const blockedNames = {
-          'community', 'learner', 'user', 'test', 'tester', 'admin',
-          'unknown', 'anonymous', 'guest', 'student', 'demo', 'null', 'sample'
-        };
-        if (blockedNames.contains(firstNameLower) || blockedNames.contains(fullNameLower)) {
-          continue;
-        }
-
-        // Strict first-name and full-name de-duplication: NO TWO USERS SHARE SAME FIRST NAME
         if (seenNames.contains(fullNameLower) || seenFirstNames.contains(firstNameLower)) {
           continue;
         }
 
-        // Check if existing pact (pending OR accepted: do not show again!)
-        if (myId.isNotEmpty) {
-          final pact = await PocketTrophyService.getPact(myId, uid);
-          if (pact != null) continue;
-        }
+        final stage = stageDistribution[i % stageDistribution.length];
+        final dummyUid = 'candidate_deck_${stage}_${name.replaceAll(' ', '_')}';
+        if (seenUserIds.contains(dummyUid)) continue;
+        if (swipedIds.contains(dummyUid)) continue;
 
-        seenUserIds.add(uid);
         seenNames.add(fullNameLower);
         seenFirstNames.add(firstNameLower);
+        seenUserIds.add(dummyUid);
 
-        // Candidate's level & avatar strictly match their real level
-        final rawScore = (p['pocket_score'] as num?)?.toInt() ?? 0;
-        final rawDay = (p['learning_day'] as num?)?.toInt();
-        final calculatedLevel = PocketScoreLevelEngine.getLevelFromScore(rawScore);
-        final candidateDay = (rawDay != null && rawDay > 0)
-            ? rawDay.clamp(1, 90)
-            : calculatedLevel.clamp(1, 90);
-
-        VectorAvatarConfig config;
-        if (p['avatar_config'] != null) {
-          try {
-            config = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(p['avatar_config']));
-          } catch (_) {
-            config = VectorAvatarConfig.getEvolutionAvatarForStage(candidateDay);
-          }
-        } else {
-          config = VectorAvatarConfig.getEvolutionAvatarForStage(candidateDay);
-        }
-
+        final config = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
         list.add(
           PocketTalkCandidate(
-            id: uid,
-            userId: uid,
-            name: cleanName,
-            avatarUrl: p['profile_image_url']?.toString(),
+            id: dummyUid,
+            userId: dummyUid,
+            name: name,
             avatarConfig: config,
-            dayLevel: candidateDay,
-            pocketScore: rawScore > 0 ? rawScore : candidateDay * 120,
-            speciesTitle: _getSpeciesTitle(config.species, candidateDay),
-            goals: _getLearnerGoal(candidateDay),
-            bio: (p['bio'] != null && p['bio'].toString().isNotEmpty)
-                ? p['bio'].toString()
-                : 'Passionate about English fluency & 4-day spoken challenges.',
+            dayLevel: stage,
+            pocketScore: stage * 135 + 40,
+            speciesTitle: _getSpeciesTitle(config.species, stage),
+            goals: _getLearnerGoal(stage),
+            bio: 'Practicing spoken conversation daily. Excited to complete 4-day pacts and mint Gold Trophies! 🏆',
           ),
         );
       }
-    } catch (e) {
-      debugPrint('Error fetching candidate profiles: $e');
-    }
 
-    // 2. Supplement with distinct unique Cyber Cat & Mythic Evolution Deck candidates
-    // Expanded unique name pool with zero repetition across first names
-    final samplePool = [
-      'Aarav Sharma', 'Meera Nair', 'Rohan Varma', 'Ananya Menon',
-      'Devika Pillai', 'Kiran Kumar', 'Siddharth Roy', 'Sneha Patel',
-      'Aditi Rao', 'Farhan Ali', 'Tara Joshi', 'Vivek Iyer',
-      'Nandita Bose', 'Arjun Das', 'Rhea Sen', 'Gautam Nambiar',
-      'Pooja Hegde', 'Nikhil Chandran', 'Aparna Balan', 'Kavya Madhavan',
-      'Pranav Mohan', 'Lakshmi Prasad', 'Vikram Seth', 'Sanjana Reddy',
-      'Harish Kurup', 'Deepa Warrier', 'Suraj Varma', 'Gayathri Suresh',
-      'Ashwin Menon', 'Reshma R Nair', 'Naveen George', 'Anjali Thomas',
-    ];
-
-    final stageDistribution = [
-      14, 28, 42, 15, 35, 21, 50, 12, 65, 18, 77, 31, 25, 82, 44,
-      19, 58, 22, 39, 48, 16, 88, 27, 33, 61, 53, 29, 70, 24, 38, 45, 14
-    ];
-
-    for (int i = 0; i < samplePool.length; i++) {
-      if (list.length >= 28) break;
-      final name = samplePool[i].trim();
-      final fullNameLower = name.toLowerCase();
-      final firstNameLower = fullNameLower.split(RegExp(r'\s+')).first;
-
-      if (seenNames.contains(fullNameLower) || seenFirstNames.contains(firstNameLower)) {
-        continue;
+      // If all candidates were previously swiped and deck is dry, cycle swiped cache
+      if (list.isEmpty && swipedIds.isNotEmpty) {
+        await prefs.remove(swipedKey);
+        swipedIds.clear();
+        for (int i = 0; i < samplePool.length; i++) {
+          if (list.length >= 20) break;
+          final name = samplePool[i].trim();
+          final stage = stageDistribution[i % stageDistribution.length];
+          final dummyUid = 'candidate_deck_${stage}_${name.replaceAll(' ', '_')}';
+          final config = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
+          list.add(
+            PocketTalkCandidate(
+              id: dummyUid,
+              userId: dummyUid,
+              name: name,
+              avatarConfig: config,
+              dayLevel: stage,
+              pocketScore: stage * 135 + 40,
+              speciesTitle: _getSpeciesTitle(config.species, stage),
+              goals: _getLearnerGoal(stage),
+              bio: 'Practicing spoken conversation daily. Excited to complete 4-day pacts and mint Gold Trophies! 🏆',
+            ),
+          );
+        }
       }
 
-      final stage = stageDistribution[i % stageDistribution.length];
-      final dummyUid = 'candidate_deck_${stage}_${name.replaceAll(' ', '_')}';
-      if (seenUserIds.contains(dummyUid)) continue;
-      if (swipedIds.contains(dummyUid)) continue;
+      // 🌟 Thoroughly shuffle so community profiles and diverse archetypes are mixed with zero repetition
+      if (list.isNotEmpty) {
+        list.shuffle(math.Random(DateTime.now().millisecondsSinceEpoch));
 
-      seenNames.add(fullNameLower);
-      seenFirstNames.add(firstNameLower);
-      seenUserIds.add(dummyUid);
-
-      final config = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
-      list.add(
-        PocketTalkCandidate(
-          id: dummyUid,
-          userId: dummyUid,
-          name: name,
-          avatarConfig: config,
-          dayLevel: stage,
-          pocketScore: stage * 135 + 40,
-          speciesTitle: _getSpeciesTitle(config.species, stage),
-          goals: _getLearnerGoal(stage),
-          bio: 'Practicing spoken conversation daily. Excited to complete 4-day pacts and mint Gold Trophies! 🏆',
-        ),
-      );
-    }
-
-    // If all candidates were previously swiped and deck is dry, cycle swiped cache
-    if (list.isEmpty && swipedIds.isNotEmpty) {
-      await prefs.remove(swipedKey);
-      return _loadCandidates();
-    }
-
-    // 🌟 Thoroughly shuffle so community profiles and diverse archetypes are mixed with zero repetition
-    list.shuffle(math.Random(DateTime.now().millisecondsSinceEpoch));
-
-    // 🌟 Sanity check: Guarantee no two adjacent cards share the same first name or same dayLevel
-    for (int i = 0; i < list.length - 1; i++) {
-      final curFirst = list[i].name.split(RegExp(r'\s+')).first.toLowerCase();
-      final nextFirst = list[i + 1].name.split(RegExp(r'\s+')).first.toLowerCase();
-      if (curFirst == nextFirst || list[i].dayLevel == list[i + 1].dayLevel) {
-        for (int j = i + 2; j < list.length; j++) {
-          final candFirst = list[j].name.split(RegExp(r'\s+')).first.toLowerCase();
-          if (candFirst != curFirst && list[j].dayLevel != list[i].dayLevel) {
-            final temp = list[i + 1];
-            list[i + 1] = list[j];
-            list[j] = temp;
-            break;
+        // 🌟 Sanity check: Guarantee no two adjacent cards share the same first name or same dayLevel
+        for (int i = 0; i < list.length - 1; i++) {
+          final curFirst = list[i].name.split(RegExp(r'\s+')).first.toLowerCase();
+          final nextFirst = list[i + 1].name.split(RegExp(r'\s+')).first.toLowerCase();
+          if (curFirst == nextFirst || list[i].dayLevel == list[i + 1].dayLevel) {
+            for (int j = i + 2; j < list.length; j++) {
+              final candFirst = list[j].name.split(RegExp(r'\s+')).first.toLowerCase();
+              if (candFirst != curFirst && list[j].dayLevel != list[i].dayLevel) {
+                final temp = list[i + 1];
+                list[i + 1] = list[j];
+                list[j] = temp;
+                break;
+              }
+            }
           }
         }
       }
-    }
-
-    if (mounted) {
-      setState(() {
-        _candidates = list;
-        _isLoading = false;
-      });
+    } catch (e) {
+      debugPrint('Error in _loadCandidates: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _candidates = list;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -837,7 +877,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Poketalk Cards',
+                  'PoketTalk Cards',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

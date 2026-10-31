@@ -3883,35 +3883,8 @@ Draft: "$draft"''';
     if (!pact.isAccepted) {
       final isSender = _currentUserId == pact.initiatorId;
       if (isSender) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A),
-            border: Border(
-              bottom: BorderSide(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              const Text('⚡', style: TextStyle(fontSize: 15)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'PocketTalk 4-Day Pact Invite Sent • Waiting for ${widget.groupName} to accept 🤝',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white70,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+        // User Audio Directive: Don't show top pact banner until recipient accepts
+        return const SizedBox.shrink();
       } else {
         return Container(
           width: double.infinity,
@@ -3929,7 +3902,7 @@ Draft: "$draft"''';
           ),
           child: Row(
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 18)),
+              const Text('⚡', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -3937,7 +3910,7 @@ Draft: "$draft"''';
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'PocketTalk 4-Day Spoken Request',
+                      'PoketTalk 4-Day Spoken Request',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFF38BDF8),
                         fontSize: 11.5,
@@ -3945,10 +3918,10 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      '15m/day for 4 days • English only • +1 Trophy',
+                      'Chat daily for 4 days • English only • +1 Silver Trophy 🥈',
                       style: GoogleFonts.inter(
                         color: Colors.white60,
-                        fontSize: 10,
+                        fontSize: 9.5,
                       ),
                     ),
                   ],
@@ -3972,7 +3945,7 @@ Draft: "$draft"''';
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content:
-                            Text('Pocket Talk request declined • 0 penalty'),
+                            Text('Poket Talk request declined'),
                         backgroundColor: Colors.grey,
                       ),
                     );
@@ -4007,14 +3980,14 @@ Draft: "$draft"''';
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                            '🤝 PocketTalk 4-Day Pact Accepted! Day 1 starts now.'),
+                            '🤝 PoketTalk 4-Day Pact Accepted! Day 1 starts now.'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00FFCC),
+                  backgroundColor: const Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -4025,7 +3998,7 @@ Draft: "$draft"''';
                   'Accept 🤝',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 11.5,
                   ),
                 ),
               ),
@@ -4065,86 +4038,54 @@ Draft: "$draft"''';
             color: isCompleted
                 ? const Color(0xFF94A3B8).withValues(alpha: 0.6)
                 : const Color(0xFFFFD700).withValues(alpha: 0.4),
-            width: 1.2,
+            width: 1.0,
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Top Row: Header & Action Badges
+          // Top Row: Minimal Header, Trophy Badge & Rules Action
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
+              Text(
+                isCompleted ? '🥈 POKETTALK MASTERED' : '⚡ POKETTALK 4-DAY PACT',
+                style: GoogleFonts.outfit(
                   color: isCompleted
-                      ? const Color(0xFF94A3B8).withValues(alpha: 0.25)
-                      : const Color(0xFFFFD700).withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isCompleted
-                        ? const Color(0xFF94A3B8)
-                        : const Color(0xFFFFD700),
-                    width: 1.1,
-                  ),
+                      ? const Color(0xFFE2E8F0)
+                      : const Color(0xFFFFD700),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isMates
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.amber.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isCompleted ? '🥈' : '🎙️',
-                  style: const TextStyle(fontSize: 12),
+                  isMates ? 'MATES 🤝' : 'SILVER TROPHY 🥈',
+                  style: GoogleFonts.inter(
+                    color: isMates ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
+                    fontSize: 8.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Row(
-                  children: [
-                    Text(
-                      isCompleted
-                          ? 'POCKET TALK MASTERED 🥈'
-                          : 'POCKET TALK 4-DAY PACT',
-                      style: GoogleFonts.outfit(
-                        color: isCompleted
-                            ? const Color(0xFFE2E8F0)
-                            : const Color(0xFFFFD700),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: isMates
-                            ? Colors.green.withValues(alpha: 0.2)
-                            : Colors.amber.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        isMates ? 'VERIFIED MATES 🤝' : 'SILVER TROPHY PACT 🥈',
-                        style: GoogleFonts.inter(
-                          color: isMates
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFFFBBF24),
-                          fontSize: 8.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Rules Info Button
+              const Spacer(),
+              // Rules button
               InkWell(
                 onTap: _showPocketTalkRulesModal,
                 borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  margin: const EdgeInsets.only(right: 6),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
@@ -4153,8 +4094,7 @@ Draft: "$draft"''';
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.info_outline_rounded,
-                          color: Colors.white70, size: 11),
+                      const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 10),
                       const SizedBox(width: 3),
                       Text(
                         'RULES',
@@ -4168,20 +4108,17 @@ Draft: "$draft"''';
                   ),
                 ),
               ),
-              // Swap Button (Day 1 only)
-              if (currentStreak <= 1 && !isCompleted)
+              if (currentStreak <= 1 && !isCompleted) ...[
+                const SizedBox(width: 5),
                 InkWell(
                   onTap: () => _showDay1SwapPartnerDialog(otherUserId),
                   borderRadius: BorderRadius.circular(6),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                          color: const Color(0xFF818CF8).withValues(alpha: 0.5),
-                          width: 0.8),
+                      border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.5), width: 0.8),
                     ),
                     child: Text(
                       'SWAP 🔄',
@@ -4193,11 +4130,12 @@ Draft: "$draft"''';
                     ),
                   ),
                 ),
+              ],
             ],
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 5),
 
-          // 📊 Interactive Step-by-Step Process Dashboard Row (User Audio Directive!)
+          // 📊 Interactive Step-by-Step Row: Day 1-4, Raid, Fight
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -4207,19 +4145,16 @@ Draft: "$draft"''';
                   final dayNum = i + 1;
                   final isDone = currentStreak >= dayNum;
                   return Container(
-                    margin: const EdgeInsets.only(right: 5),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    margin: const EdgeInsets.only(right: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                     decoration: BoxDecoration(
                       color: isDone
                           ? const Color(0xFF10B981).withValues(alpha: 0.22)
                           : Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                       border: Border.all(
-                        color: isDone
-                            ? const Color(0xFF10B981)
-                            : Colors.white24,
-                        width: 0.9,
+                        color: isDone ? const Color(0xFF10B981) : Colors.white24,
+                        width: 0.8,
                       ),
                     ),
                     child: Row(
@@ -4229,19 +4164,16 @@ Draft: "$draft"''';
                           isDone
                               ? Icons.check_circle_rounded
                               : Icons.radio_button_unchecked_rounded,
-                          size: 11,
-                          color: isDone
-                              ? const Color(0xFF10B981)
-                              : Colors.white54,
+                          size: 10,
+                          color: isDone ? const Color(0xFF10B981) : Colors.white54,
                         ),
-                        const SizedBox(width: 3.5),
+                        const SizedBox(width: 3),
                         Text(
                           'Day $dayNum',
                           style: GoogleFonts.outfit(
                             color: isDone ? Colors.white : Colors.white60,
-                            fontWeight:
-                                isDone ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 10,
+                            fontWeight: isDone ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 9.5,
                           ),
                         ),
                       ],
@@ -4249,103 +4181,101 @@ Draft: "$draft"''';
                   );
                 }),
 
-                // Citadel Attack Tick
-                Container(
-                  margin: const EdgeInsets.only(right: 5),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: hasAttacked
-                        ? const Color(0xFF10B981).withValues(alpha: 0.22)
-                        : const Color(0xFFEF4444).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
+                // Citadel Attack Tick (Interactive: Tapping navigates to Citadel Raid!)
+                InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    PocketCitadelAttackPage.openForUser(context, userId: otherUserId);
+                  },
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                    decoration: BoxDecoration(
                       color: hasAttacked
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444).withValues(alpha: 0.6),
-                      width: 0.9,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(hasAttacked ? '⚔️' : '⚔️',
-                          style: const TextStyle(fontSize: 10)),
-                      const SizedBox(width: 3.5),
-                      Text(
-                        hasAttacked ? 'Raid Done ✓' : '1 Raid Needed',
-                        style: GoogleFonts.outfit(
-                          color: hasAttacked
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFFFCA5A5),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
+                          ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                          : const Color(0xFFEF4444).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                        color: hasAttacked
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444).withValues(alpha: 0.7),
+                        width: 0.8,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⚔️', style: TextStyle(fontSize: 9.5)),
+                        const SizedBox(width: 3),
+                        Text(
+                          hasAttacked ? 'Raid Done ✓' : '1 Raid Needed ➔',
+                          style: GoogleFonts.outfit(
+                            color: hasAttacked ? const Color(0xFF4ADE80) : const Color(0xFFFCA5A5),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
-                // Citadel Fight Tick
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: hasFought
-                        ? const Color(0xFF10B981).withValues(alpha: 0.22)
-                        : const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
+                // Citadel Fight Tick (Interactive: Tapping navigates to Citadel Fight!)
+                InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    PocketCitadelAttackPage.openForUser(context, userId: otherUserId);
+                  },
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                    decoration: BoxDecoration(
                       color: hasFought
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFF59E0B).withValues(alpha: 0.6),
-                      width: 0.9,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(hasFought ? '🥊' : '🥊',
-                          style: const TextStyle(fontSize: 10)),
-                      const SizedBox(width: 3.5),
-                      Text(
-                        hasFought ? 'Fight Done ✓' : '1 Fight Needed',
-                        style: GoogleFonts.outfit(
-                          color: hasFought
-                              ? const Color(0xFF4ADE80)
-                              : const Color(0xFFFCD34D),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
+                          ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                          : const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                        color: hasFought
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF59E0B).withValues(alpha: 0.7),
+                        width: 0.8,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🥊', style: TextStyle(fontSize: 9.5)),
+                        const SizedBox(width: 3),
+                        Text(
+                          hasFought ? 'Fight Done ✓' : '1 Fight Needed ➔',
+                          style: GoogleFonts.outfit(
+                            color: hasFought ? const Color(0xFF4ADE80) : const Color(0xFFFCD34D),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
 
           // Bottom Dashboard Summary text
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  isCompleted
-                      ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
-                      : currentStreak >= 4
-                          ? '⚡ All 4 Days Chat Done! Complete ${!hasAttacked ? '⚔️ Citadel Raid' : ''}${(!hasAttacked && !hasFought) ? ' & ' : ''}${!hasFought ? '🥊 Fight Duel' : ''} to mint 🥈 Silver Trophy!'
-                          : '💬 Day $currentStreak/4 Chatting • Complete 4 days + 1 Raid + 1 Fight to unlock 🥈 Silver Trophy',
-                  style: GoogleFonts.inter(
-                    color: isCompleted
-                        ? const Color(0xFFE2E8F0)
-                        : const Color(0xFF94A3B8),
-                    fontSize: 9.5,
-                    fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            isCompleted
+                ? '🥈 4-Day Spoken Pact Mastered! Silver Trophy awarded to your profile.'
+                : currentStreak >= 4
+                    ? '⚡ 4 Days Chat Done! Tap Raid / Fight to finish and mint 🥈 Silver Trophy!'
+                    : '💬 Day $currentStreak/4 Chatting • Complete 4 days + 1 Raid + 1 Fight for 🥈 Silver Trophy',
+            style: GoogleFonts.inter(
+              color: isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFF94A3B8),
+              fontSize: 9.0,
+              fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
 
           if (isCompleted && !isMates) ...[

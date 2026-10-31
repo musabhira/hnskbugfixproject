@@ -109,10 +109,9 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
           isUnder17: isKid,
         );
 
-        // Normalize ranks 1..N for Mates leaderboard
+        // Normalize ranks 1..N for Mates leaderboard while preserving REAL globalRank
         for (int i = 0; i < mates.length; i++) {
           mates[i] = mates[i].copyWith(
-            globalRank: i + 1,
             matesRank: i + 1,
           );
         }
@@ -121,7 +120,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
         final myId = _effectiveUserId;
         for (final u in mates) {
           if (u.userId == myId) {
-            myRank = u.globalRank;
+            myRank = u.matesRank ?? u.globalRank;
             break;
           }
         }
@@ -938,9 +937,10 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
 
   /// 📇 Minimal, High-Speed Leaderboard Tile
   Widget _buildRankTile(PocketRankedUser user) {
-    final isRank1 = user.globalRank == 1;
-    final isRank2 = user.globalRank == 2;
-    final isRank3 = user.globalRank == 3;
+    final effectiveRank = (widget.isMatesOnly ? user.matesRank : user.globalRank) ?? user.globalRank;
+    final isRank1 = effectiveRank == 1;
+    final isRank2 = effectiveRank == 2;
+    final isRank3 = effectiveRank == 3;
     final isMe = user.isCurrentUser;
 
     Color rankColor;
@@ -957,7 +957,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       rankText = '3';
     } else {
       rankColor = const Color(0xFF94A3B8); // Clean minimal slate
-      rankText = '${user.globalRank}';
+      rankText = '$effectiveRank';
     }
 
     return Container(
@@ -1014,11 +1014,11 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 // 2. Avatar with Distinct Rings for Ranks 1 to 10 (Gold for 1, Silver for 2, Bronze for 3, Rank Ring for 4-10)
                 Builder(
                   builder: (context) {
-                    final rankTheme = PocketTopRankTheme.getThemeForRank(user.globalRank);
+                    final rankTheme = PocketTopRankTheme.getThemeForRank(effectiveRank);
                     final Color ringColor = rankTheme?.ringColor ??
                         (isMe ? const Color(0xFF10B981) : Colors.white24);
                     final double ringWidth = rankTheme != null
-                        ? (user.globalRank == 1 ? 2.2 : 1.4)
+                        ? (effectiveRank == 1 ? 2.2 : 1.4)
                         : (isMe ? 1.4 : 0.8);
 
                     return Container(

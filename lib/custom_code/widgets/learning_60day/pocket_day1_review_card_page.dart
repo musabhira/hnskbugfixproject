@@ -557,7 +557,6 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
               elevation: 4,
             ),
             onPressed: () {
-              HapticFeedback.heavyImpact();
               widget.onProceedToNextDay?.call();
               Navigator.pop(context);
             },
@@ -834,7 +833,6 @@ class _PocketDayReviewBottomSheetWidgetState
                 ),
               ),
               onPressed: () {
-                HapticFeedback.heavyImpact();
                 widget.onProceedToNextDay?.call();
                 Navigator.pop(context, true);
               },

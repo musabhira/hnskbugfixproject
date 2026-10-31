@@ -755,8 +755,6 @@ class _ConversationTileState extends State<ConversationTile> {
         ? Colors.white.withValues(alpha: 0.9)
         : Colors.black.withValues(alpha: 0.85);
 
-    final isPactActive = _cachedPact?.isAccepted == true && !_cachedPact!.isForfeited;
-
     final tileContent = material.Material(
       color: Colors.transparent,
       child: Container(
@@ -883,36 +881,7 @@ class _ConversationTileState extends State<ConversationTile> {
                           child: _buildAvatar(isDark),
                         ),
                       ),
-                      if (_cachedPact != null &&
-                          _cachedPact!.isAccepted &&
-                          !_cachedPact!.isForfeited)
-                        Positioned(
-                          top: -2,
-                          right: -2,
-                          child: Container(
-                            padding: const EdgeInsets.all(2.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFFFD700),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFFD700)
-                                      .withValues(alpha: 0.5),
-                                  blurRadius: 4,
-                                  spreadRadius: 0.5,
-                                ),
-                              ],
-                            ),
-                            child: const Text(
-                              '⚡',
-                              style: TextStyle(fontSize: 8.5),
-                            ),
-                          ),
-                        ),
+                        // 🚫 User Audio Directive: Removed ⚡ icon overlay on top of green avatar ring
                     ],
                   ),
 
@@ -1015,61 +984,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                     },
                                   ),
                                 ],
-                                if (isPactActive)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 6),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 7, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFFFF8F00), Color(0xFFFFB300)],
-                                      ),
-                                      borderRadius: BorderRadius.circular(6),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFFFB300).withValues(alpha: 0.3),
-                                          blurRadius: 4,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text('🔥', style: TextStyle(fontSize: 10)),
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          'Day ${_cachedPact!.streakDays}/4 🏆',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 9.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (_isPendingSent)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 6),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 5, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
-                                        width: 0.8,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Request Sent ⏳',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFFFFFC00),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 9.5,
-                                      ),
-                                    ),
-                                  ),
+                                // 🚫 User Audio Directive: Removed 'Day x/4' and 'Request Sent' badges from tile list (shown inside chat only)
                                 // 🔥 Snapchat-style Pocket Streak Badge
                                 Builder(
                                   builder: (context) {

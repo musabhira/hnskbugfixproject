@@ -20,6 +20,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_world_mode_selection_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_pattern_lock.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -88,6 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() => _isProcessing = true);
     
     try {
+      PocketKidsService.resetSession();
       // Set a timeout to ensure responsiveness even if network is slow
       await SupaFlow.client.auth.signOut().timeout(const Duration(seconds: 2));
     } catch (e) {
@@ -550,6 +553,165 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showResetAdultProgressDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 28),
+            const SizedBox(width: 10),
+            Text(
+              'Reset Target Progress',
+              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to restart from Day 1?\n\n'
+          'This will reset your Pocket Score (PS) to 0, return your 90-day learning trail back to Day 1, and clear your unlocked house stages.\n\n'
+          'This action cannot be undone.',
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() => _isProcessing = true);
+              try {
+                final myId = SupaFlow.client.auth.currentUser?.id;
+                if (myId != null && myId.isNotEmpty) {
+                  await PocketFortressDefenseService.setUnifiedScore(0, myId);
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('learning_day_$myId');
+                  await prefs.remove('pocket_learning_user_stage_$myId');
+                  await prefs.remove('learning_streak_$myId');
+                  await prefs.remove('learning_last_completed_day_$myId');
+                  await prefs.remove('user_pocket_score_$myId');
+
+                  final allKeys = prefs.getKeys().toList();
+                  for (final k in allKeys) {
+                    if (k.startsWith('pocket_day_${myId}_') || k.startsWith('learning_day_${myId}_')) {
+                      await prefs.remove(k);
+                    }
+                  }
+
+                  await SupaFlow.client.from('profile').update({
+                    'pocket_score': 0,
+                    'learning_points': 0,
+                    'xp': 0,
+                    'learning_day': 1,
+                    'learning_stage': 1,
+                    'learning_streak': 1,
+                    'level': 1,
+                  }).eq('user_id', myId);
+                }
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Target progress and Pocket Score have been reset to Day 1.'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error resetting progress: $e'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                }
+              } finally {
+                if (mounted) setState(() => _isProcessing = false);
+              }
+            },
+            child: Text('Reset Progress', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showResetKidsProgressDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.child_care_rounded, color: Color(0xFFFF9500), size: 28),
+            const SizedBox(width: 10),
+            Text(
+              'Reset Kids Progress',
+              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to reset Kids World progress?\n\n'
+          'This will return all games and daily modules to Day 1, reset Kids Score (KS) to 0, and clear collected stars.\n\n'
+          'This action cannot be undone.',
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9500),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() => _isProcessing = true);
+              try {
+                await PocketKidsService.resetKidsProgress();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Kids World progress has been reset to Day 1.'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error resetting kids progress: $e'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                }
+              } finally {
+                if (mounted) setState(() => _isProcessing = false);
+              }
+            },
+            child: Text('Reset Kids', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
@@ -1547,6 +1709,26 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: 'Invite Friends & Family',
                 subtitle: 'Share Pocket Mates & practice English together',
                 onTap: _showInviteFriendsModal,
+              ),
+              const SizedBox(height: 20),
+
+              // 🔄 Reset & Course Progression
+              const _SectionHeader(title: 'Course Progression & Reset'),
+              _SettingsTile(
+                icon: Icons.restart_alt_rounded,
+                iconColor: const Color(0xFFEF4444),
+                title: 'Reset Target Progress & Pocket Score',
+                subtitle: 'Restart 90-day learning trail from Day 1 and reset Pocket Score to 0',
+                onTap: _showResetAdultProgressDialog,
+                textColor: Colors.white,
+              ),
+              _SettingsTile(
+                icon: Icons.child_care_rounded,
+                iconColor: const Color(0xFFFF9500),
+                title: 'Reset Kids World Progress',
+                subtitle: 'Return Kids syllabus to Day 1 and reset Kids Score (KS) & stars to 0',
+                onTap: _showResetKidsProgressDialog,
+                textColor: Colors.white,
               ),
               const SizedBox(height: 20),
 

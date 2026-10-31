@@ -328,6 +328,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   int _lastCompletedDay = 0;
   String? _lastCompletedDateStr;
   final Set<int> _completedDays = {};
+  bool _hasCheckedConsistencyToday = false;
   final Map<int, String> _completedDates = {};
   int _levelRivalShuffleSeed = 0;
 
@@ -569,12 +570,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         }
 
         // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
-        final consistencyRes = await PocketFortressDefenseService.checkDailyConsistency(
-          prog.currentDay,
-          prog.streakDays,
-        );
-        if (consistencyRes.didDowngrade && mounted) {
-          _showConsistencyLossDialog(consistencyRes);
+        if (!_hasCheckedConsistencyToday) {
+          _hasCheckedConsistencyToday = true;
+          final consistencyRes = await PocketFortressDefenseService.checkDailyConsistency(
+            prog.currentDay,
+            prog.streakDays,
+          );
+          if (consistencyRes.didDowngrade && mounted) {
+            _showConsistencyLossDialog(consistencyRes);
+          }
         }
       });
     }
@@ -4208,7 +4212,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// 🚨 Consistency / Focus Loss Dialog (Audio Requirement!)
   void _showConsistencyLossDialog(ConsistencyCheckResult res) {
-    HapticFeedback.vibrate();
+    HapticFeedback.mediumImpact();
     showDialog(
       context: context,
       barrierDismissible: false,

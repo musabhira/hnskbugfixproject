@@ -27,29 +27,6 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
   final List<Map<String, dynamic>> _plans = [
     {
-      'id': 'free',
-      'name': 'Free Learner',
-      'tagline': 'Daily English with Cooldown Timer & Ads',
-      'monthlyPrice': 0,
-      'retailPrice': 0,
-      'discountBadge': null,
-      'periodText': '',
-      'color': const Color(0xFF6B7280),
-      'gradientColors': [Color(0xFF374151), Color(0xFF1F2937)],
-      'icon': Icons.public_rounded,
-      'popular': false,
-      'features': [
-        {'text': '1 House Level per Day (Midnight Timer)', 'included': true},
-        {'text': '1-on-1 English Practice (Ad-Supported)', 'included': true},
-        {'text': '15-Minute Daily Speaking Chat Limit', 'included': true},
-        {'text': '100% Ad-Free Experience', 'included': false},
-        {'text': '⚡ Instant Binge Mode (All 90 Houses)', 'included': false},
-        {'text': '👑 Golden Verified VIP Tick & Badge', 'included': false},
-        {'text': '🛡️ Presidential Escort Guard (10 Qs)', 'included': false},
-        {'text': '📜 Official Day 90 C2 Diploma Included', 'included': false},
-      ],
-    },
-    {
       'id': 'monthly',
       'name': 'Poket VIP Monthly',
       'tagline': 'Binge Mode • 100% Ad-Free Everywhere',
@@ -186,22 +163,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   Future<void> _selectPlan(String planId) async {
     if (planId == _currentPlan) return;
 
-    final plan = _plans.firstWhere((p) => p['id'] == planId);
-    final price = _isYearly ? plan['yearlyPrice'] : plan['monthlyPrice'];
-
-    if (price == 0) {
-      // Downgrade to free
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('handskill_plan', 'free');
-      await prefs.setBool('is_vip', false);
-      setState(() => _currentPlan = 'free');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Downgraded to Free plan')),
-        );
-      }
-      return;
-    }
+    final plan = _plans.firstWhere((p) => p['id'] == planId, orElse: () => _plans.first);
+    final price = plan['monthlyPrice'] as int;
 
     if (!mounted) return;
 
@@ -209,16 +172,16 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     if (!_allowDirectUpi) {
       final messenger = ScaffoldMessenger.of(context);
       HapticFeedback.mediumImpact();
-      final planType = plan['id'] as String? ?? (_isYearly ? 'yearly' : 'monthly');
+      final planType = plan['id'] as String? ?? 'monthly';
       final initiated = await IAPService().buyVipSubscription(
-        isYearly: _isYearly,
+        isYearly: planType == 'yearly',
         planType: planType,
       );
       if (!initiated && mounted) {
         messenger.showSnackBar(
           SnackBar(
             content: Text(Platform.isIOS
-                ? 'Connecting to App Store In-App Purchases...'
+                ? 'Connecting to Apple Pay / App Store In-App Purchases...'
                 : 'Connecting to Google Play In-App Billing...'),
             backgroundColor: const Color(0xFF1E293B),
           ),
@@ -973,116 +936,58 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             ),
           ),
 
-          // Billing Toggle
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E24),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _isYearly = false),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: !_isYearly ? const Color(0xFFFFD700) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Monthly',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.outfit(
-                              color: !_isYearly ? Colors.black : Colors.white54,
-                              fontWeight: FontWeight.bold,
-                            ),
+          // Current Plan banner (Shown ONLY when VIP is active)
+          if (_currentPlan != 'free' && _plans.any((p) => p['id'] == _currentPlan))
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Active Plan: ',
+                        style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                      ),
+                      Text(
+                        _plans.firstWhere((p) => p['id'] == _currentPlan)['name'] as String,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'ACTIVE',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF34D399),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _isYearly = true),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: _isYearly ? const Color(0xFFFFD700) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Yearly',
-                                style: GoogleFonts.outfit(
-                                  color: _isYearly ? Colors.black : Colors.white54,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'SAVE 30%',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-
-          // Current Plan banner
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E24),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.white38, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Current Plan: ',
-                      style: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
-                    ),
-                    Text(
-                      _plans.firstWhere((p) => p['id'] == _currentPlan)['name'] as String,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
           // Plan Cards
           SliverList(
@@ -1182,7 +1087,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     final isSelected = _currentPlan == plan['id'];
     final isPopular = plan['popular'] as bool;
     final color = plan['color'] as Color;
-    final price = _isYearly ? plan['yearlyPrice'] as int : plan['monthlyPrice'] as int;
+    final price = plan['monthlyPrice'] as int;
     final features = plan['features'] as List<Map<String, dynamic>>;
 
     return Padding(
@@ -1391,8 +1296,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         onPressed: isSelected ? null : () => _selectPlan(plan['id'] as String),
                         child: Text(
                           isSelected
-                              ? '✓ Current Plan'
-                              : (price == 0 ? 'Downgrade to Free' : 'Get ${plan['name']}'),
+                              ? '✓ Active Plan'
+                              : 'Get ${plan['name']}',
                           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ),

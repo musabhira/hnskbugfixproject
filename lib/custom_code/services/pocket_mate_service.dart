@@ -635,27 +635,45 @@ class PocketMateService {
           map['archetype'] = robot.archetype.name;
         } else if (senderId.isNotEmpty) {
           try {
-            final prof = await _supabase
-                .from('profile')
-                .select(
-                    'name, display_name, profile_picture_url, avatar_url, avatar_config, learning_day, level')
-                .eq('user_id', senderId)
+            // 1. Query 'users' table first for real sender profile
+            final userRes = await _supabase
+                .from('users')
+                .select('id, display_name, name, username, photo_url, avatar_url, avatar_config, level, learning_day')
+                .eq('id', senderId)
                 .maybeSingle();
-            if (prof != null) {
-              map['sender_name'] = prof['display_name'] ??
-                  prof['name'] ??
-                  map['sender_name'] ??
-                  'Pocket Mate';
-              map['sender_profile_image'] =
-                  prof['profile_picture_url'] ?? prof['avatar_url'];
-              map['avatar_url'] =
-                  prof['avatar_url'] ?? prof['profile_picture_url'];
-              map['avatar_config'] = prof['avatar_config'];
-              map['stage'] =
-                  prof['learning_day'] ?? prof['level'] ?? map['stage'] ?? 1;
+            if (userRes != null) {
+              final dName = userRes['display_name'] ?? userRes['name'] ?? userRes['username'];
+              if (dName != null && dName.toString().trim().isNotEmpty) {
+                map['sender_name'] = dName.toString().trim();
+              }
+              map['sender_profile_image'] = userRes['photo_url'] ?? userRes['avatar_url'];
+              map['avatar_url'] = userRes['avatar_url'] ?? userRes['photo_url'];
+              map['avatar_config'] = userRes['avatar_config'];
+              map['stage'] = userRes['learning_day'] ?? userRes['level'] ?? map['stage'] ?? 1;
+            } else {
+              // 2. Secondary fallback to 'profile' table
+              final prof = await _supabase
+                  .from('profile')
+                  .select(
+                      'name, display_name, profile_picture_url, avatar_url, avatar_config, learning_day, level')
+                  .eq('user_id', senderId)
+                  .maybeSingle();
+              if (prof != null) {
+                map['sender_name'] = prof['display_name'] ??
+                    prof['name'] ??
+                    map['sender_name'] ??
+                    'Poket Mate';
+                map['sender_profile_image'] =
+                    prof['profile_picture_url'] ?? prof['avatar_url'];
+                map['avatar_url'] =
+                    prof['avatar_url'] ?? prof['profile_picture_url'];
+                map['avatar_config'] = prof['avatar_config'];
+                map['stage'] =
+                    prof['learning_day'] ?? prof['level'] ?? map['stage'] ?? 1;
+              }
             }
           } catch (_) {
-            map['sender_name'] ??= 'Pocket Mate';
+            map['sender_name'] ??= 'Poket Mate';
           }
         }
         requests.add(map);

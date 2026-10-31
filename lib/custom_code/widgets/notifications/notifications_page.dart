@@ -56,20 +56,45 @@ class _NotificationsPageState extends State<NotificationsPage> {
       List<Map<String, dynamic>> requests = [];
 
       for (final r in dbReqs) {
+        String sName = r['sender_name']?.toString() ?? '';
+        String? sImg = r['avatar_url']?.toString() ?? r['sender_profile_image']?.toString();
+        final sId = r['sender_id']?.toString() ?? r['source_id']?.toString() ?? '';
+
+        if (sName.isEmpty || sName == 'Pocket Mate' || sName == 'Poket Mate') {
+          // Attempt fast lookup from users table
+          try {
+            if (sId.isNotEmpty && !PocketRobotService.isRobotId(sId)) {
+              final u = await _supabase
+                  .from('users')
+                  .select('display_name, name, username, photo_url, avatar_url')
+                  .eq('id', sId)
+                  .maybeSingle();
+              if (u != null) {
+                final d = u['display_name'] ?? u['name'] ?? u['username'];
+                if (d != null && d.toString().trim().isNotEmpty) {
+                  sName = d.toString().trim();
+                }
+                sImg ??= u['photo_url'] ?? u['avatar_url'];
+              }
+            }
+          } catch (_) {}
+        }
+        if (sName.isEmpty) sName = 'Poket Mate';
+
         requests.add({
           'id': r['id'],
-          'senderId': r['sender_id'] ?? r['source_id'],
-          'senderName': r['sender_name'] ?? 'Pocket Mate',
+          'senderId': sId,
+          'senderName': sName,
           'stage': r['stage'] ?? 1,
-          'message': r['message'] ?? 'Wants to become your Pocket Mate.',
+          'message': r['message'] ?? 'Wants to become your Poket Mate.',
           'time': r['created_at'] ?? DateTime.now().toIso8601String(),
-          'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(r['sender_id']?.toString() ?? ''),
+          'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(sId),
           'archetype': r['archetype'],
           'type': r['type'] ?? 'mate_request',
           'context_type': r['data'] is Map ? r['data']['context_type'] : r['context_type'],
-          'avatarUrl': r['avatar_url'] ?? r['sender_profile_image'],
+          'avatarUrl': sImg,
           'avatarConfig': r['avatar_config'],
-          'sender_profile_image': r['sender_profile_image'] ?? r['avatar_url'],
+          'sender_profile_image': sImg,
         });
       }
 
@@ -104,24 +129,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
           if (type.contains('citadel') || type.contains('raid') || type.contains('attack') || type.contains('fortress')) {
             icon = '⚔️';
             defaultTitle = 'Citadel Raid Alert';
-          } else if (type.contains('pocket_talk_accepted')) {
+          } else if (type.contains('pocket_talk_accepted') || type.contains('poket_talk_accepted')) {
             icon = '🤝';
-            defaultTitle = 'Pocket Talk Accepted';
-          } else if (type.contains('pocket_talk') || type.contains('pact') || type.contains('talk')) {
+            defaultTitle = 'Poket Talk Accepted';
+          } else if (type.contains('pocket_talk') || type.contains('poket_talk') || type.contains('pact') || type.contains('talk')) {
             icon = '⚡';
-            defaultTitle = 'Pocket Talk 4-Day Pact';
+            defaultTitle = 'Poket Talk 4-Day Pact';
           } else if (type.contains('language_warning') || type.contains('presidential')) {
             icon = '🏛️';
             defaultTitle = '🏛️ Presidential Notice';
           } else if (type.contains('trophy')) {
             icon = '🏆';
-            defaultTitle = '🏆 Pocket Trophy Awarded';
+            defaultTitle = '🏆 Poket Trophy Awarded';
           } else if (type.contains('mate_accepted')) {
             icon = '✨';
-            defaultTitle = 'Mate Connected';
+            defaultTitle = 'Poket Mate Connected';
           } else if (type.contains('mate_request')) {
             icon = '🤝';
-            defaultTitle = 'Mate Request';
+            defaultTitle = 'Poket Mate Request';
           } else if (type.contains('vibe_reply')) {
             icon = '💬';
             defaultTitle = 'Vibe Reply';
@@ -716,7 +741,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         Row(
                           children: [
                             Text(
-                              '🤝 POCKET MATE REQUESTS',
+                              '🤝 POKET MATE REQUESTS',
                               style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11.5, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 6),
@@ -745,7 +770,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ),
                             child: Center(
                               child: Text(
-                                'No pending Pocket Mate requests.\nMatch anonymously or via Stage Match to connect!',
+                                'No pending Poket Mate requests.\nMatch anonymously or via Stage Match to connect!',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
                               ),
@@ -767,124 +792,192 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             }
 
                             final isPocketTalk = req['type'] == 'pocket_talk' ||
+                                req['type'] == 'poket_talk' ||
                                 req['context_type'] == 'pocket_talk' ||
+                                req['context_type'] == 'poket_talk' ||
                                 req['message']?.toString().contains('Spoken English Pact') == true ||
-                                req['message']?.toString().contains('Pocket Talk') == true;
+                                req['message']?.toString().contains('Pocket Talk') == true ||
+                                req['message']?.toString().contains('Poket Talk') == true;
 
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF131520),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isPocketTalk
-                                      ? const Color(0xFFFFD700)
-                                      : isRobot
-                                          ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
-                                          : const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                                  width: isPocketTalk ? 1.5 : 1.2,
+                            final rawAvatarUrl = req['avatarUrl'] ?? req['sender_profile_image'];
+                            final hasRealAvatar = rawAvatarUrl != null && rawAvatarUrl.toString().trim().isNotEmpty;
+
+                            return GestureDetector(
+                              onTap: () {
+                                final sId = req['senderId']?.toString() ?? '';
+                                if (sId.isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MainProfileWidget(userId: sId),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF131520),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isPocketTalk
+                                        ? const Color(0xFFFFD700)
+                                        : isRobot
+                                            ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
+                                            : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                                    width: isPocketTalk ? 1.5 : 1.2,
+                                  ),
                                 ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      ClipOval(
-                                        child: VectorAvatarWidget(
-                                          config: avatarConfig,
-                                          size: 44,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    req['senderName'] ?? 'Pocket Mate',
-                                                    style: GoogleFonts.outfit(
-                                                      color: Colors.white,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (isRobot)
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                                                      borderRadius: BorderRadius.circular(4),
-                                                      border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4)),
-                                                    ),
-                                                    child: Text(
-                                                      'ROBOT PEER',
-                                                      style: GoogleFonts.outfit(
-                                                        color: const Color(0xFF06B6D4),
-                                                        fontWeight: FontWeight.w900,
-                                                        fontSize: 8.5,
-                                                      ),
-                                                    ),
-                                                  )
-                                                else
-                                                  Icon(Icons.verified, color: stage.tickColor, size: 14),
-                                              ],
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Header type badge
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: isPocketTalk
+                                                ? const Color(0xFFFFD700).withValues(alpha: 0.15)
+                                                : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: isPocketTalk
+                                                  ? const Color(0xFFFFD700).withValues(alpha: 0.4)
+                                                  : const Color(0xFFFFFC00).withValues(alpha: 0.4),
                                             ),
-                                            const SizedBox(height: 2),
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                    color: stage.buttonColor.withValues(alpha: 0.15),
-                                                    borderRadius: BorderRadius.circular(6),
-                                                    border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
+                                          ),
+                                          child: Text(
+                                            isPocketTalk ? '⚡ POKET TALK REQUEST' : '🤝 POKET MATE REQUEST',
+                                            style: GoogleFonts.outfit(
+                                              color: isPocketTalk ? const Color(0xFFFFD700) : const Color(0xFFFFFC00),
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 9.5,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 12),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        ClipOval(
+                                          child: hasRealAvatar && !isRobot
+                                              ? CachedNetworkImage(
+                                                  imageUrl: rawAvatarUrl.toString(),
+                                                  width: 46,
+                                                  height: 46,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (_, __) => Container(
+                                                    width: 46,
+                                                    height: 46,
+                                                    color: Colors.white10,
+                                                    child: const Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFFFFC00))),
                                                   ),
-                                                  child: Text(
-                                                    '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
-                                                    style: GoogleFonts.outfit(
-                                                      color: stage.buttonColor,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 9.5,
-                                                    ),
+                                                  errorWidget: (_, __, ___) => VectorAvatarWidget(
+                                                    config: avatarConfig,
+                                                    size: 46,
                                                   ),
+                                                )
+                                              : VectorAvatarWidget(
+                                                  config: avatarConfig,
+                                                  size: 46,
                                                 ),
-                                                if (req['archetype'] != null) ...[
-                                                  const SizedBox(width: 6),
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.purple.withValues(alpha: 0.2),
-                                                      borderRadius: BorderRadius.circular(6),
-                                                      border: Border.all(color: Colors.purple.withValues(alpha: 0.5)),
-                                                    ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Expanded(
                                                     child: Text(
-                                                      '${req['archetype']}'.toUpperCase(),
+                                                      req['senderName'] ?? 'Poket Mate Learner',
                                                       style: GoogleFonts.outfit(
-                                                        color: Colors.purpleAccent,
+                                                        color: Colors.white,
                                                         fontWeight: FontWeight.bold,
-                                                        fontSize: 9.0,
+                                                        fontSize: 14.5,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (isRobot)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4)),
+                                                      ),
+                                                      child: Text(
+                                                        'ROBOT PEER',
+                                                        style: GoogleFonts.outfit(
+                                                          color: const Color(0xFF06B6D4),
+                                                          fontWeight: FontWeight.w900,
+                                                          fontSize: 8.5,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  else
+                                                    Icon(Icons.verified, color: stage.tickColor, size: 14),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: stage.buttonColor.withValues(alpha: 0.15),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                      border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
+                                                    ),
+                                                    child: Text(
+                                                      '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
+                                                      style: GoogleFonts.outfit(
+                                                        color: stage.buttonColor,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 9.5,
                                                       ),
                                                     ),
                                                   ),
+                                                  if (req['archetype'] != null) ...[
+                                                    const SizedBox(width: 6),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.purple.withValues(alpha: 0.2),
+                                                        borderRadius: BorderRadius.circular(6),
+                                                        border: Border.all(color: Colors.purple.withValues(alpha: 0.5)),
+                                                      ),
+                                                      child: Text(
+                                                        '${req['archetype']}'.toUpperCase(),
+                                                        style: GoogleFonts.outfit(
+                                                          color: Colors.purpleAccent,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 9.0,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ],
-                                              ],
-                                            ),
-                                          ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    req['message'] ?? 'Wants to add you as a Pocket Mate!',
-                                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-                                  ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      req['message'] ?? 'Wants to add you as a Poket Mate!',
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                    ),
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
@@ -922,8 +1015,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   ),
                                 ],
                               ),
-                            );
-                          }),
+                            ),
+                          );
+                        }),
                         const SizedBox(height: 18),
                       ],
 

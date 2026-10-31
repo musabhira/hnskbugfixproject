@@ -41,6 +41,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_servi
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -607,6 +608,12 @@ class _MessageScreenState extends State<MessageScreen> {
 
       debugPrint('Message sent successfully');
 
+      // Record daily chat activity for Poket trophy & pact progress
+      PocketTrophyService.recordUserDailyChatActivity(
+        senderId: _senderId,
+        receiverId: widget.receiverId,
+      );
+
       // 2. Update conversation list in background
       _updateConversation(messageText).catchError((e) {
         debugPrint('Post-send conversation update error: $e');
@@ -749,6 +756,12 @@ class _MessageScreenState extends State<MessageScreen> {
 
       // Update conversation list metadata
       await _updateConversation('Voice message 🎤');
+
+      // Record daily chat activity for Poket trophy & pact progress
+      PocketTrophyService.recordUserDailyChatActivity(
+        senderId: _senderId,
+        receiverId: widget.receiverId,
+      );
     } catch (e) {
       debugPrint('Error sending voice: $e');
       // If failed, remove from list and show error
@@ -759,23 +772,6 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
-  Future<void> _pickAndSendVideo() async {
-    if (_isBlocked || _isBlockedByOther) return;
-
-    try {
-      final XFile? video = await _imagePicker.pickVideo(
-        source: ImageSource.gallery,
-      );
-
-      if (video != null) {
-        // Optimistic UI for Ephemeral Video
-        _uploadEphemeralMedia(video.path, 'video');
-      }
-    } catch (e) {
-      debugPrint('Error picking video: $e');
-      _showErrorSnackBar('Failed to pick video');
-    }
-  }
 
   Future<void> _recordAndSendAudio() async {
     if (_isBlocked || _isBlockedByOther) return;
@@ -1276,15 +1272,6 @@ class _MessageScreenState extends State<MessageScreen> {
                   onTap: () {
                     Navigator.pop(context);
                     _pickAndSendImage();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.videocam, color: Colors.yellow),
-                  title: const Text('Video',
-                      style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickAndSendVideo();
                   },
                 ),
                 ListTile(

@@ -3417,8 +3417,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  // 🚨 POLICE CRIME REPORT: FIND THE THIEF (കള്ളനെ കണ്ടെത്തി!) & REVENGE ATTACK
-  // (User Audio Directive: "ആരെങ്കിലും അറ്റാക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ ആരാ അറ്റാക്ക് ചെയ്തത് എന്നുള്ളത് നമ്മുടെ മെയിൻ പ്രൊഫൈൽ വിജറ്റിൽ അടിയിൽ ഇങ്ങനെ കാണിക്കണം. അദ്ദേഹത്തിന് മാത്രം കണ്ടാൽ മതി (isMe). ഈ കേസ് പോലീസ് കണ്ടെത്തി എന്ന് പറയുമല്ലോ, 'Find the Thief' / 'കള്ളൻ ആരാണെന്ന് കണ്ടെത്തി'... ആ കള്ളൻ ആരാണെന്നുള്ളത് പോലീസ് കണ്ടുപിടിച്ച ഡീറ്റെയിൽസ് ലിസ്റ്റ് വ്യൂ ആയിട്ട് മെയിൻ പ്രൊഫൈൽ വിജറ്റിൽ കൊടുക്കുക. അവർക്ക് റിവഞ്ച് അറ്റാക്ക് ചെയ്യാൻ പറ്റും, ആ സ്പോട്ടിൽ തന്നെ!")
+  // 🚨 POLICE CRIME REPORT: CITADEL INTRUSIONS & REVENGE ATTACK
   Widget _buildMinimalAttackersSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -3483,57 +3482,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              'POLICE CRIME DESK: FIND THE THIEF',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                  color: Colors.redAccent, width: 0.8),
-                            ),
-                            child: Text(
-                              PocketLanguageService.localize(
-                                en: 'Thief Identified!',
-                                ml: 'കള്ളനെ കണ്ടെത്തി!',
-                                ta: 'திருடன் கண்டுபிடிக்கப்பட்டான்!',
-                                hi: 'चोर की पहचान हो गई!',
-                              ),
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFCA5A5),
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'POLICE CRIME DESK',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        PocketLanguageService.localize(
-                          en: 'Police Crime Report • Identified Attackers & Stolen Score',
-                          ml: 'പോലീസ് അന്വേഷണ റിപ്പോർട്ട് • Identified Attackers & Stolen Score',
-                          ta: 'காவல் அறிக்கை • அடையாளம் காணப்பட்ட தாக்குபவர்கள்',
-                          hi: 'पुलिस जांच रिपोर्ट • पहचाने गए हमलावर',
-                        ),
+                        'Recent Citadel Intrusions & Attack Log',
                         style: GoogleFonts.inter(
                           color: Colors.white70,
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -3566,12 +3530,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          PocketLanguageService.localize(
-                            en: 'No intrusions recorded yet • Attacker details will appear here',
-                            ml: 'ഇതുവരെ ആരും വീട് ആക്രമിച്ചിട്ടില്ല • കള്ളന്മാരുടെ വിവരങ്ങൾ ഇവിടെ കാണാം',
-                            ta: 'இதுவரை யாரும் வீட்டைத் தாக்கவில்லை • தாக்குபவர்களின் விவரங்கள் இங்கே தோன்றும்',
-                            hi: 'अभी तक किसी ने हमला नहीं किया • हमलावरों का विवरण यहाँ दिखेगा',
-                          ),
+                          'Attacker details will appear here after an intrusion.',
                           style: GoogleFonts.inter(
                               color: Colors.white54, fontSize: 10.5),
                           textAlign: TextAlign.center,
@@ -3610,13 +3569,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: entry.breached
-                                ? Colors.redAccent.withValues(alpha: 0.45)
-                                : (entry.ironDomeBlocked
-                                    ? const Color(0xFF00F0FF)
-                                        .withValues(alpha: 0.35)
-                                    : const Color(0xFF10B981)
-                                        .withValues(alpha: 0.35)),
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.35),
                             width: 1.2,
                           ),
                           boxShadow: [
@@ -3627,346 +3580,145 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ),
                           ],
                         ),
-                        child: Column(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Attacker Avatar with Detective Badge
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: entry.breached
-                                          ? const Color(0xFFEF4444)
-                                          : const Color(0xFF38BDF8),
-                                      width: 1.2,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      displayAttackerAvatar,
-                                      style: const TextStyle(fontSize: 22),
-                                    ),
-                                  ),
+                            // Attacker Avatar
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFEF4444),
+                                  width: 1.2,
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  displayAttackerAvatar,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayAttackerName,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              displayAttackerName,
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                      const Icon(Icons.flash_on_rounded,
+                                          size: 12, color: Colors.amber),
+                                      const SizedBox(width: 3),
+                                      Flexible(
+                                        child: Text(
+                                          'Weapon: ${entry.attackerWeapon}',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.amber.shade300,
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 1.5),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF3B82F6)
-                                                  .withValues(alpha: 0.2),
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                              border: Border.all(
-                                                  color:
-                                                      const Color(0xFF60A5FA),
-                                                  width: 0.8),
-                                            ),
-                                            child: Text(
-                                              PocketLanguageService.localize(
-                                                en: '🕵️‍♂️ Suspect',
-                                                ml: '🕵️‍♂️ കള്ളൻ',
-                                                ta: '🕵️‍♂️ சந்தேக நபர்',
-                                                hi: '🕵️‍♂️ संदिग्ध',
-                                              ),
-                                              style: GoogleFonts.outfit(
-                                                color: const Color(0xFF93C5FD),
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      const SizedBox(height: 3),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.flash_on_rounded,
-                                              size: 12, color: Colors.amber),
-                                          const SizedBox(width: 3),
-                                          Flexible(
-                                            child: Text(
-                                              'Weapon: ${entry.attackerWeapon}',
-                                              style: GoogleFonts.inter(
-                                                color: Colors.amber.shade300,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '• $timeText',
-                                            style: GoogleFonts.inter(
-                                              color: Colors.white54,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ],
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '• $timeText',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white54,
+                                          fontSize: 10.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // ⚡ REVENGE ATTACK Button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () async {
+                                  HapticFeedback.heavyImpact();
+                                  String targetId = entry.attackerId;
+                                  String targetName = displayAttackerName;
+                                  if (targetId.isEmpty ||
+                                      targetId == userId ||
+                                      targetId == 'me' ||
+                                      entry.attackerName.trim().toLowerCase() == 'you') {
+                                    final rival =
+                                        await PocketFortressDefenseService
+                                            .getRecommendedRivalTarget(
+                                                userDay: _getEffectiveDay());
+                                    targetId = rival.id;
+                                    targetName = rival.name;
+                                  }
+
+                                  if (context.mounted) {
+                                    PocketCitadelAttackPage.openForUser(
+                                      context,
+                                      userId: targetId,
+                                      targetName: targetName,
+                                      attackerDay: _getEffectiveDay(),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFDC2626),
+                                        Color(0xFFB91C1C)
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFFFCA5A5),
+                                        width: 1.2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFDC2626)
+                                            .withValues(alpha: 0.45),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('⚔️',
+                                          style: TextStyle(fontSize: 12)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'REVENGE',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            // Loot & Revenge Action Bar
-                            Row(
-                              children: [
-                                // Stolen / Defended Score pill
-                                if (entry.breached)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: Colors.redAccent
-                                              .withValues(alpha: 0.5)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text('📉',
-                                            style: TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Stole -${entry.coinsLooted} Pocket Score',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFF87171),
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else if (entry.ironDomeBlocked)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF00F0FF)
-                                          .withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: const Color(0xFF00F0FF)
-                                              .withValues(alpha: 0.5)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text('🛡️',
-                                            style: TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Iron Dome Blocked (0 Lost)',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFF00F0FF),
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                else
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF10B981)
-                                          .withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: const Color(0xFF10B981)
-                                              .withValues(alpha: 0.5)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text('🛡️',
-                                            style: TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Defense Held (0 Lost)',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFF34D399),
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                const Spacer(),
-                                // ⚡ REVENGE ATTACK (പകരം വീട്ടുക) Button
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(8),
-                                    onTap: () async {
-                                      HapticFeedback.heavyImpact();
-                                      String targetId = entry.attackerId;
-                                      String targetName = displayAttackerName;
-                                      if (targetId.isEmpty ||
-                                          targetId == userId ||
-                                          targetId == 'me' ||
-                                          entry.attackerName.trim().toLowerCase() == 'you') {
-                                        final rival =
-                                            await PocketFortressDefenseService
-                                                .getRecommendedRivalTarget(
-                                                    userDay: _getEffectiveDay());
-                                        targetId = rival.id;
-                                        targetName = rival.name;
-                                      }
-                                      final isProtected =
-                                          await PocketFortressDefenseService
-                                              .isUnderPresidentialProtection(
-                                                  targetId);
-                                      if (isProtected) {
-                                        final remainingMinutes =
-                                            await PocketFortressDefenseService
-                                                .getPresidentialProtectionMinutesRemaining(
-                                                    targetId);
-                                        final hours = (remainingMinutes / 60.0)
-                                            .toStringAsFixed(1);
-                                        if (mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Row(
-                                                children: [
-                                                  const Text('👮‍♂️',
-                                                      style: TextStyle(
-                                                          fontSize: 16)),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Attacker is under 24h Presidential Protection ($hours hrs left). Revenge temporarily blocked!',
-                                                      style: GoogleFonts.outfit(
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              backgroundColor:
-                                                  const Color(0xFF1E3A8A),
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                            ),
-                                          );
-                                        }
-                                        return;
-                                      }
-                                      final inCooldown =
-                                          await PocketFortressDefenseService
-                                              .isTargetInCooldown(targetId);
-                                      if (inCooldown) {
-                                        final cdMins =
-                                            await PocketFortressDefenseService
-                                                .getCooldownMinutesRemaining(
-                                                    targetId);
-                                        final timeStr = cdMins < 60
-                                            ? '$cdMins mins'
-                                            : '${(cdMins / 60.0).toStringAsFixed(1)} hrs';
-                                        if (mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                  'Revenge cooldown active on this house ($timeStr remaining).'),
-                                              backgroundColor:
-                                                  Colors.amber.shade900,
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                            ),
-                                          );
-                                        }
-                                        return;
-                                      }
-
-                                      if (mounted) {
-                                        PocketCitadelAttackPage.openForUser(
-                                          context,
-                                          userId: targetId,
-                                          targetName: targetName,
-                                          attackerDay: _getEffectiveDay(),
-                                        );
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFFDC2626),
-                                            Color(0xFFB91C1C)
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                            color: const Color(0xFFFCA5A5),
-                                            width: 1.2),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFFDC2626)
-                                                .withValues(alpha: 0.45),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Text('⚔️',
-                                              style: TextStyle(fontSize: 12)),
-                                          const SizedBox(width: 5),
-                                          Text(
-                                            'REVENGE ATTACK',
-                                            style: GoogleFonts.outfit(
-                                              color: Colors.white,
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.w900,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
