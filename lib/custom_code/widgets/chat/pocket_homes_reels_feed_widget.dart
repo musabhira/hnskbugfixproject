@@ -210,6 +210,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   late AnimationController _jumpController;
   late Animation<double> _jumpAnimation;
 
+  static final Set<String> _cachedGlobalViewedHomeIds = {};
   final Set<String> _viewedHomeIds = {};
   final Set<String> _protectedHomeIds = {};
   bool _isHomesAudioMuted = false;
@@ -625,7 +626,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       if (widget.initialNeighbor != null) {
         items.add(ReelFeedItem.home(widget.initialNeighbor!));
       } else {
-        items.add(ReelFeedItem.home(PocketNeighbor.createPresident()));
+        // Pick first UNVIEWED house from adultRobots
+        PocketNeighbor? firstUnviewed;
+        for (final b in adultRobots) {
+          if (!_cachedGlobalViewedHomeIds.contains(b.id)) {
+            firstUnviewed = b;
+            break;
+          }
+        }
+        if (firstUnviewed != null) {
+          items.add(ReelFeedItem.home(firstUnviewed));
+        } else if (!_cachedGlobalViewedHomeIds.contains('pocket_president')) {
+          items.add(ReelFeedItem.home(PocketNeighbor.createPresident()));
+        } else if (adultRobots.isNotEmpty) {
+          items.add(ReelFeedItem.home(adultRobots.first));
+        }
       }
 
       if (spokenGames.isNotEmpty) items.add(ReelFeedItem.game(spokenGames[gIdx++]));
@@ -656,7 +671,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedViewed = prefs.getStringList('pm_viewed_homes_ids') ?? [];
-      _viewedHomeIds.addAll(savedViewed);
+      _cachedGlobalViewedHomeIds.addAll(savedViewed);
+      _viewedHomeIds.addAll(_cachedGlobalViewedHomeIds);
     } catch (_) {}
 
     await _refreshFeedList();
@@ -1584,6 +1600,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   void _recordHomeViewed(String houseId) {
+    _cachedGlobalViewedHomeIds.add(houseId);
     if (_viewedHomeIds.add(houseId)) {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setStringList('pm_viewed_homes_ids', _viewedHomeIds.toList());
@@ -1613,6 +1630,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     // Feed is pre-loaded on frame 1. Never show blocking spinner or "Discovering Homes & Challenges".
     if (_feedItems.isEmpty) {
       _feedItems = _generateInstantSeedFeed();
+      // Auto-record the first house as viewed after 1.5 seconds so if user watches even 1 sec, it won't repeat!
+      if (_feedItems.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted && _feedItems.isNotEmpty) {
+            _recordItemViewed(_feedItems[0]);
+          }
+        });
+      }
     }
 
     if (_feedItems.isEmpty) {

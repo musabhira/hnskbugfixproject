@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 
 /// 🏆 Model representing an active, requested, or completed PocketTalk 4-Day Spoken Pact
 class PocketTalkPact {
@@ -131,7 +132,7 @@ class PocketTrophyService {
   // Key Constants
   static const int kDailyRequiredMinutes = 15; // 15 mins per day
   static const int kPactRequiredDays = 4; // 4 consecutive days = 1 hour total
-  static const int kMaxActivePacts = 4; // Target cap: 4 active speaking pairs (Audio Directive)
+  static const int kMaxActivePacts = 999999; // Unlimited active speaking pairs per user directive
   static const int kMasterCertificationTargetTrophies = 150;
   static const String kPrefsTrophiesCountKey = 'pocket_talk_trophies_count_';
   static const String kPrefsPactPrefix = 'pocket_talk_pact_';
@@ -364,14 +365,45 @@ class PocketTrophyService {
           hasFought: decoded['hasFought'] == 'true',
         );
 
-        // If local pact is already accepted, return it immediately for instant responsiveness
-        if (localPact.isAccepted) {
-          return localPact;
-        }
+        // Check Supabase if remote has newer accepted status
+        try {
+          final res = await _supabase
+              .from('pocket_talk_pacts')
+              .select('*')
+              .eq('pact_id', pactId)
+              .maybeSingle();
+
+          if (res != null) {
+            final remotePact = PocketTalkPact(
+              pactId: pactId,
+              user1Id: res['user1_id']?.toString() ?? myId,
+              user2Id: res['user2_id']?.toString() ?? otherUserId,
+              initiatorId: res['initiator_id']?.toString() ?? '',
+              startedAt: DateTime.tryParse(res['started_at']?.toString() ?? '') ?? DateTime.now(),
+              streakDays: (res['streak_days'] as num?)?.toInt() ?? 1,
+              lastSpokenDate: res['last_spoken_date']?.toString() ?? '',
+              dailyMinutesToday: (res['daily_minutes_today'] as num?)?.toInt() ?? 0,
+              isAccepted: res['is_accepted'] == true,
+              isCompleted: res['is_completed'] == true,
+              isMatesNow: res['is_mates_now'] == true,
+              trophiesEarned: (res['trophies_earned'] as num?)?.toInt() ?? 0,
+              isForfeited: res['is_forfeited'] == true,
+              hasBothSpoken: res['has_both_spoken'] == true,
+              user1Days: (res['user1_days'] as num?)?.toInt() ?? 0,
+              user2Days: (res['user2_days'] as num?)?.toInt() ?? 0,
+              hasAttacked: res['has_attacked'] == true,
+              hasFought: res['has_fought'] == true,
+            );
+            await _saveLocalPact(remotePact);
+            return remotePact;
+          }
+        } catch (_) {}
+
+        return localPact;
       }
     } catch (_) {}
 
-    // 🌐 Query Supabase pocket_talk_pacts table if not found locally or if checking acceptance
+    // 🌐 Query Supabase pocket_talk_pacts table if not found locally
     try {
       final res = await _supabase
           .from('pocket_talk_pacts')
@@ -409,11 +441,11 @@ class PocketTrophyService {
   }
 
   /// Whether the user is eligible to initiate a new Pocket Talk request.
-  /// Returns false once the user reaches 4 active agreements (kMaxActivePacts).
+  /// User Audio Directive: VIP users have unlimited talks.
+  /// Free users have a 4-talk limit, then a 5-hour ChatGPT-style cooldown timer.
   static Future<bool> canInitiateNewPact(String userId) async {
-    if (userId.isEmpty) return false;
-    final activeIds = await getAllActiveAcceptedPactUserIds(userId);
-    return activeIds.length < kMaxActivePacts;
+    final status = await PocketTalkEngine.checkRateLimit(userId);
+    return status.isAllowed;
   }
 
   /// Request or start a 4-Day Spoken Pact between two users (human or robot)
@@ -424,26 +456,19 @@ class PocketTrophyService {
   }) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return null;
 
-    // 🤖 Pocket Talk is strictly between human learners! Robots do not participate.
-    if (PocketRobotService.isRobotId(otherUserId) ||
-        PocketPresidentService.isPresidentId(otherUserId) ||
-        PocketRobotService.isRobotId(myId) ||
-        PocketPresidentService.isPresidentId(myId)) {
-      debugPrint('PocketTalk is strictly for human learners. Excluded robot/president.');
-      return null;
-    }
-
-    // 🔒 4-Agreement Cap: If user already has 4 active agreements, block new pact creation!
-    final canStart = await canInitiateNewPact(myId);
-    if (!canStart) {
-      debugPrint('User $myId has reached max active pacts ($kMaxActivePacts). Cannot request more.');
-      return null;
+    // 🤖 Pocket Talk Pacts with Robots are supported and auto-accepted per User Directive!
+    final bool isWithRobot = PocketRobotService.isRobotId(otherUserId);
+    if (isWithRobot) {
+      autoAccept = true;
     }
 
     final existing = await getPact(myId, otherUserId);
     if (existing != null) {
       return existing;
     }
+
+    // Record usage against free user quota / cooldown window
+    await PocketTalkEngine.recordPocketTalkSent(myId);
 
     final today = _getTodayDateString();
     final pactId = _generatePactId(myId, otherUserId);
@@ -549,17 +574,51 @@ class PocketTrophyService {
       }
     } catch (_) {}
 
-    // 🔒 SMART ACTIVE-CAP:
-    // Only cancel extra pending pacts once user has reached the 3-pact target cap!
-    // This guarantees each user can have up to 3 active speaking pairs as requested.
-    final myActive = await getAllActiveAcceptedPactUserIds(myId);
-    if (myActive.length >= kMaxActivePacts) {
-      await cancelOtherPendingPacts(myId, exceptPeerId: otherUserId);
-    }
-    final otherActive = await getAllActiveAcceptedPactUserIds(otherUserId);
-    if (otherActive.length >= kMaxActivePacts) {
-      await cancelOtherPendingPacts(otherUserId, exceptPeerId: myId);
-    }
+    // Ensure conversation exists in Supabase so it immediately appears in ALL tab
+    try {
+      final existingConv = await _supabase
+          .from('conversations')
+          .select('id')
+          .or('and(user1_id.eq.$myId,user2_id.eq.$otherUserId),and(user1_id.eq.$otherUserId,user2_id.eq.$myId)')
+          .maybeSingle();
+
+      String? convId;
+      if (existingConv == null) {
+        final newConv = await _supabase.from('conversations').insert({
+          'user1_id': myId,
+          'user2_id': otherUserId,
+          'last_message': '🎙️ Pocket Talk Accepted! 4-Day Spoken Pact started!',
+          'last_message_time': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'unread_count': 0,
+          'is_group': false,
+        }).select('id').maybeSingle();
+        convId = newConv?['id']?.toString();
+      } else {
+        convId = existingConv['id']?.toString();
+        if (convId != null) {
+          await _supabase.from('conversations').update({
+            'last_message': '🎙️ Pocket Talk Accepted! 4-Day Spoken Pact started!',
+            'last_message_time': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', convId);
+        }
+      }
+
+      if (convId != null && convId.isNotEmpty) {
+        try {
+          await _supabase.from('messages').insert({
+            'conversation_id': convId,
+            'sender_id': myId,
+            'receiver_id': otherUserId,
+            'content': '🎙️ Pocket Talk Spoken Pact Accepted! 4-Day Spoken English Pact is now active. Day 1 starts today!',
+            'message_text': '🎙️ Pocket Talk Spoken Pact Accepted! 4-Day Spoken English Pact is now active. Day 1 starts today!',
+            'message_type': 'text',
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        } catch (_) {}
+      }
+    } catch (_) {}
 
     return accepted;
   }

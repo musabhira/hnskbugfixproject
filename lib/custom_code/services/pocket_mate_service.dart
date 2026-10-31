@@ -249,8 +249,7 @@ class PocketMateService {
           try {
             await _supabase
                 .from('notifications')
-                .update({'status': 'accepted', 'is_read': true}).eq(
-                    'id', notificationId);
+                .update({'status': 'accepted'}).eq('id', notificationId);
           } catch (_) {}
         }
         return true;
@@ -260,8 +259,11 @@ class PocketMateService {
       if (notificationId.isNotEmpty &&
           !notificationId.startsWith('local_') &&
           !notificationId.startsWith('robot_')) {
-        await _supabase.from('notifications').update(
-            {'status': 'accepted', 'is_read': true}).eq('id', notificationId);
+        try {
+          await _supabase
+              .from('notifications')
+              .update({'status': 'accepted'}).eq('id', notificationId);
+        } catch (_) {}
       }
 
       // 2. Add mutual follows in DB
@@ -288,17 +290,41 @@ class PocketMateService {
             .or('and(user1_id.eq.$myId,user2_id.eq.$senderId),and(user1_id.eq.$senderId,user2_id.eq.$myId)')
             .maybeSingle();
 
+        String? convId;
         if (existingConv == null) {
-          await _supabase.from('conversations').insert({
+          final newConv = await _supabase.from('conversations').insert({
             'user1_id': myId,
             'user2_id': senderId,
-            'last_message':
-                '🤝 Connected as Pocket Mates! Start snapping & chatting.',
+            'last_message': '🤝 You are now Mates! Say hi!',
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
             'unread_count': 0,
             'is_group': false,
-          });
+          }).select('id').maybeSingle();
+          convId = newConv?['id']?.toString();
+        } else {
+          convId = existingConv['id']?.toString();
+          if (convId != null) {
+            await _supabase.from('conversations').update({
+              'last_message': '🤝 You are now Mates! Say hi!',
+              'last_message_time': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            }).eq('id', convId);
+          }
+        }
+
+        if (convId != null && convId.isNotEmpty) {
+          try {
+            await _supabase.from('messages').insert({
+              'conversation_id': convId,
+              'sender_id': myId,
+              'receiver_id': senderId,
+              'content': '🎉 You are now Mates! Let\'s practice English!',
+              'message_text': '🎉 You are now Mates! Let\'s practice English!',
+              'message_type': 'text',
+              'created_at': DateTime.now().toIso8601String(),
+            });
+          } catch (_) {}
         }
       } catch (_) {}
 
@@ -326,8 +352,8 @@ class PocketMateService {
           'source_id': myId,
           'type': 'mate_accepted',
           'message':
-              '✨ $myName accepted your Mate Request! You can now snap & chat.',
-          'status': 'read',
+              '✨ $myName accepted your Mate Request! You are now Mates.',
+          'status': 'unread',
           'created_at': DateTime.now().toIso8601String(),
         });
       } catch (_) {}
@@ -355,8 +381,7 @@ class PocketMateService {
           try {
             await _supabase
                 .from('notifications')
-                .update({'status': 'declined', 'is_read': true}).eq(
-                    'id', notificationId);
+                .update({'status': 'declined'}).eq('id', notificationId);
           } catch (_) {}
         }
         return true;
@@ -365,8 +390,11 @@ class PocketMateService {
       if (notificationId.isNotEmpty &&
           !notificationId.startsWith('local_') &&
           !notificationId.startsWith('robot_')) {
-        await _supabase.from('notifications').update(
-            {'status': 'declined', 'is_read': true}).eq('id', notificationId);
+        try {
+          await _supabase
+              .from('notifications')
+              .update({'status': 'declined'}).eq('id', notificationId);
+        } catch (_) {}
       }
       return true;
     } catch (e) {

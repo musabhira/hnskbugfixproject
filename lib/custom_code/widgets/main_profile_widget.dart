@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/widgets/cards/pop_art_card_flame_ga
 import 'package:pocket_mates_app/custom_code/widgets/cards/pocket_defense_card_detail_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -53,6 +54,8 @@ class MainProfileWidget extends StatefulWidget {
   final String? followersCount;
   final String? followingCount;
   final List<Map<String, dynamic>>? userThreads;
+  final Map<String, dynamic>? incomingMateRequest;
+  final bool hideAppBar;
 
   const MainProfileWidget({
     super.key,
@@ -63,6 +66,8 @@ class MainProfileWidget extends StatefulWidget {
     this.followersCount,
     this.followingCount,
     this.userThreads,
+    this.incomingMateRequest,
+    this.hideAppBar = false,
   });
 
   @override
@@ -92,6 +97,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   bool _isRequested = false;
   bool _isMate = false;
   bool _isMateRequested = false;
+  Map<String, dynamic>? _incomingMateRequest;
   int _followersCount = 0;
   int _followingCount = 0;
   int _friendsCount = 0;
@@ -263,6 +269,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
+    _incomingMateRequest = widget.incomingMateRequest;
     // 4 clean Instagram-style tabs: Cards, Thoughts, Citadel, Companions (Audio Directive)
     _profileTabController = material.TabController(length: 4, vsync: this);
     _profileTabController.addListener(() {
@@ -318,7 +325,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final accType = _profileData?['account_type']?.toString().toLowerCase();
     if (accType == 'student' || accType == 'teen') return true;
     final age = _profileData?['age'];
-    if (age is num && age > 0 && age <= 18) return true;
+    if (age is num && age > 0 && age <= 20) return true;
     return false;
   }
 
@@ -769,6 +776,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 .eq('status', 'pending')
                 .maybeSingle()
             : Future.value(null),
+        (myId != null && myId != userId)
+            ? _supabase
+                .from('notifications')
+                .select('*')
+                .eq('sender_id', userId)
+                .eq('user_id', myId)
+                .inFilter('type', ['mate_request', 'pocket_talk'])
+                .eq('status', 'pending')
+                .maybeSingle()
+            : Future.value(null),
       ]);
 
       if (!mounted) return;
@@ -781,9 +798,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final requestRes = responses[5];
       final mateStatus = responses[6] as bool;
       final mateReqRes = responses[7];
+      final incomingReqRes = responses.length > 8 ? responses[8] : null;
 
       final isRequested = requestRes != null;
       final isMateRequested = mateReqRes != null;
+
+      if (incomingReqRes != null && _incomingMateRequest == null) {
+        _incomingMateRequest = Map<String, dynamic>.from(incomingReqRes as Map);
+      }
 
       if (profileRes.isNotEmpty) {
         final data = profileRes.first as Map<String, dynamic>;
@@ -1246,6 +1268,218 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
+  Widget _buildAirDropMateBanner(BuildContext context, Color textColor) {
+    if (_incomingMateRequest == null) return const SizedBox.shrink();
+    final req = _incomingMateRequest!;
+    final senderName = _profileData?['name']?.toString() ??
+        _profileData?['username']?.toString() ??
+        req['sender_name']?.toString() ??
+        'Pocket Mate';
+    final senderAvatar = _profileData?['profile_picture_url']?.toString() ??
+        _profileData?['avatar_url']?.toString() ??
+        req['sender_profile_image']?.toString();
+    final message = req['message']?.toString() ??
+        'Wants to connect with you as your Pocket Mate!';
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xF20F172A),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFFFFC00), width: 1.6),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFFFFC00), width: 1.8),
+                  ),
+                  child: ClipOval(
+                    child: (senderAvatar != null && senderAvatar.startsWith('http'))
+                        ? CachedNetworkImage(
+                            imageUrl: senderAvatar,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(color: Colors.white12),
+                            errorWidget: (_, __, ___) => const Icon(Icons.person, color: Colors.white),
+                          )
+                        : Container(
+                            color: const Color(0xFF1E293B),
+                            child: Center(
+                              child: Text(
+                                (senderAvatar != null && senderAvatar.isNotEmpty) ? senderAvatar : '👤',
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              senderName,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'AirDrop Prompt',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFFC00),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        message,
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    final myUid = _supabase.auth.currentUser?.id ?? '';
+                    final notifId = req['id']?.toString() ?? '';
+                    final senderId = req['sender_id']?.toString() ?? userId;
+                    if (notifId.isNotEmpty) {
+                      await PocketMateService.declineMateRequest(
+                        notificationId: notifId,
+                        myId: myUid,
+                        senderId: senderId,
+                      );
+                    }
+                    if (mounted) {
+                      setState(() => _incomingMateRequest = null);
+                    }
+                  },
+                  child: Text(
+                    'Dismiss',
+                    style: GoogleFonts.outfit(color: Colors.white60, fontSize: 13),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 3,
+                  ),
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    final myUid = _supabase.auth.currentUser?.id ?? '';
+                    final notifId = req['id']?.toString() ?? '';
+                    final senderId = req['sender_id']?.toString() ?? userId;
+                    final ok = await PocketMateService.acceptMateRequest(
+                      notificationId: notifId,
+                      myId: myUid,
+                      senderId: senderId,
+                    );
+                    if (ok && mounted) {
+                      setState(() {
+                        _incomingMateRequest = null;
+                        _isMate = true;
+                        _isMateRequested = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: const Color(0xFF0F172A),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                          ),
+                          content: Row(
+                            children: [
+                              const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '🎉 Connected as Pocket Mates! Chat is ready in All.',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.handshake_rounded, size: 16, color: Colors.black),
+                  label: Text(
+                    'Accept 🤝',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showSendMateRequestSheet(String targetName) {
     final messageController = TextEditingController(
       text: "Hi $targetName, let's connect and practice English together!",
@@ -1564,110 +1798,70 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     final int userRank = _getUserGlobalRank();
     final bool isTop10 = userRank > 0 && userRank <= 10;
+    final rankTheme = isTop10 ? PocketTopRankTheme.getThemeForRank(userRank) : null;
 
-    // Fixed Instagram Dark Theme (Pure #000000 Dark Mode for Days 1 to 90)
     final Color bgColor;
-    final Color textColor = const Color(0xFFFFFFFF);
+    final Color textColor;
+    final Color secondaryTextColor;
+    final Color dividerColor;
     final Color btnColor;
     final Color btnTextColor;
+    final List<Color>? bgGradient;
 
-    if (isTop10) {
-      switch (userRank) {
-        case 1:
-          // #1 Royal Obsidian Gold (Crown Gold)
-          bgColor = const Color(0xFF0F0D06);
-          btnColor = const Color(0xFFFFD700);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 2:
-          // #2 Radiant Platinum Silver
-          bgColor = const Color(0xFF0B0D12);
-          btnColor = const Color(0xFFE2E8F0);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 3:
-          // #3 Radiant Amber Bronze
-          bgColor = const Color(0xFF120B06);
-          btnColor = const Color(0xFFF59E0B);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 4:
-          // #4 Emerald Sovereign
-          bgColor = const Color(0xFF05120B);
-          btnColor = const Color(0xFF10B981);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 5:
-          // #5 Sapphire Imperial
-          bgColor = const Color(0xFF060D1A);
-          btnColor = const Color(0xFF38BDF8);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 6:
-          // #6 Amethyst Royal
-          bgColor = const Color(0xFF0E0717);
-          btnColor = const Color(0xFFA855F7);
-          btnTextColor = const Color(0xFFFFFFFF);
-          break;
-        case 7:
-          // #7 Ruby Crimson
-          bgColor = const Color(0xFF140609);
-          btnColor = const Color(0xFFF43F5E);
-          btnTextColor = const Color(0xFFFFFFFF);
-          break;
-        case 8:
-          // #8 Topaz Flame
-          bgColor = const Color(0xFF140A04);
-          btnColor = const Color(0xFFFB923C);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 9:
-          // #9 Cyan Vanguard
-          bgColor = const Color(0xFF041214);
-          btnColor = const Color(0xFF06B6D4);
-          btnTextColor = const Color(0xFF000000);
-          break;
-        case 10:
-          // #10 Prism Champion
-          bgColor = const Color(0xFF090A14);
-          btnColor = const Color(0xFF818CF8);
-          btnTextColor = const Color(0xFFFFFFFF);
-          break;
-        default:
-          bgColor = const Color(0xFF0A0C14);
-          btnColor = const Color(0xFF38BDF8);
-          btnTextColor = const Color(0xFF000000);
-      }
+    if (rankTheme != null) {
+      bgGradient = rankTheme.gradientColors;
+      bgColor = rankTheme.dominantBg;
+      textColor = rankTheme.textColor;
+      secondaryTextColor = rankTheme.secondaryTextColor;
+      dividerColor = rankTheme.borderColor.withValues(alpha: 0.25);
+      btnColor = rankTheme.btnColor;
+      btnTextColor = rankTheme.btnTextColor;
     } else {
-      // Standard Minimal Instagram Pure Black Mode for all users (Days 1 to 90)
+      bgGradient = null;
       bgColor = const Color(0xFF000000);
+      textColor = const Color(0xFFFFFFFF);
+      secondaryTextColor = const Color(0xFFA8A8A8);
+      dividerColor = const Color(0xFF262626);
       btnColor = const Color(0xFF262626);
       btnTextColor = const Color(0xFFFFFFFF);
     }
 
     return material.Scaffold(
       backgroundColor: bgColor,
-      body: PocketSnapFlameRefresh(
-        onRefresh: _handleProfileRefresh,
-        primaryFlameColor: const Color(0xFFFFFC00),
-        accentFlameColor: const Color(0xFFFF5722),
-        pullText: 'Pull to refresh profile... 🔥',
-        readyText: 'Release to update! ✨',
-        refreshingText: 'Refreshing profile & citadel... 🔥',
-        successText: 'Profile updated! ✨',
-        child: material.NestedScrollView(
-          controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              material.SliverAppBar(
-                elevation: 0,
-                pinned: true,
-                backgroundColor: bgColor,
-                leading: material.IconButton(
-                  icon: const Icon(material.Icons.arrow_back, size: 22),
-                  color: textColor,
-                  onPressed: () => Navigator.of(context).pop(),
+      body: Container(
+        decoration: bgGradient != null
+            ? BoxDecoration(
+                gradient: LinearGradient(
+                  colors: bgGradient,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
+              )
+            : null,
+        child: material.Stack(
+          children: [
+            PocketSnapFlameRefresh(
+              onRefresh: _handleProfileRefresh,
+              primaryFlameColor: const Color(0xFFFFFC00),
+              accentFlameColor: const Color(0xFFFF5722),
+              pullText: 'Pull to refresh profile... 🔥',
+              readyText: 'Release to update! ✨',
+              refreshingText: 'Refreshing profile & citadel... 🔥',
+              successText: 'Profile updated! ✨',
+              child: material.NestedScrollView(
+                controller: _scrollController,
+                headerSliverBuilder: (context, innerBoxIsScrolled) {
+                  return [
+                    if (!widget.hideAppBar)
+                      material.SliverAppBar(
+                        elevation: 0,
+                        pinned: true,
+                        backgroundColor: Colors.transparent,
+                        leading: material.IconButton(
+                          icon: const Icon(material.Icons.arrow_back, size: 22),
+                          color: textColor,
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
                 title: Text(
                   _profileData?['username'] ??
                       _profileData?['shop_name'] ??
@@ -1919,10 +2113,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
                     ],
                   ),
+            ),
           ),
         ),
+      ],
+    ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
     );
   }
@@ -2017,261 +2214,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           showTestingControls: false,
                           onDayChanged: (d) => _jumpToDay(d),
                         ),
-                        if (_recentRaids.isNotEmpty) ...[
-                          // 🚨 POLICE CRIME REPORT & REVENGE DOSSIER (User Audio Directive!)
-                          Container(
-                            margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: _recentRaids.first.breached
-                                    ? const Color(0xFFEF4444)
-                                    : const Color(0xFF38BDF8),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (_recentRaids.first.breached
-                                          ? const Color(0xFFEF4444)
-                                          : const Color(0xFF38BDF8))
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Top Header Row
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444)
-                                            .withValues(alpha: 0.2),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Text('🚨',
-                                          style: TextStyle(fontSize: 16)),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            PocketLanguageService.localize(
-                                              en: 'POLICE CRIME DOSSIER',
-                                              ml: 'POLICE CRIME DOSSIER (കേസ് ഡയറി)',
-                                              ta: 'POLICE CRIME DOSSIER (வழக்கு நாட்குறிப்பு)',
-                                              hi: 'POLICE CRIME DOSSIER (केस डायरी)',
-                                            ),
-                                            style: GoogleFonts.outfit(
-                                              color: const Color(0xFFFFD700),
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 12,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                          Text(
-                                            _recentRaids.first.breached
-                                                ? 'Crime Scene Secured • Suspect Identified'
-                                                : 'Defenses Held Firm • Suspect Repelled',
-                                            style: TextStyle(
-                                              color: _recentRaids.first.breached
-                                                  ? const Color(0xFFFCA5A5)
-                                                  : const Color(0xFF86EFAC),
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _recentRaids.first.breached
-                                            ? const Color(0xFFEF4444)
-                                                .withValues(alpha: 0.2)
-                                            : const Color(0xFF10B981)
-                                                .withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: _recentRaids.first.breached
-                                              ? const Color(0xFFF87171)
-                                              : const Color(0xFF34D399),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        _recentRaids.first.breached
-                                            ? '-${_recentRaids.first.coinsLooted > 0 ? _recentRaids.first.coinsLooted : 15} PS LOOTED'
-                                            : '0 PS LOST',
-                                        style: GoogleFonts.outfit(
-                                          color: _recentRaids.first.breached
-                                              ? const Color(0xFFF87171)
-                                              : const Color(0xFF34D399),
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 10.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                // Suspect & Raid Details
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF1E293B),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700),
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          _recentRaids.first.attackerAvatar,
-                                          style: const TextStyle(fontSize: 22),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Raider: ${_recentRaids.first.attackerName}',
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Weapon: ${_recentRaids.first.attackerWeapon}',
-                                              style: GoogleFonts.inter(
-                                                color: Colors.white70,
-                                                fontSize: 11,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                // ⚔️ 1-Tap REVENGE BUTTON (User Audio Directive!)
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 44,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFDC2626),
-                                      foregroundColor: Colors.white,
-                                      elevation: 4,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    icon: const Text('⚔️',
-                                        style: TextStyle(fontSize: 15)),
-                                    label: Text(
-                                      PocketLanguageService.localize(
-                                        en: 'LAUNCH POLICE REVENGE RAID',
-                                        ml: 'LAUNCH POLICE REVENGE RAID / തിരിച്ച് അറ്റാക്ക് ചെയ്യുക',
-                                        ta: 'பதிலடித் தாக்குதல் தொடங்கவும் ⚔️',
-                                        hi: 'जवाबी हमला शुरू करें ⚔️',
-                                      ),
-                                      style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 12,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    onPressed: () async {
-                                      HapticFeedback.heavyImpact();
-                                      final targetId =
-                                          _recentRaids.first.attackerId;
-                                      if (targetId.isNotEmpty &&
-                                          targetId != 'me') {
-                                        final isTargetProt =
-                                            await PocketFortressDefenseService
-                                                .isUnderPresidentialProtection(
-                                                    targetId);
-                                        if (isTargetProt) {
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    '👮‍♂️ Suspect is currently under 24-Hour Presidential Protection! You can launch Revenge once their protection expires.'),
-                                                backgroundColor:
-                                                    Color(0xFF0284C7),
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                              ),
-                                            );
-                                          }
-                                        } else {
-                                          PocketCitadelAttackPage.openForUser(
-                                            context,
-                                            userId: targetId,
-                                            targetName:
-                                                _recentRaids.first.attackerName,
-                                          ).then((_) =>
-                                              _loadFortressDefenseData());
-                                        }
-                                      } else {
-                                        // If attackerId is empty or mock, attack rival
-                                        final rival =
-                                            await PocketFortressDefenseService
-                                                .getRecommendedRivalTarget(
-                                                    userDay:
-                                                        _getEffectiveDay());
-                                        if (mounted) {
-                                          PocketCitadelAttackPage.openForUser(
-                                            context,
-                                            userId: rival.id,
-                                            targetName: rival.name,
-                                          ).then((_) =>
-                                              _loadFortressDefenseData());
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
                         if (!isMe) ...[
                           const SizedBox(height: 12),
                           Padding(
@@ -2381,62 +2323,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         genderStr == 'boy' ||
         (!genderStr.contains('female') && !genderStr.contains('girl'));
 
-    return ListView(
+    return GridView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 40),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.5),
-              width: 1.2,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text('🎴', style: TextStyle(fontSize: 20)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'COLLECTIBLE MILESTONE CARDS',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      '$effectiveDay / 90 Milestone Cards Unlocked',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF94A3B8),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 40),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             childAspectRatio: 0.72,
             crossAxisSpacing: 8,
@@ -2608,9 +2498,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             );
           },
-        ),
-      ],
-    );
+        );
   }
 
   // ➕ Center Floating Action Button (Audio Directive 3)
@@ -3701,6 +3589,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ? '${timeDiff.inHours}h ago'
                               : '${timeDiff.inDays}d ago');
 
+                      final isInvalidOrSelf = entry.attackerId.isEmpty ||
+                          entry.attackerId == userId ||
+                          entry.attackerId == 'me' ||
+                          entry.attackerName.trim().toLowerCase() == 'you' ||
+                          entry.attackerName.trim().isEmpty;
+                      final displayAttackerName = isInvalidOrSelf
+                          ? 'Shadow Citadel Raider 🦹'
+                          : entry.attackerName;
+                      final displayAttackerAvatar = isInvalidOrSelf
+                          ? '🦹'
+                          : (entry.attackerAvatar.isNotEmpty
+                              ? entry.attackerAvatar
+                              : '⚔️');
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(12),
@@ -3746,9 +3648,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   ),
                                   child: Center(
                                     child: Text(
-                                      entry.attackerAvatar.isNotEmpty
-                                          ? entry.attackerAvatar
-                                          : '⚔️',
+                                      displayAttackerAvatar,
                                       style: const TextStyle(fontSize: 22),
                                     ),
                                   ),
@@ -3763,7 +3663,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         children: [
                                           Flexible(
                                             child: Text(
-                                              entry.attackerName,
+                                              displayAttackerName,
                                               style: GoogleFonts.outfit(
                                                 color: Colors.white,
                                                 fontSize: 13,
@@ -3933,19 +3833,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     borderRadius: BorderRadius.circular(8),
                                     onTap: () async {
                                       HapticFeedback.heavyImpact();
-                                      final targetId = entry.attackerId;
+                                      String targetId = entry.attackerId;
+                                      String targetName = displayAttackerName;
                                       if (targetId.isEmpty ||
                                           targetId == userId ||
-                                          targetId == 'me') {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Cannot retaliate against unknown or self raider.'),
-                                            backgroundColor: Color(0xFF1E293B),
-                                          ),
-                                        );
-                                        return;
+                                          targetId == 'me' ||
+                                          entry.attackerName.trim().toLowerCase() == 'you') {
+                                        final rival =
+                                            await PocketFortressDefenseService
+                                                .getRecommendedRivalTarget(
+                                                    userDay: _getEffectiveDay());
+                                        targetId = rival.id;
+                                        targetName = rival.name;
                                       }
                                       final isProtected =
                                           await PocketFortressDefenseService
@@ -4019,7 +3918,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         PocketCitadelAttackPage.openForUser(
                                           context,
                                           userId: targetId,
-                                          targetName: entry.attackerName,
+                                          targetName: targetName,
                                           attackerDay: _getEffectiveDay(),
                                         );
                                       }
@@ -4261,6 +4160,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ? '${duel.challengerCorrect}/${duel.questionCount} hits'
                             : '${duel.challengerScore} pts';
 
+                        final chalName = duel.challengerName.trim();
+                        final safeChalName = (chalName.isNotEmpty && chalName.toLowerCase() != 'you')
+                            ? chalName
+                            : 'Arena Challenger ⚔️';
+                        final safeChalAvatar = duel.challengerAvatar.isNotEmpty ? duel.challengerAvatar : '⚔️';
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(12),
@@ -4295,7 +4200,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         width: 1.5,
                                       ),
                                     ),
-                                    child: Text(duel.challengerAvatar,
+                                    child: Text(safeChalAvatar,
                                         style: const TextStyle(fontSize: 20)),
                                   ),
                                   const SizedBox(width: 10),
@@ -4304,7 +4209,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          duel.challengerName,
+                                          safeChalName,
                                           style: GoogleFonts.outfit(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w800,
@@ -4389,8 +4294,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         final oppScore = isChallenger ? duel.opponentScore : duel.challengerScore;
                         final myTime = isChallenger ? duel.challengerTimeSeconds : duel.opponentTimeSeconds;
                         final oppTime = isChallenger ? duel.opponentTimeSeconds : duel.challengerTimeSeconds;
-                        final oppName = isChallenger ? duel.opponentName : duel.challengerName;
-                        final oppAvatar = isChallenger ? duel.opponentAvatar : duel.challengerAvatar;
+                        final rawOppName = (isChallenger ? duel.opponentName : duel.challengerName).trim();
+                        final oppName = (rawOppName.isNotEmpty && rawOppName.toLowerCase() != 'you')
+                            ? rawOppName
+                            : 'Arena Rival ⚔️';
+                        final rawOppAvatar = (isChallenger ? duel.opponentAvatar : duel.challengerAvatar).trim();
+                        final oppAvatar = rawOppAvatar.isNotEmpty ? rawOppAvatar : '⚔️';
                         final won = duel.winnerId == currentUserId;
                         final isDraw = duel.winnerId == 'draw';
 
@@ -4564,14 +4473,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final shopName = _profileData?['shop_name'];
     final bio = _profileData?['bio'] ?? '';
     final profileUrl = _profileData?['profile_image_url'];
+    final String currentEmail = SupaFlow.client.auth.currentUser?.email ?? '';
+    final String targetName = (_profileData?['name'] ?? _profileData?['username'] ?? '').toString().toLowerCase();
     final isVerified = _profileData?['verified'] == true ||
         _profileData?['is_vip'] == true ||
-        _profileData?['is_subscribed'] == true;
+        _profileData?['is_subscribed'] == true ||
+        (isMe && (currentEmail.contains('musab') || currentEmail.contains('thonippadam') || currentEmail.contains('mussabira'))) ||
+        targetName.contains('musab') ||
+        targetName.contains('thonippadam') ||
+        targetName.contains('mussabira');
     final slug = _profileData?['slug'];
 
-    const isDark = true;
-    const secondaryTextColor = Color(0xFFA8A8A8);
-    const dividerColor = Color(0xFF262626);
+    final rank = _getUserGlobalRank();
+    final isTop10 = rank > 0 && rank <= 10;
+    final isDark = !isTop10;
+    final rankTheme = isTop10 ? PocketTopRankTheme.getThemeForRank(rank) : null;
+    final secondaryTextColor = rankTheme?.secondaryTextColor ?? const Color(0xFFA8A8A8);
+    final dividerColor = rankTheme?.borderColor.withValues(alpha: 0.25) ?? const Color(0xFF262626);
 
     // Layout 1: Unified Classic Instagram Layout (Left Avatar, Right Stats) across all 90 levels (Audio directive)
     final headerContent = _buildLayoutGenesis(
@@ -5482,71 +5400,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     Widget displayAvatar = avatarCircle;
     if (isTop10) {
-      final Gradient ringGradient;
-      final Color glowColor;
-      switch (rank) {
-        case 1:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFFFF8DC), Color(0xFFFFB300), Color(0xFFFFDF00)],
-          );
-          glowColor = const Color(0xFFFFD700);
-          break;
-        case 2:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8), Color(0xFFFFFFFF), Color(0xFFCBD5E1), Color(0xFFE2E8F0)],
-          );
-          glowColor = const Color(0xFFE2E8F0);
-          break;
-        case 3:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFF59E0B), Color(0xFFFBBF24), Color(0xFFFEF3C7), Color(0xFFD97706), Color(0xFFF59E0B)],
-          );
-          glowColor = const Color(0xFFF59E0B);
-          break;
-        case 4:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFF10B981), Color(0xFF34D399), Color(0xFFA7F3D0), Color(0xFF059669), Color(0xFF10B981)],
-          );
-          glowColor = const Color(0xFF10B981);
-          break;
-        case 5:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFF38BDF8), Color(0xFF60A5FA), Color(0xFFBAE6FD), Color(0xFF2563EB), Color(0xFF38BDF8)],
-          );
-          glowColor = const Color(0xFF38BDF8);
-          break;
-        case 6:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFA855F7), Color(0xFFC084FC), Color(0xFFF3E8FF), Color(0xFF7E22CE), Color(0xFFA855F7)],
-          );
-          glowColor = const Color(0xFFA855F7);
-          break;
-        case 7:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFF43F5E), Color(0xFFFB7185), Color(0xFFFFE4E6), Color(0xFFBE123C), Color(0xFFF43F5E)],
-          );
-          glowColor = const Color(0xFFF43F5E);
-          break;
-        case 8:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFFFB923C), Color(0xFFFDBA74), Color(0xFFFFEDD5), Color(0xFFC2410C), Color(0xFFFB923C)],
-          );
-          glowColor = const Color(0xFFFB923C);
-          break;
-        case 9:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFF06B6D4), Color(0xFF22D3EE), Color(0xFFCFFAFE), Color(0xFF0E7490), Color(0xFF06B6D4)],
-          );
-          glowColor = const Color(0xFF06B6D4);
-          break;
-        case 10:
-        default:
-          ringGradient = const SweepGradient(
-            colors: [Color(0xFF818CF8), Color(0xFFA78BFA), Color(0xFFE0E7FF), Color(0xFF4F46E5), Color(0xFF818CF8)],
-          );
-          glowColor = const Color(0xFF818CF8);
-          break;
-      }
+      final rankTheme = PocketTopRankTheme.getThemeForRank(rank);
+      final Color baseRing = rankTheme?.ringColor ?? const Color(0xFFFFD700);
+      final Color glowColor = rankTheme?.ringGlowColor ?? baseRing;
+      final ringGradient = SweepGradient(
+        colors: [
+          baseRing,
+          glowColor,
+          Colors.white,
+          baseRing.withValues(alpha: 0.8),
+          baseRing,
+        ],
+      );
 
       displayAvatar = Container(
         padding: const EdgeInsets.all(2.5),
@@ -5669,13 +5534,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     var currentCfg = _getAvatarConfig();
     final animals90 = VectorAvatarConfig.get90DayAnimals();
 
-    return SingleChildScrollView(
+    return GridView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 32),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 32),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 0.69,
           crossAxisSpacing: 10,
@@ -5821,8 +5683,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   /// Interactive bottom sheet for switching unlocked companions and checking upcoming unlock levels
@@ -6220,6 +6081,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required CrossAxisAlignment alignment,
     bool hideStageBadge = false,
   }) {
+    final int rank = _getUserGlobalRank();
+    final bool isTop10 = rank > 0 && rank <= 10;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
@@ -6254,6 +6117,55 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 fontSize: 13,
                 color: secondaryTextColor,
                 fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          if (activeStage.day >= 90 || activeStage.stageNumber >= 90) ...[
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                Day90MasterCertificateDialog.show(
+                  context,
+                  userName: shopName != null && shopName.isNotEmpty ? shopName : name,
+                  userDay: activeStage.day >= 90 ? activeStage.day : 91,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                decoration: BoxDecoration(
+                  color: isTop10
+                      ? Colors.black.withValues(alpha: 0.05)
+                      : const Color(0xFF161922),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+                    width: 0.9,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.workspace_premium_rounded,
+                        color: Color(0xFFD4AF37), size: 13),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Day 90 Master Graduate',
+                      style: GoogleFonts.inter(
+                        color: textColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: textColor.withValues(alpha: 0.4),
+                      size: 9,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -6317,6 +6229,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     String name,
     String? profileUrl,
   ) {
+    final userRank = _getUserGlobalRank();
+    final rankTheme = (userRank > 0 && userRank <= 10) ? PocketTopRankTheme.getThemeForRank(userRank) : null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: isMe
@@ -6327,8 +6242,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Widget buildEditProfileBtn() => Container(
                       height: 38,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF262626),
+                        color: rankTheme != null
+                            ? rankTheme.btnColor.withValues(alpha: 0.16)
+                            : const Color(0xFF262626),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: rankTheme != null
+                              ? rankTheme.borderColor.withValues(alpha: 0.45)
+                              : Colors.white12,
+                          width: 1,
+                        ),
                       ),
                       child: InkWell(
                         onTap: () {
@@ -6352,7 +6275,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               child: Text(
                                 "Edit Profile",
                                 style: GoogleFonts.outfit(
-                                  color: textColor,
+                                  color: rankTheme?.textColor ?? textColor,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -6429,13 +6352,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFFFFBEB),
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color:
-                                const Color(0xFFFFD700).withValues(alpha: 0.3),
+                                const Color(0xFFFFD700).withValues(alpha: 0.35),
                             blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -6517,10 +6447,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Container(
                     height: 38,
                     decoration: BoxDecoration(
-                      color: _isFollowing ? const Color(0xFF262626) : btnColor,
+                      color: _isFollowing
+                          ? (rankTheme != null ? rankTheme.btnColor.withValues(alpha: 0.16) : const Color(0xFF262626))
+                          : btnColor,
                       borderRadius: BorderRadius.circular(8),
                       border: _isFollowing
-                          ? Border.all(color: textColor.withValues(alpha: 0.1))
+                          ? Border.all(color: (rankTheme?.borderColor ?? textColor).withValues(alpha: 0.3))
                           : null,
                     ),
                     child: InkWell(
@@ -6532,7 +6464,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ? "Following"
                               : (_isRequested ? "Requested" : "Follow"),
                           style: GoogleFonts.outfit(
-                            color: _isFollowing ? textColor : btnTextColor,
+                            color: _isFollowing ? (rankTheme?.textColor ?? textColor) : btnTextColor,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -6549,8 +6481,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       child: Container(
                         height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF262626),
+                          color: rankTheme != null
+                              ? rankTheme.btnColor.withValues(alpha: 0.16)
+                              : const Color(0xFF262626),
                           borderRadius: BorderRadius.circular(8),
+                          border: rankTheme != null
+                              ? Border.all(color: rankTheme.borderColor.withValues(alpha: 0.45))
+                              : null,
                         ),
                         child: InkWell(
                           onTap: () {
@@ -6570,13 +6507,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.chat_bubble_outline_rounded,
-                                    size: 15, color: Color(0xFF10B981)),
+                                Icon(Icons.chat_bubble_outline_rounded,
+                                    size: 15,
+                                    color: rankTheme?.primaryColor ?? const Color(0xFF10B981)),
                                 const SizedBox(width: 5),
                                 Text(
                                   "Message",
                                   style: GoogleFonts.outfit(
-                                    color: textColor,
+                                    color: rankTheme?.textColor ?? textColor,
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -6594,13 +6532,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         decoration: BoxDecoration(
                           color: _isMateRequested
                               ? Colors.white10
-                              : const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                              : (rankTheme != null
+                                  ? rankTheme.btnColor.withValues(alpha: 0.16)
+                                  : const Color(0xFFFFFC00).withValues(alpha: 0.18)),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: _isMateRequested
                                 ? Colors.white24
-                                : const Color(0xFFFFFC00)
-                                    .withValues(alpha: 0.6),
+                                : (rankTheme != null
+                                    ? rankTheme.borderColor.withValues(alpha: 0.5)
+                                    : const Color(0xFFFFFC00).withValues(alpha: 0.6)),
                           ),
                         ),
                         child: InkWell(
@@ -6615,7 +6556,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     ),
                                   );
                                 }
-                              : () => _showSendMateRequestSheet(name),
+                              : () async {
+                                  final myId = _supabase.auth.currentUser?.id;
+                                  if (myId == null) return;
+                                  HapticFeedback.mediumImpact();
+                                  setState(() => _isMateRequested = true);
+                                  final ok = await PocketMateService.sendMateRequest(
+                                    senderId: myId,
+                                    receiverId: userId,
+                                    message: "Hi $name, let's connect and practice English together!",
+                                    contextType: 'english_hub',
+                                  );
+                                  await PocketTrophyService.ensurePact(
+                                      myId: myId, otherUserId: userId);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Row(
+                                          children: [
+                                            const Icon(Icons.check_circle_rounded,
+                                                color: Color(0xFF10B981), size: 18),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                'Requested! $name will see it in their Requests tab.',
+                                                style: GoogleFonts.outfit(color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        backgroundColor: const Color(0xFF1E293B),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                },
                           borderRadius: BorderRadius.circular(8),
                           child: Center(
                             child: Row(
@@ -6628,17 +6603,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   size: 15,
                                   color: _isMateRequested
                                       ? Colors.white70
-                                      : const Color(0xFFFFFC00),
+                                      : (rankTheme?.primaryColor ?? const Color(0xFFFFFC00)),
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
                                   _isMateRequested
                                       ? "Requested"
-                                      : "Connect Mate",
+                                      : "Mate",
                                   style: GoogleFonts.outfit(
                                     color: _isMateRequested
                                         ? Colors.white70
-                                        : const Color(0xFFFFFC00),
+                                        : (rankTheme?.textColor ?? const Color(0xFFFFFC00)),
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -6655,11 +6630,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Container(
                     height: 38,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                      color: rankTheme != null
+                          ? rankTheme.btnColor.withValues(alpha: 0.22)
+                          : const Color(0xFFDC2626).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color:
-                              const Color(0xFFDC2626).withValues(alpha: 0.5)),
+                        color: rankTheme != null
+                            ? rankTheme.borderColor.withValues(alpha: 0.6)
+                            : const Color(0xFFDC2626).withValues(alpha: 0.5),
+                      ),
                     ),
                     child: InkWell(
                       onTap: () async {
@@ -6815,7 +6794,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildUnifiedStatsRow({
     required Color textColor,
     required LearningMilestoneStage activeStage,
+    Color? secondaryTextColor,
   }) {
+    final effectiveLabelColor = secondaryTextColor ??
+        (textColor == const Color(0xFF0F172A)
+            ? const Color(0xFF475569)
+            : Colors.white70);
+    final psColor = (textColor == const Color(0xFF0F172A))
+        ? const Color(0xFFB45309)
+        : const Color(0xFFFFD700);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -6824,13 +6812,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             label: 'Mates',
             count: _friendsCount > 0 ? _friendsCount : _followersCount,
             textColor: textColor,
+            labelColor: effectiveLabelColor,
           ),
         ),
         Expanded(
           child: _buildInstagramStatColumn(
             label: 'PS',
             count: _pocketScore,
-            textColor: const Color(0xFFFFD700),
+            textColor: psColor,
+            labelColor: effectiveLabelColor,
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -6851,6 +6841,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             label: '🏆',
             count: _goldTrophies,
             textColor: const Color(0xFFFFD700),
+            labelColor: effectiveLabelColor,
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -6871,6 +6862,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             label: '🥈',
             count: _silverTrophies > 0 ? _silverTrophies : _pocketTrophyCount,
             textColor: const Color(0xFFE2E8F0),
+            labelColor: effectiveLabelColor,
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -6891,6 +6883,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             label: '⚔️',
             count: _attacksWon,
             textColor: const Color(0xFFEF4444),
+            labelColor: effectiveLabelColor,
             onTap: () {
               HapticFeedback.selectionClick();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -6914,6 +6907,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required String label,
     required int count,
     required Color textColor,
+    Color? labelColor,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
@@ -6948,9 +6942,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.white70,
+                color: labelColor ??
+                    (textColor == const Color(0xFF0F172A)
+                        ? const Color(0xFF475569)
+                        : Colors.white70),
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

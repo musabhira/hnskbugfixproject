@@ -12,6 +12,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// ⚡ Model representing a learner candidate card in the Pocket Talk deck
 class PocketTalkCandidate {
@@ -78,7 +81,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
   List<PocketTalkCandidate> _candidates = [];
   bool _isLoading = true;
   int _currentIndex = 0;
-  int _activePactCount = 0;
+  PocketTalkRateLimitStatus? _rateLimitStatus;
+  Timer? _countdownTimer;
 
   // Swipe gesture tracking
   Offset _dragOffset = Offset.zero;
@@ -94,10 +98,42 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       duration: const Duration(milliseconds: 2800),
     )..repeat();
     _loadCandidates();
+    _refreshRateLimit();
+
+    // Live 1-second countdown ticker for ChatGPT-style cooldown timer
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && _rateLimitStatus != null && !_rateLimitStatus!.isAllowed) {
+        final current = _rateLimitStatus!.cooldownRemaining;
+        if (current.inSeconds > 1) {
+          setState(() {
+            _rateLimitStatus = PocketTalkRateLimitStatus(
+              isAllowed: false,
+              isVip: _rateLimitStatus!.isVip,
+              remainingTalks: _rateLimitStatus!.remainingTalks,
+              maxLimit: _rateLimitStatus!.maxLimit,
+              cooldownRemaining: current - const Duration(seconds: 1),
+            );
+          });
+        } else {
+          _refreshRateLimit();
+        }
+      }
+    });
+  }
+
+  Future<void> _refreshRateLimit() async {
+    final myId = _supabase.auth.currentUser?.id ?? '';
+    final status = await PocketTalkEngine.checkRateLimit(myId);
+    if (mounted) {
+      setState(() {
+        _rateLimitStatus = status;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _shimmerController.dispose();
     super.dispose();
   }
@@ -121,12 +157,6 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
 
   Future<void> _loadCandidates() async {
     final myId = _supabase.auth.currentUser?.id ?? '';
-    int activeCount = 0;
-    if (myId.isNotEmpty) {
-      final activeIds = await PocketTrophyService.getAllActiveAcceptedPactUserIds(myId);
-      activeCount = activeIds.length;
-    }
-
     final prefs = await SharedPreferences.getInstance();
     final swipedKey = 'pocket_talk_swiped_ids_$myId';
     List<String> swipedList = prefs.getStringList(swipedKey) ?? [];
@@ -343,7 +373,6 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     if (mounted) {
       setState(() {
         _candidates = list;
-        _activePactCount = activeCount;
         _isLoading = false;
       });
     }
@@ -392,6 +421,15 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       return;
     }
 
+    // 🔒 1. Check Rate Limit (User Audio Directive: 4 talks for free users, then 5-hour cooldown)
+    final limitStatus = await PocketTalkEngine.checkRateLimit(myId);
+    if (!limitStatus.isAllowed) {
+      if (mounted) {
+        _showRateLimitDialog(limitStatus);
+      }
+      return;
+    }
+
     final canStart = await PocketTrophyService.canInitiateNewPact(myId);
     if (!canStart) {
       if (mounted) {
@@ -403,7 +441,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '⚡ You already have 4 active Poketalk pacts! Complete Day 4 before initiating another.',
+                    '⚡ You already have active Poketalk pacts! Complete Day 4 before initiating another.',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
@@ -533,10 +571,110 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       );
     }
 
+    _refreshRateLimit();
+
     // Auto-advance to next card after a brief moment
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _swipeCard(isLike: true);
     });
+  }
+
+  /// ⏳ Show ChatGPT-style rate limit and cooldown dialog
+  void _showRateLimitDialog(PocketTalkRateLimitStatus status) {
+    HapticFeedback.mediumImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFFC00), width: 1.2),
+        ),
+        title: Row(
+          children: [
+            const Text('⏳', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Free Limit Reached',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Free accounts can send up to 4 Pocket Talks every 5 hours.',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.timer_outlined, color: Color(0xFFFFFC00), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Next Talk in ${status.formattedCooldown}',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFFC00),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Want unlimited Pocket Talks with zero cooldown?',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Wait & Practice',
+              style: GoogleFonts.outfit(color: Colors.white60),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
+            },
+            child: Text(
+              'Unlock VIP 🚀',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// 🤝 Send Mate connection request (User Audio Directive: Mate option on card)
@@ -721,20 +859,51 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
             ),
           ),
           const SizedBox(width: 8),
-          // Cap Indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
-            ),
-            child: Text(
-              '$_activePactCount/4 Pairs',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFFFFFC00),
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
+          // Rate Limit & Cooldown Indicator (User Audio Directive: 4 talks limit with 5-hour timer)
+          GestureDetector(
+            onTap: () {
+              if (_rateLimitStatus != null && !_rateLimitStatus!.isAllowed) {
+                _showRateLimitDialog(_rateLimitStatus!);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+              decoration: BoxDecoration(
+                color: (_rateLimitStatus?.isVip == true)
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                    : (_rateLimitStatus?.isAllowed == false)
+                        ? Colors.redAccent.withValues(alpha: 0.2)
+                        : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: (_rateLimitStatus?.isVip == true)
+                      ? const Color(0xFFFFD700)
+                      : (_rateLimitStatus?.isAllowed == false)
+                          ? Colors.redAccent
+                          : const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    (_rateLimitStatus?.isVip == true)
+                        ? '👑 VIP Unlimited'
+                        : (_rateLimitStatus?.isAllowed == false)
+                            ? '⏳ ${_rateLimitStatus!.formattedCooldown}'
+                            : '⚡ ${_rateLimitStatus?.remainingTalks ?? 4}/4 Talks',
+                    style: GoogleFonts.outfit(
+                      color: (_rateLimitStatus?.isVip == true)
+                          ? const Color(0xFFFFD700)
+                          : (_rateLimitStatus?.isAllowed == false)
+                              ? Colors.redAccent
+                              : const Color(0xFFFFFC00),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1286,11 +1455,17 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                       : () => _sendPocketTalkRequest(candidate),
                                   icon: candidate.isRequestSent
                                       ? const Icon(Icons.check_circle_rounded, color: Colors.black, size: 16)
-                                      : const Text('⚡', style: TextStyle(fontSize: 15)),
+                                      : (_rateLimitStatus?.isAllowed == false)
+                                          ? const Text('⏳', style: TextStyle(fontSize: 15))
+                                          : const Text('⚡', style: TextStyle(fontSize: 15)),
                                   label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      candidate.isRequestSent ? 'SENT ✓' : 'POKET TALK',
+                                      candidate.isRequestSent
+                                          ? 'SENT ✓'
+                                          : (_rateLimitStatus?.isAllowed == false)
+                                              ? _rateLimitStatus!.formattedCooldown
+                                              : 'POKET TALK',
                                       style: GoogleFonts.outfit(
                                         color: Colors.black,
                                         fontWeight: FontWeight.w900,
@@ -1302,7 +1477,9 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: candidate.isRequestSent
                                         ? const Color(0xFF10B981)
-                                        : const Color(0xFFFFFC00),
+                                        : (_rateLimitStatus?.isAllowed == false)
+                                            ? const Color(0xFFFBBF24)
+                                            : const Color(0xFFFFFC00),
                                     foregroundColor: Colors.black,
                                     elevation: 3,
                                     shape: RoundedRectangleBorder(

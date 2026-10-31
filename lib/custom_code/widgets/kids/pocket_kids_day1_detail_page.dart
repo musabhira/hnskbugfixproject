@@ -7,6 +7,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 🌟 Day 1 Dedicated Interactive Game-First Learning & Defense Flow for Kids
 class PocketKidsDay1DetailPage extends StatefulWidget {
@@ -448,7 +449,36 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFFDE047), width: 1.4),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+              icon: const Text('📺', style: TextStyle(fontSize: 16)),
+              label: Text(
+                'Watch Ad for +50 Bonus Stars ⭐',
+                style: GoogleFonts.outfit(color: const Color(0xFFFDE047), fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              onPressed: () async {
+                await PocketAdMobService.instance.showRewardedAd(
+                  context: context,
+                  onUserEarnedReward: (_) async {
+                    await PocketKidsService.addStars(50);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('🌟 +50 BONUS STARS CLAIMED! 🦁✨'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 14),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFD700),
@@ -456,10 +486,11 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
                 Navigator.pop(context);
                 widget.onCompleted?.call();
+                await PocketAdMobService.instance.showInterstitialAd(context: context);
               },
               child: Text(
                 'RETURN TO TRAIL MAP 🗺️',
@@ -746,9 +777,16 @@ class _PocketKidsDay1DetailPageState extends State<PocketKidsDay1DetailPage>
                     child: Text(
                       b['letter'] as String,
                       style: GoogleFonts.outfit(
-                        color: Colors.white,
+                        color: (b['color'] == Colors.amber) ? const Color(0xFF78350F) : Colors.white,
                         fontSize: 40,
                         fontWeight: FontWeight.w900,
+                        shadows: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                     ),
                   ),

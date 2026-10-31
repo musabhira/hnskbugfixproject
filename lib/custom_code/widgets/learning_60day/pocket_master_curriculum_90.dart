@@ -27,9 +27,14 @@ class CurriculumVocabItem {
     required this.meaningMl,
     this.meaningTa = '',
     this.meaningHi = '',
+    this.meaningTe = '',
+    this.meaningKn = '',
     required this.exampleEn,
     this.exampleMl = '',
   });
+
+  final String meaningTe;
+  final String meaningKn;
 
   String get localizedMeaning {
     if (PocketLanguageService.isMalayalam && meaningMl.isNotEmpty) return meaningMl;
@@ -40,6 +45,16 @@ class CurriculumVocabItem {
     }
     if (PocketLanguageService.isHindi) {
       if (meaningHi.isNotEmpty) return meaningHi;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
+    }
+    if (PocketLanguageService.isTelugu) {
+      if (meaningTe.isNotEmpty) return meaningTe;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
+    }
+    if (PocketLanguageService.isKannada) {
+      if (meaningKn.isNotEmpty) return meaningKn;
       final dictMeaning = PocketLanguageService.getVocabMeaning(word);
       if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }

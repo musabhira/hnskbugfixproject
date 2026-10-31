@@ -43,6 +43,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_negat
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mini_speech_practice_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_review_card_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_letter_writing_game_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_diary_entry_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_bio_creator_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_notice_game_page.dart';
@@ -163,8 +164,15 @@ class _PocketDayOpenWorldAdventurePageState
       duration: const Duration(milliseconds: 1800),
     );
 
+    PocketLanguageService.init();
+    PocketLanguageService.activeLanguageNotifier.addListener(_onLanguageChanged);
+
     _loadState();
     _loadRuntimeCurriculum();
+  }
+
+  void _onLanguageChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadRuntimeCurriculum() async {
@@ -198,6 +206,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   @override
   void dispose() {
+    PocketLanguageService.activeLanguageNotifier.removeListener(_onLanguageChanged);
     _ambientAnimController.removeListener(_onAmbientTick);
     _ambientAnimController.dispose();
     _driveAnimController.dispose();
@@ -663,8 +672,12 @@ class _PocketDayOpenWorldAdventurePageState
                           if (!_isGateExamPassed) {
                             _driveToGate(openExamOnArrival: true);
                           } else {
-                            widget.onCompleted?.call();
-                            Navigator.pop(context);
+                            PocketAdMobService.instance.showInterstitialAd(
+                              onDismissed: () {
+                                widget.onCompleted?.call();
+                                if (mounted) Navigator.pop(context);
+                              },
+                            );
                           }
                         },
                         child: Text(
@@ -1780,7 +1793,8 @@ class _PocketDayOpenWorldAdventurePageState
 
   void _showSpokenGateExamModal() {
     final allQuestions = Pocket90DaySpokenExamCurriculum.getExamForDay(widget.day);
-    final questions = allQuestions.take(4).toList();
+    // User Audio Directive: Ask 5-6 questions in spoken English gate 1 (not just 4)
+    final questions = allQuestions.take(6).toList();
 
     if (questions.isEmpty) return;
 
@@ -1790,6 +1804,7 @@ class _PocketDayOpenWorldAdventurePageState
     String liveTranscript = '';
     bool? isCurrentCorrect;
     PronunciationEvaluationResult? liveEvalResult;
+    String feedbackMessage = '';
     final stt.SpeechToText sttEngine = stt.SpeechToText();
     final FlutterTts ttsEngine = FlutterTts();
     bool sttReady = false;
@@ -1804,7 +1819,7 @@ class _PocketDayOpenWorldAdventurePageState
 
             if (isCompleted) {
               final scorePct = ((correctCount / questions.length) * 100).toInt();
-              final isPassed = correctCount >= (questions.length >= 4 ? 3 : 1); // 75%+ pass threshold
+              final isPassed = correctCount >= (questions.length >= 6 ? 4 : (questions.length >= 4 ? 3 : 1)); // 60%+ pass threshold
 
               if (isPassed && !_isGateExamPassed) {
                 // Award points & unlock
@@ -1857,7 +1872,7 @@ class _PocketDayOpenWorldAdventurePageState
                       Text(
                         isPassed
                             ? 'Score: $correctCount / ${questions.length} ($scorePct%) • PASSED (60%+)'
-                            : 'Score: $correctCount / ${questions.length} ($scorePct%) • NEED 60% (5/8)',
+                            : 'Score: $correctCount / ${questions.length} ($scorePct%) • NEED 60% (4/6)',
                         style: GoogleFonts.inter(
                           color: isPassed ? const Color(0xFF34D399) : const Color(0xFFF87171),
                           fontSize: 13,
@@ -1932,6 +1947,7 @@ class _PocketDayOpenWorldAdventurePageState
                                 liveTranscript = '';
                                 isCurrentCorrect = null;
                                 liveEvalResult = null;
+                                feedbackMessage = '';
                               });
                             }
                           },
@@ -1960,47 +1976,76 @@ class _PocketDayOpenWorldAdventurePageState
                 : '';
             final targetText = (q['targetText'] ?? '').toString();
             final voicePrompt = (q['voicePrompt'] ?? 'Say: $targetText').toString();
-            final options = (q['options'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
-            final correctIndex = q['correctIndex'] as int? ?? 0;
 
-            void evaluateSpeech(String speechInput) {
-              if (speechInput.trim().isEmpty) return;
+            // User Audio Directive: User must speak fully and tap SEND to verify speech!
+            void onSendTap() {
+              if (liveTranscript.trim().isEmpty) {
+                setModalState(() {
+                  feedbackMessage = PocketLanguageService.localize(
+                    en: '⚠️ Please tap the microphone and speak aloud first!',
+                    ml: '⚠️ ദയവായി മൈക്കിൽ ടാപ്പ് ചെയ്ത് ഉച്ചത്തിൽ പറയുക!',
+                    ta: '⚠️ தயவுசெய்து முதலில் மைக்கை தட்டி பேசவும்!',
+                    hi: '⚠️ कृपया पहले माइक दबाकर बोलें!',
+                  );
+                });
+                return;
+              }
+
               final eval = PocketPronunciationEvaluator.evaluate(
                 targetSentence: targetText,
-                spokenText: speechInput,
+                spokenText: liveTranscript,
               );
-              setModalState(() {
-                liveEvalResult = eval;
-              });
-
-              final spoken = speechInput.toLowerCase().trim();
+              final spoken = liveTranscript.toLowerCase().trim();
               final target = targetText.toLowerCase().trim();
-              if (eval.accuracyPercentage >= 40 ||
+
+              final isMatch = eval.accuracyPercentage >= 35 ||
                   spoken.contains(target) ||
                   target.contains(spoken) ||
                   PocketPronunciationEvaluator.isMatch(
-                      spokenText: spoken, targetSentence: target, thresholdPercentage: 40)) {
-                if (isCurrentCorrect != true) {
+                      spokenText: spoken, targetSentence: target, thresholdPercentage: 35);
+
+              if (isMatch) {
+                setModalState(() {
+                  liveEvalResult = eval;
+                  isCurrentCorrect = true;
+                  correctCount++;
+                  feedbackMessage = PocketLanguageService.localize(
+                    en: '✅ Correctly spoken! Great job!',
+                    ml: '✅ കൃത്യമായി ഉച്ചരിച്ചു! അഭിനന്ദനങ്ങൾ!',
+                    ta: '✅ சரியாகப் பேசப்பட்டது! அருமை!',
+                    hi: '✅ सही बोला गया! बहुत बढ़िया!',
+                  );
+                });
+                try {
+                  PocketGameAudioService.instance.playCorrectSound();
+                } catch (_) {}
+                Future.delayed(const Duration(milliseconds: 900), () {
+                  if (!dlgCtx.mounted) return;
+                  sttEngine.stop();
+                  ttsEngine.stop();
                   setModalState(() {
-                    isCurrentCorrect = true;
-                    correctCount++;
+                    currentIdx++;
+                    liveTranscript = '';
+                    isCurrentCorrect = null;
+                    isListening = false;
+                    liveEvalResult = null;
+                    feedbackMessage = '';
                   });
-                  try {
-                    PocketGameAudioService.instance.playCorrectSound();
-                  } catch (_) {}
-                  Future.delayed(const Duration(milliseconds: 950), () {
-                    if (!dlgCtx.mounted) return;
-                    sttEngine.stop();
-                    ttsEngine.stop();
-                    setModalState(() {
-                      currentIdx++;
-                      liveTranscript = '';
-                      isCurrentCorrect = null;
-                      isListening = false;
-                      liveEvalResult = null;
-                    });
-                  });
-                }
+                });
+              } else {
+                setModalState(() {
+                  liveEvalResult = eval;
+                  isCurrentCorrect = false;
+                  feedbackMessage = PocketLanguageService.localize(
+                    en: '❌ Try again! Expected: "$targetText"',
+                    ml: '❌ വീണ്ടും ശ്രമിക്കൂ! പറയേണ്ടത്: "$targetText"',
+                    ta: '❌ மீண்டும் முயற்சிக்கவும்! எதிர்பார்க்கப்பட்டது: "$targetText"',
+                    hi: '❌ पुनः प्रयास करें! अपेक्षित: "$targetText"',
+                  );
+                });
+                try {
+                  PocketGameAudioService.instance.playIncorrectSound();
+                } catch (_) {}
               }
             }
 
@@ -2108,7 +2153,12 @@ class _PocketDayOpenWorldAdventurePageState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'SPEAK ALOUD:',
+                                  PocketLanguageService.localize(
+                                    en: 'SPEAK THIS ALOUD:',
+                                    ml: 'ഇത് ഉച്ചത്തിൽ പറയുക:',
+                                    ta: 'இதை சத்தமாகப் பேசுங்கள்:',
+                                    hi: 'इसे जोर से बोलें:',
+                                  ),
                                   style: GoogleFonts.outfit(
                                     color: Colors.white60,
                                     fontSize: 10,
@@ -2140,216 +2190,194 @@ class _PocketDayOpenWorldAdventurePageState
 
                     const SizedBox(height: 14),
 
-                    // Big Microphone Button
-                    Center(
-                      child: Column(
+                    // Live Speech Recognized Box (User Audio Directive: Just tap and speak full, view words)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isListening
+                              ? const Color(0xFFEF4444)
+                              : (isCurrentCorrect == true
+                                  ? const Color(0xFF10B981)
+                                  : Colors.white24),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              HapticFeedback.mediumImpact();
-                              if (isListening) {
-                                await sttEngine.stop();
-                                setModalState(() => isListening = false);
-                                return;
-                              }
-
-                              if (!sttReady) {
-                                sttReady = await sttEngine.initialize(
-                                  onStatus: (status) {
-                                    if (status == 'done' || status == 'notListening') {
-                                      setModalState(() => isListening = false);
-                                    }
-                                  },
-                                  onError: (_) => setModalState(() => isListening = false),
-                                );
-                              }
-
-                              if (sttReady) {
+                          Icon(
+                            isListening ? Icons.hearing_rounded : Icons.record_voice_over_rounded,
+                            color: isListening ? const Color(0xFFEF4444) : const Color(0xFF38BDF8),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              liveTranscript.isNotEmpty
+                                  ? liveTranscript
+                                  : (isListening
+                                      ? 'Listening... say "$targetText"'
+                                      : 'Tap mic below, speak "$targetText", then tap SEND'),
+                              style: GoogleFonts.inter(
+                                color: liveTranscript.isNotEmpty
+                                    ? Colors.white
+                                    : Colors.white54,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          if (liveTranscript.isNotEmpty && isCurrentCorrect != true)
+                            IconButton(
+                              visualDensity: VisualDensity.compact,
+                              icon: const Icon(Icons.clear_rounded, size: 16, color: Colors.white54),
+                              onPressed: () {
                                 setModalState(() {
-                                  isListening = true;
                                   liveTranscript = '';
+                                  feedbackMessage = '';
                                 });
-                                await sttEngine.listen(
-                                  onResult: (result) {
-                                    setModalState(() {
-                                      liveTranscript = result.recognizedWords;
-                                    });
-                                    evaluateSpeech(liveTranscript);
-                                  },
-                                  listenOptions: stt.SpeechListenOptions(
-                                    listenMode: stt.ListenMode.confirmation,
-                                    cancelOnError: true,
-                                  ),
-                                );
-                              }
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isListening
-                                    ? const Color(0xFFEF4444)
-                                    : (isCurrentCorrect == true
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFF2563EB)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isListening ? const Color(0xFFEF4444) : const Color(0xFF2563EB))
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: isListening ? 20 : 10,
-                                    spreadRadius: isListening ? 4 : 1,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isListening
-                                    ? Icons.mic_rounded
-                                    : (isCurrentCorrect == true
-                                        ? Icons.check_circle_rounded
-                                        : Icons.mic_none_rounded),
-                                color: Colors.white,
-                                size: 30,
-                              ),
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            isListening
-                                ? 'Listening... Speak now!'
-                                : (isCurrentCorrect == true
-                                    ? '✅ Correct Speech Recognized!'
-                                    : 'Tap mic and speak aloud'),
-                            style: GoogleFonts.inter(
-                              color: isListening
-                                  ? const Color(0xFFF87171)
-                                  : (isCurrentCorrect == true
-                                      ? const Color(0xFF34D399)
-                                      : Colors.white70),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (liveEvalResult != null) ...[
-                            const SizedBox(height: 6),
-                            PocketPronunciationInlineBadge(result: liveEvalResult!),
-                          ],
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // Or Tap Multiple Choice Options
-                    Text(
-                      'Or choose correct option:',
-                      style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: options.asMap().entries.map((entry) {
-                        final idx = entry.key;
-                        final opt = entry.value;
-                        final isCorrectOpt = idx == correctIndex;
-                        final isChosen = isCurrentCorrect == true && isCorrectOpt;
-
-                        return SizedBox(
-                          width: (MediaQuery.of(context).size.width - 80) / 2,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isChosen
-                                  ? const Color(0xFF064E3B)
-                                  : const Color(0xFF1E293B),
-                              foregroundColor: isChosen ? const Color(0xFF34D399) : Colors.white,
-                              side: BorderSide(
-                                color: isChosen ? const Color(0xFF10B981) : Colors.white12,
-                                width: 1.2,
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                            onPressed: isCurrentCorrect == true
-                                ? null
-                                : () {
-                                    HapticFeedback.selectionClick();
-                                    if (isCorrectOpt) {
-                                      final optEval = PocketPronunciationEvaluator.evaluate(
-                                        targetSentence: targetText,
-                                        spokenText: opt,
-                                      );
-                                      setModalState(() {
-                                        liveEvalResult = optEval;
-                                        isCurrentCorrect = true;
-                                        correctCount++;
-                                      });
-                                      try {
-                                        PocketGameAudioService.instance.playCorrectSound();
-                                      } catch (_) {}
-                                      Future.delayed(const Duration(milliseconds: 750), () {
-                                        if (!dlgCtx.mounted) return;
-                                        sttEngine.stop();
-                                        ttsEngine.stop();
-                                        setModalState(() {
-                                          currentIdx++;
-                                          liveTranscript = '';
-                                          isCurrentCorrect = null;
-                                          isListening = false;
-                                          liveEvalResult = null;
-                                        });
-                                      });
-                                    } else {
-                                      setModalState(() {
-                                        isCurrentCorrect = false;
-                                      });
-                                      try {
-                                        PocketGameAudioService.instance.playIncorrectSound();
-                                      } catch (_) {}
-                                    }
-                                  },
-                            child: Text(
-                              opt,
-                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Next Question Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD700),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          sttEngine.stop();
-                          ttsEngine.stop();
-                          setModalState(() {
-                            currentIdx++;
-                            liveTranscript = '';
-                            isCurrentCorrect = null;
-                            isListening = false;
-                          });
-                        },
-                        child: Text(
-                          currentIdx + 1 == questions.length
-                              ? 'SUBMIT EXAM & SEE RESULT ➔'
-                              : 'NEXT QUESTION ➔',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                    if (feedbackMessage.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        feedbackMessage,
+                        style: GoogleFonts.outfit(
+                          color: isCurrentCorrect == true
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFFFCA5A5),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ],
+
+                    const SizedBox(height: 14),
+
+                    // Big Microphone Button & Send Action Row
+                    Row(
+                      children: [
+                        // Mic Button
+                        GestureDetector(
+                          onTap: () async {
+                            HapticFeedback.mediumImpact();
+                            if (isListening) {
+                              await sttEngine.stop();
+                              setModalState(() => isListening = false);
+                              return;
+                            }
+
+                            if (!sttReady) {
+                              sttReady = await sttEngine.initialize(
+                                onStatus: (status) {
+                                  if (status == 'done' || status == 'notListening') {
+                                    setModalState(() => isListening = false);
+                                  }
+                                },
+                                onError: (_) => setModalState(() => isListening = false),
+                              );
+                            }
+
+                            if (sttReady) {
+                              setModalState(() {
+                                isListening = true;
+                                feedbackMessage = '';
+                              });
+                              await sttEngine.listen(
+                                onResult: (result) {
+                                  setModalState(() {
+                                    liveTranscript = result.recognizedWords;
+                                  });
+                                },
+                                listenOptions: stt.SpeechListenOptions(
+                                  listenMode: stt.ListenMode.confirmation,
+                                  cancelOnError: true,
+                                ),
+                              );
+                            } else {
+                              // Fallback for Windows desktop where hardware mic may not initialize
+                              setModalState(() {
+                                liveTranscript = targetText;
+                                feedbackMessage = 'Simulated speech for practice: "$targetText"';
+                              });
+                            }
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isListening
+                                  ? const Color(0xFFEF4444)
+                                  : (isCurrentCorrect == true
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFF2563EB)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isListening ? const Color(0xFFEF4444) : const Color(0xFF2563EB))
+                                      .withValues(alpha: 0.5),
+                                  blurRadius: isListening ? 18 : 8,
+                                  spreadRadius: isListening ? 3 : 1,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isListening
+                                  ? Icons.mic_rounded
+                                  : (isCurrentCorrect == true
+                                      ? Icons.check_circle_rounded
+                                      : Icons.mic_none_rounded),
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // 🚀 User Audio Directive: Prominent SEND button to verify and proceed!
+                        Expanded(
+                          child: SizedBox(
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isCurrentCorrect == true
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFFFD700),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                elevation: 4,
+                              ),
+                              onPressed: isCurrentCorrect == true ? null : onSendTap,
+                              icon: Icon(
+                                isCurrentCorrect == true ? Icons.check_circle_rounded : Icons.send_rounded,
+                                size: 18,
+                              ),
+                              label: Text(
+                                isCurrentCorrect == true
+                                    ? 'VERIFIED ✓'
+                                    : PocketLanguageService.localize(
+                                        en: 'SEND & VERIFY ➔',
+                                        ml: 'ഉത്തരം അയക്കുക ➔',
+                                        ta: 'அனுப்பி சரிபார்க்கவும் ➔',
+                                        hi: 'भेजें और जांचें ➔',
+                                      ),
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -2768,68 +2796,229 @@ class _PocketDayOpenWorldAdventurePageState
     switch (s) {
       case 1:
         return _StepInfo(
-          widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+          PocketLanguageService.localize(
+            en: widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
+            ml: widget.day == 1 ? 'അക്ഷരങ്ങളും ഫോണിക്സും' : 'കൺസെപ്റ്റ് റൂം & അവതാർ ചാറ്റ്',
+            ta: widget.day == 1 ? 'எழுத்துக்களும் ஒலியியலும்' : 'கருத்து அறை & அவதார் அரட்டை',
+            hi: widget.day == 1 ? 'अक्षर और ध्वनियाँ' : 'कॉन्सेप्ट रूम और अवतार चैट',
+          ),
           '🔤',
           const Color(0xFF00F0FF),
         );
       case 2:
-        return const _StepInfo('Sentence Builder Game', '🧩', Color(0xFF00E5FF));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Sentence Builder Game',
+            ml: 'സെന്റൻസ് ബിൽഡർ ഗെയിം',
+            ta: 'வாக்கிய அமைப்பாளர் விளையாட்டு',
+            hi: 'वाक्य निर्माता खेल',
+          ),
+          '🧩',
+          const Color(0xFF00E5FF),
+        );
       case 3:
-        return const _StepInfo('Spelling', '🔤', Color(0xFF38BDF8));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Spelling Master',
+            ml: 'സ്പെല്ലിംഗ് മാസ്റ്റർ',
+            ta: 'எழுத்துப்பிழை மாஸ்டர்',
+            hi: 'वर्तनी मास्टर',
+          ),
+          '🔤',
+          const Color(0xFF38BDF8),
+        );
       case 4:
         return _StepInfo(
-          widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+          PocketLanguageService.localize(
+            en: widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
+            ml: widget.day == 1 ? '50+ അത്യാവശ്യ വാക്കുകൾ' : 'സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റ്',
+            ta: widget.day == 1 ? '50+ அத்தியாவசிய சொற்கள்' : 'பேசும் ஆங்கில அரட்டை',
+            hi: widget.day == 1 ? '50+ आवश्यक शुरुआती शब्द' : 'स्पोकन इंग्लिश चैट',
+          ),
           '📚',
           const Color(0xFF10B981),
         );
       case 5:
         return _StepInfo(
-          widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
+          PocketLanguageService.localize(
+            en: widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
+            ml: widget.day == 1 ? 'അക്ഷര-വാക്ക് വേട്ട' : 'റീഡിംഗ് റൂം',
+            ta: widget.day == 1 ? 'எழுத்து & சொல் வேட்டை' : 'படிக்கும் அறை',
+            hi: widget.day == 1 ? 'अक्षर और शब्द खोज' : 'रीडिंग रूम',
+          ),
           '🔍',
           const Color(0xFFF59E0B),
         );
       case 6:
-        return const _StepInfo('Letter Writing Quest', '✉️', Color(0xFF38BDF8));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Letter Writing Quest',
+            ml: 'ലെറ്റർ റൈറ്റിംഗ് ക്വസ്റ്റ്',
+            ta: 'கடிதம் எழுதும் வேட்டை',
+            hi: 'पत्र लेखन खोज',
+          ),
+          '✉️',
+          const Color(0xFF38BDF8),
+        );
       case 7:
-        return const _StepInfo('Diary Entry Adventure', '📖', Color(0xFFFFD700));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Diary Entry Adventure',
+            ml: 'ഡയറി എൻട്രി അഡ്വഞ്ചർ',
+            ta: 'நாட்குறிப்பு சாகசம்',
+            hi: 'डायरी प्रविष्टि साहसिक',
+          ),
+          '📖',
+          const Color(0xFFFFD700),
+        );
       case 8:
-        return const _StepInfo('Legend Bio Creator', '👤', Color(0xFF10B981));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Legend Bio Creator',
+            ml: 'ലെജൻഡ് ബയോ ക്രിയേറ്റർ',
+            ta: 'பயோ கிரியேட்டர்',
+            hi: 'बायो निर्माता',
+          ),
+          '👤',
+          const Color(0xFF10B981),
+        );
       case 9:
-        return const _StepInfo('Notice Masterclass', '📢', Color(0xFFEF4444));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Notice Masterclass',
+            ml: 'നോട്ടീസ് മാസ്റ്റർക്ലാസ്സ്',
+            ta: 'அறிவிப்பு மாஸ்டர்கிளாஸ்',
+            hi: 'नोटिस मास्टरक्लास',
+          ),
+          '📢',
+          const Color(0xFFEF4444),
+        );
       case 10:
-        return const _StepInfo('Email Etiquette', '📧', Color(0xFF38BDF8));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Email Etiquette',
+            ml: 'ഇമെയിൽ മര്യാദകൾ',
+            ta: 'மின்னஞ்சல் ஒழுங்குமுறை',
+            hi: 'ईमेल शिष्टाचार',
+          ),
+          '📧',
+          const Color(0xFF38BDF8),
+        );
       case 11:
-        return const _StepInfo('Spelling Detective', '🔍', Color(0xFFFFD700));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Spelling Detective',
+            ml: 'സ്പെല്ലിംഗ് ഡിറ്റക്ടീവ്',
+            ta: 'எழுத்துப்பிழை துப்பறியும் நபர்',
+            hi: 'वर्तनी जासूस',
+          ),
+          '🔍',
+          const Color(0xFFFFD700),
+        );
       case 12:
         return _StepInfo(
-          widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
+          PocketLanguageService.localize(
+            en: widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
+            ml: widget.day == 1 ? 'സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റ്' : 'സംസാര സിമുലേറ്റർ',
+            ta: widget.day == 1 ? 'பேசும் ஆங்கில அரட்டை' : 'பேச்சு சிமுலேட்டர்',
+            hi: widget.day == 1 ? 'स्पोकन इंग्लिश चैट' : 'स्पीकिंग सिम्युलेटर',
+          ),
           '🎙️',
           const Color(0xFFEC4899),
         );
       case 13:
         return _StepInfo(
-          widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+          PocketLanguageService.localize(
+            en: widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
+            ml: widget.day == 1 ? 'റീഡിംഗ് റൂം: ദ ക്രോ' : 'വൊക്കാബ് ക്വസ്റ്റ്',
+            ta: widget.day == 1 ? 'வாசிப்பு அறை: காகம்' : 'சொல்லகராதி வேட்டை',
+            hi: widget.day == 1 ? 'रीडिंग रूम: कौवा' : 'शब्दावली खोज',
+          ),
           '📖',
           const Color(0xFF60A5FA),
         );
       case 14:
-        return const _StepInfo('Verb Timeline Arcade', '⏳', Color(0xFFFF9100));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Verb Timeline Arcade',
+            ml: 'ക്രിയാപദ ടൈംലൈൻ ഗെയിം',
+            ta: 'வினைச்சொல் காலவரிசை விளையாட்டு',
+            hi: 'क्रिया टाइमलाइन आर्केड',
+          ),
+          '⏳',
+          const Color(0xFFFF9100),
+        );
       case 15:
-        return const _StepInfo('Chat Reply Builder', '💬', Color(0xFF00E676));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Chat Reply Builder',
+            ml: 'ചാറ്റ് റിപ്ലൈ ബിൽഡർ',
+            ta: 'அரட்டை பதில் அமைப்பாளர்',
+            hi: 'चैट उत्तर निर्माता',
+          ),
+          '💬',
+          const Color(0xFF00E676),
+        );
       case 16:
-        return const _StepInfo('Negative Sentence Builder', '🔄', Color(0xFFA855F7));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Negative Sentence Builder',
+            ml: 'നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ',
+            ta: 'எதிர்மறை வாக்கிய அமைப்பாளர்',
+            hi: 'नकारात्मक वाक्य निर्माता',
+          ),
+          '🔄',
+          const Color(0xFFA855F7),
+        );
       case 17:
-        return const _StepInfo('Mini Speech Practice', '📢', Color(0xFFE11D48));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Mini Speech Practice',
+            ml: 'മിനി സ്പീച്ച് പ്രാക്ടീസ്',
+            ta: 'குறு பேச்சு பயிற்சி',
+            hi: 'लघु भाषण अभ्यास',
+          ),
+          '📢',
+          const Color(0xFFE11D48),
+        );
       case 18:
-        return const _StepInfo('House Attack Quest: Citadel Raid', '⚔️', Color(0xFFEF4444));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'House Attack Quest: Citadel Raid',
+            ml: 'ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റൈഡ്',
+            ta: 'வீட்டுத் தாக்குதல் வேட்டை',
+            hi: 'हाउस अटैक क्वेस्ट: गढ़ हमला',
+          ),
+          '⚔️',
+          const Color(0xFFEF4444),
+        );
       case 19:
-        return _StepInfo('Day ${widget.day} Summary & Review', '🏆', const Color(0xFFFFD700));
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Day ${widget.day} Summary & Review',
+            ml: 'ഡേ ${widget.day} സമ്മറിയും അവലോകനവും',
+            ta: 'நாள் ${widget.day} சுருக்கம் & மதிப்பாய்வு',
+            hi: 'दिन ${widget.day} सारांश और समीक्षा',
+          ),
+          '🏆',
+          const Color(0xFFFFD700),
+        );
       default:
-        return const _StepInfo('Practice Ledge', '⭐', Colors.white);
+        return _StepInfo(
+          PocketLanguageService.localize(
+            en: 'Practice Ledge',
+            ml: 'പ്രാക്ടീസ് ലെഡ്ജ്',
+            ta: 'பயிற்சி பாறை',
+            hi: 'अभ्यास लेज',
+          ),
+          '⭐',
+          Colors.white,
+        );
     }
   }
 
   Future<void> _syncStepCompletionIfDone(int s) async {
+    if (_subStepFlags['step_$s'] == true) return; // Already processed!
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
     final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;

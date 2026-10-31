@@ -299,6 +299,10 @@ class PocketLanguageGuardService {
         final currentScore = prefs.getInt('pm_kid_student_score') ?? 100;
         final newScore = math.max(0, currentScore - penalty);
         await prefs.setInt('pm_kid_student_score', newScore);
+      } else {
+        final currentScore = prefs.getInt('user_pocket_score') ?? 150;
+        final newScore = math.max(0, currentScore - penalty);
+        await prefs.setInt('user_pocket_score', newScore);
       }
 
       // Supabase database deduction
@@ -314,6 +318,13 @@ class PocketLanguageGuardService {
             .from('profile')
             .update({'pocket_score': updatedScore})
             .eq('user_id', userId);
+
+        try {
+          await SupaFlow.client
+              .from('users')
+              .update({'pocket_score': updatedScore})
+              .eq('id', userId);
+        } catch (_) {}
 
         await SupaFlow.client.rpc('deduct_pocket_score_penalty', params: {
           'user_id': userId,
@@ -342,6 +353,33 @@ class PocketLanguageGuardService {
     } catch (e) {
       debugPrint('Jevv AI score penalty error: $e');
     }
+  }
+
+  /// 🌐 Background Language Guard Evaluation (User Audio Directive)
+  /// Non-blocking: runs asynchronously after message is sent.
+  /// If non-English / Malayalam is detected, deducts Pocket Score and dispatches warning notice.
+  static void evaluateOutgoingMessageInBackground({
+    required String userId,
+    required String messageText,
+    String? contextId,
+  }) {
+    if (userId.isEmpty || messageText.trim().isEmpty) return;
+    Future.microtask(() async {
+      try {
+        final result = checkMessage(messageText);
+        if (!result.isValid) {
+          final lang = result.detectedWord ?? 'Regional Language';
+          await dispatchPresidentialWarning(
+            userId: userId,
+            detectedLanguage: lang,
+            messageSnippet: messageText,
+            contextId: contextId,
+          );
+        }
+      } catch (e) {
+        debugPrint('Language guard background eval error: $e');
+      }
+    });
   }
 }
 

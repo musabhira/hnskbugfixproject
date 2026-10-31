@@ -21,6 +21,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -5093,6 +5095,9 @@ Draft: "$draft"''';
                     final isKidKing =
                         targetId == 'mentor_animal_king_lion' ||
                         targetId == 'kid_bot_100';
+                    final rank = PocketRankingService.getCachedGlobalRank(targetId);
+                    final isTopRank = rank != null && rank > 0 && rank <= 10;
+                    final isVip = isPresident || isKidKing || isTopRank || _currentGroupName.toLowerCase().contains('vip');
 
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -5117,7 +5122,7 @@ Draft: "$draft"''';
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isPresident || isKidKing)
+                        if (isVip)
                           Container(
                             margin: const EdgeInsets.only(left: 5),
                             child: const Icon(
@@ -6062,11 +6067,7 @@ Draft: "$draft"''';
                                                 message.createdAt),
                                           _buildMessageTile(message, isMe),
                                           if (showNativeAd)
-                                            const PocketNativeAdWidget(
-                                              category: 'English & Business',
-                                              margin: EdgeInsets.symmetric(
-                                                  vertical: 6, horizontal: 16),
-                                            ),
+                                            const PocketChatBubbleAdWidget(),
                                         ],
                                       ),
                                     );
@@ -7720,14 +7721,6 @@ Draft: "$draft"''';
             'Pocket Talk invite already sent! Waiting for acceptance ⏳');
         return;
       }
-    }
-
-    final canStart =
-        await PocketTrophyService.canInitiateNewPact(_currentUserId);
-    if (!canStart) {
-      _showSnackBar(
-          '⚡ You already have 3 active Pocket Talks running! Complete an agreement first.');
-      return;
     }
 
     HapticFeedback.mediumImpact();

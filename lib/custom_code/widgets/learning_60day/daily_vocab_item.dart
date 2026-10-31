@@ -73,8 +73,12 @@ class DailyVocabItem {
       if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     } else if (lang.contains('telug') || lang == 'te') {
       if (teluguMeaning.isNotEmpty) return teluguMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     } else if (lang.contains('kannad') || lang == 'kn') {
       if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
 
     if (PocketLanguageService.isMalayalam) {
@@ -90,11 +94,15 @@ class DailyVocabItem {
       final dictMeaning = PocketLanguageService.getVocabMeaning(word);
       if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
-    if (PocketLanguageService.isTelugu && teluguMeaning.isNotEmpty) {
-      return teluguMeaning;
+    if (PocketLanguageService.isTelugu) {
+      if (teluguMeaning.isNotEmpty) return teluguMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
-    if (PocketLanguageService.isKannada && kannadaMeaning.isNotEmpty) {
-      return kannadaMeaning;
+    if (PocketLanguageService.isKannada) {
+      if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
+      final dictMeaning = PocketLanguageService.getVocabMeaning(word);
+      if (dictMeaning.isNotEmpty && dictMeaning != word) return dictMeaning;
     }
 
     if (PocketLanguageService.isMalayalam && malayalamMeaning.isNotEmpty) {

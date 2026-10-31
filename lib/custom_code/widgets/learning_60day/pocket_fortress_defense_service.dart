@@ -1792,8 +1792,8 @@ class PocketFortressDefenseService {
     await prefs.setString('$_targetCooldownKey$targetId', DateTime.now().toIso8601String());
   }
 
-  /// ⚔️ Daily Attack Limit (Audio 15 Directive: "ഡെയിലി ഒരാൾക്ക് 1 അല്ലെങ്കിൽ 2 അറ്റാക്ക് ആണ് ലിമിറ്റ്")
-  static const int kDailyMaxAttacks = 2;
+  /// ⚔️ Unlimited Attacks & Fights Directive
+  static const int kDailyMaxAttacks = 999999;
 
   static String _safeCurrentUserId([String? fallback]) {
     try {
@@ -1812,8 +1812,7 @@ class PocketFortressDefenseService {
   }
 
   static Future<bool> canLaunchAttackToday([String? userId]) async {
-    final used = await getDailyAttacksUsedToday(userId);
-    return used < kDailyMaxAttacks;
+    return true; // Unlimited attacks and fights
   }
 
   static Future<void> recordAttackLaunchedToday([String? userId]) async {

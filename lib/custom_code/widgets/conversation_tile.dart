@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
@@ -187,29 +188,6 @@ class _ConversationTileState extends State<ConversationTile> {
 
   Future<void> _sendPocketTalkRequest() async {
     if (_isSendingPocketTalk) return;
-
-    final canStart =
-        await PocketTrophyService.canInitiateNewPact(widget.currentUserId);
-    if (!canStart) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF0F172A),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFFFB300), width: 1),
-            ),
-            content: Text(
-              '⚡ You already have 3 active Pocket Talks running! Complete an agreement before requesting a new one.',
-              style: GoogleFonts.outfit(color: Colors.white70),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-      return;
-    }
 
     HapticFeedback.mediumImpact();
     setState(() => _isSendingPocketTalk = true);
@@ -905,26 +883,6 @@ class _ConversationTileState extends State<ConversationTile> {
                           child: _buildAvatar(isDark),
                         ),
                       ),
-                      if (widget.conversation.isOnline &&
-                          !widget.conversation.isGroup)
-                        Positioned(
-                          right: 1,
-                          bottom: 1,
-                          child: Container(
-                            width: 11,
-                            height: 11,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981), // Emerald
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF1A1A1A)
-                                    : const Color(0xFFFFFFFF),
-                                width: 2.0,
-                              ),
-                            ),
-                          ),
-                        ),
                       if (_cachedPact != null &&
                           _cachedPact!.isAccepted &&
                           !_cachedPact!.isForfeited)
@@ -1002,6 +960,25 @@ class _ConversationTileState extends State<ConversationTile> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                                  ),
+                                  Builder(
+                                    builder: (context) {
+                                      final isPresident = PocketPresidentService.isPresidentId(widget.conversation.id);
+                                      final isVip = widget.conversation.name.toLowerCase().contains('vip') ||
+                                          widget.conversation.name.toLowerCase().contains('president') ||
+                                          isPresident;
+                                      if (isVip) {
+                                        return const Padding(
+                                          padding: EdgeInsets.only(left: 4.5),
+                                          child: Icon(
+                                            material.Icons.verified_rounded,
+                                            color: Color(0xFFFFD700),
+                                            size: 15,
+                                          ),
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
                                   ),
                                   Builder(
                                     builder: (context) {

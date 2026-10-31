@@ -214,6 +214,28 @@ class PocketRobotService {
     return _baseRobots.map((r) => getDynamicRobot(r)).toList();
   }
 
+  /// Retrieve all robots and animal companions (for active vibes, stories & interactions)
+  static List<PocketRobot> getAllRobotsAndAnimals() {
+    final robots = getAllRobots();
+    final animals = PocketKidsRobotsData.robotsAndHomies.map((animal) {
+      return PocketRobot(
+        id: animal.id,
+        name: animal.name,
+        baseLevel: animal.dayLevel,
+        level: animal.dayLevel,
+        archetype: RobotArchetype.cheerful,
+        cefrRank: 'Level ${animal.dayLevel}',
+        bio: animal.bio,
+        avatarUrl: animal.avatar.isNotEmpty ? animal.avatar : '🐾',
+        housePalette: 'terracotta',
+        status: '🐾 Animal Buddy • Level ${animal.dayLevel}',
+        openingMessage: 'Hello! I am ${animal.name}. Ready to climb the mountain together?',
+        catchphrases: ['Let’s climb the mountain!', 'Practice makes progress!'],
+      );
+    }).toList();
+    return [...robots, ...animals];
+  }
+
   /// Find robot stationed at or dynamically at an exact curriculum level (1 to 90)
   static PocketRobot getRobotByLevel(int level) {
     final clamped = level.clamp(1, 90);
@@ -239,7 +261,7 @@ class PocketRobotService {
           archetype: RobotArchetype.cheerful,
           cefrRank: 'Level ${animal.dayLevel}',
           bio: animal.bio,
-          avatarUrl: '',
+          avatarUrl: animal.avatar.isNotEmpty ? animal.avatar : '🐾',
           housePalette: 'terracotta',
           status: '🐾 Animal Buddy • Level ${animal.dayLevel}',
           openingMessage: 'Hello! I am ${animal.name}. Ready to climb the mountain together?',
@@ -926,9 +948,9 @@ class PocketRobotService {
         }).toList();
       }
 
-      // Replenish active vibes pool so robots across all levels have active vibes
+      // Replenish active vibes pool so robots & animal buddies across all levels have active vibes
       if (activeList.length < 24) {
-        final allRobots = getAllRobots();
+        final allRobots = getAllRobotsAndAnimals();
         final existingRobotIds =
             activeList.map((v) => v['profile_id']?.toString() ?? '').toSet();
         final available =
@@ -2045,7 +2067,7 @@ class PocketRobotService {
       if (activeVibes.length < 6) {
         final activeRobotIds =
             activeVibes.map((v) => v['profile_id']?.toString() ?? '').toSet();
-        final allRobots = getAllRobots();
+        final allRobots = getAllRobotsAndAnimals();
         final candidates =
             allRobots.where((r) => !activeRobotIds.contains(r.id)).toList();
         if (candidates.isNotEmpty) {

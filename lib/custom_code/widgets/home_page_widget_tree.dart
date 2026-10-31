@@ -57,6 +57,8 @@ import 'package:pocket_mates_app/custom_code/services/app_store_review_service.d
 import 'chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_ranking_trail_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -790,37 +792,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Future<void> _checkAppUpdate() async {
     try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
-
-      final updateData = await supabase
-          .from('app_updates')
-          .select('*')
-          .eq('id', 1)
-          .maybeSingle();
-
-      if (updateData == null) return;
-
-      final bool isAndroid = io.Platform.isAndroid;
-      final bool isIOS = io.Platform.isIOS;
-
-      final String? storeVersion = isAndroid
-          ? updateData['android_version']
-          : (isIOS ? updateData['ios_version'] : null);
-
-      final bool isActive = isAndroid
-          ? (updateData['android_active'] ?? false)
-          : (isIOS ? (updateData['ios_active'] ?? false) : false);
-
-      final String? storeLink = isAndroid
-          ? updateData['android_link']
-          : (isIOS ? updateData['ios_link'] : null);
-
-      if (storeVersion != null && isActive) {
-        if (_shouldUpdate(currentVersion, storeVersion)) {
-          _showUpdateDialog(updateData, storeLink, storeVersion);
-        }
-      }
+      await PocketAppUpdateService.checkForUpdate(context);
     } catch (e) {
       debugPrint('Update check error: $e');
     }
@@ -2001,9 +1973,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         setState(() {
           _chatCategoryFilterIndex = index;
         });
-        if (index == 6) {
-          _refreshPocketTalkPeers();
-        }
+        ref.read(conversationsProvider.notifier).refreshNow();
+        _loadPendingRequests();
+        _refreshPocketTalkPeers();
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -3477,13 +3449,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               onTap: () async {
                 if (item.type == 'mate') {
                   final req = item.data as Map<String, dynamic>;
+                  final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
                   await Navigator.push(
                     context,
                     material.MaterialPageRoute(
-                      builder: (context) => WhatsAppGroupChat(
-                        groupId: 'p:${req['sender_id']}',
-                        groupName: req['sender_name'] ?? 'Pocket Mate',
-                        groupImage: req['sender_profile_image'],
+                      builder: (context) => MainProfileWidget(
+                        userId: senderId,
+                        incomingMateRequest: req,
                       ),
                     ),
                   );
@@ -3848,7 +3820,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             (context, index) {
                               final conversation =
                                   displayActiveConversations[index];
-                              return RepaintBoundary(
+                              final tileWidget = RepaintBoundary(
                                 key: ValueKey(conversation.id),
                                 child: ConversationTile(
                                   key: ValueKey(conversation.id),
@@ -4059,6 +4031,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   },
                                 ),
                               );
+                              if ((index + 1) % 8 == 0) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    tileWidget,
+                                    const PocketNativeAdCard(),
+                                  ],
+                                );
+                              }
+                              return tileWidget;
                             },
                             childCount: displayActiveConversations.length,
                             addAutomaticKeepAlives: true,

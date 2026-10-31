@@ -31,6 +31,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_d
 import 'package:pocket_mates_app/custom_code/widgets/kids/curriculum_90days/spellings_90.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/student_creative_writing_90day_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 enum _Ph {
   ready,
@@ -109,6 +110,7 @@ class PocketCitadelRunnerAttackPage extends StatefulWidget {
     this.onSpeak,
     this.onListen,
     this.onRaidFinished,
+    this.isEscort = false,
   });
 
   final String defenderName;
@@ -123,6 +125,7 @@ class PocketCitadelRunnerAttackPage extends StatefulWidget {
   final Future<void> Function(String text)? onSpeak;
   final Future<String?> Function(String expected)? onListen;
   final void Function(Map<String, dynamic> result)? onRaidFinished;
+  final bool isEscort;
 
   /// 🚀 Static convenient launcher from anywhere in the app
   static Future<Map<String, dynamic>?> open(
@@ -133,6 +136,7 @@ class PocketCitadelRunnerAttackPage extends StatefulWidget {
     bool isKidMode = false,
     double passMark = 0.8,
     List<Map<String, String>>? customSentences,
+    bool isEscort = false,
   }) {
     return Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
@@ -144,6 +148,7 @@ class PocketCitadelRunnerAttackPage extends StatefulWidget {
           isKidMode: isKidMode,
           passMark: passMark,
           customSentences: customSentences,
+          isEscort: isEscort,
         ),
       ),
     );
@@ -191,10 +196,31 @@ class _PocketCitadelRunnerAttackPageState
     ['സൂര്യൻ കിഴക്ക് ഉദിക്കുന്നു.', 'The sun rises in the east.'],
     ['പക്ഷികൾ ആകാശത്ത് പറക്കുന്നു.', 'Birds fly high in the sky.'],
     ['എനിക്ക് കഥ കേൾക്കാൻ ഇഷ്ടമാണ്.', 'I love to hear stories.'],
+    ['ഞാൻ നന്നായി ഉറങ്ങി.', 'I slept very well.'],
+    ['അവർ പൂന്തോട്ടത്തിൽ കളിക്കുന്നു.', 'They are playing in the garden.'],
+    ['എന്റെ കൂട്ടുകാരൻ വന്നു.', 'My best friend arrived.'],
+    ['നമുക്ക് ചായ കുടിക്കാം.', 'Let us drink hot tea.'],
+    ['മഴ പെയ്യുന്നുണ്ട്.', 'It is raining outside now.'],
+    ['അവൻ ഒരു കത്ത് എഴുതി.', 'He wrote a nice letter.'],
+    ['അവൾ മനോഹരമായി പാടുന്നു.', 'She sings very melodiously.'],
+    ['ഞങ്ങൾ വൈകുന്നേരം നടക്കാൻ പോകുന്നു.', 'We go for an evening walk.'],
+    ['കുട്ടികൾ സന്തോഷത്തോടെ ചിരിക്കുന്നു.', 'The children laugh joyfully.'],
+    ['പാൽ ആരോഗ്യത്തിന് നല്ലതാണ്.', 'Milk is good for health.'],
+    ['നക്ഷത്രങ്ങൾ രാത്രിയിൽ തിളങ്ങുന്നു.', 'Stars shine bright at night.'],
+    ['അവൻ സത്യം പറഞ്ഞു.', 'He spoke the absolute truth.'],
+    ['ഞാൻ എന്റെ ഗൃഹപാഠം പൂർത്തിയാക്കി.', 'I completed my homework.'],
+    ['നമുക്ക് ഇംഗ്ലീഷിൽ സംസാരിക്കാം.', 'Let us speak in English.'],
+    ['ഇന്നത്തെ പ്രഭാതം മനോഹരമാണ്.', 'Today morning is beautiful.'],
+    ['അവൻ സൈക്കിൾ ഓടിക്കുന്നു.', 'He is riding a bicycle.'],
+    ['ഞാൻ ഒരു പുതിയ പാട്ട് പഠിച്ചു.', 'I learned a new song.'],
+    ['അമ്മ എനിക്ക് പലഹാരം തന്നു.', 'Mother gave me sweet snacks.'],
   ];
 
   static const List<String> _distract = [
-    'the', 'a', 'is', 'are', 'to', 'in', 'very', 'not', 'does', 'was', 'were', 'will'
+    'the', 'a', 'is', 'are', 'to', 'in', 'very', 'not', 'does', 'was', 'were', 'will', 'now', 'there', 'had',
+    'whereas', 'nevertheless', 'furthermore', 'despite', 'consequently', 'subsequently', 'inasmuch',
+    'albeit', 'notwithstanding', 'whom', 'whose', 'having', 'having been', 'might have', 'could have',
+    'would have', 'should', 'unless', 'provided', 'whilst', 'henceforth'
   ];
 
   // [correct, wrong1, wrong2]
@@ -228,6 +254,17 @@ class _PocketCitadelRunnerAttackPageState
     ['warrior', 'warior', 'warrier'],
     ['shield', 'sheild', 'shild'],
     ['courage', 'currage', 'coradge'],
+    ['victory', 'victery', 'viktory'],
+    ['treasure', 'treshure', 'treasur'],
+    ['champion', 'champian', 'chempion'],
+    ['practice', 'practise', 'practce'],
+    ['grammar', 'grammer', 'gramer'],
+    ['success', 'succes', 'sucess'],
+    ['believe', 'beleive', 'belive'],
+    ['journey', 'journy', 'jurney'],
+    ['adventure', 'adventur', 'advencher'],
+    ['fortress', 'fortres', 'fourtress'],
+    ['master', 'mastar', 'masster'],
   ];
 
   // [word, malayalam meaning, emoji]
@@ -256,6 +293,12 @@ class _PocketCitadelRunnerAttackPageState
     ['lion', 'സിംഹം', '🦁'],
     ['castle', 'കോട്ട', '🏰'],
     ['bridge', 'പാലം', '🌉'],
+    ['diamond', 'രത്നം', '💎'],
+    ['shield', 'പരിച', '🛡️'],
+    ['sword', 'വാൾ', '⚔️'],
+    ['forest', 'കാട്', '🌲'],
+    ['mountain', 'മല', '⛰️'],
+    ['ocean', 'സമുദ്രം', '🌊'],
   ];
 
   // [correct, wrong1, wrong2]
@@ -376,8 +419,8 @@ class _PocketCitadelRunnerAttackPageState
 
   void _newRaid() {
     _total = max(1, widget.defenderLevel);
-    // Unique seed per defender and raid attempt so different defenders and re-raids have distinct questions
-    final seed = (widget.defenderId?.hashCode ?? 0) ^ (widget.defenderLevel * 10007) ^ DateTime.now().minute;
+    // Truly dynamic seed using microsecond timestamp so subsequent attacks always have freshly randomized questions
+    final seed = (widget.defenderId?.hashCode ?? 0) ^ (widget.defenderLevel * 10007) ^ DateTime.now().microsecondsSinceEpoch;
     _rnd = Random(seed);
 
     final custom = widget.customSentences
@@ -385,18 +428,22 @@ class _PocketCitadelRunnerAttackPageState
             .map((m) => <String>[m['ml']!, m['en']!])
             .toList() ??
         <List<String>>[];
-    _sentBank = [..._sentences, ...custom];
+    _sentBank = [..._sentences, ...custom]..shuffle(_rnd);
 
-    // Gate 1 = Sentence Builder (Peak Simplicity, Day 1)
-    // Other gates = progressive mix among [0: Sentence, 1: Spelling, 2: Train, 3: Voice Echo, 4: Negative Sentence]
+    // Gate 1 on Day 1 = Voice Echo / Audio introductory challenge
+    // ALL other gates and levels = strict mix among [0: Sentence Builder, 1: Spelling Detective, 2: Word Train, 4: Negative Sentence]
+    // User Audio Directive: Replay Audio (Type 3) is strictly forbidden for all other gates and levels!
     _plan = [];
     var prev = -1;
     for (var i = 0; i < _total; i++) {
       int t;
-      if (i == 0) {
+      if (widget.defenderLevel == 1 && i == 0) {
+        t = 3; // Day 1 Gate 1 only: Voice Echo audio challenge
+      } else if (i == 0) {
         t = 0; // Sentence Builder
       } else {
-        final bag = [0, 1, 2, 3, 4].where((x) => x != prev).toList();
+        // STRICT: Type 3 is completely excluded from all subsequent gates and levels!
+        final bag = [0, 1, 2, 4].where((x) => x != prev).toList();
         t = bag[_rnd.nextInt(bag.length)];
       }
       _plan.add(t);
@@ -511,7 +558,13 @@ class _PocketCitadelRunnerAttackPageState
               .toList();
           final lower = words.map((w) => w.toLowerCase()).toSet();
           final extra = _distract.where((d) => !lower.contains(d)).toList()..shuffle(_rnd);
-          final chips = <String>[...words, ...extra.take(min(3, max(1, 1 + g ~/ 20)))]..shuffle(_rnd);
+          // Audio Directive: Level 50-90 Maximum Toughness! 5-7 challenging C1/C2 distractors
+          final int distractorCount = targetDay >= 75
+              ? 6
+              : (targetDay >= 50
+                  ? 5
+                  : (targetDay >= 30 ? 4 : min(3, max(1, 1 + g ~/ 20))));
+          final chips = <String>[...words, ...extra.take(distractorCount)]..shuffle(_rnd);
 
           return _Ch(
             type: 0,
@@ -605,13 +658,17 @@ class _PocketCitadelRunnerAttackPageState
           final displayMeaning = PocketLanguageService.getVocabMeaning(w, defaultFallback: rawMeaning);
 
           final n = w.length;
-          final bc = min(max(1, (targetDay / 30).ceil()), n - 1);
+          // Audio Directive: Level 50-90 Maximum Toughness! 3-4 blanks with 5 tricky decoys
+          final bc = targetDay >= 50
+              ? min(targetDay >= 75 ? 4 : 3, n - 2)
+              : min(max(1, (targetDay / 30).ceil()), n - 1);
           final idx = List<int>.generate(n, (i) => i)..shuffle(_rnd);
           final blanks = idx.take(bc).toList()..sort();
           final letters = blanks.map((i) => w[i]).toList();
           const abc = 'abcdefghijklmnopqrstuvwxyz';
           final decoys = <String>[];
-          while (decoys.length < 3) {
+          final decoyCount = targetDay >= 50 ? 5 : 3;
+          while (decoys.length < decoyCount) {
             final d = abc[_rnd.nextInt(26)];
             if (!w.contains(d) && !decoys.contains(d)) decoys.add(d);
           }
@@ -1037,6 +1094,7 @@ class _PocketCitadelRunnerAttackPageState
         'lootPoints': _loot,
         'defenderId': widget.defenderId,
         'defenderName': widget.defenderName,
+        'isEscort': widget.isEscort,
         'gates': [
           for (final r in _results)
             {
@@ -1052,11 +1110,9 @@ class _PocketCitadelRunnerAttackPageState
 
   Future<void> _finish() async {
     final m = _resultMap();
-    if (_won) {
-      if (widget.isKidMode) {
-        await PocketKidsService.addStars(15);
-      }
-    }
+    // ⚔️ Note: Single attack scoring is handled exclusively on return in pocket_citadel_attack_page.dart (User audio directive)
+    // 📺 Trigger Interstitial Ad for Non-VIPs on Raid Completion
+    await PocketAdMobService.instance.showInterstitialAd(context: context);
     widget.onRaidFinished?.call(m);
     if (mounted) Navigator.of(context).pop(m);
   }
@@ -1959,27 +2015,58 @@ class _PocketCitadelRunnerAttackPageState
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: _pop(Colors.black.withValues(alpha: 0.55), r: 12, sh: 3),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                    "🏰 ${widget.defenderName}'s CITADEL · need ${(widget.passMark * 100).round()}%",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w900)),
-                const SizedBox(height: 5),
-                Wrap(spacing: 4, runSpacing: 4, children: [
-                  for (var i = 0; i < _total; i++)
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        color: i < _results.length
-                            ? const Color(0xFFFFD600)
-                            : (i == _gate ? Colors.white : Colors.white24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        "🏰 ${widget.defenderName} · Need ${(widget.passMark * 100).round()}%",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white),
                       ),
                     ),
-                ]),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${_results.length}/$_total',
+                      style: const TextStyle(
+                          fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFD600)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 92),
+                  child: Scrollbar(
+                    thumbVisibility: _total > 45,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            for (var i = 0; i < _total; i++)
+                              Container(
+                                width: 11,
+                                height: 11,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black, width: 1.2),
+                                  color: i < _results.length
+                                      ? const Color(0xFFFFD600)
+                                      : (i == _gate ? Colors.white : Colors.white24),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ]),
             ),
           ),
@@ -2125,13 +2212,45 @@ class _PocketCitadelRunnerAttackPageState
               ],
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('GATE ${i + 1} / $_total · DAY ${i + 1} DEFENSE',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                          color: Colors.black)),
+                  Row(
+                    children: [
+                      if (widget.isEscort)
+                        Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E3A8A),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                          ),
+                          child: Text(
+                            '🛡️ Escort Attack ${i + 1}',
+                            style: const TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: Text(
+                          widget.isEscort
+                              ? 'ESCORT GATE ${i + 1} / $_total · 👮‍♂️ VIP ESCORT'
+                              : 'GATE ${i + 1} / $_total · DAY ${i + 1} DEFENSE',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              color: Colors.black),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                   Text(
-                      '${_thName[i % _thName.length]} — ${_thPower[i % _thPower.length]}',
+                      widget.isEscort
+                          ? 'Presidential Security Guard ${i + 1} of $_total'
+                          : '${_thName[i % _thName.length]} — ${_thPower[i % _thPower.length]}',
                       style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 12,

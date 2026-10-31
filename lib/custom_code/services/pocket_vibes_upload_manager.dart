@@ -155,11 +155,24 @@ class PocketVibesUploadManager {
           final fileName =
               'status_${userId}_${DateTime.now().millisecondsSinceEpoch}_part$segIndex.mp4';
 
-          await supabase.storage.from('statuses').uploadBinary(
-                fileName,
-                bytesToUpload,
-                fileOptions: const FileOptions(contentType: 'video/mp4', upsert: true),
-              ).timeout(const Duration(seconds: 45));
+          // Robust storage upload with 120s timeout and up to 3 retries
+          bool uploadSuccess = false;
+          int attempts = 0;
+          while (!uploadSuccess && attempts < 3) {
+            attempts++;
+            try {
+              await supabase.storage.from('statuses').uploadBinary(
+                    fileName,
+                    bytesToUpload,
+                    fileOptions: const FileOptions(contentType: 'video/mp4', upsert: true),
+                  ).timeout(const Duration(seconds: 120));
+              uploadSuccess = true;
+            } catch (upErr) {
+              debugPrint('Storage upload attempt $attempts failed: $upErr');
+              if (attempts >= 3) rethrow;
+              await Future.delayed(const Duration(seconds: 2));
+            }
+          }
 
           final mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
 
@@ -182,8 +195,11 @@ class PocketVibesUploadManager {
             'segment_duration': segDuration,
             'start_offset_seconds': startSec,
             'stickers': placedStickers,
+            'view_count': 0,
+            'like_count': 0,
           };
 
+          // Valid database columns for 'statuses' table
           final statusRow = <String, dynamic>{
             'user_id': userId,
             'media_url': mediaUrl,
@@ -191,16 +207,10 @@ class PocketVibesUploadManager {
             'caption': segmentCaption,
             'duration': segDuration,
             'metadata': metadata,
-            'view_count': 0,
-            'like_count': 0,
-            'is_private': statusPrivacy != 'public',
-            'status_privacy': statusPrivacy,
             'is_active': true,
             'is_kid': PocketKidsService.isKidAccount,
             'expires_at': uploadBaseTime.add(const Duration(hours: 24)).toIso8601String(),
             'created_at': uploadBaseTime.add(Duration(milliseconds: i * 200)).toIso8601String(),
-            'excluded_user_ids': excludedUserIds.toList(),
-            'included_user_ids': includedUserIds.toList(),
           };
 
           if (effectiveProfileId != null) {

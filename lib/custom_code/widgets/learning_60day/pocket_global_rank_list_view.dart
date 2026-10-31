@@ -9,6 +9,8 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
 
 /// 🏅 Global Rank Leaderboard with Dedicated Humans vs Robots Tabs
 /// User Audio Directives:
@@ -328,7 +330,20 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                                 ),
                                 itemBuilder: (context, index) {
                                   final user = filtered[index];
-                                  return _buildRankTile(user);
+                                  final tile = _buildRankTile(user);
+                                  final bool showAd = (index == 2 || (index > 2 && (index - 2) % 7 == 0));
+                                  if (showAd) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        tile,
+                                        const PocketNativeAdCard(
+                                          margin: EdgeInsets.only(bottom: 6),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return tile;
                                 },
                               ),
                       ),
@@ -389,38 +404,44 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                       ? Border.all(color: const Color(0xFF10B981), width: 1.2)
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('👤', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Humans',
-                      style: GoogleFonts.outfit(
-                        color: _currentTabIndex == 0 ? Colors.white : Colors.white60,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: _currentTabIndex == 0
-                            ? const Color(0xFF10B981)
-                            : Colors.white12,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        humanCount > 0 ? '$humanCount' : '...',
-                        style: GoogleFonts.outfit(
-                          color: _currentTabIndex == 0 ? Colors.black : Colors.white70,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('👤', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Humans',
+                          style: GoogleFonts.outfit(
+                            color: _currentTabIndex == 0 ? Colors.white : Colors.white60,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: _currentTabIndex == 0
+                                ? const Color(0xFF10B981)
+                                : Colors.white12,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            humanCount > 0 ? '$humanCount' : '...',
+                            style: GoogleFonts.outfit(
+                              color: _currentTabIndex == 0 ? Colors.black : Colors.white70,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -451,38 +472,44 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                       ? Border.all(color: const Color(0xFF818CF8), width: 1.2)
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('🤖', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Robots',
-                      style: GoogleFonts.outfit(
-                        color: _currentTabIndex == 1 ? Colors.white : Colors.white60,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: _currentTabIndex == 1
-                            ? const Color(0xFF818CF8)
-                            : Colors.white12,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        robotCount > 0 ? '$robotCount' : '90',
-                        style: GoogleFonts.outfit(
-                          color: _currentTabIndex == 1 ? Colors.black : Colors.white70,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🤖', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Robots',
+                          style: GoogleFonts.outfit(
+                            color: _currentTabIndex == 1 ? Colors.white : Colors.white60,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: _currentTabIndex == 1
+                                ? const Color(0xFF818CF8)
+                                : Colors.white12,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            robotCount > 0 ? '$robotCount' : '90',
+                            style: GoogleFonts.outfit(
+                              color: _currentTabIndex == 1 ? Colors.black : Colors.white70,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -513,38 +540,44 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                       ? Border.all(color: const Color(0xFFF59E0B), width: 1.2)
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('🐾', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Animals',
-                      style: GoogleFonts.outfit(
-                        color: _currentTabIndex == 2 ? Colors.white : Colors.white60,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: _currentTabIndex == 2
-                            ? const Color(0xFFF59E0B)
-                            : Colors.white12,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        animalCount > 0 ? '$animalCount' : '100',
-                        style: GoogleFonts.outfit(
-                          color: _currentTabIndex == 2 ? Colors.black : Colors.white70,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🐾', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Animals',
+                          style: GoogleFonts.outfit(
+                            color: _currentTabIndex == 2 ? Colors.white : Colors.white60,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: _currentTabIndex == 2
+                                ? const Color(0xFFF59E0B)
+                                : Colors.white12,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            animalCount > 0 ? '$animalCount' : '100',
+                            style: GoogleFonts.outfit(
+                              color: _currentTabIndex == 2 ? Colors.black : Colors.white70,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -706,39 +739,200 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
       titleColor = const Color(0xFFFBBF24);
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF131A26),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 13)),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              color: titleColor,
-              fontWeight: FontWeight.w900,
-              fontSize: 11,
-              letterSpacing: 0.5,
+    return InkWell(
+      onTap: _showPocketScoreInfoDialog,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF131A26),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 13)),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                color: titleColor,
+                fontWeight: FontWeight.w900,
+                fontSize: 11.5,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          const Spacer(),
-          Text(
-            widget.isMatesOnly
-                ? '${_humansList.length} Connected Mates'
-                : 'Sorted by PocketScore 🪙',
-            style: GoogleFonts.outfit(
-              color: Colors.white38,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+            const SizedBox(width: 4),
+            Icon(Icons.info_outline_rounded, size: 12, color: titleColor.withValues(alpha: 0.6)),
+            const Spacer(),
+            Text(
+              widget.isMatesOnly
+                  ? '${_humansList.length} Connected Mates'
+                  : 'Pocket Score 🪙',
+              style: GoogleFonts.outfit(
+                color: Colors.white54,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  /// 🪙 Minimal Instagram-Style Pocket Score Explanation Dialog
+  void _showPocketScoreInfoDialog() {
+    HapticFeedback.lightImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 380),
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141722),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.6),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Text('🪙', style: TextStyle(fontSize: 20)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pocket Score (PS) System',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'How your Global Rank grows',
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1F2C),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                child: Column(
+                  children: [
+                    _buildPsRuleItem('💬', 'PocketTalk 4-Day Pacts', '+25 PS daily with mates'),
+                    const Divider(color: Colors.white10, height: 16),
+                    _buildPsRuleItem('⚔️', 'Citadel Raids & Defense', '+15 PS win • +10 PS defense'),
+                    const Divider(color: Colors.white10, height: 16),
+                    _buildPsRuleItem('🎯', 'Daily Learning Quests', '+50 PS per day completed'),
+                    const Divider(color: Colors.white10, height: 16),
+                    _buildPsRuleItem('✨', 'Vibes & Social Posts', '+5 PS per shared activity'),
+                    const Divider(color: Colors.white10, height: 16),
+                    _buildPsRuleItem('👑', 'Beyond Day 90+', 'Compounds continuously forever!'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(
+                    'Got It',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPsRuleItem(String emoji, String title, String subtitle) {
+    return Row(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  color: Colors.white54,
+                  fontSize: 10.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -817,26 +1011,43 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                 ),
                 const SizedBox(width: 8),
 
-                // 2. Avatar
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isRank1
-                          ? const Color(0xFFFFD700)
-                          : (isMe ? const Color(0xFF10B981) : Colors.white24),
-                      width: 1.2,
-                    ),
-                    color: const Color(0xFF1E293B),
-                  ),
-                  child: ClipOval(
-                    child: VectorAvatarWidget(
-                      config: user.avatarConfig,
-                      size: 38,
-                    ),
-                  ),
+                // 2. Avatar with Distinct Rings for Ranks 1 to 10 (Gold for 1, Silver for 2, Bronze for 3, Rank Ring for 4-10)
+                Builder(
+                  builder: (context) {
+                    final rankTheme = PocketTopRankTheme.getThemeForRank(user.globalRank);
+                    final Color ringColor = rankTheme?.ringColor ??
+                        (isMe ? const Color(0xFF10B981) : Colors.white24);
+                    final double ringWidth = rankTheme != null
+                        ? (user.globalRank == 1 ? 2.2 : 1.4)
+                        : (isMe ? 1.4 : 0.8);
+
+                    return Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: ringColor,
+                          width: ringWidth,
+                        ),
+                        boxShadow: rankTheme?.ringGlowColor != null
+                            ? [
+                                BoxShadow(
+                                  color: rankTheme!.ringGlowColor!.withValues(alpha: 0.35),
+                                  blurRadius: 6,
+                                ),
+                              ]
+                            : null,
+                        color: const Color(0xFF1E293B),
+                      ),
+                      child: ClipOval(
+                        child: VectorAvatarWidget(
+                          config: user.avatarConfig,
+                          size: 38,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
 
@@ -860,6 +1071,14 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (user.hasGoldenTick) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFFFFD700),
+                              size: 14.5,
+                            ),
+                          ],
                           if (isMe) ...[
                             const SizedBox(width: 4),
                             Container(
@@ -899,20 +1118,47 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                         ],
                       ),
                       const SizedBox(height: 3),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'Lvl ${user.level}',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF38BDF8),
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 5,
+                        runSpacing: 2,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Lvl ${user.level}',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (widget.isMatesOnly && user.globalRank > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                'Global Rank #${user.globalRank}',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),

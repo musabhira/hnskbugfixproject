@@ -101,16 +101,6 @@ class PocketKidsRobotsData {
     KidMate(id: 'kid_bot_88', name: 'Sovereign Phoenix 🦅', avatar: '🦅', ageGroup: '9-12', dayLevel: 88, stars: 264, isRobot: true, bio: 'Rising triumphant from practice mistakes.'),
     KidMate(id: 'kid_bot_89', name: 'Apex Lion 🦁', avatar: '🦁', ageGroup: '9-12', dayLevel: 89, stars: 267, isRobot: true, bio: 'Noble general of the animal kingdom.'),
     KidMate(id: 'kid_bot_90', name: 'Chronos Eagle 🦅', avatar: '🦅', ageGroup: '9-12', dayLevel: 90, stars: 270, isRobot: true, bio: 'Master of past, present, and future tenses.'),
-    KidMate(id: 'kid_bot_91', name: 'Aurora Wolf 🐺', avatar: '🐺', ageGroup: '9-12', dayLevel: 91, stars: 273, isRobot: true, bio: 'Dancing beneath northern lights of spoken glory.'),
-    KidMate(id: 'kid_bot_92', name: 'Grand Griffin 🦅', avatar: '🦅', ageGroup: '9-12', dayLevel: 92, stars: 276, isRobot: true, bio: 'Half lion, half eagle, 100% English champion.'),
-    KidMate(id: 'kid_bot_93', name: 'Prime Sentinel Bear 🐻', avatar: '🐻', ageGroup: '9-12', dayLevel: 93, stars: 279, isRobot: true, bio: 'Steadfast protector of Level 93 Summit Pass.'),
-    KidMate(id: 'kid_bot_94', name: 'Imperial Tiger 🐯', avatar: '🐯', ageGroup: '9-12', dayLevel: 94, stars: 282, isRobot: true, bio: 'Stripes of honor for consecutive daily streaks.'),
-    KidMate(id: 'kid_bot_95', name: 'Crown Panther 🐆', avatar: '🐆', ageGroup: '9-12', dayLevel: 95, stars: 285, isRobot: true, bio: 'Stealthy master of spontaneous conversation.'),
-    KidMate(id: 'kid_bot_96', name: 'Vanguard Falcon 🦅', avatar: '🦅', ageGroup: '9-12', dayLevel: 96, stars: 288, isRobot: true, bio: 'Speeding ahead to herald the arrival of summit heroes.'),
-    KidMate(id: 'kid_bot_97', name: 'Diamond Pegasus 🦄', avatar: '🦄', ageGroup: '9-12', dayLevel: 97, stars: 291, isRobot: true, bio: 'Crystal hooves echoing on the golden marble road.'),
-    KidMate(id: 'kid_bot_98', name: 'Summit Raptor 🦖', avatar: '🦖', ageGroup: '9-12', dayLevel: 98, stars: 294, isRobot: true, bio: 'Primeval titan honoring kids dedication.'),
-    KidMate(id: 'kid_bot_99', name: 'Legend Lionheart 🦁', avatar: '🦁', ageGroup: '9-12', dayLevel: 99, stars: 297, isRobot: true, bio: 'The Grand Champion companion before the Throne!'),
-    KidMate(id: 'kid_bot_100', name: 'Supreme Lion King 🦁', avatar: '🦁', ageGroup: '9-12', dayLevel: 100, stars: 300, isRobot: true, bio: 'Ruler of the Golden Summit Castle & Master Animal Mentor!'),
   ];
 
   static KidMate? getAnimalByLevel(int level) {

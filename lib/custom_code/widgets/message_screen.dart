@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:gal/gal.dart';
 import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
@@ -38,6 +39,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -608,6 +611,16 @@ class _MessageScreenState extends State<MessageScreen> {
       _updateConversation(messageText).catchError((e) {
         debugPrint('Post-send conversation update error: $e');
       });
+
+      // 3. 🌐 Non-blocking Background Language Guard Evaluation (User Audio Directive: English Only)
+      if (messageText.trim().isNotEmpty &&
+          !PocketPresidentService.isPresidentId(widget.receiverId)) {
+        PocketLanguageGuardService.evaluateOutgoingMessageInBackground(
+          userId: _senderId,
+          messageText: messageText,
+          contextId: widget.receiverId,
+        );
+      }
 
       // Instead of _loadMessages, we can just replace the temp message or wait for real-time
       // For now, _loadMessages is safer to ensure sync
@@ -1811,10 +1824,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildRegularMessageBubble(message),
-                    const PocketNativeAdWidget(
-                      category: 'English & Business',
-                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    ),
+                    const PocketChatBubbleAdWidget(),
                   ],
                 );
               }

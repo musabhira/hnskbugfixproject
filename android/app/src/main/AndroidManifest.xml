@@ -86,11 +86,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-
-
-
-
-
+        <!-- Google Mobile Ads / AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8489571803367790~4762910426" />
         <!-- flutter_local_notifications receivers for scheduled daily alarms & reboot persistence -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">

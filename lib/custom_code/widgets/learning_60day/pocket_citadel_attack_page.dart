@@ -13,13 +13,14 @@ import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
-import 'pocket_defense_trap_modal.dart';
 import 'pocket_citadel_challenge_generator.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
 import '../report_dailoge.dart';
+import 'pocket_citadel_store_sheet.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
@@ -486,6 +487,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   double _cooldownHoursLeft = 0;
   int _retriesRemaining =
       1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
+  // ignore: unused_field
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
   bool _hasAwardedAttackThisSession = false;
@@ -539,32 +541,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
 
     _transformationController = TransformationController();
-    _transformationController.addListener(() {
-      final matrix = _transformationController.value;
-      final scale = matrix.getMaxScaleOnAxis();
-      if ((scale - _zoomScaleNotifier.value).abs() > 0.005) {
-        _zoomScaleNotifier.value = scale;
-      }
-      // 🛡️ Safety Scale Clamping: Guarantee the user can never zoom out below minScale,
-      // preventing any possibility of empty blue borders or a shrunk canvas!
-      if (_savedMinScale > 0.05 && scale < (_savedMinScale - 0.002)) {
-        final clampedScale = _savedMinScale;
-        final maxTx = 0.0;
-        final minTx = -(_savedWorldW * clampedScale - _savedViewportW);
-        final safeMinTx = minTx < maxTx ? minTx : maxTx;
-        final maxTy = 0.0;
-        final minTy = -(_savedWorldH * clampedScale - _savedViewportH);
-        final safeMinTy = minTy < maxTy ? minTy : maxTy;
-        final tx = matrix.getTranslation().x.clamp(safeMinTx, maxTx);
-        final ty = matrix.getTranslation().y.clamp(safeMinTy, maxTy);
-        final corrected = Matrix4.identity()
-          ..setEntry(0, 0, clampedScale)
-          ..setEntry(1, 1, clampedScale)
-          ..setEntry(0, 3, tx)
-          ..setEntry(1, 3, ty);
-        _transformationController.value = corrected;
-      }
-    });
 
     _cameraAnimationController = AnimationController(
       vsync: this,
@@ -924,10 +900,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       defenderHasIronDome: widget.neighbor.hasActiveShield,
     );
 
-    if (!isPostRunnerAnimation) {
-      await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
-      await PocketFortressDefenseService.recordAttackLaunchedToday();
-    }
     // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
     await PocketFortressDefenseService.placeUnderPresidentialProtection(
         widget.neighbor.id,
@@ -936,16 +908,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         widget.neighbor.id,
         hours: 24);
 
-    // ⚔️ Audio Directive: Raider earns 10 to 15 Score points (15 SS for kids, 15 PS for adults)
+    // ⚔️ Audio Directive: Single attack count and single score addition per raid victory
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
     if (!_hasAwardedAttackThisSession) {
       _hasAwardedAttackThisSession = true;
+      await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
+      await PocketFortressDefenseService.recordAttackLaunchedToday();
       if (widget.isKidMode) {
         await PocketKidsService.addStudentScore(looted > 0 ? looted : 15);
         await PocketKidsService.incrementAttackCount();
       } else {
         if (looted > 0) {
-          await PocketFortressDefenseService.awardRaidLoot(looted);
           await PocketFortressDefenseService.awardPoints(looted);
         }
         final myId = SupaFlow.client.auth.currentUser?.id;
@@ -1345,15 +1318,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   @override
   Widget build(BuildContext context) {
-    // ⏱️ 6-Hour Atmospheric Day/Night Cycle
-    // 06:00 - 12:00: Morning Sun (Day)
-    // 12:00 - 18:00: Golden Afternoon (Day)
-    // 18:00 - 24:00: Twilight & Starlit Evening (Night)
-    // 00:00 - 06:00: Deep Space Midnight (Night)
-    final currentHour = DateTime.now().hour;
-    final isNightByDefault = currentHour >= 18 || currentHour < 6;
+    // Audio directive: In a 24-hour day, night is ONLY at most 30 minutes (strictly 03:00 - 03:30 AM).
+    // The other 23.5 hours are bright, radiant DAYLIGHT!
+    final now = DateTime.now();
+    final isNightByDefault = (now.hour == 3 && now.minute < 30);
     final isNight = _manualNightOverride ?? isNightByDefault;
-    final hoursLeftIn6hBlock = 6 - (currentHour % 6);
+    final hoursLeftIn6hBlock = 6 - (now.hour % 6);
     final cycleLabel = isNight
         ? '🌙 Night (${hoursLeftIn6hBlock}h left)'
         : '☀️ Day (${hoursLeftIn6hBlock}h left)';
@@ -1428,11 +1398,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     : (w / (palaceW * 1.08)))
                 : (w / (houseW * 1.05));
 
-            final double baseMinScale = isPresident
-                ? (isLandscape
-                    ? math.max(w / worldW, h / worldH)
-                    : (houseZoomScale * 0.70).clamp(0.44, 0.54))
-                : math.max(w / worldW, h / worldH);
+            final double baseMinScale = math.max(w / worldW, h / worldH);
 
             final minScale = (w <= 0) ? 0.30 : baseMinScale;
             _savedMinScale = minScale;
@@ -1527,14 +1493,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               top: palaceTop,
                               width: palaceW,
                               height: palaceH,
-                              child: FlameEnglishHouseWidget(
-                                currentDay: 90,
-                                streak: 90,
-                                isDamaged: _isDefenderDamaged,
-                                houseId: 'pocket_president',
-                                paletteId: widget.neighbor.paletteId,
-                                isPresident: true,
-                                showTestingControls: false,
+                              child: IgnorePointer(
+                                child: RepaintBoundary(
+                                  child: FlameEnglishHouseWidget(
+                                    currentDay: 90,
+                                    streak: 90,
+                                    isDamaged: _isDefenderDamaged,
+                                    houseId: 'pocket_president',
+                                    paletteId: widget.neighbor.paletteId,
+                                    isPresident: true,
+                                    showTestingControls: false,
+                                  ),
+                                ),
                               ),
                             )
                           else ...[
@@ -1543,26 +1513,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               top: houseTop,
                               width: houseW,
                               height: houseH,
-                              child: FlameEnglishHouseWidget(
-                                currentDay: widget.neighbor.day,
-                                streak: widget.neighbor.streak,
-                                isDamaged: _isDefenderDamaged,
-                                houseId: widget.neighbor.id,
-                                paletteId: widget.neighbor.paletteId,
-                                showTestingControls: false,
+                              child: IgnorePointer(
+                                child: RepaintBoundary(
+                                  child: FlameEnglishHouseWidget(
+                                    currentDay: widget.neighbor.day,
+                                    streak: widget.neighbor.streak,
+                                    isDamaged: _isDefenderDamaged,
+                                    houseId: widget.neighbor.id,
+                                    paletteId: widget.neighbor.paletteId,
+                                    showTestingControls: false,
+                                  ),
+                                ),
                               ),
-                            ),
-
-                            // Chimney Smoke Puffs floating above the roof
-                            Positioned(
-                              top: houseTop - 28,
-                              left: 900.0 - 88,
-                              child: _buildChimneySmoke(),
-                            ),
-                            Positioned(
-                              top: houseTop - 28,
-                              left: 900.0 + 88 - 18,
-                              child: _buildChimneySmoke(),
                             ),
                           ],
 
@@ -2192,16 +2154,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
               ),
 
-              // 2. Police Officers Standing Guard
+              // 2. Police Officers Standing Guard with Escort Signboard for VIP
               Positioned(
                 left: 36,
-                top: 12,
-                child: _buildPoliceOfficerSprite(isLeft: true),
+                top: widget.neighbor.isVip ? 2 : 12,
+                child: _buildPoliceOfficerSprite(isLeft: true, hasEscortBoard: widget.neighbor.isVip),
               ),
               Positioned(
                 right: 36,
-                top: 12,
-                child: _buildPoliceOfficerSprite(isLeft: false),
+                top: widget.neighbor.isVip ? 2 : 12,
+                child: _buildPoliceOfficerSprite(isLeft: false, hasEscortBoard: widget.neighbor.isVip),
               ),
 
               // 3. Presidential Military Escort Soldiers (VIP Houses Only)
@@ -2320,10 +2282,47 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 👮‍♂️ Detailed Police Officer Sprite
-  Widget _buildPoliceOfficerSprite({required bool isLeft}) {
+  Widget _buildPoliceOfficerSprite({required bool isLeft, bool hasEscortBoard = false}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (hasEscortBoard) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🛡️', style: TextStyle(fontSize: 8)),
+                const SizedBox(width: 2),
+                Text(
+                  'ESCORT',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 7.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 2,
+            height: 4,
+            color: const Color(0xFFFFD700),
+          ),
+        ],
         // Peaked Police Cap with Gold Badge
         Container(
           width: 22,
@@ -4827,40 +4826,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// ☁️ Soft translucent smoke puffs floating from chimneys
-  Widget _buildChimneySmoke() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.25),
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.4),
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Container(
-          width: 18,
-          height: 18,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
-            shape: BoxShape.circle,
-          ),
-        ),
-      ],
-    );
-  }
+
 
   /// 🌟 Top Floating Header: Minimal circular icon buttons (Back, Perspective Toggle, Day/Night Toggle, Profile, Info)
   Widget _buildTopHeaderCapsule(
@@ -4974,11 +4940,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 3. 🔊 Game BGM Mute / Track Capsule
-                const PocketSoundToggleWidget(compact: true),
-                const SizedBox(width: 8),
-
-                // 4. 👤 Defender Profile Icon Button
+                // 👤 Defender Profile Icon Button
                 InkWell(
                   onTap: _openDefenderProfile,
                   borderRadius: BorderRadius.circular(20),
@@ -4999,88 +4961,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 4. ℹ️ Minimal (i) info button
-                InkWell(
-                  onTap: _showCitadelStatsSheet,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white24, width: 1),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.info_outline_rounded,
-                          color: Color(0xFFFFD700), size: 18),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // 📜 Game Rules & Regulations Button
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    PocketWorldGameRulesPage.show(context);
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.70),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFF59E0B), width: 1.2),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text('📜', style: TextStyle(fontSize: 16)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // 5. ✨ Share to Vibes Icon Button
-                InkWell(
-                  onTap: _shareCitadelToVibes,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFEC4899), Color(0xFF8B5CF6)],
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFFFFC00), width: 1.2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFEC4899).withValues(alpha: 0.4),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.auto_awesome_rounded,
-                          color: Colors.white, size: 17),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // 6. 🛡️ Safety Menu Button (Report / Block Citadel & Defender)
+                // 🛡️ Safety & Options Menu Button
                 PopupMenuButton<String>(
-                  tooltip: 'Citadel Safety Options',
+                  tooltip: 'Citadel Options',
                   icon: Container(
                     width: 36,
                     height: 36,
@@ -5103,13 +4986,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     side: const BorderSide(color: Colors.white24),
                   ),
                   onSelected: (val) {
-                    if (val == 'report_citadel') {
+                    if (val == 'share_vibes') {
+                      _shareCitadelToVibes();
+                    } else if (val == 'report_citadel') {
                       _showCitadelReportOptions();
                     } else if (val == 'block_defender') {
                       _showBlockDefenderDialog();
                     }
                   },
                   itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'share_vibes',
+                      child: Row(
+                        children: [
+                          Icon(Icons.auto_awesome_rounded,
+                              color: Color(0xFFEC4899), size: 18),
+                          SizedBox(width: 8),
+                          Text('Share to Vibes',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'report_citadel',
                       child: Row(
@@ -5213,6 +5110,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final psValue = _defenderScore > 0
         ? _defenderScore
         : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day);
+    final int defRank = _defenderGlobalRank ?? 0;
+    final rankTheme = PocketTopRankTheme.getThemeForRank(defRank);
 
     if (_isTargetProtected) {
       return Center(
@@ -5335,10 +5234,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           color: const Color(0xFF0F172A).withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: (widget.neighbor.isMe || widget.isDefenseMode)
-                ? const Color(0xFF10B981).withValues(alpha: 0.8)
-                : const Color(0xFFEF4444).withValues(alpha: 0.8),
-            width: 1.4,
+            color: rankTheme != null
+                ? rankTheme.borderColor
+                : ((widget.neighbor.isMe || widget.isDefenseMode)
+                    ? const Color(0xFF10B981).withValues(alpha: 0.8)
+                    : const Color(0xFFEF4444).withValues(alpha: 0.8)),
+            width: rankTheme != null ? 1.8 : 1.4,
           ),
           boxShadow: [
             BoxShadow(
@@ -5347,9 +5248,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               offset: const Offset(0, 4),
             ),
             BoxShadow(
-              color: (widget.neighbor.isMe || widget.isDefenseMode)
-                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
-                  : const Color(0xFFEF4444).withValues(alpha: 0.25),
+              color: rankTheme != null
+                  ? rankTheme.primaryColor.withValues(alpha: 0.35)
+                  : ((widget.neighbor.isMe || widget.isDefenseMode)
+                      ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                      : const Color(0xFFEF4444).withValues(alpha: 0.25)),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -5408,116 +5311,100 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             const SizedBox(height: 3),
             // Minimal Red Attack Button or President Level 90 Gate / Challenge Button or Arm Defense
             if (widget.neighbor.isMe || widget.isDefenseMode) ...[
-              GestureDetector(
-                onTap: () async {
-                  HapticFeedback.heavyImpact();
-                  await PocketDefenseTrapModal.show(
-                    context,
-                    widget.neighbor.day,
-                    isLevelComplete: true,
-                  );
-                  await _loadBattleState();
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF047857)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(
-                      color: const Color(0xFF34D399),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🛡️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'ADD / CONFIGURE DEFENSE',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: _onTapBottomAttack,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7.5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_defenseQuestions.isNotEmpty) ...[
-                const SizedBox(height: 5),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(_defenseQuestions.length, (idx) {
-                      final q = _defenseQuestions[idx];
-                      final info = PocketCitadelChallengeGenerator.getGameInfo(
-                          q.gameFormat);
-                      final diffColor = q.difficulty == 'easy'
-                          ? const Color(0xFF10B981)
-                          : (q.difficulty == 'hard'
-                              ? const Color(0xFFF43F5E)
-                              : const Color(0xFFF59E0B));
-                      return GestureDetector(
-                        onTap: () async {
-                          HapticFeedback.selectionClick();
-                          await PocketDefenseTrapModal.show(
-                            context,
-                            widget.neighbor.day,
-                            editingQuestion: q,
-                            targetDay: idx + 1,
-                          );
-                          await _loadBattleState();
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: diffColor.withValues(alpha: 0.7),
-                                width: 1),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(info.icon,
-                                  style: const TextStyle(fontSize: 11)),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Day ${idx + 1}: ${info.title}',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFF60A5FA),
+                          width: 1.4,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2563EB).withValues(alpha: 0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🎯', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'MOCK ATTACK',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.heavyImpact();
+                      PocketCitadelStoreSheet.show(
+                        context,
+                        onPurchased: _loadBattleState,
                       );
-                    }),
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFD97706), Color(0xFFB45309)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFFDE047),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFD97706).withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🛒', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'STORE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ] else if (widget.neighbor.isPresident)
               GestureDetector(
                 onTap: _onTapBottomAttack,
@@ -5713,19 +5600,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         height: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                          gradient: LinearGradient(
+                            colors: rankTheme != null
+                                ? rankTheme.gradientColors
+                                : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: const Color(0xFFFFD700),
+                            color: rankTheme != null
+                                ? rankTheme.borderColor
+                                : const Color(0xFFFFD700),
                             width: 1.4,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEF4444)
+                              color: (rankTheme != null
+                                      ? rankTheme.primaryColor
+                                      : const Color(0xFFEF4444))
                                   .withValues(alpha: 0.5),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
@@ -5760,19 +5653,26 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        gradient: LinearGradient(
+                          colors: rankTheme != null
+                              ? [rankTheme.accentColor, rankTheme.primaryColor]
+                              : const [Color(0xFFF59E0B), Color(0xFFD97706)],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
                         borderRadius: BorderRadius.circular(11),
                         border: Border.all(
-                          color: const Color(0xFFFFD700),
+                          color: rankTheme != null
+                              ? rankTheme.borderColor
+                              : const Color(0xFFFFD700),
                           width: 1.4,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                            color: (rankTheme != null
+                                    ? rankTheme.accentColor
+                                    : const Color(0xFFF59E0B))
+                                .withValues(alpha: 0.45),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -5858,19 +5758,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         height: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 18),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                          gradient: LinearGradient(
+                            colors: rankTheme != null
+                                ? rankTheme.gradientColors
+                                : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ),
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(
-                            color: const Color(0xFFFFD700),
+                            color: rankTheme != null
+                                ? rankTheme.borderColor
+                                : const Color(0xFFFFD700),
                             width: 1.4,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEF4444)
+                              color: (rankTheme != null
+                                      ? rankTheme.primaryColor
+                                      : const Color(0xFFEF4444))
                                   .withValues(alpha: 0.5),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
@@ -5905,19 +5811,26 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        gradient: LinearGradient(
+                          colors: rankTheme != null
+                              ? [rankTheme.accentColor, rankTheme.primaryColor]
+                              : const [Color(0xFFF59E0B), Color(0xFFD97706)],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
                         borderRadius: BorderRadius.circular(11),
                         border: Border.all(
-                          color: const Color(0xFFFFD700),
+                          color: rankTheme != null
+                              ? rankTheme.borderColor
+                              : const Color(0xFFFFD700),
                           width: 1.4,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+                            color: (rankTheme != null
+                                    ? rankTheme.accentColor
+                                    : const Color(0xFFF59E0B))
+                                .withValues(alpha: 0.45),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -5980,15 +5893,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       double maxHeight, double collapsedH, double bottomPad) {
     final prog = _profileDrawerController.value;
     final isExpanded = prog > 0.5;
+    final int defRank = _defenderGlobalRank ?? 0;
+    final rankTheme = PocketTopRankTheme.getThemeForRank(defRank);
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: rankTheme?.dominantBg ?? const Color(0xFF0F172A),
+        gradient: rankTheme != null
+            ? LinearGradient(
+                colors: rankTheme.gradientColors,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              )
+            : null,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         border: Border.all(
-          color:
-              const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35)),
-          width: 1.5,
+          color: rankTheme != null
+              ? rankTheme.borderColor.withValues(alpha: 0.7 + (prog * 0.3))
+              : (widget.neighbor.isPresident
+                  ? const Color(0xFFFFD700)
+                  : const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35))),
+          width: rankTheme != null ? 1.8 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
@@ -6042,10 +5967,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 padding: EdgeInsets.fromLTRB(
                     16, 4, 16, prog < 0.1 ? (4 + bottomPad) : 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withValues(alpha: 0.95),
+                  color: rankTheme != null
+                      ? rankTheme.dominantBg.withValues(alpha: 0.95)
+                      : const Color(0xFF1E293B).withValues(alpha: 0.95),
                   border: Border(
                     bottom: BorderSide(
-                      color: Colors.white.withValues(alpha: prog * 0.12),
+                      color: rankTheme != null
+                          ? rankTheme.borderColor.withValues(alpha: 0.35)
+                          : Colors.white.withValues(alpha: prog * 0.12),
                       width: 1,
                     ),
                   ),
@@ -6224,13 +6153,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             if (prog > 0.05)
               Expanded(
                 child: Container(
-                  color: const Color(0xFF0F172A),
+                  color: rankTheme?.dominantBg ?? const Color(0xFF0F172A),
                   child: widget.neighbor.isPresident
                       ? _buildPresidentialDrawerContent()
                       : (_shouldShowKidProfile
                           ? _buildKidHeroDrawerContent()
                           : MainProfileWidget(
                               userId: widget.neighbor.id,
+                              hideAppBar: true,
                               preloadedProfile: {
                                 'user_id': widget.neighbor.id,
                                 'first_name': widget.neighbor.name,
@@ -6585,7 +6515,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
-                  Navigator.pop(context, true);
                   Day90MasterCertificateDialog.show(
                     context,
                     userName: 'Sovereign Grandmaster',
@@ -6741,6 +6670,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   void _onTapBottomAttack() {
     HapticFeedback.heavyImpact();
+
+    // 🎯 User Directive: Mock Attack on own profile has ZERO penalties, ZERO score lost, and does not break protections
+    final bool isMock = widget.neighbor.isMe || widget.isDefenseMode;
+    if (isMock) {
+      PocketCitadelRunnerAttackPage.open(
+        context,
+        defenderName: '${widget.neighbor.name} (Trial Mock)',
+        defenderLevel: widget.neighbor.day > 0 ? widget.neighbor.day : 1,
+        defenderId: widget.neighbor.id,
+        isKidMode: widget.isKidMode,
+        isEscort: false,
+      ).then((result) {
+        if (result != null && result['passed'] == true && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🎯 Mock Attack Completed! 0 points lost, your Citadel is battle-ready! 🛡️'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        }
+      });
+      return;
+    }
     if (widget.neighbor.isPresident) {
       if (_attackerDay <= 90) {
         _showPresidentialLevelLockDialog();
@@ -6758,13 +6710,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       );
       return;
     }
-    if (_isDailyLimitReached) {
-      _showNoticeDialog(
-        '🔒 Daily Limit Reached!',
-        'You have used 2/2 attacks today. Return tomorrow!',
-      );
-      return;
-    }
 
     if (_raidStep == 2) {
       _executeCitadelAttack();
@@ -6774,18 +6719,36 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isEscort = (widget.neighbor.isVip && !_isEscortDefeated);
     final count = (isEscort && _escortQuestions.isNotEmpty)
         ? _escortQuestions.length
-        : widget.neighbor.day;
+        : (isEscort ? 10 : widget.neighbor.day);
 
     // 🏃 Launch Subway-Surfers Style 2D Runner Citadel Attack Game!
     PocketCitadelRunnerAttackPage.open(
       context,
-      defenderName: widget.neighbor.name,
-      defenderLevel: count > 0 ? count : widget.neighbor.day,
+      defenderName: isEscort
+          ? '${widget.neighbor.name} (Presidential Escort)'
+          : widget.neighbor.name,
+      defenderLevel: count > 0 ? count : (isEscort ? 10 : widget.neighbor.day),
       defenderId: widget.neighbor.id,
       isKidMode: widget.isKidMode,
+      isEscort: isEscort,
     ).then((result) {
+      if (!mounted) return;
       if (result != null && result['passed'] == true) {
-        _executeCitadelAttack(isPostRunnerAnimation: true);
+        if (isEscort) {
+          setState(() {
+            _isEscortDefeated = true;
+            _isEscortMode = false;
+            _defenseQuestions = _fortressQuestions;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🛡️ PRESIDENTIAL ESCORT DEFEATED! Main Citadel Now Vulnerable! ⚔️'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        } else {
+          _executeCitadelAttack(isPostRunnerAnimation: true);
+        }
       }
     });
   }
@@ -9048,11 +9011,13 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     final w = size.width;
     final h = size.height;
     final gy = groundBaseY > 0 ? groundBaseY : 920.0;
 
-    // 1. Sky & Cosmic Atmosphere (Covers full 1800 width down to ground)
+    // 1. Sky & Cosmic Atmosphere (Covers full world canvas down to ground)
     final skyShader = isNight
         ? const LinearGradient(
             colors: [
@@ -9064,7 +9029,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             stops: [0.0, 0.35, 0.70, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-          ).createShader(Rect.fromLTWH(0, 0, w, gy + 30))
+          ).createShader(Rect.fromLTWH(0, 0, w, h))
         : const LinearGradient(
             colors: [
               Color(0xFF0284C7), // Deep Azure
@@ -9073,10 +9038,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-          ).createShader(Rect.fromLTWH(0, 0, w, gy + 30));
+          ).createShader(Rect.fromLTWH(0, 0, w, h));
 
     canvas.drawRect(
-        Rect.fromLTWH(0, 0, w, gy + 30), Paint()..shader = skyShader);
+        Rect.fromLTWH(0, 0, w, h), Paint()..shader = skyShader);
 
     if (isNight) {
       // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky
@@ -9614,6 +9579,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       canvas.drawCircle(Offset(crownCenter.dx + 24, crownCenter.dy - 14), 2.8,
           Paint()..color = const Color(0xFF10B981));
     }
+    canvas.restore();
   }
 
   /// 💨 Traditional Dutch Windmill with Rotating Timber Sails
@@ -10666,15 +10632,15 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       for (double x = 0; x <= w; x += 160) {
         final hAmp = 4.0 + (i * 0.35);
         p.quadraticBezierTo(
-          x + 40 + waveOffset,
+          math.min(w, x + 40 + waveOffset),
           wy - hAmp,
-          x + 80,
+          math.min(w, x + 80),
           wy,
         );
         p.quadraticBezierTo(
-          x + 120 - waveOffset,
+          math.min(w, x + 120 - waveOffset),
           wy + hAmp,
-          x + 160,
+          math.min(w, x + 160),
           wy,
         );
       }

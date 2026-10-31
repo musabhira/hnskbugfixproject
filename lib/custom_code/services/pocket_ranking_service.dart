@@ -23,6 +23,8 @@ class PocketRankedUser {
   final bool isRobot;
   final bool isPrestigeSovereign;
   final int prestigeStars;
+  final bool isVerified;
+  final bool isVip;
 
   const PocketRankedUser({
     required this.userId,
@@ -37,10 +39,28 @@ class PocketRankedUser {
     this.isRobot = false,
     this.isPrestigeSovereign = false,
     this.prestigeStars = 0,
+    this.isVerified = false,
+    this.isVip = false,
   });
 
   /// Helper to check if this user is Rank 1 in the current context
   bool get isChampion => (matesRank ?? globalRank) == 1;
+
+  /// Golden Verification Tick strictly for paid VIPs, verified users, and admin (User audio directive)
+  /// Top 10 rank or reaching level 10 NEVER grants a golden tick!
+  bool get hasGoldenTick {
+    final lowerName = name.toLowerCase();
+    final lowerId = userId.toLowerCase();
+    if (lowerName.contains('musab') ||
+        lowerName.contains('thonippadam') ||
+        lowerName.contains('mussabira') ||
+        lowerId.contains('musab') ||
+        lowerName.contains('pocket president') ||
+        lowerName == 'president') {
+      return true;
+    }
+    return isVerified || isVip;
+  }
 
   /// Formatted score with decimal precision for transparent tie-breaking (Audio directive)
   String get preciseScoreText {
@@ -61,6 +81,8 @@ class PocketRankedUser {
     bool? isRobot,
     bool? isPrestigeSovereign,
     int? prestigeStars,
+    bool? isVerified,
+    bool? isVip,
   }) {
     return PocketRankedUser(
       userId: userId ?? this.userId,
@@ -75,6 +97,8 @@ class PocketRankedUser {
       isRobot: isRobot ?? this.isRobot,
       isPrestigeSovereign: isPrestigeSovereign ?? this.isPrestigeSovereign,
       prestigeStars: prestigeStars ?? this.prestigeStars,
+      isVerified: isVerified ?? this.isVerified,
+      isVip: isVip ?? this.isVip,
     );
   }
 }
@@ -364,14 +388,12 @@ class PocketRankingService {
       );
       final isPrestige = dynLvl >= 90;
 
-      // In Adult Mode, King is President! (User Audio Directive: "കിംഗ് അല്ല പ്രസിഡന്റ് ആണ്, കിംഗ് ഒഴിവാക്കുക")
-      String displayName = animal.name;
-      if (displayName.contains('King')) {
-        displayName = displayName
-            .replaceAll('Supreme Lion King', 'The President 🦁')
-            .replaceAll('Lion King', 'President Lion')
-            .replaceAll('King', 'President');
-      }
+      // User Audio Directive: Animals do not have President! No President in Animals Leaderboard.
+      String displayName = animal.name
+          .replaceAll('The President', 'Golden Summit Tiger')
+          .replaceAll('President', 'Champion')
+          .replaceAll('Supreme Lion King', 'Golden Summit Tiger 🐯')
+          .replaceAll('Lion King', 'Golden Hawk 🦅');
 
       animalList.add(PocketRankedUser(
         userId: animal.id,
@@ -478,6 +500,8 @@ class PocketRankingService {
 
         final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
         final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
+        final isVerified = row['verified'] == true;
+        final isVip = row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
 
         rankedList.add(PocketRankedUser(
           userId: uid,
@@ -491,6 +515,8 @@ class PocketRankingService {
           isRobot: false,
           isPrestigeSovereign: isPrestige,
           prestigeStars: stars,
+          isVerified: isVerified,
+          isVip: isVip,
         ));
       }
     } catch (e) {
@@ -709,6 +735,32 @@ class PocketRankingService {
     } catch (_) {}
 
     try {
+      final pactsRes1 = await _supabase
+          .from('pocket_talk_pacts')
+          .select('user2_id')
+          .eq('user1_id', currentUserId);
+      for (final row in pactsRes1) {
+        final fid = row['user2_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final pactsRes2 = await _supabase
+          .from('pocket_talk_pacts')
+          .select('user1_id')
+          .eq('user2_id', currentUserId);
+      for (final row in pactsRes2) {
+        final fid = row['user1_id']?.toString();
+        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+          mateIds.add(fid);
+        }
+      }
+    } catch (_) {}
+
+    try {
       final prefs = await SharedPreferences.getInstance();
       final localMates = prefs.getStringList('pocket_mates_$currentUserId') ?? [];
       for (final id in localMates) {
@@ -737,17 +789,22 @@ class PocketRankingService {
 
     final List<PocketRankedUser> matesList = [];
 
-    // Query profiles for all real human mates
+    // Query profiles for all real human mates (chunked to ensure no query limits drop mates)
     if (mateIds.length > 1) {
       try {
         final queryIds = mateIds.where((id) => !PocketRobotService.isRobotId(id)).toList();
         if (queryIds.isNotEmpty) {
-          final res = await _supabase
-              .from('profile')
-              .select('user_id, name, profile_image_url, pocket_score, account_type, kid_name')
-              .inFilter('user_id', queryIds);
+          final List<Map<String, dynamic>> allProfiles = [];
+          for (var i = 0; i < queryIds.length; i += 40) {
+            final chunk = queryIds.sublist(i, math.min(i + 40, queryIds.length));
+            final res = await _supabase
+                .from('profile')
+                .select('user_id, name, profile_image_url, pocket_score, account_type, kid_name, verified, is_premium, is_vip, is_subscribed')
+                .inFilter('user_id', chunk);
+            allProfiles.addAll(List<Map<String, dynamic>>.from(res));
+          }
 
-          for (final row in res) {
+          for (final row in allProfiles) {
             final uid = row['user_id']?.toString() ?? '';
             if (uid.isEmpty || PocketRobotService.isRobotId(uid)) continue;
 
@@ -766,6 +823,8 @@ class PocketRankingService {
             final gRank = isMe ? myGlobalRank : await fetchUserGlobalRank(uid, effectiveScore, isUnder17);
             final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
             final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
+            final isVerified = row['verified'] == true;
+            final isVip = row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
 
             matesList.add(PocketRankedUser(
               userId: uid,
@@ -779,6 +838,8 @@ class PocketRankingService {
               isRobot: false,
               isPrestigeSovereign: isPrestige,
               prestigeStars: stars,
+              isVerified: isVerified,
+              isVip: isVip,
             ));
           }
         }
@@ -789,6 +850,11 @@ class PocketRankingService {
     if (!matesList.any((m) => m.userId == currentUserId)) {
       final isPrestige = myLevel >= 90 || myScore >= 45000;
       final stars = isPrestige ? math.max(1, (myScore - 45000) ~/ 2000 + 1) : 0;
+      Map<String, dynamic>? myProfile;
+      try {
+        myProfile = await _supabase.from('profile').select('verified, is_premium, is_vip, is_subscribed').eq('user_id', currentUserId).maybeSingle();
+      } catch (_) {}
+
       matesList.add(PocketRankedUser(
         userId: currentUserId,
         name: 'You',
@@ -800,6 +866,8 @@ class PocketRankingService {
         isRobot: false,
         isPrestigeSovereign: isPrestige,
         prestigeStars: stars,
+        isVerified: myProfile?['verified'] == true,
+        isVip: myProfile?['is_premium'] == true || myProfile?['is_vip'] == true || myProfile?['is_subscribed'] == true,
       ));
     }
 
@@ -811,7 +879,7 @@ class PocketRankingService {
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
 
-    // Assign Mates Rank 1..M
+    // Assign Mates Rank 1..M while strictly preserving globalRank!
     final finalized = <PocketRankedUser>[];
     for (int i = 0; i < matesList.length; i++) {
       final user = matesList[i];
@@ -828,6 +896,8 @@ class PocketRankingService {
         isRobot: false,
         isPrestigeSovereign: user.isPrestigeSovereign,
         prestigeStars: user.prestigeStars,
+        isVerified: user.isVerified,
+        isVip: user.isVip,
       ));
     }
 

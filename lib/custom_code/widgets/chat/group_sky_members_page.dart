@@ -187,21 +187,6 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
       return;
     }
 
-    final canStart =
-        await PocketTrophyService.canInitiateNewPact(_currentUserId);
-    if (!canStart) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              "⚡ You already have 3 active Pocket Talks running! Complete an agreement first."),
-          backgroundColor: Color(0xFFFFB300),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
     HapticFeedback.mediumImpact();
     try {
       await PocketTrophyService.requestPact(

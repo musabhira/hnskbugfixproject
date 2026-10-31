@@ -26,6 +26,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_dat
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -94,6 +96,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   String _robotSearchQuery = '';
   int _robotDaysElapsed = 0;
   int _activeVibesCount = 0;
+
+  // 📜 Certificates Tab State
+  String _certSearchQuery = '';
+  List<PocketRankedUser> _certUsers = [];
+  bool _isLoadingCerts = false;
+  bool _filterDay90Only = false;
 
   // Monetization & House Ads Management State
   HousePromoCampaign? _adminCampaign;
@@ -182,7 +190,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 17, vsync: this);
+    _tabController = TabController(length: 18, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -192,6 +200,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _loadCurriculumDayData(1);
       _loadLionKidsInquiries();
       _loadReviewModeConfig();
+      _loadCertificatesData();
     });
   }
 
@@ -749,6 +758,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.published_with_changes_rounded),
                 text: '🛡️ Store Review & Mode Guard'),
+            Tab(
+                icon: Icon(Icons.workspace_premium_rounded),
+                text: '📜 Certificates'),
           ],
         ),
       ),
@@ -772,6 +784,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildCurriculumTargetsTab(),
           const AdminGamesHubWidget(),
           _buildStoreReviewModeTab(),
+          _buildCertificatesTab(),
         ],
       ),
     );
@@ -3280,6 +3293,10 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
         'ios_version': appUpdateData!['ios_version'],
         'android_active': appUpdateData!['android_active'],
         'ios_active': appUpdateData!['ios_active'],
+        'android_link': (appUpdateData!['android_link'] != null && appUpdateData!['android_link'].toString().trim().isNotEmpty)
+            ? appUpdateData!['android_link']
+            : PocketAppUpdateService.defaultAndroidPlayStoreUrl,
+        'ios_link': appUpdateData!['ios_link'],
         'is_mandatory': appUpdateData!['is_mandatory'],
         'title': appUpdateData!['title'],
         'description': appUpdateData!['description'],
@@ -12033,6 +12050,445 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
           ),
         );
       },
+    );
+  }
+
+  Future<void> _loadCertificatesData() async {
+    setState(() => _isLoadingCerts = true);
+    try {
+      final leaderboard = await PocketRankingService.fetchHumansOnlyLeaderboard(
+        limit: 500,
+        forceRefresh: true,
+      );
+      if (mounted) {
+        setState(() {
+          _certUsers = leaderboard;
+          _isLoadingCerts = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading certificate candidates: $e');
+      if (mounted) setState(() => _isLoadingCerts = false);
+    }
+  }
+
+  /// 📜 Tab 18: Authentic Day 90 Master Certificates & Verification Cards
+  Widget _buildCertificatesTab() {
+    final filtered = _certUsers.where((u) {
+      if (_filterDay90Only && u.level < 90) return false;
+      if (_certSearchQuery.trim().isEmpty) return true;
+      final q = _certSearchQuery.toLowerCase().trim();
+      return u.name.toLowerCase().contains(q) || u.userId.toLowerCase().contains(q);
+    }).toList();
+
+    final day90Count = _certUsers.where((u) => u.level >= 90).length;
+
+    return RefreshIndicator(
+      onRefresh: _loadCertificatesData,
+      color: const Color(0xFFFFD700),
+      backgroundColor: const Color(0xFF0F172A),
+      child: Column(
+        children: [
+          // Header / Filter Bar
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: Colors.white10)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Text('📜', style: TextStyle(fontSize: 22)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Master Diplomas & Verification',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Inspect Pocket Scores & launch Day 90 Master Certificates',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Search Bar
+                TextField(
+                  onChanged: (v) => setState(() => _certSearchQuery = v),
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5),
+                  decoration: InputDecoration(
+                    hintText: 'Search learners by name or user ID...',
+                    hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFFFD700), size: 20),
+                    suffixIcon: _certSearchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, color: Colors.white60, size: 18),
+                            onPressed: () => setState(() => _certSearchQuery = ''),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Filter Tabs (All vs Day 90 Master Graduates)
+                Row(
+                  children: [
+                    ChoiceChip(
+                      label: Text('All Learners (${_certUsers.length})'),
+                      selected: !_filterDay90Only,
+                      onSelected: (val) {
+                        if (val) setState(() => _filterDay90Only = false);
+                      },
+                      labelStyle: GoogleFonts.outfit(
+                        color: !_filterDay90Only ? Colors.black : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                      ),
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: !_filterDay90Only ? const Color(0xFFFFD700) : Colors.white12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      label: Text('🎓 Day 90 Masters ($day90Count)'),
+                      selected: _filterDay90Only,
+                      onSelected: (val) {
+                        if (val) setState(() => _filterDay90Only = true);
+                      },
+                      labelStyle: GoogleFonts.outfit(
+                        color: _filterDay90Only ? Colors.black : const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                      ),
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: _filterDay90Only
+                            ? const Color(0xFFFFD700)
+                            : const Color(0xFFFFD700).withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // User Certificate Cards List
+          Expanded(
+            child: _isLoadingCerts
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                  )
+                : filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('📜', style: TextStyle(fontSize: 40)),
+                            const SizedBox(height: 10),
+                            Text(
+                              'No learners found',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Try adjusting your search filter',
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                        itemBuilder: (context, index) {
+                          final user = filtered[index];
+                          final isGrad = user.level >= 90;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isGrad
+                                    ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                                    : Colors.white10,
+                                width: isGrad ? 1.4 : 1.0,
+                              ),
+                              boxShadow: [
+                                if (isGrad)
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  // Avatar
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: isGrad
+                                        ? const Color(0xFFFFD700)
+                                        : const Color(0xFF334155),
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: const Color(0xFF0F172A),
+                                      backgroundImage: (user.profileImageUrl != null &&
+                                              user.profileImageUrl!.isNotEmpty)
+                                          ? CachedNetworkImageProvider(user.profileImageUrl!)
+                                          : null,
+                                      child: (user.profileImageUrl == null ||
+                                              user.profileImageUrl!.isEmpty)
+                                          ? Text(
+                                              user.name.isNotEmpty
+                                                  ? user.name[0].toUpperCase()
+                                                  : 'U',
+                                              style: GoogleFonts.outfit(
+                                                color: isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                    : Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Name, Rank, Level & PS
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                user.name,
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            if (user.isVerified) ...[
+                                              const SizedBox(width: 4),
+                                              const Icon(Icons.verified,
+                                                  color: Color(0xFF38BDF8), size: 14),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 4,
+                                          children: [
+                                            // Level Pill
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                        .withValues(alpha: 0.2)
+                                                    : const Color(0xFF38BDF8)
+                                                        .withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: isGrad
+                                                      ? const Color(0xFFFFD700)
+                                                      : const Color(0xFF38BDF8),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                isGrad ? '👑 Lvl 90 Master' : 'Lvl ${user.level}',
+                                                style: GoogleFonts.outfit(
+                                                  color: isGrad
+                                                      ? const Color(0xFFFFD700)
+                                                      : const Color(0xFF38BDF8),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ),
+
+                                            // Pocket Score Pill
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF10B981)
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: const Color(0xFF10B981)
+                                                      .withValues(alpha: 0.6),
+                                                  width: 0.8,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text('🪙',
+                                                      style: TextStyle(fontSize: 10)),
+                                                  const SizedBox(width: 3),
+                                                  Text(
+                                                    '${user.pocketScore} PS',
+                                                    style: GoogleFonts.outfit(
+                                                      color: const Color(0xFF10B981),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 10,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // Rank Pill
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 5, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.08),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                '#${user.globalRank}',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white70,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Launch Certificate Dialog Button
+                                  GestureDetector(
+                                    onTap: () {
+                                      Day90MasterCertificateDialog.show(
+                                        context,
+                                        userName: user.name,
+                                        userDay: user.level > 0 ? user.level : 90,
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 7),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: isGrad
+                                              ? const [Color(0xFFFFD700), Color(0xFFD97706)]
+                                              : const [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (isGrad
+                                                    ? const Color(0xFFFFD700)
+                                                    : const Color(0xFF2563EB))
+                                                .withValues(alpha: 0.4),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            isGrad ? '🎓' : '📜',
+                                            style: const TextStyle(fontSize: 13),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Certificate',
+                                            style: GoogleFonts.outfit(
+                                              color: isGrad ? Colors.black : Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

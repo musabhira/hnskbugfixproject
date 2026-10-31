@@ -986,6 +986,7 @@ class PocketLanguageService {
       final entry = _vocabDict[wordKey]!;
       if (lang == 'tamil' && entry.containsKey('ta')) return entry['ta']!;
       if (lang == 'hindi' && entry.containsKey('hi')) return entry['hi']!;
+      if (lang == 'telugu' && entry.containsKey('te')) return entry['te']!;
       if (lang == 'kannada' && entry.containsKey('kn')) return entry['kn']!;
       if (lang == 'malayalam' && entry.containsKey('ml')) return entry['ml']!;
       if (lang == 'english') return wordKey;
@@ -1037,6 +1038,24 @@ class PocketLanguageService {
         return defaultFallback;
       }
       return wordKey.isNotEmpty ? wordKey : 'शब्द';
+    }
+
+    if (lang == 'telugu') {
+      if (itemOrWord is Map) {
+        final tm = itemOrWord['teluguMeaning'] ??
+            itemOrWord['meaning_te'] ??
+            itemOrWord['te'] ??
+            itemOrWord['meaningTe'];
+        if (tm != null && tm.toString().trim().isNotEmpty) {
+          return tm.toString().trim();
+        }
+      }
+      if (defaultFallback != null &&
+          defaultFallback.isNotEmpty &&
+          !RegExp(r'[\u0D00-\u0D7F]').hasMatch(defaultFallback)) {
+        return defaultFallback;
+      }
+      return wordKey.isNotEmpty ? wordKey : 'పదం';
     }
 
     if (lang == 'kannada') {
