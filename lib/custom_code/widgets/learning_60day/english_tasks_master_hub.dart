@@ -5387,7 +5387,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       await PocketFortressDefenseService.recordTrainingPoints(50, uid);
 
       try {
-        await Learning60DayService().completeDailyMission(advanceToNextDay: true);
+        await Learning60DayService().completeDailyMission(
+          userId: uid,
+          day: day,
+          earnedPoints: 50,
+          advanceToNextDay: true,
+        );
       } catch (_) {}
     }
     _completedDays.add(day);

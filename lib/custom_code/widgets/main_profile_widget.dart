@@ -2041,12 +2041,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ],
             ),
           ),
-            ),
-          ),
         ),
-      ],
-    ),
       ),
+    ],
+  ),
+),
     floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
     );
@@ -6157,6 +6156,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ),
                   ),
+                ),
                 const SizedBox(width: 8),
                   if (_isMate)
                     Expanded(
@@ -6587,7 +6587,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _showMatesListBottomSheet() {
     HapticFeedback.mediumImpact();
-    final targetUid = widget.userId ?? SupaFlow.client.auth.currentUser?.id ?? '';
+    final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+    final targetUid = widget.userId ?? myId;
     if (targetUid.isEmpty) return;
 
     showModalBottomSheet(
@@ -6885,7 +6886,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       await PocketMateService.removeMateLocally(myId, mId);
                                       if (mounted) {
                                         setState(() {
-                                          _matesCount = (_matesCount - 1).clamp(0, 999999);
+                                          _friendsCount = (_friendsCount - 1).clamp(0, 999999);
                                         });
                                       }
                                       setSheetState(() {
