@@ -5701,7 +5701,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/14 done)',
+                        'Complete House $day missions first to challenge Gate $day Citadel Defender! ($completedTasks/$requiredSteps done)',
                         style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),

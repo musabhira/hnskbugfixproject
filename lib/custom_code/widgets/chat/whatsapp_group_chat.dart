@@ -23,6 +23,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_avatar_system.
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_fight_dialog.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -6343,6 +6345,16 @@ Draft: "$draft"''';
                                       'pocket_talk_request' ||
                                   message.metadata?['is_pocket_talk'] == true)
                                 _buildPocketTalkRequestMessage(message, isMe),
+                              if (message.messageType == 'mate_request' ||
+                                  message.metadata?['type'] == 'mate_request' ||
+                                  message.metadata?['is_mate_request'] == true)
+                                _buildMateRequestMessage(message, isMe),
+                              if (message.messageType == 'citadel_fight' ||
+                                  message.metadata?['fight_id'] != null)
+                                _buildCitadelFightMessage(message, isMe),
+                              if (message.messageType == 'citadel_attack' ||
+                                  message.metadata?['is_citadel_attack'] == true)
+                                _buildCitadelAttackMessage(message, isMe),
                               if (message.messageType == 'voice' &&
                                   message.fileUrl != null)
                                 _buildVoiceMessage(message),
@@ -6398,7 +6410,13 @@ Draft: "$draft"''';
                                   message.messageText!.isNotEmpty &&
                                   message.messageType != 'robot_voice' &&
                                   message.messageType != 'voice' &&
-                                  message.messageType != 'snap')
+                                  message.messageType != 'snap' &&
+                                  message.messageType != 'mate_request' &&
+                                  message.messageType != 'citadel_fight' &&
+                                  message.messageType != 'citadel_attack' &&
+                                  message.metadata?['is_mate_request'] != true &&
+                                  message.metadata?['fight_id'] == null &&
+                                  message.metadata?['is_citadel_attack'] != true)
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 8, right: 8, top: 4, bottom: 4),
@@ -7632,6 +7650,470 @@ Draft: "$draft"''';
           },
         );
       },
+    );
+  }
+
+  Widget _buildMateRequestMessage(ChatMessage message, bool isMe) {
+    final metadata = message.metadata ?? {};
+    final otherUserId = widget.groupId.startsWith('m:') || widget.groupId.startsWith('p:')
+        ? widget.groupId.substring(2)
+        : (isMe ? (metadata['receiver_id']?.toString() ?? '') : message.senderId);
+    final reqId = metadata['request_id']?.toString() ?? metadata['id']?.toString() ?? '';
+    final isAcceptedFromMeta = metadata['status'] == 'accepted';
+
+    return StatefulBuilder(
+      builder: (context, setBubbleState) {
+        return FutureBuilder<bool>(
+          future: PocketMateService.isMate(_currentUserId, otherUserId),
+          builder: (context, snapshot) {
+            final isMate = snapshot.data == true || isAcceptedFromMeta;
+
+            return Container(
+              width: 275,
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isMate ? const Color(0xFF062016) : const Color(0xFF131722),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: isMate
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                  width: isMate ? 1.8 : 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isMate
+                        ? const Color(0xFF10B981).withValues(alpha: 0.18)
+                        : Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: isMate
+                                ? [const Color(0xFF059669), const Color(0xFF10B981)]
+                                : [const Color(0xFFFFB300), const Color(0xFFFFFC00)],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text('🤝', style: TextStyle(fontSize: 18)),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pocket Mate Request',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              isMate ? 'Connected Mates ✨' : 'Mutual Connection',
+                              style: GoogleFonts.inter(
+                                color: isMate ? const Color(0xFF34D399) : const Color(0xFFFFFC00),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    isMate
+                        ? '✨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
+                        : (isMe
+                            ? 'Mate connection request sent. Waiting for them to accept! ⏳'
+                            : '${message.senderName} wants to connect as Pocket Mates with you!'),
+                    style: GoogleFonts.inter(
+                      color: isMate ? const Color(0xFFD1FAE5) : Colors.white70,
+                      fontSize: 12.5,
+                      height: 1.35,
+                    ),
+                  ),
+                  if (!isMate && !isMe) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              HapticFeedback.mediumImpact();
+                              await PocketMateService.acceptMateRequest(
+                                notificationId: reqId,
+                                myId: _currentUserId,
+                                senderId: otherUserId,
+                              );
+                              await PocketTrophyService.ensurePact(
+                                myId: _currentUserId,
+                                otherUserId: otherUserId,
+                              );
+                              ref.read(conversationsProvider.notifier).refreshNow();
+                              setBubbleState(() {});
+                              _showSnackBar('✨ Connected as Mates! Moved to All Chats.');
+                            },
+                            child: Container(
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFC00),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Accept Mate 🤝',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            HapticFeedback.lightImpact();
+                            await PocketMateService.declineMateRequest(
+                              notificationId: reqId,
+                              myId: _currentUserId,
+                              senderId: otherUserId,
+                            );
+                            ref.read(conversationsProvider.notifier).refreshNow();
+                            setBubbleState(() {});
+                          },
+                          child: Container(
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Decline',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCitadelFightMessage(ChatMessage message, bool isMe) {
+    final metadata = message.metadata ?? {};
+    final fightId = metadata['fight_id']?.toString() ?? message.id;
+    final qCount = (metadata['question_count'] as num?)?.toInt() ?? 10;
+    final seconds = (metadata['challenger_seconds'] as num?)?.toInt() ?? 0;
+    final timeSec = (metadata['challenger_time_seconds'] as num?)?.toDouble() ?? seconds.toDouble();
+    final score = (metadata['challenger_score'] as num?)?.toInt() ?? 0;
+    final correct = (metadata['challenger_correct'] as num?)?.toInt() ?? 0;
+    final chalAvatar = metadata['challenger_avatar']?.toString() ?? '⚔️';
+    final timeStr = timeSec > 0 ? timeSec.toStringAsFixed(1) : '$seconds';
+    final correctStr = correct > 0 ? '$correct/$qCount correct' : '$score pts';
+
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131722),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF1E293B),
+                ),
+                child: Center(
+                  child: Text(chalAvatar, style: const TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Citadel Speed Duel 🥊',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '10 Questions War Mode',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFCA5A5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            isMe
+                ? 'You finished the duel in ${timeStr}s • $correctStr. Waiting for opponent to fight back! ⏳'
+                : '${message.senderName} completed the duel in ${timeStr}s • $correctStr. Can you beat their time & score? ⚔️',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12.5,
+              height: 1.35,
+            ),
+          ),
+          if (!isMe) ...[
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                final duel = CitadelFightChallenge(
+                  id: fightId,
+                  challengerId: message.senderId,
+                  challengerName: message.senderName,
+                  challengerAvatar: chalAvatar,
+                  opponentId: _currentUserId,
+                  opponentName: 'You',
+                  opponentAvatar: '🥊',
+                  gameFormat: 'citadel_speed_duel',
+                  gameTitle: 'Citadel Speed Duel',
+                  scheduledTime: 'Instant',
+                  questionCount: qCount,
+                  challengerScore: score,
+                  challengerSeconds: seconds,
+                  challengerCorrect: correct,
+                  challengerTimeSeconds: timeSec,
+                  duelSeed: (metadata['duel_seed'] as num?)?.toInt() ?? 20240607,
+                  createdAt: DateTime.now(),
+                );
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PocketCitadelFightArenaDialog(
+                      challenge: duel,
+                      opponentDay: 1,
+                      isOpponentRun: true,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    'FIGHT BACK NOW ⚔️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCitadelAttackMessage(ChatMessage message, bool isMe) {
+    final metadata = message.metadata ?? {};
+    final otherUserId = widget.groupId.startsWith('m:') || widget.groupId.startsWith('p:')
+        ? widget.groupId.substring(2)
+        : message.senderId;
+    final damage = metadata['damage'] ?? '100%';
+    final weapon = metadata['weapon'] ?? '⚡ Laser Strike';
+    final lootedCoins = metadata['coins_looted'] ?? 15;
+
+    return Container(
+      width: 280,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131722),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFDC2626).withValues(alpha: 0.6),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF1E293B),
+                ),
+                child: const Center(
+                  child: Text('🏰', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Citadel Attack 💥',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'Fortress Intrusion Report',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFCA5A5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            isMe
+                ? 'You breached Citadel defenses! Dealt $damage damage using $weapon (+$lootedCoins coins).'
+                : '${message.senderName} raided your Citadel defenses with $weapon (dealt $damage damage)!',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12.5,
+              height: 1.35,
+            ),
+          ),
+          if (!isMe) ...[
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                PocketCitadelAttackPage.openForUser(
+                  context,
+                  userId: otherUserId,
+                  targetName: message.senderName,
+                  attackerDay: 1,
+                );
+              },
+              child: Container(
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.35),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    'REVENGE ATTACK ⚔️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
   Future<void> _sendPocketTalkInvite() async {

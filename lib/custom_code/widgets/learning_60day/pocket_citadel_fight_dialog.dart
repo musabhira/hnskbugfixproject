@@ -5,7 +5,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_citadel_fight_servi
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_citadel_fight_duel_page.dart';
 
-/// 🥊 Direct launcher for Citadel Speed Duel (Zero bottom-sheet delay, default 20 questions)
+/// 🥊 Direct launcher for Citadel Speed Duel (Zero bottom-sheet delay, default 10 questions)
 class PocketCitadelFightModal {
   static void show(
     BuildContext context, {
@@ -21,7 +21,7 @@ class PocketCitadelFightModal {
       opponentName: opponentName,
       opponentAvatar: opponentAvatar,
       opponentDay: opponentDay,
-      questionCount: 20,
+      questionCount: 10,
       isKidMode: isKidMode,
     );
   }
@@ -32,7 +32,7 @@ class PocketCitadelFightModal {
     required String opponentName,
     required String opponentAvatar,
     required int opponentDay,
-    int questionCount = 20,
+    int questionCount = 10,
     bool isKidMode = false,
   }) async {
     HapticFeedback.heavyImpact();
@@ -69,7 +69,7 @@ class PocketCitadelFightModal {
   }
 }
 
-/// ⚔️ High-Speed Interactive Citadel Duel Arena Modal (20 Questions War Mode, Speed Timer, Gold Trophy)
+/// ⚔️ High-Speed Interactive Citadel Duel Arena Modal (10 Questions War Mode, Speed Timer, Gold Trophy)
 class PocketCitadelFightArenaDialog extends StatelessWidget {
   final CitadelFightChallenge challenge;
   final int opponentDay;
@@ -81,7 +81,7 @@ class PocketCitadelFightArenaDialog extends StatelessWidget {
     super.key,
     required this.challenge,
     required this.opponentDay,
-    this.questionCount = 20,
+    this.questionCount = 10,
     this.isKidMode = false,
     this.isOpponentRun = false,
   });

@@ -3551,12 +3551,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     );
                   } else {
                     final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+                    final senderName = req['sender_name']?.toString() ?? 'Poket Mate';
+                    final senderAvatar = req['sender_profile_image']?.toString() ?? req['sender_avatar']?.toString() ?? req['avatar_url']?.toString();
                     await Navigator.push(
                       context,
                       material.MaterialPageRoute(
-                        builder: (context) => MainProfileWidget(
-                          userId: senderId,
-                          incomingMateRequest: req,
+                        builder: (context) => WhatsAppGroupChat(
+                          groupId: 'm:$senderId',
+                          groupName: senderName,
+                          groupImage: senderAvatar,
                         ),
                       ),
                     );
@@ -3590,7 +3593,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     );
                   }
                 } else if (item.type == 'fight') {
-                  _acceptAndStartFight(item.data as CitadelFightChallenge);
+                  final duel = item.data as CitadelFightChallenge;
+                  await Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => WhatsAppGroupChat(
+                        groupId: 'm:${duel.challengerId}',
+                        groupName: duel.challengerName,
+                        groupImage: duel.challengerAvatar,
+                      ),
+                    ),
+                  );
                 }
                 _loadPendingRequests();
                 ref.read(conversationsProvider.notifier).refreshNow();

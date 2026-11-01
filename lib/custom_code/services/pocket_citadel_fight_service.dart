@@ -49,7 +49,7 @@ class CitadelFightChallenge {
     this.challengerSeconds = 0,
     this.opponentScore = 0,
     this.opponentSeconds = 0,
-    this.questionCount = 20,
+    this.questionCount = 10,
     this.duelSeed = 20240607,
     this.challengerCorrect = 0,
     this.opponentCorrect = 0,
@@ -102,7 +102,7 @@ class CitadelFightChallenge {
       challengerSeconds: (json['challenger_seconds'] as num?)?.toInt() ?? 0,
       opponentScore: (json['opponent_score'] as num?)?.toInt() ?? 0,
       opponentSeconds: (json['opponent_seconds'] as num?)?.toInt() ?? 0,
-      questionCount: (json['question_count'] as num?)?.toInt() ?? 20,
+      questionCount: (json['question_count'] as num?)?.toInt() ?? 10,
       duelSeed: (json['duel_seed'] as num?)?.toInt() ?? 20240607,
       challengerCorrect: (json['challenger_correct'] as num?)?.toInt() ?? 0,
       opponentCorrect: (json['opponent_correct'] as num?)?.toInt() ?? 0,
@@ -146,7 +146,7 @@ class PocketCitadelFightService {
     required String gameFormat,
     required String gameTitle,
     required String scheduledTime,
-    int questionCount = 20,
+    int questionCount = 10,
     int? duelSeed,
   }) async {
     final fightId = 'fight_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(9999)}';
@@ -317,23 +317,25 @@ class PocketCitadelFightService {
 
     await _saveChallenge(updated);
 
-    // Award Trophy to winner:
+    // Award Trophy to winner (strictly when a decisive winner exists; never on draw):
     // English Citadel / 60-Day -> 🏆 Gold Trophy!
     // Pocket Talk -> 🥈 Silver Trophy!
-    final isPocketTalk = challenge.gameFormat.toLowerCase().contains('talk') || challenge.gameFormat.toLowerCase().contains('spoken');
-    if (isPocketTalk) {
-      await PocketTrophyService.awardSilverTrophy(winnerId, 1);
-    } else {
-      await PocketTrophyService.awardGoldTrophy(winnerId, 1);
-    }
+    if (winnerId != 'draw' && winnerId.isNotEmpty) {
+      final isPocketTalk = challenge.gameFormat.toLowerCase().contains('talk') || challenge.gameFormat.toLowerCase().contains('spoken');
+      if (isPocketTalk) {
+        await PocketTrophyService.awardSilverTrophy(winnerId, 1);
+      } else {
+        await PocketTrophyService.awardGoldTrophy(winnerId, 1);
+      }
 
-    // Award Pocket Score to winner
-    try {
-      await SupaFlow.client.rpc('increment_pocket_score', params: {
-        'user_id': winnerId,
-        'amount': 250,
-      });
-    } catch (_) {}
+      // Award Pocket Score to winner
+      try {
+        await SupaFlow.client.rpc('increment_pocket_score', params: {
+          'user_id': winnerId,
+          'amount': 250,
+        });
+      } catch (_) {}
+    }
 
     // Send Completion Notification & Chat message with clear accuracy breakdown
     final isDraw = winnerId == 'draw';
@@ -393,7 +395,7 @@ class PocketCitadelFightService {
     Future<void>.delayed(const Duration(seconds: 5), () async {
       try {
         final r = math.Random();
-        final qCount = challenge.questionCount > 0 ? challenge.questionCount : 20;
+        final qCount = challenge.questionCount > 0 ? challenge.questionCount : 10;
         final userCorrect = challenge.challengerCorrect;
         final userTime = challenge.challengerTimeSeconds > 0
             ? challenge.challengerTimeSeconds
@@ -549,8 +551,8 @@ class PocketCitadelFightService {
       await _saveChallenge(updated);
     }
 
-    // Award Gold Trophy 🏆 to the winner!
-    if (winnerId.isNotEmpty) {
+    // Award Gold Trophy 🏆 to the winner (never on draw)!
+    if (winnerId != 'draw' && winnerId.isNotEmpty) {
       await PocketTrophyService.awardGoldTrophy(winnerId, 1);
     }
   }

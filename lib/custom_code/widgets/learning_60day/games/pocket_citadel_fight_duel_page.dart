@@ -1375,7 +1375,7 @@ class CitadelFightDuelPage extends StatefulWidget {
   final String opponentName;
   final String opponentAvatar; // emoji / letter / http image URL
   final int opponentLevel;
-  final int questionCount; // default 20
+  final int questionCount; // default 10
   final bool isUserBTurn; // false = Challenger initiating, true = Opponent responding
   final double? userATimeSeconds; // User A's recorded time (Round 2 only)
   final int? userAScore; // User A's recorded final score (Round 2 only)
@@ -1388,7 +1388,7 @@ class CitadelFightDuelPage extends StatefulWidget {
     required this.opponentName,
     this.opponentAvatar = '🥷',
     this.opponentLevel = 1,
-    this.questionCount = 20,
+    this.questionCount = 10,
     this.isUserBTurn = false,
     this.userATimeSeconds,
     this.userAScore,
@@ -2010,7 +2010,7 @@ class _CitadelFightDuelPageState extends State<CitadelFightDuelPage>
   // ------------------------------- SETUP -------------------------------------
   Widget _setupCard() {
     final b = widget.isUserBTurn;
-    final opts = <int>{10, 15, 20, widget.questionCount}.toList()..sort();
+    final opts = <int>{5, 10, 15, widget.questionCount}.toList()..sort();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
       child: Container(

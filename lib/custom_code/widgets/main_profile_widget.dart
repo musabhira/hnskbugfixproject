@@ -1993,10 +1993,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 child: _buildProfileHeader(
                     textColor, btnColor, btnTextColor, isMe),
               ),
-              if (!(_profileData?['is_private'] == true &&
-                      !_isFollowing &&
-                      !isMe))
-                material.SliverPersistentHeader(
+              material.SliverPersistentHeader(
                   pinned: true,
                   delegate: _SliverAppBarDelegate(
                     material.TabBar(
@@ -2028,91 +2025,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           },
           body: Container(
             color: bgColor,
-            child: ((_profileData?['is_private'] == true || (!_isMate && !(PocketRobotService.isRobotId(userId) || !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId)))) && !isMe)
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(22),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E1B4B),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: const Color(0xFFFFD700)
-                                    .withValues(alpha: 0.4),
-                                width: 1.5),
-                          ),
-                          child: const Text('🔒',
-                              style: TextStyle(fontSize: 40)),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "Profile Locked: PocketTalk in Progress",
-                          style: GoogleFonts.outfit(
-                            color: textColor,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              color: textColor.withValues(alpha: 0.65),
-                              fontSize: 13,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFFC00),
-                            foregroundColor: Colors.black,
-                            elevation: 6,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                          ),
-                          onPressed: _isMateRequested
-                              ? null
-                              : () =>
-                                  _sendPocketTalkChallengeFromProfile(),
-                          icon: const Icon(Icons.bolt_rounded, size: 20),
-                          label: Text(
-                            _isMateRequested
-                                ? 'Request Pending ⏳'
-                                : 'Challenge to Pocket Talk ⚡',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : material.TabBarView(
-                    key: ValueKey('tab_view_profile_$isMe'),
-                    controller: _profileTabController,
-                    children: [
-                      _buildAdultCardsTab(textColor, bgColor),
-                      _ThreadsTab(
-                        items: _threadItems,
-                        textColor: textColor,
-                        btnColor: btnColor,
-                        btnTextColor: btnTextColor,
-                      ),
-                      _buildCitadelHouseTab(textColor, btnColor, isMe),
-                      _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
-                    ],
-                  ),
+            child: material.TabBarView(
+              key: ValueKey('tab_view_profile_$isMe'),
+              controller: _profileTabController,
+              children: [
+                _buildAdultCardsTab(textColor, bgColor),
+                _ThreadsTab(
+                  items: _threadItems,
+                  textColor: textColor,
+                  btnColor: btnColor,
+                  btnTextColor: btnTextColor,
+                ),
+                _buildCitadelHouseTab(textColor, btnColor, isMe),
+                _buildCompanionsMilestoneTab(textColor, btnColor, isMe),
+              ],
+            ),
+          ),
             ),
           ),
         ),
@@ -3822,10 +3750,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             children: [
                               Flexible(
                                 child: Text(
-                                  'CITADEL FIGHT ARENA: SPEED DUELS',
+                                  'FIGHT DESK',
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
                                   ),
@@ -3844,7 +3772,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 ),
                                 child: Text(
                                   PocketLanguageService.localize(
-                                    en: 'Fight Desk',
+                                    en: 'Speed Duels',
                                     ml: 'ഫൈറ്റ് ഡെസ്ക്',
                                     ta: 'சண்டை மேசை',
                                     hi: 'फाइट डेस्क',
@@ -3918,31 +3846,44 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             : 'Arena Challenger ⚔️';
                         final safeChalAvatar = duel.challengerAvatar.isNotEmpty ? duel.challengerAvatar : '⚔️';
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B),
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                                blurRadius: 10,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => WhatsAppGroupChat(
+                                    groupId: 'm:${duel.challengerId}',
+                                    groupName: safeChalName,
+                                    groupImage: safeChalAvatar,
+                                  ),
+                                ),
+                              ).then((_) => setState(() {}));
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                              child: Row(
                                 children: [
                                   Container(
-                                    width: 40,
-                                    height: 40,
+                                    width: 44,
+                                    height: 44,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
@@ -3953,69 +3894,61 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       ),
                                     ),
                                     child: Text(safeChalAvatar,
-                                        style: const TextStyle(fontSize: 20)),
+                                        style: const TextStyle(fontSize: 22)),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          safeChalName,
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 14,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                safeChalName,
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 14,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFDC2626).withValues(alpha: 0.25),
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(color: const Color(0xFFDC2626), width: 0.8),
+                                              ),
+                                              child: Text(
+                                                'Fought you ⚔️',
+                                                style: GoogleFonts.outfit(
+                                                  color: const Color(0xFFFCA5A5),
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                        const SizedBox(height: 3),
                                         Text(
-                                          'Finished ${duel.questionCount}Q duel in ${timeStr}s • $correctStr',
+                                          'Finished ${duel.questionCount}Q duel in ${timeStr}s • $correctStr • Tap to open chat',
                                           style: GoogleFonts.inter(
                                             color: const Color(0xFF94A3B8),
                                             fontSize: 11,
                                           ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 14),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFDC2626),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    elevation: 4,
-                                  ),
-                                  icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
-                                  label: Text(
-                                    'FIGHT BACK NOW ⚔️',
-                                    style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    HapticFeedback.heavyImpact();
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => PocketCitadelFightArenaDialog(
-                                          challenge: duel,
-                                          opponentDay: 1,
-                                          isOpponentRun: true,
-                                        ),
-                                      ),
-                                    ).then((_) => setState(() {}));
-                                  },
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         );
                       }),
@@ -6224,10 +6157,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ),
                   ),
-                ),
-                if (!(_profileData?['is_private'] == true &&
-                    !_isFollowing)) ...[
-                  const SizedBox(width: 8),
+                const SizedBox(width: 8),
                   if (_isMate)
                     Expanded(
                       child: Container(
@@ -6376,7 +6306,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                       ),
                     ),
-                ],
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(
