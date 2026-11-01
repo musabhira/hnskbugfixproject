@@ -134,6 +134,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
+  final String _selectedTargetLanguage = 'English';
   final String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
   String _selectedLearningGoal = 'Daily Fluency & Real Conversations';

@@ -7933,7 +7933,7 @@ Draft: "$draft"''';
                 final duel = CitadelFightChallenge(
                   id: fightId,
                   challengerId: message.senderId,
-                  challengerName: message.senderName,
+                  challengerName: message.senderName ?? 'Challenger',
                   challengerAvatar: chalAvatar,
                   opponentId: _currentUserId,
                   opponentName: 'You',
@@ -8081,7 +8081,7 @@ Draft: "$draft"''';
                 PocketCitadelAttackPage.openForUser(
                   context,
                   userId: otherUserId,
-                  targetName: message.senderName,
+                  targetName: message.senderName ?? 'Defender',
                   attackerDay: 1,
                 );
               },
