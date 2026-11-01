@@ -87,7 +87,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   WelcomeMode _mode = WelcomeMode.welcome;
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 16;
+  static const int _totalSteps = 15;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -134,8 +134,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
-  final String _selectedTargetLanguage = 'English';
-  String _selectedReferralSource = 'Instagram / Reels';
+  final String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
   String _selectedLearningGoal = 'Daily Fluency & Real Conversations';
   int _selectedDailyGoalMins = 60;
@@ -168,29 +167,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     {'code': 'Arabic', 'name': 'العربية (Arabic)', 'flag': '🇸🇦'},
     {'code': 'Bengali', 'name': 'বাংলা (Bengali)', 'flag': '🌊'},
     {'code': 'Other', 'name': 'Other Language', 'flag': '✨'},
-  ];
-
-  final List<Map<String, dynamic>> _referralSources = [
-    {
-      'title': 'Instagram / Reels',
-      'icon': Icons.camera_alt_outlined,
-    },
-    {
-      'title': 'TikTok / Shorts',
-      'icon': Icons.play_arrow_rounded,
-    },
-    {
-      'title': 'Friends & Family',
-      'icon': Icons.people_outline_rounded,
-    },
-    {
-      'title': 'YouTube',
-      'icon': Icons.video_collection_outlined,
-    },
-    {
-      'title': 'Google / App Store',
-      'icon': Icons.search_rounded,
-    },
   ];
 
   List<Map<String, String>> get _englishLevels =>
@@ -932,28 +908,26 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       case 3:
         return "Let's answer quick questions to personalize your English learning plan.";
       case 4:
-        return "How did you hear about Pocket Mates?";
-      case 5:
         return "What is your current English speaking level?";
-      case 6:
+      case 5:
         return "What is your primary goal for learning English?";
-      case 7:
+      case 6:
         return "What time of day works best for your daily English practice?";
-      case 8:
+      case 7:
         return "How much time can you commit each day to practice speaking?";
-      case 9:
+      case 8:
         return "Here is your personalized daily routine and study schedule. Take a look!";
-      case 10:
+      case 9:
         return "Turn on reminders so you never miss your daily speaking practice.";
-      case 11:
+      case 10:
         return "Pocket Mates is your personal speaking partner. Practice anytime, anywhere!";
-      case 12:
+      case 11:
         return "Make a 3-month commitment to speaking, and watch your confidence grow!";
-      case 13:
+      case 12:
         return "Choose your plan to unlock interactive lessons and unlimited conversations.";
-      case 14:
+      case 13:
         return "How would you like to start your English journey today?";
-      case 15:
+      case 14:
         return "Awesome! Your personalized English plan is ready. Let's create your account to begin!";
       default:
         return "Let's continue your English learning journey!";
@@ -2075,7 +2049,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       _buildStep2NativeLanguage(),
                       _buildStepLearnerTrack(),
                       _buildStep1QuestionsIntro(),
-                      _buildStep3ReferralSource(),
                       _buildStep4EnglishLevel(),
                       _buildStep5LearningGoal(),
                       _buildStepPreferredStudyTime(),
@@ -2321,7 +2294,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           'Choose the personalized track suited for your learning journey.',
       child: Column(
         children: [
-          // Option 1: 🚀 English Mastery (Adults 18+)
+          // Option 1: 🚀 English Mastery (9+ Years)
           GestureDetector(
             onTap: () async {
               HapticFeedback.selectionClick();
@@ -2331,7 +2304,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(15),
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -2368,7 +2341,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['adultTitle'] ?? 'Adult (18+) - Spoken English',
+                              trans['adultTitle'] ?? 'English Mastery (9+ Years)',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -2382,7 +2355,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                trans['adultBadge'] ?? '18+ ADULT',
+                                trans['adultBadge'] ?? '9+ YEARS',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFFFFD700),
                                   fontSize: 10,
@@ -2410,101 +2383,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             ),
           ),
 
-          // Option 2: 🎒 Student World (Ages 9 to 18)
-          GestureDetector(
-            onTap: () async {
-              HapticFeedback.selectionClick();
-              await PocketKidsService.activateStudentAccount(
-                name: 'Student',
-                ageGroup: '9-18',
-                avatar: '🎒',
-                isPureStudent: false,
-              );
-              _nextStep();
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(15),
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF6366F1).withValues(alpha: 0.25),
-                    const Color(0xFF1E1B4B),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFF818CF8).withValues(alpha: 0.8),
-                  width: 1.6,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text('🎒', style: TextStyle(fontSize: 26)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: [
-                            Text(
-                              trans['studentTitle'] ?? 'Student (9–18) - School English',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                trans['studentBadge'] ?? '9–18 STUDENT',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFA5B4FC),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          trans['studentDesc'] ?? '',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 11,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF818CF8), size: 15),
-                ],
-              ),
-            ),
-          ),
-
-          // Option 3: 🧸 Junior Explorer (Kids Up to 8)
+          // Option 2: 🧸 Junior Explorer (Kids Up to 8)
           GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
@@ -2597,39 +2476,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         await PocketKidsService.activateAdultAccount();
         _nextStep();
       },
-      buttonText: 'CONTINUE ADULT TRACK ➔',
+      buttonText: 'CONTINUE ➔',
     );
   }
 
-  // --- Step 3: Referral Source ---
-  Widget _buildStep3ReferralSource() {
-    return _buildStepContainer(
-      title: 'How did you hear about PoketMates?',
-      mascotHint: 'Help us understand how you discovered our community!',
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _referralSources.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final source = _referralSources[index];
-          final isSelected = _selectedReferralSource == source['title'];
-          return _buildOptionCard(
-            title: source['title'] as String,
-            leadingIcon: source['icon'] as IconData,
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(
-                  () => _selectedReferralSource = source['title'] as String);
-            },
-          );
-        },
-      ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
-    );
-  }
 
   // --- Step 4: English Level ---
   Widget _buildStep4EnglishLevel() {
@@ -4677,9 +4527,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             badgeColor: const Color(0xFFFACC15),
             leadingEmoji: '👑',
             isSelected: isSuper,
-            onTap: () {
+            onTap: () async {
               HapticFeedback.selectionClick();
               setState(() => _selectedPlan = 'super');
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+              );
             },
           ),
           const SizedBox(height: 10),

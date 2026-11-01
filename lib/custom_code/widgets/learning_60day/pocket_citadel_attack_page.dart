@@ -4940,6 +4940,52 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 8),
 
+                // 🔊 Music & Audio Speaker Toggle Button (User Audio Directive)
+                ValueListenableBuilder<bool>(
+                  valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                  builder: (context, isMuted, _) {
+                    return InkWell(
+                      onTap: () async {
+                        HapticFeedback.selectionClick();
+                        await PocketGameAudioService.instance.toggleMute();
+                        if (mounted) setState(() {});
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.70),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isMuted
+                                ? Colors.white30
+                                : const Color(0xFFFFD700).withValues(alpha: 0.8),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            if (!isMuted)
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                blurRadius: 8,
+                              ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            isMuted
+                                ? Icons.volume_off_rounded
+                                : Icons.volume_up_rounded,
+                            color: isMuted ? Colors.white38 : const Color(0xFFFFD700),
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+
                 // 👤 Defender Profile Icon Button
                 InkWell(
                   onTap: _openDefenderProfile,

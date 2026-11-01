@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'curriculum_data/pocket_90day_verb_timeline_data.dart';
 import 'games/verb_timeline_flame_game.dart';
@@ -132,6 +133,197 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
     }
   }
 
+  /// Direct Keyboard Input Fallback (User Directive: tap slot to type)
+  void _promptTypeWordForCard(String tense) {
+    if (_isAllFilled || _activeVerbIdx >= _verbs.length) return;
+    final item = _verbs[_activeVerbIdx];
+    String expectedWord;
+    String tenseTitle;
+    Color tenseColor;
+    if (tense == 'past') {
+      expectedWord = item.past;
+      tenseTitle = 'PAST';
+      tenseColor = const Color(0xFFFF9100);
+    } else if (tense == 'present') {
+      expectedWord = item.present;
+      tenseTitle = 'PRESENT';
+      tenseColor = const Color(0xFF00E676);
+    } else {
+      expectedWord = item.future;
+      tenseTitle = 'FUTURE';
+      tenseColor = const Color(0xFF00E5FF);
+    }
+
+    final controller = TextEditingController();
+    String? errorText;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E0E38),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border.all(color: tenseColor.withValues(alpha: 0.4)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: tenseColor.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.edit_rounded, color: tenseColor, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Type $tenseTitle form of "${item.baseVerb}"',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. $expectedWord',
+                        hintStyle: const TextStyle(color: Colors.white30),
+                        filled: true,
+                        fillColor: Colors.black26,
+                        errorText: errorText,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: tenseColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: tenseColor, width: 2),
+                        ),
+                      ),
+                      onSubmitted: (val) {
+                        final input = val.trim();
+                        if (input.toLowerCase() == expectedWord.toLowerCase()) {
+                          Navigator.of(ctx).pop();
+                          _applyTypedWordForCard(tense, expectedWord);
+                        } else {
+                          PocketGameSfx.instance.playErrorBuzz();
+                          HapticFeedback.mediumImpact();
+                          setModalState(() {
+                            errorText = 'Not quite! Try: "$expectedWord"';
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: tenseColor,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        final input = controller.text.trim();
+                        if (input.toLowerCase() == expectedWord.toLowerCase()) {
+                          Navigator.of(ctx).pop();
+                          _applyTypedWordForCard(tense, expectedWord);
+                        } else {
+                          PocketGameSfx.instance.playErrorBuzz();
+                          HapticFeedback.mediumImpact();
+                          setModalState(() {
+                            errorText = 'Not quite! Try: "$expectedWord"';
+                          });
+                        }
+                      },
+                      child: Text(
+                        'Submit Word ✓',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _applyTypedWordForCard(String tense, String word) {
+    final item = _verbs[_activeVerbIdx];
+    PocketGameSfx.instance.playSnapCorrect();
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      if (tense == 'past') {
+        _placedPast = word;
+        _remaining.remove(word);
+        widget.onSpeak(item.pastSentence);
+      } else if (tense == 'present') {
+        _placedPresent = word;
+        _remaining.remove(word);
+        widget.onSpeak(item.presentSentence);
+      } else if (tense == 'future') {
+        _placedFuture = word;
+        _remaining.remove(word);
+        widget.onSpeak(item.futureSentence);
+      }
+
+      if (_placedPast != null && _placedPresent != null && _placedFuture != null) {
+        _isAllFilled = true;
+        PocketGameSfx.instance.playVictory();
+        widget.onSpeak(item.rhythmChant);
+        if (_activeVerbIdx + 1 >= _verbs.length) {
+          widget.onCompleted(true);
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_verbs.isEmpty) {
@@ -235,6 +427,7 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                   _placedPast,
                   const Color(0xFFFF9100),
                   item.pastSentence,
+                  'past',
                 ),
               ),
               const SizedBox(width: 6),
@@ -245,6 +438,7 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                   _placedPresent,
                   const Color(0xFF00E676),
                   item.presentSentence,
+                  'present',
                 ),
               ),
               const SizedBox(width: 6),
@@ -255,6 +449,7 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
                   _placedFuture,
                   const Color(0xFF00E5FF),
                   item.futureSentence,
+                  'future',
                 ),
               ),
             ],
@@ -457,65 +652,99 @@ class _PocketVerbTimelineCardState extends State<PocketVerbTimelineCard> {
     );
   }
 
-  Widget _buildColumnBox(String label, String sublabel, String? word, Color color, String sentence) {
+  Widget _buildColumnBox(
+    String label,
+    String sublabel,
+    String? word,
+    Color color,
+    String sentence,
+    String tense,
+  ) {
     final filled = word != null;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 116),
-      padding: const EdgeInsets.all(7),
-      decoration: BoxDecoration(
-        color: filled ? color.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: filled ? color : Colors.white12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          Text(
-            sublabel,
-            style: GoogleFonts.inter(
-              color: color.withValues(alpha: 0.75),
-              fontSize: 8.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 5),
-          if (filled) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                word,
-                style: GoogleFonts.outfit(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 4),
+    return InkWell(
+      onTap: () {
+        if (!filled) {
+          _promptTypeWordForCard(tense);
+        } else if (!_isAllFilled) {
+          // Tap placed word to return to word bank
+          setState(() {
+            if (tense == 'past' && _placedPast != null) {
+              _remaining.add(_placedPast!);
+              _placedPast = null;
+            } else if (tense == 'present' && _placedPresent != null) {
+              _remaining.add(_placedPresent!);
+              _placedPresent = null;
+            } else if (tense == 'future' && _placedFuture != null) {
+              _remaining.add(_placedFuture!);
+              _placedFuture = null;
+            }
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 116),
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: filled ? color.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: filled ? color : Colors.white12),
+        ),
+        child: Column(
+          children: [
             Text(
-              sentence,
-              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 9),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              label,
+              style: GoogleFonts.outfit(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+              ),
             ),
-          ] else ...[
-            const SizedBox(height: 14),
-            const Icon(Icons.add_circle_outline, color: Colors.white24, size: 20),
+            Text(
+              sublabel,
+              style: GoogleFonts.inter(
+                color: color.withValues(alpha: 0.75),
+                fontSize: 8.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 5),
+            if (filled) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  word,
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                sentence,
+                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 9),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ] else ...[
+              const SizedBox(height: 10),
+              Icon(Icons.edit_note_rounded, color: color.withValues(alpha: 0.8), size: 18),
+              const SizedBox(height: 2),
+              Text(
+                'Tap to type',
+                style: GoogleFonts.outfit(color: Colors.white38, fontSize: 9),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

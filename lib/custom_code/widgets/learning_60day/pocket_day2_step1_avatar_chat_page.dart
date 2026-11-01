@@ -138,9 +138,9 @@ class _PocketDay2Step1AvatarChatPageState
   // Drills for Day 2
   final List<Map<String, String>> _drills = [
     {
-      'en': 'I am from Kerala.',
-      'ml': 'ഞാൻ കേരളത്തിൽ നിന്നാണ്.',
-      'rule': 'Subject: I -> am',
+      'en': 'I am ready to speak.',
+      'ml': 'ഞാൻ സംസാരിക്കാൻ തയ്യാറാണ്.',
+      'rule': 'Subject: I -> am ready (തയ്യാറാണ്)',
     },
     {
       'en': 'I live in a beautiful city.',
@@ -400,21 +400,21 @@ class _PocketDay2Step1AvatarChatPageState
   void _onUserWantsToLearnDay2() {
     final textEn =
         'Great, $_userName! 🚀 Remember this golden rule:\n\n'
-        '• I + am ➔ "I am from Kerala."\n'
+        '• I + am ➔ "I am ready to speak."\n'
         '• He / She / It + is ➔ "He is at home."\n'
         '• We / You / They + are ➔ "They are in Kochi."\n\n'
         '⚠️ Never drop the "to be" verb in English!\n'
-        '❌ Don\'t say: "I from Kerala"\n'
-        '✅ Always say: "I am from Kerala!"';
+        '❌ Don\'t say: "I ready to speak"\n'
+        '✅ Always say: "I am ready to speak!"';
 
     final textMl =
         '$_userName, ഈ മൂന്ന് കാര്യങ്ങൾ എപ്പോഴും ഓർക്കുക:\n\n'
-        '• ഞാൻ (I) പറയുമ്പോൾ: I am from Kerala. (am വിട്ടുപോകരുത്!)\n'
+        '• ഞാൻ (I) പറയുമ്പോൾ: I am ready to speak. (am വിട്ടുപോകരുത്!)\n'
         '• അവൻ / അവൾ (He / She) പറയുമ്പോൾ: He is at home.\n'
         '• ഞങ്ങൾ / അവർ (We / They) പറയുമ്പോൾ: They are in Kochi.\n\n'
-        'മലയാളത്തിൽ "ഞാൻ നാട്ടിലാണ്" എന്ന് പറയാം. എന്നാൽ ഇംഗ്ലീഷിൽ എപ്പോഴും "I am at home" എന്ന് തന്നെ പറയണം!';
+        'മലയാളത്തിൽ "ഞാൻ തയ്യാറാണ്" എന്ന് പറയാം. എന്നാൽ ഇംഗ്ലീഷിൽ എപ്പോഴും "I am ready" എന്ന് am ചേർത്ത് പറയണം!';
 
-    _currentExpectedVoicePhrase = 'I am from Kerala';
+    _currentExpectedVoicePhrase = 'I am ready to speak';
 
     setState(() {
       _messages.add(
@@ -424,7 +424,7 @@ class _PocketDay2Step1AvatarChatPageState
           textEn: textEn,
           textNative: textMl,
           audioText:
-              'Remember this golden rule: I am from Kerala. He is at home. They are in Kochi. Never drop am, is, or are!',
+              'Remember this golden rule: I am ready to speak. He is at home. They are in Kochi. Never drop am, is, or are!',
           cardContent: _buildBlueprintVisualCard(),
           speakThisPrompt: 'Ready to speak aloud? Tap below! 👇',
           inBubbleOptions: [
@@ -452,7 +452,7 @@ class _PocketDay2Step1AvatarChatPageState
       );
     });
 
-    _speak('Remember this golden rule: I am from Kerala. He is at home. They are in Kochi.');
+    _speak('Remember this golden rule: I am ready to speak. He is at home. They are in Kochi.');
     _scrollToBottom();
   }
 
@@ -490,7 +490,7 @@ class _PocketDay2Step1AvatarChatPageState
             ],
           ),
           const SizedBox(height: 10),
-          _buildRuleRow('I + am', '"I am from Kerala."', 'ഞാൻ കേരളത്തിൽ നിന്നാണ്'),
+          _buildRuleRow('I + am', '"I am ready to speak."', 'ഞാൻ സംസാരിക്കാൻ തയ്യാറാണ്'),
           const Divider(color: Colors.white12, height: 16),
           _buildRuleRow('He / She + is', '"He is at home."', 'അവൻ വീട്ടിലാണ്'),
           const Divider(color: Colors.white12, height: 16),
@@ -669,10 +669,10 @@ class _PocketDay2Step1AvatarChatPageState
     final rules = [
       const FormulaRuleItem(
         formulaHeader: 'DAY 2 SPOKEN BLUEPRINT',
-        subjectRule: 'I + am ➔ "I am from Kerala."',
-        targetSentence: 'I am from Kerala.',
-        nativeMeaning: 'ഞാൻ കേരളത്തിൽ നിന്നാണ്.',
-        formulaTip: 'I + am (Where I am from)',
+        subjectRule: 'I + am ➔ "I am ready to speak."',
+        targetSentence: 'I am ready to speak.',
+        nativeMeaning: 'ഞാൻ സംസാരിക്കാൻ തയ്യാറാണ്.',
+        formulaTip: 'I + am (Ready state)',
       ),
       const FormulaRuleItem(
         formulaHeader: 'DAY 2 SPOKEN BLUEPRINT',

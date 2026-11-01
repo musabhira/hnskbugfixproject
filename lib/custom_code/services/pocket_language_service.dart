@@ -832,29 +832,23 @@ class PocketLanguageService {
         return {
           'title': 'Who is learning English?\nആർക്കുവേണ്ടിയാണ് ഈ അക്കൗണ്ട്?',
           'subtitle': 'നിങ്ങളുടെ പ്രായത്തിനും ആവശ്യത്തിനും അനുയോജ്യമായ ട്രാക്ക് തിരഞ്ഞെടുക്കുക:',
-          'adultTitle': 'Adult (18+) - Spoken English Mastery',
-          'adultBadge': '18+ ADULT',
-          'adultDesc': '18 വയസ്സ് മുതൽ മുതിർന്നവർക്കായി 90 ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ് & കരിയർ ടാസ്‌ക്കുകൾ!',
-          'studentTitle': 'Student (9–18) - School English & Fluency',
-          'studentBadge': '9–18 STUDENT',
-          'studentDesc': '9 മുതൽ 18 വയസ്സുവരെയുള്ള വിദ്യാർത്ഥികൾക്കായി സ്കൂൾ മിഷനുകൾ & സ്പോക്കൺ ഇംഗ്ലീഷ്!',
+          'adultTitle': 'English Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': '9 വയസ്സും അതിൽ കൂടുതലുമുള്ള എല്ലാവർക്കുമായി 90 ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ്, പ്രാക്ടീസ് & ലൈവ് ചാറ്റുകൾ!',
           'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
           'kidsBadge': 'UP TO 8 KIDS',
-          'kidsDesc': '8 വയസ്സുവരെയുള്ള കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & കളികൾ!',
+          'kidsDesc': '8 വയസ്സുവരെയുള്ള കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & രസകരമായ കളികൾ!',
         };
       default:
         return {
           'title': 'Who is learning English?',
           'subtitle': 'Choose the personalized track suited for your learning journey:',
-          'adultTitle': 'Adult (18+) - English Mastery',
-          'adultBadge': '18+ ADULT',
-          'adultDesc': 'For adults 18+: 90 days spoken English, career, tasks & real speaking!',
-          'studentTitle': 'Student (9–18) - School & Fluency',
-          'studentBadge': '9–18 STUDENT',
-          'studentDesc': 'For students aged 9–18: School missions, grammar puzzles & citadel practice!',
+          'adultTitle': 'English Mastery (9+ Years)',
+          'adultBadge': '9+ YEARS',
+          'adultDesc': 'For learners aged 9 and above: 90 days spoken English, real speaking & interactive tasks!',
           'kidsTitle': 'Kids (Up to 8) - Junior Explorer',
           'kidsBadge': 'UP TO 8 KIDS',
-          'kidsDesc': 'For kids up to 8: 2D cartoon games, phonics & animal adventures!',
+          'kidsDesc': 'For kids up to 8: 2D cartoon games, phonics & fun animal adventures!',
         };
     }
   }

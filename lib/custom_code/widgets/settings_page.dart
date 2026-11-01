@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_patter
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -606,7 +607,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
                   final allKeys = prefs.getKeys().toList();
                   for (final k in allKeys) {
-                    if (k.startsWith('pocket_day_${myId}_') || k.startsWith('learning_day_${myId}_')) {
+                    if (k.startsWith('pocket_day_${myId}_') ||
+                        k.startsWith('learning_day_${myId}_') ||
+                        k.contains('pocket_mission_day_') ||
+                        k.contains('_$myId')) {
                       await prefs.remove(k);
                     }
                   }
@@ -625,9 +629,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Target progress and Pocket Score have been reset to Day 1.'),
+                      content: Text('Progress reset to Day 1! Returning to Day 1 rules & challenges...'),
                       backgroundColor: Color(0xFF10B981),
+                      duration: Duration(seconds: 2),
                     ),
+                  );
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const PocketDailyMissionPage(day: 1),
+                    ),
+                    (route) => route.isFirst,
                   );
                 }
               } catch (e) {

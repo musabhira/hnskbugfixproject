@@ -80,6 +80,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
   /// Global reactive notifier for mute status (used by Mute/Unmute buttons across screens)
   final ValueNotifier<bool> isMutedNotifier = ValueNotifier<bool>(false);
+  bool get isMuted => isMutedNotifier.value;
 
   /// Global reactive notifier for current track title
   final ValueNotifier<String?> currentTrackNotifier =

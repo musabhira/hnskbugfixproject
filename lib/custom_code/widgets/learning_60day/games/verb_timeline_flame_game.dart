@@ -247,21 +247,26 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     final placedFuture = isFuturePrePlaced ? item.future : null;
 
     // Remaining words for user to find from Word Bank:
-    final Set<String> targetWords = {};
+    // IMPORTANT: Keep as List to preserve duplicates for verbs like "Read" (where past == present == 'Read')
+    final List<String> targetWords = [];
     if (placedPast == null) targetWords.add(item.past);
     if (placedPresent == null) targetWords.add(item.present);
     if (placedFuture == null) targetWords.add(item.future);
 
-    // Add distractor action verbs from other items in Day 1:
-    final Set<String> wordBankSet = Set.from(targetWords);
+    // Add distractor action verbs from other items:
+    final Set<String> distractorSet = {};
     for (final other in _items) {
       if (other.baseVerb != item.baseVerb) {
-        wordBankSet.add(other.past);
-        wordBankSet.add(other.present);
-        wordBankSet.add(other.future);
+        distractorSet.add(other.past);
+        distractorSet.add(other.present);
+        distractorSet.add(other.future);
       }
     }
-    final words = wordBankSet.toList()..shuffle(math.Random());
+    // Remove words that are already in targetWords
+    for (final tw in targetWords) {
+      distractorSet.remove(tw);
+    }
+    final words = [...targetWords, ...distractorSet]..shuffle(math.Random());
 
     setState(() {
       _placedPast = placedPast;
@@ -322,8 +327,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     final screenW = MediaQuery.of(context).size.width;
 
     // 1. Is it the target PAST word?
-    if (word == item.past) {
-      if (_placedPast != null) return;
+    if (word == item.past && _placedPast == null) {
       PocketGameSfx.instance.playSnapCorrect();
       HapticFeedback.mediumImpact();
       setState(() {
@@ -340,8 +344,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     }
 
     // 2. Is it the target PRESENT word?
-    if (word == item.present) {
-      if (_placedPresent != null) return;
+    if (word == item.present && _placedPresent == null) {
       PocketGameSfx.instance.playSnapCorrect();
       HapticFeedback.mediumImpact();
       setState(() {
@@ -358,8 +361,7 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
     }
 
     // 3. Is it the target FUTURE word?
-    if (word == item.future) {
-      if (_placedFuture != null) return;
+    if (word == item.future && _placedFuture == null) {
       PocketGameSfx.instance.playSnapCorrect();
       HapticFeedback.mediumImpact();
       setState(() {
@@ -377,6 +379,204 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
 
     // 4. Incorrect tap -> Heavy vibration & wobble shake!
     _handleWrongCard(word);
+  }
+
+  /// Direct Keyboard Input Fallback (User Directive: tap slot to type)
+  void _promptTypeWord(String tense) {
+    if (_isRoundCompleted) return;
+    final item = _items[_currentIndex];
+    String expectedWord;
+    String tenseTitle;
+    Color tenseColor;
+    if (tense == 'past') {
+      expectedWord = item.past;
+      tenseTitle = item.pastLabel;
+      tenseColor = const Color(0xFFE91E63);
+    } else if (tense == 'present') {
+      expectedWord = item.present;
+      tenseTitle = item.presentLabel;
+      tenseColor = const Color(0xFF00E676);
+    } else {
+      expectedWord = item.future;
+      tenseTitle = item.futureLabel;
+      tenseColor = const Color(0xFF00E5FF);
+    }
+
+    final controller = TextEditingController();
+    String? errorText;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E0E38),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border.all(color: tenseColor.withValues(alpha: 0.4)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: tenseColor.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.edit_rounded, color: tenseColor, size: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Type $tenseTitle form of "${item.baseVerb}"',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. $expectedWord',
+                        hintStyle: const TextStyle(color: Colors.white30),
+                        filled: true,
+                        fillColor: Colors.black26,
+                        errorText: errorText,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: tenseColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: tenseColor, width: 2),
+                        ),
+                      ),
+                      onSubmitted: (val) {
+                        final input = val.trim();
+                        if (input.toLowerCase() == expectedWord.toLowerCase()) {
+                          Navigator.of(ctx).pop();
+                          _applyTypedWord(tense, expectedWord);
+                        } else {
+                          PocketGameSfx.instance.playErrorBuzz();
+                          HapticFeedback.mediumImpact();
+                          setModalState(() {
+                            errorText = 'Not quite! Try: "$expectedWord"';
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: tenseColor,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        final input = controller.text.trim();
+                        if (input.toLowerCase() == expectedWord.toLowerCase()) {
+                          Navigator.of(ctx).pop();
+                          _applyTypedWord(tense, expectedWord);
+                        } else {
+                          PocketGameSfx.instance.playErrorBuzz();
+                          HapticFeedback.mediumImpact();
+                          setModalState(() {
+                            errorText = 'Not quite! Try: "$expectedWord"';
+                          });
+                        }
+                      },
+                      child: Text(
+                        'Submit Word ✓',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _applyTypedWord(String tense, String word) {
+    final item = _items[_currentIndex];
+    final screenW = MediaQuery.of(context).size.width;
+
+    PocketGameSfx.instance.playSnapCorrect();
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      if (tense == 'past') {
+        _placedPast = word;
+        _remainingCards.remove(word);
+        _speak('${item.past}. ${item.pastSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.2, 220),
+          const Color(0xFFE91E63),
+        );
+      } else if (tense == 'present') {
+        _placedPresent = word;
+        _remainingCards.remove(word);
+        _speak('${item.present}. ${item.presentSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.5, 220),
+          const Color(0xFF00E676),
+        );
+      } else if (tense == 'future') {
+        _placedFuture = word;
+        _remainingCards.remove(word);
+        _speak('${item.future}. ${item.futureSentence}');
+        _flameGame.burstCelebration(
+          Vector2(screenW * 0.8, 220),
+          const Color(0xFF00E5FF),
+        );
+      }
+    });
+
+    _checkRoundCompletion();
   }
 
   void _checkRoundCompletion() {
@@ -975,36 +1175,39 @@ class _PocketVerbTimelineGamePageState extends State<PocketVerbTimelineGamePage>
               ),
             )
           else
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.02),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.35),
-                  style: BorderStyle.solid,
-                  width: 1.2,
+            GestureDetector(
+              onTap: () => _promptTypeWord(tense),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.02),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.35),
+                    style: BorderStyle.solid,
+                    width: 1.2,
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.touch_app_outlined, size: 14, color: color.withValues(alpha: 0.8)),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      'Tap $title',
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white60,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit_note_rounded, size: 16, color: color.withValues(alpha: 0.9)),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Tap to type or pick $title',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],

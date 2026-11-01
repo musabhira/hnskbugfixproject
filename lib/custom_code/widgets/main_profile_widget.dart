@@ -2028,7 +2028,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           },
           body: Container(
             color: bgColor,
-            child: ((_profileData?['is_private'] == true || !_isMate) && !isMe)
+            child: ((_profileData?['is_private'] == true || (!_isMate && !(PocketRobotService.isRobotId(userId) || !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId)))) && !isMe)
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -6666,7 +6666,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Container(
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Container(
           height: MediaQuery.of(ctx).size.height * 0.72,
           decoration: const BoxDecoration(
             color: Color(0xFF0F172A),
@@ -6894,6 +6896,85 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   ),
                                 ),
                               ),
+                              if (targetUid == myId && !isPresident) ...[
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.person_remove_rounded,
+                                    color: Colors.white38,
+                                    size: 19,
+                                  ),
+                                  tooltip: 'Remove Mate',
+                                  constraints: const BoxConstraints(),
+                                  padding: const EdgeInsets.all(6),
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: ctx,
+                                      builder: (dCtx) => AlertDialog(
+                                        backgroundColor: const Color(0xFF1E293B),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          side: const BorderSide(color: Colors.white12),
+                                        ),
+                                        title: Row(
+                                          children: [
+                                            const Icon(Icons.person_remove_rounded, color: Colors.redAccent, size: 22),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Remove Mate?',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        content: Text(
+                                          'Are you sure you want to remove "$name" from your Mates list?',
+                                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(dCtx, false),
+                                            child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
+                                          ),
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.redAccent,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                            onPressed: () => Navigator.pop(dCtx, true),
+                                            child: Text('Remove', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirm == true) {
+                                      await PocketMateService.removeMateLocally(myId, mId);
+                                      if (mounted) {
+                                        setState(() {
+                                          _matesCount = (_matesCount - 1).clamp(0, 999999);
+                                        });
+                                      }
+                                      setSheetState(() {
+                                        mates.removeAt(index);
+                                      });
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Removed $name from Mates.'),
+                                            backgroundColor: const Color(0xFF1E293B),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ],
                             ],
                           ),
                         );
@@ -6904,10 +6985,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+          );
+        },
+      );
+    },
+  );
+}
 
   Widget _buildInstagramStatColumn({
     required String label,

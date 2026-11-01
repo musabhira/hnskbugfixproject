@@ -485,7 +485,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     try {
       final res = await supabase
           .from('profile')
-          .select('id, user_id, name, shop_name, profile_image_url, verified')
+          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier')
           .order('name');
       if (mounted) {
         setState(() {
@@ -653,23 +653,107 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     }
   }
 
-  Future<void> _toggleUserVerification(
-      String userId, bool currentStatus) async {
+  /// 👑 Manual VIP Toggle (User Audio Directive: Manual VIP access in Admin Panel)
+  Future<void> _toggleUserVip(Map<String, dynamic> user, bool currentStatus) async {
+    final newStatus = !currentStatus;
+    final uid = user['user_id']?.toString();
+    final profileId = user['id'];
+
+    // Optimistic local update for instant snappy UI
+    setState(() {
+      user['is_vip'] = newStatus;
+      user['is_premium'] = newStatus;
+      user['is_subscribed'] = newStatus;
+      user['subscription_tier'] = newStatus ? 'vip_gold' : 'free';
+      if (newStatus) user['verified'] = true;
+    });
+
     try {
-      await supabase
-          .from('profile')
-          .update({'verified': !currentStatus}).eq('id', userId);
-      _loadProfiles(); // Refresh
-      _loadStats(); // Update stats
+      final updateData = {
+        'is_vip': newStatus,
+        'is_premium': newStatus,
+        'is_subscribed': newStatus,
+        'subscription_tier': newStatus ? 'vip_gold' : 'free',
+        'subscription_status': newStatus ? 'active' : 'inactive',
+        'vip_product_id': newStatus ? 'manual_admin_granted' : null,
+        if (newStatus) 'verified': true,
+        if (newStatus) 'has_purchased_c2_certificate': true,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (uid != null && uid.isNotEmpty) {
+        await supabase.from('profile').update(updateData).eq('user_id', uid);
+      }
+      if (profileId != null) {
+        try {
+          await supabase.from('profile').update(updateData).eq('id', profileId);
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              newStatus
+                  ? '👑 Full VIP Gold access GRANTED to ${user['name'] ?? "User"}!'
+                  : 'VIP access removed for ${user['name'] ?? "User"}.',
+            ),
+            backgroundColor: newStatus ? const Color(0xFFFFD700) : Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error updating VIP status: $e');
+      setState(() {
+        user['is_vip'] = currentStatus;
+        user['is_premium'] = currentStatus;
+        user['is_subscribed'] = currentStatus;
+        user['subscription_tier'] = currentStatus ? 'vip_gold' : 'free';
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating VIP: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleUserVerification(
+      Map<String, dynamic> user, bool currentStatus) async {
+    final newStatus = !currentStatus;
+    final uid = user['user_id']?.toString();
+    final profileId = user['id'];
+
+    setState(() {
+      user['verified'] = newStatus;
+    });
+
+    try {
+      if (uid != null && uid.isNotEmpty) {
+        await supabase.from('profile').update({'verified': newStatus}).eq('user_id', uid);
+      }
+      if (profileId != null) {
+        try {
+          await supabase.from('profile').update({'verified': newStatus}).eq('id', profileId);
+        } catch (_) {}
+      }
+      _loadStats();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  'User ${!currentStatus ? "Verified" : "Unverified"} successfully!'),
-              backgroundColor: !currentStatus ? Colors.green : Colors.orange),
+                  'User ${newStatus ? "Verified" : "Unverified"} successfully!'),
+              backgroundColor: newStatus ? Colors.green : Colors.orange),
         );
       }
     } catch (e) {
+      setState(() {
+        user['verified'] = currentStatus;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1502,8 +1586,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     final filteredUsers = allProfiles.where((u) {
       final name = u['name']?.toString().toLowerCase() ?? "";
       final shop = u['shop_name']?.toString().toLowerCase() ?? "";
-      return name.contains(userSearchQuery.toLowerCase()) ||
-          shop.contains(userSearchQuery.toLowerCase());
+      final phone = u['phone_no']?.toString().toLowerCase() ?? "";
+      final q = userSearchQuery.toLowerCase();
+      return name.contains(q) || shop.contains(q) || phone.contains(q);
     }).toList();
 
     return Column(
@@ -1514,7 +1599,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             onChanged: (v) => setState(() => userSearchQuery = v),
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Search users or shops...',
+              hintText: 'Search users by name, shop, or phone...',
               hintStyle: const TextStyle(color: Colors.grey),
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
@@ -1536,48 +1621,146 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     itemBuilder: (context, index) {
                       final user = filteredUsers[index];
                       final isVerified = user['verified'] == true;
+                      final isVip = user['is_vip'] == true ||
+                          user['is_premium'] == true ||
+                          user['is_subscribed'] == true ||
+                          user['subscription_tier'] == 'vip_gold';
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.grey[900],
                           borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isVip
+                                ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                                : Colors.white10,
+                            width: isVip ? 1.4 : 1.0,
+                          ),
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(12),
-                          leading: CircleAvatar(
-                            radius: 25,
-                            backgroundImage: (user['profile_image_url'] != null)
-                                ? CachedNetworkImageProvider(
-                                    user['profile_image_url'])
-                                : null,
-                            backgroundColor: Colors.blue[100],
-                            child: (user['profile_image_url'] == null)
-                                ? Text(user['name']?[0] ?? "?",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold))
-                                : null,
-                          ),
-                          title: Row(
-                            children: [
-                              Text(user['name'] ?? 'Unknown User',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              if (isVerified) const SizedBox(width: 4),
-                              if (isVerified)
-                                const Icon(Icons.verified,
-                                    color: Color(0xFFFFFC00), size: 16),
-                            ],
-                          ),
-                          subtitle: Text(user['shop_name'] ?? 'No shop name',
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey)),
-                          trailing: Switch(
-                            value: isVerified,
-                            activeThumbColor: Colors.blue,
-                            onChanged: (v) =>
-                                _toggleUserVerification(user['id'], isVerified),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 24,
+                                  backgroundImage: (user['profile_image_url'] != null)
+                                      ? CachedNetworkImageProvider(user['profile_image_url'])
+                                      : null,
+                                  backgroundColor: isVip
+                                      ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                      : Colors.blue[100],
+                                  child: (user['profile_image_url'] == null)
+                                      ? Text(user['name']?[0] ?? "?",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: isVip ? const Color(0xFFFFD700) : Colors.black,
+                                          ))
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              user['name'] ?? 'Unknown User',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (isVerified) ...[
+                                            const SizedBox(width: 5),
+                                            const Icon(Icons.verified,
+                                                color: Color(0xFF38BDF8), size: 16),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        user['phone_no'] ?? user['shop_name'] ?? 'No phone / shop',
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isVip)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Text('👑', style: TextStyle(fontSize: 11)),
+                                        SizedBox(width: 3),
+                                        Text(
+                                          'VIP GOLD',
+                                          style: TextStyle(
+                                            color: Color(0xFFFFD700),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const Divider(color: Colors.white10, height: 18),
+                            // Action Controls: VIP Toggle & Verified Toggle
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // 👑 Manual VIP Switch
+                                Row(
+                                  children: [
+                                    const Text('👑 VIP Pass',
+                                        style: TextStyle(
+                                          color: Color(0xFFFFD700),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12.5,
+                                        )),
+                                    const SizedBox(width: 4),
+                                    Switch(
+                                      value: isVip,
+                                      activeColor: const Color(0xFFFFD700),
+                                      activeTrackColor: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                      onChanged: (val) => _toggleUserVip(user, isVip),
+                                    ),
+                                  ],
+                                ),
+
+                                // 🛡️ Verified Switch
+                                Row(
+                                  children: [
+                                    const Text('Verified',
+                                        style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                    const SizedBox(width: 4),
+                                    Switch(
+                                      value: isVerified,
+                                      activeColor: const Color(0xFF38BDF8),
+                                      onChanged: (val) => _toggleUserVerification(user, isVerified),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       );
                     },

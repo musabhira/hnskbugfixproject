@@ -48,12 +48,15 @@ class _ProfileSetupOnboardingPageState
   final _supabase = SupaFlow.client;
   final _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 3;
   bool _isLoading = false;
   bool _isRedirectingHome = false;
 
-  // Birthday & Age for Smart Matching
+  // Birthday & Age for Smart Matching (3 columns: Day, Month, Year)
   DateTime? _selectedDob;
+  int? _selectedDay;
+  int? _selectedMonth;
+  int? _selectedYear;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -193,6 +196,9 @@ class _ProfileSetupOnboardingPageState
             if (d != null && m != null && y != null && y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
               try {
                 _selectedDob = DateTime(y, m, d);
+                _selectedDay = d;
+                _selectedMonth = m;
+                _selectedYear = y;
               } catch (_) {}
             }
           });
@@ -290,19 +296,15 @@ class _ProfileSetupOnboardingPageState
         curve: Curves.easeInOutCubic,
       );
     } else if (_currentStep == 2) {
-      // Step 3: Validate Phone Number
+      // Step 3: Validate Phone Number & Complete Profile
       final phone = _phoneController.text.trim();
       if (phone.isEmpty || phone.replaceAll(RegExp(r'\D'), '').length < 7) {
         _showError(
             'Please enter your phone number to assist & support your account');
         return;
       }
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeInOutCubic,
-      );
+      _saveProfileAndComplete();
     } else {
-      // Step 4: Final Launch & Complete Profile
       _saveProfileAndComplete();
     }
   }
@@ -566,7 +568,6 @@ class _ProfileSetupOnboardingPageState
                     _buildStep1Name(),
                     _buildStep2Dob(),
                     _buildStep3Phone(),
-                    _buildStep4PhotoAndReady(),
                   ],
                 ),
               ),
@@ -787,6 +788,24 @@ class _ProfileSetupOnboardingPageState
         ? (DateTime.now().year - _selectedDob!.year)
         : null;
 
+    final currentYear = DateTime.now().year;
+    final daysList = List.generate(31, (i) => i + 1);
+    final monthsList = [
+      {'val': 1, 'name': 'Jan (01)'},
+      {'val': 2, 'name': 'Feb (02)'},
+      {'val': 3, 'name': 'Mar (03)'},
+      {'val': 4, 'name': 'Apr (04)'},
+      {'val': 5, 'name': 'May (05)'},
+      {'val': 6, 'name': 'Jun (06)'},
+      {'val': 7, 'name': 'Jul (07)'},
+      {'val': 8, 'name': 'Aug (08)'},
+      {'val': 9, 'name': 'Sep (09)'},
+      {'val': 10, 'name': 'Oct (10)'},
+      {'val': 11, 'name': 'Nov (11)'},
+      {'val': 12, 'name': 'Dec (12)'},
+    ];
+    final yearsList = List.generate(80, (i) => currentYear - 4 - i);
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -821,7 +840,7 @@ class _ProfileSetupOnboardingPageState
           ),
           const SizedBox(height: 8),
           Text(
-            'Used to calculate your age so we can pair you with peers in your age vibe in Pocket Talk ✨',
+            'Select your Day, Month & Year to match you with peers in your age vibe ✨',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white70,
@@ -831,144 +850,235 @@ class _ProfileSetupOnboardingPageState
           ),
           const SizedBox(height: 28),
 
-          // Main Birthday Selector Card
-          InkWell(
-            onTap: _pickDateOfBirth,
-            borderRadius: BorderRadius.circular(18),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF1E2230),
-                    Color(0xFF131722),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: _selectedDob != null
-                      ? const Color(0xFFFFD700)
-                      : Colors.white.withValues(alpha: 0.18),
-                  width: _selectedDob != null ? 1.8 : 1.0,
-                ),
-                boxShadow: _selectedDob != null
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.18),
-                          blurRadius: 16,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.calendar_month_rounded,
-                        color: _selectedDob != null
-                            ? const Color(0xFFFFD700)
-                            : Colors.white54,
-                        size: 26,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        _selectedDob != null
-                            ? '${_selectedDob!.day.toString().padLeft(2, '0')} / ${_selectedDob!.month.toString().padLeft(2, '0')} / ${_selectedDob!.year}'
-                            : 'Select Date of Birth',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _selectedDob != null
-                          ? const Color(0xFF10B981).withValues(alpha: 0.18)
-                          : const Color(0xFFFFD700).withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: _selectedDob != null
-                            ? const Color(0xFF10B981).withValues(alpha: 0.5)
-                            : const Color(0xFFFFD700).withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Text(
-                      _selectedDob != null
-                          ? '🎉 Age: $calculatedAge Years Old'
-                          : '👉 Tap here to select your birth date',
+          // 3 Columns: Day | Month | Year
+          Row(
+            children: [
+              // Column 1: DAY
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'DAY',
                       style: GoogleFonts.outfit(
-                        color: _selectedDob != null
-                            ? const Color(0xFF34D399)
-                            : const Color(0xFFFFD700),
-                        fontSize: 13.5,
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11.5,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E2230),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _selectedDay != null
+                              ? const Color(0xFFFFD700)
+                              : Colors.white24,
+                          width: _selectedDay != null ? 1.5 : 1,
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: _selectedDay,
+                          hint: Text('DD',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white38, fontSize: 15)),
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1E2230),
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFFFFD700), size: 18),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                          items: daysList.map((d) {
+                            return DropdownMenuItem<int>(
+                              value: d,
+                              child: Text(d.toString().padLeft(2, '0')),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val == null) return;
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _selectedDay = val;
+                              _updateDobFromComponents();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+
+              // Column 2: MONTH
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MONTH',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E2230),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _selectedMonth != null
+                              ? const Color(0xFFFFD700)
+                              : Colors.white24,
+                          width: _selectedMonth != null ? 1.5 : 1,
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: _selectedMonth,
+                          hint: Text('MM',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white38, fontSize: 15)),
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1E2230),
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFFFFD700), size: 18),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold),
+                          items: monthsList.map((m) {
+                            return DropdownMenuItem<int>(
+                              value: m['val'] as int,
+                              child: Text(m['name'] as String),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val == null) return;
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _selectedMonth = val;
+                              _updateDobFromComponents();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Column 3: YEAR
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'YEAR',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E2230),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _selectedYear != null
+                              ? const Color(0xFFFFD700)
+                              : Colors.white24,
+                          width: _selectedYear != null ? 1.5 : 1,
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: _selectedYear,
+                          hint: Text('YYYY',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white38, fontSize: 15)),
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF1E2230),
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFFFFD700), size: 18),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                          items: yearsList.map((y) {
+                            return DropdownMenuItem<int>(
+                              value: y,
+                              child: Text(y.toString()),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val == null) return;
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _selectedYear = val;
+                              _updateDobFromComponents();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 20),
 
-          // Peer Matching Guarantee Note
-          if (_selectedDob != null) ...[
+          // Age Confirmation Pill
+          if (_selectedDob != null && calculatedAge != null) ...[
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🎯', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Smart Age Matching active! You’ll be paired with peers around ${math.max(16, (calculatedAge ?? 20) - 3)}–${(calculatedAge ?? 20) + 4} years old for maximum conversation chemistry.',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 12.5,
-                        height: 1.35,
-                      ),
+                  const Text('🎉', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Age: $calculatedAge Years Old (Matches peers ${math.max(16, calculatedAge - 3)}–${calculatedAge + 4})',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF34D399),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
             ),
           ] else ...[
-            // Quick Age Category helper chips
             Text(
-              'Or tap your age bracket for quick setup:',
+              'Select Day, Month and Year to continue',
               style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              alignment: WrapAlignment.center,
-              children: [
-                _buildAgeQuickChip(label: '18–21 (College)', year: 2004),
-                _buildAgeQuickChip(label: '22–26 (Young Pro)', year: 2001),
-                _buildAgeQuickChip(label: '27–34 (Mid Career)', year: 1996),
-                _buildAgeQuickChip(label: '35+ (Experienced)', year: 1988),
-              ],
             ),
           ],
 
@@ -989,70 +1099,18 @@ class _ProfileSetupOnboardingPageState
     );
   }
 
-  Widget _buildAgeQuickChip({required String label, required int year}) {
-    final isSelected = _selectedDob?.year == year;
-    return InkWell(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        setState(() {
-          _selectedDob = DateTime(year, 6, 15);
-        });
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFFFD700).withValues(alpha: 0.20)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFFFD700)
-                : Colors.white.withValues(alpha: 0.12),
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickDateOfBirth() async {
-    HapticFeedback.selectionClick();
-    final now = DateTime.now();
-    final initial = _selectedDob ?? DateTime(2002, 6, 15);
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(1925),
-      lastDate: DateTime(now.year - 6, now.month, now.day),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFFFD700),
-              onPrimary: Colors.black,
-              surface: Color(0xFF18181B),
-              onSurface: Colors.white,
-            ),
-            dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF18181B)),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && mounted) {
-      setState(() {
-        _selectedDob = picked;
-      });
+  void _updateDobFromComponents() {
+    final d = _selectedDay ?? 1;
+    final m = _selectedMonth ?? 1;
+    final y = _selectedYear ?? 2002;
+    if (_selectedDay != null && _selectedMonth != null && _selectedYear != null) {
+      try {
+        final daysInMonth = DateTime(y, m + 1, 0).day;
+        final safeDay = d > daysInMonth ? daysInMonth : d;
+        _selectedDob = DateTime(y, m, safeDay);
+      } catch (_) {
+        _selectedDob = DateTime(y, m, 1);
+      }
     }
   }
 
@@ -1138,204 +1196,7 @@ class _ProfileSetupOnboardingPageState
     );
   }
 
-  // ==========================================
-  // STEP 4: Profile Photo / Avatar & Launch
-  // ==========================================
-  Widget _buildStep4PhotoAndReady() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 8),
-          // Habit Motivational Streak Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFFFD700).withValues(alpha: 0.16),
-                  const Color(0xFF10B981).withValues(alpha: 0.10),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Text('🔥', style: TextStyle(fontSize: 32)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Day 1 Streak Ready! 🚀',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '25 words target set for your first week. Your learning journey is locked in!',
-                        style: GoogleFonts.inter(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
 
-          Text(
-            'Choose your profile photo',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Upload a photo or pick an avatar (optional).',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Photo Upload or Emoji Avatar
-          GestureDetector(
-            onTap: _pickImage,
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                Container(
-                  width: 105,
-                  height: 105,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFFFFD700),
-                      width: 2.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                        blurRadius: 16,
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: _selectedImageBytes != null
-                        ? Image.memory(
-                            _selectedImageBytes!,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            color: const Color(0xFF1E2230),
-                            child: Center(
-                              child: _selectedPresetAvatar != null
-                                  ? Text(
-                                      _selectedPresetAvatar!,
-                                      style: const TextStyle(fontSize: 48),
-                                    )
-                                  : const Icon(
-                                      Icons.person_rounded,
-                                      size: 54,
-                                      color: Colors.white54,
-                                    ),
-                            ),
-                          ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD700),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 18,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap circle to upload from Gallery',
-            style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
-          ),
-          const SizedBox(height: 20),
-
-          // Preset Avatars Row
-          Text(
-            'Or pick an avatar:',
-            style: GoogleFonts.outfit(
-                color: Colors.white70,
-                fontSize: 13,
-                fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 12,
-            runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: _presetAvatars.map((avatar) {
-              final isSelected = _selectedPresetAvatar == avatar &&
-                  _selectedImageBytes == null;
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() {
-                    _selectedPresetAvatar = avatar;
-                    _selectedImageBytes = null;
-                  });
-                },
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFFFFD700).withValues(alpha: 0.25)
-                        : const Color(0xFF1E2230),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color:
-                          isSelected ? const Color(0xFFFFD700) : Colors.white12,
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(avatar, style: const TextStyle(fontSize: 22)),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
 
   // ==========================================
   // BOTTOM ACTION BAR: Continue / Start Button

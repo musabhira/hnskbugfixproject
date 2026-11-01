@@ -4266,7 +4266,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   Future<void> _loadSavedMissionState() async {
     final prefs = await SharedPreferences.getInstance();
-    final dayKey = 'pocket_mission_day_${widget.day}';
+    final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+    final dayKey = 'pocket_mission_day_${widget.day}_$uid';
     setState(() {
       _selectedLanguage = PocketLanguageService.currentLanguage;
       _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
@@ -4461,13 +4462,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         break;
     }
     final prefs = await SharedPreferences.getInstance();
-    final dayKey = 'pocket_mission_day_${widget.day}';
+    final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+    final dayKey = 'pocket_mission_day_${widget.day}_$uid';
     await prefs.setBool('${dayKey}_$key', value);
     final pts = _currentDayPoints;
     await prefs.setInt('${dayKey}_points', pts);
 
-    final uid = SupaFlow.client.auth.currentUser?.id;
-    if (uid != null) {
+    if (uid != 'guest') {
       final oldBase = prefs.getInt('learning_points_$uid') ?? 0;
       await prefs.setInt('learning_points_$uid', oldBase > pts ? oldBase : pts);
     }
@@ -13045,7 +13046,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
       if (savedPath != null) {
         final prefs = await SharedPreferences.getInstance();
-        final dayKey = 'pocket_mission_day_${widget.day}';
+        final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+        final dayKey = 'pocket_mission_day_${widget.day}_$uid';
         await prefs.setString('${dayKey}_story_recording_path', savedPath);
         await prefs.setInt('${dayKey}_story_recording_duration', _storyRecordDuration);
       }
