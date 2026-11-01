@@ -1119,10 +1119,6 @@ class _PocketDay1InteractiveFlowPageState
                   step.titleEn,
                   style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
                 ),
-                Text(
-                  step.titleMl,
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-                ),
               ],
             ),
           ),

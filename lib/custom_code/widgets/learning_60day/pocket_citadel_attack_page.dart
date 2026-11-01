@@ -853,6 +853,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   Future<void> _executeCitadelAttack({bool isPostRunnerAnimation = false}) async {
     if (_isStriking) return;
+    if (isPostRunnerAnimation) {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop({'passed': true});
+        return;
+      }
+      setState(() {
+        _raidStep = 3;
+        _isDefenderDamaged = true;
+      });
+      _showVictoryDialog();
+      return;
+    }
     setState(() => _isStriking = true);
 
     final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
@@ -6793,7 +6805,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             ),
           );
         } else {
-          _executeCitadelAttack(isPostRunnerAnimation: true);
+          // ⚔️ Audio Directive: Single attack sequence. Raid already completed inside runner.
+          // Pop back with success result to avoid duplicate hero sprint animation or double scoring.
+          if (mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(result);
+          } else {
+            setState(() {
+              _raidStep = 3;
+              _isDefenderDamaged = true;
+            });
+            _showVictoryDialog();
+          }
         }
       }
     });

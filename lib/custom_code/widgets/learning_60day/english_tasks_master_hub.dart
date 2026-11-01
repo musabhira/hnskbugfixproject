@@ -5376,14 +5376,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('pocket_gate_${uid}_${day}_breached', true);
       await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
+      await prefs.setBool('pocket_day_${uid}_${day}_steps_completed', true);
       await prefs.setInt('learning_last_completed_day_$uid', day);
       final now = DateTime.now();
       await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+      await prefs.setInt('pocket_learning_user_stage_$uid', day + 1);
+      await prefs.setInt('learning_day_$uid', day + 1);
 
       // Award +50 Pocket Score
       await PocketFortressDefenseService.recordTrainingPoints(50, uid);
+
+      try {
+        await Learning60DayService().completeDailyMission(advanceToNextDay: true);
+      } catch (_) {}
     }
     _completedDays.add(day);
+    _daysWithStepsCompleted.add(day);
     HapticFeedback.heavyImpact();
     await _loadData();
 
@@ -5614,15 +5622,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCurrent = (day == currentDay);
 
     int completedTasks = 0;
+    final track = Day1Track.fromLearnerLevel(_currentLearnerLevel);
+    final daySteps = Day1Curriculum.getSteps(track, day);
+    final int requiredSteps = daySteps.isNotEmpty ? daySteps.length : 8;
+
     if (isCurrent) {
-      for (int s = 1; s <= 14; s++) {
-        if (_subStepFlags['step_$s'] == true) completedTasks++;
+      for (final s in daySteps) {
+        if (_subStepFlags['step_${s.stepNumber}'] == true) completedTasks++;
+      }
+      if (completedTasks == 0) {
+        for (int s = 1; s <= 17; s++) {
+          if (_subStepFlags['step_$s'] == true) completedTasks++;
+        }
       }
     }
     final bool areHouseTasksDone = _isMasterAdmin ||
         isCompleted ||
         _isDayStepsCompleted(day) ||
-        (isCurrent && (_subStepFlags['step_14'] == true || completedTasks >= 14));
+        (isCurrent && (completedTasks >= math.min(requiredSteps, 6) || _subStepFlags['step_$requiredSteps'] == true));
     final bool isAttackReady = !isCompleted && isCurrent && areHouseTasksDone;
 
     // Exact midpoint along the mountain trail between house day and house day + 1

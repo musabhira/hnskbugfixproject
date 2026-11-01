@@ -345,13 +345,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Use a clean plate .',
-        translationMl: 'ഉപയോഗിക്കുക - Use a clean plate.',
+        translationMl: 'വൃത്തിയുള്ള ഒരു പ്ലേറ്റ് ഉപയോഗിക്കുക.',
         hint: 'Pay attention to: Articles A & An (A table, An umbrella)',
       ),
       _buildRound(
         id: 2,
         sentence: 'Hold the cup .',
-        translationMl: 'പിടിക്കുക - Hold the cup.',
+        translationMl: 'കപ്പ് പിടിക്കുക.',
         hint: 'Pay attention to: Articles A & An (A table, An umbrella)',
       ),
       _buildRound(
@@ -363,13 +363,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Don\'t drop the glass .',
-        translationMl: 'നിത്യജീവിത സാധനങ്ങൾ',
+        translationMl: 'ഗ്ലാസ് താഴെ ഇടരുത്.',
         hint: 'Core sentence pattern: Articles A & An (A table, An umbrella)',
       ),
       _buildRound(
         id: 5,
         sentence: 'Find my keys .',
-        translationMl: 'കണ്ടെത്തുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'എന്റെ താക്കോലുകൾ കണ്ടെത്തുക.',
         hint: 'Using the verb \'find\'',
       ),
     ],
@@ -380,13 +380,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Count the coins .',
-        translationMl: 'എണ്ണുക - Count the coins.',
+        translationMl: 'നാണയങ്ങൾ എണ്ണുക.',
         hint: 'Pay attention to: Singular vs Plural Nouns (-s / -es)',
       ),
       _buildRound(
         id: 2,
         sentence: 'Add two spoons .',
-        translationMl: 'കൂട്ടിച്ചേർക്കുക - Add two spoons.',
+        translationMl: 'രണ്ട് സ്പൂൺ ചേർക്കുക.',
         hint: 'Pay attention to: Singular vs Plural Nouns (-s / -es)',
       ),
       _buildRound(
@@ -398,13 +398,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Buy three pens .',
-        translationMl: 'സംഖ്യകളും എണ്ണലും',
+        translationMl: 'മൂന്ന് പേനകൾ വാങ്ങുക.',
         hint: 'Core sentence pattern: Singular vs Plural Nouns (-s / -es)',
       ),
       _buildRound(
         id: 5,
         sentence: 'Pay ten rupees .',
-        translationMl: 'പണം നൽകുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'പത്ത് രൂപ നൽകുക.',
         hint: 'Using the verb \'pay\'',
       ),
     ],
@@ -415,13 +415,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Look at the red bird .',
-        translationMl: 'നോക്കുക - Look at the red bird.',
+        translationMl: 'ചുവന്ന പക്ഷിയെ നോക്കുക.',
         hint: 'Pay attention to: Adjectives before Nouns (Red car, Big house)',
       ),
       _buildRound(
         id: 2,
         sentence: 'Wear a blue shirt .',
-        translationMl: 'ധരിക്കുക - Wear a blue shirt.',
+        translationMl: 'നീല ഷർട്ട് ധരിക്കുക.',
         hint: 'Pay attention to: Adjectives before Nouns (Red car, Big house)',
       ),
       _buildRound(
@@ -433,13 +433,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Paint it green .',
-        translationMl: 'നിറങ്ങളും രൂപങ്ങളും',
+        translationMl: 'അതിൽ പച്ച പെയിന്റ് അടിക്കുക.',
         hint: 'Core sentence pattern: Adjectives before Nouns (Red car, Big house)',
       ),
       _buildRound(
         id: 5,
         sentence: 'Stars shine bright .',
-        translationMl: 'തിളങ്ങുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'നക്ഷത്രങ്ങൾ തിളങ്ങുന്നു.',
         hint: 'Using the verb \'shine\'',
       ),
     ],
@@ -450,13 +450,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Start at 9 AM .',
-        translationMl: 'ആരംഭിക്കുക - Start at 9 AM.',
+        translationMl: 'രാവിലെ 9 മണിക്ക് ആരംഭിക്കുക.',
         hint: 'Pay attention to: Prepositions of Time: At 5 PM, On Monday, In May',
       ),
       _buildRound(
         id: 2,
         sentence: 'Finish on Monday .',
-        translationMl: 'തീർക്കുക - Finish on Monday.',
+        translationMl: 'തിങ്കളാഴ്ച തീർക്കുക.',
         hint: 'Pay attention to: Prepositions of Time: At 5 PM, On Monday, In May',
       ),
       _buildRound(
@@ -468,13 +468,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Wait for 10 minutes .',
-        translationMl: 'സമയവും ദിവസങ്ങളും',
+        translationMl: '10 മിനിറ്റ് കാത്തിരിക്കുക.',
         hint: 'Core sentence pattern: Prepositions of Time: At 5 PM, On Monday, In May',
       ),
       _buildRound(
         id: 5,
         sentence: 'Hurry up, time is up .',
-        translationMl: 'തിടുക്കം കൂട്ടുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'വേഗത്തിലാക്കൂ, സമയം കഴിഞ്ഞു.',
         hint: 'Using the verb \'hurry\'',
       ),
     ],
@@ -485,13 +485,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Brush twice daily .',
-        translationMl: 'പല്ല് തേക്കുക - Brush twice daily.',
+        translationMl: 'ദിവസവും രണ്ടുതവണ പല്ല് തേക്കുക.',
         hint: 'Pay attention to: Subject-Verb Agreement (I go vs He goes)',
       ),
       _buildRound(
         id: 2,
         sentence: 'Take a quick bath .',
-        translationMl: 'കുളിക്കുക - Take a quick bath.',
+        translationMl: 'വേഗത്തിൽ കുളിക്കുക.',
         hint: 'Pay attention to: Subject-Verb Agreement (I go vs He goes)',
       ),
       _buildRound(
@@ -503,13 +503,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Dress up neatly .',
-        translationMl: 'രാവിലത്തെ ശീലങ്ങൾ',
+        translationMl: 'വൃത്തിയുള്ള വസ്ത്രം ധരിക്കുക.',
         hint: 'Core sentence pattern: Subject-Verb Agreement (I go vs He goes)',
       ),
       _buildRound(
         id: 5,
         sentence: 'Leave home at 8 .',
-        translationMl: 'ഇറങ്ങുക സംബന്ധിച്ച വാചകം.',
+        translationMl: '8 മണിക്ക് വീട്ടിൽ നിന്ന് ഇറങ്ങുക.',
         hint: 'Using the verb \'leave\'',
       ),
     ],
@@ -520,13 +520,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'Return home at 6 .',
-        translationMl: 'തിരികെ എത്തുക - Return home at 6.',
+        translationMl: '6 മണിക്ക് വീട്ടിൽ തിരിച്ചെത്തുക.',
         hint: 'Pay attention to: Habitual Verbs in Daily Routine',
       ),
       _buildRound(
         id: 2,
         sentence: 'Relax for an hour .',
-        translationMl: 'വിശ്രമിക്കുക - Relax for an hour.',
+        translationMl: 'ഒരു മണിക്കൂർ വിശ്രമിക്കുക.',
         hint: 'Pay attention to: Habitual Verbs in Daily Routine',
       ),
       _buildRound(
@@ -538,13 +538,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Watch evening news .',
-        translationMl: 'വൈകുന്നേര ശീലങ്ങൾ',
+        translationMl: 'വൈകുന്നേര വാർത്ത കാണുക.',
         hint: 'Core sentence pattern: Habitual Verbs in Daily Routine',
       ),
       _buildRound(
         id: 5,
         sentence: 'Read a book .',
-        translationMl: 'വായിക്കുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'ഒരു പുസ്തകം വായിക്കുക.',
         hint: 'Using the verb \'read\'',
       ),
     ],
@@ -555,13 +555,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'He works hard .',
-        translationMl: 'ജോലി ചെയ്യുക - He works hard.',
+        translationMl: 'അവൻ കഠിനാധ്വാനം ചെയ്യുന്നു.',
         hint: 'Pay attention to: Do with I/You/We/They | Does with He/She/It',
       ),
       _buildRound(
         id: 2,
         sentence: 'She studies well .',
-        translationMl: 'പഠിക്കുക - She studies well.',
+        translationMl: 'അവൾ നന്നായി പഠിക്കുന്നു.',
         hint: 'Pay attention to: Do with I/You/We/They | Does with He/She/It',
       ),
       _buildRound(
@@ -573,13 +573,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'They play football .',
-        translationMl: 'Do vs Does ശീലങ്ങൾ',
+        translationMl: 'അവർ ഫുട്ബോൾ കളിക്കുന്നു.',
         hint: 'Core sentence pattern: Do with I/You/We/They | Does with He/She/It',
       ),
       _buildRound(
         id: 5,
         sentence: 'Do you know him ?',
-        translationMl: 'അറിയുക സംബന്ധിച്ച വാചകം.',
+        translationMl: 'നിങ്ങൾക്ക് അവനെ അറിയാമോ?',
         hint: 'Using the verb \'know\'',
       ),
     ],
@@ -590,13 +590,13 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 1,
         sentence: 'I don\'t like junk food .',
-        translationMl: 'ഇഷ്ടപ്പെടുക - I don\'t like junk food.',
+        translationMl: 'എനിക്ക് ജങ്ക് ഫുഡ് ഇഷ്ടമല്ല.',
         hint: 'Pay attention to: Don\'t / Doesn\'t + V1 (Never add \'s\' after doesn\'t)',
       ),
       _buildRound(
         id: 2,
         sentence: 'He doesn\'t smoke .',
-        translationMl: 'പുകവലിക്കുക - He doesn\'t smoke.',
+        translationMl: 'അവൻ പുകവലിക്കാറില്ല.',
         hint: 'Pay attention to: Don\'t / Doesn\'t + V1 (Never add \'s\' after doesn\'t)',
       ),
       _buildRound(
@@ -608,7 +608,7 @@ class Pocket90DaySentenceBuilderData {
       _buildRound(
         id: 4,
         sentence: 'Don\'t waste time .',
-        translationMl: 'നെഗറ്റീവ് ശീലങ്ങൾ (Don\'t / Doesn\'t)',
+        translationMl: 'സമയം പാഴാക്കരുത്.',
         hint: 'Core sentence pattern: Don\'t / Doesn\'t + V1 (Never add \'s\' after doesn\'t)',
       ),
       _buildRound(

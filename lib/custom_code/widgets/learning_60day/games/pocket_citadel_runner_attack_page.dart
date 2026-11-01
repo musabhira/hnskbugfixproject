@@ -65,6 +65,19 @@ class _Pt {
   final Color c;
 }
 
+class _TrainWord {
+  _TrainWord({
+    required this.word,
+    required this.prompt,
+    required this.emoji,
+    required this.blanks,
+    required this.chips,
+  });
+  final String word, prompt, emoji;
+  final List<int> blanks;
+  final List<String> chips;
+}
+
 class _Ch {
   _Ch({
     required this.type,
@@ -78,12 +91,14 @@ class _Ch {
     this.word = '',
     this.blanks = const <int>[],
     this.emoji = '',
+    this.trainWords = const <_TrainWord>[],
   });
   final int type; // 0 sentence · 1 spelling · 2 word train · 3 voice echo
   final String instruction, prompt, correct, word, emoji;
   final List<String> chips, target;
   final List<List<String>> options;
   final List<int> correctIdx, blanks;
+  final List<_TrainWord> trainWords;
 }
 
 class _Gr {
@@ -214,6 +229,30 @@ class _PocketCitadelRunnerAttackPageState
     ['അവൻ സൈക്കിൾ ഓടിക്കുന്നു.', 'He is riding a bicycle.'],
     ['ഞാൻ ഒരു പുതിയ പാട്ട് പഠിച്ചു.', 'I learned a new song.'],
     ['അമ്മ എനിക്ക് പലഹാരം തന്നു.', 'Mother gave me sweet snacks.'],
+    ['അവൻ കഠിനാധ്വാനം ചെയ്യുന്നു.', 'He works very hard every day.'],
+    ['അവൾ നന്നായി പഠിക്കുന്നു.', 'She studies her lessons diligently.'],
+    ['ഞാൻ വേഗത്തിൽ കുളിച്ചു.', 'I took a quick bath.'],
+    ['അവർ വൈകുന്നേരം കളിക്കുന്നു.', 'They play happily every evening.'],
+    ['നമുക്ക് ഒന്നിച്ച് നടക്കാം.', 'We can walk together peacefully.'],
+    ['അവൻ നല്ലൊരു ഗായകനാണ്.', 'He is a remarkably talented singer.'],
+    ['എന്റെ സഹോദരി ചിത്രം വരയ്ക്കുന്നു.', 'My sister draws colorful pictures.'],
+    ['ഞങ്ങൾ വിമാനത്താവളത്തിലേക്ക് പോകുന്നു.', 'We are heading to the airport.'],
+    ['അവൻ ഒരു പുതിയ കാർ വാങ്ങി.', 'He bought a brand new car.'],
+    ['ഇന്നലെ രാത്രി കനത്ത മഴ പെയ്തു.', 'It rained heavily last night.'],
+    ['അവൾ രാവിലെ 6 മണിക്ക് ഉണർന്നു.', 'She woke up early at six.'],
+    ['പക്ഷികൾ മരത്തിൽ കൂട് വെച്ചു.', 'Birds built a nest on the tree.'],
+    ['അവൻ തന്റെ വാച്ച് കണ്ടെത്തി.', 'He found his missing gold watch.'],
+    ['ഞാൻ ഒരു നല്ല പുസ്തകം വാങ്ങി.', 'I bought an interesting story book.'],
+    ['അവർ കടൽത്തീരത്ത് കളിക്കുന്നു.', 'They are playing on the sandy beach.'],
+    ['ഡോക്ടർ നല്ല മരുന്ന് തന്നു.', 'The kind doctor prescribed good medicine.'],
+    ['അവൾ മധുരമുള്ള മാമ്പഴം കഴിച്ചു.', 'She ate a delicious ripe mango.'],
+    ['അവൻ വേഗത്തിൽ പടികൾ കയറി.', 'He ran quickly up the stairs.'],
+    ['നമ്മുടെ വീട് വൃത്തിയായി സൂക്ഷിക്കണം.', 'We must keep our home clean.'],
+    ['അവൻ പരീക്ഷയിൽ ഒന്നാമനായി.', 'He scored the highest marks in exam.'],
+    ['അവൾ പുതിയ വസ്ത്രം ധരിച്ചു.', 'She wore a gorgeous festive dress.'],
+    ['പൂച്ച മേശപ്പുറത്ത് ഇരിക്കുന്നു.', 'The fluffy cat sits on the table.'],
+    ['അവർ നദിയിൽ നീന്തുന്നു.', 'They are swimming in the cool river.'],
+    ['ഞങ്ങൾ നാളെ രാവിലെ പുറപ്പെടും.', 'We will depart early tomorrow morning.'],
   ];
 
   static const List<String> _distract = [
@@ -265,6 +304,26 @@ class _PocketCitadelRunnerAttackPageState
     ['adventure', 'adventur', 'advencher'],
     ['fortress', 'fortres', 'fourtress'],
     ['master', 'mastar', 'masster'],
+    ['beginning', 'begining', 'beggining'],
+    ['business', 'buisness', 'busines'],
+    ['curiosity', 'curiousity', 'curiosaty'],
+    ['definitely', 'definately', 'definitly'],
+    ['embarrass', 'embarass', 'emberrass'],
+    ['environment', 'enviroment', 'enviorment'],
+    ['experience', 'experiance', 'expereince'],
+    ['foreign', 'foriegn', 'forein'],
+    ['guarantee', 'garantee', 'gaurantee'],
+    ['height', 'hieght', 'heigth'],
+    ['immediately', 'immediatly', 'immedately'],
+    ['judgment', 'judgement', 'jugment'],
+    ['millennium', 'millenium', 'milennium'],
+    ['noticeable', 'noticable', 'noticeble'],
+    ['privilege', 'privelege', 'privlege'],
+    ['pronunciation', 'pronounciation', 'pronunshiation'],
+    ['rhythm', 'rythm', 'rhytm'],
+    ['schedule', 'schedual', 'shedule'],
+    ['surprise', 'suprise', 'surprize'],
+    ['twelfth', 'twelth', 'twelvth'],
   ];
 
   // [word, malayalam meaning, emoji]
@@ -388,6 +447,8 @@ class _PocketCitadelRunnerAttackPageState
   List<int> _selA = [];
   List<int?> _pickB = [];
   List<int?> _slotC = [];
+  int _trainWordIdx = 0;
+  List<List<int?>> _trainSlots = [];
   int? _pickD;
   String? _heardD;
   bool _listening = false;
@@ -590,7 +651,7 @@ class _PocketCitadelRunnerAttackPageState
 
       case 1:
         {
-          // ── 1. SPELLING DETECTIVE / RECTIFIER ──
+          // ── 1. SPELLING DETECTIVE / RECTIFIER (10 WORDS) ──
           final opts = <List<String>>[];
           final ci = <int>[];
           final used = <String>{};
@@ -605,9 +666,12 @@ class _PocketCitadelRunnerAttackPageState
             used.add(correct.toLowerCase());
           }
 
-          while (opts.length < 4) {
+          while (opts.length < 10) {
             final e = _spell[_next(_qB, _spell.length)];
-            if (!used.add(e[0].toLowerCase())) continue;
+            if (!used.add(e[0].toLowerCase())) {
+              if (used.length >= _spell.length) used.clear();
+              continue;
+            }
             final o = [...e]..shuffle(_rnd);
             opts.add(o);
             ci.add(o.indexOf(e[0]));
@@ -616,12 +680,12 @@ class _PocketCitadelRunnerAttackPageState
           return _Ch(
             type: 1,
             instruction: PocketLanguageService.localize(
-              en: 'Spot the correct spelling (Day $targetDay)',
-              ml: 'ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തൂ (Day $targetDay)',
-              ta: 'சரியான எழுத்துப்பிழையைக் கண்டறியவும் (நாள் $targetDay)',
-              hi: 'सही वर्तनी पहचानें (दिन $targetDay)',
+              en: 'Pick the correct spelling (10 words)',
+              ml: 'ശരിയായ സ്പെല്ലിംഗ് കണ്ടെത്തൂ (10 വാക്കുകൾ)',
+              ta: 'சரியான எழுத்துப்பிழையைக் கண்டறியவும் (10 சொற்கள்)',
+              hi: 'सही वर्तनी पहचानें (10 शब्द)',
             ),
-            correct: [for (var k = 0; k < 4; k++) opts[k][ci[k]]].join(', '),
+            correct: [for (var k = 0; k < opts.length; k++) opts[k][ci[k]]].join(', '),
             options: opts,
             correctIdx: ci,
           );
@@ -629,65 +693,100 @@ class _PocketCitadelRunnerAttackPageState
 
       case 2:
         {
-          // ── 2. WORD TRAIN WAGONS ──
-          String w = '';
-          String rawMeaning = '';
-          String emoji = '🚂';
+          // ── 2. WORD TRAIN WAGONS (10 WORDS) ──
+          final trainItems = <_TrainWord>[];
+          final usedTrainWords = <String>{};
+          const abc = 'abcdefghijklmnopqrstuvwxyz';
 
           final vocabPool = Day1VocabBankData.words300;
-          if (vocabPool.isNotEmpty) {
-            final filtered = vocabPool.where((item) {
-              final len = item['word']?.toString().length ?? 0;
-              return targetDay <= 20 ? (len >= 3 && len <= 5) : (len >= 5);
-            }).toList();
-            final item = (filtered.isNotEmpty ? filtered : vocabPool)[_rnd.nextInt(filtered.isNotEmpty ? filtered.length : vocabPool.length)];
-            rawMeaning = item['meaning']?.toString() ??
+          final filtered = vocabPool.where((item) {
+            final len = item['word']?.toString().length ?? 0;
+            return targetDay <= 20 ? (len >= 3 && len <= 5) : (len >= 4);
+          }).toList();
+          final candidatePool = (filtered.isNotEmpty ? filtered : vocabPool);
+
+          for (var item in candidatePool..shuffle(_rnd)) {
+            if (trainItems.length >= 10) break;
+            final candidate = item['word']?.toString().toLowerCase().trim() ?? '';
+            if (candidate.isEmpty || candidate.length < 3 || !usedTrainWords.add(candidate)) continue;
+            final rawMeaning = item['meaning']?.toString() ??
                 (PocketLanguageService.isMalayalam
                     ? 'ആപ്പിൾ'
-                    : (PocketLanguageService.isTamil ? 'ஆப்பிள்' : 'Apple'));
-            emoji = item['emoji']?.toString() ?? '🍎';
+                    : (PocketLanguageService.isTamil ? 'ஆപ്പിள்' : 'Apple'));
+            final emoji = item['emoji']?.toString() ?? '🍎';
+            final displayMeaning = PocketLanguageService.getVocabMeaning(candidate, defaultFallback: rawMeaning);
+            final n = candidate.length;
+            final bc = targetDay >= 50
+                ? min(targetDay >= 75 ? 4 : 3, n - 2)
+                : min(max(1, (targetDay / 30).ceil()), n - 1);
+            final idx = List<int>.generate(n, (i) => i)..shuffle(_rnd);
+            final blanks = idx.take(bc).toList()..sort();
+            final letters = blanks.map((i) => candidate[i]).toList();
+            final decoys = <String>[];
+            final decoyCount = targetDay >= 50 ? 5 : 3;
+            while (decoys.length < decoyCount) {
+              final d = abc[_rnd.nextInt(26)];
+              if (!candidate.contains(d) && !decoys.contains(d)) decoys.add(d);
+            }
+            final chips = <String>[...letters, ...decoys]..shuffle(_rnd);
+            trainItems.add(_TrainWord(
+              word: candidate,
+              prompt: displayMeaning,
+              emoji: emoji,
+              blanks: blanks,
+              chips: chips,
+            ));
           }
 
-          if (w.isEmpty) {
+          // Fallback if less than 10 collected
+          while (trainItems.length < 10) {
             final e = _words[_next(_qC, _words.length)];
-            w = e[0];
-            rawMeaning = e[1];
-            emoji = e[2];
+            final candidate = e[0].toLowerCase().trim();
+            if (!usedTrainWords.add(candidate)) {
+              if (usedTrainWords.length >= _words.length) usedTrainWords.clear();
+            }
+            final rawMeaning = e[1];
+            final emoji = e[2];
+            final displayMeaning = PocketLanguageService.getVocabMeaning(candidate, defaultFallback: rawMeaning);
+            final n = candidate.length;
+            final bc = targetDay >= 50
+                ? min(targetDay >= 75 ? 4 : 3, n - 2)
+                : min(max(1, (targetDay / 30).ceil()), n - 1);
+            final idx = List<int>.generate(n, (i) => i)..shuffle(_rnd);
+            final blanks = idx.take(bc).toList()..sort();
+            final letters = blanks.map((i) => candidate[i]).toList();
+            final decoys = <String>[];
+            final decoyCount = targetDay >= 50 ? 5 : 3;
+            while (decoys.length < decoyCount) {
+              final d = abc[_rnd.nextInt(26)];
+              if (!candidate.contains(d) && !decoys.contains(d)) decoys.add(d);
+            }
+            final chips = <String>[...letters, ...decoys]..shuffle(_rnd);
+            trainItems.add(_TrainWord(
+              word: candidate,
+              prompt: displayMeaning,
+              emoji: emoji,
+              blanks: blanks,
+              chips: chips,
+            ));
           }
 
-          final displayMeaning = PocketLanguageService.getVocabMeaning(w, defaultFallback: rawMeaning);
-
-          final n = w.length;
-          // Audio Directive: Level 50-90 Maximum Toughness! 3-4 blanks with 5 tricky decoys
-          final bc = targetDay >= 50
-              ? min(targetDay >= 75 ? 4 : 3, n - 2)
-              : min(max(1, (targetDay / 30).ceil()), n - 1);
-          final idx = List<int>.generate(n, (i) => i)..shuffle(_rnd);
-          final blanks = idx.take(bc).toList()..sort();
-          final letters = blanks.map((i) => w[i]).toList();
-          const abc = 'abcdefghijklmnopqrstuvwxyz';
-          final decoys = <String>[];
-          final decoyCount = targetDay >= 50 ? 5 : 3;
-          while (decoys.length < decoyCount) {
-            final d = abc[_rnd.nextInt(26)];
-            if (!w.contains(d) && !decoys.contains(d)) decoys.add(d);
-          }
-          final chips = <String>[...letters, ...decoys]..shuffle(_rnd);
-
+          final first = trainItems.first;
           return _Ch(
             type: 2,
             instruction: PocketLanguageService.localize(
-              en: 'Fill the train wagons (Day $targetDay)',
-              ml: 'ഒഴിഞ്ഞ അക്ഷരങ്ങൾ നിറയ്ക്കൂ (Day $targetDay)',
-              ta: 'ரயில் பெட்டிகளில் விடுபட்ட எழுத்துக்களை நிரப்பவும் (நாள் $targetDay)',
-              hi: 'रेलगाड़ी के डिब्बों में अक्षर भरें (दिन $targetDay)',
+              en: 'Fill the train wagons (10 words)',
+              ml: 'തീവണ്ടി പെട്ടികൾ നിറയ്ക്കൂ (10 വാക്കുകൾ)',
+              ta: 'ரயில் பெட்டிகளில் எழுத்துக்களை நிரப்பவும் (10 சொற்கள்)',
+              hi: 'रेलगाड़ी के डिब्बों में अक्षर भरें (10 शब्द)',
             ),
-            prompt: displayMeaning,
-            emoji: emoji,
-            correct: w,
-            word: w,
-            blanks: blanks,
-            chips: chips,
+            prompt: first.prompt,
+            emoji: first.emoji,
+            correct: trainItems.map((t) => t.word).join(', '),
+            word: first.word,
+            blanks: first.blanks,
+            chips: first.chips,
+            trainWords: trainItems,
           );
         }
 
@@ -805,7 +904,7 @@ class _PocketCitadelRunnerAttackPageState
       case 1:
         return !_pickB.contains(null);
       case 2:
-        return !_slotC.contains(null);
+        return _trainSlots.isNotEmpty && _trainSlots.every((s) => !s.contains(null));
       default:
         return _pickD != null;
     }
@@ -831,28 +930,53 @@ class _PocketCitadelRunnerAttackPageState
       case 1:
         {
           final m = <String>[];
-          for (var k = 0; k < 4; k++) {
+          final totalWords = ch.options.length;
+          for (var k = 0; k < totalWords; k++) {
             final pick = _pickB[k]!;
             final ok = pick == ch.correctIdx[k];
             final right = ch.options[k][ch.correctIdx[k]];
             final got = ch.options[k][pick];
-            if (ok) earned += 0.25;
+            if (ok) earned += (1.0 / totalWords);
             m.add(got);
             lines.add(ok ? '✔ $got' : '✖ $got  →  $right');
           }
           mine = m.join(', ');
-          question = 'Pick the correct spelling (4 words)';
+          question = 'Pick the correct spelling ($totalWords words)';
           break;
         }
       case 2:
         {
-          final chars = ch.word.split('');
-          for (var b = 0; b < ch.blanks.length; b++) {
-            chars[ch.blanks[b]] = ch.chips[_slotC[b]!];
+          final totalWords = ch.trainWords.isNotEmpty ? ch.trainWords.length : 1;
+          var correctCount = 0;
+          final List<String> userWords = [];
+          if (ch.trainWords.isNotEmpty && _trainSlots.length == ch.trainWords.length) {
+            for (var i = 0; i < totalWords; i++) {
+              final tw = ch.trainWords[i];
+              final chars = tw.word.split('');
+              for (var b = 0; b < tw.blanks.length; b++) {
+                final slotVal = _trainSlots[i][b];
+                if (slotVal != null && slotVal < tw.chips.length) {
+                  chars[tw.blanks[b]] = tw.chips[slotVal];
+                }
+              }
+              final assembled = chars.join();
+              userWords.add(assembled);
+              final ok = assembled.toLowerCase().trim() == tw.word.toLowerCase().trim();
+              if (ok) correctCount++;
+              lines.add(ok ? '✔ ${tw.emoji} $assembled' : '✖ ${tw.emoji} $assembled  →  ${tw.word}');
+            }
+            mine = userWords.join(', ');
+            earned = correctCount / totalWords;
+            question = 'Word Bank Train ($correctCount/$totalWords correct)';
+          } else {
+            final chars = ch.word.split('');
+            for (var b = 0; b < ch.blanks.length; b++) {
+              chars[ch.blanks[b]] = ch.chips[_slotC[b]!];
+            }
+            mine = chars.join();
+            earned = mine == ch.word ? 1 : 0;
+            question = '${ch.emoji} ${ch.prompt}';
           }
-          mine = chars.join();
-          earned = mine == ch.word ? 1 : 0;
-          question = '${ch.emoji} ${ch.prompt}';
           break;
         }
       default:
@@ -992,8 +1116,13 @@ class _PocketCitadelRunnerAttackPageState
     setState(() {
       _cur = ch;
       _selA = [];
-      _pickB = List<int?>.filled(4, null);
+      _pickB = List<int?>.filled(ch.options.length, null);
       _slotC = List<int?>.filled(ch.blanks.length, null);
+      _trainWordIdx = 0;
+      _trainSlots = List.generate(
+        ch.trainWords.length,
+        (i) => List<int?>.filled(ch.trainWords[i].blanks.length, null),
+      );
       _pickD = null;
       _heardD = null;
       _listening = false;
@@ -2354,51 +2483,125 @@ class _PocketCitadelRunnerAttackPageState
         ]);
       case 2:
         {
-          final n = ch.word.length;
+          final hasMulti = ch.trainWords.isNotEmpty && _trainSlots.length == ch.trainWords.length;
+          final curWord = hasMulti ? ch.trainWords[_trainWordIdx] : null;
+          final curSlot = hasMulti ? _trainSlots[_trainWordIdx] : _slotC;
+          final activeWord = curWord?.word ?? ch.word;
+          final activePrompt = curWord?.prompt ?? ch.prompt;
+          final activeEmoji = curWord?.emoji ?? ch.emoji;
+          final activeBlanks = curWord?.blanks ?? ch.blanks;
+          final activeChips = curWord?.chips ?? ch.chips;
+          final n = activeWord.length;
+
           return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             _label(ch.instruction),
+            if (hasMulti) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '🚂 Wagon ${_trainWordIdx + 1} of ${ch.trainWords.length}',
+                    style: const TextStyle(
+                      color: Color(0xFFFFD600),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    '${_trainSlots.where((s) => !s.contains(null)).length}/${ch.trainWords.length} Solved',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (var wIdx = 0; wIdx < ch.trainWords.length; wIdx++) ...[
+                      GestureDetector(
+                        onTap: () => setState(() => _trainWordIdx = wIdx),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _trainWordIdx == wIdx
+                                ? const Color(0xFFFFD600)
+                                : (!_trainSlots[wIdx].contains(null)
+                                    ? const Color(0xFF00E676).withValues(alpha: 0.3)
+                                    : Colors.white12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _trainWordIdx == wIdx
+                                  ? Colors.white
+                                  : (!_trainSlots[wIdx].contains(null)
+                                      ? const Color(0xFF00E676)
+                                      : Colors.white24),
+                              width: _trainWordIdx == wIdx ? 2 : 1,
+                            ),
+                          ),
+                          child: Text(
+                            !_trainSlots[wIdx].contains(null) ? '✔ ${wIdx + 1}' : '${wIdx + 1}',
+                            style: TextStyle(
+                              color: _trainWordIdx == wIdx ? Colors.black : Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: _pop(Colors.white, r: 16, sh: 4),
               child: Column(children: [
-                Text(ch.emoji, style: const TextStyle(fontSize: 54)),
-                Text(ch.prompt,
+                Text(activeEmoji, style: const TextStyle(fontSize: 48)),
+                Text(activePrompt,
                     style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.w900)),
               ]),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: [
-                const Text('🚂', style: TextStyle(fontSize: 40)),
+                const Text('🚂', style: TextStyle(fontSize: 36)),
                 for (var p = 0; p < n; p++) ...[
                   Container(width: 8, height: 4, color: Colors.white70),
                   Builder(builder: (_) {
-                    final b = ch.blanks.indexOf(p);
+                    final b = activeBlanks.indexOf(p);
                     if (b < 0) {
                       return Container(
-                        width: 40,
-                        height: 50,
+                        width: 38,
+                        height: 48,
                         alignment: Alignment.center,
                         decoration: _pop(col, r: 8, sh: 2),
-                        child: Text(ch.word[p].toUpperCase(),
+                        child: Text(activeWord[p].toUpperCase(),
                             style: const TextStyle(
-                                fontSize: 22,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.black)),
                       );
                     }
-                    final v = _slotC[b];
+                    final v = curSlot[b];
                     return GestureDetector(
                       onTap: v == null
                           ? null
-                          : () => setState(() => _slotC[b] = null),
+                          : () => setState(() => curSlot[b] = null),
                       child: Container(
-                        width: 40,
-                        height: 50,
+                        width: 38,
+                        height: 48,
                         alignment: Alignment.center,
                         decoration: _pop(
                             v == null
@@ -2406,9 +2609,9 @@ class _PocketCitadelRunnerAttackPageState
                                 : const Color(0xFFFFD600),
                             r: 8,
                             sh: 2),
-                        child: Text(v == null ? '?' : ch.chips[v].toUpperCase(),
+                        child: Text(v == null ? '?' : activeChips[v].toUpperCase(),
                             style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 color: v == null
                                     ? Colors.white70
@@ -2419,17 +2622,47 @@ class _PocketCitadelRunnerAttackPageState
                 ],
               ]),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             _label('LETTER BANK (tap a filled wagon to remove)',
                 fs: 11, c: Colors.white70),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              for (var k = 0; k < ch.chips.length; k++)
-                _chipW(ch.chips[k].toUpperCase(),
-                    dim: _slotC.contains(k), tap: () {
-                  final free = _slotC.indexOf(null);
-                  if (free >= 0) setState(() => _slotC[free] = k);
+              for (var k = 0; k < activeChips.length; k++)
+                _chipW(activeChips[k].toUpperCase(),
+                    dim: curSlot.contains(k), tap: () {
+                  final free = curSlot.indexOf(null);
+                  if (free >= 0) {
+                    setState(() => curSlot[free] = k);
+                    if (hasMulti && !curSlot.contains(null) && _trainWordIdx < ch.trainWords.length - 1) {
+                      Future.delayed(const Duration(milliseconds: 250), () {
+                        if (mounted) setState(() => _trainWordIdx++);
+                      });
+                    }
+                  }
                 }),
             ]),
+            if (hasMulti) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  if (_trainWordIdx > 0)
+                    Expanded(
+                      child: _popBtn('◀ PREV WAGON', () => setState(() => _trainWordIdx--),
+                          color: Colors.white24, fs: 12),
+                    ),
+                  if (_trainWordIdx > 0 && _trainWordIdx < ch.trainWords.length - 1)
+                    const SizedBox(width: 8),
+                  if (_trainWordIdx < ch.trainWords.length - 1)
+                    Expanded(
+                      child: _popBtn(
+                        'NEXT WAGON ▶',
+                        () => setState(() => _trainWordIdx++),
+                        color: !curSlot.contains(null) ? const Color(0xFF00E676) : const Color(0xFF80D8FF),
+                        fs: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ]);
         }
       default:

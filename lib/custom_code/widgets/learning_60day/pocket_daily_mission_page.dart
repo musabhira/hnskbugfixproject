@@ -8578,17 +8578,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          if (titleMl.isNotEmpty && PocketLanguageService.currentLanguage.toLowerCase().contains('malay')) ...[
-            const SizedBox(height: 4),
-            Text(
-              titleMl,
-              style: GoogleFonts.inter(
-                color: const Color(0xFFCBD5E1),
-                fontSize: 12.5,
-                height: 1.35,
-              ),
-            ),
-          ],
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
