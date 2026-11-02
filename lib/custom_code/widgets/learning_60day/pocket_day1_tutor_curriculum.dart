@@ -948,16 +948,28 @@ class Day1Curriculum {
         data: {'id': 'step_18_house_attack', 'day': day},
       ),
 
-      // Step 19: 🏆 Day Review & Performance Card
+      // Step 19: 🎙️ Spoken English Gate Exam
       Day1StepModel(
         stepNumber: 19,
+        titleEn: '🎙️ Spoken English Gate Exam',
+        titleMl: '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് ഗേറ്റ് പരീക്ഷ',
+        icon: '🎙️',
+        type: 'spoken_gate_exam',
+        descriptionEn: 'Pass the 6-question Spoken English Gate Exam with 60%+ to unlock the Day Review and next house!',
+        descriptionMl: 'അടുത്ത വീട് അൺലോക്ക് ചെയ്യാൻ 60% മാർക്കോടെ സ്പോക്കൺ പരീക്ഷ പാസ്സാകുക!',
+        data: {'id': 'step_19_spoken_exam', 'day': day},
+      ),
+
+      // Step 20: 🏆 Day Review & Performance Card
+      Day1StepModel(
+        stepNumber: 20,
         titleEn: '🏆 Day $day Summary & Review',
         titleMl: '🏆 Day $day Summary & Review',
         icon: '🏆',
         type: 'day_review_card',
         descriptionEn: 'Comprehensive evaluation card analyzing your growth, mistakes, weaknesses, and next-day roadmap!',
         descriptionMl: 'ഇന്നത്തെ മുഴുവൻ പ്രകടനവും അവലോകനം ചെയ്യുകയും അടുത്ത ദിവസത്തെ അൺലോക്ക് ചെയ്യുകയും ചെയ്യുക!',
-        data: {'id': 'step_19_day_review', 'day': day},
+        data: {'id': 'step_20_day_review', 'day': day},
       ),
     ];
   }

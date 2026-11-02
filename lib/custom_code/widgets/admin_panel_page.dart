@@ -57,6 +57,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   // Filter and Search
   String userSearchQuery = "";
   String authSearchQuery = "";
+  String _premiumSearchQuery = "";
+  String _premiumFilter = "all";
   List<Map<String, dynamic>> allProfiles = [];
   List<Map<String, dynamic>> pendingAccessList = [];
   bool isLoadingUsers = false;
@@ -190,7 +192,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 18, vsync: this);
+    _tabController = TabController(length: 19, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -845,6 +847,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.workspace_premium_rounded),
                 text: '📜 Certificates'),
+            Tab(
+                icon: Icon(Icons.stars_rounded),
+                text: '👑 Premium Users'),
           ],
         ),
       ),
@@ -869,6 +874,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           const AdminGamesHubWidget(),
           _buildStoreReviewModeTab(),
           _buildCertificatesTab(),
+          _buildPremiumUsersTab(),
         ],
       ),
     );
@@ -2666,7 +2672,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Colors.green,
             'android_version',
             'android_active',
-            appUpdateData!['android_link'] ?? '',
+            'android_link',
           ),
           const SizedBox(height: 20),
           _buildUpdateControlCard(
@@ -2675,7 +2681,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Colors.white,
             'ios_version',
             'ios_active',
-            appUpdateData!['ios_link'] ?? '',
+            'ios_link',
           ),
           const SizedBox(height: 30),
           const Text('Global Update Details',
@@ -3005,7 +3011,8 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
   }
 
   Widget _buildUpdateControlCard(String title, IconData icon, Color iconColor,
-      String versionKey, String activeKey, String link) {
+      String versionKey, String activeKey, String linkKey) {
+    final isActive = appUpdateData![activeKey] == true;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -12674,6 +12681,298 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
       ),
     );
   }
+
+  /// 👑 Tab 19: Dedicated Premium & VIP Users Management
+  Widget _buildPremiumUsersTab() {
+    final filteredUsers = allProfiles.where((u) {
+      final name = (u['name'] ?? '').toString().toLowerCase();
+      final phone = (u['phone_no'] ?? '').toString().toLowerCase();
+      final uid = (u['user_id'] ?? '').toString().toLowerCase();
+      final query = _premiumSearchQuery.toLowerCase().trim();
+
+      final matchesQuery = query.isEmpty ||
+          name.contains(query) ||
+          phone.contains(query) ||
+          uid.contains(query);
+
+      if (!matchesQuery) return false;
+
+      final isVip = u['is_vip'] == true ||
+          u['is_premium'] == true ||
+          u['is_subscribed'] == true;
+
+      if (_premiumFilter == 'vip_only') return isVip;
+      if (_premiumFilter == 'free_only') return !isVip;
+      return true;
+    }).toList();
+
+    final totalVipCount = allProfiles.where((u) =>
+        u['is_vip'] == true ||
+        u['is_premium'] == true ||
+        u['is_subscribed'] == true).length;
+
+    return RefreshIndicator(
+      onRefresh: _loadProfiles,
+      color: const Color(0xFFFFD700),
+      backgroundColor: const Color(0xFF0F172A),
+      child: Column(
+        children: [
+          // Stat Summary Cards
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: Colors.white10)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                      ),
+                      child: const Text('👑', style: TextStyle(fontSize: 24)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'POKET VIP & Premium Management',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Grant 1-Click VIP passes, manage subscriptions, & inspect ad-free access',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFFD700)),
+                      ),
+                      child: Text(
+                        '$totalVipCount VIPs',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                // Search field
+                TextField(
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, phone or user ID...',
+                    hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Colors.white54, size: 18),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFFFD700)),
+                    ),
+                  ),
+                  onChanged: (val) => setState(() => _premiumSearchQuery = val),
+                ),
+                const SizedBox(height: 10),
+                // Filter chips
+                Row(
+                  children: [
+                    _buildFilterChip('All (${allProfiles.length})', 'all'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Active VIPs ($totalVipCount)', 'vip_only'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Free Users (${allProfiles.length - totalVipCount})', 'free_only'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // User list
+          Expanded(
+            child: isLoadingUsers
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFD700)))
+                : filteredUsers.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No users match your filter',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = filteredUsers[index];
+                          final isVip = user['is_vip'] == true ||
+                              user['is_premium'] == true ||
+                              user['is_subscribed'] == true;
+                          final name = user['name']?.toString() ?? 'Unnamed';
+                          final phone = user['phone_no']?.toString() ?? 'No phone';
+                          final tier = user['subscription_tier']?.toString() ?? (isVip ? 'VIP Gold' : 'Free Tier');
+                          final imgUrl = user['profile_image_url']?.toString();
+
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isVip
+                                  ? const Color(0xFF1E293B).withValues(alpha: 0.9)
+                                  : const Color(0xFF111827),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isVip
+                                    ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                                    : Colors.white10,
+                                width: isVip ? 1.2 : 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: const Color(0xFF334155),
+                                  backgroundImage: imgUrl != null && imgUrl.isNotEmpty
+                                      ? NetworkImage(imgUrl)
+                                      : null,
+                                  child: imgUrl == null || imgUrl.isEmpty
+                                      ? Text(
+                                          name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                          style: const TextStyle(
+                                              color: Colors.white, fontWeight: FontWeight.bold),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              name,
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (isVip) ...[
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFFFD700),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: const Text(
+                                                'VIP',
+                                                style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w900),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        phone,
+                                        style: GoogleFonts.inter(
+                                            color: Colors.white60, fontSize: 11),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Tier: $tier • ${isVip ? "100% Ad-Free ✨" : "Standard Ads"}',
+                                        style: TextStyle(
+                                          color: isVip
+                                              ? const Color(0xFF6EE7B7)
+                                              : Colors.white38,
+                                          fontSize: 10.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Switch(
+                                  value: isVip,
+                                  activeThumbColor: const Color(0xFFFFD700),
+                                  activeTrackColor: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                                  inactiveThumbColor: Colors.grey,
+                                  inactiveTrackColor: Colors.white10,
+                                  onChanged: (val) => _toggleUserVip(user, isVip),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final selected = _premiumFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _premiumFilter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? const Color(0xFFFFD700) : Colors.white12,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.black : Colors.white70,
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
 }
 
 /*

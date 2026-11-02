@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 /// 🚀 Clean, Minimalist In-App Version & Remote Update Service
 ///
@@ -57,6 +58,25 @@ class PocketAppUpdateService {
         remoteVersion: remoteVersion,
         remoteBuild: remoteBuild,
       );
+
+      // 2.5 Deliver automatic President Update Announcement chat message (deduplicated)
+      final currentUid = SupaFlow.client.auth.currentUser?.id;
+      if (currentUid != null && currentUid.isNotEmpty) {
+        final platformName = Platform.isIOS ? 'iOS' : 'Android';
+        final rawFeatures = updateInfo['features_list'];
+        final features = (rawFeatures is List)
+            ? rawFeatures.map((e) => e.toString()).toList()
+            : <String>[];
+        PocketPresidentService.sendPresidentUpdateMessage(
+          targetUserId: currentUid,
+          platform: platformName,
+          version: remoteVersion,
+          title: updateInfo['title'] ?? 'What\'s New',
+          description: updateInfo['raw_description'] ?? '',
+          features: features,
+          storeUrl: storeUrl,
+        );
+      }
 
       if (!hasNewerVersion) {
         return; // Already up to date! Never show dialog.
@@ -157,6 +177,9 @@ class PocketAppUpdateService {
         return {
           'latest_version': remoteVer,
           'latest_build': 0,
+          'title': res['title']?.toString() ?? 'POKET Update Available',
+          'raw_description': desc,
+          'features_list': featuresList,
           'release_notes': formattedNotes.isNotEmpty
               ? formattedNotes
               : 'Bug fixes, performance improvements, and new features.',

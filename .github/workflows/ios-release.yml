@@ -1,9 +1,12 @@
-name: iOS Release
+name: iOS Release (Legacy Manual Flutter Build)
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for running manual non-Shorebird iOS build'
+        required: false
+        default: 'Manual test build'
 
 jobs:
   build:

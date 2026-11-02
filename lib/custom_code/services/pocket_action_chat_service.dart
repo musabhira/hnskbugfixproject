@@ -77,9 +77,9 @@ class PocketActionChatService {
       }
 
       final String messageText =
-          '⚔️ I am attacking your house! Dealt $damage damage using $weapon.';
+          '⚔️ $aName successfully attacked $dName\'s house!';
       final String displaySummary =
-          '⚔️ $aName attacked your house! (-$damage)';
+          '⚔️ $aName successfully attacked $dName\'s house!';
 
       final Map<String, dynamic> metadata = {
         'is_citadel_attack': true,

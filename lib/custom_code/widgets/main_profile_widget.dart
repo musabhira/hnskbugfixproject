@@ -3618,7 +3618,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       userId: targetId,
                                       targetName: targetName,
                                       attackerDay: _getEffectiveDay(),
-                                    );
+                                    ).then((_) {
+                                      _loadPocketScore();
+                                      _loadFortressDefenseData();
+                                      _loadGlobalRank();
+                                    });
                                   }
                                 },
                                 child: Container(
@@ -4579,7 +4583,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               attackerDay: _getEffectiveDay(),
                             ),
                           ),
-                        ).then((_) => _loadFortressDefenseData());
+                        ).then((_) {
+                          _loadPocketScore();
+                          _loadFortressDefenseData();
+                          _loadGlobalRank();
+                        });
                       }
                     },
                     icon: const Icon(Icons.flash_on_rounded, size: 20),
@@ -6427,7 +6435,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 attackerStreak: 1,
                               ),
                             ),
-                          );
+                          ).then((_) {
+                            _loadPocketScore();
+                            _loadFortressDefenseData();
+                            _loadGlobalRank();
+                          });
                         }
                       },
                       borderRadius: BorderRadius.circular(8),

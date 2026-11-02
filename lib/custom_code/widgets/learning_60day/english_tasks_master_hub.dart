@@ -525,7 +525,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final Map<String, bool> subFlags = {};
     bool previousStepDone = true;
-    for (int step = 1; step <= 17; step++) {
+    for (int step = 1; step <= 20; step++) {
       final flagKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       final rawDone = prefs.getBool(flagKey) ?? false;
       final isDone = rawDone && previousStepDone;
@@ -3654,6 +3654,31 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             if (_activeTargetTab == 0) ...[
               const SizedBox(height: 6),
               _buildMilestonesStrip(prog),
+              const SizedBox(height: 5),
+              // ✨ Daily Updated English Content Informational Label
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Daily Updated English Content',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white60,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
@@ -5135,9 +5160,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
 
-              // 7. Green Bouncing Down-Arrow Badge on House 2 when Day 1 is completed
+              // 7. Green Bouncing Down-Arrow Badge on House $day when immediate previous Day is completed
               // User Audio Directive: "വണ്ടി അങ്ങനെ പോയിട്ട് നമ്മുടെ രണ്ടാമത്തെ വീട്ടിൽ പോയി നിൽക്കുക... നിൽക്കുന്ന സമയത്ത് അവിടെ ആ വീടിന്റെ മേലെ ടാപ്പ് ചെയ്യാൻ പച്ച കളറിൽ ടാപ്പ് ചെയ്യാനുള്ള സാധനം കാണിക്കുക, ഡൗൺ ആരോ. വീട്ടിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ എൻ്റർ ഡേ 2 ലേക്ക് പോകും."
-              if (day == 2 && _isDayCompleted(1) && !isCompleted)
+              if (day > 1 && _isDayCompleted(day - 1) && !isCompleted)
                 Positioned(
                   top: -24,
                   left: 0,
@@ -5172,7 +5197,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 const Text('👇', style: TextStyle(fontSize: 13)),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'TAP TO ENTER DAY 2 ➔',
+                                  'TAP TO ENTER DAY $day ➔',
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
                                     fontSize: 10.5,

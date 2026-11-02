@@ -238,16 +238,21 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   Day1Track _day1Track = Day1Track.middle;
   bool _isGateExamPassed = false;
-  int get _totalSteps => 19;
+  int get _totalSteps => 20;
 
   /// Exact coordinate of milestone step on the mountain slope (User Audio Directive: Ample gap after Today's Lesson billboard)
-  static Offset getStepPosition(int stepIndex, {int totalSteps = 19}) {
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 20}) {
     if (stepIndex == totalSteps) {
       // Summit Review Milestone right past the Gate!
       const x = 4350.0;
       return Offset(x, getGroundY(x));
     }
-    final stepsForSlope = totalSteps - 1;
+    if (stepIndex == totalSteps - 1) {
+      // Step 19: Dedicated Spoken English Gate Exam
+      const x = 4220.0;
+      return Offset(x, getGroundY(x));
+    }
+    final stepsForSlope = totalSteps - 2; // Steps 1 to 18 along the scenic slope
     final denominator = (stepsForSlope > 1) ? (stepsForSlope - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
     const startX = 1040.0;
@@ -528,8 +533,30 @@ class _PocketDayOpenWorldAdventurePageState
       // Auto-drive forward strictly to next step from current location
       if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
+
+        // 🎯 Strategic Transition Ads:
+        // 1. Interstitial Ad after completing configured learning step frequency (default every 6 steps)
+        if (stepIndex > 0 &&
+            stepIndex % PocketAdMobService.interstitialStepFrequency == 0 &&
+            stepIndex < _totalSteps) {
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (mounted) {
+              PocketAdMobService.instance.showInterstitialAd(context: context);
+            }
+          });
+        }
       } else {
-        // Day fully mastered! Notify parent and do not re-launch activity in loop
+        // Step 20 (and day) fully completed!
+        // Show celebration Interstitial Ad on major Day Milestone completion
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (mounted) {
+            PocketAdMobService.instance.showInterstitialAd(context: context);
+          }
+        });
+
+        // Animate vehicle to park in front of next unlocked House (summit destination)
+        _driveToNextHouse();
+        // Day fully mastered! Notify parent
         widget.onCompleted?.call();
       }
     }
@@ -683,9 +710,20 @@ class _PocketDayOpenWorldAdventurePageState
                             _driveToGate(openExamOnArrival: true);
                           } else {
                             PocketAdMobService.instance.showInterstitialAd(
+                              context: context,
                               onDismissed: () {
                                 widget.onCompleted?.call();
-                                if (mounted) Navigator.pop(context);
+                                if (mounted) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PocketDayOpenWorldAdventurePage(
+                                        day: widget.day + 1,
+                                        userId: widget.userId,
+                                      ),
+                                    ),
+                                  );
+                                }
                               },
                             );
                           }
@@ -1666,6 +1704,49 @@ class _PocketDayOpenWorldAdventurePageState
     });
   }
 
+  void _driveToNextHouse() {
+    if (!mounted) return;
+    const houseX = 4440.0;
+    _driveAnimController.stop();
+    final startX = _playerX;
+    _driveAnimation = Tween<double>(begin: startX, end: houseX).animate(
+      CurvedAnimation(parent: _driveAnimController, curve: Curves.easeInOutCubic),
+    )..addListener(() {
+        if (!mounted) return;
+        final currentX = _driveAnimation!.value;
+        final dx = currentX - _prevPlayerX;
+        _wheelAngle += dx * 0.14;
+        _prevPlayerX = currentX;
+
+        if (dx.abs() > 0.8 && math.Random().nextDouble() < 0.45) {
+          final gy = getGroundY(currentX);
+          _dustParticles.add(
+            JumpDustParticle(
+              x: currentX - (dx.sign * 24.0),
+              y: gy + 4.0,
+              vx: -dx.sign * (15.0 + math.Random().nextDouble() * 20.0),
+              vy: -10.0 - math.Random().nextDouble() * 15.0,
+            ),
+          );
+        }
+
+        setState(() {
+          _playerX = currentX;
+          _isDriving = true;
+        });
+
+        _focusOnPoint(currentX, getGroundY(currentX), scale: _zoomScale, animate: false);
+      });
+
+    _driveAnimController.forward(from: 0.0).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _isDriving = false;
+      });
+      HapticFeedback.heavyImpact();
+    });
+  }
+
   Widget _buildSummitGate(int day, bool isGatePassed) {
     const gateWidth = 140.0;
     const gateHeight = 160.0;
@@ -1832,15 +1913,17 @@ class _PocketDayOpenWorldAdventurePageState
               final isPassed = correctCount >= (questions.length >= 6 ? 4 : (questions.length >= 4 ? 3 : 1)); // 60%+ pass threshold
 
               if (isPassed && !_isGateExamPassed) {
-                // Award points & unlock
+                // Award points & unlock Step 20
                 final uid = widget.userId ?? _supabase.auth.currentUser?.id;
                 SharedPreferences.getInstance().then((prefs) async {
                   await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_gate_exam_passed', true);
+                  await prefs.setBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_19_done', true);
                   await PocketFortressDefenseService.recordTrainingPoints(100, uid);
                   if (mounted) {
                     setState(() {
                       _isGateExamPassed = true;
                     });
+                    await _onStepCompleted(19);
                   }
                 });
               }
@@ -1940,16 +2023,8 @@ class _PocketDayOpenWorldAdventurePageState
                           onPressed: () async {
                             if (isPassed) {
                               Navigator.pop(dlgCtx);
-                              await PocketDay1ReviewCardPage.show(
-                                context,
-                                day: widget.day,
-                                userId: widget.userId ?? _supabase.auth.currentUser?.id,
-                                onProceedToNextDay: () {
-                                  widget.onCompleted?.call();
-                                },
-                              );
-                              await _syncStepCompletionIfDone(_totalSteps);
-                              await _loadState(preserveCarPosition: true);
+                              // Open Step 20: Day Review & Performance Card
+                              _launchStepActivity(20);
                             } else {
                               setModalState(() {
                                 currentIdx = 0;
@@ -2411,47 +2486,130 @@ class _PocketDayOpenWorldAdventurePageState
     return Positioned(
       left: summitX,
       top: groundY - houseHeight - 8.0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isUnlocked
-                    ? const Color(0xFFFFD700)
-                    : Colors.white24,
-                width: 1.2,
+      child: GestureDetector(
+        onTap: () {
+          if (!isUnlocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '🔒 Complete Day ${widget.day} Gate Exam and Daily Summary to unlock House $targetDay!',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                backgroundColor: const Color(0xFF1E2438),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            return;
+          }
+          HapticFeedback.heavyImpact();
+          PocketAdMobService.instance.showInterstitialAd(
+            context: context,
+            onDismissed: () {
+              widget.onCompleted?.call();
+              if (mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PocketDayOpenWorldAdventurePage(
+                      day: targetDay,
+                      userId: widget.userId,
+                    ),
+                  ),
+                );
+              }
+            },
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🎯 Bouncing Green Down-Arrow Indicator when House is unlocked!
+            if (isUnlocked)
+              Center(
+                child: AnimatedBuilder(
+                  animation: _ambientAnimController,
+                  builder: (context, _) {
+                    final t = _ambientAnimController.value;
+                    final bounce = math.sin(t * math.pi * 6) * 5.0;
+                    return Transform.translate(
+                      offset: Offset(0, -bounce),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF34D399), Color(0xFF10B981), Color(0xFF047857)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                              blurRadius: 14,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('👇', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 5),
+                            Text(
+                              'ENTER HOUSE $targetDay ➔',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isUnlocked
+                      ? const Color(0xFFFFD700)
+                      : Colors.white24,
+                  width: 1.2,
+                ),
+              ),
+              child: Text(
+                isUnlocked
+                    ? '👑 SUMMIT REACHED: DAY $targetDay UNLOCKED!'
+                    : '🔒 SUMMIT DESTINATION: DAY $targetDay ($estateTitle)',
+                style: GoogleFonts.outfit(
+                  color: isUnlocked ? const Color(0xFFFFD700) : Colors.white60,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
-            child: Text(
-              isUnlocked
-                  ? '👑 SUMMIT REACHED: DAY $targetDay UNLOCKED!'
-                  : '🔒 SUMMIT DESTINATION: DAY $targetDay ($estateTitle)',
-              style: GoogleFonts.outfit(
-                color: isUnlocked ? const Color(0xFFFFD700) : Colors.white60,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
+            const SizedBox(height: 4),
+            SizedBox(
+              width: houseWidth,
+              height: houseHeight,
+              child: CustomPaint(
+                size: const Size(houseWidth, houseHeight),
+                painter: HouseMasterPainter(
+                  day: targetDay,
+                  palette: palette,
+                  isPresident: false,
+                  lightsOn: isUnlocked,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: houseWidth,
-            height: houseHeight,
-            child: CustomPaint(
-              size: const Size(houseWidth, houseHeight),
-              painter: HouseMasterPainter(
-                day: targetDay,
-                palette: palette,
-                isPresident: false,
-                lightsOn: isUnlocked,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2806,221 +2964,127 @@ class _PocketDayOpenWorldAdventurePageState
     switch (s) {
       case 1:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
-            ml: widget.day == 1 ? 'അക്ഷരങ്ങളും ഫോണിക്സും' : 'കൺസെപ്റ്റ് റൂം & അവതാർ ചാറ്റ്',
-            ta: widget.day == 1 ? 'எழுத்துக்களும் ஒலியியலும்' : 'கருத்து அறை & அவதார் அரட்டை',
-            hi: widget.day == 1 ? 'अक्षर और ध्वनियाँ' : 'कॉन्सेप्ट रूम और अवतार चैट',
-          ),
+          widget.day == 1 ? 'Meet Letters & Phonics' : 'Concept Room & Avatar Chat',
           '🔤',
           const Color(0xFF00F0FF),
         );
       case 2:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Sentence Builder Game',
-            ml: 'സെന്റൻസ് ബിൽഡർ ഗെയിം',
-            ta: 'வாக்கிய அமைப்பாளர் விளையாட்டு',
-            hi: 'वाक्य निर्माता खेल',
-          ),
+          'Sentence Builder Game',
           '🧩',
           const Color(0xFF00E5FF),
         );
       case 3:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Spelling Master',
-            ml: 'സ്പെല്ലിംഗ് മാസ്റ്റർ',
-            ta: 'எழுத்துப்பிழை மாஸ்டர்',
-            hi: 'वर्तनी मास्टर',
-          ),
+          'Spelling Master',
           '🔤',
           const Color(0xFF38BDF8),
         );
       case 4:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
-            ml: widget.day == 1 ? '50+ അത്യാവശ്യ വാക്കുകൾ' : 'സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റ്',
-            ta: widget.day == 1 ? '50+ அத்தியாவசிய சொற்கள்' : 'பேசும் ஆங்கில அரட்டை',
-            hi: widget.day == 1 ? '50+ आवश्यक शुरुआती शब्द' : 'स्पोकन इंग्लिश चैट',
-          ),
+          widget.day == 1 ? '50+ Essential Beginner Words' : 'Spoken English Chat',
           '📚',
           const Color(0xFF10B981),
         );
       case 5:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
-            ml: widget.day == 1 ? 'അക്ഷര-വാക്ക് വേട്ട' : 'റീഡിംഗ് റൂം',
-            ta: widget.day == 1 ? 'எழுத்து & சொல் வேட்டை' : 'படிக்கும் அறை',
-            hi: widget.day == 1 ? 'अक्षर और शब्द खोज' : 'रीडिंग रूम',
-          ),
+          widget.day == 1 ? 'Letter & Word Hunt' : 'Reading Room',
           '🔍',
           const Color(0xFFF59E0B),
         );
       case 6:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Letter Writing Quest',
-            ml: 'ലെറ്റർ റൈറ്റിംഗ് ക്വസ്റ്റ്',
-            ta: 'கடிதம் எழுதும் வேட்டை',
-            hi: 'पत्र लेखन खोज',
-          ),
+          'Letter Writing Quest',
           '✉️',
           const Color(0xFF38BDF8),
         );
       case 7:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Diary Entry Adventure',
-            ml: 'ഡയറി എൻട്രി അഡ്വഞ്ചർ',
-            ta: 'நாட்குறிப்பு சாகசம்',
-            hi: 'डायरी प्रविष्टि साहसिक',
-          ),
+          'Diary Entry Adventure',
           '📖',
           const Color(0xFFFFD700),
         );
       case 8:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Legend Bio Creator',
-            ml: 'ലെജൻഡ് ബയോ ക്രിയേറ്റർ',
-            ta: 'பயோ கிரியேட்டர்',
-            hi: 'बायो निर्माता',
-          ),
+          'Legend Bio Creator',
           '👤',
           const Color(0xFF10B981),
         );
       case 9:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Notice Masterclass',
-            ml: 'നോട്ടീസ് മാസ്റ്റർക്ലാസ്സ്',
-            ta: 'அறிவிப்பு மாஸ்டர்கிளாஸ்',
-            hi: 'नोटिस मास्टरक्लास',
-          ),
+          'Notice Masterclass',
           '📢',
           const Color(0xFFEF4444),
         );
       case 10:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Email Etiquette',
-            ml: 'ഇമെയിൽ മര്യാദകൾ',
-            ta: 'மின்னஞ்சல் ஒழுங்குமுறை',
-            hi: 'ईमेल शिष्टाचार',
-          ),
+          'Email Etiquette',
           '📧',
           const Color(0xFF38BDF8),
         );
       case 11:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Spelling Detective',
-            ml: 'സ്പെല്ലിംഗ് ഡിറ്റക്ടീവ്',
-            ta: 'எழுத்துப்பிழை துப்பறியும் நபர்',
-            hi: 'वर्तनी जासूस',
-          ),
+          'Spelling Detective',
           '🔍',
           const Color(0xFFFFD700),
         );
       case 12:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
-            ml: widget.day == 1 ? 'സ്പോക്കൺ ഇംഗ്ലീഷ് ചാറ്റ്' : 'സംസാര സിമുലേറ്റർ',
-            ta: widget.day == 1 ? 'பேசும் ஆங்கில அரட்டை' : 'பேச்சு சிமுலேட்டர்',
-            hi: widget.day == 1 ? 'स्पोकन इंग्लिश चैट' : 'स्पीकिंग सिम्युलेटर',
-          ),
+          widget.day == 1 ? 'Spoken English Chat' : '20-Turn Spoken Simulator',
           '🎙️',
           const Color(0xFFEC4899),
         );
       case 13:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
-            ml: widget.day == 1 ? 'റീഡിംഗ് റൂം: ദ ക്രോ' : 'വൊക്കാബ് ക്വസ്റ്റ്',
-            ta: widget.day == 1 ? 'வாசிப்பு அறை: காகம்' : 'சொல்லகராதி வேட்டை',
-            hi: widget.day == 1 ? 'रीडिंग रूम: कौवा' : 'शब्दावली खोज',
-          ),
+          widget.day == 1 ? 'Reading Room: The Crow' : 'Open-World Vocab Quest',
           '📖',
           const Color(0xFF60A5FA),
         );
       case 14:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Verb Timeline Arcade',
-            ml: 'ക്രിയാപദ ടൈംലൈൻ ഗെയിം',
-            ta: 'வினைச்சொல் காலவரிசை விளையாட்டு',
-            hi: 'क्रिया टाइमलाइन आर्केड',
-          ),
+          'Verb Timeline Arcade',
           '⏳',
           const Color(0xFFFF9100),
         );
       case 15:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Chat Reply Builder',
-            ml: 'ചാറ്റ് റിപ്ലൈ ബിൽഡർ',
-            ta: 'அரட்டை பதில் அமைப்பாளர்',
-            hi: 'चैट उत्तर निर्माता',
-          ),
+          'Chat Reply Builder',
           '💬',
           const Color(0xFF00E676),
         );
       case 16:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Negative Sentence Builder',
-            ml: 'നെഗറ്റീവ് സെന്റൻസ് ബിൽഡർ',
-            ta: 'எதிர்மறை வாக்கிய அமைப்பாளர்',
-            hi: 'नकारात्मक वाक्य निर्माता',
-          ),
+          'Negative Sentence Builder',
           '🔄',
           const Color(0xFFA855F7),
         );
       case 17:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Mini Speech Practice',
-            ml: 'മിനി സ്പീച്ച് പ്രാക്ടീസ്',
-            ta: 'குறு பேச்சு பயிற்சி',
-            hi: 'लघु भाषण अभ्यास',
-          ),
+          'Mini Speech Practice',
           '📢',
           const Color(0xFFE11D48),
         );
       case 18:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'House Attack Quest: Citadel Raid',
-            ml: 'ഹൗസ് അറ്റാക്ക് ക്വസ്റ്റ്: സിറ്റാഡൽ റൈഡ്',
-            ta: 'வீட்டுத் தாக்குதல் வேட்டை',
-            hi: 'हाउस अटैक क्वेस्ट: गढ़ हमला',
-          ),
+          'House Attack Quest: Citadel Raid',
           '⚔️',
           const Color(0xFFEF4444),
         );
       case 19:
         return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Day ${widget.day} Summary & Review',
-            ml: 'ഡേ ${widget.day} സമ്മറിയും അവലോകനവും',
-            ta: 'நாள் ${widget.day} சுருக்கம் & மதிப்பாய்வு',
-            hi: 'दिन ${widget.day} सारांश और समीक्षा',
-          ),
+          'Spoken English Gate Exam',
+          '🎙️',
+          const Color(0xFF10B981),
+        );
+      case 20:
+        return _StepInfo(
+          'Day ${widget.day} Summary & Review',
           '🏆',
           const Color(0xFFFFD700),
         );
       default:
-        return _StepInfo(
-          PocketLanguageService.localize(
-            en: 'Practice Ledge',
-            ml: 'പ്രാക്ടീസ് ലെഡ്ജ്',
-            ta: 'பயிற்சி பாறை',
-            hi: 'अभ्यास लेज',
-          ),
+        return const _StepInfo(
+          'Practice Ledge',
           '⭐',
           Colors.white,
         );
@@ -3327,24 +3391,30 @@ class _PocketDayOpenWorldAdventurePageState
         return;
       }
       if (s == 19) {
+        // Step 19: Dedicated Spoken English Gate Exam
+        _showSpokenGateExamModal();
+        return;
+      }
+      if (s == 20) {
+        // Step 20: Daily Summary & Review
         final res = await PocketDay1ReviewCardPage.showBottomSheet(
           context,
           day: day,
           userId: uid,
           onProceedToNextDay: () async {
-            await _onStepCompleted(19);
+            await _onStepCompleted(20);
             widget.onCompleted?.call();
           },
         );
         if (res == true) {
-          await _syncStepCompletionIfDone(19);
+          await _syncStepCompletionIfDone(20);
           widget.onCompleted?.call();
           if (mounted) {
             Navigator.pop(context, true);
           }
           return;
         }
-        await _syncStepCompletionIfDone(19);
+        await _syncStepCompletionIfDone(20);
         await _loadState(preserveCarPosition: true);
         return;
       }

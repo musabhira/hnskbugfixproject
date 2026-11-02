@@ -18,6 +18,8 @@ import 'pocket_world_game_rules_modal.dart';
 import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
+import 'games/pocket_house_siege_2d_battle_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import '../report_dailoge.dart';
 import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
@@ -65,7 +67,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
   });
 
   /// 🏰 Open Citadel / House Page for any user or robot from anywhere in the app
-  static Future<void> openForUser(
+  static Future<dynamic> openForUser(
     BuildContext context, {
     required String userId,
     String? targetName,
@@ -187,8 +189,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
         hp: 100,
         maxHp: 100,
       );
-      if (!context.mounted) return;
-      Navigator.push(
+      if (!context.mounted) return null;
+      return await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PocketCitadelAttackPage(
@@ -199,7 +201,6 @@ class PocketCitadelAttackPage extends StatefulWidget {
           ),
         ),
       );
-      return;
     }
 
     Map<String, dynamic>? data = preloadedProfile;
@@ -271,8 +272,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
       } catch (_) {}
     }
 
-    if (!context.mounted) return;
-    Navigator.push(
+    if (!context.mounted) return null;
+    return await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PocketCitadelAttackPage(
@@ -775,16 +776,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isDailyLimitReached =
         attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
+    final bool isAttackerVip =
+        await PocketAdMobService.instance.isUserVip();
     final bool isTargetVip = widget.neighbor.isVip;
+    final bool requireEscort = isAttackerVip || isTargetVip;
     final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
       widget.neighbor.day,
       isNeighbor: true,
       targetUserId: widget.neighbor.id,
     );
 
-    // 🛡️ 1. Load 10 Presidential Escort tasks for VIP targets (User Audio Directive!)
+    // 🛡️ 1. Load 10 VIP Escort Attack tasks (POKET VIP Member Escort Defense System)
     List<HouseShieldQuestion> escortQuestions = [];
-    if (isTargetVip) {
+    if (requireEscort) {
       final escortRandom = math.Random(
           (widget.neighbor.id.hashCode.abs() * 13) + (widget.neighbor.day * 7));
       escortQuestions =
@@ -801,7 +805,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       customArmedQuestions: customArmed,
     );
 
-    final activeQuestions = (isTargetVip && !_isEscortDefeated)
+    final activeQuestions = (requireEscort && !_isEscortDefeated)
         ? escortQuestions
         : fortressQuestions;
 
@@ -840,7 +844,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         }
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
-        _isEscortMode = (isTargetVip && !_isEscortDefeated);
+        _isEscortMode = (requireEscort && !_isEscortDefeated);
         _escortQuestions = escortQuestions;
         _fortressQuestions = fortressQuestions;
         _defenseQuestions = activeQuestions;
@@ -5659,7 +5663,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     GestureDetector(
                       onTap: () {
                         HapticFeedback.heavyImpact();
-                        _executeCitadelAttack();
+                        _openHouseSiege2dBattle();
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -6822,11 +6826,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
 
     if (_raidStep == 2) {
-      _executeCitadelAttack();
+      _openHouseSiege2dBattle();
       return;
     }
 
-    final bool isEscort = (widget.neighbor.isVip && !_isEscortDefeated);
+    final bool isEscort = _isEscortMode && !_isEscortDefeated;
     final count = (isEscort && _escortQuestions.isNotEmpty)
         ? _escortQuestions.length
         : (isEscort ? 10 : widget.neighbor.day);
@@ -6835,13 +6839,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     PocketCitadelRunnerAttackPage.open(
       context,
       defenderName: isEscort
-          ? '${widget.neighbor.name} (Presidential Escort)'
+          ? '${widget.neighbor.name} (VIP Escort Defense)'
           : widget.neighbor.name,
       defenderLevel: count > 0 ? count : (isEscort ? 10 : widget.neighbor.day),
       defenderId: widget.neighbor.id,
       isKidMode: widget.isKidMode,
       isEscort: isEscort,
-    ).then((result) {
+    ).then((result) async {
       if (!mounted) return;
       if (result != null && result['passed'] == true) {
         if (isEscort) {
@@ -6853,25 +6857,37 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  '🛡️ PRESIDENTIAL ESCORT DEFEATED! Main Citadel Now Vulnerable! ⚔️'),
+                  '🛡️ VIP ESCORT DEFEATED! Main House Defenses Now Vulnerable! ⚔️'),
               backgroundColor: Color(0xFF10B981),
             ),
           );
         } else {
-          // ⚔️ Audio Directive: Single attack sequence. Raid already completed inside runner.
-          // Pop back with success result to avoid duplicate hero sprint animation or double scoring.
-          if (mounted && Navigator.of(context).canPop()) {
-            Navigator.of(context).pop(result);
-          } else {
-            setState(() {
-              _raidStep = 3;
-              _isDefenderDamaged = true;
-            });
-            _showVictoryDialog();
-          }
+          // 🎉 Minimum 80% passing requirement satisfied!
+          // Launch the Interactive Full-Screen 2D House Attack Game!
+          await _openHouseSiege2dBattle();
         }
       }
     });
+  }
+
+  /// 🏰 Open Full-Screen 2D House Attack Arena Game
+  Future<void> _openHouseSiege2dBattle() async {
+    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
+    final battleResult = await PocketHouseSiege2dBattlePage.open(
+      context,
+      defenderName: widget.neighbor.name,
+      defenderLevel: widget.neighbor.day > 0 ? widget.neighbor.day : 1,
+      defenderId: widget.neighbor.id,
+      paletteId: widget.neighbor.paletteId,
+      attackerDay: widget.attackerDay,
+      attackerWeapon: perk.combatWeaponName,
+      isKidMode: widget.isKidMode,
+    );
+
+    if (battleResult != null && battleResult['passed'] == true && mounted) {
+      // Execute the real single-source-of-truth backend attack & synchronization
+      await _executeCitadelAttack();
+    }
   }
 
   /// 🔤 Step 3 Essential Spelling Challenge Playfield (Zero MCQs - Pure Interactive Letter Tiles)
@@ -8284,7 +8300,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     onPressed: () {
                       setState(() => _isQuestionSheetOpen = false);
-                      _executeCitadelAttack();
+                      _openHouseSiege2dBattle();
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

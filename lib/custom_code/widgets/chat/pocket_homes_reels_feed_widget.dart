@@ -10,6 +10,7 @@ import '../../services/pocket_game_audio_service.dart';
 import '../../services/pocket_mate_service.dart';
 import '../../services/pocket_trophy_service.dart';
 import '../learning_60day/pocket_fortress_defense_service.dart';
+import '../../services/pocket_admob_service.dart';
 
 import '../../services/pocket_kids_service.dart';
 import '../kids/pocket_kids_robots_data.dart';
@@ -26,8 +27,8 @@ import 'pocket_reels_game_engine.dart';
 import 'pocket_reels_content_engine.dart';
 import '../report_dailoge.dart';
 
-/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, or Vocab
-enum ReelItemType { home, game, vibe, story, interview, speakChallenge, vocabCard }
+/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, Public Vibe, Story, Interview, Speak Challenge, Vocab, or Native Ad
+enum ReelItemType { home, game, vibe, story, interview, speakChallenge, vocabCard, ad }
 
 class ReelVibeItem {
   final String id;
@@ -166,6 +167,16 @@ class ReelFeedItem {
         storyCard = null,
         interviewCard = null,
         speakChallengeCard = null;
+
+  const ReelFeedItem.ad()
+      : type = ReelItemType.ad,
+        neighbor = null,
+        gameCard = null,
+        vibeCard = null,
+        storyCard = null,
+        interviewCard = null,
+        speakChallengeCard = null,
+        vocabCard = null;
 }
 
 /// 🏰 PocketHomesReelsFeedWidget
@@ -1141,6 +1152,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           combinedFeed.add(ReelFeedItem.story(stories[storyIdx++]));
         }
 
+        if (i > 0 && i % 4 == 0) {
+          // Native Ad insertion every 7-8 total cards for non-VIP players
+          combinedFeed.add(const ReelFeedItem.ad());
+        }
+
         if ((i + 1) % 4 == 0 && vibeIdx < publicVibes.length) {
           combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx++]));
         }
@@ -1719,6 +1735,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 return _buildSpeakChallengeSlide(item.speakChallengeCard!, index);
               } else if (item.type == ReelItemType.vocabCard && item.vocabCard != null) {
                 return _buildVocabSlide(item.vocabCard!, index);
+              } else if (item.type == ReelItemType.ad) {
+                return _buildNativeAdReelSlide(index);
               }
               return _buildHouseReelSlide(item.neighbor!, index);
             },
@@ -1815,6 +1833,76 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ],
       ),
+    );
+  }
+
+  /// 📢 Native Ad Reel Slide styled like an aesthetic full-screen sponsor card
+  Widget _buildNativeAdReelSlide(int index) {
+    return FutureBuilder<bool>(
+      future: PocketAdMobService.instance.isUserVip(),
+      builder: (context, snapshot) {
+        if (snapshot.data == true) {
+          return const SizedBox.shrink(); // 100% ad-free for VIPs
+        }
+        return Container(
+          color: const Color(0xFF0F172A),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background gradient
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0B1329)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('SPONSORED', style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3)),
+                              child: const Text('Ad', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const PocketNativeAdCard(
+                        margin: EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      const SizedBox(height: 20),
+                      TextButton.icon(
+                        onPressed: _scrollToNextReel,
+                        icon: const Icon(Icons.arrow_downward_rounded, color: Colors.white60, size: 16),
+                        label: const Text('Swipe up for next English Mate', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

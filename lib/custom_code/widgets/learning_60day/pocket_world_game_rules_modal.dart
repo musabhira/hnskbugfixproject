@@ -665,6 +665,43 @@ class _PocketWorldGameRulesPageState extends State<PocketWorldGameRulesPage> {
                   itemBuilder: (context, index) {
                     final rule = kPocketWorldMasterRulesList[index];
                     final isChecked = _checkedRuleIds.contains(rule.id);
+                    final isLast = index == kPocketWorldMasterRulesList.length - 1;
+                    if (isLast) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildRuleCard(rule, isChecked),
+                          const SizedBox(height: 12),
+                          // ✨ Daily Updated English Content Label directly below Rules
+                          Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Daily Updated English Content',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white60,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }
                     return _buildRuleCard(rule, isChecked);
                   },
                 ),

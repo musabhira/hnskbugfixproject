@@ -445,6 +445,54 @@ class PocketPresidentService {
     );
   }
 
+  /// 📢 Send Official President App Update Announcement to an individual citizen's 1-on-1 President chat
+  /// Checks for duplicate dispatch prevention using unique platform & release key
+  static Future<void> sendPresidentUpdateMessage({
+    required String targetUserId,
+    required String platform, // 'Android' or 'iOS'
+    required String version,
+    required String title,
+    required String description,
+    List<String> features = const [],
+    String? storeUrl,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final releaseKey = 'pres_app_update_sent_${platform.toLowerCase()}_${version.replaceAll('.', '_')}_$targetUserId';
+    if (prefs.getBool(releaseKey) == true) {
+      return; // Deduplication: already sent to this user!
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln('🏛️ President – POKET Update Announcement');
+    buffer.writeln();
+    buffer.writeln('Hello!');
+    buffer.writeln();
+    buffer.writeln('A new POKET update is now available for $platform.');
+    buffer.writeln();
+    buffer.writeln('📌 Version $version – ${title.isNotEmpty ? title : "What\'s New"}');
+    buffer.writeln();
+    if (description.isNotEmpty) {
+      buffer.writeln(description);
+      buffer.writeln();
+    }
+    if (features.isNotEmpty) {
+      buffer.writeln('What\'s New:');
+      for (int i = 0; i < features.length; i++) {
+        buffer.writeln('${i + 1}. ${features[i]}');
+      }
+      buffer.writeln();
+    }
+    buffer.writeln('Thank you for being part of POKET! Speak with confidence every single day! 🌟');
+
+    await sendPresidentReplyToUser(
+      targetUserId: targetUserId,
+      replyText: buffer.toString().trim(),
+      adminName: 'Presidential Office',
+    );
+
+    await prefs.setBool(releaseKey, true);
+  }
+
   /// 🤖 Autonomous Robot / AI Presidential Response Generator
   /// Formulates official, dignified, and helpful replies to citizen doubts, app questions,
   /// complaints, and greetings.

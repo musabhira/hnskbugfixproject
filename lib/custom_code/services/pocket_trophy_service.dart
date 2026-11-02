@@ -298,7 +298,9 @@ class PocketTrophyService {
         await _supabase.from('profile').update({
           'successful_attacks_count': updated,
         }).eq('user_id', userId);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('PocketTrophyService.recordSuccessfulAttack error: $e');
+      }
       return updated;
     } catch (_) {
       return 0;

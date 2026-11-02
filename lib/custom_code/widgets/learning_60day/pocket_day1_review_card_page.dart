@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_sfx.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 
 /// 🏆 Authentic, Minimal & Fully Responsive Day Review & Performance Card Page
 ///
@@ -546,6 +547,13 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
   Widget _buildActionButtons() {
     return Column(
       children: [
+        if (PocketAdMobService.enableDailySummaryReviewAd)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 14),
+            child: PocketNativeAdCard(
+              margin: EdgeInsets.zero,
+            ),
+          ),
         SizedBox(
           width: double.infinity,
           height: 48,
@@ -816,6 +824,10 @@ class _PocketDayReviewBottomSheetWidgetState
               ],
             ),
           ),
+          if (PocketAdMobService.enableDailySummaryReviewAd) ...[
+            const SizedBox(height: 14),
+            const PocketNativeAdCard(margin: EdgeInsets.zero),
+          ],
           const SizedBox(height: 18),
 
           // Primary Glowing Action Button

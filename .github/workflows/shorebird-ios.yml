@@ -1,23 +1,35 @@
-name: Shorebird iOS Patch
+name: Shorebird iOS Release & TestFlight
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       action:
         description: 'Action to perform (release or patch)'
         required: true
-        default: 'patch'
+        default: 'release'
         type: choice
         options:
-        - patch
-        - release
+          - release
+          - patch
+      release_version:
+        description: 'Target release version (Only for patch, e.g. 1.0.149+324 or latest)'
+        required: false
+        default: 'latest'
+
+concurrency:
+  group: ios-shorebird-deployment
+  cancel-in-progress: false
 
 jobs:
   ios-shorebird:
-    name: Shorebird iOS ${{ inputs.action }}
+    name: Shorebird iOS ${{ inputs.action || 'release' }}
     runs-on: macos-15
+
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Select Newest Xcode
@@ -32,8 +44,34 @@ jobs:
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
         with:
-          shorebird-version: 'stable'
-          # Remove hardcoded flutter-version to use the latest supported by Shorebird
+          cache: true
+
+      - name: Determine Version and Build Number
+        id: versioning
+        run: |
+          # 1. Parse marketing version from pubspec.yaml (e.g. 1.0.149)
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
+
+          # 2. Parse current base build number from pubspec.yaml (e.g. 324)
+          PUBSPEC_BUILD_NUMBER=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/.*+//' | tr -d '\r\n ')
+
+          # 3. Dynamic build number calculation to ensure strict monotonicity
+          # If repository variable IOS_BUILD_NUMBER_BASE is set, add GITHUB_RUN_NUMBER to it.
+          # Otherwise fallback to PUBSPEC_BUILD_NUMBER or pubspec + run_number offset.
+          BASE_NUM="${{ vars.IOS_BUILD_NUMBER_BASE }}"
+          if [ -n "$BASE_NUM" ] && [ "$BASE_NUM" -gt 0 ] 2>/dev/null; then
+            CALCULATED_BUILD=$(( BASE_NUM + GITHUB_RUN_NUMBER ))
+          else
+            # Ensure at least PUBSPEC_BUILD_NUMBER (e.g. 324)
+            CALCULATED_BUILD=$(( PUBSPEC_BUILD_NUMBER + GITHUB_RUN_NUMBER ))
+          fi
+
+          echo "Marketing Version (build-name): $VERSION_NAME"
+          echo "Internal Build Number (build-number): $CALCULATED_BUILD"
+
+          echo "build_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "build_number=$CALCULATED_BUILD" >> $GITHUB_OUTPUT
+          echo "full_version=$VERSION_NAME+$CALCULATED_BUILD" >> $GITHUB_OUTPUT
 
       - name: Install Apple Certificates
         env:
@@ -63,35 +101,61 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: Shorebird ${{ inputs.action }}
+      - name: Run Shorebird Release or Patch
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+          ACTION: ${{ inputs.action || 'release' }}
+          BUILD_NAME: ${{ steps.versioning.outputs.build_name }}
+          BUILD_NUMBER: ${{ steps.versioning.outputs.build_number }}
+          PATCH_RELEASE_VERSION: ${{ inputs.release_version || 'latest' }}
         run: |
           # Re-unlock keychain and set default for building
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $RUNNER_TEMP/app-signing.keychain-db
           security default-keychain -s $RUNNER_TEMP/app-signing.keychain-db
 
-          if [ "${{ inputs.action }}" == "release" ]; then
-            shorebird release ios --export-options-plist=ios/ExportOptions.plist
+          if [ "$ACTION" == "release" ]; then
+            echo "🚀 Executing Shorebird iOS Release for $BUILD_NAME+$BUILD_NUMBER..."
+            shorebird release ios \
+              --export-options-plist=ios/ExportOptions.plist \
+              --build-name="$BUILD_NAME" \
+              --build-number="$BUILD_NUMBER"
           else
-            shorebird patch ios --export-options-plist=ios/ExportOptions.plist
+            echo "🩹 Executing Shorebird iOS Patch for release $PATCH_RELEASE_VERSION..."
+            if [ -n "$PATCH_RELEASE_VERSION" ] && [ "$PATCH_RELEASE_VERSION" != "latest" ]; then
+              shorebird patch ios \
+                --export-options-plist=ios/ExportOptions.plist \
+                --release-version="$PATCH_RELEASE_VERSION"
+            else
+              shorebird patch ios \
+                --export-options-plist=ios/ExportOptions.plist \
+                --release-version=latest
+            fi
           fi
 
-      - name: Rename IPA to remove invalid characters
-        if: inputs.action == 'release'
+      - name: Verify and Standardize Shorebird IPA
+        if: (inputs.action || 'release') == 'release'
         run: |
+          mkdir -p build/ios/ipa
+          if ! ls build/ios/ipa/*.ipa 1> /dev/null 2>&1; then
+            echo "❌ Error: Shorebird IPA file not found in build/ios/ipa/!"
+            exit 1
+          fi
           cd build/ios/ipa
+          # Standardize filename for artifact and altool upload
           mv *.ipa pocket_mates_app.ipa || true
+          echo "✅ Shorebird IPA verified at build/ios/ipa/pocket_mates_app.ipa"
+          ls -lh pocket_mates_app.ipa
 
-      - name: Upload IPA (If Release)
-        if: inputs.action == 'release'
+      - name: Upload IPA Artifact to GitHub
+        if: (inputs.action || 'release') == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
+          name: ios-shorebird-ipa-${{ steps.versioning.outputs.full_version }}
           path: build/ios/ipa/pocket_mates_app.ipa
+          retention-days: 14
 
-      - name: Upload to App Store Connect
-        if: inputs.action == 'release'
+      - name: Upload Shorebird IPA to TestFlight
+        if: (inputs.action || 'release') == 'release'
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -99,5 +163,17 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
-          IPA_PATH=$(ls build/ios/ipa/*.ipa)
+          IPA_PATH="build/ios/ipa/pocket_mates_app.ipa"
+          echo "🚀 Uploading Shorebird-enabled IPA to TestFlight via App Store Connect altool..."
           xcrun altool --upload-app -f "$IPA_PATH" -t ios --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          echo "🎉 Successfully uploaded version ${{ steps.versioning.outputs.full_version }} to TestFlight!"
+
+      - name: Deployment Summary Report
+        if: always()
+        run: |
+          echo "### 🚀 POKET iOS Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action**: ${{ inputs.action || 'release' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Version**: ${{ steps.versioning.outputs.full_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status == 'success' && '✅ SUCCESS' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY

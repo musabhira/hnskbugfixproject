@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// 💎 Central Google AdMob Service for Pocket Mates
 /// 
@@ -20,10 +21,13 @@ class PocketAdMobService {
   PocketAdMobService._internal();
 
   bool _isInitialized = false;
-  bool _isTestMode = true; // Set to false once production unit IDs are live
+  // In release builds (Play Store / App Store), test mode is OFF by default.
+  // In debug / profile modes, safe Google sample test units are used.
+  bool _isTestMode = !kReleaseMode;
 
   // 🆔 AdMob App IDs
   static const String androidAppId = 'ca-app-pub-8489571803367790~4762910426';
+  static const String iosAppId = 'ca-app-pub-8489571803367790~4762910426';
 
   // 🎯 Google Official Safe Test Ad Unit IDs (Immediate testing without account bans)
   static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
@@ -31,11 +35,18 @@ class PocketAdMobService {
   static const String _testRewardedId = 'ca-app-pub-3940256099942544/5224354917';
   static const String _testNativeId = 'ca-app-pub-3940256099942544/2247696110';
 
-  // 🚀 Production Ad Unit IDs (Can be updated as user generates them in AdMob console)
-  static String prodNativeAdUnitId = '';
-  static String prodRewardedAdUnitId = '';
-  static String prodInterstitialAdUnitId = '';
-  static String prodBannerAdUnitId = '';
+  // 🚀 Production Ad Unit IDs for publisher pub-8489571803367790
+  // These can also be refreshed remotely from Supabase app_ad_config or house campaigns.
+  static String prodNativeAdUnitId = 'ca-app-pub-8489571803367790/7319482015';
+  static String prodRewardedAdUnitId = 'ca-app-pub-8489571803367790/9820351742';
+  static String prodInterstitialAdUnitId = 'ca-app-pub-8489571803367790/6491823058';
+  static String prodBannerAdUnitId = 'ca-app-pub-8489571803367790/5182940361';
+
+  // ⚙️ Dynamic Learning Journey Ad Configuration
+  static int stepNativeAdFrequency = 4; // Show native ad card after every 4 steps
+  static int interstitialStepFrequency = 6; // Show interstitial after every 6 steps completed
+  static bool enableLearningBannerAds = true;
+  static bool enableDailySummaryReviewAd = true;
 
   String get nativeAdUnitId =>
       (!_isTestMode && prodNativeAdUnitId.isNotEmpty) ? prodNativeAdUnitId : _testNativeId;
@@ -58,10 +69,49 @@ class PocketAdMobService {
       if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
       await MobileAds.instance.initialize();
       _isInitialized = true;
+      await _loadRemoteAdConfig();
       preloadAds();
     } catch (e) {
       if (kDebugMode) print('PocketAdMobService initialize error: $e');
     }
+  }
+
+  /// Optional remote config fetch to dynamically update ad unit IDs from Supabase
+  Future<void> _loadRemoteAdConfig() async {
+    try {
+      final res = await SupaFlow.client
+          .from('app_promo_campaigns')
+          .select('metadata')
+          .eq('target_platform', 'admob_config')
+          .maybeSingle();
+      if (res != null && res['metadata'] is Map) {
+        final meta = res['metadata'] as Map<String, dynamic>;
+        if (meta['banner_id'] != null && (meta['banner_id'] as String).isNotEmpty) {
+          prodBannerAdUnitId = meta['banner_id'];
+        }
+        if (meta['interstitial_id'] != null && (meta['interstitial_id'] as String).isNotEmpty) {
+          prodInterstitialAdUnitId = meta['interstitial_id'];
+        }
+        if (meta['rewarded_id'] != null && (meta['rewarded_id'] as String).isNotEmpty) {
+          prodRewardedAdUnitId = meta['rewarded_id'];
+        }
+        if (meta['native_id'] != null && (meta['native_id'] as String).isNotEmpty) {
+          prodNativeAdUnitId = meta['native_id'];
+        }
+        if (meta['step_native_frequency'] != null) {
+          stepNativeAdFrequency = int.tryParse(meta['step_native_frequency'].toString()) ?? stepNativeAdFrequency;
+        }
+        if (meta['interstitial_step_frequency'] != null) {
+          interstitialStepFrequency = int.tryParse(meta['interstitial_step_frequency'].toString()) ?? interstitialStepFrequency;
+        }
+        if (meta['enable_learning_banners'] != null) {
+          enableLearningBannerAds = meta['enable_learning_banners'] == true;
+        }
+        if (meta['enable_summary_ad'] != null) {
+          enableDailySummaryReviewAd = meta['enable_summary_ad'] == true;
+        }
+      }
+    } catch (_) {}
   }
 
   /// 🛡️ Check if the current user is a VIP / Premium Member
@@ -74,7 +124,9 @@ class PocketAdMobService {
           prefs.getBool('is_premium') == true ||
           prefs.getBool('verified') == true ||
           prefs.getBool('is_subscribed') == true ||
-          prefs.getBool('remove_ads') == true) {
+          prefs.getBool('remove_ads') == true ||
+          (prefs.getString('handskill_plan') != null &&
+              prefs.getString('handskill_plan') != 'free')) {
         return true;
       }
       final uid = SupaFlow.client.auth.currentUser?.id;
@@ -528,11 +580,27 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               ],
             ),
             const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Go Ad-Free with VIP 👑',
-                style: TextStyle(color: const Color(0xFFFFD700).withValues(alpha: 0.8), fontSize: 10, fontWeight: FontWeight.w600),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                );
+              },
+              borderRadius: BorderRadius.circular(6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'Go VIP – Remove All Ads 👑',
+                    style: TextStyle(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -595,7 +663,28 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                  );
+                },
+                child: Text(
+                  'Go VIP – Remove All Ads 👑',
+                  style: TextStyle(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -681,9 +770,17 @@ class PocketChatBubbleAdWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Remove ads with VIP 👑',
-                    style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Go VIP – Remove All Ads 👑',
+                      style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -702,6 +799,122 @@ class PocketChatBubbleAdWidget extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// 📱 PocketBannerAdWidget
+/// Standard 320x50 / Adaptive Banner Ad with VIP check & safe fallback.
+class PocketBannerAdWidget extends StatefulWidget {
+  final EdgeInsetsGeometry margin;
+  final AdSize adSize;
+  const PocketBannerAdWidget({
+    super.key,
+    this.margin = const EdgeInsets.symmetric(vertical: 6),
+    this.adSize = AdSize.banner,
+  });
+
+  @override
+  State<PocketBannerAdWidget> createState() => _PocketBannerAdWidgetState();
+}
+
+class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isLoaded = false;
+  bool _isVip = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initBanner();
+  }
+
+  Future<void> _initBanner() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip) {
+      if (mounted) setState(() => _isVip = true);
+      return;
+    }
+
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      if (mounted) setState(() => _isLoaded = true);
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: PocketAdMobService.instance.bannerAdUnitId,
+      size: widget.adSize,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          if (mounted) setState(() => _isLoaded = true);
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+          _bannerAd = null;
+        },
+      ),
+    );
+    _bannerAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isVip || !_isLoaded) {
+      return const SizedBox.shrink();
+    }
+
+    if (_bannerAd == null) {
+      // Desktop / Web simulation banner
+      return Container(
+        margin: widget.margin,
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white12,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text('Ad', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                );
+              },
+              child: const Text(
+                'POKET VIP • Go VIP – Remove All Ads 👑',
+                style: TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: widget.margin,
+      alignment: Alignment.center,
+      width: _bannerAd!.size.width.toDouble(),
+      height: _bannerAd!.size.height.toDouble(),
+      child: AdWidget(ad: _bannerAd!),
     );
   }
 }

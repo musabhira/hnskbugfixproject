@@ -8079,7 +8079,7 @@ Draft: "$draft"''';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isMe ? 'I am attacking ⚔️' : 'Attacker Alert 💥',
+                      isMe ? 'Attack Successful ⚔️' : 'House Intrusion Alert 💥',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -8087,7 +8087,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      isMe ? 'Citadel Attack Launched' : 'Fortress Intrusion Report',
+                      isMe ? 'House Breached' : 'House Attack Report',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFCA5A5),
                         fontSize: 11,
@@ -8102,11 +8102,12 @@ Draft: "$draft"''';
           const SizedBox(height: 10),
           Text(
             isMe
-                ? 'I am attacking! Breached Citadel defenses with $weapon (dealt $damage damage, +$lootedCoins coins).'
-                : 'Attacker ${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : (metadata['attacker_name'] ?? 'Rival')} raided your Citadel defenses with $weapon (dealt $damage damage)!',
+                ? 'You successfully attacked ${metadata['defender_name'] ?? 'your rival'}\'s house!'
+                : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : (metadata['attacker_name'] ?? 'User')} successfully attacked your house!',
             style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 12.5,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
               height: 1.35,
             ),
           ),

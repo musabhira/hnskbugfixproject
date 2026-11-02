@@ -38,6 +38,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
@@ -1478,11 +1479,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         final viewerIndex = onlyGroups.indexOf(statusGroup);
         final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
         
-        return RepaintBoundary(
+        final statusItem = RepaintBoundary(
           key: ValueKey('vertical_status_${profileId}_$index'),
           child: _buildStatusItem(statusGroup, viewerIndex, false,
               listOverride: onlyGroups),
         );
+
+        if (widget.isVertical && index > 0 && index % 6 == 0) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              statusItem,
+              const PocketNativeAdCard(
+                margin: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+            ],
+          );
+        }
+
+        return statusItem;
       },
     );
   }
