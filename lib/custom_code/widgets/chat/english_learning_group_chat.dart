@@ -228,9 +228,9 @@ class _EnglishLearningGroupChatWidgetState
             constraints: const BoxConstraints(),
             onPressed: widget.onCancel,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
 
-          // Ultra-minimal icons-only pill switcher: Spaces (Left) | Chat (Center) | Homes (Right)
+          // Exactly two visible tabs: ChitChat Table & Chat
           Expanded(
             child: Container(
               height: 38,
@@ -242,7 +242,7 @@ class _EnglishLearningGroupChatWidgetState
               ),
               child: Row(
                 children: [
-                  // Tab 0 (Left): 🎙️ Spaces
+                  // Tab 0: 🎙️ ChitChat Table
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -264,9 +264,20 @@ class _EnglishLearningGroupChatWidgetState
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🎙️', style: TextStyle(fontSize: 16)),
+                              const Text('🎙️', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'ChitChat Table',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _selectedHubTab == 0
+                                      ? Colors.black
+                                      : Colors.white70,
+                                ),
+                              ),
                               if (_selectedHubTab != 0) ...[
-                                const SizedBox(width: 3),
+                                const SizedBox(width: 4),
                                 Container(
                                   width: 5,
                                   height: 5,
@@ -283,7 +294,7 @@ class _EnglishLearningGroupChatWidgetState
                     ),
                   ),
 
-                  // Tab 1 (Center): 💬 Chat
+                  // Tab 1: 💬 Chat
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -301,33 +312,24 @@ class _EnglishLearningGroupChatWidgetState
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Center(
-                          child: Text('💬', style: TextStyle(fontSize: 16)),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Tab 2 (Right): 🏰 Homes
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        _hubPageController.animateToPage(
-                          2,
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _selectedHubTab == 2
-                              ? const Color(0xFFFFFC00)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: Text('🏰', style: TextStyle(fontSize: 16)),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('💬', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'Chat',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _selectedHubTab == 1
+                                      ? Colors.black
+                                      : Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -92,7 +92,8 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
-  int _currentIndex = 1;
+  // 4-Item Minimal Navigation: 0 = Chat, 1 = English Hub, 2 = Target, 3 = Profile
+  int _currentIndex = 0;
   String? profileId;
   bool _isVerified = false;
   bool _isLoading = true;
@@ -635,7 +636,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           prefs.getInt('initial_home_tab_global');
       if (initialTab != null) {
         safeSetState(() {
-          _currentIndex = initialTab;
+          // Map legacy tab indices to new 4-item bottom navigation:
+          // Old: 0=Homes, 1=Chat, 2=English Hub, 3=Target, 4=Profile
+          // New: 0=Chat, 1=English Hub, 2=Target, 3=Profile
+          if (initialTab == 1) {
+            _currentIndex = 0; // Chat
+          } else if (initialTab == 2) {
+            _currentIndex = 1; // English Hub
+          } else if (initialTab == 3) {
+            _currentIndex = 2; // Target
+          } else if (initialTab >= 4) {
+            _currentIndex = 3; // Profile
+          } else {
+            _currentIndex = 0; // Default to Chat
+          }
         });
         await prefs.remove('initial_home_tab_$userId');
         await prefs.remove('initial_home_tab_global');
@@ -1164,7 +1178,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             material.Scaffold(
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
-              floatingActionButton: _currentIndex == 1
+              floatingActionButton: _currentIndex == 0
                   ? material.FloatingActionButton.extended(
                       heroTag: 'mates_ranking_fab',
                       onPressed: () {
@@ -1202,32 +1216,27 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               : const Color(0xFFFFFC00),
                         ),
                       )
-                    : _currentIndex == 0
-                        ? PocketHomesReelsFeedWidget(
-                            userLevel: _getEffectiveNavDay(),
-                            isActive: _currentIndex == 0,
+                    : _currentIndex == 1
+                        ? EnglishLearningGroupChatWidget(
+                            onCancel: () =>
+                                setState(() => _currentIndex = 0),
                           )
                         : _currentIndex == 2
-                            ? EnglishLearningGroupChatWidget(
-                                onCancel: () =>
-                                    setState(() => _currentIndex = 1),
-                              )
-                            : _currentIndex == 3
-                                ? EnglishTasksMasterHubPage(
-                                    userId: _currentUserId ??
-                                        supabase.auth.currentUser?.id)
-                                : PocketSnapFlameRefresh(
-                                    onRefresh: _handleRefresh,
-                                    triggerDistance: 85.0,
-                                    maxPullDistance: 210.0,
-                                    restingHeight: 150.0,
-                                    child: material.NestedScrollView(
-                                      physics: const BouncingScrollPhysics(
-                                          parent:
-                                              AlwaysScrollableScrollPhysics()),
-                                      headerSliverBuilder:
-                                          (context, innerBoxIsScrolled) {
-                                        return [
+                            ? EnglishTasksMasterHubPage(
+                                userId: _currentUserId ??
+                                    supabase.auth.currentUser?.id)
+                            : PocketSnapFlameRefresh(
+                                onRefresh: _handleRefresh,
+                                triggerDistance: 85.0,
+                                maxPullDistance: 210.0,
+                                restingHeight: 150.0,
+                                child: material.NestedScrollView(
+                                  physics: const BouncingScrollPhysics(
+                                      parent:
+                                          AlwaysScrollableScrollPhysics()),
+                                  headerSliverBuilder:
+                                      (context, innerBoxIsScrolled) {
+                                    return [
                                           // Unified Coordinated Header
                                           SliverPersistentHeader(
                                             pinned: true,
@@ -5386,21 +5395,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         const PocketFloatingAudioBar(),
         _buildDailyPracticeTimerStrip(context),
         Container(
-          height: 65 + bottomPadding,
+          height: 60 + bottomPadding,
           padding: EdgeInsets.only(bottom: bottomPadding),
           decoration: BoxDecoration(
             color: navBgColor,
             border: Border(
               top: BorderSide(
                 color: borderColor,
-                width: 1.5,
+                width: 1.0,
               ),
             ),
             boxShadow: [
               BoxShadow(
                 color: shadowColor,
-                blurRadius: 20,
-                offset: const Offset(0, -4),
+                blurRadius: 16,
+                offset: const Offset(0, -3),
               ),
             ],
           ),
@@ -5409,25 +5418,43 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // 1. Chat
                 _buildNavItem(
-                  icon: material.Icons.cottage_rounded,
+                  icon: material.Icons.chat_bubble_rounded,
                   isSelected: _currentIndex == 0,
                   onTap: () => setState(() => _currentIndex = 0),
                 ),
-                _buildNavItem(
-                  icon: material.Icons.chat_bubble_rounded,
-                  isSelected: _currentIndex == 1,
-                  onTap: () => setState(() => _currentIndex = 1),
-                ),
+
+                // 2. English Hub
                 _buildNavItem(
                   icon: material.Icons.group_rounded,
-                  isSelected: _currentIndex == 2,
+                  isSelected: _currentIndex == 1,
                   onTap: () async {
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                         context: context,
                         customMessage:
                             "Please login to join Group Chats and English Hub",
+                      );
+                      if (isAuth && mounted) {
+                        setState(() => _currentIndex = 1);
+                      }
+                    } else {
+                      setState(() => _currentIndex = 1);
+                    }
+                  },
+                ),
+
+                // 3. Target
+                _buildNavItem(
+                  icon: material.Icons.track_changes_rounded,
+                  isSelected: _currentIndex == 2,
+                  onTap: () async {
+                    if (_currentUserId == null || _currentUserId!.isEmpty) {
+                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                        context: context,
+                        customMessage:
+                            "Please login to access your Daily Missions and Progress",
                       );
                       if (isAuth && mounted) {
                         setState(() => _currentIndex = 2);
@@ -5437,24 +5464,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     }
                   },
                 ),
-                _buildNavItem(
-                  icon: material.Icons.track_changes_rounded,
-                  isSelected: _currentIndex == 3,
-                  onTap: () async {
-                    if (_currentUserId == null || _currentUserId!.isEmpty) {
-                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                        context: context,
-                        customMessage:
-                            "Please login to access your Daily Missions and Progress",
-                      );
-                      if (isAuth && mounted) {
-                        setState(() => _currentIndex = 3);
-                      }
-                    } else {
-                      setState(() => _currentIndex = 3);
-                    }
-                  },
-                ),
+
+                // 4. Profile
                 _buildProfileNavItem(),
               ],
             ),
@@ -5660,6 +5671,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildProfileNavItem() {
     final day = _getEffectiveNavDay();
+    final isSelected = _currentIndex == 3;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
@@ -5728,37 +5740,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedScale(
-                scale: _currentIndex == 4 ? 1.15 : 1.0,
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutBack,
+                scale: isSelected ? 1.08 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
                 child: Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.center,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 36,
+                      height: 36,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const SweepGradient(
-                          colors: [
-                            Color(0xFFFFFC00), // Vibrant Yellow
-                            Color(0xFFFF8906), // Vivid Orange
-                            Color(0xFFFF2E93), // Rose Pink
-                            Color(0xFF833AB4), // Deep Purple
-                            Color(0xFFFFFC00), // Loop
-                          ],
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFFFFFC00)
+                              : Colors.white24,
+                          width: isSelected ? 2.0 : 1.2,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFF8906).withValues(alpha: 0.45),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ],
                       ),
-                      padding: const EdgeInsets.all(2.2),
+                      padding: const EdgeInsets.all(1.5),
                       child: Container(
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
@@ -5767,7 +5768,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         child: ClipOval(
                           child: VectorAvatarWidget(
                             config: _getNavAvatarConfig(),
-                            size: 35.0,
+                            size: 32.0,
                             useFlame: true,
                             showAura: true,
                             isInteractive: false,
@@ -5779,26 +5780,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       bottom: -3,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 4.5, vertical: 1),
+                            horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                            color: const Color(0xFFFFD700),
-                            width: 1,
+                            color: isSelected
+                                ? const Color(0xFFFFFC00)
+                                : const Color(0xFFFFD700),
+                            width: 0.8,
                           ),
                           boxShadow: const [
                             BoxShadow(
                               color: Colors.black45,
-                              blurRadius: 4,
+                              blurRadius: 3,
                             ),
                           ],
                         ),
                         child: Text(
                           'D$day',
-                          style: const TextStyle(
-                            color: Color(0xFFFFFC00),
-                            fontSize: 8,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFFFFFC00)
+                                : Colors.white70,
+                            fontSize: 7.5,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.2,
                           ),
@@ -5806,27 +5811,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ],
-                ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                margin: const EdgeInsets.only(top: 3),
-                width: _currentIndex == 4 ? 16 : 0,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFC00),
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: _currentIndex == 4
-                      ? [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFFFC00).withValues(alpha: 0.75),
-                            blurRadius: 6,
-                            spreadRadius: 1,
-                          )
-                        ]
-                      : null,
                 ),
               ),
             ],
@@ -5843,72 +5827,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const themeYellow = Color(0xFFFFFC00);
+    final unselectedColor = isDark
+        ? material.Colors.white.withValues(alpha: 0.40)
+        : material.Colors.black.withValues(alpha: 0.40);
+
     return material.InkWell(
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
       },
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: SizedBox(
         height: 58,
         width: 62,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedScale(
-              scale: isSelected ? 1.15 : 1.0,
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutBack,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? themeYellow.withValues(alpha: 0.16)
-                      : material.Colors.transparent,
-                  borderRadius: BorderRadius.circular(18),
-                  border: isSelected
-                      ? Border.all(
-                          color: themeYellow.withValues(alpha: 0.35),
-                          width: 1,
-                        )
-                      : null,
-                ),
-                child: Icon(
-                  icon,
-                  color: isSelected
-                      ? themeYellow
-                      : (isDark
-                          ? material.Colors.white.withValues(alpha: 0.45)
-                          : material.Colors.black.withValues(alpha: 0.45)),
-                  size: 23,
-                ),
-              ),
+        child: Center(
+          child: AnimatedScale(
+            scale: isSelected ? 1.08 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            child: Icon(
+              icon,
+              color: isSelected ? themeYellow : unselectedColor,
+              size: 24,
             ),
-            // Glowing pill dot indicator
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              margin: const EdgeInsets.only(top: 3),
-              width: isSelected ? 16 : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: themeYellow,
-                borderRadius: BorderRadius.circular(2),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: themeYellow.withValues(alpha: 0.75),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        )
-                      ]
-                    : null,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

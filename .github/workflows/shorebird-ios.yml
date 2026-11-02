@@ -32,14 +32,39 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Select Newest Xcode
+      - name: List Available Xcodes
         run: |
-          echo "Listing available Xcode versions:"
-          ls -d /Applications/Xcode*
-          NEWEST_XCODE=$(ls -d /Applications/Xcode* | tail -n 1)
-          echo "Selecting newest Xcode: $NEWEST_XCODE"
-          sudo xcode-select -s "$NEWEST_XCODE"
+          echo "=== Installed Xcode Applications ==="
+          ls -la /Applications | grep -i Xcode || true
+          echo "Current xcode-select: $(xcode-select -p)"
+
+      - name: Set up Xcode (Latest Stable)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 'latest-stable'
+
+      - name: Verify Xcode and SDK Toolchain
+        run: |
+          echo "=== Active Xcode Version ==="
           xcodebuild -version
+          echo "=== Active Developer Directory ==="
+          xcode-select -p
+          echo "=== Installed SDKs ==="
+          xcodebuild -showsdks
+          
+          # Verification check for Xcode 16+ and iOS 18+ SDK
+          XCODE_MAJOR=$(xcodebuild -version | head -n 1 | awk '{print $2}' | cut -d. -f1)
+          echo "Detected Xcode Major Version: $XCODE_MAJOR"
+          if [ "$XCODE_MAJOR" -lt 16 ]; then
+            echo "❌ Error: Xcode version $XCODE_MAJOR is below required Xcode 16+!"
+            exit 1
+          fi
+
+          if ! xcodebuild -showsdks | grep -q "iphoneos"; then
+            echo "❌ Error: iphoneos SDK not found in active Xcode!"
+            exit 1
+          fi
+          echo "✅ Xcode and iOS SDK verified successfully."
 
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
