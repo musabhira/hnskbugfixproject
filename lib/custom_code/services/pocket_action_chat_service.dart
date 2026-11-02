@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
 import 'pocket_citadel_fight_service.dart';
 import 'pocket_robot_service.dart';
+import 'pocket_mate_service.dart';
 
 /// Centralized service to automatically generate system chat messages,
 /// update conversations, and track actions across Mates Requests,
@@ -187,6 +188,101 @@ class PocketActionChatService {
       );
     } catch (e) {
       debugPrint('sendAttackActionMessage error: $e');
+    }
+  }
+
+  /// 💬 Deliver user-selected playful Attack Message to individual 1-on-1 chat
+  /// Complies strictly with Mates rules:
+  /// - If User A and User B are already Mates: displayed under 'All' tab.
+  /// - If not Mates: displayed under 'Requests' tab (is_request: true).
+  static Future<bool> sendSelectedAttackChallengeMessage({
+    required String attackerId,
+    required String defenderId,
+    required String messageText,
+    String? attackEventId,
+  }) async {
+    if (attackerId.isEmpty || defenderId.isEmpty || messageText.trim().isEmpty) {
+      return false;
+    }
+
+    try {
+      final nowIso = DateTime.now().toUtc().toIso8601String();
+      final areMates = await PocketMateService.isMate(attackerId, defenderId);
+
+      final Map<String, dynamic> metadata = {
+        'source': 'citadel_attack_challenge',
+        'is_request': !areMates,
+        'attack_event_id': attackEventId,
+        'timestamp': nowIso,
+      };
+
+      // 1. Supabase message insert if real UUIDs
+      if (_isValidUuid(attackerId) && _isValidUuid(defenderId)) {
+        try {
+          await _supabase.from('messages').insert({
+            'sender_id': attackerId,
+            'receiver_id': defenderId,
+            'content': messageText.trim(),
+            'message_text': messageText.trim(),
+            'message_type': 'text',
+            'metadata': metadata,
+            'created_at': nowIso,
+          });
+        } catch (e) {
+          debugPrint('Error inserting attack challenge text message: $e');
+        }
+
+        // 2. Update conversation tile preview
+        try {
+          final updateRes = await _supabase.from('conversations').update({
+            'last_message': messageText.trim(),
+            'last_message_time': nowIso,
+            'updated_at': nowIso,
+            'last_sender_id': attackerId,
+          }).or(
+            'and(user1_id.eq.$attackerId,user2_id.eq.$defenderId),and(user1_id.eq.$defenderId,user2_id.eq.$attackerId)',
+          ).select();
+
+          if (updateRes.isEmpty) {
+            await _supabase.from('conversations').insert({
+              'user1_id': attackerId,
+              'user2_id': defenderId,
+              'last_message': messageText.trim(),
+              'last_message_time': nowIso,
+              'updated_at': nowIso,
+              'last_sender_id': attackerId,
+              'unread_count': 1,
+              'is_group': false,
+            });
+          }
+        } catch (e) {
+          debugPrint('Error updating conversation for challenge text: $e');
+        }
+      }
+
+      // 3. If interacting with a Robot, save locally to robot history
+      if (PocketRobotService.isRobotId(defenderId)) {
+        await PocketRobotService.saveRobotChatMessage(
+          attackerId,
+          defenderId,
+          {
+            'id': 'atk_msg_${DateTime.now().millisecondsSinceEpoch}',
+            'sender_id': attackerId,
+            'receiver_id': defenderId,
+            'message_text': messageText.trim(),
+            'content': messageText.trim(),
+            'message_type': 'text',
+            'metadata': metadata,
+            'created_at': DateTime.now().toIso8601String(),
+            'is_read': true,
+          },
+        );
+      }
+
+      return true;
+    } catch (e) {
+      debugPrint('sendSelectedAttackChallengeMessage error: $e');
+      return false;
     }
   }
 

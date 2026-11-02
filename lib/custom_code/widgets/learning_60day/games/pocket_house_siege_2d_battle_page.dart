@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../flame_english_house_game.dart';
+import '../painters/citadel_scenic_landscape_painter.dart';
 
 /// ⚔️ Tactical Deployable Siege Unit Definition
 class SiegeDeployableUnit {
@@ -473,43 +474,22 @@ class _PocketHouseSiege2dBattlePageState
       backgroundColor: const Color(0xFF030A16),
       body: Stack(
         children: [
-          // 1. Dynamic 2D Atmospheric Battle Sky & Terrain
+          // 1. Dynamic 2D Citadel Scenic Open-World Landscape & Atmospheric Living Environment
           Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF020617),
-                    Color(0xFF0F172A),
-                    Color(0xFF1E293B),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ),
-
-          // Ground Battle Grid
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: size.height * 0.45,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0B132B).withValues(alpha: 0.3),
-                    const Color(0xFF0F172A),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                border: const Border(
-                  top: BorderSide(color: Color(0xFF334155), width: 1.5),
-                ),
-              ),
+            child: AnimatedBuilder(
+              animation: _ticker,
+              builder: (context, _) {
+                return CustomPaint(
+                  painter: CitadelScenicLandscapePainter(
+                    isDamaged: _isHouseDamaged || _isVictory,
+                    groundBaseY: size.height * 0.50,
+                    isNight: false,
+                    isDay90: widget.defenderLevel >= 90,
+                    ambientProg: _ticker.value,
+                    isPresident: false,
+                  ),
+                );
+              },
             ),
           ),
 
@@ -962,15 +942,30 @@ class _PocketHouseSiege2dBattlePageState
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
                             ),
                             child: Center(
-                              child: Text(
-                                'CLAIM VICTORY ⚔️',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.home_rounded, color: Colors.white, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'RETURN TO HOME',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),

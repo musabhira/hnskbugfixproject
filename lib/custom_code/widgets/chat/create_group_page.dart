@@ -7,6 +7,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import '../pocketgang/pocketgang_models.dart';
+import '../pocketgang/pocketgang_type_card.dart';
+import '../pocketgang/pocketgang_language_picker.dart';
 
 class SquadThemePreset {
   final String id;
@@ -143,6 +146,11 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   bool _isSearching = false;
   bool _isPublicGroup = true;
 
+  // PocketGang 2.0 Configurations
+  PocketGangType _selectedGangType = PocketGangType.friendsTeam;
+  String _selectedPurposeKey = 'general_friends';
+  List<String> _selectedLanguageCodes = ['en', 'ml'];
+
   @override
   void initState() {
     super.initState();
@@ -211,6 +219,30 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   }
 
   void _toggleMember(dynamic member) {
+    if (_selectedGangType == PocketGangType.individual) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Individual Gang is a personal private space (Creator only).'),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    if (_selectedGangType == PocketGangType.couple) {
+      final exists = _selectedMembers.any((m) => m['id'] == member['id']);
+      if (!exists && _selectedMembers.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couple Gang supports exactly 2 members (You + 1 Mate).'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFFF43F5E),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
     setState(() {
       final exists = _selectedMembers.any((m) => m['id'] == member['id']);
       if (exists) {
@@ -257,7 +289,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             ? _descriptionController.text.trim()
             : activeTheme.defaultTag,
         'created_by': userId,
-        'is_public': _isPublicGroup,
+        'is_public': _selectedGangType == PocketGangType.individual || _selectedGangType == PocketGangType.couple
+            ? false
+            : _isPublicGroup,
+        'gang_type': _selectedGangType.key,
+        'gang_purpose': _selectedPurposeKey,
+        'visual_theme': _selectedGangType == PocketGangType.couple ? 'romantic_rose' : 'default',
+        'configuration_version': 2,
       };
 
       final groupsTable =
@@ -304,6 +342,38 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       }
 
       await supabase.from(membersTable).insert(membersToAdd);
+
+      // Best-effort initialization for group_languages & default group_tools
+      try {
+        final langRows = _selectedLanguageCodes.map((code) => {
+          'group_id': groupId,
+          'language_code': code,
+          'language_name': code.toUpperCase(),
+          'is_primary': code == _selectedLanguageCodes.first,
+        }).toList();
+        await supabase.from('group_languages').insert(langRows);
+      } catch (_) {
+        // Table created via migration
+      }
+
+      try {
+        final defaultTools = _selectedGangType == PocketGangType.individual
+            ? ['chat', 'personal_tasks', 'goals', 'habits', 'focus_timer', 'dashboard']
+            : (_selectedGangType == PocketGangType.couple
+                ? ['chat', 'calendar', 'date_planner', 'countdown', 'memories', 'love_notes', 'couple_dashboard']
+                : ['chat', 'ranking', 'team_mgmt', 'tasks_kanban', 'time_tracker', 'dashboard', 'diagram_studio']);
+
+        final toolRows = defaultTools.asMap().entries.map((entry) => {
+          'group_id': groupId,
+          'tool_key': entry.value,
+          'is_enabled': true,
+          'display_order': entry.key,
+          'installed_by': userId,
+        }).toList();
+        await supabase.from('group_tools').insert(toolRows);
+      } catch (_) {
+        // Table created via migration
+      }
 
       widget.onGroupCreated();
       if (mounted) {
@@ -466,6 +536,169 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                     ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 18),
+            Divider(color: Colors.white.withValues(alpha: 0.08)),
+            const SizedBox(height: 12),
+
+            // POCKETGANG 2.0: Gang Type Selection Cards
+            Row(
+              children: [
+                const Text('⚡ ', style: TextStyle(fontSize: 16)),
+                Text(
+                  'Choose Gang Mode',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...PocketGangType.values.map((type) {
+              return PocketGangTypeCard(
+                type: type,
+                isSelected: _selectedGangType == type,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    _selectedGangType = type;
+                    final purposes = PocketGangPurpose.getForType(type);
+                    if (purposes.isNotEmpty) {
+                      _selectedPurposeKey = purposes.first.key;
+                    }
+                    if (type == PocketGangType.individual) {
+                      _selectedMembers.clear();
+                    } else if (type == PocketGangType.couple && _selectedMembers.length > 1) {
+                      _selectedMembers.removeRange(1, _selectedMembers.length);
+                    }
+                  });
+                },
+              );
+            }),
+
+            const SizedBox(height: 14),
+
+            // Purpose Templates
+            Row(
+              children: [
+                const Text('🎯 ', style: TextStyle(fontSize: 16)),
+                Text(
+                  'Gang Purpose / Template',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: PocketGangPurpose.getForType(_selectedGangType).map((p) {
+                  final isSelected = _selectedPurposeKey == p.key;
+                  return GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedPurposeKey = p.key);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(p.icon, style: const TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            p.label,
+                            style: GoogleFonts.outfit(
+                              color: isSelected ? Colors.black : Colors.white,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Multi-Language Selector
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Text('🌐 ', style: TextStyle(fontSize: 16)),
+                    Text(
+                      'Languages',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.selectionClick();
+                    final selected = await PocketGangLanguagePickerSheet.show(
+                      context,
+                      initialCodes: _selectedLanguageCodes,
+                    );
+                    if (selected != null && selected.isNotEmpty) {
+                      setState(() => _selectedLanguageCodes = selected);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                    ),
+                    child: Text(
+                      'Edit Languages (${_selectedLanguageCodes.length})',
+                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: _selectedLanguageCodes.map((code) {
+                final lang = PocketGangLanguage.supportedLanguages.firstWhere(
+                  (l) => l.code == code,
+                  orElse: () => PocketGangLanguage(code: code, name: code.toUpperCase(), nativeName: code, flag: '🌐'),
+                );
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(lang.flag, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        lang.name,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
 
             const SizedBox(height: 18),
@@ -747,6 +980,52 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   ),
 
             const SizedBox(height: 30),
+
+            // Creation Preview Summary Box
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF161924),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('📋 ', style: TextStyle(fontSize: 16)),
+                      Text(
+                        'Workspace Preview',
+                        style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• Mode: ${_selectedGangType.label} (${_selectedGangType.subtitle})',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '• Purpose: ${PocketGangPurpose.getForType(_selectedGangType).firstWhere((p) => p.key == _selectedPurposeKey, orElse: () => PocketGangPurpose.allPurposes.first).label}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '• Languages: ${_selectedLanguageCodes.map((c) => c.toUpperCase()).join(', ')}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '• Members: ${_selectedGangType == PocketGangType.individual ? "1 (Creator)" : "${_selectedMembers.length + 1} Mates"}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
 
             // 6. Create Squad Submit Button
             SizedBox(

@@ -19,6 +19,7 @@ import 'pocket_citadel_fight_dialog.dart';
 import 'games/pocket_essential_spelling_game_page.dart';
 import 'games/pocket_citadel_runner_attack_page.dart';
 import 'games/pocket_house_siege_2d_battle_page.dart';
+import 'pocket_attack_message_composer_modal.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import '../report_dailoge.dart';
 import 'pocket_citadel_store_sheet.dart';
@@ -6887,6 +6888,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (battleResult != null && battleResult['passed'] == true && mounted) {
       // Execute the real single-source-of-truth backend attack & synchronization
       await _executeCitadelAttack();
+
+      // Launch the English Attack Message Composer Modal to send challenge message to 1-on-1 chat
+      if (mounted) {
+        final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+        await PocketAttackMessageComposerModal.show(
+          context,
+          attackerId: myId,
+          defenderId: widget.neighbor.id,
+          defenderName: widget.neighbor.name,
+        );
+      }
     }
   }
 

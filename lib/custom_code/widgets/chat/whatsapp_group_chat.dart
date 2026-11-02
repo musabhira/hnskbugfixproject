@@ -73,6 +73,8 @@ import 'live_task_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_tools_library_sheet.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_team_workspace.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_ranking_trail_widget.dart';
@@ -5687,6 +5689,12 @@ Draft: "$draft"''';
                           currentUserId: _currentUserId,
                           initialMembers: _groupMembers,
                         ),
+                        if (!_isKidMode && !widget.groupId.startsWith('p:'))
+                          PocketGangTeamWorkspaceWidget(
+                            groupId: widget.groupId,
+                            groupName: widget.groupName,
+                            currentUserId: _currentUserId,
+                          ),
                       ],
                     ),
                   ),
@@ -5813,6 +5821,79 @@ Draft: "$draft"''';
                     ],
                   ),
                 ),
+              ),
+            ),
+
+            // Tab 3: Workspace (Team / Projects)
+            if (!isKid && !widget.groupId.startsWith('p:'))
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _chatTabPageController.animateToPage(
+                      2,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                    );
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    decoration: BoxDecoration(
+                      color: _activeChatTabIndex == 2
+                          ? const Color(0xFFFFD600)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('💼', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Workspace',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: _activeChatTabIndex == 2
+                                ? Colors.black
+                                : Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Minimal Modular "+" Tools Library Button
+            GestureDetector(
+              onTap: () async {
+                HapticFeedback.selectionClick();
+                final updatedTools = await PocketGangToolsLibrarySheet.show(
+                  context,
+                  gangTypeKey: 'friends_team',
+                  currentTools: const ['chat', 'ranking', 'team_mgmt', 'tasks_kanban', 'time_tracker', 'dashboard', 'diagram_studio'],
+                );
+                if (updatedTools != null && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('✨ Workspace tools updated (${updatedTools.length} tools installed)!'),
+                      backgroundColor: const Color(0xFFFFD700),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.only(left: 6, right: 3),
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                ),
+                child: const Icon(Icons.add, color: Color(0xFFFFD700), size: 14),
               ),
             ),
           ],
