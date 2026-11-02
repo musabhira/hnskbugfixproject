@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 
 /// 🏆 Model representing an active, requested, or completed PocketTalk 4-Day Spoken Pact
 class PocketTalkPact {
@@ -502,6 +503,13 @@ class PocketTrophyService {
       });
     } catch (_) {}
 
+    // Automatically send system PocketTalk chat message & update conversation
+    unawaited(PocketActionChatService.sendPocketTalkRequestActionMessage(
+      senderId: myId,
+      receiverId: otherUserId,
+      pactId: pactId,
+    ));
+
     return newPact;
   }
 
@@ -532,11 +540,22 @@ class PocketTrophyService {
         dailyMinutesToday: 0,
         isAccepted: true,
         isCompleted: false,
-        isMatesNow: false,
+        isMatesNow: true,
         trophiesEarned: 0,
         isForfeited: false,
       );
       await _savePact(pact);
+
+      // Make both users mutual Mates in SharedPreferences and Supabase follows
+      await PocketMateService.addMateLocally(myId, otherUserId);
+      await PocketMateService.addMateLocally(otherUserId, myId);
+      try {
+        await _supabase.from('follows').upsert([
+          {'follower_id': myId, 'followed_id': otherUserId, 'created_at': DateTime.now().toIso8601String()},
+          {'follower_id': otherUserId, 'followed_id': myId, 'created_at': DateTime.now().toIso8601String()},
+        ]);
+      } catch (_) {}
+
       return pact;
     }
 
@@ -551,11 +570,21 @@ class PocketTrophyService {
       dailyMinutesToday: 0,
       isAccepted: true,
       isCompleted: false,
-      isMatesNow: false,
+      isMatesNow: true,
       trophiesEarned: pact.trophiesEarned,
       isForfeited: false,
     );
     await _savePact(accepted);
+
+    // Make both users mutual Mates in SharedPreferences and Supabase follows
+    await PocketMateService.addMateLocally(myId, otherUserId);
+    await PocketMateService.addMateLocally(otherUserId, myId);
+    try {
+      await _supabase.from('follows').upsert([
+        {'follower_id': myId, 'followed_id': otherUserId, 'created_at': DateTime.now().toIso8601String()},
+        {'follower_id': otherUserId, 'followed_id': myId, 'created_at': DateTime.now().toIso8601String()},
+      ]);
+    } catch (_) {}
 
     // 🤝 Notify initiator that pact was accepted via Supabase notifications
     try {

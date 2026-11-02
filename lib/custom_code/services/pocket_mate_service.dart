@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 
 /// 🤝 PocketMateService: Central service for managing Snapchat-style Mates,
 /// connection requests, connection pinning, and 100% private interactions.
@@ -167,9 +168,6 @@ class PocketMateService {
         'message': message ?? defaultMsg,
         'status': 'pending',
         'created_at': DateTime.now().toIso8601String(),
-        'data': {
-          'context_type': contextType ?? notifType,
-        },
       });
 
       // Also record in SharedPreferences for rapid local sync
@@ -206,6 +204,15 @@ class PocketMateService {
         await prefs.setString('sent_requests_cache_$senderId',
             json.encode(cache.take(50).toList()));
       } catch (_) {}
+
+      // Automatically create system mate_request chat message & update conversation
+      unawaited(PocketActionChatService.sendMateRequestActionMessage(
+        senderId: senderId,
+        receiverId: receiverId,
+        senderName: name,
+        senderAvatar: receiverAvatarUrl,
+        message: message ?? defaultMsg,
+      ));
 
       return true;
     } catch (e) {

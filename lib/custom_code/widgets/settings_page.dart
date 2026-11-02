@@ -22,7 +22,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_parental_patter
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -576,7 +575,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         content: Text(
           'Are you sure you want to restart from Day 1?\n\n'
-          'This will reset your Pocket Score (PS) to 0, return your 90-day learning trail back to Day 1, and clear your unlocked house stages.\n\n'
+          'This will reset your POKET Score (PS) to 0, return your 90-day learning trail back to Day 1, and clear your unlocked house stages.\n\n'
           'This action cannot be undone.',
           style: GoogleFonts.inter(color: Colors.white70, fontSize: 13.5, height: 1.4),
         ),
@@ -596,24 +595,27 @@ class _SettingsPageState extends State<SettingsPage> {
               setState(() => _isProcessing = true);
               try {
                 final myId = SupaFlow.client.auth.currentUser?.id;
+                final prefs = await SharedPreferences.getInstance();
+
+                // 1. Reset local SharedPreferences keys thoroughly for both user & guest
+                final allKeys = prefs.getKeys().toList();
+                for (final k in allKeys) {
+                  if (k.startsWith('pocket_day_') ||
+                      k.startsWith('learning_day_') ||
+                      k.contains('pocket_mission_day_') ||
+                      k.contains('pocket_learning_') ||
+                      k.contains('learning_streak') ||
+                      k.contains('learning_last_completed_day') ||
+                      k.contains('user_pocket_score_') ||
+                      k.contains('jackie_chan_talisman') ||
+                      (myId != null && k.contains(myId)) ||
+                      k.contains('guest')) {
+                    await prefs.remove(k);
+                  }
+                }
+
                 if (myId != null && myId.isNotEmpty) {
                   await PocketFortressDefenseService.setUnifiedScore(0, myId);
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('learning_day_$myId');
-                  await prefs.remove('pocket_learning_user_stage_$myId');
-                  await prefs.remove('learning_streak_$myId');
-                  await prefs.remove('learning_last_completed_day_$myId');
-                  await prefs.remove('user_pocket_score_$myId');
-
-                  final allKeys = prefs.getKeys().toList();
-                  for (final k in allKeys) {
-                    if (k.startsWith('pocket_day_${myId}_') ||
-                        k.startsWith('learning_day_${myId}_') ||
-                        k.contains('pocket_mission_day_') ||
-                        k.contains('_$myId')) {
-                      await prefs.remove(k);
-                    }
-                  }
 
                   await SupaFlow.client.from('profile').update({
                     'pocket_score': 0,
@@ -627,18 +629,37 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
 
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Progress reset to Day 1! Returning to Day 1 rules & challenges...'),
-                      backgroundColor: Color(0xFF10B981),
-                      duration: Duration(seconds: 2),
+                  showDialog(
+                    context: context,
+                    builder: (alertCtx) => AlertDialog(
+                      backgroundColor: const Color(0xFF1E293B),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: Row(
+                        children: [
+                          const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 26),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Progress Reset',
+                            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                      content: Text(
+                        'Your target progress and POKET Score have been successfully reset to 0. You are now at Day 1 Step 1.',
+                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 14, height: 1.4),
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.pop(alertCtx),
+                          child: Text('OK', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
-                  );
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const PocketDailyMissionPage(day: 1),
-                    ),
-                    (route) => route.isFirst,
                   );
                 }
               } catch (e) {
@@ -1728,8 +1749,8 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsTile(
                 icon: Icons.restart_alt_rounded,
                 iconColor: const Color(0xFFEF4444),
-                title: 'Reset Target Progress & Pocket Score',
-                subtitle: 'Restart 90-day learning trail from Day 1 and reset Pocket Score to 0',
+                title: 'Reset Target Progress & POKET Score',
+                subtitle: 'Restart 90-day learning trail from Day 1 and reset POKET Score to 0',
                 onTap: _showResetAdultProgressDialog,
                 textColor: Colors.white,
               ),

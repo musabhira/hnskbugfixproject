@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,6 +6,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_challenge_generator.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 
 /// 🥊 Model for a Citadel Fight Challenge / Duel
 class CitadelFightChallenge {
@@ -175,6 +177,12 @@ class PocketCitadelFightService {
       await SupaFlow.client.from('citadel_fights').insert(challenge.toJson());
     } catch (_) {}
 
+    // Automatically create system fight chat message & conversation
+    unawaited(PocketActionChatService.sendFightActionMessage(
+      challenge: challenge,
+      isInitiation: true,
+    ));
+
     return challenge;
   }
 
@@ -219,39 +227,19 @@ class PocketCitadelFightService {
         'title': '🥊 Citadel Fight Challenge!',
         'message': '⚔️ ${challenge.challengerName} completed a Fight challenge in ${seconds}s ($score pts)! Can you beat their time? Tap to Fight Back!',
         'status': 'pending',
-        'data': {
-          'fight_id': challenge.id,
-          'challenger_name': challenge.challengerName,
-          'challenger_seconds': seconds,
-          'challenger_score': score,
-          'question_count': challenge.questionCount,
-          'duel_seed': updated.duelSeed,
-          'challenger_correct': updated.challengerCorrect,
-          'challenger_time_seconds': updated.challengerTimeSeconds,
-        },
       });
     } catch (_) {}
 
-    // Send Chat Message to Opponent
-    try {
-      await SupaFlow.client.from('messages').insert({
-        'sender_id': challenge.challengerId,
-        'receiver_id': challenge.opponentId,
-        'message_text': '🥊 CITADEL FIGHT CHALLENGE!\nI finished the speed duel in ${seconds}s with $score pts! Can you beat my time? Tap to FIGHT BACK! ⚔️',
-        'message_type': 'citadel_fight',
-        'metadata': {
-          'fight_id': challenge.id,
-          'challenger_name': challenge.challengerName,
-          'challenger_seconds': seconds,
-          'challenger_score': score,
-          'question_count': challenge.questionCount,
-          'duel_seed': updated.duelSeed,
-          'challenger_correct': updated.challengerCorrect,
-          'challenger_time_seconds': updated.challengerTimeSeconds,
-        },
-        'created_at': DateTime.now().toIso8601String(),
-      });
-    } catch (_) {}
+    // Send Chat Message & update conversation
+    unawaited(PocketActionChatService.sendFightActionMessage(
+      challenge: updated,
+      isInitiation: false,
+      score: score,
+      seconds: seconds,
+      timeSec: challengerTimeSeconds ?? seconds.toDouble(),
+      correct: updated.challengerCorrect,
+      duelSeed: updated.duelSeed,
+    ));
 
     // If opponent is a Robot, trigger realistic asynchronous robot fight-back after 5s
     if (PocketRobotService.isRobotId(challenge.opponentId) ||
@@ -369,13 +357,23 @@ class PocketCitadelFightService {
     } catch (_) {}
 
     try {
+      final duelSettledText = '🏆 FIGHT DUEL SETTLED!\n$resultHeadline\n• $winnerName: $winCorrect/${challenge.questionCount} correct in ${winTime}s ($winScore pts)\n• $loserName: $loserCorrect/${challenge.questionCount} correct in ${loserTime}s ($loserScore pts)\n+1 Trophy awarded! 🌟';
       await SupaFlow.client.from('messages').insert({
         'sender_id': challenge.opponentId,
         'receiver_id': challenge.challengerId,
-        'message_text': '🏆 FIGHT DUEL SETTLED!\n$resultHeadline\n• $winnerName: $winCorrect/${challenge.questionCount} correct in ${winTime}s ($winScore pts)\n• $loserName: $loserCorrect/${challenge.questionCount} correct in ${loserTime}s ($loserScore pts)\n+1 Trophy awarded! 🌟',
+        'message_text': duelSettledText,
+        'content': duelSettledText,
         'message_type': 'citadel_fight_result',
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toUtc().toIso8601String(),
       });
+
+      final summary = '🏆 Fight Duel Settled: $winnerName won! 🌟';
+      await SupaFlow.client.from('conversations').update({
+        'last_message': summary,
+        'last_message_time': DateTime.now().toUtc().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+        'last_sender_id': challenge.opponentId,
+      }).or('and(user1_id.eq.${challenge.challengerId},user2_id.eq.${challenge.opponentId}),and(user1_id.eq.${challenge.opponentId},user2_id.eq.${challenge.challengerId})');
     } catch (_) {}
 
     // Clear pending fight notification in Supabase

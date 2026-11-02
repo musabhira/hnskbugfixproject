@@ -21,6 +21,7 @@ import 'games/pocket_citadel_runner_attack_page.dart';
 import '../report_dailoge.dart';
 import 'pocket_citadel_store_sheet.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_top_rank_theme.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
@@ -354,8 +355,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         cleanWords.shuffle();
         _availableWords = cleanWords;
       } else if (q.options.isNotEmpty) {
-        final target =
-            q.options[q.correctIndex.clamp(0, q.options.length - 1)];
+        final target = q.options[q.correctIndex.clamp(0, q.options.length - 1)];
         final cleanWords = target
             .replaceAll(RegExp(r'[^\w\s\?]'), '')
             .split(RegExp(r'\s+'))
@@ -373,10 +373,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     // 🔤 Prepare Step 3 Letter Slots and Letter Bank for Spelling Challenge
     if (q.gameFormat == 'spelling_challenge') {
-      _targetSpellingWord = q.explanation
-          .trim()
-          .toUpperCase()
-          .replaceAll(RegExp(r'[^A-Z]'), '');
+      _targetSpellingWord =
+          q.explanation.trim().toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
       if (_targetSpellingWord.isEmpty) {
         _targetSpellingWord = 'ALWAYS';
       }
@@ -789,8 +787,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (isTargetVip) {
       final escortRandom = math.Random(
           (widget.neighbor.id.hashCode.abs() * 13) + (widget.neighbor.day * 7));
-      escortQuestions = PocketCitadelChallengeGenerator.generateEscortTasks(
-          10, escortRandom);
+      escortQuestions =
+          PocketCitadelChallengeGenerator.generateEscortTasks(10, escortRandom);
     }
 
     // 🏰 2. Load Core Fortress Defense Cards (Strictly matching defenderLevel, e.g. Day 30 = 30 tasks)
@@ -851,7 +849,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
   }
 
-  Future<void> _executeCitadelAttack({bool isPostRunnerAnimation = false}) async {
+  Future<void> _executeCitadelAttack(
+      {bool isPostRunnerAnimation = false}) async {
     if (_isStriking) return;
     if (isPostRunnerAnimation) {
       if (mounted && Navigator.of(context).canPop()) {
@@ -903,11 +902,37 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
     HapticFeedback.vibrate();
 
+    final myUser = SupaFlow.client.auth.currentUser;
+    final myId = myUser?.id ?? 'me';
+    String myName = 'Player';
+    String? myAvatar;
+    try {
+      final myProfile = await SupaFlow.client
+          .from('profile')
+          .select('name, username, avatar_url, profile_image_url')
+          .eq('user_id', myId)
+          .maybeSingle();
+      if (myProfile != null) {
+        myName =
+            (myProfile['name'] ?? myProfile['username'] ?? 'Player').toString();
+        myAvatar = (myProfile['avatar_url'] ?? myProfile['profile_image_url'])
+            ?.toString();
+      }
+    } catch (_) {}
+    if (myName == 'Player' || myName.isEmpty) {
+      final cachedName =
+          myUser?.userMetadata?['name'] ?? myUser?.userMetadata?['full_name'];
+      if (cachedName != null && cachedName.toString().isNotEmpty) {
+        myName = cachedName.toString();
+      }
+    }
+
     final result = await PocketFortressDefenseService.processRaidBreach(
       defenderHouseId: widget.neighbor.id,
-      attackerId: 'me',
+      attackerId: myId,
       damageHp: 60,
-      attackerName: 'You (Level ${widget.attackerDay})',
+      attackerName: myName,
+      attackerAvatar: myAvatar ?? '⚔️',
       attackerWeapon: perk.combatWeaponName,
       defenderHasIronDome: widget.neighbor.hasActiveShield,
     );
@@ -924,7 +949,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
     if (!_hasAwardedAttackThisSession) {
       _hasAwardedAttackThisSession = true;
-      await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
+      await PocketFortressDefenseService.recordTargetAttacked(
+          widget.neighbor.id);
       await PocketFortressDefenseService.recordAttackLaunchedToday();
       if (widget.isKidMode) {
         await PocketKidsService.addStudentScore(looted > 0 ? looted : 15);
@@ -933,11 +959,26 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         if (looted > 0) {
           await PocketFortressDefenseService.awardPoints(looted);
         }
-        final myId = SupaFlow.client.auth.currentUser?.id;
-        if (myId != null && myId.isNotEmpty) {
+        if (myId.isNotEmpty && myId != 'me') {
           await PocketTrophyService.recordSuccessfulAttack(myId);
           await PocketTrophyService.recordPactAttack(myId, widget.neighbor.id);
         }
+      }
+
+      // Automatically send system attack chat message between attacker and defender
+      if (myId.isNotEmpty && widget.neighbor.id.isNotEmpty) {
+        unawaited(PocketActionChatService.sendAttackActionMessage(
+          attackerId: myId,
+          defenderId: widget.neighbor.id,
+          weapon: perk.combatWeaponName,
+          damage: '60%',
+          lootedCoins: looted > 0 ? looted : 15,
+          attackerDay: widget.attackerDay,
+          attackerName: myName,
+          attackerAvatar: myAvatar,
+          defenderName: widget.neighbor.name,
+          defenderAvatar: null,
+        ));
       }
     }
 
@@ -2170,12 +2211,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Positioned(
                 left: 36,
                 top: widget.neighbor.isVip ? 2 : 12,
-                child: _buildPoliceOfficerSprite(isLeft: true, hasEscortBoard: widget.neighbor.isVip),
+                child: _buildPoliceOfficerSprite(
+                    isLeft: true, hasEscortBoard: widget.neighbor.isVip),
               ),
               Positioned(
                 right: 36,
                 top: widget.neighbor.isVip ? 2 : 12,
-                child: _buildPoliceOfficerSprite(isLeft: false, hasEscortBoard: widget.neighbor.isVip),
+                child: _buildPoliceOfficerSprite(
+                    isLeft: false, hasEscortBoard: widget.neighbor.isVip),
               ),
 
               // 3. Presidential Military Escort Soldiers (VIP Houses Only)
@@ -2294,7 +2337,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 👮‍♂️ Detailed Police Officer Sprite
-  Widget _buildPoliceOfficerSprite({required bool isLeft, bool hasEscortBoard = false}) {
+  Widget _buildPoliceOfficerSprite(
+      {required bool isLeft, bool hasEscortBoard = false}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -4838,8 +4882,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-
-
   /// 🌟 Top Floating Header: Minimal circular icon buttons (Back, Perspective Toggle, Day/Night Toggle, Profile, Info)
   Widget _buildTopHeaderCapsule(
       {bool isNight = false, String cycleLabel = ''}) {
@@ -4954,7 +4996,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                 // 🔊 Music & Audio Speaker Toggle Button (User Audio Directive)
                 ValueListenableBuilder<bool>(
-                  valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                  valueListenable:
+                      PocketGameAudioService.instance.isMutedNotifier,
                   builder: (context, isMuted, _) {
                     return InkWell(
                       onTap: () async {
@@ -4972,13 +5015,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           border: Border.all(
                             color: isMuted
                                 ? Colors.white30
-                                : const Color(0xFFFFD700).withValues(alpha: 0.8),
+                                : const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.8),
                             width: 1.2,
                           ),
                           boxShadow: [
                             if (!isMuted)
                               BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.25),
                                 blurRadius: 8,
                               ),
                           ],
@@ -4988,7 +5033,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             isMuted
                                 ? Icons.volume_off_rounded
                                 : Icons.volume_up_rounded,
-                            color: isMuted ? Colors.white38 : const Color(0xFFFFD700),
+                            color: isMuted
+                                ? Colors.white38
+                                : const Color(0xFFFFD700),
                             size: 18,
                           ),
                         ),
@@ -5375,7 +5422,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   GestureDetector(
                     onTap: _onTapBottomAttack,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 7.5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
@@ -5389,7 +5437,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2563EB).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFF2563EB).withValues(alpha: 0.5),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -5423,7 +5472,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7.5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFD97706), Color(0xFFB45309)],
@@ -5437,7 +5487,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFD97706).withValues(alpha: 0.5),
+                            color:
+                                const Color(0xFFD97706).withValues(alpha: 0.5),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -5970,7 +6021,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ? rankTheme.borderColor.withValues(alpha: 0.7 + (prog * 0.3))
               : (widget.neighbor.isPresident
                   ? const Color(0xFFFFD700)
-                  : const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35))),
+                  : const Color(0xFF8B5CF6)
+                      .withValues(alpha: 0.45 + (prog * 0.35))),
           width: rankTheme != null ? 1.8 : 1.5,
         ),
         boxShadow: [
@@ -6491,7 +6543,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   void _showVictoryDialog() {
-
     if (widget.neighbor.isPresident) {
       PocketPresidentService.markPresidentialCitadelConquered();
       showDialog(
@@ -6743,7 +6794,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         if (result != null && result['passed'] == true && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('🎯 Mock Attack Completed! 0 points lost, your Citadel is battle-ready! 🛡️'),
+              content: Text(
+                  '🎯 Mock Attack Completed! 0 points lost, your Citadel is battle-ready! 🛡️'),
               backgroundColor: Color(0xFF10B981),
             ),
           );
@@ -6800,7 +6852,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('🛡️ PRESIDENTIAL ESCORT DEFEATED! Main Citadel Now Vulnerable! ⚔️'),
+              content: Text(
+                  '🛡️ PRESIDENTIAL ESCORT DEFEATED! Main Citadel Now Vulnerable! ⚔️'),
               backgroundColor: Color(0xFF10B981),
             ),
           );
@@ -6836,7 +6889,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 _speakIndianEnglish(_targetSpellingWord);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
@@ -6853,7 +6907,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.volume_up_rounded, color: Colors.white, size: 16),
+                    const Icon(Icons.volume_up_rounded,
+                        color: Colors.white, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       'Listen Word',
@@ -6900,15 +6955,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       : const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: isFilled
-                        ? const Color(0xFFFFD700)
-                        : Colors.white24,
+                    color: isFilled ? const Color(0xFFFFD700) : Colors.white24,
                     width: isFilled ? 2.0 : 1.2,
                   ),
                   boxShadow: isFilled
                       ? [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.25),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -6919,7 +6973,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: Text(
                     letter ?? '_',
                     style: GoogleFonts.outfit(
-                      color: isFilled ? const Color(0xFFFFD700) : Colors.white24,
+                      color:
+                          isFilled ? const Color(0xFFFFD700) : Colors.white24,
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                     ),
@@ -6987,7 +7042,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             GestureDetector(
               onTap: _onSpellingBackspace,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(8),
@@ -6996,11 +7052,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.backspace_rounded, size: 14, color: Colors.white70),
+                    const Icon(Icons.backspace_rounded,
+                        size: 14, color: Colors.white70),
                     const SizedBox(width: 4),
                     Text(
                       'Backspace',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -7010,7 +7068,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             GestureDetector(
               onTap: _onSpellingShuffle,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(8),
@@ -7019,11 +7078,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.shuffle_rounded, size: 14, color: Colors.white70),
+                    const Icon(Icons.shuffle_rounded,
+                        size: 14, color: Colors.white70),
                     const SizedBox(width: 4),
                     Text(
                       'Shuffle',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -7033,7 +7094,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             GestureDetector(
               onTap: _onSpellingClear,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(8),
@@ -7042,11 +7104,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.refresh_rounded, size: 14, color: Colors.white70),
+                    const Icon(Icons.refresh_rounded,
+                        size: 14, color: Colors.white70),
                     const SizedBox(width: 4),
                     Text(
                       'Clear',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -7599,12 +7663,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               border: Border.all(
                                 color: _assembledWords.isNotEmpty
                                     ? const Color(0xFF00E5FF)
-                                    : const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                                    : const Color(0xFF00E5FF)
+                                        .withValues(alpha: 0.35),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                                  color: const Color(0xFF00E5FF)
+                                      .withValues(alpha: 0.08),
                                   blurRadius: 14,
                                   offset: const Offset(0, 3),
                                 ),
@@ -7973,8 +8039,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     final isVerbTimelineMode =
                         currentQ.gameFormat == 'verb_timeline' ||
                             currentQ.gameFormat == 'tense_fortress';
-                    final isSpotErrorMode =
-                        currentQ.gameFormat == 'spot_error';
+                    final isSpotErrorMode = currentQ.gameFormat == 'spot_error';
 
                     final bool isReady;
                     if (isSpellingMode) {
@@ -7985,8 +8050,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     } else if (isVerbTimelineMode || isSpotErrorMode) {
                       isReady = _selectedOption != -1;
                     } else {
-                      isReady = _assembledWords.isNotEmpty ||
-                          _selectedOption != -1;
+                      isReady =
+                          _assembledWords.isNotEmpty || _selectedOption != -1;
                     }
 
                     return SizedBox(
@@ -8058,10 +8123,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           ),
                                           backgroundColor:
                                               const Color(0xFF7C3AED),
-                                          duration:
-                                              const Duration(seconds: 2),
-                                          behavior:
-                                              SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 2),
+                                          behavior: SnackBarBehavior.floating,
                                         ),
                                       );
                                       _startCombatTimer();
@@ -8091,10 +8154,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                             '⚠️ Escort Error! (1/2 errors). One more mistake will repel the raid!',
                                           ),
                                           backgroundColor: Colors.amber,
-                                          duration:
-                                              const Duration(seconds: 3),
-                                          behavior:
-                                              SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 3),
+                                          behavior: SnackBarBehavior.floating,
                                         ),
                                       );
                                       if (_currentQIdx + 1 <
@@ -9108,8 +9169,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
             end: Alignment.bottomCenter,
           ).createShader(Rect.fromLTWH(0, 0, w, h));
 
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, w, h), Paint()..shader = skyShader);
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()..shader = skyShader);
 
     if (isNight) {
       // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky

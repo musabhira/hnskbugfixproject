@@ -270,17 +270,26 @@ class _PocketDayOpenWorldAdventurePageState
     final gatePassed = prefs.getBool(gatePassedKey) ?? false;
 
     final Map<String, bool> flags = {};
+    bool previousStepDone = true;
     for (int step = 1; step <= _totalSteps; step++) {
       final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${step}_done' : null;
       final guestKey = 'pocket_day_guest_${widget.day}_step_${step}_done';
-      final isDone = (userKey != null && prefs.getBool(userKey) == true) ||
-          (prefs.getBool(guestKey) == true) ||
-          (prefs.getBool('pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done') == true) ||
-          (step == 1 &&
-              ((userKey != null &&
-                      prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true) ||
-                  prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true));
+
+      // If user is logged in, prioritize userKey. Only check guestKey if uid is absent.
+      final bool rawDone;
+      if (uid != null && uid.isNotEmpty) {
+        rawDone = (prefs.getBool(userKey!) == true) ||
+            (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${step}_done') == true) ||
+            (step == 1 && prefs.getBool('pocket_day_${uid}_${widget.day}_step_1_completed') == true);
+      } else {
+        rawDone = (prefs.getBool(guestKey) == true) ||
+            (step == 1 && prefs.getBool('pocket_day_guest_${widget.day}_step_1_completed') == true);
+      }
+
+      // Enforce strict sequential order: Step N can only be marked done if Step N-1 was completed!
+      final isDone = rawDone && previousStepDone;
       flags['step_$step'] = isDone;
+      previousStepDone = isDone;
     }
 
     if (mounted) {
@@ -3024,11 +3033,15 @@ class _PocketDayOpenWorldAdventurePageState
     final prefs = await SharedPreferences.getInstance();
     final userKey = uid != null ? 'pocket_day_${uid}_${widget.day}_step_${s}_done' : null;
     final guestKey = 'pocket_day_guest_${widget.day}_step_${s}_done';
-    final legacyCompletedKey = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${s}_completed';
 
-    final isDone = (userKey != null && prefs.getBool(userKey) == true) ||
-        (prefs.getBool(guestKey) == true) ||
-        (prefs.getBool(legacyCompletedKey) == true);
+    final bool isDone;
+    if (uid != null && uid.isNotEmpty) {
+      isDone = (prefs.getBool(userKey!) == true) ||
+          (prefs.getBool('pocket_day_${uid}_${widget.day}_step_${s}_completed') == true);
+    } else {
+      isDone = (prefs.getBool(guestKey) == true) ||
+          (prefs.getBool('pocket_day_guest_${widget.day}_step_${s}_completed') == true);
+    }
 
     if (isDone) {
       await _onStepCompleted(s);

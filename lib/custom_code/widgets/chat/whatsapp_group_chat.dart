@@ -43,6 +43,7 @@ import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_compress/video_compress.dart';
@@ -79,6 +80,7 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -162,12 +164,25 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   bool _isAdminBlockedFromHub = false;
 
+  bool get _isPersonalChat =>
+      _currentGroupId.startsWith('p:') ||
+      _currentGroupId.startsWith('m:') ||
+      PocketRobotService.isRobotId(_currentGroupId) ||
+      PocketPresidentService.isPresidentId(_currentGroupId);
+
+  String get _personalPeerId {
+    if (_currentGroupId.startsWith('p:') || _currentGroupId.startsWith('m:')) {
+      return _currentGroupId.substring(2);
+    }
+    return _currentGroupId;
+  }
+
   bool get _isKidMode =>
       PocketKidsService.isKidAccount ||
       _currentGroupId.startsWith('kid_') ||
       _currentGroupId.startsWith('p:kid_') ||
-      (_currentGroupId.startsWith('p:') &&
-          PocketKidsService.isAllowedKidMateId(_currentGroupId.substring(2)));
+      (_isPersonalChat &&
+          PocketKidsService.isAllowedKidMateId(_personalPeerId));
 
   bool get _isEnglishHubGroup {
     if (_isKidMode) return false; // Strict separation: Kids mode has NO English Hub!
@@ -1166,7 +1181,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _fetchMembers() async {
-    if (_currentGroupId.startsWith('p:')) return;
+    if (_isPersonalChat) return;
     try {
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''
@@ -1380,6 +1395,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           await PocketMateService.hasPendingSentRequest(uid, otherUserId);
       final incoming =
           await PocketMateService.getPendingIncomingRequest(uid, otherUserId);
+
+      // Restore / ensure any historical Mate Request appears as a chat bubble without duplicates
+      unawaited(PocketActionChatService.syncHistoricalMateRequestMessage(
+        myId: uid,
+        otherUserId: otherUserId,
+      ));
 
       if (mounted) {
         safeSetState(() {
@@ -4878,7 +4899,7 @@ Draft: "$draft"''';
       child: Scaffold(
         key: _scaffoldKey,
         endDrawerEnableOpenDragGesture: false,
-        endDrawer: widget.groupId.startsWith('p:')
+        endDrawer: _isPersonalChat
             ? _buildFriendshipDashboardDrawer(context)
             : null,
         backgroundColor: backgroundColor,
@@ -4904,8 +4925,16 @@ Draft: "$draft"''';
             children: [
               GestureDetector(
                 onTap: () {
-                  if (widget.groupId.startsWith('p:')) {
-                    _showGroupInfo();
+                  if (_isPersonalChat) {
+                    final targetId = _personalPeerId;
+                    if (targetId.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainProfileWidget(userId: targetId),
+                        ),
+                      );
+                    }
                     return;
                   }
                   if (widget.groupImage != null) {
@@ -4922,9 +4951,8 @@ Draft: "$draft"''';
                 },
                 child: Hero(
                   tag: 'group_avatar_${widget.groupId}',
-                  child: widget.groupId.startsWith('p:')
-                      ? (PocketPresidentService.isPresidentId(
-                              widget.groupId.substring(2))
+                  child: _isPersonalChat
+                      ? (PocketPresidentService.isPresidentId(_personalPeerId)
                           ? const PresidentAvatarWidget(size: 34)
                           : Stack(
                               clipBehavior: Clip.none,
@@ -4938,7 +4966,7 @@ Draft: "$draft"''';
                                   child: ClipOval(
                                     child: VectorAvatarWidget(
                                       config: _getPersonalAvatarConfig(
-                                        widget.groupId.substring(2),
+                                        _personalPeerId,
                                       ),
                                       size: 34,
                                     ),
@@ -5012,16 +5040,28 @@ Draft: "$draft"''';
               const SizedBox(width: 10),
               Expanded(
                 child: InkWell(
-            onTap: _showGroupInfo,
+            onTap: () {
+              if (_isPersonalChat) {
+                final targetId = _personalPeerId;
+                if (targetId.isNotEmpty) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MainProfileWidget(userId: targetId),
+                    ),
+                  );
+                }
+              } else {
+                _showGroupInfo();
+              }
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Builder(
                   builder: (context) {
-                    final targetId = _currentGroupId.startsWith('p:')
-                        ? _currentGroupId.substring(2)
-                        : _currentGroupId;
+                    final targetId = _personalPeerId;
                     final isPresident =
                         PocketPresidentService.isPresidentId(targetId);
                     final isKidKing =
@@ -5040,7 +5080,7 @@ Draft: "$draft"''';
                                 ? 'President'
                                 : (isKidKing
                                     ? 'King'
-                                    : (_currentGroupId.startsWith('p:')
+                                    : (_isPersonalChat
                                         ? ContactsNameService().getDisplayName(
                                             userId: targetId,
                                             fallbackName: _currentGroupName,
@@ -5063,7 +5103,7 @@ Draft: "$draft"''';
                               size: 14.5,
                             ),
                           )
-                        else if (widget.groupId.startsWith('p:'))
+                        else if (_isPersonalChat)
                           Container(
                             margin: const EdgeInsets.only(left: 6),
                             width: 7,
@@ -5080,11 +5120,9 @@ Draft: "$draft"''';
                 ValueListenableBuilder<Map<String, bool>>(
                   valueListenable: PocketRobotService.typingStatusNotifier,
                   builder: (context, typingMap, _) {
-                    final targetId = widget.groupId.startsWith('p:')
-                        ? widget.groupId.substring(2)
-                        : widget.groupId;
+                    final targetId = _personalPeerId;
                     String? activeTypingId;
-                    if (widget.groupId.startsWith('p:')) {
+                    if (_isPersonalChat) {
                       if (typingMap[targetId] == true) {
                         activeTypingId = targetId;
                       }
@@ -5195,7 +5233,7 @@ Draft: "$draft"''';
                         ),
                       );
                     }
-                    if (widget.groupId.startsWith('p:')) {
+                    if (_isPersonalChat) {
                       final stage = _userPocketStageCache[targetId];
                       return Padding(
                         padding: const EdgeInsets.only(top: 1.5),
@@ -5250,18 +5288,13 @@ Draft: "$draft"''';
                     color: Color(0xFFFFD700), size: 22),
                 tooltip: 'Citadel Challenge 🏰',
                 onPressed: () {
-                  final targetId = widget.groupId.startsWith('p:')
-                      ? widget.groupId.substring(2)
-                      : widget.groupId;
+                  final targetId = _personalPeerId;
                   PocketCitadelAttackPage.openForUser(context, userId: targetId);
                 },
               ),
             if (!_isKidMode &&
-                !PocketPresidentService.isPresidentId(
-                    _currentGroupId.startsWith('p:')
-                        ? _currentGroupId.substring(2)
-                        : _currentGroupId)) ...[
-              if (_currentGroupId.startsWith('p:')) ...[
+                !PocketPresidentService.isPresidentId(_personalPeerId)) ...[
+              if (_isPersonalChat) ...[
                 IconButton(
                   icon: const Text('🔥', style: TextStyle(fontSize: 18)),
                   tooltip: 'Fluency Streak 🔥',
@@ -5420,9 +5453,7 @@ Draft: "$draft"''';
                   }
                 }
                 if (value == 'block') {
-                  final otherUserId = _currentGroupId.startsWith('p:')
-                      ? _currentGroupId.substring(2)
-                      : '';
+                  final otherUserId = _personalPeerId;
                   if (otherUserId.isNotEmpty) {
                     _showBlockUserDialog(otherUserId, _currentGroupName);
                   }
@@ -5432,7 +5463,7 @@ Draft: "$draft"''';
                 }
               },
               itemBuilder: (context) {
-                final isPersonalChat = _currentGroupId.startsWith('p:');
+                final isPersonalChat = _isPersonalChat;
                 return [
                   if (!isPersonalChat)
                     const PopupMenuItem(
@@ -6414,6 +6445,8 @@ Draft: "$draft"''';
                                   message.messageType != 'mate_request' &&
                                   message.messageType != 'citadel_fight' &&
                                   message.messageType != 'citadel_attack' &&
+                                  message.messageType != 'pocket_talk_request' &&
+                                  message.metadata?['is_pocket_talk'] != true &&
                                   message.metadata?['is_mate_request'] != true &&
                                   message.metadata?['fight_id'] == null &&
                                   message.metadata?['is_citadel_attack'] != true)
@@ -7743,8 +7776,8 @@ Draft: "$draft"''';
                     isMate
                         ? '✨ You and ${isMe ? 'opponent' : message.senderName} are now official Mates! Chat is active in All Chats.'
                         : (isMe
-                            ? 'Mate connection request sent. Waiting for them to accept! ⏳'
-                            : '${message.senderName} wants to connect as Pocket Mates with you!'),
+                            ? 'You sent a Mates Request 🤝 • You can chat anytime!'
+                            : '${message.senderName} sent you a Mates Request 🤝'),
                     style: GoogleFonts.inter(
                       color: isMate ? const Color(0xFFD1FAE5) : Colors.white70,
                       fontSize: 12.5,
@@ -7894,7 +7927,7 @@ Draft: "$draft"''';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Citadel Speed Duel 🥊',
+                      isMe ? 'Fight Initiated 🥊' : 'Fight Challenge 🥊',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -7902,7 +7935,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      '10 Questions War Mode',
+                      'Citadel Speed Duel • $qCount Qs',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFCA5A5),
                         fontSize: 11,
@@ -7917,8 +7950,12 @@ Draft: "$draft"''';
           const SizedBox(height: 10),
           Text(
             isMe
-                ? 'You finished the duel in ${timeStr}s • $correctStr. Waiting for opponent to fight back! ⏳'
-                : '${message.senderName} completed the duel in ${timeStr}s • $correctStr. Can you beat their time & score? ⚔️',
+                ? (seconds == 0 && score == 0
+                    ? 'You initiated a Citadel Fight! Waiting for opponent to duel! ⏳'
+                    : 'You finished the duel in ${timeStr}s • $correctStr. Waiting for opponent to fight back! ⏳')
+                : (seconds == 0 && score == 0
+                    ? '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} started a Fight challenge with you! Can you win the duel? ⚔️'
+                    : '${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : "Opponent"} initiated a Fight and finished in ${timeStr}s • $correctStr. Can you beat their time & score? ⚔️'),
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12.5,
@@ -8042,7 +8079,7 @@ Draft: "$draft"''';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Citadel Attack 💥',
+                      isMe ? 'I am attacking ⚔️' : 'Attacker Alert 💥',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -8050,7 +8087,7 @@ Draft: "$draft"''';
                       ),
                     ),
                     Text(
-                      'Fortress Intrusion Report',
+                      isMe ? 'Citadel Attack Launched' : 'Fortress Intrusion Report',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFCA5A5),
                         fontSize: 11,
@@ -8065,8 +8102,8 @@ Draft: "$draft"''';
           const SizedBox(height: 10),
           Text(
             isMe
-                ? 'You breached Citadel defenses! Dealt $damage damage using $weapon (+$lootedCoins coins).'
-                : '${message.senderName} raided your Citadel defenses with $weapon (dealt $damage damage)!',
+                ? 'I am attacking! Breached Citadel defenses with $weapon (dealt $damage damage, +$lootedCoins coins).'
+                : 'Attacker ${(message.senderName != null && message.senderName!.isNotEmpty) ? message.senderName : (metadata['attacker_name'] ?? 'Rival')} raided your Citadel defenses with $weapon (dealt $damage damage)!',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12.5,
@@ -8862,136 +8899,7 @@ Draft: "$draft"''';
       );
     }
 
-    if (widget.groupId.startsWith('p:')) {
-      if (_isOutgoingPendingRequest) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: const BoxDecoration(
-            color: Color(0xFF111A21),
-            border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.lock_clock_rounded,
-                        color: Color(0xFFFFFC00), size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Request Sent',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFFC00),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'You can send more messages once ${widget.groupName} accepts your request.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 12.5,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      if (_incomingPendingRequest != null) {
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: const BoxDecoration(
-            color: Color(0xFF111A21),
-            border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${widget.groupName} sent you a message request',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Accept to reply and connect as mutual Poket Mates.',
-                  style: GoogleFonts.inter(
-                    color: Colors.white54,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _declineIncomingRequest,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white24),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        child: Text(
-                          'Decline',
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _acceptIncomingRequest,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFFC00),
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        child: Text(
-                          'Accept',
-                          style: GoogleFonts.outfit(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    }
+    // Instagram-style messaging: Users can send messages freely even if Mates Request is pending
 
     return SafeArea(
       top: false,
@@ -9046,9 +8954,9 @@ Draft: "$draft"''';
                         FocusScope.of(context).unfocus();
                       },
                       decoration: InputDecoration(
-                        hintText: !widget.groupId.startsWith('p:')
-                            ? 'Type in English only... 🇬🇧'
-                            : 'Type a message...',
+                        hintText: _isPersonalChat
+                            ? 'Type a message...'
+                            : 'Type in English only... 🇬🇧',
                         hintStyle: const TextStyle(
                             color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,

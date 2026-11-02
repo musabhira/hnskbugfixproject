@@ -41,7 +41,7 @@ class ChatMessages extends _$ChatMessages {
 
   bool get _isEnglishHubGroup {
     if (_isKid) return false;
-    if (groupId.startsWith('p:')) return false;
+    if (groupId.startsWith('p:') || groupId.startsWith('m:')) return false;
     final lowerId = groupId.toLowerCase();
     if (lowerId.contains('english_hub') ||
         lowerId.contains('english') ||
@@ -103,7 +103,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> markMessagesAsRead() async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return;
@@ -165,7 +165,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   void _setupSubscription() {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
@@ -285,7 +285,7 @@ class ChatMessages extends _$ChatMessages {
   void _handleRealtimeUpdate(dynamic payload) {
     final eventType = payload.eventType;
 
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
@@ -427,7 +427,7 @@ class ChatMessages extends _$ChatMessages {
       _hasMoreMessages = true;
     }
 
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
@@ -581,7 +581,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> cleanupOldMessages() async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
@@ -618,7 +618,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> editMessage(String messageId, String newText) async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     try {
       await _supabase.from(isPersonal ? _messagesTable : _groupMessagesTable).update({
         'message_text': newText,
@@ -688,7 +688,7 @@ class ChatMessages extends _$ChatMessages {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return null;
 
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
 
     // 🏛️ The President chat: handle via PocketPresidentService
@@ -1261,7 +1261,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> updateMessageFileUrl(String messageId, String fileUrl) async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     try {
       await _supabase.from(isPersonal ? _messagesTable : _groupMessagesTable).update({
         'file_url': fileUrl,
@@ -1291,7 +1291,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> deleteMessage(String messageId) async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     // Optimistically remove from UI
     state.whenData((messages) {
       state = AsyncData(messages.where((m) => m.id != messageId).toList());
@@ -1370,7 +1370,7 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {
-    final isPersonal = groupId.startsWith('p:');
+    final isPersonal = groupId.startsWith('p:') || groupId.startsWith('m:');
     try {
       const String selectQueryFetch = '''
         *,

@@ -7135,7 +7135,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 day: widget.day,
                 stepNumber: '$_stepShortcut',
                 icon: '⚡',
-                title: 'Sovereign Fluency Shortcut (കുറുക്കുവഴി)',
+                title: 'Sovereign Fluency Shortcut',
                 subtitle: 'Master native colloquial shortcuts and speech linking.',
                 accentColor: const Color(0xFFFFD700),
                 initialLanguage: _selectedLanguage,
@@ -15549,7 +15549,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     return _buildTopicSubtaskCard(
       stepNumber: '$_stepShortcut',
       icon: '⚡',
-      title: 'Sovereign Fluency Shortcut (കുറുക്കുവഴി)',
+      title: 'Sovereign Fluency Shortcut',
       subtitle: '${shortcut.title}: ${shortcut.ruleSummary}',
       isVerified: _fluencyShortcutCompleted,
       actionColor: const Color(0xFFFFD700),

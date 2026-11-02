@@ -524,9 +524,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
 
     final Map<String, bool> subFlags = {};
+    bool previousStepDone = true;
     for (int step = 1; step <= 17; step++) {
       final flagKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
-      subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
+      final rawDone = prefs.getBool(flagKey) ?? false;
+      final isDone = rawDone && previousStepDone;
+      subFlags['step_$step'] = isDone;
+      previousStepDone = isDone;
     }
 
     if (mounted) {
@@ -1642,7 +1646,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       InPathSubStep(
         stepIndex: 15,
         title: 'Sovereign Fluency Shortcut',
-        subtitle: 'Colloquial speech contractions (കുറുക്കുവഴി)',
+        subtitle: 'Colloquial speech contractions and lightning rules',
         icon: '⚡',
         color: const Color(0xFFFFB300),
         isCompleted: _subStepFlags['step_15'] ?? false,

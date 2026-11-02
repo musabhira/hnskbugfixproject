@@ -32,13 +32,17 @@ void main() {
     FlutterError.onError = (FlutterErrorDetails details) {
       final exceptionStr = details.exceptionAsString();
       // Suppress known benign framework debug assertion on desktop mouse pointer tracking
-      if (exceptionStr.contains('mouse_tracker.dart') && exceptionStr.contains('_debugDuringDeviceUpdate')) {
+      if (exceptionStr.contains('mouse_tracker.dart') &&
+          exceptionStr.contains('_debugDuringDeviceUpdate')) {
         return;
       }
       // Suppress known transient framework layout hit-test assertion during scaffold/FAB route transitions
-      if (exceptionStr.contains('Cannot hit test a render box that has never been laid out') ||
-          (exceptionStr.contains('hitTest()') && exceptionStr.contains('floatingActionButton'))) {
-        debugPrint('Main: Handled transient FAB hit test transition assertion: $exceptionStr');
+      if (exceptionStr.contains(
+              'Cannot hit test a render box that has never been laid out') ||
+          (exceptionStr.contains('hitTest()') &&
+              exceptionStr.contains('floatingActionButton'))) {
+        debugPrint(
+            'Main: Handled transient FAB hit test transition assertion: $exceptionStr');
         return;
       }
       FlutterError.presentError(details);
@@ -99,7 +103,7 @@ void main() {
         await IAPService().initialize();
       } catch (_) {}
 
-      // 5d. Initialize Google Mobile Ads / AdMob Service
+      // 5d. Initialize Google Mobile Ads / AdMob Servic3Le
       try {
         await PocketAdMobService.instance.initialize();
       } catch (_) {}
@@ -107,7 +111,8 @@ void main() {
       // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)
       try {
         await PocketLanguageService.init();
-        debugPrint('Main: PocketLanguageService initialized: ${PocketLanguageService.currentLanguage}');
+        debugPrint(
+            'Main: PocketLanguageService initialized: ${PocketLanguageService.currentLanguage}');
       } catch (e) {
         debugPrint('Main: PocketLanguageService initialization error: $e');
       }
@@ -244,11 +249,13 @@ class MyAppState extends State<MyApp> {
     jwtTokenStream.listen((_) {});
 
     // Listen for global language changes from Settings, Dialogs, etc.
-    PocketLanguageService.activeLanguageNotifier.addListener(_onLanguageChanged);
+    PocketLanguageService.activeLanguageNotifier
+        .addListener(_onLanguageChanged);
   }
 
   void _onLanguageChanged() {
-    debugPrint('Main: Active language changed globally to: ${PocketLanguageService.currentLanguage}. Rebuilding UI tree.');
+    debugPrint(
+        'Main: Active language changed globally to: ${PocketLanguageService.currentLanguage}. Rebuilding UI tree.');
     if (mounted) {
       safeSetState(() {
         _key = UniqueKey();
@@ -258,7 +265,8 @@ class MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    PocketLanguageService.activeLanguageNotifier.removeListener(_onLanguageChanged);
+    PocketLanguageService.activeLanguageNotifier
+        .removeListener(_onLanguageChanged);
     super.dispose();
   }
 

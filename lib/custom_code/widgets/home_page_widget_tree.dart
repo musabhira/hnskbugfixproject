@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
@@ -222,7 +224,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   List<Map<String, dynamic>> _sentRequests = [];
   List<PocketTalkPact> _pendingIncomingPacts = [];
   List<CitadelFightChallenge> _pendingFightChallenges = [];
-  int _requestsSubTab = 0; // 0: All, 1: Mates, 2: PocketTalk, 3: Fight
+  List<Map<String, dynamic>> _pendingAttacks = [];
+  List<Map<String, dynamic>> _sentAttacks = [];
+  int _requestsSubTab = 0; // 0: All, 1: Mates, 2: PocketTalk, 3: Fight, 4: Attack
   bool _isLoadingRequests = false;
   int _userPocketScore = 0;
   int _userPocketStage = 1;
@@ -253,12 +257,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       final sentReqs = await PocketMateService.getSentRequests(uid);
       final incomingPacts = await PocketTrophyService.getPendingIncomingPacts(uid);
       final fightChallenges = await PocketCitadelFightService.getPendingChallenges(uid);
+      final pendingAttacks = await PocketActionChatService.getPendingAttacks(uid);
+      final sentAttacks = await PocketActionChatService.getSentAttacks(uid);
       if (mounted) {
         setState(() {
           _pendingRequests = reqs;
           _sentRequests = sentReqs;
           _pendingIncomingPacts = incomingPacts;
           _pendingFightChallenges = fightChallenges;
+          _pendingAttacks = pendingAttacks;
+          _sentAttacks = sentAttacks;
           _isLoadingRequests = false;
         });
       }
@@ -1896,7 +1904,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     final totalIncomingRequests = _pendingRequests.length +
         _pendingIncomingPacts.length +
-        _pendingFightChallenges.length;
+        _pendingFightChallenges.length +
+        _pendingAttacks.length;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
@@ -2509,13 +2518,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildRequestsSubTabToggle(bool isDark) {
     final totalCount = _pendingRequests.length +
         _pendingIncomingPacts.length +
-        _pendingFightChallenges.length;
+        _pendingFightChallenges.length +
+        _pendingAttacks.length;
 
     final subTabs = [
       {'label': 'All', 'count': totalCount},
       {'label': '🤝 Mates', 'count': _pendingRequests.length},
       {'label': '🎙️ PocketTalk', 'count': _pendingIncomingPacts.length},
       {'label': '🥊 Fight', 'count': _pendingFightChallenges.length},
+      {'label': '⚔️ Attack', 'count': _pendingAttacks.length},
     ];
 
     return SliverToBoxAdapter(
@@ -3000,6 +3011,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       }
     }
 
+    // Citadel Attacks (show under All or Attack tab)
+    if (_requestsSubTab == 0 || _requestsSubTab == 4) {
+      for (final atk in _pendingAttacks) {
+        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ?? DateTime.now();
+        items.add(_UnifiedRequestItem(
+          id: atk['id']?.toString() ?? 'atk_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'attack',
+          createdAt: dt,
+          data: atk,
+        ));
+      }
+      for (final atk in _sentAttacks) {
+        final dt = DateTime.tryParse(atk['created_at']?.toString() ?? '') ?? DateTime.now();
+        final map = Map<String, dynamic>.from(atk);
+        map['is_sent'] = true;
+        items.add(_UnifiedRequestItem(
+          id: 'sent_${atk['id']}',
+          type: 'attack',
+          createdAt: dt,
+          data: map,
+        ));
+      }
+    }
+
     // Sort newest at the top (maalek maalek vannaal mathi)
     items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return items;
@@ -3007,7 +3042,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildEmptyRequestsState(bool isDark) {
     String title = 'No Pending Requests';
-    String desc = 'Incoming Mate requests, PocketTalk pacts, and Citadel Fight duels will appear here.';
+    String desc = 'Incoming Mate requests, PocketTalk pacts, Citadel Fight duels, and attacks will appear here.';
     IconData icon = Icons.mark_email_read_rounded;
 
     if (_requestsSubTab == 1) {
@@ -3022,6 +3057,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       title = 'No Fight Challenges';
       desc = '20-question speed duel challenges from mates will appear here.';
       icon = Icons.sports_mma_rounded;
+    } else if (_requestsSubTab == 4) {
+      title = 'No Citadel Attacks';
+      desc = 'Citadel raid attacks and breach reports will appear here.';
+      icon = Icons.shield_outlined;
     }
 
     return SliverToBoxAdapter(
@@ -3101,6 +3140,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ),
         ),
       );
+    } else if (type == 'attack') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+        ),
+        child: Text(
+          '⚔️ CITADEL ATTACK',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFFEF4444),
+            fontWeight: FontWeight.w800,
+            fontSize: 10,
+          ),
+        ),
+      );
     } else {
       final fight = data as CitadelFightChallenge;
       return Container(
@@ -3142,7 +3198,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl is num ? lvl.toInt() : 1);
     } else if (req['avatar_config'] != null) {
       try {
-        avatarConfig = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatar_config']));
+        avatarConfig = req['avatar_config'] is String ? VectorAvatarConfig.fromJson(req['avatar_config']) : VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatar_config']));
       } catch (_) {}
     }
 
@@ -3502,6 +3558,122 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  Widget _buildAttackRow(Map<String, dynamic> attack, bool isDark) {
+    final isSent = attack['is_sent'] == true;
+    final peerName = isSent
+        ? (attack['defender_name']?.toString() ?? 'Opponent')
+        : (attack['attacker_name']?.toString() ?? 'Attacker');
+    final peerAvatar = isSent
+        ? attack['defender_avatar']?.toString()
+        : attack['attacker_avatar']?.toString();
+    final targetId = isSent
+        ? (attack['defender_id']?.toString() ?? '')
+        : (attack['attacker_id']?.toString() ?? '');
+    final damage = attack['damage'] ?? 0;
+    final weapon = attack['weapon_name']?.toString() ?? 'Attack Raid';
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 23,
+          backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.2),
+          backgroundImage: (peerAvatar != null && peerAvatar.isNotEmpty)
+              ? NetworkImage(peerAvatar)
+              : null,
+          child: (peerAvatar == null || peerAvatar.isEmpty)
+              ? Text(
+                  peerName.isNotEmpty ? peerName[0].toUpperCase() : '⚔️',
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                peerName,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                isSent
+                    ? 'Target breached: -$damage HP with $weapon'
+                    : 'Attacked your citadel! -$damage HP with $weapon',
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        if (isSent)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.45)),
+            ),
+            child: Text(
+              'Sent ⚔️',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFEF4444),
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          )
+        else
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: const Size(64, 32),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            onPressed: () {
+              if (targetId.isNotEmpty) {
+                PocketCitadelAttackPage.openForUser(
+                  context,
+                  userId: targetId,
+                  targetName: peerName,
+                );
+              }
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('⚔️', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 4),
+                Text(
+                  'Revenge',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildPendingRequestsSliver() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -3523,133 +3695,136 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
 
+    // Convert unified items to standard ChatConversation models so they render using the exact same ConversationTile as the All category
+    final conversations = unified.map((item) {
+      String peerId = '';
+      String peerName = 'Poket Mate';
+      String? peerAvatar;
+      Map<String, dynamic>? avatarConfig;
+      String lastMsg = '';
+      DateTime lastTime = item.createdAt;
+
+      if (item.type == 'mate') {
+        final req = item.data as Map<String, dynamic>;
+        final isSent = req['is_sent'] == true;
+        if (isSent) {
+          peerId = req['receiver_id']?.toString() ?? req['target_id']?.toString() ?? req['user_id']?.toString() ?? '';
+          peerName = req['receiver_name']?.toString() ?? req['sender_name']?.toString() ?? 'Poket Mate';
+          peerAvatar = req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString() ?? req['avatar_url']?.toString();
+          lastMsg = req['message']?.toString() ?? 'Sent Mates Request • Waiting for acceptance ⏳';
+        } else {
+          peerId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+          peerName = req['sender_name']?.toString() ?? 'Poket Mate';
+          peerAvatar = req['sender_profile_image']?.toString() ?? req['sender_avatar']?.toString() ?? req['avatar_url']?.toString();
+          lastMsg = req['message']?.toString() ?? '$peerName sent you a Mates Request';
+        }
+        if (req['avatar_config'] != null) {
+          try {
+            avatarConfig = Map<String, dynamic>.from(req['avatar_config']);
+          } catch (_) {}
+        }
+      } else if (item.type == 'pact') {
+        if (item.data is PocketTalkPact) {
+          final pact = item.data as PocketTalkPact;
+          final isMe = pact.user1Id == uid;
+          peerId = isMe ? pact.user2Id : pact.user1Id;
+          peerName = _getPactPeerName(peerId);
+          peerAvatar = _getPactPeerAvatar(peerId);
+          lastMsg = isMe ? 'Sent PocketTalk Request (4-Day Pact) ⏳' : '$peerName sent you a PocketTalk Request (4-Day Pact)';
+        } else if (item.data is Map<String, dynamic>) {
+          final map = item.data as Map<String, dynamic>;
+          final isSent = map['is_sent'] == true;
+          peerId = map['peer_id']?.toString() ?? map['user_id']?.toString() ?? map['receiver_id']?.toString() ?? '';
+          peerName = map['peer_name']?.toString() ?? map['receiver_name']?.toString() ?? _getPactPeerName(peerId);
+          peerAvatar = map['peer_avatar']?.toString() ?? map['receiver_avatar']?.toString() ?? _getPactPeerAvatar(peerId);
+          lastMsg = isSent ? 'Sent PocketTalk Request (4-Day Pact) ⏳' : '$peerName sent you a PocketTalk Request (4-Day Pact)';
+        }
+      } else if (item.type == 'fight') {
+        final duel = item.data as CitadelFightChallenge;
+        peerId = duel.challengerId;
+        peerName = duel.challengerName;
+        peerAvatar = duel.challengerAvatar;
+        lastMsg = '🥊 Citadel Fight Challenge (${duel.questionCount} Questions)';
+      } else if (item.type == 'attack') {
+        final atk = item.data as Map<String, dynamic>;
+        final isSent = atk['is_sent'] == true;
+        peerId = isSent
+            ? (atk['defender_id']?.toString() ?? '')
+            : (atk['attacker_id']?.toString() ?? '');
+        peerName = isSent
+            ? (atk['defender_name']?.toString() ?? 'Opponent')
+            : (atk['attacker_name']?.toString() ?? 'Attacker');
+        peerAvatar = isSent
+            ? atk['defender_avatar']?.toString()
+            : atk['attacker_avatar']?.toString();
+        lastMsg = isSent
+            ? '⚔️ You attacked Citadel defenses (${atk['weapon_name'] ?? 'Weapon'})'
+            : '⚔️ $peerName attacked your Citadel (${atk['weapon_name'] ?? 'Weapon'})';
+      }
+
+      return ChatConversation(
+        id: peerId,
+        name: peerName,
+        imageUrl: peerAvatar,
+        avatarConfig: avatarConfig,
+        lastMessage: lastMsg,
+        lastMessageTime: lastTime,
+        unreadCount: 1,
+        otherUnreadCount: 0,
+        isGroup: false,
+        lastSenderId: peerId,
+        isOnline: false,
+      );
+    }).where((c) => c.id.isNotEmpty).toList();
+
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          final item = unified[index];
+          final conversation = conversations[index];
           return RepaintBoundary(
-            key: ValueKey('req_${item.type}_${item.id}'),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
+            key: ValueKey('req_conv_' + conversation.id),
+            child: ConversationTile(
+              key: ValueKey('req_conv_' + conversation.id),
+              conversation: conversation,
+              currentUserId: uid,
+              onFavoriteToggle: () {
+                ref.read(conversationsProvider.notifier).refreshNow();
+                _handleRefresh();
+              },
               onTap: () async {
-                if (item.type == 'mate') {
-                  final req = item.data as Map<String, dynamic>;
-                  final isSent = req['is_sent'] == true;
-                  if (isSent) {
-                    final targetId = req['receiver_id']?.toString() ?? req['target_id']?.toString() ?? req['user_id']?.toString() ?? '';
-                    final targetName = req['receiver_name']?.toString() ?? req['sender_name']?.toString() ?? 'Poket Mate';
-                    final targetAvatar = req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString() ?? req['avatar_url']?.toString();
-                    await Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => WhatsAppGroupChat(
-                          groupId: 'm:$targetId',
-                          groupName: targetName,
-                          groupImage: targetAvatar,
-                        ),
-                      ),
-                    );
-                  } else {
-                    final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
-                    final senderName = req['sender_name']?.toString() ?? 'Poket Mate';
-                    final senderAvatar = req['sender_profile_image']?.toString() ?? req['sender_avatar']?.toString() ?? req['avatar_url']?.toString();
-                    await Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => WhatsAppGroupChat(
-                          groupId: 'm:$senderId',
-                          groupName: senderName,
-                          groupImage: senderAvatar,
-                        ),
-                      ),
-                    );
-                  }
-                } else if (item.type == 'pact') {
-                  String peerId = '';
-                  String peerName = 'Pocket Talk Partner';
-                  String? peerAvatar;
-                  if (item.data is PocketTalkPact) {
-                    final pact = item.data as PocketTalkPact;
-                    peerId = pact.user1Id == uid ? pact.user2Id : pact.user1Id;
-                    peerName = _getPactPeerName(peerId);
-                    peerAvatar = _getPactPeerAvatar(peerId);
-                  } else if (item.data is Map<String, dynamic>) {
-                    final map = item.data as Map<String, dynamic>;
-                    peerId = map['peer_id']?.toString() ?? map['user_id']?.toString() ?? map['receiver_id']?.toString() ?? '';
-                    peerName = map['peer_name']?.toString() ?? map['receiver_name']?.toString() ?? _getPactPeerName(peerId);
-                    peerAvatar = map['peer_avatar']?.toString() ?? map['receiver_avatar']?.toString() ?? _getPactPeerAvatar(peerId);
-                  }
-
-                  if (peerId.isNotEmpty) {
-                    await Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => WhatsAppGroupChat(
-                          groupId: 'p:$peerId',
-                          groupName: peerName,
-                          groupImage: peerAvatar,
-                        ),
-                      ),
-                    );
-                  }
-                } else if (item.type == 'fight') {
-                  final duel = item.data as CitadelFightChallenge;
-                  await Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => WhatsAppGroupChat(
-                        groupId: 'm:${duel.challengerId}',
-                        groupName: duel.challengerName,
-                        groupImage: duel.challengerAvatar,
-                      ),
-                    ),
+                if (_currentUserId == null || _currentUserId!.isEmpty) {
+                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                    context: context,
+                    customMessage: 'Please login to chat with ' + conversation.name,
                   );
+                  if (!isAuth) return;
                 }
+
+                // Mark as read in provider
+                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+
+                // Open 1-on-1 personal chat screen
+                await Navigator.push(
+                  context,
+                  material.MaterialPageRoute(
+                    builder: (context) => WhatsAppGroupChat(
+                      groupId: 'p:' + conversation.id,
+                      groupName: conversation.name,
+                      groupImage: conversation.imageUrl,
+                      avatarConfig: conversation.avatarConfig,
+                    ),
+                  ),
+                );
+
                 _loadPendingRequests();
                 ref.read(conversationsProvider.notifier).refreshNow();
+                if (mounted) setState(() {});
               },
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.black12,
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        _buildRequestTypeBadge(item.type, item.data),
-                        const Spacer(),
-                        Text(
-                          _formatRequestTime(item.createdAt),
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: isDark ? Colors.white38 : Colors.black38,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    if (item.type == 'mate')
-                      _buildMateRequestRow(item.data as Map<String, dynamic>, isDark)
-                    else if (item.type == 'pact')
-                      _buildPocketTalkPactRow(item.data, uid, isDark)
-                    else if (item.type == 'fight')
-                      _buildFightChallengeRow(item.data as CitadelFightChallenge, isDark),
-                  ],
-                ),
-              ),
+              onLongPress: () => _showConversationActionSheet(conversation),
             ),
           );
         },
-        childCount: unified.length,
+        childCount: conversations.length,
         addAutomaticKeepAlives: true,
         addRepaintBoundaries: true,
       ),

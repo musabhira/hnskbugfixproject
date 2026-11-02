@@ -313,11 +313,94 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     if (type.contains('citadel') || type.contains('raid') || type.contains('attack') || type.contains('fortress')) {
       if (targetUid.isNotEmpty) {
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: targetUid,
-          targetName: alert['title'] ?? 'Fortress',
-          attackerDay: 1,
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: const Color(0xFF131520),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (sheetContext) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Citadel Raid Alert ⚔️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    alert['body'] ?? 'Your fortress was attacked!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
+                    label: Text(
+                      'Launch Revenge Attack',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      PocketCitadelAttackPage.openForUser(
+                        context,
+                        userId: targetUid,
+                        targetName: alert['title'] ?? 'Fortress',
+                        attackerDay: 1,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFFFC00)),
+                      foregroundColor: const Color(0xFFFFFC00),
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                    label: Text(
+                      'Open Personal Chat',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WhatsAppGroupChat(
+                            groupId: 'p:$targetUid',
+                            groupName: alert['title'] ?? 'Opponent',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       }
     } else if (type.contains('pocket_talk') || type.contains('pact') || type.contains('talk')) {
@@ -462,6 +545,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         !a['title'].toString().contains('President') &&
         !a['body'].toString().contains('President') &&
         a['icon'] != '🏛️').toList();
+    final attackAlerts = _activityAlerts.where((a) {
+      final t = a['type']?.toString().toLowerCase() ?? '';
+      final title = a['title']?.toString().toLowerCase() ?? '';
+      return t.contains('citadel') || t.contains('raid') || t.contains('attack') || title.contains('citadel') || title.contains('attack');
+    }).toList();
+    final totalRequestsCount = _connectionRequests.length + _pendingFights.length + attackAlerts.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFF090A10),
@@ -497,7 +586,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       children: [
                         _buildFilterChip(0, 'All (${_connectionRequests.length + _activityAlerts.length})'),
                         const SizedBox(width: 8),
-                        _buildFilterChip(1, '🤝 Requests (${_connectionRequests.length})'),
+                        _buildFilterChip(1, '🤝 Requests ($totalRequestsCount)'),
                         const SizedBox(width: 8),
                         _buildFilterChip(2, '✨ Activity (${regularAlerts.length})'),
                         const SizedBox(width: 8),
@@ -608,7 +697,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ],
 
                       // 🥊 Citadel Fight Speed Duel Challenges Banner
-                      if (_pendingFights.isNotEmpty && (_selectedFilter == 0 || _selectedFilter == 2)) ...[
+                      if (_pendingFights.isNotEmpty && (_selectedFilter == 0 || _selectedFilter == 1 || _selectedFilter == 2)) ...[
                         Row(
                           children: [
                             Text(
@@ -699,6 +788,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                         child: Text(
                                           'Dismiss',
                                           style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => WhatsAppGroupChat(
+                                                groupId: 'p:${f.challengerId}',
+                                                groupName: f.challengerName,
+                                                groupImage: f.challengerAvatar,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(color: Color(0xFFF59E0B)),
+                                          foregroundColor: const Color(0xFFF59E0B),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 14),
+                                        label: Text(
+                                          'Chat',
+                                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -1018,6 +1133,96 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ),
                           );
                         }),
+                        const SizedBox(height: 18),
+                      ],
+
+                      // ⚔️ Citadel Attacks & Raids (Requests Tab)
+                      if (_selectedFilter == 1 && attackAlerts.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Text(
+                              '⚔️ CITADEL ATTACKS & RAIDS',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFEF4444),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEF4444),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${attackAlerts.length}',
+                                style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ...attackAlerts.map((alert) => Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E1B2E),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () => _handleAlertTap(alert),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(color: const Color(0xFFEF4444), width: 1.2),
+                                          ),
+                                          child: const Center(
+                                            child: Text('⚔️', style: TextStyle(fontSize: 18)),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                alert['title'] ?? 'Citadel Attack',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                alert['body'] ?? '',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.white70,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )),
                         const SizedBox(height: 18),
                       ],
 

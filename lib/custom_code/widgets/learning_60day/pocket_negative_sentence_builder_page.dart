@@ -326,30 +326,37 @@ class _PocketNegativeSentenceBuilderPageState
       appBar: AppBar(
         backgroundColor: isKid ? const Color(0xFF2E1065) : const Color(0xFF0F172A),
         elevation: 0,
+        titleSpacing: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                const Text('🔄', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
-                Text(
-                  'Negative Sentence',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            const Text('🔄', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Negative Sentence',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Text(
-              'Step 10 • Day ${widget.day}',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                  Text(
+                    'Step 10 • Day ${widget.day}',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -358,8 +365,8 @@ class _PocketNegativeSentenceBuilderPageState
           GestureDetector(
             onTap: () => setState(() => _showConceptGuide = !_showConceptGuide),
             child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFFA855F7).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
@@ -369,13 +376,13 @@ class _PocketNegativeSentenceBuilderPageState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('💡', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 3),
                   Text(
                     'Class',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFE9D5FF),
                       fontWeight: FontWeight.bold,
-                      fontSize: 11.5,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -383,24 +390,24 @@ class _PocketNegativeSentenceBuilderPageState
             ),
           ),
           Container(
-            margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            margin: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.6)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🎯', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 4),
+                const Text('🎯', style: TextStyle(fontSize: 11)),
+                const SizedBox(width: 3),
                 Text(
                   '${_currentIndex + 1} / ${_rounds.length}',
                   style: GoogleFonts.robotoMono(
                     color: const Color(0xFFA855F7),
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ],

@@ -2833,10 +2833,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               'type': 'vibe_like',
               'title': 'Vibe Liked ❤️',
               'message': '$senderName liked your Vibe!',
-              'data': {
-                'status_id': statusId,
-                'media_url': status['media_url'],
-              },
+              
             });
           }
         } catch (_) {}
@@ -2970,12 +2967,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           'type': 'vibe_reply',
           'title': 'New Vibe Reply 💬',
           'message': '$senderName replied to your Vibe: "$originalText"',
-          'data': {
-            'status_id': status['id'],
-            'media_url': status['media_url'],
-            'reply_text': originalText,
-            'sender_name': senderName,
-          },
+          
         });
       } catch (notifErr) {
         debugPrint('Error inserting vibe reply notification: $notifErr');

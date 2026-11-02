@@ -3475,19 +3475,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ? '${timeDiff.inHours}h ago'
                               : '${timeDiff.inDays}d ago');
 
-                      final isInvalidOrSelf = entry.attackerId.isEmpty ||
-                          entry.attackerId == userId ||
-                          entry.attackerId == 'me' ||
-                          entry.attackerName.trim().toLowerCase() == 'you' ||
-                          entry.attackerName.trim().isEmpty;
-                      final displayAttackerName = isInvalidOrSelf
-                          ? 'Shadow Citadel Raider 🦹'
-                          : entry.attackerName;
-                      final displayAttackerAvatar = isInvalidOrSelf
-                          ? '🦹'
-                          : (entry.attackerAvatar.isNotEmpty
-                              ? entry.attackerAvatar
-                              : '⚔️');
+                      final bool isSelf = entry.attackerId.isNotEmpty &&
+                          (entry.attackerId == userId || entry.attackerId == 'me');
+                      final String rawName = entry.attackerName.trim();
+                      final displayAttackerName = (rawName.isNotEmpty && rawName.toLowerCase() != 'you' && !isSelf)
+                          ? rawName
+                          : (isSelf ? 'Test Raid' : 'Shadow Citadel Raider 🦹');
+                      final displayAttackerAvatar = entry.attackerAvatar.isNotEmpty
+                          ? entry.attackerAvatar
+                          : '⚔️';
+
+                      Widget attackerAvatarWidget;
+                      if (displayAttackerAvatar.startsWith('http')) {
+                        attackerAvatarWidget = ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: CachedNetworkImage(
+                            imageUrl: displayAttackerAvatar,
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => const Center(
+                              child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFEF4444)),
+                            ),
+                            errorWidget: (_, __, ___) => const Center(
+                              child: Text('⚔️', style: TextStyle(fontSize: 22)),
+                            ),
+                          ),
+                        );
+                      } else {
+                        attackerAvatarWidget = Center(
+                          child: Text(
+                            displayAttackerAvatar,
+                            style: const TextStyle(fontSize: 22),
+                          ),
+                        );
+                      }
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -3522,12 +3544,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   width: 1.2,
                                 ),
                               ),
-                              child: Center(
-                                child: Text(
-                                  displayAttackerAvatar,
-                                  style: const TextStyle(fontSize: 22),
-                                ),
-                              ),
+                              child: attackerAvatarWidget,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -3854,7 +3871,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => WhatsAppGroupChat(
-                                    groupId: 'm:${duel.challengerId}',
+                                    groupId: 'p:${duel.challengerId}',
                                     groupName: safeChalName,
                                     groupImage: safeChalAvatar,
                                   ),
@@ -3892,8 +3909,25 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         width: 1.5,
                                       ),
                                     ),
-                                    child: Text(safeChalAvatar,
-                                        style: const TextStyle(fontSize: 22)),
+                                    child: safeChalAvatar.startsWith('http')
+                                        ? ClipOval(
+                                            child: CachedNetworkImage(
+                                              imageUrl: safeChalAvatar,
+                                              width: 44,
+                                              height: 44,
+                                              fit: BoxFit.cover,
+                                              placeholder: (_, __) => const Center(
+                                                child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFFEF4444)),
+                                              ),
+                                              errorWidget: (_, __, ___) => const Center(
+                                                child: Text('⚔️', style: TextStyle(fontSize: 22)),
+                                              ),
+                                            ),
+                                          )
+                                        : Center(
+                                            child: Text(safeChalAvatar,
+                                                style: const TextStyle(fontSize: 22)),
+                                          ),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
