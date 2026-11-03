@@ -1489,7 +1489,7 @@ class _PocketKidsSentenceBuilderPageState
 
                     // Next Level Button
                     ElevatedButton.icon(
-                      onPressed: _currentDay < 90
+                      onPressed: _currentDay < 300
                           ? () => _switchDay(_currentDay + 1)
                           : null,
                       style: ElevatedButton.styleFrom(

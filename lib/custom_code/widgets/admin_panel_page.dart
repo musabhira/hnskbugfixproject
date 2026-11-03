@@ -26,7 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_dat
 import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_app_update_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 
 class AdminDashboardPage extends StatefulWidget {
@@ -66,9 +66,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   bool isLoadingAuth = false;
   List<Map<String, dynamic>> allUsers = [];
 
-  // App Update State
+  // App Update & Releases State
   Map<String, dynamic>? appUpdateData;
   bool isLoadingUpdate = false;
+  List<AppReleaseRecord> _allReleases = [];
+  String _releaseSearchQuery = '';
+  String _releasePlatformFilter = 'all'; // 'all', 'android', 'ios'
+  String _releaseStatusFilter = 'all'; // 'all', 'active', 'testing', 'production'
+  AppReleaseRecord? _activeAndroidRelease;
+  AppReleaseRecord? _activeIosRelease;
 
   // Tools Visibility
   List<Map<String, dynamic>> allToolConfigs = [];
@@ -2637,96 +2643,997 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Widget _buildUpdateTab() {
-    if (isLoadingUpdate)
+    if (isLoadingUpdate) {
       return const Center(child: CircularProgressIndicator());
-    if (appUpdateData == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            const Text('Failed to load update metadata',
-                style: TextStyle(color: Colors.white)),
-            TextButton(
-                onPressed: _loadAppUpdateData, child: const Text('Retry')),
-          ],
-        ),
-      );
     }
+
+    // Filter releases
+    final filteredReleases = _allReleases.where((r) {
+      if (_releasePlatformFilter != 'all' && r.platform.toLowerCase() != _releasePlatformFilter.toLowerCase()) {
+        return false;
+      }
+      if (_releaseStatusFilter == 'active' && !r.isActiveProduction) {
+        return false;
+      }
+      if (_releaseStatusFilter == 'testing' && (r.isActiveProduction || r.buildType.toLowerCase() == 'production')) {
+        return false;
+      }
+      if (_releaseStatusFilter == 'production' && r.buildType.toLowerCase() != 'production') {
+        return false;
+      }
+      if (_releaseSearchQuery.isNotEmpty) {
+        final q = _releaseSearchQuery.toLowerCase();
+        final match = r.version.toLowerCase().contains(q) ||
+            r.buildNumber.toString().contains(q) ||
+            r.releaseTitle.toLowerCase().contains(q) ||
+            r.releaseNotes.toLowerCase().contains(q);
+        if (!match) return false;
+      }
+      return true;
+    }).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Platform Versioning',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white)),
-          const SizedBox(height: 20),
-          _buildUpdateControlCard(
-            'Android Deployment',
-            Icons.android,
-            Colors.green,
-            'android_version',
-            'android_active',
-            'android_link',
-          ),
-          const SizedBox(height: 20),
-          _buildUpdateControlCard(
-            'iOS Deployment',
-            Icons.apple,
-            Colors.white,
-            'ios_version',
-            'ios_active',
-            'ios_link',
-          ),
-          const SizedBox(height: 30),
-          const Text('Global Update Details',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white)),
-          const SizedBox(height: 15),
-          _buildTextField('Update Title', 'title'),
-          const SizedBox(height: 15),
-          _buildTextField('Description', 'description', maxLines: 3),
-          const SizedBox(height: 15),
+          // 🚀 HEADER SECTION: Active Production Releases & Quick Stats
           Row(
             children: [
-              const Text('Mandatory Update',
-                  style: TextStyle(color: Colors.white)),
-              const Spacer(),
-              Switch(
-                value: appUpdateData!['is_mandatory'] ?? false,
-                onChanged: (v) =>
-                    setState(() => appUpdateData!['is_mandatory'] = v),
-                activeThumbColor: Colors.red,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Release Management & App Updates',
+                      style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage Android & iOS builds independently. Set active store release for in-app updates.',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 20),
+                label: Text(
+                  'Create Release',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                ),
+                onPressed: () => _showCreateEditReleaseDialog(),
               ),
             ],
           ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFFFC00),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+          const SizedBox(height: 20),
+
+          // 📊 STATUS CARDS: Active Android vs Active iOS
+          Row(
+            children: [
+              Expanded(
+                child: _buildActiveReleaseBanner(
+                  platformTitle: 'Android Active Production',
+                  icon: Icons.android,
+                  accentColor: Colors.green,
+                  activeRelease: _activeAndroidRelease,
+                  onActivate: () => _pickAndActivateRelease('android'),
+                ),
               ),
-              onPressed: _updateAppVersion,
-              child: const Text('Push Global Update Configuration',
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildActiveReleaseBanner(
+                  platformTitle: 'iOS Active Production',
+                  icon: Icons.apple,
+                  accentColor: Colors.white,
+                  activeRelease: _activeIosRelease,
+                  onActivate: () => _pickAndActivateRelease('ios'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // 🔍 SEARCH & FILTERS
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131B26),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (v) => setState(() => _releaseSearchQuery = v.trim()),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                      hintText: 'Search by version, build #, title, or notes...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      filled: true,
+                      fillColor: Colors.black26,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // Platform filter
+                DropdownButton<String>(
+                  value: _releasePlatformFilter,
+                  dropdownColor: const Color(0xFF1E293B),
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('All Platforms')),
+                    DropdownMenuItem(value: 'android', child: Text('Android Only')),
+                    DropdownMenuItem(value: 'ios', child: Text('iOS Only')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _releasePlatformFilter = val);
+                  },
+                ),
+                const SizedBox(width: 14),
+                // Status filter
+                DropdownButton<String>(
+                  value: _releaseStatusFilter,
+                  dropdownColor: const Color(0xFF1E293B),
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('All Statuses')),
+                    DropdownMenuItem(value: 'active', child: Text('Active Live Only')),
+                    DropdownMenuItem(value: 'testing', child: Text('Testing / Shorebird')),
+                    DropdownMenuItem(value: 'production', child: Text('Production Builds')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _releaseStatusFilter = val);
+                  },
+                ),
+                const SizedBox(width: 14),
+                IconButton(
+                  tooltip: 'Refresh Releases',
+                  icon: const Icon(Icons.refresh, color: Color(0xFFFFFC00)),
+                  onPressed: _loadAppUpdateData,
+                ),
+              ],
             ),
           ),
+          const SizedBox(height: 20),
+
+          // 📋 LIST OF RELEASES
+          if (filteredReleases.isEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: BoxDecoration(
+                color: const Color(0xFF131B26),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.layers_clear_rounded, size: 48, color: Colors.white38),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No releases found matching current filters',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredReleases.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (ctx, i) {
+                final rel = filteredReleases[i];
+                return _buildReleaseCard(rel);
+              },
+            ),
+          ],
           const SizedBox(height: 40),
+
+          // 🛡️ KEYSTORE & VAULT CARD
           _buildKeystoreVaultCard(),
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActiveReleaseBanner({
+    required String platformTitle,
+    required IconData icon,
+    required Color accentColor,
+    required AppReleaseRecord? activeRelease,
+    required VoidCallback onActivate,
+  }) {
+    final bool hasActive = activeRelease != null;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B26),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: hasActive ? accentColor.withValues(alpha: 0.5) : Colors.white10,
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: accentColor, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                platformTitle,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: hasActive ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  hasActive ? 'ACTIVE LIVE' : 'NO TARGET SET',
+                  style: GoogleFonts.outfit(
+                    color: hasActive ? Colors.greenAccent : Colors.orangeAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (hasActive) ...[
+            Text(
+              'Version ${activeRelease.version} (Build ${activeRelease.buildNumber})',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              activeRelease.releaseTitle.isNotEmpty ? activeRelease.releaseTitle : 'Production Store Release',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                if (activeRelease.isMandatory) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text('Mandatory Update', style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 11)),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  'Activated: ${activeRelease.productionActivatedAt?.toLocal().toString().split('.').first ?? 'Recent'}',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                ),
+              ],
+            ),
+          ] else ...[
+            Text(
+              'No live release currently selected. Older app versions will not be prompted to update.',
+              style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+            ),
+          ],
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: accentColor.withValues(alpha: 0.5)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: onActivate,
+              child: Text(
+                hasActive ? 'Change Active Release' : 'Select Active Release',
+                style: GoogleFonts.outfit(color: accentColor, fontWeight: FontWeight.w600, fontSize: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReleaseCard(AppReleaseRecord rel) {
+    final isIos = rel.platform.toLowerCase() == 'ios';
+    final isProd = rel.buildType.toLowerCase() == 'production';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B26),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: rel.isActiveProduction
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+              : Colors.white10,
+          width: rel.isActiveProduction ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(isIos ? Icons.apple : Icons.android, color: isIos ? Colors.white : Colors.green, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '${rel.version} (${rel.buildNumber})',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Build Type Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isProd ? Colors.purple.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  rel.buildType.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    color: isProd ? Colors.purpleAccent : Colors.lightBlueAccent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Store Status Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  rel.storeStatus.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              if (rel.isActiveProduction) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle, size: 14, color: Colors.black),
+                      const SizedBox(width: 4),
+                      Text(
+                        'ACTIVE PRODUCTION',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              // Edit button
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Colors.white70, size: 18),
+                tooltip: 'Edit Release',
+                onPressed: () => _showCreateEditReleaseDialog(existing: rel),
+              ),
+              // Delete button (blocked if active)
+              IconButton(
+                icon: Icon(Icons.delete_outline,
+                    color: rel.isActiveProduction ? Colors.white24 : Colors.redAccent, size: 18),
+                tooltip: rel.isActiveProduction ? 'Cannot delete active production release' : 'Delete Release',
+                onPressed: rel.isActiveProduction ? null : () => _confirmDeleteRelease(rel),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            rel.releaseTitle,
+            style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+          if (rel.releaseNotes.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              rel.releaseNotes,
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          const SizedBox(height: 12),
+          // Actions footer
+          Row(
+            children: [
+              if (rel.shorebirdReleaseId != null && rel.shorebirdReleaseId!.isNotEmpty) ...[
+                Text(
+                  'Shorebird ID: ${rel.shorebirdReleaseId}',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                ),
+                const SizedBox(width: 14),
+              ],
+              Text(
+                'Created: ${rel.createdAt.toLocal().toString().split(' ').first}',
+                style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+              ),
+              const Spacer(),
+              if (!rel.isActiveProduction)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    foregroundColor: const Color(0xFFFFFC00),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    side: const BorderSide(color: Color(0xFFFFFC00), width: 1),
+                  ),
+                  icon: const Icon(Icons.verified_rounded, size: 16),
+                  label: Text('Set as Active Production', style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold)),
+                  onPressed: () => _confirmSetActiveProduction(rel),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickAndActivateRelease(String platform) async {
+    final matching = _allReleases.where((r) => r.platform.toLowerCase() == platform.toLowerCase()).toList();
+    if (matching.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No $platform releases found! Please create a release first.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131B26),
+        title: Text(
+          'Select Active ${platform.toUpperCase()} Release',
+          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: SizedBox(
+          width: 400,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: matching.length,
+            separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+            itemBuilder: (_, i) {
+              final r = matching[i];
+              return ListTile(
+                title: Text(
+                  '${r.version} (${r.buildNumber}) - ${r.buildType}',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  r.releaseTitle,
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                ),
+                trailing: r.isActiveProduction
+                    ? const Icon(Icons.check_circle, color: Color(0xFFFFFC00))
+                    : const Icon(Icons.chevron_right, color: Colors.white38),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmSetActiveProduction(r);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmSetActiveProduction(AppReleaseRecord rel) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131B26),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFFFFC00)),
+            const SizedBox(width: 8),
+            Text(
+              'Activate Production Release?',
+              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to set this build as the live Production Release for ${rel.platform.toUpperCase()}?',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('• Version: ${rel.version} (Build ${rel.buildNumber})',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                  Text('• Title: ${rel.releaseTitle}',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                  Text('• Platform: ${rel.platform.toUpperCase()}',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                  Text('• Mandatory: ${rel.isMandatory ? 'YES' : 'NO'}',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Note: All users running an older build on this platform will immediately see the update prompt. An official President announcement will also be dispatched once.',
+              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Confirm Activation', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => isLoadingUpdate = true);
+      try {
+        await PocketReleaseService.setActiveProductionRelease(rel);
+        await _loadAppUpdateData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully activated ${rel.platform.toUpperCase()} version ${rel.version} for production!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error activating release: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => isLoadingUpdate = false);
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteRelease(AppReleaseRecord rel) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131B26),
+        title: const Text('Delete Release Record?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Are you sure you want to permanently delete release ${rel.version} (${rel.buildNumber})? This cannot be undone.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await PocketReleaseService.deleteReleaseRecord(rel.id);
+        await _loadAppUpdateData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Release deleted successfully'), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _showCreateEditReleaseDialog({AppReleaseRecord? existing}) async {
+    final isEditing = existing != null;
+    String selectedPlatform = existing?.platform ?? 'android';
+    final versionController = TextEditingController(text: existing?.version ?? '1.0.155');
+    final buildController = TextEditingController(text: existing?.buildNumber.toString() ?? '330');
+    final shorebirdController = TextEditingController(text: existing?.shorebirdReleaseId ?? '');
+    final titleController = TextEditingController(text: existing?.releaseTitle ?? 'POKET Update');
+    final notesController = TextEditingController(text: existing?.releaseNotes ?? '');
+    final featuresController = TextEditingController(text: existing?.features.join('\n') ?? '');
+    final improvementsController = TextEditingController(text: existing?.improvements.join('\n') ?? '');
+    final bugFixesController = TextEditingController(text: existing?.bugFixes.join('\n') ?? '');
+    final announcementController = TextEditingController(text: existing?.announcementMessage ?? '');
+    final storeUrlController = TextEditingController(text: existing?.storeUrl ?? '');
+    String selectedBuildType = existing?.buildType ?? 'Testing';
+    String selectedStoreStatus = existing?.storeStatus ?? 'draft';
+    bool isMandatory = existing?.isMandatory ?? false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF131B26),
+          title: Text(
+            isEditing ? 'Edit Release Record' : 'Create New Release Record',
+            style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Platform selection
+                  Row(
+                    children: [
+                      const Text('Platform:', style: TextStyle(color: Colors.white70)),
+                      const SizedBox(width: 12),
+                      ChoiceChip(
+                        label: const Text('Android'),
+                        selected: selectedPlatform == 'android',
+                        onSelected: (s) => setDlgState(() => selectedPlatform = 'android'),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('iOS'),
+                        selected: selectedPlatform == 'ios',
+                        onSelected: (s) => setDlgState(() => selectedPlatform = 'ios'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // Version & Build
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: versionController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Version Name (e.g. 1.0.155)',
+                            labelStyle: TextStyle(color: Colors.white54),
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: buildController,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Build Number (e.g. 330)',
+                            labelStyle: TextStyle(color: Colors.white54),
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Shorebird Release ID
+                  TextField(
+                    controller: shorebirdController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Shorebird Release ID (Optional)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Title
+                  TextField(
+                    controller: titleController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Release Title',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Release Notes
+                  TextField(
+                    controller: notesController,
+                    maxLines: 3,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Release Notes (Summary)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Features (one per line)
+                  TextField(
+                    controller: featuresController,
+                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'New Features (One per line)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Improvements (one per line)
+                  TextField(
+                    controller: improvementsController,
+                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Improvements (One per line)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Bug Fixes (one per line)
+                  TextField(
+                    controller: bugFixesController,
+                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Bug Fixes (One per line)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Build Type & Store Status
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedBuildType,
+                          dropdownColor: const Color(0xFF1E293B),
+                          decoration: const InputDecoration(
+                            labelText: 'Build Type',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'Testing', child: Text('Testing')),
+                            DropdownMenuItem(value: 'Internal', child: Text('Internal')),
+                            DropdownMenuItem(value: 'TestFlight', child: Text('TestFlight')),
+                            DropdownMenuItem(value: 'Production', child: Text('Production')),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) setDlgState(() => selectedBuildType = v);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedStoreStatus,
+                          dropdownColor: const Color(0xFF1E293B),
+                          decoration: const InputDecoration(
+                            labelText: 'Store Status',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'draft', child: Text('Draft')),
+                            DropdownMenuItem(value: 'submitted', child: Text('Submitted')),
+                            DropdownMenuItem(value: 'in_review', child: Text('In Review')),
+                            DropdownMenuItem(value: 'approved', child: Text('Approved')),
+                            DropdownMenuItem(value: 'live', child: Text('Live')),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) setDlgState(() => selectedStoreStatus = v);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Store Link
+                  TextField(
+                    controller: storeUrlController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Store URL (Optional override)',
+                      labelStyle: TextStyle(color: Colors.white54),
+                      filled: true,
+                      fillColor: Colors.black26,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Mandatory Toggle
+                  SwitchListTile(
+                    title: const Text('Mandatory Force Update', style: TextStyle(color: Colors.white)),
+                    subtitle: const Text('Users cannot dismiss without updating', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                    value: isMandatory,
+                    onChanged: (v) => setDlgState(() => isMandatory = v),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final v = versionController.text.trim();
+                final b = int.tryParse(buildController.text.trim()) ?? 0;
+                if (v.isEmpty || b <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter valid Version and Build Number'), backgroundColor: Colors.orange),
+                  );
+                  return;
+                }
+
+                List<String> splitLines(String text) {
+                  return text
+                      .split('\n')
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList();
+                }
+
+                final record = AppReleaseRecord(
+                  id: existing?.id ?? 'rel_${selectedPlatform}_${v}_$b',
+                  platform: selectedPlatform,
+                  version: v,
+                  buildNumber: b,
+                  shorebirdReleaseId: shorebirdController.text.trim().isNotEmpty ? shorebirdController.text.trim() : null,
+                  releaseTitle: titleController.text.trim().isNotEmpty ? titleController.text.trim() : 'POKET Update',
+                  releaseNotes: notesController.text.trim(),
+                  features: splitLines(featuresController.text),
+                  improvements: splitLines(improvementsController.text),
+                  bugFixes: splitLines(bugFixesController.text),
+                  announcementMessage: announcementController.text.trim(),
+                  buildType: selectedBuildType,
+                  storeStatus: selectedStoreStatus,
+                  isActiveProduction: existing?.isActiveProduction ?? false,
+                  productionActivatedAt: existing?.productionActivatedAt,
+                  isMandatory: isMandatory,
+                  storeUrl: storeUrlController.text.trim().isNotEmpty ? storeUrlController.text.trim() : null,
+                  createdAt: existing?.createdAt ?? DateTime.now(),
+                  updatedAt: DateTime.now(),
+                );
+
+                Navigator.pop(ctx);
+                setState(() => isLoadingUpdate = true);
+                try {
+                  await PocketReleaseService.saveReleaseRecord(record);
+                  await _loadAppUpdateData();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Release $v ($b) saved successfully!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error saving release: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                } finally {
+                  if (mounted) setState(() => isLoadingUpdate = false);
+                }
+              },
+              child: Text(isEditing ? 'Save Changes' : 'Create Release', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3010,71 +3917,7 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
-  Widget _buildUpdateControlCard(String title, IconData icon, Color iconColor,
-      String versionKey, String activeKey, String linkKey) {
-    final isActive = appUpdateData![activeKey] == true;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: iconColor, size: 24),
-              const SizedBox(width: 12),
-              Text(title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white)),
-              const Spacer(),
-              const Text('Active',
-                  style: TextStyle(color: Colors.grey, fontSize: 12)),
-              Switch(
-                value: appUpdateData![activeKey] ?? false,
-                onChanged: (v) => setState(() => appUpdateData![activeKey] = v),
-                activeThumbColor: Colors.blue,
-              ),
-            ],
-          ),
-          const Divider(color: Colors.white10, height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: TextEditingController(
-                      text: appUpdateData![versionKey]?.toString() ?? '1.0.0'),
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: 'Store Version',
-                    labelStyle: TextStyle(color: Colors.grey),
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (v) => appUpdateData![versionKey] = v,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('Live',
-                    style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // (Legacy update methods cleaned up in favor of PocketReleaseService)
 
   // ---------------------------------------------------------------------------
   // 🛡️ STORE REVIEW & WORLD MODE VISIBILITY TAB (Play Store & App Store Approval)
@@ -3435,80 +4278,32 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
-  Widget _buildTextField(String label, String key, {int maxLines = 1}) {
-    return TextField(
-      controller:
-          TextEditingController(text: appUpdateData![key]?.toString() ?? ''),
-      maxLines: maxLines,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        filled: true,
-        fillColor: Colors.grey[900],
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none),
-      ),
-      onChanged: (v) => appUpdateData![key] = v,
-    );
-  }
+
 
   Future<void> _loadAppUpdateData() async {
     setState(() => isLoadingUpdate = true);
     try {
+      final releases = await PocketReleaseService.fetchAllReleases();
+      final activeAndroid = await PocketReleaseService.fetchActiveProductionRelease('android');
+      final activeIos = await PocketReleaseService.fetchActiveProductionRelease('ios');
+
       final res = await supabase
           .from('app_updates')
           .select('*')
           .eq('id', 1)
           .maybeSingle();
+
       if (mounted) {
         setState(() {
+          _allReleases = releases;
+          _activeAndroidRelease = activeAndroid;
+          _activeIosRelease = activeIos;
           appUpdateData = res;
           isLoadingUpdate = false;
         });
       }
     } catch (e) {
       debugPrint('Error loading app update data: $e');
-      if (mounted) setState(() => isLoadingUpdate = false);
-    }
-  }
-
-  Future<void> _updateAppVersion() async {
-    if (appUpdateData == null) return;
-    setState(() => isLoadingUpdate = true);
-    try {
-      await supabase.from('app_updates').update({
-        'android_version': appUpdateData!['android_version'],
-        'ios_version': appUpdateData!['ios_version'],
-        'android_active': appUpdateData!['android_active'],
-        'ios_active': appUpdateData!['ios_active'],
-        'android_link': (appUpdateData!['android_link'] != null && appUpdateData!['android_link'].toString().trim().isNotEmpty)
-            ? appUpdateData!['android_link']
-            : PocketAppUpdateService.defaultAndroidPlayStoreUrl,
-        'ios_link': appUpdateData!['ios_link'],
-        'is_mandatory': appUpdateData!['is_mandatory'],
-        'title': appUpdateData!['title'],
-        'description': appUpdateData!['description'],
-        'features': appUpdateData!['features'],
-      }).eq('id', 1);
-
-      _loadAppUpdateData();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('App configuration updated successfully!'),
-              backgroundColor: Colors.green),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error updating app config: $e'),
-              backgroundColor: Colors.red),
-        );
-      }
       if (mounted) setState(() => isLoadingUpdate = false);
     }
   }

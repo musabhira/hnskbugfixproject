@@ -452,9 +452,14 @@ class PocketKidsService {
   /// 👶 Kids Score (KS) - Dedicated playful score for children (4–8 yrs)
   /// Earned through phonics balloon pops, animal feeding, and mascot playdates!
   static int get kidsScore => _kidsScore;
+  static int get kidScore => _kidsScore;
+  static int get totalStarsEarned => _kidStars;
 
   /// Backwards-compatibility wrapper for legacy calls (defaults to SS)
   static int get pocketScore => _studentScore;
+
+  static Future<void> addKidScore(int points, [String? uid]) =>
+      addKidsScore(points, uid);
 
   static Future<int> getStudentScore([String? uid]) async {
     try {

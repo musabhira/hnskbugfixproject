@@ -6,8 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 
 /// 🚀 Clean, Minimalist In-App Version & Remote Update Service
 ///
@@ -36,55 +35,36 @@ class PocketAppUpdateService {
       if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
 
       final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version; // e.g. "1.0.139"
+      final currentVersion = packageInfo.version; // e.g. "1.0.155"
       final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;
+      final platform = Platform.isIOS ? 'ios' : 'android';
 
-      // 1. Fetch remote update data from Supabase `app_updates` (row id = 1)
-      final updateInfo = await _fetchRemoteVersionInfo();
-      if (updateInfo.isEmpty) return; // Not enabled or no remote update published
+      // 1. Fetch active production release for current platform from PocketReleaseService
+      final activeRelease = await PocketReleaseService.fetchActiveProductionRelease(platform);
+      if (activeRelease == null) return; // No active release configured
 
-      final String remoteVersion = updateInfo['latest_version'] ?? currentVersion;
-      final int remoteBuild = int.tryParse(updateInfo['latest_build']?.toString() ?? '0') ?? currentBuild;
-      final String releaseNotes = updateInfo['release_notes'] ?? '';
-      final bool forceUpdateFromRemote = updateInfo['force_update'] == true;
-      final String storeUrl = (Platform.isIOS)
-          ? (updateInfo['ios_url'] ?? defaultIosStoreUrl)
-          : (updateInfo['android_url'] ?? defaultAndroidPlayStoreUrl);
+      final String remoteVersion = activeRelease.version;
+      final int remoteBuild = activeRelease.buildNumber;
+      final bool forceUpdateFromRemote = activeRelease.isMandatory;
+      final String storeUrl = (activeRelease.storeUrl != null && activeRelease.storeUrl!.trim().isNotEmpty)
+          ? activeRelease.storeUrl!.trim()
+          : (Platform.isIOS ? defaultIosStoreUrl : defaultAndroidPlayStoreUrl);
 
       // 2. Strict version comparison
-      final bool hasNewerVersion = _isVersionOutdated(
+      final bool hasNewerVersion = PocketReleaseService.isInstalledBuildOutdated(
         currentVersion: currentVersion,
         currentBuild: currentBuild,
-        remoteVersion: remoteVersion,
-        remoteBuild: remoteBuild,
+        targetVersion: remoteVersion,
+        targetBuild: remoteBuild,
       );
 
-      // 2.5 Deliver automatic President Update Announcement chat message (deduplicated)
-      final currentUid = SupaFlow.client.auth.currentUser?.id;
-      if (currentUid != null && currentUid.isNotEmpty) {
-        final platformName = Platform.isIOS ? 'iOS' : 'Android';
-        final rawFeatures = updateInfo['features_list'];
-        final features = (rawFeatures is List)
-            ? rawFeatures.map((e) => e.toString()).toList()
-            : <String>[];
-        PocketPresidentService.sendPresidentUpdateMessage(
-          targetUserId: currentUid,
-          platform: platformName,
-          version: remoteVersion,
-          title: updateInfo['title'] ?? 'What\'s New',
-          description: updateInfo['raw_description'] ?? '',
-          features: features,
-          storeUrl: storeUrl,
-        );
-      }
-
       if (!hasNewerVersion) {
-        return; // Already up to date! Never show dialog.
+        return; // Installed version is equal to or newer than target production! Never prompt.
       }
 
       // 3. Prompt history counter
       final prefs = await SharedPreferences.getInstance();
-      final promptKey = '$_kPromptCountPrefix$remoteVersion';
+      final promptKey = '$_kPromptCountPrefix${remoteVersion}_$remoteBuild';
       final promptCount = prefs.getInt(promptKey) ?? 0;
 
       // 1st time has dismiss button; 2nd launch onwards becomes mandatory force update
@@ -103,7 +83,7 @@ class PocketAppUpdateService {
           child: _MinimalUpdateDialog(
             currentVersion: currentVersion,
             latestVersion: remoteVersion,
-            releaseNotes: releaseNotes,
+            releaseRecord: activeRelease,
             storeUrl: storeUrl,
             isMandatory: isMandatory,
           ),
@@ -114,83 +94,19 @@ class PocketAppUpdateService {
     }
   }
 
-  /// Version comparison helper
-  static bool _isVersionOutdated({
+  /// Version comparison helper (Legacy proxy)
+  static bool isVersionOutdated({
     required String currentVersion,
     required int currentBuild,
     required String remoteVersion,
     required int remoteBuild,
   }) {
-    if (remoteVersion.isEmpty || remoteVersion == currentVersion) return false;
-
-    if (remoteBuild > currentBuild && currentBuild > 0) return true;
-
-    final currParts = currentVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final remParts = remoteVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-
-    for (int i = 0; i < 3; i++) {
-      final curr = (i < currParts.length) ? currParts[i] : 0;
-      final rem = (i < remParts.length) ? remParts[i] : 0;
-      if (rem > curr) return true;
-      if (rem < curr) return false;
-    }
-    return false;
-  }
-
-  /// Fetch version info from Supabase `app_updates` table (row id = 1)
-  static Future<Map<String, dynamic>> _fetchRemoteVersionInfo() async {
-    try {
-      final res = await SupaFlow.client
-          .from('app_updates')
-          .select('*')
-          .eq('id', 1)
-          .maybeSingle();
-
-      if (res != null) {
-        final isIos = Platform.isIOS;
-        final bool isActive = isIos
-            ? (res['ios_active'] == true)
-            : (res['android_active'] == true);
-
-        // If admin hasn't activated it, return empty so no update dialog appears
-        if (!isActive) return {};
-
-        final remoteVer = isIos
-            ? (res['ios_version']?.toString().trim() ?? '')
-            : (res['android_version']?.toString().trim() ?? '');
-
-        if (remoteVer.isEmpty) return {};
-
-        final rawStoreLink = isIos ? res['ios_link'] : res['android_link'];
-        final storeLink = (rawStoreLink != null && rawStoreLink.toString().trim().isNotEmpty)
-            ? rawStoreLink.toString().trim()
-            : (isIos ? defaultIosStoreUrl : defaultAndroidPlayStoreUrl);
-
-        final desc = res['description']?.toString().trim() ?? '';
-        final featuresList = res['features'];
-        String formattedNotes = desc;
-        if (featuresList is List && featuresList.isNotEmpty) {
-          final items = featuresList.map((f) => '• $f').join('\n');
-          formattedNotes = formattedNotes.isNotEmpty ? '$formattedNotes\n\n$items' : items;
-        }
-
-        return {
-          'latest_version': remoteVer,
-          'latest_build': 0,
-          'title': res['title']?.toString() ?? 'POKET Update Available',
-          'raw_description': desc,
-          'features_list': featuresList,
-          'release_notes': formattedNotes.isNotEmpty
-              ? formattedNotes
-              : 'Bug fixes, performance improvements, and new features.',
-          'force_update': res['is_mandatory'] == true,
-          'android_url': storeLink,
-          'ios_url': isIos ? storeLink : defaultIosStoreUrl,
-        };
-      }
-    } catch (_) {}
-
-    return {}; // If offline or table not configured, do not show any dialog!
+    return PocketReleaseService.isInstalledBuildOutdated(
+      currentVersion: currentVersion,
+      currentBuild: currentBuild,
+      targetVersion: remoteVersion,
+      targetBuild: remoteBuild,
+    );
   }
 }
 
@@ -198,14 +114,14 @@ class PocketAppUpdateService {
 class _MinimalUpdateDialog extends StatelessWidget {
   final String currentVersion;
   final String latestVersion;
-  final String releaseNotes;
+  final AppReleaseRecord releaseRecord;
   final String storeUrl;
   final bool isMandatory;
 
   const _MinimalUpdateDialog({
     required this.currentVersion,
     required this.latestVersion,
-    required this.releaseNotes,
+    required this.releaseRecord,
     required this.storeUrl,
     required this.isMandatory,
   });
@@ -222,12 +138,20 @@ class _MinimalUpdateDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = releaseRecord.releaseTitle.isNotEmpty
+        ? releaseRecord.releaseTitle
+        : 'Version $latestVersion is here';
+    final notes = releaseRecord.releaseNotes.trim();
+    final hasFeatures = releaseRecord.features.isNotEmpty;
+    final hasImprovements = releaseRecord.improvements.isNotEmpty;
+    final hasBugFixes = releaseRecord.bugFixes.isNotEmpty;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 380),
+        constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
           color: const Color(0xFF141720),
           borderRadius: BorderRadius.circular(24),
@@ -308,7 +232,7 @@ class _MinimalUpdateDialog extends StatelessWidget {
 
               // Title & Subtitle
               Text(
-                'Version $latestVersion is here',
+                title,
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontSize: 20,
@@ -318,19 +242,19 @@ class _MinimalUpdateDialog extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Please update to keep enjoying a smooth and bug-free experience.',
+                'Version $latestVersion (${releaseRecord.buildNumber}) is now ready on the store.',
                 style: GoogleFonts.inter(
                   color: Colors.white60,
                   fontSize: 12.5,
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
-              // Minimal Release Notes Card
-              if (releaseNotes.trim().isNotEmpty) ...[
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 160),
+              // Minimal Release Notes & Highlights Card
+              Flexible(
+                child: Container(
+                  constraints: const BoxConstraints(maxHeight: 200),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1B1F2A),
@@ -341,19 +265,115 @@ class _MinimalUpdateDialog extends StatelessWidget {
                     ),
                   ),
                   child: SingleChildScrollView(
-                    child: Text(
-                      releaseNotes,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 12.5,
-                        height: 1.5,
-                        fontWeight: FontWeight.w400,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (notes.isNotEmpty) ...[
+                          Text(
+                            notes,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 12.5,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        if (hasFeatures) ...[
+                          Text(
+                            '✨ NEW FEATURES',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          ...releaseRecord.features.map(
+                            (f) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• ', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                  Expanded(
+                                    child: Text(
+                                      f,
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (hasImprovements) ...[
+                          Text(
+                            '⚡ IMPROVEMENTS',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF00FFC2),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          ...releaseRecord.improvements.map(
+                            (imp) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• ', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                  Expanded(
+                                    child: Text(
+                                      imp,
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (hasBugFixes) ...[
+                          Text(
+                            '🛠️ BUG FIXES',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          ...releaseRecord.bugFixes.map(
+                            (fix) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('• ', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                  Expanded(
+                                    child: Text(
+                                      fix,
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
+              const SizedBox(height: 18),
 
               // Primary Action Button
               SizedBox(

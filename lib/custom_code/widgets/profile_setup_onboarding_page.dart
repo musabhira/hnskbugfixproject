@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_service.da
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_pure_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
@@ -471,6 +472,22 @@ class _ProfileSetupOnboardingPageState
         } else {
           // Adult Mode (Ages 17+)
           await PocketKidsService.activateAdultAccount();
+          if (!mounted) return;
+
+          // Check if eligible for one-time post-signup Super Pocketmates VIP offer
+          final bool isVip = prefs.getBool('is_vip') == true ||
+              prefs.getBool('is_premium') == true ||
+              prefs.getBool('has_vip_pass') == true;
+          final bool seenVipModal =
+              prefs.getBool('post_signup_vip_modal_seen') == true;
+
+          if (!isVip && !seenVipModal) {
+            await prefs.setBool('post_signup_vip_modal_seen', true);
+            if (mounted) {
+              await _showPostSignupVipOffer(context);
+            }
+          }
+
           if (mounted) {
             context.goNamedAuth(HomePageWidget.routeName, context.mounted);
             return;
@@ -485,6 +502,159 @@ class _ProfileSetupOnboardingPageState
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _showPostSignupVipOffer(BuildContext ctx) async {
+    await showDialog<void>(
+      context: ctx,
+      barrierDismissible: true,
+      builder: (dialogCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.7),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      blurRadius: 18,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text('👑', style: TextStyle(fontSize: 34)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Unlock Super PoketMates',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Get unlimited AI conversations, 100% ad-free experience, and fast-track spoken English fluency!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFA1A1AA),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    _buildVipFeatureRow('🚫', '100% Zero Ads across the app'),
+                    const SizedBox(height: 8),
+                    _buildVipFeatureRow('⚡', 'Instant 90-Day Unlocked Binge Mode'),
+                    const SizedBox(height: 8),
+                    _buildVipFeatureRow('🎙️', 'Unlimited Maya & Alex AI Voice Coaching'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogCtx).pop();
+                    Navigator.of(ctx).push(
+                      MaterialPageRoute(
+                          builder: (_) => const SubscriptionPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 3,
+                  ),
+                  child: Text(
+                    'GET SUPER POKETMATES ⚡',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(),
+                child: Text(
+                  'Continue Free',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFA1A1AA),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVipFeatureRow(String emoji, String text) {
+    return Row(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 15)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -772,6 +942,102 @@ class _ProfileSetupOnboardingPageState
               Text(
                 'Visible to your spoken practice partners in rooms',
                 style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+          // Optional Avatar / Profile Picture Row
+          const SizedBox(height: 24),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Profile Photo or Avatar (Optional)',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF27272A),
+                    border: Border.all(
+                      color: _selectedImageBytes != null
+                          ? const Color(0xFFFFD700)
+                          : Colors.white24,
+                      width: 2,
+                    ),
+                  ),
+                  child: _selectedImageBytes != null
+                      ? ClipOval(
+                          child: Image.memory(
+                            _selectedImageBytes!,
+                            width: 58,
+                            height: 58,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(Icons.add_a_photo_rounded,
+                              color: Color(0xFFFFD700), size: 24),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: SizedBox(
+                  height: 52,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _presetAvatars.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final avatar = _presetAvatars[index];
+                      final isSelected = _selectedPresetAvatar == avatar &&
+                          _selectedImageBytes == null;
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _selectedPresetAvatar = avatar;
+                            _selectedImageBytes = null;
+                          });
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isSelected
+                                ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                : const Color(0xFF1E293B),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              avatar,
+                              style: const TextStyle(fontSize: 22),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ],
           ),

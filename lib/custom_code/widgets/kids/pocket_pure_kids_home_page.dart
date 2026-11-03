@@ -36,6 +36,17 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/senten
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_essential_spelling_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/spoken/pocket_kids_cumulative_speech_arena_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/games/pocket_kids_interactive_learning_games.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/profile/pocket_kids_growing_tree_profile_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_1_letter_sound_quest.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_2_word_bridge_builder.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_3_listening_detective.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_4_vocabulary_rocket_run.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_5_grammar_garden.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_6_opposite_world_challenge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_7_tense_time_travel.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_8_pronunciation_echo.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_9_story_sequence.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/games/flame/pocket_kids_flame_game_10_everyday_conversation.dart';
 
 /// 👶 Pure Kids World Platform (Ages 4–8)
 ///
@@ -217,11 +228,10 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
               child: IndexedStack(
                 index: _currentTab,
                 children: [
-                  _buildKidWorldTab(),
-                  _buildAnimalMatesTab(),
-                  _buildCartoonTrailTab(),
-                  _buildArcadePlaygroundTab(),
-                  _buildKidProfileTab(),
+                  _buildKidWorldTab(),        // Tab 0: Homes
+                  _buildCartoonTrailTab(),     // Tab 1: Trails (300-day learning journey)
+                  _buildArcadePlaygroundTab(), // Tab 2: Arcade (mini-games playground)
+                  _buildKidProfileTab(),      // Tab 3: Profile (growing tree world)
                 ],
               ),
             ),
@@ -503,56 +513,11 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Visit cute animal houses & challenge their English defenses!',
+                        'Visit cute animal houses & practice friendly English challenges!',
                         style: GoogleFonts.outfit(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF6B8B82),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // 2D Open World Action Button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.heavyImpact();
-                          PocketGameAudioService.instance.playVictorySfx();
-                          PocketKidsDayOpenWorldPage.open(
-                            context,
-                            PocketKidsService.currentUnlockedDay,
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8CD837),
-                            borderRadius: BorderRadius.circular(16),
-                            border: const Border(
-                              bottom: BorderSide(color: Color(0xFF6FAF24), width: 3),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF8CD837).withValues(alpha: 0.4),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('🎮', style: TextStyle(fontSize: 12)),
-                              const SizedBox(width: 5),
-                              Text(
-                                'EXPLORE 2D OPEN WORLD',
-                                style: GoogleFonts.outfit(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ],
@@ -3083,180 +3048,189 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
                       const SizedBox(height: 12),
 
-                      // 🚗 Step 4: Speed Wheels & Vehicles Garage
+                      // 🔤 Step 4: Letter Sound Quest (Flame 2D Phonics)
                       _buildActivityOptionTile(
                         stepNumber: 4,
-                        iconEmoji: '🚗',
-                        title: 'Vehicles & Speed Wheels Garage 🚗',
-                        subtitle: 'Zoom cars, buses, planes & rockets with real vehicle sounds & spelling',
-                        gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        iconEmoji: '🌟',
+                        title: 'Letter Sound Quest (Flame 2D) 🔤',
+                        subtitle: 'Tap flying star bubbles & match phoneme letter sounds',
+                        gradientColors: const [Color(0xFF8CD837), Color(0xFF16A34A)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 4),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 4),
                         onTap: () => launchStep(
                           4,
-                          () => PocketKidsVehiclesAndWheelsGame.show(
+                          () => PocketKidsLetterSoundQuestPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 4),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🦁 Step 5: Safari Animal Feeder & Zoo Sounds
+                      // 🌉 Step 5: Word Bridge Builder (Flame 2D)
                       _buildActivityOptionTile(
                         stepNumber: 5,
-                        iconEmoji: '🦁',
-                        title: 'Safari Animal Feeder & Zoo Sounds 🦁',
-                        subtitle: 'Feed hungry lions, pandas & monkeys their favorite food with wild sounds',
-                        gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
+                        iconEmoji: '🌉',
+                        title: 'Word Bridge Builder (Flame 2D) 🌉',
+                        subtitle: 'Place wooden word planks across the river for the puppy',
+                        gradientColors: const [Color(0xFF0284C7), Color(0xFF0369A1)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 5),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 5),
                         onTap: () => launchStep(
                           5,
-                          () => PocketKidsSafariAnimalFeederGame.show(
+                          () => PocketKidsWordBridgeBuilderPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 5),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🍎 Step 6: Fruit, Veggie & Bakery Market
+                      // 🔍 Step 6: Listening Detective
                       _buildActivityOptionTile(
                         stepNumber: 6,
-                        iconEmoji: '🍎',
-                        title: 'Fruit, Veggie & Bakery Market 🍎',
-                        subtitle: 'Fill your shopping cart with delicious apples, bananas, cookies & cupcakes',
-                        gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        iconEmoji: '🔍',
+                        title: 'Listening Detective Lab 🔍',
+                        subtitle: 'Solve spoken English sound riddles with animal detective badges',
+                        gradientColors: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 6),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 6),
                         onTap: () => launchStep(
                           6,
-                          () => PocketKidsFruitBakeryMarketGame.show(
+                          () => PocketKidsListeningDetectivePage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 6),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🔢 Step 7: Number Magic & Star Counting
+                      // 🚀 Step 7: Vocabulary Rocket Run
                       _buildActivityOptionTile(
                         stepNumber: 7,
-                        iconEmoji: '🔢',
-                        title: 'Number Magic & Star Counting 🔢',
-                        subtitle: 'Count sparkling shooting stars, balloons & puppies from 1 to 20',
-                        gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                        iconEmoji: '🚀',
+                        title: 'Vocabulary Rocket Run 🚀',
+                        subtitle: 'Fuel the spacecraft with target words & reach outer orbit',
+                        gradientColors: const [Color(0xFFEC4899), Color(0xFFDB2777)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 7),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 7),
                         onTap: () => launchStep(
                           7,
-                          () => PocketKidsNumberMagicCountingGame.show(
+                          () => PocketKidsVocabularyRocketRunPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 7),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🦸 Step 8: Superhero Action Verbs Arena
+                      // 🌸 Step 8: Grammar Garden
                       _buildActivityOptionTile(
                         stepNumber: 8,
-                        iconEmoji: '🦸',
-                        title: 'Superhero Action Verbs Arena 🦸',
-                        subtitle: 'Jump, run, fly, dance & sing! Master essential action verbs with audio',
-                        gradientColors: const [Color(0xFFEC4899), Color(0xFFDB2777)],
+                        iconEmoji: '🌸',
+                        title: 'Grammar Garden 🌸',
+                        subtitle: 'Singular/Plural & A/An flower petal grammar puzzles',
+                        gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 8),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 8),
                         onTap: () => launchStep(
                           8,
-                          () => PocketKidsActionSuperheroJumpGame.show(
+                          () => PocketKidsGrammarGardenPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 8),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🐸 Step 9: Rhyme Time Frog Lilypad Hopper
+                      // ⚖️ Step 9: Opposite World Challenge
                       _buildActivityOptionTile(
                         stepNumber: 9,
-                        iconEmoji: '🐸',
-                        title: 'Rhyme Time Lilypad Hopper 🐸',
-                        subtitle: 'Help the cute frog leap across the river by hopping on rhyming word lilypads',
-                        gradientColors: const [Color(0xFF0284C7), Color(0xFF0369A1)],
+                        iconEmoji: '⚖️',
+                        title: 'Opposite World Challenge ⚖️',
+                        subtitle: 'Hot vs Cold, Fast vs Slow, Big vs Small balance scale',
+                        gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 9),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 9),
                         onTap: () => launchStep(
                           9,
-                          () => PocketKidsRhymeFrogHopperGame.show(
+                          () => PocketKidsOppositeWorldChallengePage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 9),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // ⚖️ Step 10: Opposites Seesaw Balance Scale
+                      // ⏳ Step 10: Tense Time Travel
                       _buildActivityOptionTile(
                         stepNumber: 10,
-                        iconEmoji: '⚖️',
-                        title: 'Opposites Seesaw Balance Scale ⚖️',
-                        subtitle: 'Big vs Small, Hot vs Cold, Fast vs Slow! Balance the seesaw with opposite pairs',
-                        gradientColors: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        iconEmoji: '⏳',
+                        title: 'Tense Time Travel ⏳',
+                        subtitle: 'Learn sleep ➔ slept with time machine blocks & hints',
+                        gradientColors: const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 10),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 10),
                         onTap: () => launchStep(
                           10,
-                          () => PocketKidsOppositesSeesawGame.show(
+                          () => PocketKidsTenseTimeTravelPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 10),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // ⏳ Step 11: Past, Present & Future Tenses
+                      // 🗣️ Step 11: Pronunciation Echo & Dialogue Lab
                       _buildActivityOptionTile(
                         stepNumber: 11,
-                        iconEmoji: '⏳',
-                        title: 'Past, Present & Future Tenses ⏳',
-                        subtitle: 'Learn sleep ➔ slept with falling action blocks & native hints',
-                        gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        iconEmoji: '🗣️',
+                        title: 'Pronunciation Echo & Dialogue Lab 🗣️',
+                        subtitle: 'Interactive voice conversation with animal mascot, live mic & stars',
+                        gradientColors: const [Color(0xFF007AFF), Color(0xFF5856D6)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 11),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 11),
                         onTap: () => launchStep(
                           11,
-                          () => PocketKidsTenseDropGame.show(
+                          () => PocketKidsPronunciationEchoPage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 11),
                           ),
                         ),
                       ),
 
                       const SizedBox(height: 12),
 
-                      // 🗣️ Step 12: Spoken English & Dialogue Lab
+                      // 📖 Step 12: Story Sequence Adventure
                       _buildActivityOptionTile(
                         stepNumber: 12,
-                        iconEmoji: '🗣️',
-                        title: 'Spoken English & Dialogue Lab 🗣️',
-                        subtitle: 'Interactive voice conversation with animal mascot, live mic & stars',
-                        gradientColors: const [Color(0xFF007AFF), Color(0xFF5856D6)],
+                        iconEmoji: '📖',
+                        title: 'Story Sequence Adventure 📖',
+                        subtitle: 'Arrange First, Then, Finally cartoon story sequence cards',
+                        gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
                         isCompleted: PocketKidsService.isDayStepCompleted(day, 12),
                         isUnlocked: PocketKidsService.isDayStepUnlocked(day, 12),
                         onTap: () => launchStep(
                           12,
-                          () => PocketKidsSpokenDialogueLabPage.show(
+                          () => PocketKidsStorySequenceAdventurePage.show(
                             context,
                             day: day,
+                            onCompleted: () => PocketKidsService.markDayStepCompleted(day, 12),
                           ),
                         ),
                       ),
@@ -3822,64 +3796,64 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
         'type': 'match_it',
       },
       {
-        'title': 'Vehicles & Speed Wheels 🚗',
-        'sub': 'Zoom cars, buses, planes & rockets! Match engine sounds & spell vehicle words.',
-        'color': const Color(0xFFEF4444),
-        'emoji': '🚗',
-        'tag': 'VEHICLES • SPELLING',
+        'title': 'Letter Sound Quest 🔤',
+        'sub': 'Listen to phoneme sounds & pop matching letter star bubbles in Flame 2D!',
+        'color': const Color(0xFF8CD837),
+        'emoji': '🌟',
+        'tag': 'FLAME 2D • PHONICS',
         'ks': '+20 KS',
         'cat': 1,
-        'type': 'vehicles',
+        'type': 'letter_sound_quest',
       },
       {
-        'title': 'Safari Animal Feeder 🦁',
-        'sub': 'Feed hungry lions, pandas & monkeys their favorite food with realistic wild sounds!',
-        'color': const Color(0xFF10B981),
-        'emoji': '🦁',
-        'tag': 'WILD SAFARI',
-        'ks': '+20 KS',
-        'cat': 2,
-        'type': 'safari_feeder',
-      },
-      {
-        'title': 'Fruit, Veggie & Bakery Shop 🍎',
-        'sub': 'Shop for fresh apples, bananas, cookies & cupcakes in the sunny market!',
-        'color': const Color(0xFFF59E0B),
-        'emoji': '🍎',
-        'tag': 'MARKET STALL',
-        'ks': '+20 KS',
-        'cat': 2,
-        'type': 'fruit_market',
-      },
-      {
-        'title': 'Number Magic & Star Counting 🔢',
-        'sub': 'Count twinkling stars, balloons and cute puppies from 1 to 20!',
-        'color': const Color(0xFF8B5CF6),
-        'emoji': '🔢',
-        'tag': 'NUMBERS 1-20',
-        'ks': '+20 KS',
-        'cat': 1,
-        'type': 'number_magic',
-      },
-      {
-        'title': 'Superhero Action Verbs ⚡',
-        'sub': 'Jump, run, fly, dance and sing! Master core action verbs that power up English.',
-        'color': const Color(0xFFEC4899),
-        'emoji': '🦸',
-        'tag': 'ACTION VERBS',
+        'title': 'Word Bridge Builder 🌉',
+        'sub': 'Place wooden word planks across the rushing river so the puppy can cross safely!',
+        'color': const Color(0xFF0284C7),
+        'emoji': '🌉',
+        'tag': 'SENTENCE BRIDGE',
         'ks': '+20 KS',
         'cat': 4,
-        'type': 'action_verbs',
+        'type': 'word_bridge_builder',
       },
       {
-        'title': 'Rhyme Time Lilypad Hopper 🐸',
-        'sub': 'Help the cute frog leap across the river by hopping on rhyming word lilypads!',
-        'color': const Color(0xFF0284C7),
-        'emoji': '🐸',
-        'tag': 'PHONICS RHYMES',
+        'title': 'Listening Detective 🔍',
+        'sub': 'Solve spoken English sound clues to reveal mystery animals, food & vehicles!',
+        'color': const Color(0xFF6366F1),
+        'emoji': '🔍',
+        'tag': 'LISTENING EAR',
         'ks': '+20 KS',
         'cat': 2,
-        'type': 'rhyme_frog',
+        'type': 'listening_detective',
+      },
+      {
+        'title': 'Vocabulary Rocket Run 🚀',
+        'sub': 'Fuel your supersonic rocket with target vocabulary words to reach deep space!',
+        'color': const Color(0xFFEC4899),
+        'emoji': '🚀',
+        'tag': 'VOCABULARY RUSH',
+        'ks': '+20 KS',
+        'cat': 1,
+        'type': 'vocabulary_rocket_run',
+      },
+      {
+        'title': 'Grammar Garden 🌸',
+        'sub': 'Bloom flowers with singular/plural nouns and A vs An articles!',
+        'color': const Color(0xFF10B981),
+        'emoji': '🌸',
+        'tag': 'GRAMMAR GARDEN',
+        'ks': '+20 KS',
+        'cat': 4,
+        'type': 'grammar_garden',
+      },
+      {
+        'title': 'Everyday Conversation Quest 💬',
+        'sub': 'Practice cheerful greetings, politeness & daily conversation with Leo!',
+        'color': const Color(0xFFF59E0B),
+        'emoji': '💬',
+        'tag': 'SPOKEN ENGLISH',
+        'ks': '+20 KS',
+        'cat': 4,
+        'type': 'everyday_conversation',
       },
       {
         'title': 'Opposites Seesaw Balance ⚖️',
@@ -4427,6 +4401,48 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
       ).then((_) {
         if (mounted) setState(() {});
       });
+    } else if (type == 'letter_sound_quest') {
+      PocketKidsLetterSoundQuestPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'word_bridge_builder') {
+      PocketKidsWordBridgeBuilderPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'listening_detective') {
+      PocketKidsListeningDetectivePage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'vocabulary_rocket_run') {
+      PocketKidsVocabularyRocketRunPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'grammar_garden') {
+      PocketKidsGrammarGardenPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
+    } else if (type == 'everyday_conversation') {
+      PocketKidsEverydayConversationQuestPage.show(
+        context,
+        day: PocketKidsService.currentUnlockedDay,
+      ).then((_) {
+        if (mounted) setState(() {});
+      });
     } else if (type == 'vehicles') {
       PocketKidsVehiclesAndWheelsGame.show(
         context,
@@ -4493,9 +4509,15 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
 
   // =========================================================================
   // =========================================================================
-  // TAB 4: 👤 KID PROFILE (Kumi UI Design Profile Screen)
+  // TAB 3: 🌳 KID PROFILE (Full-Screen Growing Tree 2D World)
   // =========================================================================
   Widget _buildKidProfileTab() {
+    return PocketKidsGrowingTreeProfileWidget(
+      onEditProfile: _showAvatarPicker,
+    );
+  }
+
+  Widget _buildKidProfileOldListView() {
     final curDay = PocketKidsService.currentUnlockedDay;
     final house = PocketKidsService.getHouseForDay(curDay);
 
@@ -5708,7 +5730,7 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
   }
 
   // =========================================================================
-  // 🕹️ BOTTOM KID NAV (ക്ലീൻ വൈറ്റ് ഗെയിമിഫൈഡ് ബാർ)
+  // 🕹️ BOTTOM KID NAV (Exactly 4 destinations: Homes, Trails, Arcade, Profile)
   // =========================================================================
   Widget _buildBottomKidNav() {
     return SafeArea(
@@ -5732,10 +5754,9 @@ class _PocketPureKidsHomePageState extends State<PocketPureKidsHomePage>
         child: Row(
           children: [
             _buildKidNavItem(0, '🏡', 'HOMES'),
-            _buildKidNavItem(1, '🐾', 'MATES'),
-            _buildKidNavItem(2, '🎯', 'TRAIL'),
-            _buildKidNavItem(3, '🎮', 'ARCADE'),
-            _buildKidNavItem(4, '👤', 'PROFILE'),
+            _buildKidNavItem(1, '🎯', 'TRAILS'),
+            _buildKidNavItem(2, '🎮', 'ARCADE'),
+            _buildKidNavItem(3, '🌳', 'PROFILE'),
           ],
         ),
       ),

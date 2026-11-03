@@ -30,7 +30,6 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'onboarding/why_no_c_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_voice_service.dart';
-import 'subscription_page.dart';
 
 enum WelcomeMode {
   welcome,
@@ -87,7 +86,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   WelcomeMode _mode = WelcomeMode.welcome;
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 15;
+  static const int _totalSteps = 9;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -172,44 +171,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   List<Map<String, String>> get _englishLevels =>
       PocketLanguageService.getEnglishLevels(_selectedNativeLanguage);
-
-  final List<Map<String, dynamic>> _learningGoals = [
-    {
-      'title': 'Daily Fluency & Real Conversations',
-      'subtitle': 'Speak naturally with native confidence in daily life',
-      'icon': Icons.chat_bubble_outline_rounded,
-    },
-    {
-      'title': 'Job Interviews & Workplace English',
-      'subtitle': 'Ace interviews, business calls, emails & presentations',
-      'icon': Icons.work_outline_rounded,
-    },
-    {
-      'title': 'Study Abroad & Exams (IELTS, TOEFL, OET)',
-      'subtitle': 'High-band academic speaking, writing & visa readiness',
-      'icon': Icons.school_outlined,
-    },
-    {
-      'title': 'Travel, Relocation & Global Friends',
-      'subtitle': 'Navigate airports, hotels, dining & make international mates',
-      'icon': Icons.flight_takeoff_rounded,
-    },
-    {
-      'title': 'Public Speaking & Debate',
-      'subtitle': 'Overcome stage fear, command respect & express thoughts clearly',
-      'icon': Icons.record_voice_over_rounded,
-    },
-    {
-      'title': 'Business, Sales & Entrepreneurship',
-      'subtitle': 'Client pitches, international deals & commercial negotiation',
-      'icon': Icons.trending_up_rounded,
-    },
-    {
-      'title': 'Daily Habit & Personal Confidence',
-      'subtitle': 'Never miss a day, build speaking stamina & feel proud',
-      'icon': Icons.psychology_outlined,
-    },
-  ];
 
   final List<Map<String, dynamic>> _studyTimeSlots = [
     {
@@ -873,7 +834,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     try {
       _flutterTts = FlutterTts();
       try {
-        await PocketVoiceService.instance.configureOptimalFemaleVoice(_flutterTts!);
+        await PocketVoiceService.instance
+            .configureOptimalFemaleVoice(_flutterTts!);
       } catch (_) {
         await _flutterTts!.setLanguage("en-IN");
       }
@@ -907,29 +869,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       case 2:
         return "Who is learning English? Choose the personalized track suited for your learning journey.";
       case 3:
-        return "Let's answer quick questions to personalize your English learning plan.";
-      case 4:
-        return "What is your current English speaking level?";
-      case 5:
-        return "What is your primary goal for learning English?";
-      case 6:
         return "What time of day works best for your daily English practice?";
-      case 7:
+      case 4:
         return "How much time can you commit each day to practice speaking?";
-      case 8:
+      case 5:
         return "Here is your personalized daily routine and study schedule. Take a look!";
-      case 9:
+      case 6:
         return "Turn on reminders so you never miss your daily speaking practice.";
-      case 10:
-        return "Pocket Mates is your personal speaking partner. Practice anytime, anywhere!";
-      case 11:
-        return "Make a 3-month commitment to speaking, and watch your confidence grow!";
-      case 12:
-        return "Choose your plan to unlock interactive lessons and unlimited conversations.";
-      case 13:
+      case 7:
+        return "Commit to your daily streak and watch what you will achieve in 3 months!";
+      case 8:
         return "How would you like to start your English journey today?";
-      case 14:
-        return "Awesome! Your personalized English plan is ready. Let's create your account to begin!";
       default:
         return "Let's continue your English learning journey!";
     }
@@ -962,7 +912,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   void _toggleAudioMute() {
     HapticFeedback.lightImpact();
     PocketGameAudioService.instance.toggleMute();
-    setState(() => _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value);
+    setState(() =>
+        _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value);
   }
 
   @override
@@ -1071,7 +1022,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       final prefs = await SharedPreferences.getInstance();
       final user = SupaFlow.client.auth.currentUser;
       await prefs.setString('pm_native_language', _selectedNativeLanguage);
-      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage, userId: user?.id);
+      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage,
+          userId: user?.id);
       await prefs.setString('pm_target_language', _selectedTargetLanguage);
       await prefs.setString('pm_referral_source', _selectedReferralSource);
       await prefs.setString('pm_english_level', _selectedEnglishLevel);
@@ -1321,10 +1273,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Restore paired kid profile progress from parent's cloud account
           await PocketKidsService.loadKidProgressFromParentCloud();
 
-          final isStudent = await PocketKidsService.syncAndVerifyUserAccountType(user.uid ?? '');
+          final isStudent =
+              await PocketKidsService.syncAndVerifyUserAccountType(
+                  user.uid ?? '');
           if (isStudent && mounted) {
             setState(() {
-              _loadingMessage = 'Welcome to Student Adventure! Opening your home...';
+              _loadingMessage =
+                  'Welcome to Student Adventure! Opening your home...';
             });
             await Future.delayed(const Duration(milliseconds: 350));
             await _bgmPlayer?.stop();
@@ -1385,7 +1340,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         ),
       );
     }
-
   }
 
   @override
@@ -1508,146 +1462,145 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         SafeArea(
           child: Stack(
             children: [
-
-          // Top Controls: Mute/Unmute Audio
-          Positioned(
-            top: 12,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                onPressed: _toggleAudioMute,
-                icon: Icon(
-                  _isAudioMuted
-                      ? Icons.volume_off_rounded
-                      : Icons.volume_up_rounded,
-                  color:
-                      _isAudioMuted ? Colors.white38 : const Color(0xFFFACC15),
-                  size: 22,
+              // Top Controls: Mute/Unmute Audio
+              Positioned(
+                top: 12,
+                right: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    onPressed: _toggleAudioMute,
+                    icon: Icon(
+                      _isAudioMuted
+                          ? Icons.volume_off_rounded
+                          : Icons.volume_up_rounded,
+                      color: _isAudioMuted
+                          ? Colors.white38
+                          : const Color(0xFFFACC15),
+                      size: 22,
+                    ),
+                    tooltip: _isAudioMuted ? 'Unmute BGM' : 'Mute BGM',
+                  ),
                 ),
-                tooltip: _isAudioMuted ? 'Unmute BGM' : 'Mute BGM',
               ),
-            ),
-          ),
 
-          // Main Center Content
-          Center(
-            child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 20),
-
-                    // Minimal Floating Starter Avatar
-                    Center(
-                      child: AnimatedBuilder(
-                        animation: _floatAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(0, _floatAnimation.value),
-                            child: child,
-                          );
-                        },
-                        child: _buildStarterAvatar(size: 110),
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // App Title
-                    Text(
-                      'Poket Mates',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 38,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Tagline
-                    Text(
-                      'Your interactive English speaking world.\nBuild your home, talk daily, unlock fluency.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF94A3B8),
-                        fontSize: 14.5,
-                        height: 1.45,
-                      ),
-                    ),
-
-                    const SizedBox(height: 26),
-
-                    // Minimal Feature Badges
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
+              // Main Center Content
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28.0, vertical: 20.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildFeaturePill('🏡 Level 1 Home'),
-                        _buildFeaturePill('🗣️ Voice Practice'),
-                        _buildFeaturePill('🔥 Daily Streaks'),
+                        const SizedBox(height: 20),
+
+                        // Minimal Floating Starter Avatar
+                        Center(
+                          child: AnimatedBuilder(
+                            animation: _floatAnimation,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0, _floatAnimation.value),
+                                child: child,
+                              );
+                            },
+                            child: _buildStarterAvatar(size: 110),
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // App Title
+                        Text(
+                          'Poket Mates',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 38,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Tagline
+                        Text(
+                          'Your interactive English speaking world.\nBuild your home, talk daily, unlock fluency.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 14.5,
+                            height: 1.45,
+                          ),
+                        ),
+
+                        const SizedBox(height: 26),
+
+                        // Minimal Feature Badges
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _buildFeaturePill('🏡 Level 1 Home'),
+                            _buildFeaturePill('🗣️ Voice Practice'),
+                            _buildFeaturePill('🔥 Daily Streaks'),
+                          ],
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // PRIMARY CTA: "GET STARTED"
+                        _buildDuolingoButton(
+                          label: 'GET STARTED',
+                          backgroundColor: const Color(0xFF10B981),
+                          shadowColor: const Color(0xFF059669),
+                          textColor: Colors.white,
+                          onPressed: () {
+                            HapticFeedback.heavyImpact();
+                            setState(() {
+                              _mode = WelcomeMode.onboarding;
+                              _currentStep = 0;
+                            });
+                            _speakStepPrompt(0);
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // SECONDARY CTA: "I ALREADY HAVE AN ACCOUNT"
+                        _buildDuolingoOutlineButton(
+                          label: 'I ALREADY HAVE AN ACCOUNT',
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              _isSignUpMode = false;
+                              _errorMessage = null;
+                              _mode = WelcomeMode.signIn;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 💡 Trial: Brand Philosophy Footnote (Why no 'C'?)
+                        _buildWhyNoCFootnote(),
                       ],
                     ),
-
-                    const SizedBox(height: 40),
-
-                    // PRIMARY CTA: "GET STARTED"
-                    _buildDuolingoButton(
-                      label: 'GET STARTED',
-                      backgroundColor: const Color(0xFF10B981),
-                      shadowColor: const Color(0xFF059669),
-                      textColor: Colors.white,
-                      onPressed: () {
-                        HapticFeedback.heavyImpact();
-                        setState(() {
-                          _mode = WelcomeMode.onboarding;
-                          _currentStep = 0;
-                        });
-                        _speakStepPrompt(0);
-                      },
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // SECONDARY CTA: "I ALREADY HAVE AN ACCOUNT"
-                    _buildDuolingoOutlineButton(
-                      label: 'I ALREADY HAVE AN ACCOUNT',
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _isSignUpMode = false;
-                          _errorMessage = null;
-                          _mode = WelcomeMode.signIn;
-                        });
-                      },
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // 💡 Trial: Brand Philosophy Footnote (Why no 'C'?)
-                    _buildWhyNoCFootnote(),
-
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
-  ],
-);
+        ),
+      ],
+    );
   }
 
   Widget _buildWhyNoCFootnote() {
@@ -2049,18 +2002,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       _buildStep0Greeting(),
                       _buildStep2NativeLanguage(),
                       _buildStepLearnerTrack(),
-                      _buildStep1QuestionsIntro(),
-                      _buildStep4EnglishLevel(),
-                      _buildStep5LearningGoal(),
                       _buildStepPreferredStudyTime(),
                       _buildStepDailyCommitment(),
                       _buildStepScheduleReview(),
                       _buildStep6Notifications(),
-                      _buildStep7WidgetCheer(),
-                      _buildStep8ThreeMonthPromise(),
-                      _buildStep9PlanChoice(),
+                      _buildStep7StreakAndPromiseCombined(),
                       _buildStep10StartingPath(),
-                      _buildStep11CelebrationAndSave(),
                     ],
                   ),
                 ),
@@ -2224,33 +2171,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 1: Questions Intro ---
-  Widget _buildStep1QuestionsIntro() {
-    return _buildStepContainer(
-      title: "5 quick questions to personalize your plan 🎯",
-      mascotHint:
-          "We'll tune your daily topics, high-impact vocabulary, and speaking level.",
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF1E293B),
-              border: Border.all(color: const Color(0xFF38BDF8), width: 2),
-            ),
-            child: const Icon(Icons.tune_rounded,
-                color: Color(0xFF38BDF8), size: 34),
-          ),
-        ),
-      ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
-    );
-  }
-
   // --- Step 2: Native Language ---
   Widget _buildStep2NativeLanguage() {
     return _buildStepContainer(
@@ -2288,7 +2208,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // --- Step 2: Learner Track Choice (Adult 18+ vs Student 9-18 vs Kids Up to 8) ---
   Widget _buildStepLearnerTrack() {
-    final trans = PocketLanguageService.getLearnerTypeTranslations(_selectedNativeLanguage);
+    final trans = PocketLanguageService.getLearnerTypeTranslations(
+        _selectedNativeLanguage);
     return _buildStepContainer(
       title: trans['title'] ?? 'Who is learning English?',
       mascotHint: trans['subtitle'] ??
@@ -2342,7 +2263,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['adultTitle'] ?? 'English Mastery (9+ Years)',
+                              trans['adultTitle'] ??
+                                  'English Mastery (9+ Years)',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -2350,9 +2272,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                                color: const Color(0xFFF59E0B)
+                                    .withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -2378,7 +2302,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 15),
+                  const Icon(Icons.arrow_forward_ios_rounded,
+                      color: Color(0xFFFFD700), size: 15),
                 ],
               ),
             ),
@@ -2430,7 +2355,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['kidsTitle'] ?? 'Kids (Up to 8) - Junior Explorer',
+                              trans['kidsTitle'] ??
+                                  'Kids (Up to 8) - Junior Explorer',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -2438,9 +2364,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                                color: const Color(0xFF38BDF8)
+                                    .withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -2466,7 +2394,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF38BDF8), size: 15),
+                  const Icon(Icons.arrow_forward_ios_rounded,
+                      color: Color(0xFF38BDF8), size: 15),
                 ],
               ),
             ),
@@ -2478,67 +2407,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         _nextStep();
       },
       buttonText: 'CONTINUE ➔',
-    );
-  }
-
-
-  // --- Step 4: English Level ---
-  Widget _buildStep4EnglishLevel() {
-    return _buildStepContainer(
-      title: 'How much English do you know right now?',
-      mascotHint: 'Select where you feel most comfortable starting.',
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _englishLevels.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final level = _englishLevels[index];
-          final isSelected = _selectedEnglishLevel == level['title'];
-          return _buildOptionCard(
-            title: level['title']!,
-            subtitle: level['subtitle'],
-            leadingEmoji: level['emoji'],
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() => _selectedEnglishLevel = level['title']!);
-            },
-          );
-        },
-      ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
-    );
-  }
-
-  // --- Step 5: Learning Goal ---
-  Widget _buildStep5LearningGoal() {
-    return _buildStepContainer(
-      title: 'Why are you learning English?',
-      mascotHint: 'What goal motivates you toward spoken fluency?',
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _learningGoals.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final goal = _learningGoals[index];
-          final isSelected = _selectedLearningGoal == goal['title'];
-          return _buildOptionCard(
-            title: goal['title'] as String,
-            subtitle: goal['subtitle'] as String?,
-            leadingIcon: goal['icon'] as IconData,
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() => _selectedLearningGoal = goal['title'] as String);
-            },
-          );
-        },
-      ),
-      onContinue: _nextStep,
-      buttonText: 'CONTINUE',
     );
   }
 
@@ -3279,11 +3147,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   _showEditRoutineItemModal(context, null, -1);
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color:
-                        const Color(0xFF10B981).withValues(alpha: 0.15),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: const Color(0xFF10B981).withValues(alpha: 0.4),
@@ -3320,11 +3187,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color:
-                        const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
@@ -3426,9 +3292,22 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       } else {
         favTools = [
           {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
-          {'title': '90-Day English Tasks', 'timeAdded': DateTime.now().toIso8601String()},
-          {'title': '1-on-1 English Match', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()},
-          {'title': 'Voice Speaking Sprint', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()},
+          {
+            'title': '90-Day English Tasks',
+            'timeAdded': DateTime.now().toIso8601String()
+          },
+          {
+            'title': '1-on-1 English Match',
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 1))
+                .toIso8601String()
+          },
+          {
+            'title': 'Voice Speaking Sprint',
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 2))
+                .toIso8601String()
+          },
         ];
       }
 
@@ -3443,7 +3322,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await prefs.setString(favKey, jsonEncode(favTools));
       await prefs.setString('favorited_tools_guest', jsonEncode(favTools));
       if (user != null) {
-        await prefs.setString('favorited_tools_${user.id}', jsonEncode(favTools));
+        await prefs.setString(
+            'favorited_tools_${user.id}', jsonEncode(favTools));
       }
 
       // 4. Schedule Alarms for all routine items where hasAlarm == true! (Android only as requested)
@@ -3562,7 +3442,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     // Title Field
                     TextField(
                       controller: titleController,
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Activity Name',
                         labelStyle:
@@ -3582,7 +3463,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     // Description Field
                     TextField(
                       controller: descController,
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                      style:
+                          GoogleFonts.inter(color: Colors.white, fontSize: 13),
                       decoration: InputDecoration(
                         labelText: 'Description / Notes (Optional)',
                         labelStyle:
@@ -3625,7 +3507,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                   startDT = DateTime(now.year, now.month,
                                       now.day, picked.hour, picked.minute);
                                   if (endDT.isBefore(startDT)) {
-                                    endDT = startDT.add(const Duration(minutes: 30));
+                                    endDT = startDT
+                                        .add(const Duration(minutes: 30));
                                   }
                                 });
                               }
@@ -3693,8 +3576,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               );
                               if (picked != null) {
                                 setModalState(() {
-                                  endDT = DateTime(now.year, now.month,
-                                      now.day, picked.hour, picked.minute);
+                                  endDT = DateTime(now.year, now.month, now.day,
+                                      picked.hour, picked.minute);
                                 });
                               }
                             },
@@ -3881,83 +3764,343 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     final isTe = lang == 'telugu';
 
     if (id == 'onboarding_study_slot') {
-      if (isMl) return {'title': 'ഇംഗ്ലീഷ് സംഭാഷണ പരിശീലനം 🗣️', 'desc': 'ദിവസേനയുള്ള ഇംഗ്ലീഷ് സംസാര പരിശീലനവും വോയ്സ് റൂമും'};
-      if (isTa) return {'title': 'ஆங்கில பேசும் பயிற்சி 🗣️', 'desc': 'தினசரி உரையாடல் பயிற்சி மற்றும் குரல் அறை'};
-      if (isHi) return {'title': 'अंग्रेजी बोलने का अभ्यास 🗣️', 'desc': 'दैनिक स्पोकन इंग्लिश अभ्यास और वॉयस रूम'};
-      if (isKn) return {'title': 'ಇಂಗ್ಲಿಷ್ ಮಾತನಾಡುವ ಅಭ್ಯಾಸ 🗣️', 'desc': 'ದೈನಂದಿನ ಇಂಗ್ಲಿಷ್ ಸಂಭಾಷಣೆ ಮತ್ತು ಧ್ವನಿ ಕೊಠಡಿ'};
-      if (isTe) return {'title': 'ఇంగ్లీష్ మాట్లాడే సాధన 🗣️', 'desc': 'రోజువారీ స్పోకెన్ ఇంగ్లీష్ సాధన & వాయిస్ రూమ్'};
+      if (isMl)
+        return {
+          'title': 'ഇംഗ്ലീഷ് സംഭാഷണ പരിശീലനം 🗣️',
+          'desc': 'ദിവസേനയുള്ള ഇംഗ്ലീഷ് സംസാര പരിശീലനവും വോയ്സ് റൂമും'
+        };
+      if (isTa)
+        return {
+          'title': 'ஆங்கில பேசும் பயிற்சி 🗣️',
+          'desc': 'தினசரி உரையாடல் பயிற்சி மற்றும் குரல் அறை'
+        };
+      if (isHi)
+        return {
+          'title': 'अंग्रेजी बोलने का अभ्यास 🗣️',
+          'desc': 'दैनिक स्पोकन इंग्लिश अभ्यास और वॉयस रूम'
+        };
+      if (isKn)
+        return {
+          'title': 'ಇಂಗ್ಲಿಷ್ ಮಾತನಾಡುವ ಅಭ್ಯಾಸ 🗣️',
+          'desc': 'ದೈನಂದಿನ ಇಂಗ್ಲಿಷ್ ಸಂಭಾಷಣೆ ಮತ್ತು ಧ್ವನಿ ಕೊಠಡಿ'
+        };
+      if (isTe)
+        return {
+          'title': 'ఇంగ్లీష్ మాట్లాడే సాధన 🗣️',
+          'desc': 'రోజువారీ స్పోకెన్ ఇంగ్లీష్ సాధన & వాయిస్ రూమ్'
+        };
     } else if (id == 'routine_wake') {
-      if (isMl) return {'title': 'ഉണരലും പ്രഭാത ഉന്മേഷവും 🌅', 'desc': 'പ്രഭാത വ്യായാമം, ഫ്രഷ് ആകൽ, ശുദ്ധജലം'};
-      if (isTa) return {'title': 'விடியலும் காலை புத்துணர்ச்சியும் 🌅', 'desc': 'காலை உடற்பயிற்சி மற்றும் புத்துணர்ச்சி'};
-      if (isHi) return {'title': 'सुबह जागना और ताजगी 🌅', 'desc': 'सुबह का व्यायाम, फ्रेश होना और पानी पीना'};
-      if (isKn) return {'title': 'ಬೆಳಗ್ಗೆ ಏಳುವುದು & ನವಚೈತನ್ಯ 🌅', 'desc': 'ಬೆಳಗಿನ ವ್ಯಾಯಾಮ, ಮುಖ ತೊಳೆಯುವುದು & ನೀರು'};
-      if (isTe) return {'title': 'మేల్కొలుపు & ఉదయపు ఉత్సాహం 🌅', 'desc': 'ఉదయపు వ్యಾಯామం, ఫ్రెష్ అవ్వడం & నీరు'};
+      if (isMl)
+        return {
+          'title': 'ഉണരലും പ്രഭാത ഉന്മേഷവും 🌅',
+          'desc': 'പ്രഭാത വ്യായാമം, ഫ്രഷ് ആകൽ, ശുദ്ധജലം'
+        };
+      if (isTa)
+        return {
+          'title': 'விடியலும் காலை புத்துணர்ச்சியும் 🌅',
+          'desc': 'காலை உடற்பயிற்சி மற்றும் புத்துணர்ச்சி'
+        };
+      if (isHi)
+        return {
+          'title': 'सुबह जागना और ताजगी 🌅',
+          'desc': 'सुबह का व्यायाम, फ्रेश होना और पानी पीना'
+        };
+      if (isKn)
+        return {
+          'title': 'ಬೆಳಗ್ಗೆ ಏಳುವುದು & ನವಚೈತನ್ಯ 🌅',
+          'desc': 'ಬೆಳಗಿನ ವ್ಯಾಯಾಮ, ಮುಖ ತೊಳೆಯುವುದು & ನೀರು'
+        };
+      if (isTe)
+        return {
+          'title': 'మేల్కొలుపు & ఉదయపు ఉత్సాహం 🌅',
+          'desc': 'ఉదయపు వ్యಾಯామం, ఫ్రెష్ అవ్వడం & నీరు'
+        };
     } else if (id == 'routine_breakfast') {
-      if (isMl) return {'title': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും 🍳', 'desc': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും'};
-      if (isTa) return {'title': 'குளியல் மற்றும் சத்தான காலை உணவு 🍳', 'desc': 'குளியல், சுவையான காலை உணவு மற்றும் புறப்படுதல்'};
-      if (isHi) return {'title': 'स्नान और पौष्टिक नाश्ता 🍳', 'desc': 'नहाना, सेहतमंद नाश्ता और दिन की तैयारी'};
-      if (isKn) return {'title': 'ಸ್ನಾನ ಮತ್ತು ಪೌಷ್ಟಿಕ ಉಪಹಾರ 🍳', 'desc': 'ಸ್ನಾನ, ಉತ್ತಮ ಉಪಹಾರ ಮತ್ತು ದಿನದ ಆರಂಭ'};
-      if (isTe) return {'title': 'స్నానం & పోషకమైన అల్పాహారం 🍳', 'desc': 'స్నానం, ఆరోగ్యకరమైన టిఫిన్ & తయారీ'};
+      if (isMl)
+        return {
+          'title': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും 🍳',
+          'desc': 'കുളിയും ആരോഗ്യകരമായ പ്രഭാതഭക്ഷണവും'
+        };
+      if (isTa)
+        return {
+          'title': 'குளியல் மற்றும் சத்தான காலை உணவு 🍳',
+          'desc': 'குளியல், சுவையான காலை உணவு மற்றும் புறப்படுதல்'
+        };
+      if (isHi)
+        return {
+          'title': 'स्नान और पौष्टिक नाश्ता 🍳',
+          'desc': 'नहाना, सेहतमंद नाश्ता और दिन की तैयारी'
+        };
+      if (isKn)
+        return {
+          'title': 'ಸ್ನಾನ ಮತ್ತು ಪೌಷ್ಟಿಕ ಉಪಹಾರ 🍳',
+          'desc': 'ಸ್ನಾನ, ಉತ್ತಮ ಉಪಹಾರ ಮತ್ತು ದಿನದ ಆರಂಭ'
+        };
+      if (isTe)
+        return {
+          'title': 'స్నానం & పోషకమైన అల్పాహారం 🍳',
+          'desc': 'స్నానం, ఆరోగ్యకరమైన టిఫిన్ & తయారీ'
+        };
     } else if (id == 'routine_classes') {
-      if (isMl) return {'title': 'സ്കൂൾ / കോളേജ് ക്ലാസുകൾ 📚', 'desc': 'ക്ലാസ്സ് ലക്ചറുകൾ, കുറിപ്പുകൾ, സജീവ പങ്കാളിത്തം'};
-      if (isTa) return {'title': 'பள்ளி / கல்லூரி வகுப்புகள் 📚', 'desc': 'பாடங்கள், குறிப்புகள் மற்றும் கலந்துரையாடல்'};
-      if (isHi) return {'title': 'स्कूल / कॉलेज की कक्षाएं 📚', 'desc': 'मुख्य व्याख्यान, नोट्स और पढ़ाई'};
-      if (isKn) return {'title': 'ಶಾಲೆ / ಕಾಲೇಜು ತರಗತಿಗಳು 📚', 'desc': 'ಉಪನ್ಯಾಸಗಳು, ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಅಧ್ಯಯನ'};
-      if (isTe) return {'title': 'పాఠశాల / కళాశాల తరగతులు 📚', 'desc': 'తరగతులు, నోట్స్ మరియు విద్యార్థి భాగస్వామ్యం'};
+      if (isMl)
+        return {
+          'title': 'സ്കൂൾ / കോളേജ് ക്ലാസുകൾ 📚',
+          'desc': 'ക്ലാസ്സ് ലക്ചറുകൾ, കുറിപ്പുകൾ, സജീവ പങ്കാളിത്തം'
+        };
+      if (isTa)
+        return {
+          'title': 'பள்ளி / கல்லூரி வகுப்புகள் 📚',
+          'desc': 'பாடங்கள், குறிப்புகள் மற்றும் கலந்துரையாடல்'
+        };
+      if (isHi)
+        return {
+          'title': 'स्कूल / कॉलेज की कक्षाएं 📚',
+          'desc': 'मुख्य व्याख्यान, नोट्स और पढ़ाई'
+        };
+      if (isKn)
+        return {
+          'title': 'ಶಾಲೆ / ಕಾಲೇಜು ತರಗತಿಗಳು 📚',
+          'desc': 'ಉಪನ್ಯಾಸಗಳು, ಟಿಪ್ಪಣಿಗಳು ಮತ್ತು ಅಧ್ಯಯನ'
+        };
+      if (isTe)
+        return {
+          'title': 'పాఠశాల / కళాశాల తరగతులు 📚',
+          'desc': 'తరగతులు, నోట్స్ మరియు విద్యార్థి భాగస్వామ్యం'
+        };
     } else if (id == 'routine_work_morn' || id == 'routine_work') {
-      if (isMl) return {'title': 'ഓഫീസ് ജോലിയും ടീം മീറ്റിംഗുകളും 💼', 'desc': 'പ്രധാന പ്രോജക്റ്റുകൾ, ടീം ചർച്ചകൾ'};
-      if (isTa) return {'title': 'அலுவலக வேலை மற்றும் சந்திப்புகள் 💼', 'desc': 'முக்கிய திட்டங்கள் மற்றும் குழு விவாதங்கள்'};
-      if (isHi) return {'title': 'कार्यालय कार्य और टीम मीटिंग 💼', 'desc': 'महत्वपूर्ण प्रोजेक्ट्स और टीम चर्चा'};
-      if (isKn) return {'title': 'ಕಚೇರಿ ಕೆಲಸ ಮತ್ತು ಸಭೆಗಳು 💼', 'desc': 'ಮುಖ್ಯ ಯೋಜನೆಗಳು ಮತ್ತು ತಂಡದ ಚರ್ಚೆಗಳು'};
-      if (isTe) return {'title': 'ఆఫీస్ పని & మీటింగులు 💼', 'desc': 'ముఖ్యమైన ప్రాజెక్ట్‌లు మరియు సమావేశాలు'};
+      if (isMl)
+        return {
+          'title': 'ഓഫീസ് ജോലിയും ടീം മീറ്റിംഗുകളും 💼',
+          'desc': 'പ്രധാന പ്രോജക്റ്റുകൾ, ടീം ചർച്ചകൾ'
+        };
+      if (isTa)
+        return {
+          'title': 'அலுவலக வேலை மற்றும் சந்திப்புகள் 💼',
+          'desc': 'முக்கிய திட்டங்கள் மற்றும் குழு விவாதங்கள்'
+        };
+      if (isHi)
+        return {
+          'title': 'कार्यालय कार्य और टीम मीटिंग 💼',
+          'desc': 'महत्वपूर्ण प्रोजेक्ट्स और टीम चर्चा'
+        };
+      if (isKn)
+        return {
+          'title': 'ಕಚೇರಿ ಕೆಲಸ ಮತ್ತು ಸಭೆಗಳು 💼',
+          'desc': 'ಮುಖ್ಯ ಯೋಜನೆಗಳು ಮತ್ತು ತಂಡದ ಚರ್ಚೆಗಳು'
+        };
+      if (isTe)
+        return {
+          'title': 'ఆఫీస్ పని & మీటింగులు 💼',
+          'desc': 'ముఖ్యమైన ప్రాజెక్ట్‌లు మరియు సమావేశాలు'
+        };
     } else if (id == 'routine_lunch') {
-      if (isMl) return {'title': 'ഉച്ചഭക്ഷണവും ലഘുവിശ്രമവും 🥗', 'desc': 'രുചികരമായ ഉച്ചഭക്ഷണവും നടപ്പും'};
-      if (isTa) return {'title': 'மதிய உணவு மற்றும் நடைபயிற்சி 🥗', 'desc': 'ஆரோக்கியமான மதிய உணவு மற்றும் ஓய்வு'};
-      if (isHi) return {'title': 'दोपहर का भोजन और थोड़ा आराम 🥗', 'desc': 'पौष्टिक खाना और स्क्रीन से दूरी'};
-      if (isKn) return {'title': 'ಮಧ್ಯಾಹ್ನದ ಊಟ & ವಿಶ್ರಾಂತಿ 🥗', 'desc': 'ಪೌಷ್ಟಿಕ ಊಟ ಮತ್ತು ಸಣ್ಣ ನಡಿಗೆ'};
-      if (isTe) return {'title': 'మధ్యాహ్న భోజనం & విశ్రాంతి 🥗', 'desc': 'ఆరోగ్యకరమైన భోజనం మరియు కొద్దిసేపు నడక'};
+      if (isMl)
+        return {
+          'title': 'ഉച്ചഭക്ഷണവും ലഘുവിശ്രമവും 🥗',
+          'desc': 'രുചികരമായ ഉച്ചഭക്ഷണവും നടപ്പും'
+        };
+      if (isTa)
+        return {
+          'title': 'மதிய உணவு மற்றும் நடைபயிற்சி 🥗',
+          'desc': 'ஆரோக்கியமான மதிய உணவு மற்றும் ஓய்வு'
+        };
+      if (isHi)
+        return {
+          'title': 'दोपहर का भोजन और थोड़ा आराम 🥗',
+          'desc': 'पौष्टिक खाना और स्क्रीन से दूरी'
+        };
+      if (isKn)
+        return {
+          'title': 'ಮಧ್ಯಾಹ್ನದ ಊಟ & ವಿಶ್ರಾಂತಿ 🥗',
+          'desc': 'ಪೌಷ್ಟಿಕ ಊಟ ಮತ್ತು ಸಣ್ಣ ನಡಿಗೆ'
+        };
+      if (isTe)
+        return {
+          'title': 'మధ్యాహ్న భోజనం & విశ్రాంతి 🥗',
+          'desc': 'ఆరోగ్యకరమైన భోజనం మరియు కొద్దిసేపు నడక'
+        };
     } else if (id == 'routine_work_aft') {
-      if (isMl) return {'title': 'ഉച്ചകഴിഞ്ഞുള്ള ജോലികൾ 📊', 'desc': 'ഇമെയിലുകൾ, പ്രോജക്റ്റ് പൂർത്തീകരണം'};
-      if (isTa) return {'title': 'பிற்பகல் பணிகள் மற்றும் நிறைவு 📊', 'desc': 'மின்னஞ்சல்கள் மற்றும் வேலைகள்'};
-      if (isHi) return {'title': 'दोपहर का कार्य समापन 📊', 'desc': 'ईमेल, बातचीत और कार्य समापन'};
-      if (isKn) return {'title': 'ಮಧ್ಯಾಹ್ನದ ನಂತರದ ಕೆಲಸ 📊', 'desc': 'ಇಮೇಲ್‌ಗಳು ಮತ್ತು ದಿನದ ಗುರಿಗಳು'};
-      if (isTe) return {'title': 'మధ్యాహ్నపు పనులు & ముగింపు 📊', 'desc': 'ఈమెయిల్స్ మరియు ప్రాజెక్ట్ పనులు'};
+      if (isMl)
+        return {
+          'title': 'ഉച്ചകഴിഞ്ഞുള്ള ജോലികൾ 📊',
+          'desc': 'ഇമെയിലുകൾ, പ്രോജക്റ്റ് പൂർത്തീകരണം'
+        };
+      if (isTa)
+        return {
+          'title': 'பிற்பகல் பணிகள் மற்றும் நிறைவு 📊',
+          'desc': 'மின்னஞ்சல்கள் மற்றும் வேலைகள்'
+        };
+      if (isHi)
+        return {
+          'title': 'दोपहर का कार्य समापन 📊',
+          'desc': 'ईमेल, बातचीत और कार्य समापन'
+        };
+      if (isKn)
+        return {
+          'title': 'ಮಧ್ಯಾಹ್ನದ ನಂತರದ ಕೆಲಸ 📊',
+          'desc': 'ಇಮೇಲ್‌ಗಳು ಮತ್ತು ದಿನದ ಗುರಿಗಳು'
+        };
+      if (isTe)
+        return {
+          'title': 'మధ్యాహ్నపు పనులు & ముగింపు 📊',
+          'desc': 'ఈమెయిల్స్ మరియు ప్రాజెక్ట్ పనులు'
+        };
     } else if (id == 'routine_chores') {
-      if (isMl) return {'title': 'വീട്ടുജോലിയും തയ്യാറെടുപ്പുകളും 🥗', 'desc': 'വീട് അടുക്കലും ഉച്ചഭക്ഷണ തയ്യാറെടുപ്പും'};
-      if (isTa) return {'title': 'வீட்டுப் பராமரிப்பு மற்றும் சமையல் 🥗', 'desc': 'வீட்டை ஒழுங்குபடுத்துதல் மற்றும் மதிய உணவு தயாரிப்பு'};
-      if (isHi) return {'title': 'घर की देखभाल और खाना बनाना 🥗', 'desc': 'घर का काम और दोपहर के भोजन की तैयारी'};
-      if (isKn) return {'title': 'ಮನೆ ಕೆಲಸ ಮತ್ತು ಅಡುಗೆ 🥗', 'desc': 'ಮನೆ ಸ್ವಚ್ಛತೆ ಮತ್ತು ಮಧ್ಯಾಹ್ನದ ಊಟದ ತಯಾರಿ'};
-      if (isTe) return {'title': 'ఇంటి పనులు & వంట తయారీ 🥗', 'desc': 'ఇల్లు సర్దుకోవడం మరియు భోజనం సిద్ధం చేయడం'};
+      if (isMl)
+        return {
+          'title': 'വീട്ടുജോലിയും തയ്യാറെടുപ്പുകളും 🥗',
+          'desc': 'വീട് അടുക്കലും ഉച്ചഭക്ഷണ തയ്യാറെടുപ്പും'
+        };
+      if (isTa)
+        return {
+          'title': 'வீட்டுப் பராமரிப்பு மற்றும் சமையல் 🥗',
+          'desc': 'வீட்டை ஒழுங்குபடுத்துதல் மற்றும் மதிய உணவு தயாரிப்பு'
+        };
+      if (isHi)
+        return {
+          'title': 'घर की देखभाल और खाना बनाना 🥗',
+          'desc': 'घर का काम और दोपहर के भोजन की तैयारी'
+        };
+      if (isKn)
+        return {
+          'title': 'ಮನೆ ಕೆಲಸ ಮತ್ತು ಅಡುಗೆ 🥗',
+          'desc': 'ಮನೆ ಸ್ವಚ್ಛತೆ ಮತ್ತು ಮಧ್ಯಾಹ್ನದ ಊಟದ ತಯಾರಿ'
+        };
+      if (isTe)
+        return {
+          'title': 'ఇంటి పనులు & వంట తయారీ 🥗',
+          'desc': 'ఇల్లు సర్దుకోవడం మరియు భోజనం సిద్ధం చేయడం'
+        };
     } else if (id == 'routine_rest') {
-      if (isMl) return {'title': 'വിശ്രമവും വ്യക്തിഗത സമയവും 🧘', 'desc': 'വിശ്രമം, ഹോബികൾ, പുസ്തക വായന'};
-      if (isTa) return {'title': 'ஓய்வு மற்றும் தனிப்பட்ட நேரம் 🧘', 'desc': 'புத்தக வாசிப்பு மற்றும் அமைதியான நேரம்'};
-      if (isHi) return {'title': 'आराम और व्यक्तिगत समय 🧘', 'desc': 'हॉबी, पढ़ना या छोटी झपकी'};
-      if (isKn) return {'title': 'ವಿಶ್ರಾಂತಿ ಮತ್ತು ವೈಯಕ್ತಿಕ ಸಮಯ 🧘', 'desc': 'ವಿಶ್ರಾಂತಿ, ಹವ್ಯಾಸಗಳು ಅಥವಾ ಪುಸ್ತಕ ಓದುವುದು'};
-      if (isTe) return {'title': 'విశ్రాంతి & వ్యక్తిగత సమయం 🧘', 'desc': 'విశ్రాంతి, అభిరుచులు మరియు పుస్తక పఠనం'};
+      if (isMl)
+        return {
+          'title': 'വിശ്രമവും വ്യക്തിഗത സമയവും 🧘',
+          'desc': 'വിശ്രമം, ഹോബികൾ, പുസ്തക വായന'
+        };
+      if (isTa)
+        return {
+          'title': 'ஓய்வு மற்றும் தனிப்பட்ட நேரம் 🧘',
+          'desc': 'புத்தக வாசிப்பு மற்றும் அமைதியான நேரம்'
+        };
+      if (isHi)
+        return {
+          'title': 'आराम और व्यक्तिगत समय 🧘',
+          'desc': 'हॉबी, पढ़ना या छोटी झपकी'
+        };
+      if (isKn)
+        return {
+          'title': 'ವಿಶ್ರಾಂತಿ ಮತ್ತು ವೈಯಕ್ತಿಕ ಸಮಯ 🧘',
+          'desc': 'ವಿಶ್ರಾಂತಿ, ಹವ್ಯಾಸಗಳು ಅಥವಾ ಪುಸ್ತಕ ಓದುವುದು'
+        };
+      if (isTe)
+        return {
+          'title': 'విశ్రాంతి & వ్యక్తిగత సమయం 🧘',
+          'desc': 'విశ్రాంతి, అభిరుచులు మరియు పుస్తక పఠనం'
+        };
     } else if (id == 'routine_play') {
-      if (isMl) return {'title': 'വിനോദവും കളിയും വൈകുന്നേര ചായയും ⚽', 'desc': 'കളി, വൈകുന്നേരത്തെ ചായ, സുഹൃത്തുക്കളുമായി സമയം'};
-      if (isTa) return {'title': 'விளையாட்டு, மாலை தேநீர் மற்றும் ஓய்வு ⚽', 'desc': 'நண்பர்களுடன் விளையாட்டு, தேநீர் மற்றும் அரட்டை'};
-      if (isHi) return {'title': 'खेलकूद, शाम की चाय और ताजगी ⚽', 'desc': 'दोस्तों के साथ खेल, शाम की चाय और मौज'};
-      if (isKn) return {'title': 'ಆಟ, ಸಂಜೆಯ ಚಹಾ ಮತ್ತು ಮನರಂಜನೆ ⚽', 'desc': 'ಆಟವಾಡುವುದು, ಚಹಾ ಮತ್ತು ಸ್ನೇಹಿತರೊಂದಿಗೆ ಮಾತುಕತೆ'};
-      if (isTe) return {'title': 'ఆటలు, సాయంత్రపు టీ & సేదదీరడం ⚽', 'desc': 'స్నేహితులతో ఆటలు, టీ మరియు ముచ్చట్లు'};
+      if (isMl)
+        return {
+          'title': 'വിനോദവും കളിയും വൈകുന്നേര ചായയും ⚽',
+          'desc': 'കളി, വൈകുന്നേരത്തെ ചായ, സുഹൃത്തുക്കളുമായി സമയം'
+        };
+      if (isTa)
+        return {
+          'title': 'விளையாட்டு, மாலை தேநீர் மற்றும் ஓய்வு ⚽',
+          'desc': 'நண்பர்களுடன் விளையாட்டு, தேநீர் மற்றும் அரட்டை'
+        };
+      if (isHi)
+        return {
+          'title': 'खेलकूद, शाम की चाय और ताजगी ⚽',
+          'desc': 'दोस्तों के साथ खेल, शाम की चाय और मौज'
+        };
+      if (isKn)
+        return {
+          'title': 'ಆಟ, ಸಂಜೆಯ ಚಹಾ ಮತ್ತು ಮನರಂಜನೆ ⚽',
+          'desc': 'ಆಟವಾಡುವುದು, ಚಹಾ ಮತ್ತು ಸ್ನೇಹಿತರೊಂದಿಗೆ ಮಾತುಕತೆ'
+        };
+      if (isTe)
+        return {
+          'title': 'ఆటలు, సాయంత్రపు టీ & సేదదీరడం ⚽',
+          'desc': 'స్నేహితులతో ఆటలు, టీ మరియు ముచ్చట్లు'
+        };
     } else if (id == 'routine_homework') {
-      if (isMl) return {'title': 'സ്വയംപഠനവും പുനരവലോകനവും 📝', 'desc': 'ഹോംവർക്ക്, പരീക്ഷാ തയ്യാറെടുപ്പ്, പാഠഭാഗങ്ങൾ'};
-      if (isTa) return {'title': 'சுய படிப்பு மற்றும் வீட்டுப்பாடம் 📝', 'desc': 'வீட்டுப்பாடம் மற்றும் தேர்வுக்கான படிப்பு'};
-      if (isHi) return {'title': 'स्वाध्याय और रिवीजन 📝', 'desc': 'होमवर्क, परीक्षा की तैयारी और पुनरावृत्ति'};
-      if (isKn) return {'title': 'ಸ್ವಯಂ ಅಧ್ಯಯನ ಮತ್ತು ಪುನರಾವರ್ತನೆ 📝', 'desc': 'ಮನೆಕೆಲಸ ಮತ್ತು ಪರೀಕ್ಷೆಯ ತಯಾರಿ'};
-      if (isTe) return {'title': 'స్వీయ అధ్యయనం & పునశ్చరణ 📝', 'desc': 'హోంవర్క్ మరియు పరీక్షల ప్రిపరేషన్'};
+      if (isMl)
+        return {
+          'title': 'സ്വയംപഠനവും പുനരവലോകനവും 📝',
+          'desc': 'ഹോംവർക്ക്, പരീക്ഷാ തയ്യാറെടുപ്പ്, പാഠഭാഗങ്ങൾ'
+        };
+      if (isTa)
+        return {
+          'title': 'சுய படிப்பு மற்றும் வீட்டுப்பாடம் 📝',
+          'desc': 'வீட்டுப்பாடம் மற்றும் தேர்வுக்கான படிப்பு'
+        };
+      if (isHi)
+        return {
+          'title': 'स्वाध्याय और रिवीजन 📝',
+          'desc': 'होमवर्क, परीक्षा की तैयारी और पुनरावृत्ति'
+        };
+      if (isKn)
+        return {
+          'title': 'ಸ್ವಯಂ ಅಧ್ಯಯನ ಮತ್ತು ಪುನರಾವರ್ತನೆ 📝',
+          'desc': 'ಮನೆಕೆಲಸ ಮತ್ತು ಪರೀಕ್ಷೆಯ ತಯಾರಿ'
+        };
+      if (isTe)
+        return {
+          'title': 'స్వీయ అధ్యయనం & పునశ్చరణ 📝',
+          'desc': 'హోంవర్క్ మరియు పరీక్షల ప్రిపరేషన్'
+        };
     } else if (id == 'routine_dinner') {
-      if (isMl) return {'title': 'അത്താഴവും കുടുംബത്തോടൊപ്പമുള്ള സമയവും 🍲', 'desc': 'സ്വാദിഷ്ടമായ അത്താഴവും കുടുംബ സല്ലാപവും'};
-      if (isTa) return {'title': 'இரவு உணவு மற்றும் குடும்ப நேரம் 🍲', 'desc': 'சுவையான இரவு உணவு மற்றும் குடும்ப உரையாடல்'};
-      if (isHi) return {'title': 'रात का भोजन और परिवार के साथ समय 🍲', 'desc': 'स्वादिष्ट खाना और परिवार के साथ बातचीत'};
-      if (isKn) return {'title': 'ರಾತ್ರಿಯ ಊಟ ಮತ್ತು ಕುಟುಂಬದ ಸಮಯ 🍲', 'desc': 'ಕುಟುಂಬದೊಂದಿಗೆ ಊಟ ಮತ್ತು ಮಾತುಕತೆ'};
-      if (isTe) return {'title': 'రాత్రి భోజనం & కుటుంబ సమయం 🍲', 'desc': 'కుటుంబ సభ్యులతో భోజనం మరియు ఆనంద సమయం'};
+      if (isMl)
+        return {
+          'title': 'അത്താഴവും കുടുംബത്തോടൊപ്പമുള്ള സമയവും 🍲',
+          'desc': 'സ്വാദിഷ്ടമായ അത്താഴവും കുടുംബ സല്ലാപവും'
+        };
+      if (isTa)
+        return {
+          'title': 'இரவு உணவு மற்றும் குடும்ப நேரம் 🍲',
+          'desc': 'சுவையான இரவு உணவு மற்றும் குடும்ப உரையாடல்'
+        };
+      if (isHi)
+        return {
+          'title': 'रात का भोजन और परिवार के साथ समय 🍲',
+          'desc': 'स्वादिष्ट खाना और परिवार के साथ बातचीत'
+        };
+      if (isKn)
+        return {
+          'title': 'ರಾತ್ರಿಯ ಊಟ ಮತ್ತು ಕುಟುಂಬದ ಸಮಯ 🍲',
+          'desc': 'ಕುಟುಂಬದೊಂದಿಗೆ ಊಟ ಮತ್ತು ಮಾತುಕತೆ'
+        };
+      if (isTe)
+        return {
+          'title': 'రాత్రి భోజనం & కుటుంబ సమయం 🍲',
+          'desc': 'కుటుంబ సభ్యులతో భోజనం మరియు ఆనంద సమయం'
+        };
     } else if (id == 'routine_sleep') {
-      if (isMl) return {'title': 'രാത്രി ഉറക്കവും വിശ്രമവും 🌙', 'desc': 'ഫോൺ മാറ്റി വെച്ചുള്ള സുഖകരമായ ഉറക്കം'};
-      if (isTa) return {'title': 'இரவு நிம்மதியான தூக்கம் 🌙', 'desc': 'திரை இல்லாமல் ஆரோக்கியமான தூக்கம்'};
-      if (isHi) return {'title': 'रात की आरामदायक नींद 🌙', 'desc': 'स्क्रीन बंद करके गहरी और शांतिपूर्ण नींद'};
-      if (isKn) return {'title': 'ರಾತ್ರಿಯ ಸುಖ ನಿದ್ರೆ 🌙', 'desc': 'ಮೊಬೈಲ್ ಬದಿಗಿಟ್ಟು ಶಾಂತ ನಿದ್ರೆ'};
-      if (isTe) return {'title': 'హాయిగా రాత్రి నిద్ర 🌙', 'desc': 'స్క్రీన్ పక్కన పెట్టి ప్రశాంతమైన నిద్ర'};
+      if (isMl)
+        return {
+          'title': 'രാത്രി ഉറക്കവും വിശ്രമവും 🌙',
+          'desc': 'ഫോൺ മാറ്റി വെച്ചുള്ള സുഖകരമായ ഉറക്കം'
+        };
+      if (isTa)
+        return {
+          'title': 'இரவு நிம்மதியான தூக்கம் 🌙',
+          'desc': 'திரை இல்லாமல் ஆரோக்கியமான தூக்கம்'
+        };
+      if (isHi)
+        return {
+          'title': 'रात की आरामदायक नींद 🌙',
+          'desc': 'स्क्रीन बंद करके गहरी और शांतिपूर्ण नींद'
+        };
+      if (isKn)
+        return {
+          'title': 'ರಾತ್ರಿಯ ಸುಖ ನಿದ್ರೆ 🌙',
+          'desc': 'ಮೊಬೈಲ್ ಬದಿಗಿಟ್ಟು ಶಾಂತ ನಿದ್ರೆ'
+        };
+      if (isTe)
+        return {
+          'title': 'హాయిగా రాత్రి నిద్ర 🌙',
+          'desc': 'స్క్రీన్ పక్కన పెట్టి ప్రశాంతమైన నిద్ర'
+        };
     }
     return null;
   }
@@ -4038,8 +4181,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                         Icon(
                           Icons.access_time_rounded,
                           size: 12,
-                          color:
-                              isStudy ? const Color(0xFF10B981) : item.color,
+                          color: isStudy ? const Color(0xFF10B981) : item.color,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -4058,8 +4200,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 2.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981)
-                            .withValues(alpha: 0.25),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                             color: const Color(0xFF10B981), width: 0.8),
@@ -4358,8 +4499,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 7: Daily Streak Kickoff ---
-  Widget _buildStep7WidgetCheer() {
+  // --- Step 7: Streak & 3-Month Achievement Motivation ---
+  Widget _buildStep7StreakAndPromiseCombined() {
     return _buildStepContainer(
       title: 'Commit to your daily streak 🔥',
       mascotHint: "Consistency is the fastest route to spoken English fluency.",
@@ -4437,21 +4578,19 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             text:
                 'Streak rewards: Keep your streak alive to unlock rooms & items!',
           ),
-        ],
-      ),
-      onContinue: _nextStep,
-      buttonText: "LET'S DO THIS!",
-    );
-  }
-
-  // --- Step 8: 3-Month Achievement Promise ---
-  Widget _buildStep8ThreeMonthPromise() {
-    return _buildStepContainer(
-      title: "What you will achieve in 3 months:",
-      mascotHint:
-          "Every feature in PoketMates is designed to make you speak fluently.",
-      child: Column(
-        children: [
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "What you will achieve in 3 months:",
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           _buildPromiseCard(
             emoji: '🎓',
             title: 'Official CEFR-Aligned Certificate',
@@ -4508,79 +4647,26 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         ],
       ),
       onContinue: _nextStep,
-      buttonText: 'CONTINUE',
+      buttonText: "LET'S DO THIS!",
     );
   }
 
-  // --- Step 9: Plan Choice (Super vs Free) ---
-  Widget _buildStep9PlanChoice() {
-    final isSuper = _selectedPlan == 'super';
-    return _buildStepContainer(
-      title: 'How do you want to get started?',
-      mascotHint: 'Select your preferred experience (change anytime).',
-      child: Column(
-        children: [
-          // Super PoketMates
-          _buildOptionCard(
-            title: 'Super PoketMates',
-            subtitle: 'Unlimited AI calls, faster progress & zero ads.',
-            badge: '⚡ PRO',
-            badgeColor: const Color(0xFFFACC15),
-            leadingEmoji: '👑',
-            isSelected: isSuper,
-            onTap: () async {
-              HapticFeedback.selectionClick();
-              setState(() => _selectedPlan = 'super');
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          // Learn For Free
-          _buildOptionCard(
-            title: 'Learn for Free',
-            subtitle: 'Full learning island, daily streaks & peer chats.',
-            badge: '100% FREE',
-            badgeColor: const Color(0xFF38BDF8),
-            leadingEmoji: '🌱',
-            isSelected: !isSuper,
-            onTap: () {
-              HapticFeedback.selectionClick();
-              setState(() => _selectedPlan = 'free');
-            },
-          ),
-        ],
-      ),
-      onContinue: () async {
-        if (_selectedPlan == 'super') {
-          await Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-          );
-          _nextStep();
-        } else {
-          _nextStep();
-        }
-      },
-      buttonText: isSuper ? 'CONTINUE WITH SUPER ⚡' : 'CONTINUE FOR FREE',
-    );
-  }
-
-  // --- Step 10: Starting Path (Scratch vs Placement) ---
+  // --- Step 8: How Would You Like to Begin & Save Journey ---
   Widget _buildStep10StartingPath() {
     if (_selectedPath == 'placement_active') {
       return _buildPlacementQuizStep();
     }
 
     return _buildStepContainer(
-      title: 'Where would you like to start?',
-      mascotHint: 'Choose your starting point.',
+      title: 'How would you like to begin?',
+      mascotHint: 'Choose your starting point. All learners start at Day 1.',
       child: Column(
         children: [
           // Start from Scratch
           _buildOptionCard(
             title: 'Start from scratch',
-            subtitle: 'Begin with Day 1 basics: greetings & essentials.',
+            subtitle:
+                'Begin with Day 1 basics: greetings, alphabet & essentials.',
             leadingEmoji: '🟢',
             isSelected: _selectedPath == 'scratch',
             onTap: () {
@@ -4593,15 +4679,90 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildOptionCard(
             title: 'Find my level',
             subtitle:
-                'Take a quick 2-minute check to find your starting level.',
+                'Take a quick check with 4-5 questions to personalize your vocabulary.',
             leadingEmoji: '🔵',
-            badge: '2-MIN QUIZ',
+            badge: 'QUICK CHECK',
             badgeColor: const Color(0xFF818CF8),
             isSelected: _selectedPath == 'placement',
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _selectedPath = 'placement');
             },
+          ),
+          const SizedBox(height: 20),
+          const Divider(color: Color(0xFF27272A)),
+          const SizedBox(height: 14),
+
+          // Save Progress Section directly integrated
+          _buildStarterAvatar(size: 52),
+          const SizedBox(height: 10),
+          Text(
+            "Save your Day 1 journey to lock in your streak:",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFA1A1AA),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          if (kEnableGoogleSignIn) ...[
+            _buildSocialButton(
+              label: 'Save with Google',
+              iconWidget: const FaIcon(FontAwesomeIcons.google,
+                  color: Color(0xFFDB4437), size: 19),
+              backgroundColor: Colors.white,
+              textColor: Colors.black87,
+              onPressed: _handleGoogleSignIn,
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          _buildDuolingoOutlineButton(
+            label: 'Save with Email',
+            onPressed: () {
+              setState(() {
+                _isSignUpMode = true;
+                _mode = WelcomeMode.signIn;
+              });
+            },
+          ),
+
+          const SizedBox(height: 8),
+
+          TextButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              setState(() {
+                _isSignUpMode = false;
+                _errorMessage = null;
+                _mode = WelcomeMode.signIn;
+              });
+            },
+            child: Text(
+              'I Already Have an Account',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF38BDF8),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          TextButton(
+            onPressed: _finishAsGuest,
+            child: Text(
+              'CONTINUE AS GUEST 🚀',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFACC15),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
         ],
       ),
@@ -4613,11 +4774,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             _quizScore = 0;
             _selectedQuizAnswer = null;
           });
-        } else {
-          _nextStep();
         }
       },
-      buttonText: _selectedPath == 'placement' ? 'START QUIZ' : 'CONTINUE',
+      showDefaultButton: _selectedPath == 'placement',
+      buttonText: 'START QUICK CHECK',
     );
   }
 
@@ -4673,86 +4833,27 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           if (_quizScore == 0) {
             _selectedEnglishLevel = levels[0]['title']!;
           } else if (_quizScore == 1) {
-            _selectedEnglishLevel = levels.length > 1 ? levels[1]['title']! : levels[0]['title']!;
+            _selectedEnglishLevel =
+                levels.length > 1 ? levels[1]['title']! : levels[0]['title']!;
           } else if (_quizScore == 2) {
-            _selectedEnglishLevel = levels.length > 2 ? levels[2]['title']! : levels[1]['title']!;
+            _selectedEnglishLevel =
+                levels.length > 2 ? levels[2]['title']! : levels[1]['title']!;
           } else {
-            _selectedEnglishLevel = levels.length > 3 ? levels[3]['title']! : levels[2]['title']!;
+            _selectedEnglishLevel =
+                levels.length > 3 ? levels[3]['title']! : levels[2]['title']!;
           }
           setState(() => _selectedPath = 'scratch');
-          _nextStep();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Level determined: $_selectedEnglishLevel! Starting at Day 1! 🚀'),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
         }
       },
       buttonText:
           _quizStep == _placementQuestions.length - 1 ? 'FINISH CHECK' : 'NEXT',
-    );
-  }
-
-  // --- Step 11: Celebration & Save Progress ---
-  Widget _buildStep11CelebrationAndSave() {
-    return _buildStepContainer(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildStarterAvatar(size: 64),
-          const SizedBox(height: 14),
-          _buildMascotSpeechBubble("You're all set to begin! 🚀"),
-          const SizedBox(height: 12),
-          Text(
-            "Day 1 Streak Started! Save your journey so you never lose your progress:",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFA1A1AA),
-              fontSize: 13.5,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          if (kEnableGoogleSignIn) ...[
-            // Google 1-Tap Button
-            _buildSocialButton(
-              label: 'Save with Google',
-              iconWidget: const FaIcon(FontAwesomeIcons.google,
-                  color: Color(0xFFDB4437), size: 19),
-              backgroundColor: Colors.white,
-              textColor: Colors.black87,
-              onPressed: _handleGoogleSignIn,
-            ),
-            const SizedBox(height: 10),
-          ],
-
-          const SizedBox(height: 10),
-
-          // Email Auth Button
-          _buildDuolingoOutlineButton(
-            label: 'Save with Email',
-            onPressed: () {
-              setState(() {
-                _isSignUpMode = true;
-                _mode = WelcomeMode.signIn;
-              });
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          // Enter as Guest Button
-          TextButton(
-            onPressed: _finishAsGuest,
-            child: Text(
-              'CONTINUE AS GUEST 🚀',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFFACC15),
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-      showDefaultButton: false,
     );
   }
 
@@ -5028,7 +5129,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                       HapticFeedback.selectionClick();
                                       setState(() {
                                         _useCustomPassword = false;
-                                        _passwordController.text = _generatedPassword;
+                                        _passwordController.text =
+                                            _generatedPassword;
                                       });
                                     },
                                     icon: const Icon(Icons.auto_awesome_rounded,
@@ -5549,7 +5651,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                 _speakText(promptText);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.95),
                   borderRadius: const BorderRadius.only(
@@ -5623,35 +5726,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMascotSpeechBubble(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.inter(
-          color: Colors.white,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          height: 1.35,
-        ),
       ),
     );
   }
@@ -5756,8 +5830,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981),
                       borderRadius: BorderRadius.circular(8),
@@ -6332,7 +6406,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
     _emailController = TextEditingController(text: widget.initialEmail);
     _nameController = TextEditingController();
     _newPasswordController = TextEditingController();
-    _showProfileReset = widget.cachedPassword == null || widget.cachedPassword!.isEmpty;
+    _showProfileReset =
+        widget.cachedPassword == null || widget.cachedPassword!.isEmpty;
     _selectedDob = DateTime(2000, 1, 1);
   }
 
@@ -6403,7 +6478,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
       return;
     }
     if (newPass.length < 6) {
-      setState(() => _errorMessage = 'New password must be at least 6 characters');
+      setState(
+          () => _errorMessage = 'New password must be at least 6 characters');
       return;
     }
 
@@ -6453,8 +6529,18 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
 
   String _formatDob(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
   }
@@ -6508,7 +6594,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                         shape: BoxShape.circle,
                         color: const Color(0xFF10B981).withValues(alpha: 0.18),
                         border: Border.all(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.4)),
                       ),
                       child: const Center(
                         child: Icon(Icons.lock_reset_rounded,
@@ -6564,7 +6651,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.12),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -6628,7 +6716,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                                   size: 20,
                                 ),
                                 onPressed: () => setState(() =>
-                                    _revealSavedPassword = !_revealSavedPassword),
+                                    _revealSavedPassword =
+                                        !_revealSavedPassword),
                               ),
                             ],
                           ),
@@ -6681,8 +6770,7 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                   const SizedBox(height: 12),
                   Center(
                     child: TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _showProfileReset = true),
+                      onPressed: () => setState(() => _showProfileReset = true),
                       icon: const Icon(Icons.security_rounded,
                           size: 15, color: Color(0xFF38BDF8)),
                       label: Text(
@@ -6745,7 +6833,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                       hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF64748B), fontSize: 13),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      fillColor:
+                          const Color(0xFF1E293B).withValues(alpha: 0.65),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       prefixIcon: const Icon(Icons.mail_outline_rounded,
@@ -6787,7 +6876,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                       hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF64748B), fontSize: 13),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      fillColor:
+                          const Color(0xFF1E293B).withValues(alpha: 0.65),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       prefixIcon: const Icon(Icons.person_outline_rounded,
@@ -6899,7 +6989,8 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
                       hintStyle: GoogleFonts.inter(
                           color: const Color(0xFF64748B), fontSize: 13),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
+                      fillColor:
+                          const Color(0xFF1E293B).withValues(alpha: 0.65),
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 12),
                       prefixIcon: const Icon(Icons.lock_outline_rounded,
@@ -7002,4 +7093,3 @@ class _ForgotPasswordSheetState extends State<_ForgotPasswordSheet> {
     );
   }
 }
-
