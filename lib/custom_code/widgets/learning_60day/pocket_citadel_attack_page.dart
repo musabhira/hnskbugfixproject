@@ -777,8 +777,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final isDailyLimitReached =
         attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
-    final bool isAttackerVip =
-        await PocketAdMobService.instance.isUserVip();
+    final bool isAttackerVip = await PocketAdMobService.instance.isUserVip();
     final bool isTargetVip = widget.neighbor.isVip;
     final bool requireEscort = isAttackerVip || isTargetVip;
     final customArmed = await PocketFortressDefenseService.loadShieldQuestions(
@@ -1424,20 +1423,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
             final isLandscape = w > h;
-            final double worldH = isPresident
-                ? math.max(1800.0, worldW * (h / (w > 0 ? w : 368.0)))
-                : 1600.0;
-            final double groundY =
-                isPresident ? (isLandscape ? 780.0 : (worldH * 0.44)) : 920.0;
+            final double worldH = 1600.0;
+            final double groundY = 920.0;
             final double houseLeft = (worldW - houseW) / 2;
             final double houseTop = groundY - 14.0 - houseH;
 
             // 🏛️ Sovereign Presidential Palace Castle Dimensions
             final double palaceW = 540.0;
             final double palaceH = 410.0;
-            final double palaceLeft =
-                (worldW - palaceW) / 2; // (1200 - 540) / 2 = 330.0
-            final double palaceTop = groundY - 10.0 - palaceH;
+            final double palaceLeft = (worldW - palaceW) / 2;
+            final double palaceTop = groundY - 14.0 - houseH + (houseH - palaceH);
 
             _savedViewportW = w;
             _savedViewportH = h;
@@ -1446,14 +1441,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             _savedGroundY = groundY;
 
             // 🛡️ Zoom Range:
-            // For regular houses: math.max(w / worldW, h / worldH) fills the screen perfectly.
-            // For Presidential Citadel:
-            // On desktop/landscape (w > h): fit palace vertically with ample sky above, never cut off!
-            // On mobile portrait (h >= w): zoom in to fill ~92% width as previously perfected.
+            // Naturally align President House within the exact 90-level estate viewport & camera
             final double houseZoomScale = isPresident
                 ? (isLandscape
-                    ? math.min(w / (palaceW * 1.15), h / (palaceH * 1.25))
-                    : (w / (palaceW * 1.08)))
+                    ? math.min(w / (palaceW * 1.05), h / (palaceH * 1.15))
+                    : (w / (houseW * 1.05)))
                 : (w / (houseW * 1.05));
 
             final double baseMinScale = math.max(w / worldW, h / worldH);
@@ -1464,20 +1456,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
             final defaultScale = (w <= 0)
                 ? 1.0
-                : (isPresident
-                    ? (isLandscape
-                        ? math.max(minScale, houseZoomScale)
-                        : houseZoomScale.clamp(minScale, maxScale))
-                    : math.min(maxScale, math.max(minScale, houseZoomScale)));
+                : math.min(maxScale, math.max(minScale, houseZoomScale));
 
-            // 🏠 Default View: Camera smoothly focuses on the House/Palace centered on screen!
+            // 🏠 Default View: Camera smoothly focuses on the House centered on screen!
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
 
               final houseCenterX = worldW / 2;
-              final houseCenterY = isPresident
-                  ? (palaceTop + (palaceH * 0.48))
-                  : (houseTop + (houseH * 0.52));
+              final houseCenterY = houseTop + (houseH * 0.52);
 
               final maxTx = 0.0;
               final minTx = -((worldW * defaultScale) - w);
@@ -1488,11 +1474,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               final maxTy = 0.0;
               final minTy = -((worldH * defaultScale) - h);
               final safeMinTy = minTy < maxTy ? minTy : maxTy;
-              final targetTy = isPresident
-                  ? (isLandscape
-                      ? ((h * 0.50) - (houseCenterY * defaultScale))
-                      : ((h * 0.38) - (houseCenterY * defaultScale)))
-                  : ((h * 0.42) - (houseCenterY * defaultScale));
+              final targetTy = ((h * 0.42) - (houseCenterY * defaultScale));
               final ty = targetTy.clamp(safeMinTy, maxTy);
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1535,9 +1517,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     isDamaged: _isDefenderDamaged,
                                     groundBaseY: groundY,
                                     isNight: isNight,
-                                    isDay90: isDay90,
+                                    isDay90: isDay90 || isPresident,
                                     ambientProg: _ambientController.value,
-                                    isPresident: isPresident,
+                                    isPresident: false,
                                   ),
                                 );
                               },
@@ -6871,35 +6853,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     });
   }
 
-  /// 🏰 Open Full-Screen 2D House Attack Arena Game
+  /// 🏰 Complete House Attack and Return to Previous Screen
   Future<void> _openHouseSiege2dBattle() async {
-    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
-    final battleResult = await PocketHouseSiege2dBattlePage.open(
-      context,
-      defenderName: widget.neighbor.name,
-      defenderLevel: widget.neighbor.day > 0 ? widget.neighbor.day : 1,
-      defenderId: widget.neighbor.id,
-      paletteId: widget.neighbor.paletteId,
-      attackerDay: widget.attackerDay,
-      attackerWeapon: perk.combatWeaponName,
-      isKidMode: widget.isKidMode,
-    );
+    // Execute the real backend attack and synchronization
+    await _executeCitadelAttack();
 
-    if (battleResult != null && battleResult['passed'] == true && mounted) {
-      // Execute the real single-source-of-truth backend attack & synchronization
-      await _executeCitadelAttack();
+    if (!mounted) return;
 
-      // Launch the English Attack Message Composer Modal to send challenge message to 1-on-1 chat
-      if (mounted) {
-        final myId = SupaFlow.client.auth.currentUser?.id ?? '';
-        await PocketAttackMessageComposerModal.show(
-          context,
-          attackerId: myId,
-          defenderId: widget.neighbor.id,
-          defenderName: widget.neighbor.name,
-        );
-      }
-    }
+    // Close the current screen with the existing reverse navigation animation
+    Navigator.of(context).pop();
   }
 
   /// 🔤 Step 3 Essential Spelling Challenge Playfield (Zero MCQs - Pure Interactive Letter Tiles)
