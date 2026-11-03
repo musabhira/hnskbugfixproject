@@ -72,9 +72,12 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'live_task_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_tools_library_sheet.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_team_workspace.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_team_management_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_dashboard_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_diagram_hub_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_modular_plus_sheet.dart';
+import 'package:pocket_mates_app/custom_code/services/pocketgang_tools_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocketgang_task_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_ranking_trail_widget.dart';
@@ -123,6 +126,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final _focusNode = FocusNode();
   final _imagePicker = ImagePicker();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _isSttListening = false;
 
   // PocketScore Avatar Caches to ensure instant & accurate display
   static final Map<String, VectorAvatarConfig> _userAvatarConfigCache = {};
@@ -219,9 +224,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Timer? _pactActiveTimer;
   DateTime? _lastPactMinuteLogTime;
 
-  // Speech-to-Text for English Hub
-  final stt.SpeechToText _speechToText = stt.SpeechToText();
-  bool _isSttListening = false;
+  // 🛠️ PocketGang Modular Tools & Dynamic Tabs State
+  List<String> _gangInstalledTools = ['team_mgmt'];
+  List<PocketGangTask> _gangTasks = [];
+  RealtimeChannel? _gangToolsSubscription;
+
+  bool get _isEligibleForPocketGangWorkspace {
+    if (_isKidMode) return false;
+    return PocketGangToolsService.isEligibleForPocketGangTools(
+      groupId: _currentGroupId,
+      groupName: _currentGroupName,
+    );
+  }
 
   Future<void> _toggleEnglishSpeechDictation() async {
     if (_isSttListening) {
@@ -712,6 +726,39 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         }
       });
     }
+
+    // 🛠️ Initialize PocketGang Group-Wide Tools & Tasks
+    if (_isEligibleForPocketGangWorkspace) {
+      _initPocketGangToolsAndTasks();
+    }
+  }
+
+  Future<void> _initPocketGangToolsAndTasks() async {
+    final tools = await PocketGangToolsService.instance
+        .getInstalledTools(_currentGroupId);
+    final tasks = await PocketGangTaskService.instance
+        .getTasks(_currentGroupId);
+    if (mounted) {
+      safeSetState(() {
+        _gangInstalledTools = tools;
+        _gangTasks = tasks;
+      });
+    }
+    _gangToolsSubscription = PocketGangToolsService.instance.subscribeToTools(
+      groupId: _currentGroupId,
+      onToolsChanged: () async {
+        final updatedTools = await PocketGangToolsService.instance
+            .getInstalledTools(_currentGroupId);
+        final updatedTasks = await PocketGangTaskService.instance
+            .getTasks(_currentGroupId);
+        if (mounted) {
+          safeSetState(() {
+            _gangInstalledTools = updatedTools;
+            _gangTasks = updatedTasks;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _initEnglishHubRobotParticipation() async {
@@ -1029,6 +1076,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _scrollController.dispose();
     _focusNode.dispose();
     _chatTabPageController.dispose();
+    _gangToolsSubscription?.unsubscribe();
     super.dispose();
   }
 
@@ -5669,10 +5717,10 @@ Draft: "$draft"''';
               ),
               Column(
                 children: [
-                  // 📌 Stable Segmented Tab Bar (Chat / Ranking Trail)
+                  // 📌 Minimal Responsive Segmented Tab Bar (Chat | Tools... | Ranking | +)
                   _buildChatHeaderTabs(),
 
-                  // 📱 Swipeable View (Page 0: Chat, Page 1: Ranking Trail)
+                  // 📱 Dynamic View Controller (Page 0: Chat, 1..N: Tools, N+1: Ranking)
                   Expanded(
                     child: PageView(
                       controller: _chatTabPageController,
@@ -5682,19 +5730,55 @@ Draft: "$draft"''';
                         }
                       },
                       children: [
+                        // Page 0: Always Chat
                         _buildMainChatConversationView(chatMessagesAsync),
+
+                        // If Eligible for PocketGang Workspace, dynamically mount installed tools
+                        if (_isEligibleForPocketGangWorkspace) ...[
+                          for (final toolKey in _gangInstalledTools) ...[
+                            if (toolKey == 'team_mgmt')
+                              PocketGangTeamManagementWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                                groupMembers: _groupMembers,
+                                isAdmin: _userRole == 'admin',
+                                tasks: _gangTasks,
+                                onTasksChanged: () async {
+                                  final tasks = await PocketGangTaskService.instance
+                                      .getTasks(widget.groupId);
+                                  if (mounted) {
+                                    safeSetState(() => _gangTasks = tasks);
+                                  }
+                                },
+                              )
+                            else if (toolKey == 'dashboard')
+                              PocketGangDashboardWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                tasks: _gangTasks,
+                                contributions: PocketGangTaskService.instance
+                                    .calculateContributions(
+                                  groupMembers: _groupMembers,
+                                  tasks: _gangTasks,
+                                ),
+                              )
+                            else if (toolKey == 'diagram_studio')
+                              PocketGangDiagramHubWidget(
+                                groupId: widget.groupId,
+                                groupName: widget.groupName,
+                                currentUserId: _currentUserId,
+                              )
+                          ],
+                        ],
+
+                        // Final Tab: Ranking Trail
                         ChatRankingTrailWidget(
                           groupId: widget.groupId,
                           groupName: widget.groupName,
                           currentUserId: _currentUserId,
                           initialMembers: _groupMembers,
                         ),
-                        if (!_isKidMode && !widget.groupId.startsWith('p:'))
-                          PocketGangTeamWorkspaceWidget(
-                            groupId: widget.groupId,
-                            groupName: widget.groupName,
-                            currentUserId: _currentUserId,
-                          ),
                       ],
                     ),
                   ),
@@ -5709,129 +5793,41 @@ Draft: "$draft"''';
 
   Widget _buildChatHeaderTabs() {
     final isKid = PocketKidsService.isKidAccount;
-    return Container(
-      width: double.infinity,
-      height: 44,
-      decoration: BoxDecoration(
-        color: isKid ? const Color(0xFF0F172A) : const Color(0xFF121B22),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 1.0,
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      child: Container(
+
+    // If NOT eligible for PocketGang workspace (e.g. English Hub, Kids mode, or Personal 1-on-1 chat):
+    // Strictly preserve standard 2-tab view: Chat | Ranking (NO Plus button, NO tools, NO workspace)
+    if (!_isEligibleForPocketGangWorkspace) {
+      return Container(
+        width: double.infinity,
+        height: 44,
         decoration: BoxDecoration(
-          color: isKid ? const Color(0xFF1E293B) : const Color(0xFF070B0E),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isKid ? const Color(0xFF38BDF8).withValues(alpha: 0.4) : Colors.white12,
-            width: 0.8,
+          color: isKid ? const Color(0xFF0F172A) : const Color(0xFF121B22),
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1.0,
+            ),
           ),
         ),
-        child: Row(
-          children: [
-            // Tab 1: Chat
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _chatTabPageController.animateToPage(
-                    0,
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  decoration: BoxDecoration(
-                    color: _activeChatTabIndex == 0
-                        ? (isKid ? const Color(0xFF38BDF8) : const Color(0xFFFFD600))
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.chat_bubble_rounded,
-                        size: 13,
-                        color: _activeChatTabIndex == 0
-                            ? (isKid ? Colors.white : Colors.black)
-                            : Colors.white70,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        isKid ? 'Student Chat' : 'Chat',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          color: _activeChatTabIndex == 0
-                              ? (isKid ? Colors.white : Colors.black)
-                              : Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isKid ? const Color(0xFF1E293B) : const Color(0xFF070B0E),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isKid ? const Color(0xFF38BDF8).withValues(alpha: 0.4) : Colors.white12,
+              width: 0.8,
             ),
-
-            // Tab 2: Ranking Trail
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _chatTabPageController.animateToPage(
-                    1,
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  decoration: BoxDecoration(
-                    color: _activeChatTabIndex == 1
-                        ? const Color(0xFFFFD600)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        isKid ? '🏅' : (_activeChatTabIndex == 1 ? '👑' : '🏆'),
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        isKid ? 'Trail Ranking' : 'Ranking',
-                        style: GoogleFonts.outfit(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          color: _activeChatTabIndex == 1
-                              ? Colors.black
-                              : Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Tab 3: Workspace (Team / Projects)
-            if (!isKid && !widget.groupId.startsWith('p:'))
+          ),
+          child: Row(
+            children: [
+              // Tab 1: Chat
               Expanded(
                 child: GestureDetector(
                   onTap: () {
                     HapticFeedback.selectionClick();
                     _chatTabPageController.animateToPage(
-                      2,
+                      0,
                       duration: const Duration(milliseconds: 250),
                       curve: Curves.easeOutCubic,
                     );
@@ -5839,8 +5835,8 @@ Draft: "$draft"''';
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
                     decoration: BoxDecoration(
-                      color: _activeChatTabIndex == 2
-                          ? const Color(0xFFFFD600)
+                      color: _activeChatTabIndex == 0
+                          ? (isKid ? const Color(0xFF38BDF8) : const Color(0xFFFFD600))
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -5848,15 +5844,21 @@ Draft: "$draft"''';
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('💼', style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.chat_bubble_rounded,
+                          size: 13,
+                          color: _activeChatTabIndex == 0
+                              ? (isKid ? Colors.white : Colors.black)
+                              : Colors.white70,
+                        ),
+                        const SizedBox(width: 5),
                         Text(
-                          'Workspace',
+                          isKid ? 'Student Chat' : 'Chat',
                           style: GoogleFonts.outfit(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: _activeChatTabIndex == 2
-                                ? Colors.black
+                            color: _activeChatTabIndex == 0
+                                ? (isKid ? Colors.white : Colors.black)
                                 : Colors.white70,
                           ),
                         ),
@@ -5866,34 +5868,219 @@ Draft: "$draft"''';
                 ),
               ),
 
-            // Minimal Modular "+" Tools Library Button
-            GestureDetector(
-              onTap: () async {
-                HapticFeedback.selectionClick();
-                final updatedTools = await PocketGangToolsLibrarySheet.show(
-                  context,
-                  gangTypeKey: 'friends_team',
-                  currentTools: const ['chat', 'ranking', 'team_mgmt', 'tasks_kanban', 'time_tracker', 'dashboard', 'diagram_studio'],
-                );
-                if (updatedTools != null && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('✨ Workspace tools updated (${updatedTools.length} tools installed)!'),
-                      backgroundColor: const Color(0xFFFFD700),
-                      behavior: SnackBarBehavior.floating,
+              // Tab 2: Ranking Trail
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _chatTabPageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                    );
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    decoration: BoxDecoration(
+                      color: _activeChatTabIndex == 1
+                          ? const Color(0xFFFFD600)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  );
-                }
-              },
-              child: Container(
-                margin: const EdgeInsets.only(left: 6, right: 3),
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isKid ? '🏅' : (_activeChatTabIndex == 1 ? '👑' : '🏆'),
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          isKid ? 'Trail Ranking' : 'Ranking',
+                          style: GoogleFonts.outfit(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: _activeChatTabIndex == 1
+                                ? Colors.black
+                                : Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.add, color: Color(0xFFFFD700), size: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 🌟 NORMAL POCKETGANG GROUP: Horizontally scrollable minimal strip
+    // Tab Order: Chat (0) | Tool 1 (1) ... Tool N (N) | Ranking (N+1) | + (Button)
+    final rankingTabIndex = _gangInstalledTools.length + 1;
+
+    return Container(
+      width: double.infinity,
+      height: 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFF121B22),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1.0,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  // Tab 0: Chat
+                  _buildModularGangTab(
+                    index: 0,
+                    iconWidget: const Icon(Icons.chat_bubble_rounded, size: 13),
+                    title: 'Chat',
+                  ),
+                  const SizedBox(width: 6),
+
+                  // Installed Tool Tabs (indices 1 .. N)
+                  for (int i = 0; i < _gangInstalledTools.length; i++) ...[
+                    _buildDynamicGangToolTab(
+                      toolKey: _gangInstalledTools[i],
+                      tabIndex: i + 1,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+
+                  // Last Tab: Ranking
+                  _buildModularGangTab(
+                    index: rankingTabIndex,
+                    iconWidget: Text(
+                      _activeChatTabIndex == rankingTabIndex ? '👑' : '🏆',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    title: 'Ranking',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Small circular '+' button pinned at right
+          GestureDetector(
+            onTap: () async {
+              HapticFeedback.selectionClick();
+              final updatedTools = await PocketGangModularPlusSheet.show(
+                context,
+                groupId: widget.groupId,
+                userId: _currentUserId,
+                currentInstalledTools: _gangInstalledTools,
+              );
+              if (updatedTools != null && mounted) {
+                safeSetState(() {
+                  _gangInstalledTools = updatedTools;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '✨ Gang workspace updated (${updatedTools.length} tools active)',
+                      style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                    backgroundColor: const Color(0xFFFFD600),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFFD600).withValues(alpha: 0.15),
+                border: Border.all(color: const Color(0xFFFFD600), width: 1.2),
+              ),
+              child: const Icon(Icons.add, color: Color(0xFFFFD600), size: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDynamicGangToolTab({required String toolKey, required int tabIndex}) {
+    String title = 'Tool';
+    Widget iconWidget = const Text('🛠️', style: TextStyle(fontSize: 12));
+
+    if (toolKey == 'team_mgmt') {
+      title = 'Team';
+      iconWidget = const Text('👥', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'dashboard') {
+      title = 'Dashboard';
+      iconWidget = const Text('📊', style: TextStyle(fontSize: 12));
+    } else if (toolKey == 'diagram_studio') {
+      title = 'Diagram Studio';
+      iconWidget = const Text('📐', style: TextStyle(fontSize: 12));
+    }
+
+    return _buildModularGangTab(
+      index: tabIndex,
+      iconWidget: iconWidget,
+      title: title,
+    );
+  }
+
+  Widget _buildModularGangTab({
+    required int index,
+    required Widget iconWidget,
+    required String title,
+  }) {
+    final isSelected = _activeChatTabIndex == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        _chatTabPageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+        );
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFD600) : const Color(0xFF070B0E),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFD600) : Colors.white12,
+            width: 0.8,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconTheme(
+              data: IconThemeData(
+                color: isSelected ? Colors.black : Colors.white70,
+                size: 13,
+              ),
+              child: iconWidget,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? Colors.black : Colors.white70,
               ),
             ),
           ],
