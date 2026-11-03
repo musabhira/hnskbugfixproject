@@ -3536,12 +3536,12 @@ Draft: "$draft"''';
       }
 
       // 🗣️ ASYNC REGIONAL LANGUAGE DETECTION & PRESIDENTIAL WARNING
-      // (User Audio Directive: "എല്ലാ ചാറ്റിംഗിലും ഇൻപുട്ട് ചെയ്യട്ടെ. എന്താണെന്നറിയോ മലയാളമോ തമിഴോ തെലുങ്കോ എന്തെങ്കിലും സംസാരിച്ചതിനെ കണ്ടുപിടിക്കേണ്ടേ?
-      // ഇവര് നോർമലി അപ്പുറത്തും ഇപ്പുറത്തും ഒക്കെ ഇരുന്ന് ചാറ്റ് ചെയ്ത് ഇങ്ങനെ പോകും. പക്ഷേ എന്താണ്, മെല്ലെ സമാധാനത്തിൽ കണ്ടുപിടിച്ചാൽ മതി.
-      // കണ്ടുപിടിച്ചിട്ട് തന്നെ പറയും നിങ്ങൾ സംസാരിച്ചു, നോട്ടിഫിക്കേഷൻ പോകും. പ്രസിഡൻഷ്യൽ നോട്ടിഫിക്കേഷൻ പോകാം. പ്രസിഡന്റ് നോട്ടിഫിക്കേഷൻ അയക്കും.")
+      // Note: Normal PocketGang groups allow multi-language communication as selected upon creation.
+      // Language enforcement strictly applies to English Hub, Pocket Talk pacts, and Direct 1-on-1 English learning chats.
       if (text != null &&
           text.trim().isNotEmpty &&
-          !PocketPresidentService.isPresidentId(widget.groupId)) {
+          !PocketPresidentService.isPresidentId(widget.groupId) &&
+          !_isEligibleForPocketGangWorkspace) {
         final langCheck = PocketLanguageGuardService.checkMessage(text);
         if (!langCheck.isValid || !_isEnglishOnly(text)) {
           final detectedLang = langCheck.detectedWord ?? 'Regional Language';

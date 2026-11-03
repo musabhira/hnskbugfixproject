@@ -46,7 +46,7 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
   final List<Map<String, dynamic>> _rawHistory = [
     {
       'role': 'system',
-      'content': 'You are PoketMates Voice AI, a helpful virtual assistant that controls the PoketMates app and the Zoyarex ERP module. Keep responses very short and conversational. Note: The app name is PoketMates (never spelled with a "c"). When the user wants to go to a page, get data, send a message, or create a task, use the provided tools. You must be able to understand and speak in Malayalam fluently when requested.'
+      'content': 'You are PoketMates Voice AI, a helpful virtual assistant that controls the PoketMates app. Keep responses very short and conversational. Note: The app name is PoketMates (never spelled with a "c"). When the user wants to go to a page, get data, send a message, or create a task, use the provided tools. You must be able to understand and speak in Malayalam fluently when requested.'
     }
   ];
 
@@ -62,19 +62,6 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
             'pageName': {'type': 'string', 'description': 'The name of the page to navigate to (e.g., "sales", "expenses", "users", "outlets", "home")'}
           },
           'required': ['pageName']
-        }
-      }
-    },
-    {
-      'type': 'function',
-      'function': {
-        'name': 'get_zoyarex_sales',
-        'description': 'Retrieves a summary of sales data for the current tenant in Zoyarex.',
-        'parameters': {
-          'type': 'object',
-          'properties': {
-            'branch_name': {'type': 'string', 'description': 'Optional. The name of the branch to filter sales by.'}
-          }
         }
       }
     },
@@ -190,20 +177,6 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
             final page = args['pageName'] as String?;
             await _speak('Navigating to $page');
             toolResultString = 'Navigated to $page';
-          } else if (name == 'get_zoyarex_sales') {
-            try {
-              final query = SupaFlow.client.from('gt_vouchers').select('total_amount').eq('voucher_type', 'sale');
-              final data = await query;
-              double total = 0;
-              for (var row in data) {
-                 total += double.tryParse(row['total_amount']?.toString() ?? '0') ?? 0;
-              }
-              await _speak('You have ${data.length} recent sales totaling \$${total.toStringAsFixed(2)}.');
-              toolResultString = 'Reported ${data.length} sales totaling \$${total.toStringAsFixed(2)}';
-            } catch(e) {
-              await _speak('Sorry, I could not fetch the sales right now.');
-              toolResultString = 'Failed to fetch sales: $e';
-            }
           } else if (name == 'send_chat_message') {
             final user = args['username'] as String?;
             final msg = args['message'] as String?;

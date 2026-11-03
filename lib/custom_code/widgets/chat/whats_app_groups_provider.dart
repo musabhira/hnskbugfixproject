@@ -810,6 +810,7 @@ class Conversations extends _$Conversations {
               group_image_url,
               last_message,
               last_message_time,
+              created_at,
               updated_at
             )
           ''');
@@ -864,14 +865,18 @@ class Conversations extends _$Conversations {
         );
         final hasUnwatchedStatus = hasStatus && !isSeen;
 
+        final lastMsgTime = groupData['last_message_time'] != null
+            ? DateTime.tryParse(groupData['last_message_time'].toString())
+            : (groupData['created_at'] != null
+                ? DateTime.tryParse(groupData['created_at'].toString())
+                : null);
+
         return ChatConversation(
           id: gId,
           name: groupData['name'] ?? 'Unnamed Group',
           imageUrl: groupData['group_image_url'],
           lastMessage: groupData['last_message'],
-          lastMessageTime: groupData['last_message_time'] != null
-              ? DateTime.parse(groupData['last_message_time'])
-              : null,
+          lastMessageTime: lastMsgTime,
           unreadCount: unreadCount,
           isGroup: true,
           hasStatus: hasStatus,

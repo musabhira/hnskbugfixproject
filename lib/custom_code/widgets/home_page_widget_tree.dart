@@ -5886,7 +5886,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               const SizedBox(height: 20),
               Row(
                 children: [
-                  // "Add Gallery" option removed per directive (all gallery/market creation hidden)
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -5937,6 +5936,54 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.poppins(
                                         color: Colors.white, fontSize: 12)),
+                              ],
+                            )),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: material.InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final isAuthenticated =
+                              await AuthAlertBox.checkAuthAndShowAlert(
+                            context: context,
+                            customMessage: "Please login to create a PocketGang",
+                          );
+                          if (isAuthenticated && mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => CreateGroupDialog(
+                                onGroupCreated: () => _handleRefresh(),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFFFF8906),
+                                  Color(0xFFFF2A6D),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(material.Icons.groups_rounded,
+                                    color: Colors.white, size: 30),
+                                const SizedBox(height: 8),
+                                Text('Create\nPocketGang',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                               ],
                             )),
                       ),
