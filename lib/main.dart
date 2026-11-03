@@ -23,6 +23,7 @@ import 'custom_code/services/pocket_language_service.dart';
 import 'custom_code/services/app_store_review_service.dart';
 import 'services/iap_service.dart';
 import 'custom_code/services/pocket_admob_service.dart';
+import 'custom_code/services/pocket_personal_chat_language_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -106,6 +107,11 @@ void main() {
       // 5d. Initialize Google Mobile Ads / AdMob Servic3Le
       try {
         await PocketAdMobService.instance.initialize();
+      } catch (_) {}
+
+      // 5e. Initialize Personal Chat Background Language Check Worker (English-Only)
+      try {
+        PocketPersonalChatLanguageService.instance.startBackgroundWorker();
       } catch (_) {}
 
       // 6. Initialize Pocket Native Language service (Hindi, Tamil, Malayalam, etc.)

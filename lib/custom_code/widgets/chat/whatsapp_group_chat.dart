@@ -33,6 +33,9 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_gang_group_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_language_picker.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocketgang_models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
@@ -228,6 +231,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   List<String> _gangInstalledTools = ['team_mgmt'];
   List<PocketGangTask> _gangTasks = [];
   RealtimeChannel? _gangToolsSubscription;
+
+  // 🌐 PocketGang Allowed Languages State (Group-Wide)
+  List<String> _gangAllowedLanguages = ['en', 'ml'];
+  RealtimeChannel? _gangLanguagesSubscription;
 
   bool get _isEligibleForPocketGangWorkspace {
     if (_isKidMode) return false;
@@ -438,7 +445,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '🎮 Play, chat & conquer English quests together!',
+              '🎮 Play, chat & conquer quests together!',
               style: GoogleFonts.outfit(
                 color: const Color(0xFF1E293B),
                 fontSize: 11.5,
@@ -738,10 +745,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         .getInstalledTools(_currentGroupId);
     final tasks = await PocketGangTaskService.instance
         .getTasks(_currentGroupId);
+    final languages = await PocketGangGroupLanguageService.instance
+        .getAllowedLanguageCodes(_currentGroupId);
     if (mounted) {
       safeSetState(() {
         _gangInstalledTools = tools;
         _gangTasks = tasks;
+        _gangAllowedLanguages = languages;
       });
     }
     _gangToolsSubscription = PocketGangToolsService.instance.subscribeToTools(
@@ -755,6 +765,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           safeSetState(() {
             _gangInstalledTools = updatedTools;
             _gangTasks = updatedTasks;
+          });
+        }
+      },
+    );
+    _gangLanguagesSubscription = PocketGangGroupLanguageService.instance.subscribeToGangLanguages(
+      groupId: _currentGroupId,
+      onLanguagesChanged: () async {
+        final updatedLangs = await PocketGangGroupLanguageService.instance
+            .getAllowedLanguageCodes(_currentGroupId);
+        if (mounted) {
+          safeSetState(() {
+            _gangAllowedLanguages = updatedLangs;
           });
         }
       },
@@ -3440,6 +3462,53 @@ Draft: "$draft"''';
     }
 
 
+
+    // 🌐 PocketGang Allowed Languages Validation
+    // If this is a PocketGang group, enforce that messages use only permitted languages!
+    if (_isEligibleForPocketGangWorkspace && text != null && text.trim().isNotEmpty) {
+      final gangCheck = PocketLanguageGuardService.checkGangMessage(
+        text: text,
+        allowedLanguageCodes: _gangAllowedLanguages,
+      );
+      if (!gangCheck.isValid) {
+        final unsupported = gangCheck.detectedWord ?? 'unsupported language';
+        final allowedNames = _gangAllowedLanguages.map((c) {
+          final l = PocketGangLanguage.supportedLanguages.firstWhere(
+            (lang) => lang.code == c,
+            orElse: () => PocketGangLanguage(code: c, name: c.toUpperCase(), nativeName: c, flag: '🌐'),
+          );
+          return l.name;
+        }).join(', ');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
+            ),
+            content: Row(
+              children: [
+                const Text('🌐 ', style: TextStyle(fontSize: 16)),
+                Expanded(
+                  child: Text(
+                    'This Gang only allows: $allowedNames. (Detected $unsupported). Please communicate in the allowed languages.',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFDE68A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return null; // Prevent sending clearly unsupported messages
+      }
+    }
 
     // Filter out truly empty messages
     bool isEmpty = (text == null || text.trim().isEmpty) &&
@@ -6889,6 +6958,58 @@ Draft: "$draft"''';
                     ),
                   ),
                 ),
+                // ⚠️ Inline Language Warning (Below Message Bubble)
+                if (message.metadata?['language_warning'] != null &&
+                    message.metadata!['language_warning']['has_language_warning'] == true) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 6, right: 6, bottom: 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F2937).withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('⚠️ ', style: TextStyle(fontSize: 11)),
+                              Flexible(
+                                child: Text(
+                                  message.metadata!['language_warning']['warning_text'] ??
+                                      'Please communicate in English in Personal Chat.',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (message.metadata!['language_warning']['detected_language'] != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'Detected language: ${message.metadata!['language_warning']['detected_language']}',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -10507,7 +10628,109 @@ Draft: "$draft"''';
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
+
+                    // 🌐 PocketGang Allowed Languages Section
+                    if (_isEligibleForPocketGangWorkspace) ...[
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161F2C),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('🌐 ', style: TextStyle(fontSize: 16)),
+                                    Text(
+                                      'Languages Allowed in this Gang',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_userRole == 'admin')
+                                  GestureDetector(
+                                    onTap: () async {
+                                      HapticFeedback.selectionClick();
+                                      final selected = await PocketGangLanguagePickerSheet.show(
+                                        context,
+                                        initialCodes: _gangAllowedLanguages,
+                                      );
+                                      if (selected != null && selected.isNotEmpty) {
+                                        await PocketGangGroupLanguageService.instance.updateAllowedLanguages(
+                                          groupId: _currentGroupId,
+                                          languageCodes: selected,
+                                          userId: _currentUserId,
+                                        );
+                                        safeSetState(() {
+                                          _gangAllowedLanguages = selected;
+                                        });
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                                      ),
+                                      child: const Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          color: Color(0xFFFFD700),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: _gangAllowedLanguages.map((code) {
+                                final lang = PocketGangLanguage.supportedLanguages.firstWhere(
+                                  (l) => l.code == code,
+                                  orElse: () => PocketGangLanguage(code: code, name: code.toUpperCase(), nativeName: code, flag: '🌐'),
+                                );
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F172A),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.white12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(lang.flag, style: const TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        lang.name,
+                                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
 
                     // Participants Section
                     Builder(builder: (context) {

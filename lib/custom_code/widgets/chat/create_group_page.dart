@@ -367,6 +367,22 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         // Table created via migration
       }
 
+      // Also persist to group_activities for guaranteed real-time syncing
+      try {
+        await supabase.from('group_activities').upsert({
+          'group_id': groupId,
+          'activity_type': 'gang_allowed_languages',
+          'title': 'PocketGang Allowed Languages',
+          'data': {
+            'languages': _selectedLanguageCodes,
+            'updated_by': userId,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+          'created_by': userId,
+          'is_active': true,
+        });
+      } catch (_) {}
+
       try {
         final defaultTools = _selectedGangType == PocketGangType.individual
             ? ['chat', 'personal_tasks', 'goals', 'habits', 'focus_timer', 'dashboard']
@@ -652,7 +668,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                   children: [
                     const Text('🌐 ', style: TextStyle(fontSize: 16)),
                     Text(
-                      'Languages',
+                      'Languages allowed in this Gang',
                       style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ],

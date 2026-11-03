@@ -254,12 +254,8 @@ class PocketLanguageGuardService {
         });
       } catch (_) {}
 
-      // 3. Asynchronously trigger Jevv AI background score deduction (Adult Pocket Score / Student Score / Kids Score)
-      applyNonEnglishScorePenalty(
-        userId: userId,
-        detectedLanguage: detectedLanguage,
-        messageSnippet: messageSnippet,
-      );
+      // 3. Score deduction removed per directive: No penalties, disciplinary warnings, or score reductions!
+      // The system only provides gentle inline warnings below the message bubble.
 
       return true;
     } catch (_) {
@@ -357,7 +353,6 @@ class PocketLanguageGuardService {
 
   /// 🌐 Background Language Guard Evaluation (User Audio Directive)
   /// Non-blocking: runs asynchronously after message is sent.
-  /// If non-English / Malayalam is detected, deducts Pocket Score and dispatches warning notice.
   static void evaluateOutgoingMessageInBackground({
     required String userId,
     required String messageText,
@@ -381,6 +376,324 @@ class PocketLanguageGuardService {
       }
     });
   }
+
+  // -------------------------------------------------------------
+  // 🎯 HIGH-ACCURACY PERSONAL CHAT LANGUAGE DETECTOR (NO AI TOKENS)
+  // -------------------------------------------------------------
+
+  /// Safe common greetings and conversational short terms exempt from warnings
+  static final Set<String> _exemptTerms = {
+    'hi', 'hello', 'hey', 'ok', 'okay', 'yes', 'no', 'yeah', 'yep', 'nope',
+    'gm', 'gn', 'tc', 'k', 'kk', 'ty', 'thx', 'thanks', 'thank you', 'welcome',
+    'congrats', 'pls', 'please', 'bye', 'good', 'fine', 'cool', 'nice',
+    'done', 'sure', 'alright', 'wait', 'wait a sec', 'coming', 'call you later',
+    'see you', 'cu', 'cya', 'super', 'awesome', 'great', 'lol', 'haha', 'hahaha',
+    'wow', 'omg', 'idk', 'brb', 'btw', 'gud', 'wfh', 'asap', 'fyi', 'tbd',
+  };
+
+  /// High-confidence German vocabulary indicators
+  static final Set<String> _germanWords = {
+    'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'und', 'oder', 'aber',
+    'nicht', 'ja', 'nein', 'bitte', 'danke', 'hallo', 'guten', 'morgen',
+    'abend', 'nacht', 'wie', 'geht', 'mir', 'dir', 'was', 'ist',
+    'ein', 'eine', 'der', 'die', 'das', 'den', 'dem', 'des', 'haben',
+    'sein', 'werden', 'können', 'müssen', 'wollen', 'schön', 'tschüss',
+  };
+
+  /// Check a Personal Chat message for English-only policy.
+  /// Strictly avoids false positives on:
+  /// - Short messages (<= 3 chars, or <= 2 words matching exempt greetings)
+  /// - URLs (http://, https://, www., .com, etc.)
+  /// - Email addresses
+  /// - Numbers, code snippets, emojis
+  /// Confidently flags:
+  /// - Malayalam script
+  /// - Hindi script
+  /// - Tamil, Telugu, Kannada, Arabic scripts
+  /// - German words
+  /// - Transliterated Malayalam (Manglish)
+  /// - Transliterated Hindi (Hinglish)
+  static LanguageCheckResult checkPersonalChatMessage(String text) {
+    if (text.trim().isEmpty) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    final trimmed = text.trim();
+
+    // 1. Skip if message is entirely or primarily a URL
+    if (trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://') ||
+        trimmed.startsWith('www.') ||
+        RegExp(r'https?:\/\/[^\s]+').hasMatch(trimmed) ||
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(trimmed)) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    // 2. Skip code snippets (enclosed in backticks or curly braces)
+    if (trimmed.startsWith('```') || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    // 3. Remove emojis, symbols, and check remaining alphanumeric text length
+    final withoutEmojis = trimmed.replaceAll(RegExp(
+      r'[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]',
+      unicode: true,
+    ), ' ').trim();
+
+    if (withoutEmojis.isEmpty) {
+      return const LanguageCheckResult(isValid: true); // Pure emojis
+    }
+
+    // 4. Skip pure numbers, times, math, or punctuation
+    final onlyAlpha = withoutEmojis.replaceAll(RegExp(r'[^a-zA-Z\u0D00-\u0D7F\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0600-\u06FF]'), '');
+    if (onlyAlpha.length < 2) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    // 5. Script checks (Immediate 100% confidence non-English)
+    if (RegExp(r'[\u0D00-\u0D7F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Malayalam',
+      );
+    }
+    if (RegExp(r'[\u0900-\u097F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Hindi',
+      );
+    }
+    if (RegExp(r'[\u0B80-\u0BFF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Tamil',
+      );
+    }
+    if (RegExp(r'[\u0600-\u06FF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Arabic',
+      );
+    }
+    if (RegExp(r'[\u0C00-\u0C7F]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Telugu',
+      );
+    }
+    if (RegExp(r'[\u0C80-\u0CFF]').hasMatch(trimmed)) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Kannada',
+      );
+    }
+
+    // 6. Tokenize words for Latin-script text
+    final tokens = withoutEmojis
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
+
+    if (tokens.isEmpty) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    // Check if entire phrase is an exempt short conversational greeting
+    final fullPhrase = tokens.join(' ');
+    if (_exemptTerms.contains(fullPhrase)) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    if (tokens.length == 1 && (_exemptTerms.contains(tokens.first) || tokens.first.length <= 3)) {
+      return const LanguageCheckResult(isValid: true);
+    }
+
+    // Count vocabulary matches
+    int manglishMatches = 0;
+    int hinglishMatches = 0;
+    int germanMatches = 0;
+    String? sampleNonEnglish;
+
+    for (final token in tokens) {
+      if (_manglishWords.contains(token)) {
+        manglishMatches++;
+        sampleNonEnglish ??= token;
+      } else if (_hinglishWords.contains(token)) {
+        hinglishMatches++;
+        sampleNonEnglish ??= token;
+      } else if (_germanWords.contains(token)) {
+        germanMatches++;
+        sampleNonEnglish ??= token;
+      }
+    }
+
+    final totalNonEnglish = manglishMatches + hinglishMatches + germanMatches;
+
+    // High confidence classification threshold:
+    // If short (<= 3 words), require at least 1 strong indicator word
+    // If longer (> 3 words), require at least 2 indicator words or >= 25% of tokens
+    if (tokens.length <= 3 && totalNonEnglish >= 1) {
+      String detected = 'Malayalam (Manglish)';
+      if (hinglishMatches > manglishMatches && hinglishMatches > germanMatches) {
+        detected = 'Hindi (Hinglish)';
+      } else if (germanMatches > manglishMatches && germanMatches > hinglishMatches) {
+        detected = 'German';
+      }
+      return LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.manglish,
+        detectedWord: detected,
+      );
+    }
+
+    if (totalNonEnglish >= 2 || (tokens.isNotEmpty && (totalNonEnglish / tokens.length) >= 0.25)) {
+      String detected = 'Malayalam (Manglish)';
+      if (hinglishMatches > manglishMatches && hinglishMatches > germanMatches) {
+        detected = 'Hindi (Hinglish)';
+      } else if (germanMatches > manglishMatches && germanMatches > hinglishMatches) {
+        detected = 'German';
+      }
+      return LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.manglish,
+        detectedWord: detected,
+      );
+    }
+
+    return const LanguageCheckResult(isValid: true);
+  }
+
+  // -------------------------------------------------------------
+  // 🏢 POCKETGANG GROUP MULTI-LANGUAGE VERIFIER (NO AI TOKENS)
+  // -------------------------------------------------------------
+
+  /// Verify whether a message sent in a PocketGang group matches the allowed languages.
+  /// If the group allows ['en', 'ml'], both English and Malayalam are permitted!
+  /// If the message contains an unsupported language (e.g. Arabic when only en+ml are allowed),
+  /// returns isValid: false with the unsupported language name.
+  static LanguageCheckResult checkGangMessage({
+    required String text,
+    required List<String> allowedLanguageCodes,
+  }) {
+    if (text.trim().isEmpty) return const LanguageCheckResult(isValid: true);
+
+    // If English is the ONLY allowed language, delegate to personal check
+    if (allowedLanguageCodes.length == 1 && allowedLanguageCodes.contains('en')) {
+      return checkPersonalChatMessage(text);
+    }
+
+    final trimmed = text.trim();
+
+    // Check script mismatches against allowed language codes
+    final hasMalayalamScript = RegExp(r'[\u0D00-\u0D7F]').hasMatch(trimmed);
+    if (hasMalayalamScript && !allowedLanguageCodes.contains('ml')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Malayalam',
+      );
+    }
+
+    final hasHindiScript = RegExp(r'[\u0900-\u097F]').hasMatch(trimmed);
+    if (hasHindiScript && !allowedLanguageCodes.contains('hi')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Hindi',
+      );
+    }
+
+    final hasTamilScript = RegExp(r'[\u0B80-\u0BFF]').hasMatch(trimmed);
+    if (hasTamilScript && !allowedLanguageCodes.contains('ta')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Tamil',
+      );
+    }
+
+    final hasArabicScript = RegExp(r'[\u0600-\u06FF]').hasMatch(trimmed);
+    if (hasArabicScript && !allowedLanguageCodes.contains('ar')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Arabic',
+      );
+    }
+
+    final hasTeluguScript = RegExp(r'[\u0C00-\u0C7F]').hasMatch(trimmed);
+    if (hasTeluguScript && !allowedLanguageCodes.contains('te')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Telugu',
+      );
+    }
+
+    final hasKannadaScript = RegExp(r'[\u0C80-\u0CFF]').hasMatch(trimmed);
+    if (hasKannadaScript && !allowedLanguageCodes.contains('kn')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.nonLatinScript,
+        detectedWord: 'Kannada',
+      );
+    }
+
+    // Tokenize Latin script words
+    final tokens = trimmed
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.length > 2)
+        .toList();
+
+    if (tokens.isEmpty) return const LanguageCheckResult(isValid: true);
+
+    int manglishCount = 0;
+    int hinglishCount = 0;
+    int germanCount = 0;
+
+    for (final token in tokens) {
+      if (_manglishWords.contains(token)) manglishCount++;
+      if (_hinglishWords.contains(token)) hinglishCount++;
+      if (_germanWords.contains(token)) germanCount++;
+    }
+
+    if (manglishCount >= 2 && !allowedLanguageCodes.contains('ml')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.manglish,
+        detectedWord: 'Malayalam (Manglish)',
+      );
+    }
+
+    if (hinglishCount >= 2 && !allowedLanguageCodes.contains('hi')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.hinglish,
+        detectedWord: 'Hindi (Hinglish)',
+      );
+    }
+
+    if (germanCount >= 2 && !allowedLanguageCodes.contains('de')) {
+      return const LanguageCheckResult(
+        isValid: false,
+        reason: LanguageViolationType.none,
+        detectedWord: 'German',
+      );
+    }
+
+    return const LanguageCheckResult(isValid: true);
+  }
+
 }
 
 enum LanguageViolationType {

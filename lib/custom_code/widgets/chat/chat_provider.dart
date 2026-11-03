@@ -16,6 +16,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_grou
 
 import 'chat_models.dart';
 
+import 'package:pocket_mates_app/custom_code/services/pocket_personal_chat_language_service.dart';
+
 part 'chat_provider.g.dart';
 
 // Provider for the Supabase Client
@@ -1094,6 +1096,19 @@ class ChatMessages extends _$ChatMessages {
                     : (messageType == 'gallery' ? '🎨 Artwork' : 'Attachment')));
 
         if (isPersonal) {
+          // 🌐 Schedule delayed (2-3 mins) background language check for personal chat (English-only)
+          if (text.isNotEmpty &&
+              !PocketRobotService.isRobotId(actualId) &&
+              !PocketPresidentService.isPresidentId(actualId)) {
+            PocketPersonalChatLanguageService.instance.scheduleMessageCheck(
+              messageId: fullMessage.id,
+              messageText: text,
+              senderId: uid,
+              receiverId: actualId,
+              chatId: groupId,
+            );
+          }
+
           final updateRes = await _supabase.from(_conversationsTable).update({
             'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
