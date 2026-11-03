@@ -13,7 +13,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
@@ -1404,9 +1403,29 @@ class _ConversationTileState extends State<ConversationTile> {
             ),
           );
         } else {
+          int? knownStage;
+          if (widget.conversation.avatarConfig != null) {
+            final cStage = widget.conversation.avatarConfig!['stage'] ??
+                widget.conversation.avatarConfig!['learning_day'] ??
+                widget.conversation.avatarConfig!['day'] ??
+                widget.conversation.avatarConfig!['level'];
+            if (cStage is num && cStage > 0) {
+              knownStage = cStage.toInt();
+            }
+          }
+          if (knownStage == null && widget.conversation.teamData != null) {
+            final tStage = widget.conversation.teamData!['learning_day'] ??
+                widget.conversation.teamData!['stage'] ??
+                widget.conversation.teamData!['learning_stage'];
+            if (tStage is num && tStage > 0) {
+              knownStage = tStage.toInt();
+            }
+          }
           PocketCitadelAttackPage.openForUser(
             context,
             userId: widget.conversation.id,
+            targetDay: knownStage,
+            targetName: widget.conversation.name,
           );
         }
         return false; // Prevent tile removal from list; smoothly spring back

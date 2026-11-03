@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
@@ -210,8 +211,8 @@ class PocketCitadelAttackPage extends StatefulWidget {
         final res = await SupaFlow.client
             .from('profile')
             .select(
-                'user_id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score')
-            .eq('user_id', userId)
+                'user_id, id, first_name, name, bio, learning_day, level, stage, streak, rank, palette_id, is_pocket_robo, pocket_score')
+            .or('user_id.eq.$userId,id.eq.$userId')
             .maybeSingle();
         if (res != null) data = res;
       } catch (e) {
@@ -219,10 +220,39 @@ class PocketCitadelAttackPage extends StatefulWidget {
       }
     }
 
+    // Secondary fallback: query 'users' table if profile returned no progression
+    if (data == null || (data['learning_day'] == null && data['level'] == null && data['pocket_score'] == null)) {
+      try {
+        final userRes = await SupaFlow.client
+            .from('users')
+            .select('id, name, display_name, learning_day, level, avatar_config')
+            .eq('id', userId)
+            .maybeSingle();
+        if (userRes != null) {
+          data = {
+            ...?data,
+            'user_id': userRes['id'],
+            'name': userRes['display_name'] ?? userRes['name'] ?? data?['name'],
+            'learning_day': userRes['learning_day'],
+            'level': userRes['level'],
+            'avatar_config': userRes['avatar_config'],
+          };
+        }
+      } catch (_) {}
+    }
+
     final p = data ?? {};
     final currentUserId = SupaFlow.client.auth.currentUser?.id;
     final isMe =
         (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
+
+    // Tertiary fallback: check local SharedPreferences cached stage for this user
+    int? localCachedDay;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      localCachedDay = prefs.getInt('pocket_learning_user_stage_$userId') ??
+          prefs.getInt('learning_day_$userId');
+    } catch (_) {}
 
     int effectiveDay = targetDay ??
         (p['learning_day'] as num?)?.toInt() ??
@@ -232,6 +262,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
             ? PocketScoreLevelEngine.getLevelFromScore(
                 (p['pocket_score'] as num).toInt())
             : null) ??
+        localCachedDay ??
         1;
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;

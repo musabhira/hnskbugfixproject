@@ -318,6 +318,8 @@ class PocketActionChatService {
           ? '🥊 ${challenge.challengerName} challenged you to a Fight!'
           : '🥊 ${challenge.challengerName} challenged you to a Fight! (${effSeconds}s)';
 
+      final areMates = await PocketMateService.isMate(challengerId, opponentId);
+
       final Map<String, dynamic> metadata = {
         'fight_id': challenge.id,
         'challenger_id': challengerId,
@@ -333,6 +335,7 @@ class PocketActionChatService {
         'challenger_correct': effCorrect,
         'challenger_time_seconds': effTimeSec,
         'is_initiating': isInitiation,
+        'is_request': !areMates,
         'timestamp': DateTime.now().toUtc().toIso8601String(),
       };
 

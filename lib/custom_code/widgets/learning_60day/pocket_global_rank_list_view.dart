@@ -330,7 +330,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                                 itemBuilder: (context, index) {
                                   final user = filtered[index];
                                   final tile = _buildRankTile(user);
-                                  final bool showAd = (index == 2 || (index > 2 && (index - 2) % 7 == 0));
+                                  final bool showAd = (index > 0 && (index + 1) % 3 == 0);
                                   if (showAd) {
                                     return Column(
                                       mainAxisSize: MainAxisSize.min,

@@ -21,9 +21,16 @@ class PocketAdMobService {
   PocketAdMobService._internal();
 
   bool _isInitialized = false;
-  // In release builds (Play Store / App Store), test mode is OFF by default.
-  // In debug / profile modes, safe Google sample test units are used.
-  bool _isTestMode = !kReleaseMode;
+  bool? _overrideTestMode;
+  // Environment Policy:
+  // - Android Release builds (Production APK / Play Store): Test mode OFF, verified production Ad Unit IDs.
+  // - Android Debug / Profile mode: Test mode ON (Google sample test ad units).
+  // - iOS Simulator / non-Android platforms: Test mode ON (safe test mode to avoid violations).
+  bool get _isTestMode {
+    if (_overrideTestMode != null) return _overrideTestMode!;
+    if (kIsWeb || !Platform.isAndroid) return true;
+    return !kReleaseMode;
+  }
 
   // 🆔 AdMob App IDs
   static const String androidAppId = 'ca-app-pub-8489571803367790~4762910426';
@@ -407,7 +414,7 @@ class PocketAdMobService {
 
   /// Toggle test mode
   void setTestMode(bool isTest) {
-    _isTestMode = isTest;
+    _overrideTestMode = isTest;
   }
 }
 
@@ -448,7 +455,9 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
     }
 
     _bannerAd = BannerAd(
-      adUnitId: PocketAdMobService.instance.bannerAdUnitId,
+      adUnitId: PocketAdMobService.instance.nativeAdUnitId.isNotEmpty
+          ? PocketAdMobService.instance.nativeAdUnitId
+          : PocketAdMobService.instance.bannerAdUnitId,
       size: AdSize.mediumRectangle, // 300x250 Instagram feed style
       request: const AdRequest(),
       listener: BannerAdListener(

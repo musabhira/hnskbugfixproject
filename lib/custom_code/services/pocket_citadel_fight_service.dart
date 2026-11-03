@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 
 /// 🥊 Model for a Citadel Fight Challenge / Duel
 class CitadelFightChallenge {
@@ -358,22 +359,42 @@ class PocketCitadelFightService {
 
     try {
       final duelSettledText = '🏆 FIGHT DUEL SETTLED!\n$resultHeadline\n• $winnerName: $winCorrect/${challenge.questionCount} correct in ${winTime}s ($winScore pts)\n• $loserName: $loserCorrect/${challenge.questionCount} correct in ${loserTime}s ($loserScore pts)\n+1 Trophy awarded! 🌟';
+      final areMates = await PocketMateService.isMate(challenge.opponentId, challenge.challengerId);
       await SupaFlow.client.from('messages').insert({
         'sender_id': challenge.opponentId,
         'receiver_id': challenge.challengerId,
         'message_text': duelSettledText,
         'content': duelSettledText,
         'message_type': 'citadel_fight_result',
+        'metadata': {
+          'source': 'citadel_fight_result',
+          'is_request': !areMates,
+          'winner_id': winnerId,
+          'challenge_id': challenge.id,
+        },
         'created_at': DateTime.now().toUtc().toIso8601String(),
       });
 
       final summary = '🏆 Fight Duel Settled: $winnerName won! 🌟';
-      await SupaFlow.client.from('conversations').update({
+      final updateRes = await SupaFlow.client.from('conversations').update({
         'last_message': summary,
         'last_message_time': DateTime.now().toUtc().toIso8601String(),
         'updated_at': DateTime.now().toUtc().toIso8601String(),
         'last_sender_id': challenge.opponentId,
-      }).or('and(user1_id.eq.${challenge.challengerId},user2_id.eq.${challenge.opponentId}),and(user1_id.eq.${challenge.opponentId},user2_id.eq.${challenge.challengerId})');
+      }).or('and(user1_id.eq.${challenge.challengerId},user2_id.eq.${challenge.opponentId}),and(user1_id.eq.${challenge.opponentId},user2_id.eq.${challenge.challengerId})').select();
+
+      if (updateRes.isEmpty) {
+        await SupaFlow.client.from('conversations').insert({
+          'user1_id': challenge.opponentId,
+          'user2_id': challenge.challengerId,
+          'last_message': summary,
+          'last_message_time': DateTime.now().toUtc().toIso8601String(),
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+          'last_sender_id': challenge.opponentId,
+          'unread_count': 1,
+          'is_group': false,
+        });
+      }
     } catch (_) {}
 
     // Clear pending fight notification in Supabase

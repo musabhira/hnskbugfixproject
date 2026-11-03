@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/common/pocket_error_snackbar.dart';
 import '../pocketgang/pocketgang_models.dart';
 import '../pocketgang/pocketgang_type_card.dart';
 import '../pocketgang/pocketgang_language_picker.dart';
@@ -41,6 +43,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final _descriptionController = TextEditingController();
   final _searchController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
+  Timer? _searchDebounce;
 
   Uint8List? _selectedImageBytes;
   bool _isUsingCustomPhoto = false;
@@ -160,6 +163,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _nameController.dispose();
     _descriptionController.dispose();
     _searchController.dispose();
@@ -189,6 +193,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         }
       }
     } catch (_) {}
+  }
+
+  void _onSearchChanged(String query) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      _searchUsers(query);
+    });
   }
 
   Future<void> _searchUsers(String query) async {
@@ -397,8 +408,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating squad: $e'), backgroundColor: Colors.red),
+        PocketErrorSnackBar.show(
+          context,
+          error: e,
+          fallbackMessage: 'Error creating squad: $e',
         );
       }
     } finally {
@@ -925,7 +938,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               child: TextField(
                 controller: _searchController,
                 style: GoogleFonts.inter(color: Colors.white),
-                onChanged: _searchUsers,
+                onChanged: _onSearchChanged,
                 decoration: const InputDecoration(
                   icon: Icon(Icons.search, color: Colors.white38, size: 20),
                   hintText: 'Search mates by name...',
