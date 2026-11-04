@@ -191,20 +191,12 @@ class _ConversationTileState extends State<ConversationTile> {
     HapticFeedback.mediumImpact();
     setState(() => _isSendingPocketTalk = true);
     try {
+      // 🤝 Send ONLY Pocket Talk Spoken Pact challenge (strictly decoupled from Pocket Mate friend request)
       final pact = await PocketTrophyService.requestPact(
         myId: widget.currentUserId,
         otherUserId: widget.conversation.id,
         autoAccept: false,
       );
-
-      try {
-        await PocketMateService.sendMateRequest(
-          senderId: widget.currentUserId,
-          receiverId: widget.conversation.id,
-          message: '⚡ Sent PocketTalk 4-Day Spoken Pact invite! Tap to accept.',
-          contextType: 'pocket_talk',
-        );
-      } catch (_) {}
 
       if (mounted) {
         setState(() {

@@ -918,7 +918,7 @@ class PocketTrophyService {
           streakDays: math.max(u1Days, u2Days).clamp(1, kPactRequiredDays),
           lastSpokenDate: today,
           dailyMinutesToday: pact.dailyMinutesToday + 1,
-          isAccepted: true,
+          isAccepted: pact.isAccepted,
           isCompleted: alreadyAwarded || didUnlock,
           isMatesNow: pact.isMatesNow || (completedDates.length >= kPactRequiredDays && otherDates.length >= kPactRequiredDays),
           trophiesEarned: didUnlock ? pact.trophiesEarned + 1 : pact.trophiesEarned,

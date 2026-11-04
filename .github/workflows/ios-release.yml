@@ -90,8 +90,8 @@ jobs:
             if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
               BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
             fi
-            # Count commits since anchor commit 8cd7b01
-            RAW_COMMIT_COUNT=$(git rev-list --count 8cd7b01..HEAD 2>/dev/null || echo 1)
+            # Count commits since anchor commit 1ccd501
+            RAW_COMMIT_COUNT=$(git rev-list --count 1ccd501..HEAD 2>/dev/null || echo 1)
             COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
             ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
             BUILD_NUMBER=$(( BASE_BUILD + COMMIT_OFFSET + ATTEMPT_OFFSET ))
@@ -298,20 +298,25 @@ jobs:
           # Export the archive
           xcodebuild -exportArchive -archivePath build/ios/Runner.xcarchive -exportPath build/ios/ipa -exportOptionsPlist ios/ExportOptions.plist
 
-      - name: Check for IPA
+      - name: Check and Standardize IPA Filename
         run: |
+          mkdir -p build/ios/ipa
           if ! ls build/ios/ipa/*.ipa 1> /dev/null 2>&1; then
             echo "❌ Error: IPA file not found in build/ios/ipa/!"
             exit 1
           fi
-          echo "✅ Found IPA: $(ls build/ios/ipa/*.ipa)"
+          # Rename any IPA containing colons (e.g. 'Handskill : PocketMates.ipa') to clean filename for actions/upload-artifact
+          ORIGINAL_IPA=$(ls build/ios/ipa/*.ipa | head -n 1)
+          echo "Found original IPA: $ORIGINAL_IPA"
+          mv "$ORIGINAL_IPA" build/ios/ipa/pocket_mates_app.ipa
+          echo "✅ Standardized IPA path: build/ios/ipa/pocket_mates_app.ipa"
 
       - name: Verify IPA Metadata
         env:
           EXPECTED_VERSION: ${{ steps.versioning.outputs.build_name }}
           EXPECTED_BUILD: ${{ steps.versioning.outputs.build_number }}
         run: |
-          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+          IPA_PATH="build/ios/ipa/pocket_mates_app.ipa"
           echo "🔍 Inspecting IPA metadata: $IPA_PATH"
 
           TEMP_DIR=$(mktemp -d)
@@ -361,7 +366,7 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
-          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+          IPA_PATH="build/ios/ipa/pocket_mates_app.ipa"
 
           echo "🚀 Uploading Native IPA to App Store Connect via xcrun altool..."
           echo "Target Binary: $IPA_PATH"

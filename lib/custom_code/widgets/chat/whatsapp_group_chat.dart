@@ -47,6 +47,7 @@ import 'package:image/image.dart' as img;
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -4591,7 +4592,12 @@ Draft: "$draft"''';
                 const Text('🏆', style: TextStyle(fontSize: 24)),
                 const SizedBox(width: 8),
                 Text(
-                  'PocketTalk 4-Day Spoken Pact',
+                  PocketLanguageService.localize(
+                    en: 'PocketTalk 4-Day Spoken Pact',
+                    ml: 'പോക്കറ്റ്ടോക്ക് 4-ഡേ സ്പോക്കൺ പാക്ട്',
+                    ta: 'பாக்கெட்டாக் 4-நாள் பேசும் உடன்படிக்கை',
+                    hi: 'पॉकेटटॉक 4-दिवसीय स्पोकन पैक्ट',
+                  ),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 18,
@@ -4602,47 +4608,97 @@ Draft: "$draft"''';
             ),
             const SizedBox(height: 6),
             Text(
-              'A serious mutual agreement to build real conversational fluency in English.',
+              PocketLanguageService.localize(
+                en: 'A serious mutual agreement to build real conversational fluency in English.',
+                ml: 'ഇംഗ്ലീഷ് സംസാരിക്കാനുള്ള കഴിവ് വളർത്തിയെടുക്കാനുള്ള പരസ്പര പ്രതിജ്ഞ.',
+                ta: 'ஆங்கிலத்தில் பேசும் திறனை வளர்ப்பதற்கான பரஸ்பர உடன்படிக்கை.',
+                hi: 'अंग्रेजी में वास्तविक बातचीत का प्रवाह बनाने के लिए एक गंभीर आपसी समझौता।',
+              ),
               style: GoogleFonts.inter(color: Colors.white60, fontSize: 12.5),
             ),
             const SizedBox(height: 16),
             _buildRuleItem(
               icon: Icons.timer_outlined,
-              title: '15 Minutes Daily (1 Hour Total)',
-              desc:
-                  'Speak or chat for at least 15 minutes each day for 4 consecutive days (15m x 4 = 60 mins total).',
+              title: PocketLanguageService.localize(
+                en: '15 Minutes Daily (1 Hour Total)',
+                ml: 'പ്രതിദിനം 15 മിനിറ്റ് (ആകെ 1 മണിക്കൂർ)',
+                ta: 'தினசரி 15 நிமிடங்கள் (மொத்தம் 1 மணிநேரம்)',
+                hi: 'प्रतिदिन 15 मिनट (कुल 1 घंटा)',
+              ),
+              desc: PocketLanguageService.localize(
+                en: 'Speak or chat for at least 15 minutes each day for 4 consecutive days (15m x 4 = 60 mins total).',
+                ml: 'തുടർച്ചയായി 4 ദിവസങ്ങളിൽ പ്രതിദിനം കുറഞ്ഞത് 15 മിനിറ്റ് ഇംഗ്ലീഷിൽ സംസാരിക്കുക അല്ലെങ്കിൽ ചാറ്റ് ചെയ്യുക (ആകെ 60 മിനിറ്റ്).',
+                ta: 'தொடர்ந்து 4 நாட்களுக்கு தினமும் குறைந்தது 15 நிமிடங்கள் பேசவும் அல்லது அரட்டையடிக்கவும் (மொத்தம் 60 நிமிடங்கள்).',
+                hi: 'लगातार 4 दिनों तक प्रतिदिन कम से कम 15 मिनट बोलें या चैट करें (कुल 60 मिनट)।',
+              ),
               color: const Color(0xFF38BDF8),
             ),
             const SizedBox(height: 12),
             _buildRuleItem(
               icon: Icons.trending_down_rounded,
-              title: 'Loss Aversion: Trophy Penalty (കമ്മിയാവും)',
-              desc:
-                  'If either person misses a day or stops chatting before completing 15 mins, the pact breaks and 1 Trophy is deducted from your profile!',
+              title: PocketLanguageService.localize(
+                en: 'Loss Aversion: Trophy Penalty',
+                ml: 'ട്രോഫി പെനാൽറ്റി (കമ്മിയാവും)',
+                ta: 'கோப்பை அபராதம் (குறைக்கப்படும்)',
+                hi: 'ट्रॉफी पेनल्टी (नुकसान)',
+              ),
+              desc: PocketLanguageService.localize(
+                en: 'If either person misses a day or stops chatting before completing 15 mins, the pact breaks and 1 Trophy is deducted from your profile!',
+                ml: 'ആരെങ്കിലും ഒരു ദിവസം നഷ്ടപ്പെടുത്തുകയോ 15 മിനിറ്റ് തികയ്ക്കാതിരിക്കുകയോ ചെയ്താൽ പാക്ട് റദ്ദാകുകയും പ്രൊഫൈലിൽ നിന്ന് 1 ട്രോഫി കമ്മിയാവുകയും ചെയ്യും!',
+                ta: 'யாராவது ஒரு நாளை தவறவிட்டால் அல்லது 15 நிமிடங்களை முடிப்பதற்குள் அரட்டையை நிறுத்தினால், ஒப்பந்தம் முறிந்து 1 கோப்பை கழிக்கப்படும்!',
+                hi: 'यदि कोई भी व्यक्ति एक दिन छोड़ देता है या 15 मिनट पूरा करने से पहले चैट बंद कर देता है, तो पैक्ट टूट जाता है और 1 ट्रॉफी काट ली जाती है!',
+              ),
               color: Colors.redAccent,
             ),
             const SizedBox(height: 12),
             _buildRuleItem(
               icon: Icons.g_translate_rounded,
-              title: 'Strict English Only',
-              desc:
-                  'All messages must be in English. Speaking other languages can be reported via AI check, resetting streak and deducting 50 Pocket Score.',
+              title: PocketLanguageService.localize(
+                en: 'Strict English Only',
+                ml: 'ഇംഗ്ലീഷ് മാത്രം സംസാരിക്കുക',
+                ta: 'கண்டிப்பான ஆங்கிலம் மட்டுமே',
+                hi: 'केवल सख्त अंग्रेजी',
+              ),
+              desc: PocketLanguageService.localize(
+                en: 'All messages must be in English. Speaking other languages can be reported via AI check, resetting streak and deducting 50 Pocket Score.',
+                ml: 'എല്ലാ സന്ദേശങ്ങളും ഇംഗ്ലീഷിൽ മാത്രമായിരിക്കണം. മറ്റ് ഭാഷകൾ ഉപയോഗിച്ചാൽ AI ചെക്ക് വഴി 50 പോക്കറ്റ് സ്കോർ കുറയുന്നതാണ്.',
+                ta: 'அனைத்து செய்திகளும் ஆங்கிலத்தில் மட்டுமே இருக்க வேண்டும். பிற மொழிகளைப் பயன்படுத்தினால் 50 பாக்கெட் மதிப்பெண் கழிக்கப்படலாம்.',
+                hi: 'सभी संदेश अंग्रेजी में होने चाहिए। अन्य भाषाओं में बोलने पर AI चेक द्वारा 50 पॉकेट स्कोर काटा जा सकता है।',
+              ),
               color: Colors.amberAccent,
             ),
             const SizedBox(height: 12),
             _buildRuleItem(
               icon: Icons.emoji_events_rounded,
-              title: '150-Trophy Master Graduation',
-              desc:
-                  'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
+              title: PocketLanguageService.localize(
+                en: '150-Trophy Master Graduation',
+                ml: '150-ട്രോഫി മാസ്റ്റർ ഗ്രാജ്വേഷൻ',
+                ta: '150-கோப்பை மாஸ்டர் பட்டமளிப்பு',
+                hi: '150-ट्रॉफी मास्टर ग्रेजुएशन',
+              ),
+              desc: PocketLanguageService.localize(
+                en: 'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
+                ml: '4 ദിവസവും വിജയകരമായി പൂർത്തിയാക്കിയാൽ 1 സിൽവർ ട്രോഫിയും 🏆 ഫുൾ പ്രൊഫൈൽ അൺലോക്കും ലഭിക്കും. ലെവൽ 90-ൽ ഗ്രാജ്വേറ്റ് ചെയ്യാൻ 150 ട്രോഫികൾ നേടുക!',
+                ta: '4 நாட்களையும் முடித்தால் 1 பேசும் கோப்பை 🏆 மற்றும் முழு சுயவிவரம் திறக்கப்படும். நிலை 90 இல் தேர்ச்சி பெற 150 கோப்பைகளை அடையுங்கள்!',
+                hi: 'सभी 4 दिन पूरे करने पर 1 स्पोकन ट्रॉफी 🏆 मिलती है और पूर्ण प्रोफाइल अनलॉक होती है। लेवल 90 पर स्नातक होने के लिए 150 ट्रॉफियां हासिल करें!',
+              ),
               color: const Color(0xFFFFD700),
             ),
             const SizedBox(height: 12),
             _buildRuleItem(
               icon: Icons.swap_horiz_rounded,
-              title: 'Day 1 Safe Swap Grace Period',
-              desc:
-                  'Not feeling the vibe or partner inactive on Day 1? Swap partners with zero Trophy penalty! Automatic match refills ensure you never get stuck.',
+              title: PocketLanguageService.localize(
+                en: 'Day 1 Safe Swap Grace Period',
+                ml: 'ഡേ 1 സേഫ് സ്വാപ്പ് ഗ്രേസ് പിരീഡ്',
+                ta: 'நாள் 1 பாதுகாப்பான மாற்ற சலுகைக் காலம்',
+                hi: 'डे 1 सुरक्षित स्वैप छूट अवधि',
+              ),
+              desc: PocketLanguageService.localize(
+                en: 'Not feeling the vibe or partner inactive on Day 1? Swap partners with zero Trophy penalty! Automatic match refills ensure you never get stuck.',
+                ml: 'ഡേ 1-ൽ പങ്കാളി സജീവമല്ലെങ്കിലോ മാറ്റം വേണമെങ്കിലോ ട്രോഫി നഷ്ടമില്ലാതെ പാർട്ണറെ മാറ്റാം!',
+                ta: 'நாள் 1 இல் பார்ட்னர் செயல்படவில்லையா? எந்தக் கோப்பை அபராதமும் இல்லாமல் பார்ட்னரை மாற்றிக் கொள்ளுங்கள்!',
+                hi: 'डे 1 पर पार्टनर सक्रिय नहीं है? बिना किसी ट्रॉफी पेनल्टी के पार्टनर बदलें!',
+              ),
               color: const Color(0xFF818CF8),
             ),
           ],

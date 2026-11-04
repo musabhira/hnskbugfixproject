@@ -1593,15 +1593,24 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '• Chat 15 minutes each day for 4 consecutive days (1 Hour Total)\n'
-                    '• ⚠️ ' + PocketLanguageService.localize(
-                      en: 'Skipping a day breaks the pact and deducts 1 Trophy\n',
-                      ml: 'Skipping a day breaks the pact and deducts 1 Trophy (കമ്മിയാവും)\n',
-                      ta: 'ஒரு நாளைத் தவறவிட்டால் உடன்படிக்கை முறிந்து 1 கோப்பை கழிக்கப்படும்\n',
-                      hi: 'एक दिन छोड़ने पर समझौता टूट जाएगा और 1 ट्रॉफी कम हो जाएगी\n',
-                    ) +
-                    '• English only: Non-English can be reported & penalized\n'
-                    '• Complete 4 days to earn +1 Spoken Trophy 🏆 & unlock full profile!',
+                    PocketLanguageService.localize(
+                      en: '• Chat 15 minutes each day for 4 consecutive days (1 Hour Total)\n'
+                          '• ⚠️ Skipping a day breaks the pact and deducts 1 Trophy\n'
+                          '• English only: Non-English can be reported & penalized\n'
+                          '• Complete 4 days to earn +1 Spoken Trophy 🏆 & unlock full profile!',
+                      ml: '• തുടർച്ചയായി 4 ദിവസങ്ങളിൽ പ്രതിദിനം 15 മിനിറ്റ് ചാറ്റ് ചെയ്യുക (ആകെ 1 മണിക്കൂർ)\n'
+                          '• ⚠️ ഒരു ദിവസം മുടങ്ങിയാൽ പാക്ട് റദ്ദാകുകയും 1 ട്രോഫി കമ്മിയാവുകയും ചെയ്യും\n'
+                          '• ഇംഗ്ലീഷ് മാത്രം: മറ്റ് ഭാഷകൾ ഉപയോഗിച്ചാൽ പെനാൽറ്റി ഉണ്ടാകും\n'
+                          '• 4 ദിവസം പൂർത്തിയാക്കി +1 സ്പോക്കൺ ട്രോഫിയും 🏆 ഫുൾ പ്രൊഫൈലും അൺലോക്ക് ചെയ്യുക!',
+                      ta: '• தொடர்ந்து 4 நாட்களுக்கு தினமும் 15 நிமிடங்கள் அரட்டையடிக்கவும் (மொத்தம் 1 மணி)\n'
+                          '• ⚠️ ஒரு நாள் தவறினால் உடன்படிக்கை முறிந்து 1 கோப்பை கழிக்கப்படும்\n'
+                          '• ஆங்கிலம் மட்டுமே: பிற மொழிகளுக்கு அபராதம் விதிக்கப்படலாம்\n'
+                          '• 4 நாட்களை முடித்து +1 கோப்பை 🏆 மற்றும் முழு சுயவிவரத்தையும் திறக்கவும்!',
+                      hi: '• लगातार 4 दिनों तक प्रतिदिन 15 मिनट चैट करें (कुल 1 घंटा)\n'
+                          '• ⚠️ एक दिन छोड़ने पर समझौता टूटेगा और 1 ट्रॉफी कम होगी\n'
+                          '• केवल अंग्रेजी: अन्य भाषा के उपयोग पर पेनल्टी लग सकती है\n'
+                          '• 4 दिन पूरे करें और +1 स्पोकन ट्रॉफी 🏆 और पूरी प्रोफाइल अनलॉक करें!',
+                    ),
                     style: GoogleFonts.inter(
                       color: Colors.white70,
                       fontSize: 10.5,
@@ -1709,15 +1718,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final targetAvatar = _profileData?['profile_picture_url']?.toString() ?? _profileData?['avatar_url']?.toString();
 
     HapticFeedback.heavyImpact();
-    final ok = await PocketMateService.sendMateRequest(
-      senderId: myId,
-      receiverId: targetId,
-      receiverName: targetName,
-      receiverAvatarUrl: targetAvatar,
-      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Poketalk tab!',
-      contextType: 'pocket_talk',
-    );
-
+    // 🤝 Send ONLY Pocket Talk Spoken Pact challenge (strictly decoupled from Pocket Mate friend request)
     await PocketTrophyService.requestPact(
       myId: myId,
       otherUserId: targetId,

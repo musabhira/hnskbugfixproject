@@ -503,25 +503,10 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     });
     _recordSwiped(candidate.userId);
 
-    String myName = 'Pocket Mate';
-    try {
-      final p = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
-      if (p != null && p['name'] != null) myName = p['name'];
-    } catch (_) {}
-
+    // 🤝 Send ONLY Pocket Talk Spoken Pact challenge (strictly decoupled from Pocket Mate friend request)
     await PocketTrophyService.requestPact(
       myId: myId,
       otherUserId: candidate.userId,
-    );
-
-    await PocketMateService.sendMateRequest(
-      senderId: myId,
-      receiverId: candidate.userId,
-      senderName: myName,
-      receiverName: candidate.name,
-      receiverAvatarUrl: candidate.avatarUrl,
-      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Poketalk tab!',
-      contextType: 'pocket_talk',
     );
 
     // Save to SharedPreferences sent cache so it appears instantly under Sent tab
