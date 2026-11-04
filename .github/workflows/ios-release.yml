@@ -14,6 +14,10 @@ on:
         description: 'Build Number (e.g. 360, leave empty for automatic calculation)'
         required: false
         default: ''
+      runner:
+        description: 'macOS runner label (e.g. macos-14, macos-15, macos-latest)'
+        required: false
+        default: 'macos-14'
 
 concurrency:
   group: ios-native-release
@@ -22,7 +26,7 @@ concurrency:
 jobs:
   build:
     name: Build and Release iOS
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-14' }}
 
     steps:
       - name: Checkout Repository
@@ -69,8 +73,8 @@ jobs:
             if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
               BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
             fi
-            # Count commits since anchor commit 15a4bd1
-            RAW_COMMIT_COUNT=$(git rev-list --count 15a4bd1..HEAD 2>/dev/null || echo 1)
+            # Count commits since anchor commit c08ce05
+            RAW_COMMIT_COUNT=$(git rev-list --count c08ce05..HEAD 2>/dev/null || echo 1)
             COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
             ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
             BUILD_NUMBER=$(( BASE_BUILD + COMMIT_OFFSET + ATTEMPT_OFFSET ))
@@ -133,7 +137,7 @@ jobs:
       - name: Download iOS Platform
         run: |
           sudo xcodebuild -runFirstLaunch
-          sudo xcodebuild -downloadPlatform iOS
+          sudo xcodebuild -downloadPlatform iOS || true
 
       - name: Build and Sign IPA
         env:
