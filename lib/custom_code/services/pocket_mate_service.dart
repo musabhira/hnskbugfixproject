@@ -1,3 +1,4 @@
+import 'pocket_pinned_conversations_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -728,38 +729,15 @@ class PocketMateService {
   /// Toggle Pinned Conversation status
   static Future<bool> togglePinConversation(
       String userId, String conversationId) async {
-    if (userId.isEmpty || conversationId.isEmpty) return false;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'pinned_conversations_$userId';
-      final list = prefs.getStringList(key) ?? [];
-
-      bool isNowPinned;
-      if (list.contains(conversationId)) {
-        list.remove(conversationId);
-        isNowPinned = false;
-      } else {
-        list.add(conversationId);
-        isNowPinned = true;
-      }
-
-      await prefs.setStringList(key, list);
-      return isNowPinned;
-    } catch (e) {
-      debugPrint('Error toggling pin: $e');
-      return false;
-    }
+    return await PocketPinnedConversationsService.instance.togglePinConversation(
+      userId: userId,
+      conversationId: conversationId,
+    );
   }
 
   /// Get list of pinned conversation IDs
   static Future<List<String>> getPinnedConversations(String userId) async {
-    if (userId.isEmpty) return [];
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getStringList('pinned_conversations_$userId') ?? [];
-    } catch (_) {
-      return [];
-    }
+    return await PocketPinnedConversationsService.instance.getPinnedConversationIds(userId);
   }
 
   /// Get list of all local Mate IDs (President is always present for all citizens)

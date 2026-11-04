@@ -4350,7 +4350,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     tileWidget,
-                                    const PocketNativeAdCard(),
+                                    const PocketTrueNativeAdWidget(
+                                      placement: PocketAdPlacement.home,
+                                    ),
                                   ],
                                 );
                               }

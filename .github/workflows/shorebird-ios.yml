@@ -180,6 +180,7 @@ jobs:
           retention-days: 14
 
       - name: Upload Shorebird IPA to TestFlight
+        id: testflight_upload
         if: (inputs.action || 'release') == 'release'
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -190,8 +191,76 @@ jobs:
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
           IPA_PATH="build/ios/ipa/pocket_mates_app.ipa"
           echo "🚀 Uploading Shorebird-enabled IPA to TestFlight via App Store Connect altool..."
-          xcrun altool --upload-app -f "$IPA_PATH" -t ios --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
-          echo "🎉 Successfully uploaded version ${{ steps.versioning.outputs.full_version }} to TestFlight!"
+          if xcrun altool --upload-app -f "$IPA_PATH" -t ios --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"; then
+            echo "🎉 Successfully uploaded version ${{ steps.versioning.outputs.full_version }} to TestFlight!"
+            echo "store_status=submitted" >> $GITHUB_ENV
+          else
+            echo "⚠️ Warning: TestFlight upload failed, but Shorebird release was created successfully."
+            echo "store_status=failed" >> $GITHUB_ENV
+          fi
+
+      - name: Automatically Register Shorebird Release in Supabase
+        if: (inputs.action || 'release') == 'release'
+        env:
+          SUPABASE_URL: "https://gswhynuabdspnwudltth.supabase.co"
+          SUPABASE_ANON_KEY: "${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2h5bnVhYmRzcG53dWRsdHRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM1NzMyNTcsImV4cCI6MjAzOTE0OTI1N30.rL9fG0j6YtLg_Xl01rB8j52e4YJgT7n0u9E5_4n_v6w' }}"
+          BUILD_NAME: ${{ steps.versioning.outputs.build_name }}
+          BUILD_NUMBER: ${{ steps.versioning.outputs.build_number }}
+          GIT_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+        run: |
+          echo "📝 Fetching Shorebird Release ID from Shorebird CLI..."
+          SHOREBIRD_REL_ID=$(shorebird releases list --platform=ios 2>/dev/null | grep "$BUILD_NAME+$BUILD_NUMBER" | head -n 1 | awk '{print $1}')
+          if [ -z "$SHOREBIRD_REL_ID" ]; then
+            SHOREBIRD_REL_ID="shorebird_ios_${BUILD_NAME}_${BUILD_NUMBER}"
+          fi
+          echo "Identified Shorebird Release ID: $SHOREBIRD_REL_ID"
+
+          RELEASE_ID="rel_ios_${BUILD_NAME}_${BUILD_NUMBER}"
+          STORE_STATUS="${store_status:-submitted}"
+
+          echo "🚀 Registering release $RELEASE_ID in Supabase app_releases table..."
+          
+          # Payload without overwriting existing release notes if already filled by Admin
+          PAYLOAD=$(cat <<EOF
+          {
+            "id": "$RELEASE_ID",
+            "platform": "ios",
+            "version": "$BUILD_NAME",
+            "build_number": $BUILD_NUMBER,
+            "shorebird_release_id": "$SHOREBIRD_REL_ID",
+            "git_commit_sha": "$GIT_SHA",
+            "github_workflow_name": "$WORKFLOW_NAME",
+            "github_run_id": "$RUN_ID",
+            "release_title": "POKET iOS $BUILD_NAME ($BUILD_NUMBER)",
+            "build_type": "TestFlight",
+            "shorebird_status": "success",
+            "store_status": "$STORE_STATUS",
+            "is_active_production": false,
+            "created_by": "GitHub Actions",
+            "updated_at": "now()"
+          }
+          EOF
+          )
+
+          HTTP_CODE=$(curl -s -o /tmp/supabase_res.json -w "%{http_code}" \
+            -X POST "$SUPABASE_URL/rest/v1/app_releases" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d "$PAYLOAD")
+
+          echo "Supabase registration response (HTTP $HTTP_CODE):"
+          cat /tmp/supabase_res.json || true
+          echo ""
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Successfully registered release $BUILD_NAME+$BUILD_NUMBER in Admin Panel!"
+          else
+            echo "⚠️ Warning: Automated registration returned HTTP $HTTP_CODE (non-fatal, release artifact is intact)."
+          fi
 
       - name: Deployment Summary Report
         if: always()

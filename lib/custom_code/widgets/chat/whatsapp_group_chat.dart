@@ -1,3 +1,5 @@
+import 'package:pocket_mates_app/custom_code/services/pocket_pinned_group_messages_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocketgang/pocket_diagram_studio_editor_page.dart';
 // Automatic FlutterFlow imports
 
 import '/backend/supabase/supabase.dart';
@@ -235,6 +237,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   // 🌐 PocketGang Allowed Languages State (Group-Wide)
   List<String> _gangAllowedLanguages = ['en', 'ml'];
   RealtimeChannel? _gangLanguagesSubscription;
+  List<PinnedGroupMessage> _gangPinnedMessages = [];
+  RealtimeChannel? _gangPinsSubscription;
+  String? _highlightedMessageId;
 
   bool get _isEligibleForPocketGangWorkspace {
     if (_isKidMode) return false;
@@ -781,6 +786,26 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         }
       },
     );
+
+    // Initialize Group Pinned Messages
+    if (!widget.groupId.startsWith('p:')) {
+      final initialPins = await PocketPinnedGroupMessagesService.instance
+          .getPinnedMessages(_currentGroupId);
+      if (mounted) {
+        safeSetState(() => _gangPinnedMessages = initialPins);
+      }
+      _gangPinsSubscription = PocketPinnedGroupMessagesService.instance
+          .subscribeToPinnedMessages(
+        groupId: _currentGroupId,
+        onPinsChanged: () async {
+          final updatedPins = await PocketPinnedGroupMessagesService.instance
+              .getPinnedMessages(_currentGroupId);
+          if (mounted) {
+            safeSetState(() => _gangPinnedMessages = updatedPins);
+          }
+        },
+      );
+    }
   }
 
   Future<void> _initEnglishHubRobotParticipation() async {
@@ -1094,6 +1119,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     PocketRobotService.clearAllTyping();
     _pactActiveTimer?.cancel();
     _messageController.removeListener(_onMessageChanged);
+    _gangPinsSubscription?.unsubscribe();
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -6168,49 +6194,14 @@ Draft: "$draft"''';
           Column(
             children: [
           if (_isKidMode && !widget.groupId.startsWith('p:'))
-            _buildPocketGangHeaderRibbon()
-                    else if (_isEnglishHubGroup)
-                      _buildEnglishHubHeaderRibbon()
-                    else if (widget.groupId.startsWith('p:'))
-                      _buildPocketTalkPactHeaderRibbon()
-                    else if (!widget.groupId.startsWith('p:'))
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                              const Color(0xFFFFD600).withValues(alpha: 0.08),
-                            ],
-                          ),
-                          border: Border(
-                            bottom: BorderSide(
-                              color: const Color(0xFFFFFC00)
-                                  .withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('🇬🇧', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Group Rule: English Only • Keep the chat in English',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFFC00),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    LiveTaskTile(service: _teamsService),
+            _buildPocketGangHeaderRibbon(),
+          if (_isEnglishHubGroup)
+            _buildEnglishHubHeaderRibbon(),
+          if (widget.groupId.startsWith('p:'))
+            _buildPocketTalkPactHeaderRibbon(),
+
+          LiveTaskTile(service: _teamsService),
+          _buildPinnedMessagesBanner(),
                     Expanded(
                       child: Builder(
                         builder: (context) {
@@ -6421,6 +6412,121 @@ Draft: "$draft"''';
 
   bool _isSameDay(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+  void _scrollToMessage(String targetId) {
+    HapticFeedback.selectionClick();
+    final messages = ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
+    final filtered = messages.where((m) {
+      return m.isOptimistic ||
+          (m.messageText != null && m.messageText!.isNotEmpty) ||
+          (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
+          (m.messageType != 'text' && m.messageType != 'system');
+    }).toList();
+
+    final index = filtered.indexWhere((m) => m.id == targetId);
+    if (index != -1 && _scrollController.hasClients) {
+      final targetOffset = (index * 76.0)
+          .clamp(0.0, _scrollController.position.maxScrollExtent);
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+
+      safeSetState(() => _highlightedMessageId = targetId);
+      Future.delayed(const Duration(milliseconds: 1800), () {
+        if (mounted && _highlightedMessageId == targetId) {
+          safeSetState(() => _highlightedMessageId = null);
+        }
+      });
+    } else {
+      _showSnackBar('Message is higher in chat history');
+    }
+  }
+
+  Widget _buildPinnedMessagesBanner() {
+    if (_gangPinnedMessages.isEmpty) return const SizedBox.shrink();
+    final topPin = _gangPinnedMessages.first;
+    final totalCount = _gangPinnedMessages.length;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161924),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.push_pin, color: Color(0xFFFFD700), size: 14),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _scrollToMessage(topPin.messageId),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'PINNED MESSAGE ${totalCount > 1 ? "(1 of $totalCount)" : ""}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '• by ${topPin.pinnedByName}',
+                        style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${topPin.senderName}: ${topPin.messageText}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white38, size: 16),
+            tooltip: 'Unpin Message',
+            onPressed: () async {
+              HapticFeedback.lightImpact();
+              await PocketPinnedGroupMessagesService.instance.unpinMessage(
+                groupId: _currentGroupId,
+                userId: _currentUserId,
+                messageId: topPin.messageId,
+              );
+              final updated = await PocketPinnedGroupMessagesService.instance
+                  .getPinnedMessages(_currentGroupId);
+              if (mounted) safeSetState(() => _gangPinnedMessages = updated);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTypingBubble(String targetId) {
@@ -6681,9 +6787,11 @@ Draft: "$draft"''';
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isMe
-                          ? const Color(0xFF2B3038)
-                          : const Color(0xFF22262C),
+                      color: _highlightedMessageId == message.id
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                          : (isMe
+                              ? const Color(0xFF2B3038)
+                              : const Color(0xFF22262C)),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.08),
@@ -6769,6 +6877,9 @@ Draft: "$draft"''';
                               if (message.messageType == 'tool' &&
                                   message.metadata != null)
                                 _buildToolMessage(message.metadata!, isMe),
+                              if (message.messageType == 'gang_share' &&
+                                  message.metadata != null)
+                                _buildGangShareMessage(message.metadata!, isMe),
                               if (message.messageType == 'document')
                                 _buildDocumentMessage(message, isMe),
                               if (message.messageType == 'course' &&
@@ -8732,6 +8843,106 @@ Draft: "$draft"''';
     );
   }
 
+  Widget _buildGangShareMessage(Map<String, dynamic> metadata, bool isMe) {
+    final String shareKind = metadata['share_kind'] ?? '';
+    final String title = metadata['title'] ?? 'Item';
+    final isDiagram = shareKind == 'gang_diagram';
+
+    return GestureDetector(
+      onTap: () {
+        if (isDiagram) {
+          final diagId = metadata['diagram_id']?.toString() ?? '';
+          final template = metadata['template']?.toString() ?? 'flowchart';
+          PocketDiagramStudioEditorPage.open(
+            context,
+            diagramId: diagId,
+            diagramTitle: title,
+            templateKey: template,
+            groupName: widget.groupName,
+            groupId: widget.groupId,
+            userId: _currentUserId,
+          );
+        } else {
+          // Switch tab to Team Management
+          safeSetState(() {
+            _activeChatTabIndex = 1;
+          });
+        }
+      },
+      child: Container(
+        width: 250,
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: const Color(0xFF1E293B),
+          border: Border.all(
+            color: isDiagram ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isDiagram ? const Color(0xFF38BDF8) : const Color(0xFFFFD700)).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(isDiagram ? '📐' : '📋', style: const TextStyle(fontSize: 22)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isDiagram ? 'GANG DIAGRAM' : 'GANG TASK',
+                    style: GoogleFonts.outfit(
+                      color: isDiagram ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        isDiagram ? 'Tap to view & edit' : 'Tap to open tasks',
+                        style: const TextStyle(color: Colors.white54, fontSize: 10),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_rounded, size: 10, color: Colors.white54),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildToolMessage(Map<String, dynamic> metadata, bool isMe) {
     final String title = metadata['title'] ?? 'Tool';
     final String? description = metadata['description'];
@@ -9038,6 +9249,68 @@ Draft: "$draft"''';
             ),
           ),
           const SizedBox(height: 6),
+          if (!widget.groupId.startsWith('p:'))
+            Builder(
+              builder: (ctx) {
+                final isAlreadyPinned = _gangPinnedMessages.any((p) => p.messageId == message.id);
+                return ListTile(
+                  leading: Icon(
+                    isAlreadyPinned ? Icons.push_pin_outlined : Icons.push_pin,
+                    color: const Color(0xFFFFD700),
+                  ),
+                  title: Text(
+                    isAlreadyPinned ? 'Unpin Message' : 'Pin Message',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    isAlreadyPinned
+                        ? 'Remove from top of group chat'
+                        : 'Keep easily visible to group members',
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    HapticFeedback.mediumImpact();
+                    if (isAlreadyPinned) {
+                      await PocketPinnedGroupMessagesService.instance.unpinMessage(
+                        groupId: _currentGroupId,
+                        userId: _currentUserId,
+                        messageId: message.id,
+                      );
+                      final updated = await PocketPinnedGroupMessagesService.instance
+                          .getPinnedMessages(_currentGroupId);
+                      if (mounted) safeSetState(() => _gangPinnedMessages = updated);
+                      _showSnackBar('📌 Message unpinned');
+                    } else {
+                      final currentSenderName = message.senderName ??
+                          (message.senderProfile?['name'] ?? 'Member');
+                      await PocketPinnedGroupMessagesService.instance.pinMessage(
+                        groupId: _currentGroupId,
+                        userId: _currentUserId,
+                        userName: () {
+                          final me = _groupMembers.firstWhere(
+                            (m) => m['user_id'] == _currentUserId,
+                            orElse: () => {},
+                          );
+                          return (me['profile']?['name'] ?? me['name'] ?? 'Admin').toString();
+                        }(),
+                        messageId: message.id,
+                        messageText: message.messageText ??
+                            (message.messageType == 'voice' ? '🎤 Voice message' : '📷 Media'),
+                        senderId: message.senderId,
+                        senderName: currentSenderName,
+                        messageType: message.messageType,
+                        fileUrl: message.fileUrl,
+                      );
+                      final updated = await PocketPinnedGroupMessagesService.instance
+                          .getPinnedMessages(_currentGroupId);
+                      if (mounted) safeSetState(() => _gangPinnedMessages = updated);
+                      _showSnackBar('📌 Message pinned to group!');
+                    }
+                  },
+                );
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.reply, color: Color(0xFF38BDF8)),
             title: const Text('Reply',
@@ -9344,9 +9617,7 @@ Draft: "$draft"''';
                         FocusScope.of(context).unfocus();
                       },
                       decoration: InputDecoration(
-                        hintText: _isPersonalChat
-                            ? 'Type a message...'
-                            : 'Type in English only... 🇬🇧',
+                        hintText: (_isEnglishHubGroup || widget.groupId.startsWith('p:')) ? 'Type in English only... 🇬🇧' : 'Type a message...',
                         hintStyle: const TextStyle(
                             color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,

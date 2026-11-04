@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -28,6 +29,11 @@ import 'custom_code/services/pocket_personal_chat_language_service.dart';
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Lock mobile app strictly to portrait mode
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      ]);
 
     // Catch synchronous framework-level errors
     FlutterError.onError = (FlutterErrorDetails details) {

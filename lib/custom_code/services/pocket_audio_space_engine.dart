@@ -537,7 +537,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       // 1. Supabase Realtime channel for presence, text messages & ephemeral voice notes
       // (Live peer-to-peer audio mesh is bypassed for 4-seat chit-chat to avoid hardware audio device conflicts)
       final channelName = 'audio_space_${space.id}';
-      _roomChannel = _supabase.channel(channelName);
+      _roomChannel = _supabase.channel(channelName, opts: const RealtimeChannelConfig(ack: true, self: true));
 
       _roomChannel!
           // Signaling: WebRTC Offer/Answer/Candidate
@@ -568,7 +568,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
           .onBroadcast(event: 'chat_message', callback: (payload) {
             try {
               final msg = SpaceChatMessage.fromMap(payload);
-              if (msg.senderId != _myUserId) {
+              if (!_chatMessages.any((m) => m.id == msg.id)) {
                 _chatMessages.add(msg);
                 _pruneExpiredMessages();
                 notifyListeners();
@@ -1113,6 +1113,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     // Unsubscribe from channel
     _roomChannel?.untrack();
     _roomChannel?.unsubscribe();
+    if (_roomChannel != null) { _supabase.removeChannel(_roomChannel!); }
     _roomChannel = null;
 
     _currentSpace = null;

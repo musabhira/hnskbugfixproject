@@ -1490,7 +1490,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             mainAxisSize: MainAxisSize.min,
             children: [
               statusItem,
-              const PocketNativeAdCard(
+              const PocketTrueNativeAdWidget(
+                placement: PocketAdPlacement.vibes,
                 margin: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
             ],

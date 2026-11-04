@@ -27,6 +27,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_ranking_service.dar
 import 'package:pocket_mates_app/custom_code/widgets/admin_games_hub_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/app_store_review_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 
 class AdminDashboardPage extends StatefulWidget {
@@ -59,6 +60,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   String authSearchQuery = "";
   String _premiumSearchQuery = "";
   String _premiumFilter = "all";
+  String _latestUsersSearchQuery = "";
+  int _latestUsersCurrentPage = 0;
+  static const int _latestUsersPerPage = 20;
+  Map<String, dynamic>? _backendAdTelemetry;
+  bool _isLoadingBackendTelemetry = false;
   List<Map<String, dynamic>> allProfiles = [];
   List<Map<String, dynamic>> pendingAccessList = [];
   bool isLoadingUsers = false;
@@ -198,7 +204,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 19, vsync: this);
+    _tabController = TabController(length: 20, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
@@ -491,13 +497,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Future<void> _loadProfiles() async {
     setState(() => isLoadingUsers = true);
     try {
+      // 1. Fetch profiles with created_at
       final res = await supabase
           .from('profile')
-          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier')
-          .order('name');
+          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier, created_at, bio, country')
+          .order('created_at', ascending: false);
+
+      // 2. Fetch users email mappings to cross-reference
+      Map<String, String> emailMap = {};
+      try {
+        final usersRes = await supabase.from('users').select('id, email');
+        for (var u in usersRes) {
+          final uid = u['id']?.toString();
+          final email = u['email']?.toString();
+          if (uid != null && email != null) {
+            emailMap[uid] = email;
+          }
+        }
+      } catch (err) {
+        debugPrint('Could not fetch email mappings: $err');
+      }
+
+      final mappedProfiles = List<Map<String, dynamic>>.from(res).map((p) {
+        final uid = p['user_id']?.toString() ?? p['id']?.toString() ?? '';
+        final email = emailMap[uid] ?? (p['email']?.toString() ?? 'No Email');
+        return {
+          ...p,
+          'email': email,
+        };
+      }).toList();
+
       if (mounted) {
         setState(() {
-          allProfiles = List<Map<String, dynamic>>.from(res);
+          allProfiles = mappedProfiles;
           isLoadingUsers = false;
         });
       }
@@ -8795,6 +8827,527 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     );
   }
 
+  Widget _buildAdMobMonitoringCard() {
+    final admob = PocketAdMobService.instance;
+    final telemetry = admob.telemetry;
+    final isInitialized = admob.isSdkInitialized;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.ads_click_rounded, color: Color(0xFF38BDF8), size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Google AdMob Live Telemetry',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isInitialized ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: isInitialized ? const Color(0xFF10B981) : Colors.red,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            isInitialized ? 'ONLINE / INITIALIZED' : 'STANDBY',
+                            style: TextStyle(
+                              color: isInitialized ? const Color(0xFF34D399) : Colors.redAccent,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Real production telemetry, fill rates & policy diagnostics',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: Color(0xFF38BDF8), size: 20),
+                tooltip: 'Refresh Telemetry',
+                onPressed: () => setState(() {}),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white12, height: 1),
+          const SizedBox(height: 14),
+
+          // Platform & Configuration Info Chips
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildAdMobChip(
+                icon: Platform.isAndroid ? Icons.android_rounded : Icons.apple_rounded,
+                label: Platform.isAndroid ? 'Android OS' : 'iOS / Other',
+                color: const Color(0xFF10B981),
+              ),
+              _buildAdMobChip(
+                icon: Icons.tag_rounded,
+                label: 'App v1.0.156 (331)',
+                color: const Color(0xFFA855F7),
+              ),
+              _buildAdMobChip(
+                icon: Icons.fingerprint_rounded,
+                label: 'App ID: ...4762910426',
+                color: const Color(0xFFF59E0B),
+              ),
+              _buildAdMobChip(
+                icon: Icons.shield_rounded,
+                label: 'VIP Suppression: Active',
+                color: const Color(0xFFEC4899),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Primary Performance Metrics Grid (4 items)
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricTile(
+                  label: 'TOTAL REQUESTS',
+                  value: '${telemetry.totalRequests}',
+                  icon: Icons.send_rounded,
+                  color: const Color(0xFF38BDF8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildMetricTile(
+                  label: 'ADS LOADED',
+                  value: '${telemetry.totalLoads}',
+                  icon: Icons.check_circle_rounded,
+                  color: const Color(0xFF34D399),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildMetricTile(
+                  label: 'IMPRESSIONS',
+                  value: '${telemetry.totalImpressions}',
+                  icon: Icons.visibility_rounded,
+                  color: const Color(0xFFFBBF24),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildMetricTile(
+                  label: 'FILL RATE',
+                  value: '${telemetry.fillRatePercent.toStringAsFixed(1)}%',
+                  icon: Icons.pie_chart_rounded,
+                  color: telemetry.fillRatePercent > 50
+                      ? const Color(0xFF34D399)
+                      : (telemetry.totalRequests == 0 ? Colors.white54 : const Color(0xFFFB7185)),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Failure / No-Fill Secondary Row
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: Color(0xFFFB7185), size: 18),
+                      const SizedBox(width: 8),
+                      Text('Failed Loads: ', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
+                      Text('${telemetry.totalFails}', style: GoogleFonts.inter(color: const Color(0xFFFB7185), fontSize: 12, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.hourglass_empty_rounded, color: Color(0xFFFBBF24), size: 18),
+                      const SizedBox(width: 8),
+                      Text('No-Fill (Code 3): ', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
+                      Text('${telemetry.totalNoFills}', style: GoogleFonts.inter(color: const Color(0xFFFBBF24), fontSize: 12, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Real Diagnostics Message Banner
+          if (telemetry.latestErrorMessage != null || telemetry.latestErrorCode != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B).withValues(alpha: 0.5) : Colors.red.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        telemetry.latestErrorCode == '3' ? Icons.info_outline_rounded : Icons.warning_amber_rounded,
+                        color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B) : const Color(0xFFFB7185),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        telemetry.latestErrorCode == '3'
+                            ? 'AdMob Status: ERROR_CODE_NO_FILL (Code 3)'
+                            : 'Latest Error [Code: ${telemetry.latestErrorCode ?? "N/A"}]',
+                        style: GoogleFonts.inter(
+                          color: telemetry.latestErrorCode == '3' ? const Color(0xFFF59E0B) : const Color(0xFFFB7185),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    telemetry.latestErrorCode == '3'
+                        ? 'Google AdMob servers had no inventory for this request right now. Common reasons: (1) Ad unit is newly created (takes up to 24-48 hrs to ramp up), (2) App-ads.txt / Play Store link pending verification, (3) Account payment profile incomplete.'
+                        : (telemetry.latestErrorMessage ?? 'Unknown error occurred while fetching ad.'),
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, height: 1.35),
+                  ),
+                  if (telemetry.lastFailureTime != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Time: ${telemetry.lastFailureTime!.toLocal().toString().split(".")[0]}',
+                        style: const TextStyle(color: Colors.white38, fontSize: 10),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 18),
+
+          // Placement Inventory List
+          Text(
+            'Placement Health & Ad Units',
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+
+          _buildPlacementRow(
+            title: 'Global Ranking In-Feed Ad',
+            type: 'Banner (300x250 Medium Rectangle)',
+            unitId: PocketAdMobService.prodRankingAdUnitId,
+            metric: telemetry.placementMetrics['ranking'],
+          ),
+          _buildPlacementRow(
+            title: 'Home Feed Native Ad',
+            type: 'Native Advanced (pocketNativeCardFactory)',
+            unitId: PocketAdMobService.prodNativeHomeAdUnitId,
+            metric: telemetry.placementMetrics['home'],
+          ),
+          _buildPlacementRow(
+            title: 'Learning Step Interstitial',
+            type: 'Full Screen Interstitial',
+            unitId: PocketAdMobService.prodLearningStepInterstitialId,
+            metric: telemetry.placementMetrics['learningStep'],
+          ),
+          _buildPlacementRow(
+            title: 'Day Completion Interstitial',
+            type: 'Full Screen Interstitial',
+            unitId: PocketAdMobService.prodDayCompletionInterstitialId,
+            metric: telemetry.placementMetrics['dayCompletion'],
+          ),
+          _buildPlacementRow(
+            title: 'Store Rewarded Coins Ad',
+            type: 'Rewarded Video (+50 PS)',
+            unitId: PocketAdMobService.prodStoreCoinsRewardedId,
+            metric: telemetry.placementMetrics['storeCoins'] ?? telemetry.placementMetrics['rewarded_coins'],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Controls & Action Bar
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF38BDF8),
+                    side: const BorderSide(color: Color(0xFF38BDF8), width: 0.9),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  icon: const Icon(Icons.bolt_rounded, size: 16),
+                  label: const Text('Test Ranking Ad Request', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                  onPressed: () async {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Triggering Ranking ad check...'),
+                        backgroundColor: Color(0xFF0284C7),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    final diag = await admob.runAdDiagnostics(PocketAdPlacement.ranking);
+                    if (mounted) {
+                      setState(() {});
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: const Color(0xFF0F172A),
+                          title: const Text('Ad Diagnostics Result', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                          content: Text(
+                            jsonEncode(diag),
+                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('OK', style: TextStyle(color: Color(0xFFFFFC00))),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.delete_sweep_rounded, color: Colors.white54, size: 20),
+                tooltip: 'Reset Counters',
+                onPressed: () {
+                  admob.resetTelemetry();
+                  setState(() {});
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Telemetry counters cleared.'),
+                      backgroundColor: Colors.grey,
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Admin Preview Toggle (Temporarily bypasses VIP check for Musab's testing device)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.developer_mode_rounded, color: Color(0xFFFFFC00), size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Admin Device Ad Preview',
+                        style: TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Allows ads to load on this admin session (regular VIPs still 100% ad-free)',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 9.5),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: admob.adminAdPreviewOverride,
+                  activeColor: const Color(0xFFFFFC00),
+                  onChanged: (val) {
+                    setState(() {
+                      admob.setAdminAdPreviewOverride(val);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdMobChip({required IconData icon, required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 13),
+          const SizedBox(width: 5),
+          Text(label, style: TextStyle(color: color, fontSize: 10.5, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricTile({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 14),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(value, style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 8.5, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlacementRow({
+    required String title,
+    required String type,
+    required String unitId,
+    required PocketAdPlacementMetric? metric,
+  }) {
+    final req = metric?.requests ?? 0;
+    final load = metric?.loads ?? 0;
+    final imp = metric?.impressions ?? 0;
+    final fails = metric?.fails ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text(type, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10)),
+                const SizedBox(height: 2),
+                Text(unitId, style: const TextStyle(color: Colors.white38, fontSize: 9.5, fontFamily: 'monospace')),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Req: $req', style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                  const SizedBox(width: 6),
+                  Text('Load: $load', style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 6),
+                  Text('Imp: $imp', style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 10)),
+                ],
+              ),
+              if (fails > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text('Fails: $fails', style: const TextStyle(color: Color(0xFFFB7185), fontSize: 9.5)),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMonetizationTab() {
     if (_isLoadingMonetization) {
       return const Center(
@@ -8802,12 +9355,18 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
     }
 
     return RefreshIndicator(
-      onRefresh: _loadMonetizationData,
+      onRefresh: () async {
+        await _loadMonetizationData();
+        if (mounted) setState(() {});
+      },
       color: const Color(0xFFFFFC00),
       backgroundColor: const Color(0xFF1E293B),
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _buildAdMobMonitoringCard(),
+          const SizedBox(height: 20),
+
           // Header Card
           Container(
             padding: const EdgeInsets.all(18),

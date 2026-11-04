@@ -10,12 +10,16 @@ class PocketGangTask {
   String title;
   String description;
   String status; // 'todo', 'in_progress', 'review', 'completed'
-  int effortPoints;
+  double estimatedHours; // Replaces effortPoints
+  int effortPoints; // Kept for backward compatibility
   List<String> assignedMemberNames;
   List<String> assignedUserIds;
+  List<String> approverMemberNames;
+  List<String> approverUserIds;
   String createdBy;
   String? approvedBy;
   DateTime? approvedAt;
+  String? rejectionReason;
   DateTime? dueDate;
   DateTime createdAt;
 
@@ -25,12 +29,16 @@ class PocketGangTask {
     required this.title,
     this.description = '',
     this.status = 'todo',
+    this.estimatedHours = 1.0,
     this.effortPoints = 5,
     this.assignedMemberNames = const [],
     this.assignedUserIds = const [],
+    this.approverMemberNames = const [],
+    this.approverUserIds = const [],
     required this.createdBy,
     this.approvedBy,
     this.approvedAt,
+    this.rejectionReason,
     this.dueDate,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
@@ -41,12 +49,16 @@ class PocketGangTask {
         'title': title,
         'description': description,
         'status': status,
+        'estimated_hours': estimatedHours,
         'effort_points': effortPoints,
         'assigned_member_names': assignedMemberNames,
         'assigned_user_ids': assignedUserIds,
+        'approver_member_names': approverMemberNames,
+        'approver_user_ids': approverUserIds,
         'created_by': createdBy,
         'approved_by': approvedBy,
         'approved_at': approvedAt?.toIso8601String(),
+        'rejection_reason': rejectionReason,
         'due_date': dueDate?.toIso8601String(),
         'created_at': createdAt.toIso8601String(),
       };
@@ -58,6 +70,9 @@ class PocketGangTask {
       title: json['title']?.toString() ?? 'Untitled Task',
       description: json['description']?.toString() ?? '',
       status: json['status']?.toString() ?? 'todo',
+      estimatedHours: (json['estimated_hours'] as num?)?.toDouble() ??
+          (json['effort_points'] as num?)?.toDouble() ??
+          1.0,
       effortPoints: (json['effort_points'] as num?)?.toInt() ?? 5,
       assignedMemberNames: (json['assigned_member_names'] as List?)
               ?.map((e) => e.toString())
@@ -67,11 +82,20 @@ class PocketGangTask {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      approverMemberNames: (json['approver_member_names'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      approverUserIds: (json['approver_user_ids'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       createdBy: json['created_by']?.toString() ?? '',
       approvedBy: json['approved_by']?.toString(),
       approvedAt: json['approved_at'] != null
           ? DateTime.tryParse(json['approved_at'].toString())
           : null,
+      rejectionReason: json['rejection_reason']?.toString(),
       dueDate: json['due_date'] != null
           ? DateTime.tryParse(json['due_date'].toString())
           : null,
@@ -83,13 +107,16 @@ class PocketGangTask {
 }
 
 /// 📈 Real Gang Member Contribution Computation
+/// Contribution is strictly calculated from APPROVED COMPLETED tasks.
+/// If a task has N assignees, each receives 1/N task units (equal split).
 class RealMemberContribution {
   final String userId;
   final String name;
   final int totalAssigned;
   final int completedTasks;
   final int reviewTasks;
-  final int approvedEffortPoints;
+  final double approvedUnits; // 1.0 split among assignees
+  final int approvedEffortPoints; // Backward compatibility
   final double contributionPercentage;
 
   const RealMemberContribution({
@@ -98,6 +125,7 @@ class RealMemberContribution {
     required this.totalAssigned,
     required this.completedTasks,
     required this.reviewTasks,
+    this.approvedUnits = 0.0,
     required this.approvedEffortPoints,
     required this.contributionPercentage,
   });
@@ -137,7 +165,8 @@ class PocketGangTaskService {
             .map((item) =>
                 PocketGangTask.fromJson(Map<String, dynamic>.from(item)))
             .toList();
-        await prefs.setString(cacheKey, jsonEncode(tasks.map((t) => t.toJson()).toList()));
+        await prefs.setString(
+            cacheKey, jsonEncode(tasks.map((t) => t.toJson()).toList()));
         return tasks;
       }
     } catch (e) {
@@ -189,7 +218,8 @@ class PocketGangTaskService {
     }
   }
 
-  /// Calculate genuine real contributions based exclusively on admin-approved tasks
+  /// Calculate genuine real contributions based strictly on approved completed tasks
+  /// If a task has N assignees, 1 task unit is split equally: 1 / N per member.
   List<RealMemberContribution> calculateContributions({
     required List<Map<String, dynamic>> groupMembers,
     required List<PocketGangTask> tasks,
@@ -208,14 +238,13 @@ class PocketGangTaskService {
       }
     }
 
-    // Tally effort points only for tasks that are 'completed' and have an 'approved_by'
-    final Map<String, int> approvedPoints = {};
+    final Map<String, double> approvedUnitsMap = {};
     final Map<String, int> totalAssignedMap = {};
     final Map<String, int> completedCountMap = {};
     final Map<String, int> reviewCountMap = {};
 
     for (final uid in memberNameMap.keys) {
-      approvedPoints[uid] = 0;
+      approvedUnitsMap[uid] = 0.0;
       totalAssignedMap[uid] = 0;
       completedCountMap[uid] = 0;
       reviewCountMap[uid] = 0;
@@ -235,7 +264,7 @@ class PocketGangTaskService {
           (task.approvedBy != null && task.approvedBy!.isNotEmpty);
 
       final shareCount = assignees.isEmpty ? 1 : assignees.length;
-      final pointsPerMember = (task.effortPoints / shareCount).round();
+      final unitPerMember = 1.0 / shareCount;
 
       for (final uid in assignees) {
         totalAssignedMap[uid] = (totalAssignedMap[uid] ?? 0) + 1;
@@ -244,22 +273,22 @@ class PocketGangTaskService {
         }
         if (isApproved) {
           completedCountMap[uid] = (completedCountMap[uid] ?? 0) + 1;
-          approvedPoints[uid] = (approvedPoints[uid] ?? 0) + pointsPerMember;
+          approvedUnitsMap[uid] = (approvedUnitsMap[uid] ?? 0.0) + unitPerMember;
         }
       }
     }
 
-    final totalPoints =
-        approvedPoints.values.fold<int>(0, (sum, pts) => sum + pts);
+    final totalUnits =
+        approvedUnitsMap.values.fold<double>(0.0, (sum, u) => sum + u);
 
     final List<RealMemberContribution> results = [];
 
     for (final entry in memberNameMap.entries) {
       final uid = entry.key;
       final name = entry.value;
-      final pts = approvedPoints[uid] ?? 0;
-      final pct = totalPoints > 0
-          ? double.parse(((pts / totalPoints) * 100).toStringAsFixed(1))
+      final units = approvedUnitsMap[uid] ?? 0.0;
+      final pct = totalUnits > 0
+          ? double.parse(((units / totalUnits) * 100).toStringAsFixed(1))
           : 0.0;
 
       results.add(RealMemberContribution(
@@ -268,7 +297,8 @@ class PocketGangTaskService {
         totalAssigned: totalAssignedMap[uid] ?? 0,
         completedTasks: completedCountMap[uid] ?? 0,
         reviewTasks: reviewCountMap[uid] ?? 0,
-        approvedEffortPoints: pts,
+        approvedUnits: units,
+        approvedEffortPoints: units.round(),
         contributionPercentage: pct,
       ));
     }
@@ -276,4 +306,3 @@ class PocketGangTaskService {
     return results;
   }
 }
-

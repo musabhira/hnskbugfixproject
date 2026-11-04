@@ -175,9 +175,12 @@ class _PocketGangDiagramHubWidgetState
 
                   PocketDiagramStudioEditorPage.open(
                     context,
+                    diagramId: newId,
                     diagramTitle: title,
                     templateKey: templateKey,
                     groupName: widget.groupName,
+                    groupId: widget.groupId,
+                    userId: widget.currentUserId,
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -350,9 +353,12 @@ class _PocketGangDiagramHubWidgetState
                     HapticFeedback.selectionClick();
                     PocketDiagramStudioEditorPage.open(
                       context,
+                      diagramId: d['id']?.toString() ?? '',
                       diagramTitle: d['title']?.toString() ?? 'Diagram',
                       templateKey: d['template']?.toString() ?? 'flowchart',
                       groupName: widget.groupName,
+                      groupId: widget.groupId,
+                      userId: widget.currentUserId,
                     );
                   },
                 ),

@@ -1,3 +1,4 @@
+import 'package:pocket_mates_app/custom_code/services/pocket_pinned_conversations_service.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -521,9 +522,9 @@ class Conversations extends _$Conversations {
 
       final prefs = await SharedPreferences.getInstance();
 
-      // Load Pinned Status
-      final pinnedIds =
-          prefs.getStringList('pinned_conversations_$userId') ?? [];
+      // Load Pinned Status (Cloud synchronized + offline cached)
+      final pinnedIds = await PocketPinnedConversationsService.instance
+          .getPinnedConversationIds(userId);
 
       // Load Favorited Tools (Ensure Schedule is at top for all users)
       var favoritedToolsRaw = prefs.getString('favorited_tools_$userId');
@@ -1142,17 +1143,10 @@ class Conversations extends _$Conversations {
       final userId = ref.read(currentUserIdProvider);
       if (userId.isEmpty) return;
 
-      final prefs = await SharedPreferences.getInstance();
-      final pinnedIds =
-          prefs.getStringList('pinned_conversations_$userId') ?? [];
-
-      if (pinnedIds.contains(conversationId)) {
-        pinnedIds.remove(conversationId);
-      } else {
-        pinnedIds.add(conversationId);
-      }
-
-      await prefs.setStringList('pinned_conversations_$userId', pinnedIds);
+      await PocketPinnedConversationsService.instance.togglePinConversation(
+        userId: userId,
+        conversationId: conversationId,
+      );
 
       // Refresh to update UI
       _debouncedRefresh();

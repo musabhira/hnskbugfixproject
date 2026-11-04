@@ -551,6 +551,7 @@ class _PocketDay1ReviewCardPageState extends State<PocketDay1ReviewCardPage> {
           const Padding(
             padding: EdgeInsets.only(bottom: 14),
             child: PocketNativeAdCard(
+              placement: PocketAdPlacement.review,
               margin: EdgeInsets.zero,
             ),
           ),
@@ -826,7 +827,10 @@ class _PocketDayReviewBottomSheetWidgetState
           ),
           if (PocketAdMobService.enableDailySummaryReviewAd) ...[
             const SizedBox(height: 14),
-            const PocketNativeAdCard(margin: EdgeInsets.zero),
+            const PocketTrueNativeAdWidget(
+              placement: PocketAdPlacement.review,
+              margin: EdgeInsets.zero,
+            ),
           ],
           const SizedBox(height: 18),
 

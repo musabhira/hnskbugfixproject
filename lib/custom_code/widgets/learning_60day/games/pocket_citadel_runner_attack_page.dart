@@ -1241,7 +1241,10 @@ class _PocketCitadelRunnerAttackPageState
     final m = _resultMap();
     // ⚔️ Note: Single attack scoring is handled exclusively on return in pocket_citadel_attack_page.dart (User audio directive)
     // 📺 Trigger Interstitial Ad for Non-VIPs on Raid Completion
-    await PocketAdMobService.instance.showInterstitialAd(context: context);
+    await PocketAdMobService.instance.showInterstitialAd(
+      context: context,
+      placement: PocketAdPlacement.attack,
+    );
     widget.onRaidFinished?.call(m);
     if (mounted) Navigator.of(context).pop(m);
   }

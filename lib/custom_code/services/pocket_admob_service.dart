@@ -7,6 +7,81 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
+/// Placement types for AdMob units across Pocket Mates
+enum PocketAdPlacement {
+  ranking,
+  reels,
+  vibes,
+  home,
+  review,
+  learningStep,
+  dayCompletion,
+  attack,
+  storeCoins,
+}
+
+/// 📊 Real-time AdMob Telemetry & Event Model
+class PocketAdPlacementMetric {
+  int requests = 0;
+  int loads = 0;
+  int fails = 0;
+  int noFills = 0;
+  int impressions = 0;
+  DateTime? lastLoadedTime;
+  DateTime? lastFailedTime;
+  String? lastErrorCode;
+  String? lastErrorMessage;
+
+  Map<String, dynamic> toJson() => {
+        'requests': requests,
+        'loads': loads,
+        'fails': fails,
+        'noFills': noFills,
+        'impressions': impressions,
+        'lastLoadedTime': lastLoadedTime?.toIso8601String(),
+        'lastFailedTime': lastFailedTime?.toIso8601String(),
+        'lastErrorCode': lastErrorCode,
+        'lastErrorMessage': lastErrorMessage,
+      };
+
+  void fromJson(Map<String, dynamic> map) {
+    requests = (map['requests'] as num?)?.toInt() ?? 0;
+    loads = (map['loads'] as num?)?.toInt() ?? 0;
+    fails = (map['fails'] as num?)?.toInt() ?? 0;
+    noFills = (map['noFills'] as num?)?.toInt() ?? 0;
+    impressions = (map['impressions'] as num?)?.toInt() ?? 0;
+    if (map['lastLoadedTime'] != null) {
+      lastLoadedTime = DateTime.tryParse(map['lastLoadedTime'].toString());
+    }
+    if (map['lastFailedTime'] != null) {
+      lastFailedTime = DateTime.tryParse(map['lastFailedTime'].toString());
+    }
+    lastErrorCode = map['lastErrorCode']?.toString();
+    lastErrorMessage = map['lastErrorMessage']?.toString();
+  }
+}
+
+class PocketAdTelemetryData {
+  bool sdkInitialized = false;
+  DateTime? sdkInitTime;
+  int totalRequests = 0;
+  int totalLoads = 0;
+  int totalFails = 0;
+  int totalNoFills = 0;
+  int totalImpressions = 0;
+  DateTime? lastSuccessTime;
+  DateTime? lastFailureTime;
+  String? latestErrorCode;
+  String? latestErrorMessage;
+  String? latestErrorPlacement;
+  Map<String, PocketAdPlacementMetric> placementMetrics = {};
+
+  double get fillRatePercent {
+    if (totalRequests == 0) return 0.0;
+    return (totalLoads / totalRequests) * 100.0;
+  }
+}
+
 /// 💎 Central Google AdMob Service for Pocket Mates
 /// 
 /// User Directives:
@@ -40,14 +115,39 @@ class PocketAdMobService {
   static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
   static const String _testInterstitialId = 'ca-app-pub-3940256099942544/1033173712';
   static const String _testRewardedId = 'ca-app-pub-3940256099942544/5224354917';
-  static const String _testNativeId = 'ca-app-pub-3940256099942544/2247696110';
+  static const String testNativeId = 'ca-app-pub-3940256099942544/2247696110';
 
   // 🚀 Production Ad Unit IDs for publisher pub-8489571803367790
-  // These can also be refreshed remotely from Supabase app_ad_config or house campaigns.
-  static String prodNativeAdUnitId = 'ca-app-pub-8489571803367790/7319482015';
-  static String prodRewardedAdUnitId = 'ca-app-pub-8489571803367790/9820351742';
-  static String prodInterstitialAdUnitId = 'ca-app-pub-8489571803367790/6491823058';
-  static String prodBannerAdUnitId = 'ca-app-pub-8489571803367790/5182940361';
+  // Banner / Medium Rectangle In-Feed Units (300x250)
+  static String prodRankingAdUnitId = 'ca-app-pub-8489571803367790/3184855433';
+  static String prodReelsAdUnitId = 'ca-app-pub-8489571803367790/2266138392';
+  static String prodVibesAdUnitId = 'ca-app-pub-8489571803367790/6045776312';
+  static String prodHomeAdUnitId = 'ca-app-pub-8489571803367790/2521464274';
+  static String prodReviewAdUnitId = 'ca-app-pub-8489571803367790/5846290758';
+
+  // 🌟 Dedicated Native Advanced Ad Units
+  static String prodNativeHomeAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
+  static String prodNativeVibesAdUnitId = 'ca-app-pub-8489571803367790/2725690431';
+  static String prodNativeLearningSummaryAdUnitId = 'ca-app-pub-8489571803367790/5519374733';
+  static String prodNativeRankingAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
+
+  // Interstitial Ad Units
+  static String prodLearningStepInterstitialId = 'ca-app-pub-8489571803367790/1304410512';
+  static String prodDayCompletionInterstitialId = 'ca-app-pub-8489571803367790/9793449634';
+  static String prodAttackInterstitialId = 'ca-app-pub-8489571803367790/6110401679';
+
+  // Rewarded Ad Units
+  static String prodStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/9802234672';
+
+  // Fallbacks / Legacy accessors
+  static String get prodNativeAdUnitId => prodNativeHomeAdUnitId;
+  static set prodNativeAdUnitId(String val) => prodNativeHomeAdUnitId = val;
+  static String get prodRewardedAdUnitId => prodStoreCoinsRewardedId;
+  static set prodRewardedAdUnitId(String val) => prodStoreCoinsRewardedId = val;
+  static String get prodInterstitialAdUnitId => prodDayCompletionInterstitialId;
+  static set prodInterstitialAdUnitId(String val) => prodDayCompletionInterstitialId = val;
+  static String get prodBannerAdUnitId => prodHomeAdUnitId;
+  static set prodBannerAdUnitId(String val) => prodHomeAdUnitId = val;
 
   // ⚙️ Dynamic Learning Journey Ad Configuration
   static int stepNativeAdFrequency = 4; // Show native ad card after every 4 steps
@@ -55,27 +155,258 @@ class PocketAdMobService {
   static bool enableLearningBannerAds = true;
   static bool enableDailySummaryReviewAd = true;
 
-  String get nativeAdUnitId =>
-      (!_isTestMode && prodNativeAdUnitId.isNotEmpty) ? prodNativeAdUnitId : _testNativeId;
-  String get rewardedAdUnitId =>
-      (!_isTestMode && prodRewardedAdUnitId.isNotEmpty) ? prodRewardedAdUnitId : _testRewardedId;
-  String get interstitialAdUnitId =>
-      (!_isTestMode && prodInterstitialAdUnitId.isNotEmpty) ? prodInterstitialAdUnitId : _testInterstitialId;
-  String get bannerAdUnitId =>
-      (!_isTestMode && prodBannerAdUnitId.isNotEmpty) ? prodBannerAdUnitId : _testBannerId;
+  /// Returns the ad unit ID for a specific placement, respecting release vs test mode
+  String getUnitIdForPlacement(PocketAdPlacement placement) {
+    if (_isTestMode) {
+      switch (placement) {
+        case PocketAdPlacement.ranking:
+        case PocketAdPlacement.reels:
+        case PocketAdPlacement.vibes:
+        case PocketAdPlacement.home:
+        case PocketAdPlacement.review:
+          return _testBannerId;
+        case PocketAdPlacement.learningStep:
+        case PocketAdPlacement.dayCompletion:
+        case PocketAdPlacement.attack:
+          return _testInterstitialId;
+        case PocketAdPlacement.storeCoins:
+          return _testRewardedId;
+      }
+    }
+
+    switch (placement) {
+      case PocketAdPlacement.ranking:
+        return prodRankingAdUnitId;
+      case PocketAdPlacement.reels:
+        return prodReelsAdUnitId;
+      case PocketAdPlacement.vibes:
+        return prodVibesAdUnitId;
+      case PocketAdPlacement.home:
+        return prodHomeAdUnitId;
+      case PocketAdPlacement.review:
+        return prodReviewAdUnitId;
+      case PocketAdPlacement.learningStep:
+        return prodLearningStepInterstitialId;
+      case PocketAdPlacement.dayCompletion:
+        return prodDayCompletionInterstitialId;
+      case PocketAdPlacement.attack:
+        return prodAttackInterstitialId;
+      case PocketAdPlacement.storeCoins:
+        return prodStoreCoinsRewardedId;
+    }
+  }
+
+  /// Dedicated resolver for Native Advanced ad unit IDs
+  String getNativeAdUnitId(PocketAdPlacement placement) {
+    if (_isTestMode) return testNativeId;
+    switch (placement) {
+      case PocketAdPlacement.home:
+        return prodNativeHomeAdUnitId;
+      case PocketAdPlacement.vibes:
+        return prodNativeVibesAdUnitId;
+      case PocketAdPlacement.review:
+        return prodNativeLearningSummaryAdUnitId;
+      case PocketAdPlacement.ranking:
+        return prodNativeRankingAdUnitId;
+      default:
+        return prodNativeHomeAdUnitId;
+    }
+  }
+
+  String get nativeAdUnitId => getNativeAdUnitId(PocketAdPlacement.home);
+  String get rewardedAdUnitId => getUnitIdForPlacement(PocketAdPlacement.storeCoins);
+  String get interstitialAdUnitId => getUnitIdForPlacement(PocketAdPlacement.dayCompletion);
+  String get bannerAdUnitId => getUnitIdForPlacement(PocketAdPlacement.home);
 
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
   bool _isInterstitialLoading = false;
   bool _isRewardedLoading = false;
+  DateTime? _lastInterstitialShownTime;
+  static const Duration minInterstitialInterval = Duration(minutes: 3);
+
+  // 📊 Live Telemetry Cache
+  final PocketAdTelemetryData _telemetry = PocketAdTelemetryData();
+  PocketAdTelemetryData get telemetry => _telemetry;
+  bool get isSdkInitialized => _isInitialized;
+
+  void _recordAdRequest(String placementName) {
+    _telemetry.totalRequests++;
+    final metric = _telemetry.placementMetrics.putIfAbsent(
+        placementName, () => PocketAdPlacementMetric());
+    metric.requests++;
+  }
+
+  void _recordAdLoaded(String placementName) {
+    _telemetry.totalLoads++;
+    _telemetry.lastSuccessTime = DateTime.now();
+    final metric = _telemetry.placementMetrics.putIfAbsent(
+        placementName, () => PocketAdPlacementMetric());
+    metric.loads++;
+    metric.lastLoadedTime = DateTime.now();
+    _saveTelemetryLocally();
+  }
+
+  void _recordAdFailed(String placementName, dynamic error) {
+    _telemetry.totalFails++;
+    _telemetry.lastFailureTime = DateTime.now();
+    final codeStr = error is LoadAdError ? error.code.toString() : 'UNKNOWN';
+    final msgStr = error is LoadAdError ? error.message : error.toString();
+    _telemetry.latestErrorCode = codeStr;
+    _telemetry.latestErrorMessage = msgStr;
+    _telemetry.latestErrorPlacement = placementName;
+    if (codeStr == '3') {
+      _telemetry.totalNoFills++;
+    }
+    final metric = _telemetry.placementMetrics.putIfAbsent(
+        placementName, () => PocketAdPlacementMetric());
+    metric.fails++;
+    if (codeStr == '3') metric.noFills++;
+    metric.lastFailedTime = DateTime.now();
+    metric.lastErrorCode = codeStr;
+    metric.lastErrorMessage = msgStr;
+    _saveTelemetryLocally();
+  }
+
+  void _recordAdImpression(String placementName) {
+    _telemetry.totalImpressions++;
+    final metric = _telemetry.placementMetrics.putIfAbsent(
+        placementName, () => PocketAdPlacementMetric());
+    metric.impressions++;
+    _saveTelemetryLocally();
+  }
+
+  Future<void> _saveTelemetryLocally() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('admob_total_req', _telemetry.totalRequests);
+      await prefs.setInt('admob_total_load', _telemetry.totalLoads);
+      await prefs.setInt('admob_total_fail', _telemetry.totalFails);
+      await prefs.setInt('admob_total_nofill', _telemetry.totalNoFills);
+      await prefs.setInt('admob_total_imp', _telemetry.totalImpressions);
+      if (_telemetry.lastSuccessTime != null) {
+        await prefs.setString('admob_last_success', _telemetry.lastSuccessTime!.toIso8601String());
+      }
+      if (_telemetry.lastFailureTime != null) {
+        await prefs.setString('admob_last_fail', _telemetry.lastFailureTime!.toIso8601String());
+      }
+      if (_telemetry.latestErrorCode != null) {
+        await prefs.setString('admob_latest_code', _telemetry.latestErrorCode!);
+      }
+      if (_telemetry.latestErrorMessage != null) {
+        await prefs.setString('admob_latest_msg', _telemetry.latestErrorMessage!);
+      }
+
+      // Sync aggregated production telemetry to Supabase backend asynchronously
+      _syncTelemetryToBackend();
+    } catch (_) {}
+  }
+
+  DateTime? _lastBackendSyncTime;
+  Future<void> _syncTelemetryToBackend() async {
+    // Throttle syncs to at most once every 30 seconds
+    if (_lastBackendSyncTime != null &&
+        DateTime.now().difference(_lastBackendSyncTime!) < const Duration(seconds: 30)) {
+      return;
+    }
+    _lastBackendSyncTime = DateTime.now();
+
+    try {
+      final platform = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'other');
+      final syncPayload = {
+        'target_platform': 'admob_telemetry_$platform',
+        'is_active': true,
+        'metadata': {
+          'platform': platform,
+          'total_requests': _telemetry.totalRequests,
+          'total_loads': _telemetry.totalLoads,
+          'total_fails': _telemetry.totalFails,
+          'total_nofills': _telemetry.totalNoFills,
+          'total_impressions': _telemetry.totalImpressions,
+          'latest_error_code': _telemetry.latestErrorCode,
+          'latest_error_message': _telemetry.latestErrorMessage,
+          'latest_placement': _telemetry.latestErrorPlacement,
+          'last_sync_time': DateTime.now().toIso8601String(),
+          'app_version': '1.0.156+331',
+        },
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      await SupaFlow.client.from('app_promo_campaigns').upsert(syncPayload);
+    } catch (_) {}
+  }
+
+  Future<Map<String, dynamic>?> fetchBackendTelemetry() async {
+    try {
+      final platform = Platform.isAndroid ? 'android' : 'ios';
+      final res = await SupaFlow.client
+          .from('app_promo_campaigns')
+          .select('metadata')
+          .eq('target_platform', 'admob_telemetry_$platform')
+          .maybeSingle();
+      if (res != null && res['metadata'] is Map) {
+        return Map<String, dynamic>.from(res['metadata'] as Map);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> _loadTelemetryLocally() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _telemetry.totalRequests = prefs.getInt('admob_total_req') ?? 0;
+      _telemetry.totalLoads = prefs.getInt('admob_total_load') ?? 0;
+      _telemetry.totalFails = prefs.getInt('admob_total_fail') ?? 0;
+      _telemetry.totalNoFills = prefs.getInt('admob_total_nofill') ?? 0;
+      _telemetry.totalImpressions = prefs.getInt('admob_total_imp') ?? 0;
+      final succ = prefs.getString('admob_last_success');
+      if (succ != null) _telemetry.lastSuccessTime = DateTime.tryParse(succ);
+      final fail = prefs.getString('admob_last_fail');
+      if (fail != null) _telemetry.lastFailureTime = DateTime.tryParse(fail);
+      _telemetry.latestErrorCode = prefs.getString('admob_latest_code');
+      _telemetry.latestErrorMessage = prefs.getString('admob_latest_msg');
+    } catch (_) {}
+  }
+
+  void resetTelemetry() async {
+    _telemetry.totalRequests = 0;
+    _telemetry.totalLoads = 0;
+    _telemetry.totalFails = 0;
+    _telemetry.totalNoFills = 0;
+    _telemetry.totalImpressions = 0;
+    _telemetry.lastSuccessTime = null;
+    _telemetry.lastFailureTime = null;
+    _telemetry.latestErrorCode = null;
+    _telemetry.latestErrorMessage = null;
+    _telemetry.latestErrorPlacement = null;
+    _telemetry.placementMetrics.clear();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('admob_total_req');
+      await prefs.remove('admob_total_load');
+      await prefs.remove('admob_total_fail');
+      await prefs.remove('admob_total_nofill');
+      await prefs.remove('admob_total_imp');
+      await prefs.remove('admob_last_success');
+      await prefs.remove('admob_last_fail');
+      await prefs.remove('admob_latest_code');
+      await prefs.remove('admob_latest_msg');
+    } catch (_) {}
+  }
 
   /// ⚡ Initialize Google Mobile Ads SDK
   Future<void> initialize() async {
     if (_isInitialized) return;
     try {
-      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+      await _loadTelemetryLocally();
+      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+        _telemetry.sdkInitialized = true;
+        _telemetry.sdkInitTime = DateTime.now();
+        return;
+      }
       await MobileAds.instance.initialize();
       _isInitialized = true;
+      _telemetry.sdkInitialized = true;
+      _telemetry.sdkInitTime = DateTime.now();
       await _loadRemoteAdConfig();
       preloadAds();
     } catch (e) {
@@ -121,28 +452,51 @@ class PocketAdMobService {
     } catch (_) {}
   }
 
+  bool _adminAdPreviewOverride = false;
+  bool get adminAdPreviewOverride => _adminAdPreviewOverride;
+  void setAdminAdPreviewOverride(bool value) {
+    _adminAdPreviewOverride = value;
+  }
+
   /// 🛡️ Check if the current user is a VIP / Premium Member
   /// VIP Rule: Never show any ads to VIPs!
   Future<bool> isUserVip() async {
+    // If admin enabled live test previewing in Admin Panel, temporarily allow ads to show for verification
+    if (_adminAdPreviewOverride) {
+      return false;
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool('is_vip') == true ||
           prefs.getBool('has_vip_pass') == true ||
           prefs.getBool('is_premium') == true ||
-          prefs.getBool('verified') == true ||
           prefs.getBool('is_subscribed') == true ||
           prefs.getBool('remove_ads') == true ||
           (prefs.getString('handskill_plan') != null &&
               prefs.getString('handskill_plan') != 'free')) {
         return true;
       }
+
+      // Check current user's profile in Supabase to sync real-time database status
       final uid = SupaFlow.client.auth.currentUser?.id;
       if (uid != null) {
-        final email = SupaFlow.client.auth.currentUser?.email;
-        if (email != null &&
-            (email.contains('musab') || email.contains('thonippadam') || email.contains('mussabira'))) {
-          return true;
-        }
+        try {
+          final profile = await SupaFlow.client
+              .from('profile')
+              .select('is_vip, is_premium, is_subscribed')
+              .eq('user_id', uid)
+              .maybeSingle();
+          if (profile != null) {
+            final isVipDb = profile['is_vip'] == true ||
+                profile['is_premium'] == true ||
+                profile['is_subscribed'] == true;
+            // Synchronize to local SharedPreferences
+            await prefs.setBool('is_vip', isVipDb);
+            await prefs.setBool('is_premium', isVipDb);
+            if (isVipDb) return true;
+          }
+        } catch (_) {}
       }
     } catch (_) {}
     return false;
@@ -160,6 +514,7 @@ class PocketAdMobService {
   void _loadInterstitialAd() {
     if (_isInterstitialLoading || _interstitialAd != null) return;
     _isInterstitialLoading = true;
+    _recordAdRequest('interstitial_cached');
     InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
@@ -167,10 +522,12 @@ class PocketAdMobService {
         onAdLoaded: (ad) {
           _interstitialAd = ad;
           _isInterstitialLoading = false;
+          _recordAdLoaded('interstitial_cached');
         },
         onAdFailedToLoad: (error) {
           _interstitialAd = null;
           _isInterstitialLoading = false;
+          _recordAdFailed('interstitial_cached', error);
         },
       ),
     );
@@ -179,6 +536,7 @@ class PocketAdMobService {
   void _loadRewardedAd() {
     if (_isRewardedLoading || _rewardedAd != null) return;
     _isRewardedLoading = true;
+    _recordAdRequest('rewarded_coins');
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
@@ -186,10 +544,12 @@ class PocketAdMobService {
         onAdLoaded: (ad) {
           _rewardedAd = ad;
           _isRewardedLoading = false;
+          _recordAdLoaded('rewarded_coins');
         },
         onAdFailedToLoad: (error) {
           _rewardedAd = null;
           _isRewardedLoading = false;
+          _recordAdFailed('rewarded_coins', error);
         },
       ),
     );
@@ -292,6 +652,9 @@ class PocketAdMobService {
 
     if (_rewardedAd != null) {
       _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) {
+          _recordAdImpression('rewarded_coins');
+        },
         onAdDismissedFullScreenContent: (ad) {
           ad.dispose();
           _rewardedAd = null;
@@ -317,9 +680,20 @@ class PocketAdMobService {
   }
 
   /// 📺 Show Interstitial Ad (e.g. after completing major Day milestones or finishing an attack)
-  Future<void> showInterstitialAd({BuildContext? context, VoidCallback? onDismissed}) async {
+  Future<void> showInterstitialAd({
+    BuildContext? context,
+    PocketAdPlacement placement = PocketAdPlacement.dayCompletion,
+    VoidCallback? onDismissed,
+  }) async {
     final vip = await isUserVip();
     if (vip) {
+      onDismissed?.call();
+      return;
+    }
+
+    // ⏱️ Policy Safeguard: Enforce minimum interval between interstitials (3 minutes)
+    if (_lastInterstitialShownTime != null &&
+        DateTime.now().difference(_lastInterstitialShownTime!) < minInterstitialInterval) {
       onDismissed?.call();
       return;
     }
@@ -361,10 +735,10 @@ class PocketAdMobService {
               children: [
                 const Icon(Icons.ads_click_rounded, size: 50, color: Color(0xFF38BDF8)),
                 const SizedBox(height: 12),
-                const Text(
-                  'Full-screen Interstitial Ad triggered for Non-VIP player.\n\nOn mobile (Android/iOS), this shows the full Google AdMob ad overlay.',
+                Text(
+                  'Full-screen Interstitial Ad triggered for Non-VIP player.\n\nPlacement: ${placement.name}\nOn mobile (Android/iOS), this shows the full Google AdMob ad overlay.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 12.5),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12.5),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -391,7 +765,11 @@ class PocketAdMobService {
     }
 
     if (_interstitialAd != null) {
+      _lastInterstitialShownTime = DateTime.now();
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) {
+          _recordAdImpression(placement.name);
+        },
         onAdDismissedFullScreenContent: (ad) {
           ad.dispose();
           _interstitialAd = null;
@@ -407,8 +785,37 @@ class PocketAdMobService {
       );
       _interstitialAd!.show();
     } else {
-      onDismissed?.call();
-      _loadInterstitialAd();
+      // If cached interstitial is null or placement needs a direct one-shot load
+      final targetUnitId = getUnitIdForPlacement(placement);
+      _recordAdRequest(placement.name);
+      InterstitialAd.load(
+        adUnitId: targetUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) {
+            _recordAdLoaded(placement.name);
+            _lastInterstitialShownTime = DateTime.now();
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdShowedFullScreenContent: (a) {
+                _recordAdImpression(placement.name);
+              },
+              onAdDismissedFullScreenContent: (a) {
+                a.dispose();
+                onDismissed?.call();
+              },
+              onAdFailedToShowFullScreenContent: (a, err) {
+                a.dispose();
+                onDismissed?.call();
+              },
+            );
+            ad.show();
+          },
+          onAdFailedToLoad: (err) {
+            _recordAdFailed(placement.name, err);
+            onDismissed?.call();
+          },
+        ),
+      );
     }
   }
 
@@ -416,15 +823,40 @@ class PocketAdMobService {
   void setTestMode(bool isTest) {
     _overrideTestMode = isTest;
   }
+
+  /// 🧪 Trigger a diagnostic test ad request directly from Admin Panel
+  Future<Map<String, dynamic>> runAdDiagnostics(PocketAdPlacement placement) async {
+    final unitId = getUnitIdForPlacement(placement);
+    final nativeUnitId = getNativeAdUnitId(placement);
+    return {
+      'isInitialized': _isInitialized,
+      'isTestMode': _isTestMode,
+      'appId': androidAppId,
+      'placement': placement.name,
+      'resolvedBannerUnitId': unitId,
+      'resolvedNativeUnitId': nativeUnitId,
+      'totalRequests': _telemetry.totalRequests,
+      'totalLoads': _telemetry.totalLoads,
+      'totalFails': _telemetry.totalFails,
+      'totalNoFills': _telemetry.totalNoFills,
+      'latestErrorCode': _telemetry.latestErrorCode,
+      'latestErrorMessage': _telemetry.latestErrorMessage,
+    };
+  }
 }
 
 /// 🎨 Aesthetic Instagram-Style Native Ad Banner Widget
 /// Automatically checks VIP status and suppresses itself for VIPs!
 class PocketNativeAdCard extends StatefulWidget {
   final EdgeInsetsGeometry margin;
+  final PocketAdPlacement placement;
+  final String? customAdUnitId;
+
   const PocketNativeAdCard({
     super.key,
     this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    this.placement = PocketAdPlacement.home,
+    this.customAdUnitId,
   });
 
   @override
@@ -454,19 +886,29 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
       return;
     }
 
+    final targetUnitId = widget.customAdUnitId ??
+        (PocketAdMobService.instance._isTestMode
+            ? PocketAdMobService.instance.getUnitIdForPlacement(widget.placement)
+            : PocketAdMobService.instance.getUnitIdForPlacement(widget.placement));
+
+    PocketAdMobService.instance._recordAdRequest(widget.placement.name);
+
     _bannerAd = BannerAd(
-      adUnitId: PocketAdMobService.instance.nativeAdUnitId.isNotEmpty
-          ? PocketAdMobService.instance.nativeAdUnitId
-          : PocketAdMobService.instance.bannerAdUnitId,
+      adUnitId: targetUnitId,
       size: AdSize.mediumRectangle, // 300x250 Instagram feed style
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
+          PocketAdMobService.instance._recordAdLoaded(widget.placement.name);
           if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, err) {
+          PocketAdMobService.instance._recordAdFailed(widget.placement.name, err);
           ad.dispose();
           _bannerAd = null;
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance._recordAdImpression(widget.placement.name);
         },
       ),
     );
@@ -700,6 +1142,124 @@ class _PocketNativeAdCardState extends State<PocketNativeAdCard> {
   }
 }
 
+/// 💎 Genuine Native Advanced Ad Widget (Google Mobile Ads NativeAd)
+/// Uses Android NativeAdFactory ("pocketNativeCardFactory") and layout XML.
+/// Automatically handles VIP suppression, loading state, error fallback, and dispose.
+class PocketTrueNativeAdWidget extends StatefulWidget {
+  final EdgeInsetsGeometry margin;
+  final PocketAdPlacement placement;
+  final String? customAdUnitId;
+
+  const PocketTrueNativeAdWidget({
+    super.key,
+    this.margin = const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    this.placement = PocketAdPlacement.home,
+    this.customAdUnitId,
+  });
+
+  @override
+  State<PocketTrueNativeAdWidget> createState() => _PocketTrueNativeAdWidgetState();
+}
+
+class _PocketTrueNativeAdWidgetState extends State<PocketTrueNativeAdWidget> {
+  NativeAd? _nativeAd;
+  bool _isLoaded = false;
+  bool _isVip = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkVipAndLoad();
+  }
+
+  Future<void> _checkVipAndLoad() async {
+    final vip = await PocketAdMobService.instance.isUserVip();
+    if (vip) {
+      if (mounted) setState(() => _isVip = true);
+      return;
+    }
+
+    if (kIsWeb || !Platform.isAndroid) {
+      if (mounted) setState(() => _isLoaded = true);
+      return;
+    }
+
+    final targetUnitId = widget.customAdUnitId ??
+        (PocketAdMobService.instance._isTestMode
+            ? PocketAdMobService.testNativeId
+            : PocketAdMobService.instance.getNativeAdUnitId(widget.placement));
+
+    PocketAdMobService.instance._recordAdRequest(widget.placement.name);
+
+    _nativeAd = NativeAd(
+      adUnitId: targetUnitId,
+      factoryId: 'pocketNativeCardFactory',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (_) {
+          PocketAdMobService.instance._recordAdLoaded(widget.placement.name);
+          if (mounted) setState(() => _isLoaded = true);
+        },
+        onAdFailedToLoad: (ad, err) {
+          PocketAdMobService.instance._recordAdFailed(widget.placement.name, err);
+          ad.dispose();
+          _nativeAd = null;
+          if (mounted) setState(() => _isLoaded = false);
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance._recordAdImpression(widget.placement.name);
+        },
+      ),
+    );
+
+    _nativeAd?.load();
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isVip) {
+      return const SizedBox.shrink();
+    }
+
+    if (_nativeAd == null || !_isLoaded) {
+      // In web or desktop or while loading, fallback gracefully to in-feed container
+      if (kIsWeb || !Platform.isAndroid) {
+        return PocketNativeAdCard(
+          margin: widget.margin,
+          placement: widget.placement,
+          customAdUnitId: widget.customAdUnitId,
+        );
+      }
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: widget.margin,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      height: 330, // Responsive height for PocketNativeAdFactory view
+      child: AdWidget(ad: _nativeAd!),
+    );
+  }
+}
+
 /// 💬 Sponsored Native Chat Bubble Ad Widget
 /// Automatically renders inside English Hub and 1-on-1 Chats like a clean incoming message bubble!
 class PocketChatBubbleAdWidget extends StatelessWidget {
@@ -850,17 +1410,24 @@ class _PocketBannerAdWidgetState extends State<PocketBannerAdWidget> {
       return;
     }
 
+    PocketAdMobService.instance._recordAdRequest('standard_banner');
+
     _bannerAd = BannerAd(
       adUnitId: PocketAdMobService.instance.bannerAdUnitId,
       size: widget.adSize,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
+          PocketAdMobService.instance._recordAdLoaded('standard_banner');
           if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, err) {
+          PocketAdMobService.instance._recordAdFailed('standard_banner', err);
           ad.dispose();
           _bannerAd = null;
+        },
+        onAdImpression: (_) {
+          PocketAdMobService.instance._recordAdImpression('standard_banner');
         },
       ),
     );

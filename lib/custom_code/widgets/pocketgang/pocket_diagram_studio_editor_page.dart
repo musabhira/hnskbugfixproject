@@ -1,7 +1,11 @@
+import '../../services/pocketgang_chat_share_service.dart';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Single Node on the Interactive Vector Canvas
 class DiagramCanvasNode {
@@ -22,6 +26,33 @@ class DiagramCanvasNode {
     this.shapeType = 'rounded',
     this.subtitle,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'dx': position.dx,
+        'dy': position.dy,
+        'width': size.width,
+        'height': size.height,
+        'color': color.toARGB32(),
+        'shapeType': shapeType,
+        'subtitle': subtitle,
+      };
+
+  factory DiagramCanvasNode.fromJson(Map<String, dynamic> json) =>
+      DiagramCanvasNode(
+        id: json['id']?.toString() ?? '',
+        label: json['label']?.toString() ?? '',
+        position: Offset((json['dx'] as num?)?.toDouble() ?? 100.0,
+            (json['dy'] as num?)?.toDouble() ?? 100.0),
+        size: Size((json['width'] as num?)?.toDouble() ?? 140.0,
+            (json['height'] as num?)?.toDouble() ?? 60.0),
+        color: json['color'] != null
+            ? Color((json['color'] as num).toInt())
+            : const Color(0xFF1E293B),
+        shapeType: json['shapeType']?.toString() ?? 'rounded',
+        subtitle: json['subtitle']?.toString(),
+      );
 }
 
 /// Connector Edge between two DiagramCanvasNodes
@@ -39,33 +70,64 @@ class DiagramCanvasEdge {
     this.label,
     this.color = const Color(0xFF38BDF8),
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'sourceNodeId': sourceNodeId,
+        'targetNodeId': targetNodeId,
+        'label': label,
+        'color': color.toARGB32(),
+      };
+
+  factory DiagramCanvasEdge.fromJson(Map<String, dynamic> json) =>
+      DiagramCanvasEdge(
+        id: json['id']?.toString() ?? '',
+        sourceNodeId: json['sourceNodeId']?.toString() ?? '',
+        targetNodeId: json['targetNodeId']?.toString() ?? '',
+        label: json['label']?.toString(),
+        color: json['color'] != null
+            ? Color((json['color'] as num).toInt())
+            : const Color(0xFF38BDF8),
+      );
 }
 
 /// 📐 POKET Interactive Diagram Studio & Whiteboard Editor Page
 class PocketDiagramStudioEditorPage extends StatefulWidget {
+  final String diagramId;
   final String diagramTitle;
   final String templateKey;
   final String groupName;
+  final String groupId;
+  final String userId;
 
   const PocketDiagramStudioEditorPage({
     super.key,
+    this.diagramId = '',
     required this.diagramTitle,
     required this.templateKey,
     required this.groupName,
+    this.groupId = '',
+    this.userId = '',
   });
 
   static Future<void> open(
     BuildContext context, {
+    String diagramId = '',
     required String diagramTitle,
     required String templateKey,
     required String groupName,
+    String groupId = '',
+    String userId = '',
   }) {
     return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PocketDiagramStudioEditorPage(
+          diagramId: diagramId,
           diagramTitle: diagramTitle,
           templateKey: templateKey,
           groupName: groupName,
+          groupId: groupId,
+          userId: userId,
         ),
       ),
     );
@@ -84,17 +146,161 @@ class _PocketDiagramStudioEditorPageState
 
   String? _selectedNodeId;
   bool _isGridVisible = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _loadTemplatePreset(widget.templateKey);
+    _loadDiagramData();
   }
 
   @override
   void dispose() {
     _transformCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadDiagramData() async {
+    // If diagramId & groupId provided, try loading from Supabase group_activities
+    if (widget.groupId.isNotEmpty && widget.diagramId.isNotEmpty) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cacheKey = 'gang_diag_detail_${widget.groupId}_${widget.diagramId}';
+        final cached = prefs.getString(cacheKey);
+
+        if (cached != null) {
+          final data = jsonDecode(cached);
+          _parseDiagramJson(data);
+        }
+
+        final supabase = Supabase.instance.client;
+        final res = await supabase
+            .from('group_activities')
+            .select('data')
+            .eq('group_id', widget.groupId)
+            .eq('activity_type', 'gang_diagram_${widget.diagramId}')
+            .maybeSingle();
+
+        if (res != null && res['data'] != null) {
+          final data = res['data'];
+          await prefs.setString(cacheKey, jsonEncode(data));
+          _parseDiagramJson(data);
+          return;
+        }
+      } catch (e) {
+        debugPrint('Error loading cloud diagram data: $e');
+      }
+    }
+
+    if (_nodes.isEmpty) {
+      _loadTemplatePreset(widget.templateKey);
+    }
+  }
+
+  void _parseDiagramJson(dynamic data) {
+    if (data is Map && data['nodes'] is List) {
+      final List nList = data['nodes'];
+      final List eList = (data['edges'] as List?) ?? [];
+      setState(() {
+        _nodes.clear();
+        _edges.clear();
+        _nodes.addAll(nList
+            .map((e) => DiagramCanvasNode.fromJson(Map<String, dynamic>.from(e))));
+        _edges.addAll(eList
+            .map((e) => DiagramCanvasEdge.fromJson(Map<String, dynamic>.from(e))));
+      });
+    }
+  }
+
+  Future<void> _saveDiagramToCloud() async {
+    if (widget.groupId.isEmpty || widget.diagramId.isEmpty) return;
+    setState(() => _isSaving = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = 'gang_diag_detail_${widget.groupId}_${widget.diagramId}';
+      final payload = {
+        'id': widget.diagramId,
+        'title': widget.diagramTitle,
+        'template': widget.templateKey,
+        'nodes': _nodes.map((n) => n.toJson()).toList(),
+        'edges': _edges.map((e) => e.toJson()).toList(),
+        'updated_by': widget.userId,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      await prefs.setString(cacheKey, jsonEncode(payload));
+
+      final supabase = Supabase.instance.client;
+      await supabase.from('group_activities').upsert({
+        'group_id': widget.groupId,
+        'activity_type': 'gang_diagram_${widget.diagramId}',
+        'title': widget.diagramTitle,
+        'data': payload,
+        'created_by': widget.userId,
+        'is_active': true,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('☁️ Diagram saved to Group Cloud!'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving diagram to cloud: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _fitToScreen() {
+    if (_nodes.isEmpty) {
+      _resetZoom();
+      return;
+    }
+    double minX = _nodes.first.position.dx;
+    double maxX = _nodes.first.position.dx + _nodes.first.size.width;
+    double minY = _nodes.first.position.dy;
+    double maxY = _nodes.first.position.dy + _nodes.first.size.height;
+
+    for (final n in _nodes) {
+      if (n.position.dx < minX) minX = n.position.dx;
+      if (n.position.dx + n.size.width > maxX) maxX = n.position.dx + n.size.width;
+      if (n.position.dy < minY) minY = n.position.dy;
+      if (n.position.dy + n.size.height > maxY) maxY = n.position.dy + n.size.height;
+    }
+
+    final diagWidth = (maxX - minX) + 120;
+    final diagHeight = (maxY - minY) + 120;
+    final screenSize = MediaQuery.of(context).size;
+
+    final scaleX = screenSize.width / diagWidth;
+    final scaleY = (screenSize.height - 180) / diagHeight;
+    final targetScale = math.min(scaleX, scaleY).clamp(0.4, 1.8);
+
+    final matrix = Matrix4.identity()
+      ..translate(
+        (screenSize.width - diagWidth * targetScale) / 2 - (minX - 60) * targetScale,
+        (screenSize.height - diagHeight * targetScale) / 2 - (minY - 60) * targetScale,
+      )
+      ..scale(targetScale, targetScale);
+
+    setState(() {
+      _transformCtrl.value = matrix;
+    });
+    HapticFeedback.lightImpact();
+  }
+
+  void _resetZoom() {
+    setState(() {
+      _transformCtrl.value = Matrix4.identity();
+    });
+    HapticFeedback.lightImpact();
   }
 
   /// Populate sample editable topology based on the selected template
@@ -158,25 +364,25 @@ class _PocketDiagramStudioEditorPageState
         DiagramCanvasNode(
             id: 'm1',
             label: 'Individual Workspace',
-            position: const Offset(40, 80),
+            position: const Offset(40, 100),
             color: const Color(0xFF38BDF8),
             shapeType: 'rounded'),
         DiagramCanvasNode(
             id: 'm2',
-            label: 'Couple Shared Life',
-            position: const Offset(360, 80),
-            color: const Color(0xFFF43F5E),
-            shapeType: 'rounded'),
-        DiagramCanvasNode(
-            id: 'm3',
-            label: 'Friends & Team Gang',
-            position: const Offset(40, 400),
+            label: 'PocketGang Collaborative',
+            position: const Offset(340, 100),
             color: const Color(0xFF10B981),
             shapeType: 'rounded'),
         DiagramCanvasNode(
+            id: 'm3',
+            label: 'English 90-Day Citadel',
+            position: const Offset(40, 380),
+            color: const Color(0xFFF59E0B),
+            shapeType: 'rounded'),
+        DiagramCanvasNode(
             id: 'm4',
-            label: 'English Learning Hub',
-            position: const Offset(360, 400),
+            label: 'Gamified Ranking Trail',
+            position: const Offset(340, 380),
             color: const Color(0xFFA855F7),
             shapeType: 'rounded'),
       ]);
@@ -187,54 +393,43 @@ class _PocketDiagramStudioEditorPageState
         DiagramCanvasEdge(id: 'e4', sourceNodeId: 'c', targetNodeId: 'm4'),
       ]);
     } else {
-      // General architecture diagram
       _nodes.addAll([
         DiagramCanvasNode(
-            id: 'a1',
-            label: 'Flutter Mobile & Web Client',
-            position: const Offset(100, 100),
-            color: const Color(0xFF0284C7),
+            id: 'sys1',
+            label: 'Mobile Client (Flutter)',
+            position: const Offset(100, 120),
+            color: const Color(0xFF38BDF8),
             shapeType: 'rounded'),
         DiagramCanvasNode(
-            id: 'a2',
-            label: 'Supabase Realtime API Gateway',
+            id: 'sys2',
+            label: 'Supabase Realtime Cloud',
             position: const Offset(100, 260),
             color: const Color(0xFF10B981),
             shapeType: 'rounded'),
         DiagramCanvasNode(
-            id: 'a3',
-            label: 'PostgreSQL Tables & RLS Policies',
-            position: const Offset(100, 420),
-            color: const Color(0xFF6366F1),
+            id: 'sys3',
+            label: 'Edge Functions & AI',
+            position: const Offset(100, 400),
+            color: const Color(0xFFFFD700),
             shapeType: 'rounded'),
       ]);
       _edges.addAll([
-        DiagramCanvasEdge(
-            id: 'ea1',
-            sourceNodeId: 'a1',
-            targetNodeId: 'a2',
-            label: 'HTTPS & WSS Broadcast'),
-        DiagramCanvasEdge(
-            id: 'ea2',
-            sourceNodeId: 'a2',
-            targetNodeId: 'a3',
-            label: 'Row Level Security'),
+        DiagramCanvasEdge(id: 'se1', sourceNodeId: 'sys1', targetNodeId: 'sys2', label: 'WebSocket / REST'),
+        DiagramCanvasEdge(id: 'se2', sourceNodeId: 'sys2', targetNodeId: 'sys3', label: 'RPC / Webhook'),
       ]);
     }
   }
 
   void _addNewNode() {
     HapticFeedback.lightImpact();
+    final newId = 'n_${DateTime.now().millisecondsSinceEpoch}';
     setState(() {
-      final newId = 'node_${DateTime.now().millisecondsSinceEpoch}';
-      _nodes.add(
-        DiagramCanvasNode(
-          id: newId,
-          label: 'New Concept Node',
-          position: const Offset(180, 180),
-          color: const Color(0xFF1E293B),
-        ),
-      );
+      _nodes.add(DiagramCanvasNode(
+        id: newId,
+        label: 'New Step / Module',
+        position: const Offset(160, 260),
+        color: const Color(0xFF0284C7),
+      ));
       _selectedNodeId = newId;
     });
   }
@@ -248,37 +443,33 @@ class _PocketDiagramStudioEditorPageState
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Edit Node Label',
-            style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: Text('Edit Node Label',
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: ctrl,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
-            hintText: 'Enter node title...',
-            hintStyle: TextStyle(color: Colors.white30),
-            enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF38BDF8))),
+            hintText: 'Enter title...',
+            hintStyle: TextStyle(color: Colors.white38),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child:
-                const Text('CANCEL', style: TextStyle(color: Colors.white60)),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black),
             onPressed: () {
-              if (ctrl.text.trim().isNotEmpty) {
-                setState(() => node.label = ctrl.text.trim());
-              }
+              setState(() {
+                node.label = ctrl.text.trim();
+              });
               Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black),
-            child: const Text('SAVE',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -288,82 +479,86 @@ class _PocketDiagramStudioEditorPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF090D16),
+      backgroundColor: const Color(0xFF0B0F19),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: const Color(0xFF111827),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.diagramTitle,
               style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800),
+                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Row(
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                      shape: BoxShape.circle, color: Color(0xFF10B981)),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  '${widget.groupName} · 3 Collaborators Online',
-                  style: const TextStyle(color: Colors.white54, fontSize: 10.5),
-                ),
-              ],
+            Text(
+              '${widget.groupName} • Diagram Studio',
+              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
             ),
           ],
         ),
         actions: [
           IconButton(
+            tooltip: 'Toggle Grid',
             icon: Icon(
-                _isGridVisible ? Icons.grid_on_rounded : Icons.grid_off_rounded,
-                color: Colors.white70,
-                size: 20),
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              setState(() => _isGridVisible = !_isGridVisible);
-            },
+              _isGridVisible ? Icons.grid_on_rounded : Icons.grid_off_rounded,
+              color: _isGridVisible ? const Color(0xFFFFD700) : Colors.white38,
+              size: 20,
+            ),
+            onPressed: () => setState(() => _isGridVisible = !_isGridVisible),
           ),
           IconButton(
-            icon: const Icon(Icons.download_rounded,
-                color: Color(0xFFFFD700), size: 22),
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      '📥 Exporting Diagram to PNG & PDF... (Autosaved to Team Hub)'),
-                  backgroundColor: Color(0xFF10B981),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
+            tooltip: 'Save to Cloud',
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFD700)),
+                  )
+                : const Icon(Icons.cloud_upload_outlined, color: Color(0xFFFFD700), size: 22),
+            onPressed: _isSaving ? null : _saveDiagramToCloud,
           ),
+          if (widget.groupId.isNotEmpty)
+            IconButton(
+              tooltip: 'Share to Group Chat',
+              icon: const Icon(Icons.share_rounded, color: Color(0xFFFFD700), size: 20),
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                await _saveDiagramToCloud();
+                final ok = await PocketGangChatShareService.instance.shareDiagramToGroupChat(
+                  groupId: widget.groupId,
+                  userId: widget.userId,
+                  diagramId: widget.diagramId,
+                  diagramTitle: widget.diagramTitle,
+                  templateKey: widget.templateKey,
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(ok ? '🚀 Diagram shared to Group Chat!' : 'Failed to share diagram.'),
+                      backgroundColor: ok ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+            ),
         ],
       ),
       body: Stack(
         children: [
-          // Infinite Interactive Vector Canvas
+          // Responsive Unclipped Vector Canvas with smooth InteractiveViewer
           InteractiveViewer(
             transformationController: _transformCtrl,
-            boundaryMargin: const EdgeInsets.all(1000),
-            minScale: 0.3,
-            maxScale: 3.0,
+            boundaryMargin: const EdgeInsets.all(2500),
+            minScale: 0.2,
+            maxScale: 3.5,
+            clipBehavior: Clip.none,
             child: SizedBox(
-              width: 2500,
-              height: 2500,
+              width: 3000,
+              height: 3000,
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
                   // 1. Grid Background
                   if (_isGridVisible)
@@ -450,6 +645,33 @@ class _PocketDiagramStudioEditorPageState
                   }),
                 ],
               ),
+            ),
+          ),
+
+          // Floating Fit-to-Screen and Reset Zoom controls
+          Positioned(
+            right: 16,
+            top: 16,
+            child: Column(
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'fab_fit',
+                  tooltip: 'Fit to Screen',
+                  backgroundColor: const Color(0xFF1E293B),
+                  foregroundColor: const Color(0xFFFFD700),
+                  onPressed: _fitToScreen,
+                  child: const Icon(Icons.fullscreen_rounded, size: 20),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.small(
+                  heroTag: 'fab_reset',
+                  tooltip: 'Reset Zoom (100%)',
+                  backgroundColor: const Color(0xFF1E293B),
+                  foregroundColor: Colors.white70,
+                  onPressed: _resetZoom,
+                  child: const Icon(Icons.center_focus_strong_rounded, size: 18),
+                ),
+              ],
             ),
           ),
 

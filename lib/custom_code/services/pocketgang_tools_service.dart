@@ -64,7 +64,7 @@ class PocketGangToolsService {
             .order('display_order', ascending: true);
 
         if (res.isNotEmpty) {
-          final tools = res.map((r) => r['tool_key']?.toString() ?? '').where((k) => k.isNotEmpty).toList();
+          final tools = res.map((r) => r['tool_key']?.toString() ?? '').where((k) => k.isNotEmpty).toSet().toList();
           await prefs.setString(cacheKey, jsonEncode(tools));
           return tools;
         }
@@ -87,7 +87,7 @@ class PocketGangToolsService {
           } else if (data is List) {
             list = data;
           }
-          final tools = list.map((e) => e.toString()).toList();
+          final tools = list.map((e) => e.toString()).toSet().toList();
           if (tools.isNotEmpty) {
             await prefs.setString(cacheKey, jsonEncode(tools));
             return tools;
@@ -102,7 +102,7 @@ class PocketGangToolsService {
     final cached = prefs.getString(cacheKey);
     if (cached != null) {
       try {
-        final list = (jsonDecode(cached) as List).map((e) => e.toString()).toList();
+        final list = (jsonDecode(cached) as List).map((e) => e.toString()).toSet().toList();
         if (list.isNotEmpty) return list;
       } catch (_) {}
     }
@@ -116,12 +116,13 @@ class PocketGangToolsService {
     required List<String> toolKeys,
     required String userId,
   }) async {
+    final uniqueTools = toolKeys.toSet().toList();
     if (groupId.isEmpty) return;
 
     // Cache immediately locally
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = 'pocketgang_tools_$groupId';
-    await prefs.setString(cacheKey, jsonEncode(toolKeys));
+    await prefs.setString(cacheKey, jsonEncode(uniqueTools));
 
     try {
       final supabase = Supabase.instance.client;
@@ -129,10 +130,10 @@ class PocketGangToolsService {
       // Attempt 1: Sync to group_tools table
       try {
         // Upsert tool rows
-        for (int i = 0; i < toolKeys.length; i++) {
+        for (int i = 0; i < uniqueTools.length; i++) {
           await supabase.from(_toolsTableName).upsert({
             'group_id': groupId,
-            'tool_key': toolKeys[i],
+            'tool_key': uniqueTools[i],
             'is_enabled': true,
             'display_order': i,
             'installed_by': userId,
@@ -146,7 +147,7 @@ class PocketGangToolsService {
           'group_id': groupId,
           'activity_type': 'gang_installed_tools',
           'title': 'PocketGang Tools',
-          'data': {'tools': toolKeys, 'updated_by': userId, 'timestamp': DateTime.now().toIso8601String()},
+          'data': {'tools': uniqueTools, 'updated_by': userId, 'timestamp': DateTime.now().toIso8601String()},
           'created_by': userId,
           'is_active': true,
         });

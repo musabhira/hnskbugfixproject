@@ -3486,157 +3486,192 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     HapticFeedback.heavyImpact();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0A0F1D),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
-              ),
-              child: const Text('🔒', style: TextStyle(fontSize: 22)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Supreme Citadel Locked',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  Text(
-                    'Level 90 Clearance Required',
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 380),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+              boxShadow: [
+                BoxShadow(
                   color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('🏛️', style: TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
+                      // Header
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                            ),
+                            child: const Text('🔒', style: TextStyle(fontSize: 22)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'President Challenge Locked',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Pass Levels 1–19 to Unlock',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Notice Box
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🏛️', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Imperial Clearance Protocol',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Complete and pass Levels 1–19 to unlock the President Challenge. Once you have passed Level 19, you can challenge the President.',
+                              style: GoogleFonts.inter(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 13,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Progress Bar
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Your Mastery Progress',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Level $_attackerDay / 19',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: (_attackerDay / 19.0).clamp(0.0, 1.0),
+                          minHeight: 8,
+                          backgroundColor: Colors.white12,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       Text(
-                        'Imperial Decree of Defense',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                        _attackerDay >= 20
+                            ? 'Ready to challenge the President!'
+                            : '${(20 - _attackerDay).clamp(1, 19)} level(s) remaining to unlock.',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Button
+                      SizedBox(
+                        height: 46,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFD700),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(
+                            'Understood, Sir! 🫡',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'By Imperial Decree of The President and Supreme Armed Command, the Sovereign Citadel is sealed under DEFCON 1 Royal Protection.\n\nOnly citizens who have completed all 90 daily English trials (Level 90 Graduation) and reached Level 91+ are permitted to challenge The President in the 200-question boss battle.',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 12,
-                      height: 1.45,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Progress Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Your Mastery Progress',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.5,
-                  ),
-                ),
-                Text(
-                  'Level $_attackerDay / 90 (Pass Level 90 to Challenge)',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11.5,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: (_attackerDay / 90.0).clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor: Colors.white12,
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${(91 - _attackerDay).clamp(1, 90)} levels remaining to pass Level 90 and unlock the Supreme President Challenge.',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF38BDF8),
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(
-                'Understood, Sir! 🫡',
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -5557,7 +5592,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (_attackerDay <= 90
+                        color: (_attackerDay <= 19
                                 ? Colors.black
                                 : const Color(0xFFFFD700))
                             .withValues(alpha: 0.5),
@@ -5569,7 +5604,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_attackerDay <= 90 ? '🔒' : '👑',
+                      Text(_attackerDay <= 19 ? '🔒' : '👑',
                           style: const TextStyle(fontSize: 13)),
                       const SizedBox(width: 6),
                       Column(
@@ -5582,14 +5617,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 : 'CHALLENGE PRESIDENT ⚔️',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: _attackerDay <= 90 ? 11.5 : 13,
+                              fontSize: _attackerDay <= 19 ? 11.5 : 13,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.6,
                             ),
                           ),
-                          if (_attackerDay <= 90)
+                          if (_attackerDay <= 19)
                             Text(
-                              'Day $_attackerDay / 90 Progress (Pass Lvl 90)',
+                              'Day $_attackerDay / 19 Progress (Pass Lvl 19)',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFFFD700),
                                 fontSize: 8.5,
@@ -6822,7 +6857,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       return;
     }
     if (widget.neighbor.isPresident) {
-      if (_attackerDay <= 90) {
+      if (_attackerDay <= 19) {
         _showPresidentialLevelLockDialog();
         return;
       }

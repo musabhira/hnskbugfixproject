@@ -37,8 +37,10 @@ class _EnglishLearningGroupChatWidgetState
   EnglishHubLevelGroup? _levelGroup;
   String? _currentUserProfileId;
   String? _currentUserId;
-  int _selectedHubTab = 1; // 0 = Spaces (Left), 1 = Chat (Center), 2 = Homes (Right)
-  int _homesEpoch = 0; // Incremented when switching back to Homes tab to auto-refresh seen items
+  int _selectedHubTab =
+      1; // 0 = Homes (Left), 1 = Chat (Center), 2 = Table (Right)
+  int _homesEpoch =
+      0; // Incremented when switching back to Homes tab to auto-refresh seen items
   late PageController _hubPageController;
 
   @override
@@ -73,13 +75,16 @@ class _EnglishLearningGroupChatWidgetState
           .select('id')
           .eq('user_id', _currentUserId!)
           .maybeSingle();
-      _currentUserProfileId = profileResponse?['id']?.toString() ?? _currentUserId!;
+      _currentUserProfileId =
+          profileResponse?['id']?.toString() ?? _currentUserId!;
 
       // 2. Resolve user's current learning level
-      final userLevel = await EnglishHubLevelGroupService.resolveCurrentUserLevel();
+      final userLevel =
+          await EnglishHubLevelGroupService.resolveCurrentUserLevel();
 
       // 3. Ensure user is in their level group & auto-leaves older level groups
-      final matchedGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+      final matchedGroup =
+          await EnglishHubLevelGroupService.ensureUserInLevelGroup(
         userLevel: userLevel,
         userId: _currentUserId!,
         profileId: _currentUserProfileId,
@@ -166,14 +171,24 @@ class _EnglishLearningGroupChatWidgetState
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           itemBuilder: (context, index) {
             final isMe = index % 2 == 0;
-            final bubbleWidths = [170.0, 240.0, 130.0, 210.0, 280.0, 150.0, 220.0];
+            final bubbleWidths = [
+              170.0,
+              240.0,
+              130.0,
+              210.0,
+              280.0,
+              150.0,
+              220.0
+            ];
             final width = bubbleWidths[index % bubbleWidths.length];
-            final height = (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
+            final height =
+                (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
 
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Row(
-                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisAlignment:
+                    isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (!isMe) ...[
@@ -195,8 +210,12 @@ class _EnglishLearningGroupChatWidgetState
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
-                        bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
-                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                        bottomLeft: isMe
+                            ? const Radius.circular(16)
+                            : const Radius.circular(4),
+                        bottomRight: isMe
+                            ? const Radius.circular(4)
+                            : const Radius.circular(16),
                       ),
                     ),
                   ),
@@ -230,7 +249,7 @@ class _EnglishLearningGroupChatWidgetState
           ),
           const SizedBox(width: 8),
 
-          // Exactly two visible tabs: ChitChat Table & Chat
+          // 3-tab pill switcher: Homes (Left) | Chat (Center) | Table (Right)
           Expanded(
             child: Container(
               height: 38,
@@ -242,7 +261,7 @@ class _EnglishLearningGroupChatWidgetState
               ),
               child: Row(
                 children: [
-                  // Tab 0: 🎙️ ChitChat Table
+                  // Tab 0 (Left): 🏰 Homes
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -264,10 +283,10 @@ class _EnglishLearningGroupChatWidgetState
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🎙️', style: TextStyle(fontSize: 14)),
-                              const SizedBox(width: 5),
+                              const Text('🏰', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 4),
                               Text(
-                                'ChitChat Table',
+                                'Homes',
                                 style: GoogleFonts.outfit(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -276,17 +295,6 @@ class _EnglishLearningGroupChatWidgetState
                                       : Colors.white70,
                                 ),
                               ),
-                              if (_selectedHubTab != 0) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
@@ -294,7 +302,7 @@ class _EnglishLearningGroupChatWidgetState
                     ),
                   ),
 
-                  // Tab 1: 💬 Chat
+                  // Tab 1 (Center): 💬 Chat
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -317,7 +325,7 @@ class _EnglishLearningGroupChatWidgetState
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text('💬', style: TextStyle(fontSize: 14)),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               Text(
                                 'Chat',
                                 style: GoogleFonts.outfit(
@@ -328,6 +336,58 @@ class _EnglishLearningGroupChatWidgetState
                                       : Colors.white70,
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tab 2 (Right): 🎙️ Table
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _hubPageController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _selectedHubTab == 2
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🎙️', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Table',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _selectedHubTab == 2
+                                      ? Colors.black
+                                      : Colors.white70,
+                                ),
+                              ),
+                              if (_selectedHubTab != 2) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -367,22 +427,30 @@ class _EnglishLearningGroupChatWidgetState
                 controller: _hubPageController,
                 onPageChanged: (idx) {
                   HapticFeedback.selectionClick();
-                  // Audio Directive: When on Chat (tab 1) or Voice Spaces (tab 0), silence background music
-                  if (idx != 2) {
+                  // Audio Directive: When on Chat (tab 1) or Table (tab 2), silence background music
+                  if (idx != 0) {
                     PocketGameAudioService.instance.pause();
                   }
                   setState(() {
-                    if (idx == 2 && _selectedHubTab != 2) {
+                    if (idx == 0 && _selectedHubTab != 0) {
                       _homesEpoch++;
                     }
                     _selectedHubTab = idx;
                   });
                 },
                 children: [
-                  // 0 (Left): Live Voice Spaces
-                  const PocketAudioSpacesLobbyPage(
-                    showHeader: false,
-                    enableSafeArea: false,
+                  // 0 (Left): Homes (Reels-style Homestead & Attack Feed)
+                  PocketHomesReelsFeedWidget(
+                    key: ValueKey('homes_reel_$_homesEpoch'),
+                    userLevel: _levelGroup?.minLevel ?? 1,
+                    isActive: _selectedHubTab == 0,
+                    onBackToChat: () {
+                      _hubPageController.animateToPage(
+                        1,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                      );
+                    },
                   ),
 
                   // 1 (Center): Level Chat
@@ -402,27 +470,19 @@ class _EnglishLearningGroupChatWidgetState
                             )
                           : _buildErrorState(context)),
 
-                // 2 (Right): Homes (Reels-style Homestead & Attack Feed)
-                PocketHomesReelsFeedWidget(
-                  key: ValueKey('homes_reel_$_homesEpoch'),
-                  userLevel: _levelGroup?.minLevel ?? 1,
-                  isActive: _selectedHubTab == 2,
-                  onBackToChat: () {
-                    _hubPageController.animateToPage(
-                      1,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                    );
-                  },
-                ),
-              ],
+                  // 2 (Right): ChitChat Table (4-seat Voice & Text Table)
+                  const PocketAudioSpacesLobbyPage(
+                    showHeader: false,
+                    enableSafeArea: false,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildErrorState(BuildContext context) {
     return Center(
@@ -431,7 +491,8 @@ class _EnglishLearningGroupChatWidgetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.group_off_rounded, color: Colors.white54, size: 48),
+            const Icon(Icons.group_off_rounded,
+                color: Colors.white54, size: 48),
             const SizedBox(height: 16),
             const Text(
               'Unable to connect to group right now.',
@@ -526,7 +587,8 @@ class _EnglishLearningGroupChatWidgetState
                 child: ElevatedButton.icon(
                   onPressed: () => AuthAlertBox.checkAuthAndShowAlert(
                     context: context,
-                    customMessage: "Please login to access Group Chats and English Hub",
+                    customMessage:
+                        "Please login to access Group Chats and English Hub",
                   ),
                   icon: const Icon(Icons.login_rounded, color: Colors.black),
                   label: Text(

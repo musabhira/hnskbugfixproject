@@ -536,12 +536,18 @@ class _PocketDayOpenWorldAdventurePageState
 
         // 🎯 Strategic Transition Ads:
         // 1. Interstitial Ad after completing configured learning step frequency (default every 6 steps)
+        // ⚠️ NOTE: Exclude Step 18 — Step 18 (House / Guest Citadel Attack Quest) already contains its own dedicated in-activity raid interstitial ad (PocketAdPlacement.attack).
+        // Excluded from the generic modulo-6 rule to prevent duplicate ads on activity exit and step completion.
         if (stepIndex > 0 &&
+            stepIndex != 18 &&
             stepIndex % PocketAdMobService.interstitialStepFrequency == 0 &&
             stepIndex < _totalSteps) {
           Future.delayed(const Duration(milliseconds: 600), () {
             if (mounted) {
-              PocketAdMobService.instance.showInterstitialAd(context: context);
+              PocketAdMobService.instance.showInterstitialAd(
+                context: context,
+                placement: PocketAdPlacement.learningStep,
+              );
             }
           });
         }
@@ -550,7 +556,10 @@ class _PocketDayOpenWorldAdventurePageState
         // Show celebration Interstitial Ad on major Day Milestone completion
         Future.delayed(const Duration(milliseconds: 800), () {
           if (mounted) {
-            PocketAdMobService.instance.showInterstitialAd(context: context);
+            PocketAdMobService.instance.showInterstitialAd(
+              context: context,
+              placement: PocketAdPlacement.dayCompletion,
+            );
           }
         });
 
@@ -711,6 +720,7 @@ class _PocketDayOpenWorldAdventurePageState
                           } else {
                             PocketAdMobService.instance.showInterstitialAd(
                               context: context,
+                              placement: PocketAdPlacement.dayCompletion,
                               onDismissed: () {
                                 widget.onCompleted?.call();
                                 if (mounted) {
@@ -2504,6 +2514,7 @@ class _PocketDayOpenWorldAdventurePageState
           HapticFeedback.heavyImpact();
           PocketAdMobService.instance.showInterstitialAd(
             context: context,
+            placement: PocketAdPlacement.dayCompletion,
             onDismissed: () {
               widget.onCompleted?.call();
               if (mounted) {

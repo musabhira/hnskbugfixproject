@@ -1,8 +1,9 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocketgang_task_service.dart';
 
-/// 📊 PocketGang Genuine Minimal Dashboard
+/// 📊 PocketGang Genuine Dashboard with Circular Donut Contribution Chart
 class PocketGangDashboardWidget extends StatelessWidget {
   final String groupId;
   final String groupName;
@@ -25,11 +26,15 @@ class PocketGangDashboardWidget extends StatelessWidget {
     final inProgressTasks = tasks.where((t) => t.status == 'in_progress').length;
     final todoTasks = tasks.where((t) => t.status == 'todo').length;
 
-    final totalEffort = tasks
-        .where((t) => t.status == 'completed' && t.approvedBy != null)
-        .fold<int>(0, (sum, t) => sum + t.effortPoints);
+    // Completed approved tasks count
+    final approvedTasks = tasks
+        .where((t) => t.status == 'completed' && t.approvedBy != null && t.approvedBy!.isNotEmpty)
+        .length;
 
     final progressPct = totalTasks > 0 ? (completedTasks / totalTasks) : 0.0;
+
+    // Filter contributions with actual approved units
+    final activeContributions = contributions.where((c) => c.approvedUnits > 0).toList();
 
     return Container(
       color: const Color(0xFF0F172A),
@@ -40,7 +45,7 @@ class PocketGangDashboardWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('GANG METRICS DASHBOARD',
+              Text('TEAM CONTRIBUTION DASHBOARD',
                   style: GoogleFonts.outfit(
                       color: Colors.white70,
                       fontSize: 11,
@@ -63,7 +68,7 @@ class PocketGangDashboardWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Progress Card
+          // Project Progress Card
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -111,134 +116,165 @@ class PocketGangDashboardWidget extends StatelessWidget {
               const SizedBox(width: 8),
               _buildKpiCard('In Progress', '$inProgressTasks', const Color(0xFFF59E0B)),
               const SizedBox(width: 8),
-              _buildKpiCard('Review', '$reviewTasks', const Color(0xFFA855F7)),
+              _buildKpiCard('Pending Appr.', '$reviewTasks', const Color(0xFFA855F7)),
               const SizedBox(width: 8),
-              _buildKpiCard('Approved', '$completedTasks', const Color(0xFF10B981)),
+              _buildKpiCard('Approved', '$approvedTasks', const Color(0xFF10B981)),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          // Genuine Member Contribution Section
-          Text('REAL VERIFIED CONTRIBUTIONS',
-              style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8)),
-          const SizedBox(height: 10),
+          // Circular/Donut Team Contribution Chart Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('TEAM CONTRIBUTION',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8)),
+              Text('$approvedTasks Approved Tasks',
+                  style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
 
-          if (totalEffort == 0 || contributions.isEmpty)
+          if (approvedTasks == 0 || activeContributions.isEmpty)
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white10),
               ),
               child: Column(
                 children: [
-                  const Text('📊', style: TextStyle(fontSize: 28)),
-                  const SizedBox(height: 6),
-                  Text('No approved contributions yet.',
+                  const Text('🍩', style: TextStyle(fontSize: 34)),
+                  const SizedBox(height: 8),
+                  Text('No approved tasks completed yet.',
                       style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   const Text(
-                    'Contribution percentages will calculate dynamically once an admin reviews and approves completed tasks.',
-                    style: TextStyle(color: Colors.white54, fontSize: 11),
+                    'Contribution percentages calculate automatically as approved completed tasks are finished (1 unit split equally across assignees).',
+                    style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.4),
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
             )
-          else
-            ...contributions.map((c) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF0F172A),
-                      ),
+          else ...[
+            // Donut Chart & Legend Card
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  // Donut Visual
+                  SizedBox(
+                    height: 160,
+                    width: 160,
+                    child: Stack(
                       alignment: Alignment.center,
-                      child: Text(
-                        c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                            color: Color(0xFFFFD700),
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold),
-                      ),
+                      children: [
+                        CustomPaint(
+                          size: const Size(160, 160),
+                          painter: _DonutChartPainter(contributions: activeContributions),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('$approvedTasks',
+                                style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900)),
+                            const Text('Approved',
+                                style: TextStyle(color: Colors.white54, fontSize: 10)),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Member Breakdown List
+                  ...activeContributions.map((c) {
+                    final color = _getMemberColor(c.name);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Row(
                         children: [
-                          Text(c.name,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold)),
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              c.name,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                           Text(
-                            '${c.approvedEffortPoints} verified pts · ${c.completedTasks} completed · ${c.reviewTasks} in review',
-                            style: const TextStyle(
-                                color: Colors.white54, fontSize: 10.5),
+                            '${c.approvedUnits.toStringAsFixed(1)} units',
+                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            '${c.contributionPercentage}%',
+                            style: GoogleFonts.outfit(
+                              color: color,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    Text(
-                      '${c.contributionPercentage}%',
-                      style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900),
-                    ),
-                  ],
-                ),
-              );
-            }),
-
-          const SizedBox(height: 18),
-          // Legal disclaimer per requirement
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white10),
+                    );
+                  }),
+                ],
+              ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Icon(Icons.info_outline_rounded,
-                    color: Color(0xFFFFD700), size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'PocketGang Contribution represents verified work completed within this group. It does not automatically establish legal business ownership or profit-sharing rights.',
-                    style: TextStyle(
-                        color: Colors.white60, fontSize: 10.5, height: 1.4),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ],
       ),
     );
+  }
+
+  static final List<Color> _palette = [
+    const Color(0xFFFFD700),
+    const Color(0xFF38BDF8),
+    const Color(0xFF10B981),
+    const Color(0xFFA855F7),
+    const Color(0xFFF97316),
+    const Color(0xFFEC4899),
+    const Color(0xFF6366F1),
+  ];
+
+  static Color _getMemberColor(String name) {
+    final hash = name.codeUnits.fold(0, (prev, elem) => prev + elem);
+    return _palette[hash % _palette.length];
   }
 
   Widget _buildKpiCard(String label, String value, Color color) {
@@ -247,8 +283,8 @@ class PocketGangDashboardWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white10),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -257,8 +293,9 @@ class PocketGangDashboardWidget extends StatelessWidget {
                     color: color, fontSize: 16, fontWeight: FontWeight.w900)),
             const SizedBox(height: 2),
             Text(label,
-                style:
-                    const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white60, fontSize: 10)),
           ],
         ),
       ),
@@ -266,3 +303,41 @@ class PocketGangDashboardWidget extends StatelessWidget {
   }
 }
 
+class _DonutChartPainter extends CustomPainter {
+  final List<RealMemberContribution> contributions;
+
+  _DonutChartPainter({required this.contributions});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = 18.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    double startAngle = -math.pi / 2;
+
+    for (final c in contributions) {
+      final sweepAngle = (c.contributionPercentage / 100.0) * (2 * math.pi);
+      if (sweepAngle <= 0) continue;
+
+      final paint = Paint()
+        ..color = PocketGangDashboardWidget._getMemberColor(c.name)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle - 0.04, // slight gap
+        false,
+        paint,
+      );
+
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutChartPainter oldDelegate) => true;
+}

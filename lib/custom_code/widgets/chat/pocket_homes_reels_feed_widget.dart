@@ -1887,6 +1887,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                       ),
                       const SizedBox(height: 16),
                       const PocketNativeAdCard(
+                        placement: PocketAdPlacement.reels,
                         margin: EdgeInsets.symmetric(horizontal: 16),
                       ),
                       const SizedBox(height: 20),

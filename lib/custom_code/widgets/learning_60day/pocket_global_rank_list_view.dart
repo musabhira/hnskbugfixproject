@@ -337,6 +337,7 @@ class _PocketGlobalRankListViewState extends State<PocketGlobalRankListView>
                                       children: [
                                         tile,
                                         const PocketNativeAdCard(
+                                          placement: PocketAdPlacement.ranking,
                                           margin: EdgeInsets.only(bottom: 6),
                                         ),
                                       ],
