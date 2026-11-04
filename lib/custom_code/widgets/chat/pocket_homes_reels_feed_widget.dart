@@ -18,6 +18,7 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/flame_english_house_game.dart';
 import '../learning_60day/pocket_citadel_attack_page.dart';
+import '../learning_60day/pocket_score_level_engine.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../learning_60day/pocket_world_street_page.dart';
@@ -742,14 +743,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
         final profiles = await _supabase
             .from('profile')
-            .select('id, user_id, name, display_name, learning_day, daily_streak, profile_image_url')
+            .select('id, user_id, name, display_name, day, learning_day, pocket_score, daily_streak, profile_image_url')
             .neq('user_id', currentUserId ?? '')
-            .order('learning_day', ascending: false)
+            .order('day', ascending: false)
             .limit(30);
 
         if (profiles.isNotEmpty) {
           for (final p in profiles) {
-            final day = (p['learning_day'] as num?)?.toInt() ?? 3;
+            final rawDay = (p['day'] as num?)?.toInt() ??
+                (p['learning_day'] as num?)?.toInt() ??
+                1;
+            final score = (p['pocket_score'] as num?)?.toInt() ?? 0;
+            final day = PocketScoreLevelEngine.calculateEffectiveLevel(
+              day: rawDay,
+              pocketScore: score,
+            );
             final streak = (p['daily_streak'] as num?)?.toInt() ?? 1;
             final name = p['name']?.toString() ?? p['display_name']?.toString() ?? 'English Learner';
             final id = p['user_id']?.toString() ?? p['id']?.toString() ?? 'user';
@@ -875,13 +883,35 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             maxHp: 100,
           );
         } else {
+          String targetName = 'Citizen Citadel';
+          int effectiveDay = widget.userLevel;
+          try {
+            final p = await _supabase
+                .from('profile')
+                .select('name, display_name, day, learning_day, pocket_score')
+                .or('user_id.eq.$targetId,id.eq.$targetId')
+                .maybeSingle();
+            if (p != null) {
+              targetName = p['name']?.toString() ??
+                  p['display_name']?.toString() ??
+                  'Citizen Citadel';
+              final rawDay = (p['day'] as num?)?.toInt() ??
+                  (p['learning_day'] as num?)?.toInt() ??
+                  1;
+              final score = (p['pocket_score'] as num?)?.toInt() ?? 0;
+              effectiveDay = PocketScoreLevelEngine.calculateEffectiveLevel(
+                day: rawDay,
+                pocketScore: score,
+              );
+            }
+          } catch (_) {}
           targetNeighbor = PocketNeighbor(
             id: targetId,
-            name: 'Citizen Citadel',
-            day: widget.userLevel,
+            name: targetName,
+            day: effectiveDay,
             streak: 1,
             rank: 'Citadel Resident',
-            paletteId: 'slate',
+            paletteId: _randomPalette(effectiveDay),
             isMe: false,
             statusMessage: 'Welcome to my Citadel Home!',
           );

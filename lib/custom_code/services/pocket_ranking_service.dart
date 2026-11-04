@@ -917,15 +917,19 @@ class PocketRankingService {
 
     // Ensure Current User is always present
     if (!matesList.any((m) => m.userId == effectiveUid || m.userId == myProfileId)) {
-      final isPrestige = myCourseDay >= 90 || myScore >= 45000;
+      final effectiveMyLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: myCourseDay,
+        pocketScore: myScore,
+      );
+      final isPrestige = effectiveMyLevel >= 90 || myScore >= 45000;
       final stars = isPrestige ? math.max(1, (myScore - 45000) ~/ 2000 + 1) : 0;
       matesList.add(PocketRankedUser(
         userId: effectiveUid,
         name: 'You',
         pocketScore: myScore,
-        level: myCourseDay.clamp(1, 99),
+        level: effectiveMyLevel,
         globalRank: myGlobalRank,
-        avatarConfig: _resolveAvatarConfig(effectiveUid, myCourseDay),
+        avatarConfig: _resolveAvatarConfig(effectiveUid, effectiveMyLevel),
         isCurrentUser: true,
         isRobot: false,
         isPrestigeSovereign: isPrestige,

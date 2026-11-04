@@ -691,7 +691,7 @@ class PocketFortressDefenseService {
         final res = await SupaFlow.client
             .from('profile')
             .select(
-                'user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+                'user_id, first_name, name, bio, day, learning_day, pocket_score, streak, rank, palette_id, is_pocket_robo')
             .neq('user_id', myId ?? '')
             .gte('learning_day', math.max(1, targetLevel - 2))
             .lte('learning_day', math.min(90, targetLevel + 2))
@@ -707,18 +707,25 @@ class PocketFortressDefenseService {
             final isProtected = await isUnderPresidentialProtection(uid);
             if (isProtected) continue;
 
-            final pDay = (p['learning_day'] as num?)?.toInt() ?? targetLevel;
+            final rawDay = (p['day'] as num?)?.toInt() ??
+                (p['learning_day'] as num?)?.toInt() ??
+                targetLevel;
+            final score = (p['pocket_score'] as num?)?.toInt() ?? 0;
+            final effectiveDay = PocketScoreLevelEngine.calculateEffectiveLevel(
+              day: rawDay,
+              pocketScore: score,
+            );
             return PocketNeighbor(
               id: uid,
               name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
-              day: pDay,
-              streak: (p['streak'] as num?)?.toInt() ?? pDay,
+              day: effectiveDay,
+              streak: (p['streak'] as num?)?.toInt() ?? effectiveDay,
               rank: p['rank']?.toString() ?? 'Knight',
               paletteId: p['palette_id']?.toString() ?? 'stone_castle',
               isMe: false,
               hasActiveShield: true,
               statusMessage:
-                  p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
+                  p['bio']?.toString() ?? 'Guarded Citadel Lvl $effectiveDay',
               isPocketRobo: false,
               hp: 100,
               maxHp: 100,
@@ -3430,21 +3437,33 @@ class PocketFortressDefenseService {
         final userIds = res.map((r) => r['user_id'].toString()).toList();
         final profileRes = await SupaFlow.client
             .from('profile')
-            .select('user_id, name')
+            .select('user_id, name, day, learning_day, pocket_score')
             .inFilter('user_id', userIds);
 
         final profileMap = {
           for (var p in profileRes)
-            p['user_id'].toString(): p['name']?.toString() ?? 'User'
+            p['user_id'].toString(): {
+              'name': p['name']?.toString() ?? 'User',
+              'day': PocketScoreLevelEngine.calculateEffectiveLevel(
+                day: (p['day'] as num?)?.toInt() ??
+                    (p['learning_day'] as num?)?.toInt() ??
+                    1,
+                pocketScore: (p['pocket_score'] as num?)?.toInt() ?? 0,
+              ),
+            }
         };
 
         final List<PocketNeighbor> neighbors = [];
         for (var r in res) {
           final uid = r['user_id'].toString();
           final isMe = uid == myId;
+          final pInfo = profileMap[uid];
           final name =
-              isMe ? 'You (Your Pocket Home)' : (profileMap[uid] ?? 'Explorer');
-          final day = (r['day'] as num?)?.toInt() ?? 1;
+              isMe ? 'You (Your Pocket Home)' : (pInfo?['name'] ?? 'Explorer');
+          final rawDay = (pInfo?['day'] as int?) ??
+              (r['day'] as num?)?.toInt() ??
+              1;
+          final day = rawDay.clamp(1, 90);
           final streak = (r['streak'] as num?)?.toInt() ?? 1;
           final hp = (r['hp'] as num?)?.toInt() ?? 100;
           final maxHp = (r['max_hp'] as num?)?.toInt() ?? 100;
