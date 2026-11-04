@@ -191,12 +191,23 @@ jobs:
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
           IPA_PATH="build/ios/ipa/pocket_mates_app.ipa"
           echo "🚀 Uploading Shorebird-enabled IPA to TestFlight via App Store Connect altool..."
-          if xcrun altool --upload-app -f "$IPA_PATH" -t ios --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"; then
+          set +e
+          xcrun altool --upload-app \
+            -f "$IPA_PATH" \
+            -t ios \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --verbose
+          UPLOAD_EXIT_CODE=$?
+          set -e
+
+          if [ $UPLOAD_EXIT_CODE -eq 0 ]; then
+            echo "store_status=submitted" >> "$GITHUB_ENV"
             echo "🎉 Successfully uploaded version ${{ steps.versioning.outputs.full_version }} to TestFlight!"
-            echo "store_status=submitted" >> $GITHUB_ENV
           else
-            echo "⚠️ Warning: TestFlight upload failed, but Shorebird release was created successfully."
-            echo "store_status=failed" >> $GITHUB_ENV
+            echo "store_status=failed" >> "$GITHUB_ENV"
+            echo "❌ ERROR: TestFlight upload failed with exit code $UPLOAD_EXIT_CODE."
+            exit $UPLOAD_EXIT_CODE
           fi
 
       - name: Automatically Register Shorebird Release in Supabase

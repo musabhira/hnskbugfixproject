@@ -1,5 +1,13 @@
 # POKET Release Notes
 
+## Version 1.0.159 (Build 334) — November 4, 2026
+
+### 🚀 Highlights & CI/CD Pipeline Correction
+- **iOS CI/CD Pipeline Error Propagation**: Refined TestFlight upload step in `.github/workflows/shorebird-ios.yml` to execute verbose `altool` delivery and capture authentic exit codes without false green ticks.
+- **Version Bump**: Upgraded to `1.0.159+334` for automated Shorebird release compilation and TestFlight delivery via GitHub Actions.
+
+---
+
 ## Version 1.0.158 (Build 333) — November 4, 2026
 
 ### 🚀 Highlights & New Features
