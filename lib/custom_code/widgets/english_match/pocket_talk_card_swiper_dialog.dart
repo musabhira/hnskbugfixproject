@@ -266,13 +266,14 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
           seenNames.add(fullNameLower);
           seenFirstNames.add(firstNameLower);
 
-          // Candidate's level & avatar strictly match their real level
+          // Candidate's level & avatar strictly match their real course day
           final rawScore = (p['pocket_score'] as num?)?.toInt() ?? 0;
-          final rawDay = (p['learning_day'] as num?)?.toInt();
-          final calculatedLevel = PocketScoreLevelEngine.getLevelFromScore(rawScore);
+          final rawDay = (p['learning_day'] as num?)?.toInt() ??
+              (p['learning_stage'] as num?)?.toInt() ??
+              (p['level'] as num?)?.toInt();
           final candidateDay = (rawDay != null && rawDay > 0)
               ? rawDay.clamp(1, 90)
-              : calculatedLevel.clamp(1, 90);
+              : 1;
 
           VectorAvatarConfig config;
           if (p['avatar_config'] != null) {

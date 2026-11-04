@@ -132,12 +132,10 @@ class ChatConversation {
       final score = (otherProfile['pocket_score'] as num?)?.toInt() ??
           (otherProfile['learning_points'] as num?)?.toInt() ??
           (otherProfile['xp'] as num?)?.toInt() ?? 0;
-      final stage = score > 0
-          ? PocketScoreLevelEngine.getLevelFromScore(score)
-          : ((otherProfile['learning_day'] as num?)?.toInt() ??
-             (otherProfile['learning_stage'] as num?)?.toInt() ??
-             (otherProfile['stage'] as num?)?.toInt() ??
-             (otherProfile['level'] as num?)?.toInt() ?? 1);
+      final stage = (otherProfile['learning_day'] as num?)?.toInt() ??
+          (otherProfile['learning_stage'] as num?)?.toInt() ??
+          (otherProfile['stage'] as num?)?.toInt() ??
+          (otherProfile['level'] as num?)?.toInt() ?? 1;
       final talisman = otherProfile['equipped_talisman']?.toString() ??
           otherProfile['talisman_id']?.toString();
       if (otherProfile['avatar_config'] != null && otherProfile['avatar_config'] is Map) {

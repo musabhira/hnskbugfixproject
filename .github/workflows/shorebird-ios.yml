@@ -1,9 +1,10 @@
 name: Shorebird iOS Release & TestFlight
 
 on:
-  push:
-    branches:
-      - main
+  # Temporarily disabled automatic push trigger to isolate native iOS release testing
+  # push:
+  #   branches:
+  #     - main
   workflow_dispatch:
     inputs:
       action:

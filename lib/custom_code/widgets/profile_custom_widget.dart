@@ -136,7 +136,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           selectedCity = profileResponse['city'] ?? '';
           
           final rawScore = (profileResponse['pocket_score'] as num?)?.toInt() ?? 0;
-          _learningDay = PocketScoreLevelEngine.getLevelFromScore(rawScore);
+          _learningDay = ((profileResponse['learning_day'] as num?)?.toInt() ??
+                  (profileResponse['learning_stage'] as num?)?.toInt() ??
+                  (profileResponse['level'] as num?)?.toInt() ??
+                  1)
+              .clamp(1, 90);
           final stage = LearningMilestoneStage.getStageForDay(_learningDay);
           
           _colorCode = stage.bgHex;

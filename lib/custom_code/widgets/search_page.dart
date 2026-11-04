@@ -965,7 +965,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             targetName.contains('mussabira');
         final isRobot = !isPresident && profile['is_robot'] == true;
         final userScore = (profile['pocket_score'] as num?)?.toInt() ?? 0;
-        final userDay = PocketScoreLevelEngine.getLevelFromScore(userScore);
+        final userDay = ((profile['learning_day'] as num?)?.toInt() ??
+                (profile['learning_stage'] as num?)?.toInt() ??
+                (profile['level'] as num?)?.toInt() ??
+                1)
+            .clamp(1, 90);
         final userStage = (isRobot || isPresident)
             ? null
             : LearningMilestoneStage.getStageForDay(userDay);

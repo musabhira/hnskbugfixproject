@@ -191,10 +191,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       }
     });
     _loadSeenStatuses();
-    PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
-      if (mounted) {
-        setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
-      }
+    SharedPreferences.getInstance().then((prefs) {
+      final day = prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      if (mounted) setState(() => _currentUserLevel = day.clamp(1, 90));
     });
     _loadVibesFilter().then((_) {
       _loadCachedStatuses();
@@ -333,8 +332,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final followingIds = List<String>.from(
           followingRes.map((e) => e['followed_id'].toString()));
       final prefs = await SharedPreferences.getInstance();
-      final myScore = await PocketFortressDefenseService.getUnifiedScore(widget.currentUserId);
-      _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(myScore);
+      final day = prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      _currentUserLevel = day.clamp(1, 90);
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
@@ -2054,16 +2053,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     } else {
       int stage = 1;
       if (profile != null) {
-        final ps = (profile['pocket_score'] as num?)?.toInt();
-        if (ps != null && ps > 0) {
-          stage = PocketScoreLevelEngine.getLevelFromScore(ps);
-        } else {
-          final st = profile['learning_day'] ??
-              profile['learning_stage'] ??
-              profile['level'];
-          if (st is num && st > 0) {
-            stage = st.toInt();
-          }
+        final st = profile['learning_day'] ??
+            profile['learning_stage'] ??
+            profile['level'];
+        if (st is num && st > 0) {
+          stage = st.toInt();
         }
       }
       displayDay = stage;
@@ -2534,16 +2528,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     } else {
       int stage = 1;
       if (profile != null) {
-        final ps = (profile['pocket_score'] as num?)?.toInt();
-        if (ps != null && ps > 0) {
-          stage = PocketScoreLevelEngine.getLevelFromScore(ps);
-        } else {
-          final st = profile['learning_day'] ??
-              profile['learning_stage'] ??
-              profile['level'];
-          if (st is num && st > 0) {
-            stage = st.toInt();
-          }
+        final st = profile['learning_day'] ??
+            profile['learning_stage'] ??
+            profile['level'];
+        if (st is num && st > 0) {
+          stage = st.toInt();
         }
       }
       displayDay = stage;
@@ -2686,10 +2675,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       if (mounted) setState(() {});
     });
 
-    PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
-      if (mounted) {
-        setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
-      }
+    SharedPreferences.getInstance().then((prefs) {
+      final day = prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      if (mounted) setState(() => _currentUserLevel = day.clamp(1, 90));
     });
 
     _initializeViewer();

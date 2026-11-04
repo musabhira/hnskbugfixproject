@@ -1222,13 +1222,18 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
     try {
       final profile = await supabase
           .from('profile')
-          .select('name, profile_image_url, pocket_score, xp, stage, equipped_talisman, talisman_id')
+          .select('name, profile_image_url, pocket_score, learning_day, learning_stage, xp, stage, level, equipped_talisman, talisman_id')
           .eq('user_id', uid)
           .maybeSingle();
 
       if (profile != null && mounted) {
         final score = (profile['pocket_score'] as num?)?.toInt() ?? 0;
-        final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+        final stage = ((profile['learning_day'] ??
+                profile['learning_stage'] ??
+                profile['stage'] ??
+                profile['level'] ??
+                1) as num)
+            .toInt();
         setState(() {
           _authorName = profile['name']?.toString() ?? 'You';
           _authorAvatarUrl = profile['profile_image_url']?.toString();
@@ -2065,7 +2070,12 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
     } else {
       final score = (_threadDetail?['pocket_score'] as num?)?.toInt() ?? 0;
-      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      final stage = ((_threadDetail?['learning_day'] ??
+              _threadDetail?['learning_stage'] ??
+              _threadDetail?['stage'] ??
+              _threadDetail?['level'] ??
+              1) as num)
+          .toInt();
       final talisman = _threadDetail?['equipped_talisman']?.toString() ?? _threadDetail?['talisman_id']?.toString();
       authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }
@@ -2243,7 +2253,12 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
     } else {
       final score = (comment['pocket_score'] as num?)?.toInt() ?? 0;
-      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      final stage = ((_threadDetail?['learning_day'] ??
+              _threadDetail?['learning_stage'] ??
+              _threadDetail?['stage'] ??
+              _threadDetail?['level'] ??
+              1) as num)
+          .toInt();
       final talisman = comment['equipped_talisman']?.toString() ?? comment['talisman_id']?.toString();
       commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }

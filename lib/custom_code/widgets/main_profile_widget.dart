@@ -151,13 +151,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           PocketRobotService.getRobotByLevel(1);
       return PocketRobotService.getDynamicLevel(robot);
     }
-    // 🪙 AUDIO DIRECTIVE: User Level / Stage is strictly and non-negotiably derived from Pocket Score!
-    // A user with 0 Pocket Score can ONLY be Level 1 / Stage 1. Both house and profile must match this score.
-    final profScore = _pocketScore > 0
-        ? _pocketScore
-        : ((_profileData?['pocket_score'] as num?)?.toInt() ?? 0);
-    final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(profScore);
-    return scoreLvl.clamp(1, 90);
+    // 📚 User Level / Stage is strictly and non-negotiably derived from actual course progress (learning_day)!
+    final lDay = (_profileData?['learning_day'] as num?)?.toInt() ??
+        (_profileData?['learning_stage'] as num?)?.toInt() ??
+        _localUserStage;
+    return lDay.clamp(1, 90);
   }
 
   Future<void> _loadLocalUserStage() async {
@@ -182,14 +180,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         return;
       }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
-      final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(score);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('pocket_learning_user_stage_$userId', scoreLvl);
-      await prefs.setInt('learning_day_$userId', scoreLvl);
+      final courseDay = prefs.getInt('learning_day_$userId') ??
+          (_profileData?['learning_day'] as num?)?.toInt() ??
+          (_profileData?['learning_stage'] as num?)?.toInt() ??
+          1;
       if (mounted) {
         setState(() {
           _pocketScore = score;
-          _localUserStage = scoreLvl;
+          _localUserStage = courseDay.clamp(1, 90);
         });
       }
     } catch (_) {}
@@ -394,8 +393,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         setState(() {
           _pocketScore = finalScore;
           _friendsCount = dynamicMates;
-          final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(finalScore);
-          _localUserStage = scoreLvl;
+          final courseDay = prefs.getInt('learning_day_$userId') ??
+              (_profileData?['learning_day'] as num?)?.toInt() ??
+              _localUserStage;
+          _localUserStage = courseDay.clamp(1, 90);
         });
       }
     } catch (_) {}
@@ -658,7 +659,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final xpScore = (data['xp'] as num?)?.toInt() ?? 0;
       final score = math.max(_pocketScore, math.max(rawScore, xpScore));
       _pocketScore = score;
-      effectiveStage = PocketScoreLevelEngine.getLevelFromScore(score);
+      // 📚 Level is strictly determined by actual course progress (learning_day), decoupled from score!
+      final lDay = (data['learning_day'] as num?)?.toInt() ??
+          (data['learning_stage'] as num?)?.toInt() ??
+          (data['level'] as num?)?.toInt() ??
+          _localUserStage;
+      effectiveStage = lDay.clamp(1, 90);
     }
     if (!(_isTestingStage && isMe && _isAdminUser())) {
       _localUserStage = effectiveStage;

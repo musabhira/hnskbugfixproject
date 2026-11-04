@@ -238,11 +238,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (uid == null || uid.isEmpty) return;
     try {
       final score = await PocketFortressDefenseService.getUnifiedScore(uid);
-      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      final prefs = await SharedPreferences.getInstance();
+      // 📚 Course stage/level is strictly determined by actual course progress (learning_day), NEVER score!
+      final day = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
+          (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
+          prefs.getInt('learning_day_$uid') ??
+          1;
       if (mounted) {
         safeSetState(() {
           _userPocketScore = score;
-          _userPocketStage = stage;
+          _userPocketStage = day.clamp(1, 90);
         });
       }
     } catch (_) {}
@@ -666,10 +671,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       }
 
       final cachedScore = prefs.getInt('user_pocket_score_$userId') ?? 0;
+      final cachedDay = prefs.getInt('learning_day_$userId') ?? 1;
       safeSetState(() {
         _userPocketScore = cachedScore;
-        _userPocketStage =
-            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        _userPocketStage = cachedDay.clamp(1, 90);
       });
 
       if (cachedStats != null) {
@@ -785,9 +790,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             'cached_profile_$userId', jsonEncode(profileResponse));
         await PocketLanguageService.syncWithUserProfile(profileResponse,
             userId: userId);
-        final score = (profileResponse['pocket_score'] as num?)?.toInt() ?? 0;
-        final day = PocketScoreLevelEngine.getLevelFromScore(score);
-        PocketMissionTimerService.instance.initForDay(day);
+        final day = (profileResponse['learning_day'] as num?)?.toInt() ??
+            (profileResponse['learning_stage'] as num?)?.toInt() ??
+            prefs.getInt('learning_day_$userId') ??
+            1;
+        PocketMissionTimerService.instance.initForDay(day.clamp(1, 90));
       }
 
       final statsMap = {
@@ -5648,19 +5655,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   int _getEffectiveNavDay() {
-    if (_userPocketStage > 0) return _userPocketStage;
-    if (_userPocketScore > 0) {
-      return PocketScoreLevelEngine.getLevelFromScore(_userPocketScore);
-    }
-    final profScore = (_preloadedProfile?['pocket_score'] as num?)?.toInt() ??
-        (_preloadedProfile?['learning_points'] as num?)?.toInt() ??
-        (_preloadedProfile?['xp'] as num?)?.toInt();
-    if (profScore != null && profScore > 0) {
-      return PocketScoreLevelEngine.getLevelFromScore(profScore);
-    }
-    return (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
-        (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
-        1;
+    // 📚 Course stage/level is strictly determined by actual course progress (learning_day), NEVER score!
+    final profileDay = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
+        (_preloadedProfile?['learning_stage'] as num?)?.toInt();
+    if (profileDay != null && profileDay > 0) return profileDay.clamp(1, 90);
+    if (_userPocketStage > 0) return _userPocketStage.clamp(1, 90);
+    return 1;
   }
 
   VectorAvatarConfig _getNavAvatarConfig() {

@@ -1,12 +1,23 @@
-name: iOS Release (Legacy Manual Flutter Build)
+name: iOS Release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
-      reason:
-        description: 'Reason for running manual non-Shorebird iOS build'
+      version_name:
+        description: 'Marketing Version (e.g. 1.0.159, leave empty to read from pubspec.yaml)'
         required: false
-        default: 'Manual test build'
+        default: ''
+      build_number:
+        description: 'Build Number (e.g. 360, leave empty for automatic calculation)'
+        required: false
+        default: ''
+
+concurrency:
+  group: ios-native-release
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -16,6 +27,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: List Available Xcodes (Debug)
         run: |
@@ -35,6 +48,41 @@ jobs:
 
       - name: Disable Swift Package Manager (Use CocoaPods)
         run: flutter config --no-enable-swift-package-manager
+
+      - name: Determine Version and Build Number
+        id: versioning
+        run: |
+          # 1. Marketing Version (CFBundleShortVersionString)
+          VERSION_NAME="${{ inputs.version_name }}"
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
+          fi
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME="1.0.159"
+          fi
+
+          # 2. Build Number (CFBundleVersion) - Monotonically increasing & retry-safe
+          BASE_BUILD=360
+          if [ -n "${{ inputs.build_number }}" ]; then
+            BUILD_NUMBER="${{ inputs.build_number }}"
+          else
+            if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
+              BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
+            fi
+            # Count commits since anchor commit 15a4bd1
+            RAW_COMMIT_COUNT=$(git rev-list --count 15a4bd1..HEAD 2>/dev/null || echo 1)
+            COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
+            ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
+            BUILD_NUMBER=$(( BASE_BUILD + COMMIT_OFFSET + ATTEMPT_OFFSET ))
+          fi
+
+          echo "Marketing Version (build-name): $VERSION_NAME"
+          echo "Internal Build Number (build-number): $BUILD_NUMBER"
+          echo "Full iOS Version: $VERSION_NAME+$BUILD_NUMBER"
+
+          echo "build_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "full_version=$VERSION_NAME+$BUILD_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Install Apple Certificate
         env:
@@ -88,14 +136,13 @@ jobs:
           sudo xcodebuild -downloadPlatform iOS
 
       - name: Build and Sign IPA
+        env:
+          VERSION_NAME: ${{ steps.versioning.outputs.build_name }}
+          BUILD_NUMBER: ${{ steps.versioning.outputs.build_number }}
         run: |
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts NO
 
-          # Extract version and build number cleanly without CRLF or whitespace
-          VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
-          BUILD_NUMBER=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/.*+//' | tr -d '\r\n ')
-
-          echo "Building version $VERSION_NAME+$BUILD_NUMBER"
+          echo "🚀 Building Native Flutter iOS: version $VERSION_NAME+$BUILD_NUMBER"
 
           flutter build ios --release --build-name="$VERSION_NAME" --build-number="$BUILD_NUMBER" --no-codesign
 
@@ -112,17 +159,97 @@ jobs:
       - name: Check for IPA
         run: |
           if ! ls build/ios/ipa/*.ipa 1> /dev/null 2>&1; then
-            echo "IPA file not found!"
+            echo "❌ Error: IPA file not found in build/ios/ipa/!"
             exit 1
           fi
+          echo "✅ Found IPA: $(ls build/ios/ipa/*.ipa)"
+
+      - name: Verify IPA Metadata
+        env:
+          EXPECTED_VERSION: ${{ steps.versioning.outputs.build_name }}
+          EXPECTED_BUILD: ${{ steps.versioning.outputs.build_number }}
+        run: |
+          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+          echo "🔍 Inspecting IPA metadata: $IPA_PATH"
+
+          TEMP_DIR=$(mktemp -d)
+          unzip -q -j "$IPA_PATH" "Payload/*.app/Info.plist" -d "$TEMP_DIR"
+          PLIST="$TEMP_DIR/Info.plist"
+
+          ACTUAL_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$PLIST" 2>/dev/null || echo "")
+          ACTUAL_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PLIST" 2>/dev/null || echo "")
+          ACTUAL_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST" 2>/dev/null || echo "")
+
+          echo "=== IPA Verification Results ==="
+          echo "CFBundleIdentifier:         $ACTUAL_BUNDLE_ID (Expected: com.handskill.friends)"
+          echo "CFBundleShortVersionString: $ACTUAL_VERSION (Expected: $EXPECTED_VERSION)"
+          echo "CFBundleVersion:            $ACTUAL_BUILD (Expected: $EXPECTED_BUILD)"
+
+          if [ "$ACTUAL_BUNDLE_ID" != "com.handskill.friends" ]; then
+            echo "❌ Error: Bundle ID mismatch! Expected 'com.handskill.friends', found '$ACTUAL_BUNDLE_ID'"
+            exit 1
+          fi
+
+          if [ "$ACTUAL_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "❌ Error: Marketing version mismatch! Expected '$EXPECTED_VERSION', found '$ACTUAL_VERSION'"
+            exit 1
+          fi
+
+          if [ "$ACTUAL_BUILD" != "$EXPECTED_BUILD" ]; then
+            echo "❌ Error: Build number mismatch! Expected '$EXPECTED_BUILD', found '$ACTUAL_BUILD'"
+            exit 1
+          fi
+
+          echo "✅ IPA metadata successfully verified against expected release values."
+          rm -rf "$TEMP_DIR"
+
+      - name: Upload IPA Artifact to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-ipa-${{ steps.versioning.outputs.full_version }}
+          path: build/ios/ipa/*.ipa
+          retention-days: 14
 
       - name: Upload to App Store Connect
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_KEY_CONTENT }}
+          TARGET_VERSION: ${{ steps.versioning.outputs.full_version }}
         run: |
           mkdir -p ~/.private_keys
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
-          IPA_PATH=$(ls build/ios/ipa/*.ipa)
-          xcrun altool --upload-app -f "$IPA_PATH" -t ios --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+
+          echo "🚀 Uploading Native IPA to App Store Connect via xcrun altool..."
+          echo "Target Binary: $IPA_PATH"
+          echo "Target Version: $TARGET_VERSION"
+
+          set +e
+          xcrun altool --upload-app \
+            -f "$IPA_PATH" \
+            -t ios \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --verbose
+          UPLOAD_EXIT_CODE=$?
+          set -e
+
+          if [ $UPLOAD_EXIT_CODE -eq 0 ]; then
+            echo "🎉 Upload command succeeded!"
+            echo "✅ Binary received by Apple App Store Connect."
+            echo "ℹ️ Note: TestFlight processing typically takes 5–15 minutes before appearing in App Store Connect."
+          else
+            echo "❌ ERROR: xcrun altool upload failed with exit code $UPLOAD_EXIT_CODE."
+            exit $UPLOAD_EXIT_CODE
+          fi
+
+      - name: Release Summary Report
+        if: always()
+        run: |
+          echo "### 🍏 Native iOS Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pipeline**: Native Flutter / Xcode (No Shorebird)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Version**: ${{ steps.versioning.outputs.full_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status == 'success' && '✅ SUCCESS' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY

@@ -836,7 +836,12 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
       final profile = widget.thread['profile'] is Map ? widget.thread['profile'] : null;
       final rawScore = widget.thread['pocket_score'] ?? profile?['pocket_score'];
       final score = (rawScore as num?)?.toInt() ?? 0;
-      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      final stage = ((widget.thread['learning_day'] ??
+              profile?['learning_day'] ??
+              profile?['learning_stage'] ??
+              profile?['level'] ??
+              1) as num)
+          .toInt();
       final talisman = widget.thread['equipped_talisman']?.toString() ?? profile?['equipped_talisman']?.toString() ?? profile?['talisman_id']?.toString();
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }

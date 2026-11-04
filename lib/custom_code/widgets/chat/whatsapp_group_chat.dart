@@ -1168,9 +1168,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final prefs = await SharedPreferences.getInstance();
       final cachedScore = prefs.getInt('user_pocket_score_$targetId');
       final cachedStage = prefs.getInt('user_pocket_stage_$targetId');
-      if (cachedScore != null && cachedScore > 0) {
-        final stage = cachedStage ??
-            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+      if (cachedStage != null && cachedStage > 0) {
+        final stage = cachedStage;
         final cfg =
             VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
         _userAvatarConfigCache[targetId] = cfg;
@@ -1189,13 +1188,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['learning_points'] as num?)?.toInt() ??
             (profileRes['xp'] as num?)?.toInt() ??
             0;
-        final stage = score > 0
-            ? PocketScoreLevelEngine.getLevelFromScore(score)
-            : ((profileRes['learning_day'] as num?)?.toInt() ??
-                (profileRes['learning_stage'] as num?)?.toInt() ??
-                (profileRes['stage'] as num?)?.toInt() ??
-                (profileRes['level'] as num?)?.toInt() ??
-                1);
+        final stage = (profileRes['learning_day'] as num?)?.toInt() ??
+            (profileRes['learning_stage'] as num?)?.toInt() ??
+            (profileRes['stage'] as num?)?.toInt() ??
+            (profileRes['level'] as num?)?.toInt() ??
+            1;
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();
 
@@ -1254,13 +1251,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           (profile['learning_points'] as num?)?.toInt() ??
           (profile['xp'] as num?)?.toInt() ??
           0;
-      final lvl = score > 0
-          ? PocketScoreLevelEngine.getLevelFromScore(score)
-          : ((profile['learning_day'] as num?)?.toInt() ??
-              (profile['learning_stage'] as num?)?.toInt() ??
-              (profile['stage'] as num?)?.toInt() ??
-              (profile['level'] as num?)?.toInt() ??
-              1);
+      final lvl = (profile['learning_day'] as num?)?.toInt() ??
+          (profile['learning_stage'] as num?)?.toInt() ??
+          (profile['stage'] as num?)?.toInt() ??
+          (profile['level'] as num?)?.toInt() ??
+          1;
       final talismanId = profile['equipped_talisman']?.toString() ??
           profile['talisman_id']?.toString();
       final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(
@@ -1359,10 +1354,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       // Check cached score/stage first for instant UI response
       final cachedScore = prefs.getInt('user_pocket_score_$mateUserId');
       final cachedStage = prefs.getInt('user_pocket_stage_$mateUserId');
-      if (cachedScore != null && cachedScore > 0) {
-        final stage = cachedStage ??
-            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
-        _userPocketScoreCache[mateUserId] = cachedScore;
+      if (cachedStage != null && cachedStage > 0) {
+        final stage = cachedStage;
+        _userPocketScoreCache[mateUserId] = cachedScore ?? 0;
         _userPocketStageCache[mateUserId] = stage;
         _userAvatarConfigCache[mateUserId] =
             VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
@@ -1385,13 +1379,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['xp'] as num?)?.toInt() ??
             0;
 
-        final stage = score > 0
-            ? PocketScoreLevelEngine.getLevelFromScore(score)
-            : ((profileRes['learning_day'] as num?)?.toInt() ??
-                (profileRes['learning_stage'] as num?)?.toInt() ??
-                (profileRes['stage'] as num?)?.toInt() ??
-                (profileRes['level'] as num?)?.toInt() ??
-                1);
+        final stage = (profileRes['learning_day'] as num?)?.toInt() ??
+            (profileRes['learning_stage'] as num?)?.toInt() ??
+            (profileRes['stage'] as num?)?.toInt() ??
+            (profileRes['level'] as num?)?.toInt() ??
+            1;
 
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();

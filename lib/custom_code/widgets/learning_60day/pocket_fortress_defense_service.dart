@@ -523,17 +523,13 @@ class PocketFortressDefenseService {
     if (myId != null && myId.isNotEmpty) {
       await prefs.setInt('user_pocket_score_$myId', score);
       await prefs.setInt('learning_points_$myId', score);
-      final newLvl = PocketScoreLevelEngine.getLevelFromScore(score);
-      await prefs.setInt('pocket_learning_user_stage_$myId', newLvl);
-      await prefs.setInt('learning_day_$myId', newLvl);
+      // 📚 Course stage/level is strictly determined by actual course progress (learning_day), NEVER score!
+      // Pocket Score is strictly points/coins and does not overwrite learning_day.
       try {
         await SupaFlow.client.from('profile').update({
           'pocket_score': score,
           'learning_points': score,
           'xp': score,
-          'learning_day': newLvl,
-          'learning_stage': newLvl,
-          'level': newLvl,
         }).eq('user_id', myId);
         await SupaFlow.client.from('pocket_homes').update({
           'points': score,
@@ -1978,25 +1974,14 @@ class PocketFortressDefenseService {
       await prefs.setBool(_isDamagedKey, true);
       await setUnifiedScore(remainingCoins);
 
-      // Check if defender score drops below level threshold
-      defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(remainingCoins);
-      if (defenderNewLevel < defenderPreviousLevel) {
-        isLevelDowngraded = true;
-        await prefs.setInt('learning_day_$myId', defenderNewLevel);
-        await prefs.setInt('pocket_learning_user_stage_$myId', defenderNewLevel);
-        try {
-          await SupaFlow.client.from('profile').update({
-            'learning_day': defenderNewLevel,
-            'learning_stage': defenderNewLevel,
-            'learning_points': remainingCoins,
-            'xp': remainingCoins,
-          }).eq('user_id', myId!);
-          await SupaFlow.client.from('pocket_homes').update({
-            'stage': defenderNewLevel,
-            'points': remainingCoins,
-          }).eq('user_id', myId);
-        } catch (_) {}
-      }
+      defenderNewLevel = defenderPreviousLevel;
+      try {
+        await SupaFlow.client.from('pocket_homes').update({
+          'points': remainingCoins,
+          'hp': newHp,
+          'is_damaged': true,
+        }).eq('user_id', myId!);
+      } catch (_) {}
     } else {
       // Attacking another user's house - update defender in Supabase pocket_homes & profile!
       if (defenderHouseId.isNotEmpty &&
@@ -2033,8 +2018,7 @@ class PocketFortressDefenseService {
           await SupaFlow.client.from('profile').update({
             'learning_points': updatedPoints,
             'xp': updatedPoints,
-            if (isLevelDowngraded) 'learning_day': defenderNewLevel,
-            if (isLevelDowngraded) 'learning_stage': defenderNewLevel,
+            'pocket_score': updatedPoints,
           }).eq('user_id', defenderHouseId);
         } catch (e) {
           debugPrint('Error syncing defender damage to Supabase: $e');

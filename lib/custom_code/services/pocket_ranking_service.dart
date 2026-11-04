@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 /// 🏆 Model representing a ranked user across Pocket Mates
@@ -491,12 +492,12 @@ class PocketRankingService {
 
         // 🪙 Accurate Pocket Score (User Audio Directive: strictly reflect actual pocket_score, no fake 0-rank 1 bugs)
         final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
-        final rawDay = (row['learning_day'] as num?)?.toInt() ?? 1;
+        final rawDay = (row['learning_day'] as num?)?.toInt() ?? (row['learning_stage'] as num?)?.toInt() ?? 1;
 
         final isMe = uid == currentUserId;
         final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
-        final rawLevel = PocketScoreLevelEngine.getLevelFromScore(effectiveScore);
-        final effectiveLevel = math.max(rawLevel, rawDay).clamp(1, 99);
+        // 📚 Level is strictly determined by actual course progress (learning_day), decoupled from score!
+        final effectiveLevel = rawDay.clamp(1, 99);
 
         final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
         final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
@@ -588,7 +589,12 @@ class PocketRankingService {
     if (currentUserId != null &&
         currentUserId.isNotEmpty &&
         !rankedList.any((u) => u.userId == currentUserId)) {
-      final myLvl = PocketScoreLevelEngine.getLevelFromScore(myScore);
+      int myDay = 1;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        myDay = prefs.getInt('learning_day_$currentUserId') ?? 1;
+      } catch (_) {}
+      final myLvl = myDay.clamp(1, 99);
       final isPrestige = myLvl >= 90 || myScore >= 45000;
       final stars = isPrestige ? math.max(1, (myScore - 45000) ~/ 2000 + 1) : 0;
       rankedList.add(PocketRankedUser(
@@ -651,72 +657,105 @@ class PocketRankingService {
     String currentUserId, {
     bool isUnder17 = false,
   }) async {
-    final myScore = await PocketFortressDefenseService.getUnifiedScore(currentUserId);
-    final myLevel = PocketScoreLevelEngine.getLevelFromScore(myScore);
-    final myGlobalRank = await fetchUserGlobalRank(currentUserId, myScore, isUnder17);
+    final effectiveUid = currentUserId.isNotEmpty
+        ? currentUserId
+        : (_supabase.auth.currentUser?.id ?? '');
+    final myScore = await PocketFortressDefenseService.getUnifiedScore(effectiveUid);
 
-    final Set<String> mateIds = {currentUserId};
+    // Fetch current user profile to get actual learning_day and profile.id
+    String myProfileId = '';
+    int myCourseDay = 1;
+    Map<String, dynamic>? myProfile;
     try {
-      final followsRes = await _supabase
+      final prefs = await SharedPreferences.getInstance();
+      myCourseDay = prefs.getInt('learning_day_$effectiveUid') ?? 1;
+      myProfile = await _supabase
+          .from('profile')
+          .select('id, user_id, name, display_name, profile_image_url, pocket_score, learning_day, learning_stage, verified, is_premium')
+          .eq('user_id', effectiveUid)
+          .maybeSingle();
+      if (myProfile != null) {
+        myProfileId = myProfile['id']?.toString() ?? '';
+        final pDay = (myProfile['learning_day'] as num?)?.toInt() ??
+            (myProfile['learning_stage'] as num?)?.toInt();
+        if (pDay != null && pDay > 0) {
+          myCourseDay = pDay;
+        }
+      }
+    } catch (_) {}
+
+    final myGlobalRank = await fetchUserGlobalRank(effectiveUid, myScore, isUnder17);
+
+    final Set<String> candidateIds = {effectiveUid};
+    if (myProfileId.isNotEmpty) {
+      candidateIds.add(myProfileId);
+    }
+
+    // 1. Follows table (both follower_id and followed_id)
+    try {
+      final followsRes1 = await _supabase
           .from('follows')
           .select('followed_id')
-          .eq('follower_id', currentUserId);
-      for (final row in followsRes) {
+          .eq('follower_id', effectiveUid);
+      for (final row in followsRes1) {
         final fid = row['followed_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
 
     try {
-      final followersRes = await _supabase
+      final followsRes2 = await _supabase
           .from('follows')
           .select('follower_id')
-          .eq('followed_id', currentUserId);
-      for (final row in followersRes) {
+          .eq('followed_id', effectiveUid);
+      for (final row in followsRes2) {
         final fid = row['follower_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
 
-    try {
-      final flRes1 = await _supabase
-          .from('friendlist')
-          .select('profile_id')
-          .eq('user_id', currentUserId);
-      for (final row in flRes1) {
-        final fid = row['profile_id']?.toString();
-        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+    if (myProfileId.isNotEmpty && myProfileId != effectiveUid) {
+      try {
+        final followsRes3 = await _supabase
+            .from('follows')
+            .select('followed_id')
+            .eq('follower_id', myProfileId);
+        for (final row in followsRes3) {
+          final fid = row['followed_id']?.toString();
+          if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+            candidateIds.add(fid);
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
 
-    try {
-      final flRes2 = await _supabase
-          .from('friendlist')
-          .select('user_id')
-          .eq('profile_id', currentUserId);
-      for (final row in flRes2) {
-        final fid = row['user_id']?.toString();
-        if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+      try {
+        final followsRes4 = await _supabase
+            .from('follows')
+            .select('follower_id')
+            .eq('followed_id', myProfileId);
+        for (final row in followsRes4) {
+          final fid = row['follower_id']?.toString();
+          if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
+            candidateIds.add(fid);
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
+    // 2. Conversations table
     try {
       final convRes1 = await _supabase
           .from('conversations')
           .select('user2_id')
-          .eq('user1_id', currentUserId);
+          .eq('user1_id', effectiveUid);
       for (final row in convRes1) {
         final fid = row['user2_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
@@ -725,24 +764,25 @@ class PocketRankingService {
       final convRes2 = await _supabase
           .from('conversations')
           .select('user1_id')
-          .eq('user2_id', currentUserId);
+          .eq('user2_id', effectiveUid);
       for (final row in convRes2) {
         final fid = row['user1_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
 
+    // 3. Pocket Talk Pacts table
     try {
       final pactsRes1 = await _supabase
           .from('pocket_talk_pacts')
           .select('user2_id')
-          .eq('user1_id', currentUserId);
+          .eq('user1_id', effectiveUid);
       for (final row in pactsRes1) {
         final fid = row['user2_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
@@ -751,27 +791,27 @@ class PocketRankingService {
       final pactsRes2 = await _supabase
           .from('pocket_talk_pacts')
           .select('user1_id')
-          .eq('user2_id', currentUserId);
+          .eq('user2_id', effectiveUid);
       for (final row in pactsRes2) {
         final fid = row['user1_id']?.toString();
         if (fid != null && fid.isNotEmpty && !PocketRobotService.isRobotId(fid)) {
-          mateIds.add(fid);
+          candidateIds.add(fid);
         }
       }
     } catch (_) {}
 
+    // 4. Local mates registered in PocketMateService
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final localMates = prefs.getStringList('pocket_mates_$currentUserId') ?? [];
+      final localMates = await PocketMateService.getMatesList(effectiveUid);
       for (final id in localMates) {
         if (!PocketRobotService.isRobotId(id)) {
-          mateIds.add(id);
+          candidateIds.add(id);
         }
       }
     } catch (_) {}
 
-    // Fallback: If no mates recorded yet, fetch registered community profiles so leaderboard is never empty
-    if (mateIds.length <= 1) {
+    // 5. If no mates found, fallback to top active community profiles so leaderboard is never empty
+    if (candidateIds.length <= 1) {
       try {
         final fallbackRes = await _supabase
             .from('profile')
@@ -781,97 +821,109 @@ class PocketRankingService {
         for (final row in fallbackRes) {
           final uid = row['user_id']?.toString();
           if (uid != null && uid.isNotEmpty && !PocketRobotService.isRobotId(uid)) {
-            mateIds.add(uid);
+            candidateIds.add(uid);
           }
         }
       } catch (_) {}
     }
 
     final List<PocketRankedUser> matesList = [];
+    final Set<String> processedUids = {};
 
-    // Query profiles for all real human mates (chunked to ensure no query limits drop mates)
-    if (mateIds.length > 1) {
+    // 6. Query profiles for all real human mates (query both user_id and id)
+    final queryIds = candidateIds
+        .where((id) =>
+            !PocketRobotService.isRobotId(id) &&
+            !PocketPresidentService.isPresidentId(id))
+        .toList();
+    if (queryIds.isNotEmpty) {
       try {
-        final queryIds = mateIds.where((id) => !PocketRobotService.isRobotId(id)).toList();
-        if (queryIds.isNotEmpty) {
-          final List<Map<String, dynamic>> allProfiles = [];
-          for (var i = 0; i < queryIds.length; i += 40) {
-            final chunk = queryIds.sublist(i, math.min(i + 40, queryIds.length));
-            final res = await _supabase
-                .from('profile')
-                .select('user_id, name, profile_image_url, pocket_score, account_type, kid_name, verified, is_premium, is_vip, is_subscribed')
-                .inFilter('user_id', chunk);
-            allProfiles.addAll(List<Map<String, dynamic>>.from(res));
-          }
-
-          for (final row in allProfiles) {
-            final uid = row['user_id']?.toString() ?? '';
-            if (uid.isEmpty || PocketRobotService.isRobotId(uid)) continue;
-
-            if (isUnder17) {
-              final accType = row['account_type']?.toString().toLowerCase().trim();
-              final hasKidName = row['kid_name'] != null && row['kid_name'].toString().trim().isNotEmpty;
-              final isKid = accType == 'kid' || accType == 'pure_kid' || accType == 'student' || hasKidName;
-              if (!isKid) continue;
-            }
-            final isMe = uid == currentUserId;
-            final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
-            final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
-            final rawLevel = PocketScoreLevelEngine.getLevelFromScore(effectiveScore);
-            final effectiveLevel = isMe ? math.max(myLevel, rawLevel) : rawLevel;
-
-            final gRank = isMe ? myGlobalRank : await fetchUserGlobalRank(uid, effectiveScore, isUnder17);
-            final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
-            final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
-            final isVerified = row['verified'] == true;
-            final isVip = row['is_premium'] == true || row['is_vip'] == true || row['is_subscribed'] == true;
-
-            matesList.add(PocketRankedUser(
-              userId: uid,
-              name: isMe ? 'You' : (row['name']?.toString() ?? 'Mate'),
-              profileImageUrl: row['profile_image_url']?.toString(),
-              pocketScore: effectiveScore,
-              level: effectiveLevel.clamp(1, 99),
-              globalRank: gRank,
-              avatarConfig: _resolveAvatarConfig(uid, effectiveLevel),
-              isCurrentUser: isMe,
-              isRobot: false,
-              isPrestigeSovereign: isPrestige,
-              prestigeStars: stars,
-              isVerified: isVerified,
-              isVip: isVip,
-            ));
-          }
+        final List<Map<String, dynamic>> allProfiles = [];
+        for (var i = 0; i < queryIds.length; i += 30) {
+          final chunk = queryIds.sublist(i, math.min(i + 30, queryIds.length));
+          final res = await _supabase
+              .from('profile')
+              .select('id, user_id, name, display_name, profile_image_url, pocket_score, learning_day, learning_stage, level, account_type, verified, is_premium')
+              .or('user_id.in.(${chunk.join(",")}),id.in.(${chunk.join(",")})');
+          allProfiles.addAll(List<Map<String, dynamic>>.from(res));
         }
-      } catch (_) {}
+
+        for (final row in allProfiles) {
+          final uid = row['user_id']?.toString() ?? row['id']?.toString() ?? '';
+          if (uid.isEmpty || PocketRobotService.isRobotId(uid)) continue;
+          if (processedUids.contains(uid)) continue;
+          processedUids.add(uid);
+
+          if (isUnder17) {
+            final accType = row['account_type']?.toString().toLowerCase().trim();
+            final isKid = accType == 'kid' || accType == 'pure_kid' || accType == 'student';
+            if (!isKid) continue;
+          }
+
+          final isMe = uid == effectiveUid || uid == myProfileId;
+          final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
+          final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
+          // 📚 User level is strictly determined by actual course progress (learning_day), decoupled from score!
+          final rawDay = (row['learning_day'] as num?)?.toInt() ??
+              (row['learning_stage'] as num?)?.toInt() ??
+              (row['level'] as num?)?.toInt() ??
+              1;
+          final effectiveLevel = isMe ? myCourseDay.clamp(1, 99) : rawDay.clamp(1, 99);
+
+          final gRank = isMe ? myGlobalRank : await fetchUserGlobalRank(uid, effectiveScore, isUnder17);
+          final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
+          final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
+          final isVerified = row['verified'] == true;
+          final isVip = row['is_premium'] == true;
+
+          final rawDispName = row['display_name']?.toString().trim();
+          final rawUserName = (row['name']?.toString() ?? 'Pocket Mate').trim();
+          final displayName = (rawDispName != null && rawDispName.isNotEmpty)
+              ? rawDispName
+              : (rawUserName.isEmpty ? 'Pocket Mate' : rawUserName);
+
+          matesList.add(PocketRankedUser(
+            userId: uid,
+            name: isMe ? 'You' : displayName,
+            profileImageUrl: row['profile_image_url']?.toString(),
+            pocketScore: effectiveScore,
+            level: effectiveLevel,
+            globalRank: gRank,
+            avatarConfig: _resolveAvatarConfig(uid, effectiveLevel),
+            isCurrentUser: isMe,
+            isRobot: false,
+            isPrestigeSovereign: isPrestige,
+            prestigeStars: stars,
+            isVerified: isVerified,
+            isVip: isVip,
+          ));
+        }
+      } catch (e) {
+        if (kDebugMode) print('Error fetching mates profiles: $e');
+      }
     }
 
     // Ensure Current User is always present
-    if (!matesList.any((m) => m.userId == currentUserId)) {
-      final isPrestige = myLevel >= 90 || myScore >= 45000;
+    if (!matesList.any((m) => m.userId == effectiveUid || m.userId == myProfileId)) {
+      final isPrestige = myCourseDay >= 90 || myScore >= 45000;
       final stars = isPrestige ? math.max(1, (myScore - 45000) ~/ 2000 + 1) : 0;
-      Map<String, dynamic>? myProfile;
-      try {
-        myProfile = await _supabase.from('profile').select('verified, is_premium, is_vip, is_subscribed').eq('user_id', currentUserId).maybeSingle();
-      } catch (_) {}
-
       matesList.add(PocketRankedUser(
-        userId: currentUserId,
+        userId: effectiveUid,
         name: 'You',
         pocketScore: myScore,
-        level: myLevel.clamp(1, 99),
+        level: myCourseDay.clamp(1, 99),
         globalRank: myGlobalRank,
-        avatarConfig: _resolveAvatarConfig(currentUserId, myLevel),
+        avatarConfig: _resolveAvatarConfig(effectiveUid, myCourseDay),
         isCurrentUser: true,
         isRobot: false,
         isPrestigeSovereign: isPrestige,
         prestigeStars: stars,
         isVerified: myProfile?['verified'] == true,
-        isVip: myProfile?['is_premium'] == true || myProfile?['is_vip'] == true || myProfile?['is_subscribed'] == true,
+        isVip: myProfile?['is_premium'] == true,
       ));
     }
 
-    // Sort by pocket score descending; for ties / zero score, sort alphabetically (Audio Directive)
+    // Sort by pocket score descending; for ties, sort alphabetically
     matesList.sort((a, b) {
       if (a.pocketScore != b.pocketScore) {
         return b.pocketScore.compareTo(a.pocketScore);
