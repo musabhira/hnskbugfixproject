@@ -98,18 +98,18 @@ class PocketAdMobService {
   bool _isInitialized = false;
   bool? _overrideTestMode;
   // Environment Policy:
-  // - Android Release builds (Production APK / Play Store): Test mode OFF, verified production Ad Unit IDs.
-  // - Android Debug / Profile mode: Test mode ON (Google sample test ad units).
-  // - iOS Simulator / non-Android platforms: Test mode ON (safe test mode to avoid violations).
+  // - Android / iOS Release builds (Production App): Test mode OFF, verified production Ad Unit IDs.
+  // - Debug / Profile mode: Test mode ON (Google sample test ad units).
+  // - Web / Desktop: Simulation mode.
   bool get _isTestMode {
     if (_overrideTestMode != null) return _overrideTestMode!;
-    if (kIsWeb || !Platform.isAndroid) return true;
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return true;
     return !kReleaseMode;
   }
 
   // 🆔 AdMob App IDs
   static const String androidAppId = 'ca-app-pub-8489571803367790~4762910426';
-  static const String iosAppId = 'ca-app-pub-8489571803367790~4762910426';
+  static const String iosAppId = 'ca-app-pub-8489571803367790~7234734906';
 
   // 🎯 Google Official Safe Test Ad Unit IDs (Immediate testing without account bans)
   static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
@@ -117,7 +117,7 @@ class PocketAdMobService {
   static const String _testRewardedId = 'ca-app-pub-3940256099942544/5224354917';
   static const String testNativeId = 'ca-app-pub-3940256099942544/2247696110';
 
-  // 🚀 Production Ad Unit IDs for publisher pub-8489571803367790
+  // 🚀 Android Production Ad Unit IDs
   // Banner / Medium Rectangle In-Feed Units (300x250)
   static String prodRankingAdUnitId = 'ca-app-pub-8489571803367790/3184855433';
   static String prodReelsAdUnitId = 'ca-app-pub-8489571803367790/2266138392';
@@ -125,19 +125,41 @@ class PocketAdMobService {
   static String prodHomeAdUnitId = 'ca-app-pub-8489571803367790/2521464274';
   static String prodReviewAdUnitId = 'ca-app-pub-8489571803367790/5846290758';
 
-  // 🌟 Dedicated Native Advanced Ad Units
+  // 🌟 Dedicated Native Advanced Ad Units (Android)
   static String prodNativeHomeAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
   static String prodNativeVibesAdUnitId = 'ca-app-pub-8489571803367790/2725690431';
   static String prodNativeLearningSummaryAdUnitId = 'ca-app-pub-8489571803367790/5519374733';
   static String prodNativeRankingAdUnitId = 'ca-app-pub-8489571803367790/7490544913';
 
-  // Interstitial Ad Units
+  // Interstitial Ad Units (Android)
   static String prodLearningStepInterstitialId = 'ca-app-pub-8489571803367790/1304410512';
   static String prodDayCompletionInterstitialId = 'ca-app-pub-8489571803367790/9793449634';
   static String prodAttackInterstitialId = 'ca-app-pub-8489571803367790/6110401679';
 
-  // Rewarded Ad Units
+  // Rewarded Ad Units (Android)
   static String prodStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/9802234672';
+
+  // 🍏 iOS Production Ad Unit IDs
+  // Banner / Medium Rectangle In-Feed Units (300x250)
+  static String prodIosRankingAdUnitId = 'ca-app-pub-8489571803367790/4063571266';
+  static String prodIosReelsAdUnitId = 'ca-app-pub-8489571803367790/7496771001';
+  static String prodIosVibesAdUnitId = 'ca-app-pub-8489571803367790/1398266514';
+  static String prodIosHomeAdUnitId = 'ca-app-pub-8489571803367790/8159115983';
+  static String prodIosReviewAdUnitId = 'ca-app-pub-8489571803367790/6921843905';
+
+  // 🌟 Dedicated Native Advanced Ad Units (iOS)
+  static String prodIosNativeHomeAdUnitId = 'ca-app-pub-8489571803367790/8043565915';
+  static String prodIosNativeVibesAdUnitId = 'ca-app-pub-8489571803367790/8805983242';
+  static String prodIosNativeLearningSummaryAdUnitId = 'ca-app-pub-8489571803367790/2132376644';
+  static String prodIosNativeRankingAdUnitId = 'ca-app-pub-8489571803367790/8043565915';
+
+  // Interstitial Ad Units (iOS)
+  static String prodIosLearningStepInterstitialId = 'ca-app-pub-8489571803367790/6946106667';
+  static String prodIosDayCompletionInterstitialId = 'ca-app-pub-8489571803367790/7660210500';
+  static String prodIosAttackInterstitialId = 'ca-app-pub-8489571803367790/1669729255';
+
+  // Rewarded Ad Units (iOS)
+  static String prodIosStoreCoinsRewardedId = 'ca-app-pub-8489571803367790/5688865317';
 
   // Fallbacks / Legacy accessors
   static String get prodNativeAdUnitId => prodNativeHomeAdUnitId;
@@ -155,7 +177,7 @@ class PocketAdMobService {
   static bool enableLearningBannerAds = true;
   static bool enableDailySummaryReviewAd = true;
 
-  /// Returns the ad unit ID for a specific placement, respecting release vs test mode
+  /// Returns the ad unit ID for a specific placement, respecting release vs test mode and platform
   String getUnitIdForPlacement(PocketAdPlacement placement) {
     if (_isTestMode) {
       switch (placement) {
@@ -171,6 +193,29 @@ class PocketAdMobService {
           return _testInterstitialId;
         case PocketAdPlacement.storeCoins:
           return _testRewardedId;
+      }
+    }
+
+    if (Platform.isIOS) {
+      switch (placement) {
+        case PocketAdPlacement.ranking:
+          return prodIosRankingAdUnitId;
+        case PocketAdPlacement.reels:
+          return prodIosReelsAdUnitId;
+        case PocketAdPlacement.vibes:
+          return prodIosVibesAdUnitId;
+        case PocketAdPlacement.home:
+          return prodIosHomeAdUnitId;
+        case PocketAdPlacement.review:
+          return prodIosReviewAdUnitId;
+        case PocketAdPlacement.learningStep:
+          return prodIosLearningStepInterstitialId;
+        case PocketAdPlacement.dayCompletion:
+          return prodIosDayCompletionInterstitialId;
+        case PocketAdPlacement.attack:
+          return prodIosAttackInterstitialId;
+        case PocketAdPlacement.storeCoins:
+          return prodIosStoreCoinsRewardedId;
       }
     }
 
@@ -199,6 +244,22 @@ class PocketAdMobService {
   /// Dedicated resolver for Native Advanced ad unit IDs
   String getNativeAdUnitId(PocketAdPlacement placement) {
     if (_isTestMode) return testNativeId;
+
+    if (Platform.isIOS) {
+      switch (placement) {
+        case PocketAdPlacement.home:
+          return prodIosNativeHomeAdUnitId;
+        case PocketAdPlacement.vibes:
+          return prodIosNativeVibesAdUnitId;
+        case PocketAdPlacement.review:
+          return prodIosNativeLearningSummaryAdUnitId;
+        case PocketAdPlacement.ranking:
+          return prodIosNativeRankingAdUnitId;
+        default:
+          return prodIosNativeHomeAdUnitId;
+      }
+    }
+
     switch (placement) {
       case PocketAdPlacement.home:
         return prodNativeHomeAdUnitId;
