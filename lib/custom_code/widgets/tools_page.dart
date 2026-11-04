@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
-import '/custom_code/widgets/drawing_app_home.dart';
+// import drawing_app_home.dart;
 import '/custom_code/widgets/teams/teams_home_widget.dart';
 import '/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import '/custom_code/widgets/poki_games_page.dart';
@@ -1428,23 +1428,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             MaterialPageRoute(
                 builder: (context) => const AvatarNetworkExplorerPage())),
       },
-      {
-        'title': 'Drawing Tool',
-        'subtitle': 'Creative Sketchbook',
-        'icon': Icons.palette_rounded,
-        'category': 'Creative',
-        'color': const Color(0xFFFF007A),
-        'gradient': [const Color(0xFFFF007A), const Color(0xFF7928CA)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'artist_apron',
-          auraStyle: 'cherry_blossom',
-          hairStyle: 'curly_fade',
-          faceShape: 'round',
-          hairColor: '#FF2A6D',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const DrawingAppHome())),
-      },
+      // [TEMPORARILY HIDDEN: Drawing Tool]
       {
         'title': 'Daily Media Suite',
         'subtitle': 'Compress & Audio Extract',
@@ -4524,16 +4508,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       children: [
-        _buildToolCard(
-          title: 'Drawing Tool',
-          icon: Icons.brush,
-          color: Colors.orange,
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const DrawingAppHome()),
-            );
-          },
-        ),
+        // [TEMPORARILY HIDDEN: Drawing Tool card]
         _buildToolCard(
           title: 'Analytics & Interests',
           icon: Icons.analytics_outlined,

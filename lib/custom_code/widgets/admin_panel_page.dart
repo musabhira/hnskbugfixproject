@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/services/app_store_review_service.d
 import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -888,6 +889,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.stars_rounded),
                 text: '👑 Premium Users'),
+            Tab(
+                icon: Icon(Icons.ads_click_rounded),
+                text: 'Ads 📺'),
           ],
         ),
       ),
@@ -913,6 +917,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildStoreReviewModeTab(),
           _buildCertificatesTab(),
           _buildPremiumUsersTab(),
+          const AdminAdsManagementTab(),
         ],
       ),
     );

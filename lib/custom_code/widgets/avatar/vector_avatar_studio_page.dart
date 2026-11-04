@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_app_home.dart';
+// import drawing_app_home.dart;
 import 'vector_avatar_config.dart';
 import 'vector_avatar_widget.dart';
 import 'avatar_sticker_pack_sheet.dart';
@@ -284,24 +284,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
             ),
             onPressed: _mintRandomNftMate,
           ),
-          // 🎨 Hand-Draw Custom Layers Button
-          IconButton(
-            tooltip: '🎨 Hand-Draw Layers',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF007A).withValues(alpha: 0.25),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.brush_rounded, color: Color(0xFFFF007A), size: 20),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DrawingAppHome()),
-              );
-            },
-          ),
+          // [TEMPORARILY HIDDEN: Hand-Draw Custom Layers Button]
           // 🌐 Global Avatar Network Button
           IconButton(
             tooltip: '🌐 Global Avatar Network (Millions+)',

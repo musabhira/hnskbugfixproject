@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -878,6 +879,170 @@ class PocketAdMobService {
         ),
       );
     }
+  }
+
+  // Placement Enable/Disable Map (Admin configuration)
+  final Map<String, bool> _placementEnabledMap = {};
+
+  bool isPlacementEnabled(String placementKey) {
+    return _placementEnabledMap[placementKey] ?? true;
+  }
+
+  void setPlacementEnabled(String placementKey, bool isEnabled) {
+    _placementEnabledMap[placementKey] = isEnabled;
+  }
+
+  /// 🧪 Safely test loading a single individual Ad Unit directly from Admin Panel
+  Future<Map<String, dynamic>> testIndividualAd({
+    required PocketAdPlacement placement,
+    bool isNative = false,
+    bool isInterstitial = false,
+    bool isRewarded = false,
+  }) async {
+    final String targetUnitId = isNative
+        ? getNativeAdUnitId(placement)
+        : getUnitIdForPlacement(placement);
+
+    final Completer<Map<String, dynamic>> completer = Completer();
+
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return {
+        'success': true,
+        'simulated': true,
+        'unitId': targetUnitId,
+        'message': 'Simulated desktop/web pass (Mobile Ads SDK requires Android or iOS device)',
+      };
+    }
+
+    if (isNative) {
+      NativeAd(
+        adUnitId: targetUnitId,
+        factoryId: 'pocketNativeCardFactory',
+        request: const AdRequest(),
+        listener: NativeAdListener(
+          onAdLoaded: (ad) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': true,
+                'unitId': targetUnitId,
+                'message': 'Native Ad loaded successfully!',
+              });
+            }
+          },
+          onAdFailedToLoad: (ad, err) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': false,
+                'unitId': targetUnitId,
+                'errorCode': err.code.toString(),
+                'errorMessage': err.message,
+                'domain': err.domain,
+              });
+            }
+          },
+        ),
+      ).load();
+    } else if (isInterstitial) {
+      InterstitialAd.load(
+        adUnitId: targetUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': true,
+                'unitId': targetUnitId,
+                'message': 'Interstitial Ad loaded successfully!',
+              });
+            }
+          },
+          onAdFailedToLoad: (err) {
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': false,
+                'unitId': targetUnitId,
+                'errorCode': err.code.toString(),
+                'errorMessage': err.message,
+                'domain': err.domain,
+              });
+            }
+          },
+        ),
+      );
+    } else if (isRewarded) {
+      RewardedAd.load(
+        adUnitId: targetUnitId,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (ad) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': true,
+                'unitId': targetUnitId,
+                'message': 'Rewarded Ad loaded successfully!',
+              });
+            }
+          },
+          onAdFailedToLoad: (err) {
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': false,
+                'unitId': targetUnitId,
+                'errorCode': err.code.toString(),
+                'errorMessage': err.message,
+                'domain': err.domain,
+              });
+            }
+          },
+        ),
+      );
+    } else {
+      // Banner Ad
+      BannerAd(
+        adUnitId: targetUnitId,
+        size: AdSize.mediumRectangle,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': true,
+                'unitId': targetUnitId,
+                'message': 'Banner Ad loaded successfully!',
+              });
+            }
+          },
+          onAdFailedToLoad: (ad, err) {
+            ad.dispose();
+            if (!completer.isCompleted) {
+              completer.complete({
+                'success': false,
+                'unitId': targetUnitId,
+                'errorCode': err.code.toString(),
+                'errorMessage': err.message,
+                'domain': err.domain,
+              });
+            }
+          },
+        ),
+      ).load();
+    }
+
+    // Safety timeout after 10 seconds
+    return completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => {
+        'success': false,
+        'unitId': targetUnitId,
+        'errorCode': 'TIMEOUT',
+        'errorMessage': 'Ad request timed out after 10 seconds (network or AdMob server unresponsive)',
+      },
+    );
   }
 
   /// Toggle test mode
