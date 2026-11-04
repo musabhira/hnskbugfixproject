@@ -462,7 +462,7 @@ class PocketRankingService {
       try {
         final response = await _supabase
             .from('profile')
-            .select('user_id, name, display_name, profile_image_url, pocket_score, learning_day, daily_streak, xp, verified, is_premium, level, avatar_config')
+            .select('user_id, name, display_name, profile_image_url, pocket_score, day, learning_day, daily_streak, xp, verified, is_premium, level, avatar_config')
             .order('pocket_score', ascending: false, nullsFirst: false)
             .limit(limit);
         data = response as List<dynamic>;
@@ -470,7 +470,7 @@ class PocketRankingService {
         if (kDebugMode) print('Primary profile query note: $err1, falling back to basic columns');
         final response2 = await _supabase
             .from('profile')
-            .select('user_id, name, display_name, profile_image_url, learning_day, daily_streak, xp, pocket_score')
+            .select('user_id, name, display_name, profile_image_url, day, learning_day, daily_streak, xp, pocket_score')
             .order('pocket_score', ascending: false, nullsFirst: false)
             .limit(limit);
         data = response2 as List<dynamic>;
@@ -492,12 +492,18 @@ class PocketRankingService {
 
         // 🪙 Accurate Pocket Score (User Audio Directive: strictly reflect actual pocket_score, no fake 0-rank 1 bugs)
         final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
-        final rawDay = (row['learning_day'] as num?)?.toInt() ?? (row['learning_stage'] as num?)?.toInt() ?? 1;
+        final rawDay = (row['day'] as num?)?.toInt() ??
+            (row['learning_day'] as num?)?.toInt() ??
+            (row['learning_stage'] as num?)?.toInt() ??
+            1;
 
         final isMe = uid == currentUserId;
         final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
-        // 📚 Level is strictly determined by actual course progress (learning_day), decoupled from score!
-        final effectiveLevel = rawDay.clamp(1, 99);
+        // 📚 Level is derived from course progress (day ceiling) with minimum pass mark (score floor)
+        final effectiveLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: rawDay,
+          pocketScore: effectiveScore,
+        );
 
         final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;
         final stars = isPrestige ? math.max(1, (effectiveScore - 45000) ~/ 2000 + 1) : 0;
@@ -671,12 +677,13 @@ class PocketRankingService {
       myCourseDay = prefs.getInt('learning_day_$effectiveUid') ?? 1;
       myProfile = await _supabase
           .from('profile')
-          .select('id, user_id, name, display_name, profile_image_url, pocket_score, learning_day, learning_stage, verified, is_premium')
+          .select('id, user_id, name, display_name, profile_image_url, pocket_score, day, learning_day, learning_stage, verified, is_premium')
           .eq('user_id', effectiveUid)
           .maybeSingle();
       if (myProfile != null) {
         myProfileId = myProfile['id']?.toString() ?? '';
-        final pDay = (myProfile['learning_day'] as num?)?.toInt() ??
+        final pDay = (myProfile['day'] as num?)?.toInt() ??
+            (myProfile['learning_day'] as num?)?.toInt() ??
             (myProfile['learning_stage'] as num?)?.toInt();
         if (pDay != null && pDay > 0) {
           myCourseDay = pDay;
@@ -843,7 +850,7 @@ class PocketRankingService {
           final chunk = queryIds.sublist(i, math.min(i + 30, queryIds.length));
           final res = await _supabase
               .from('profile')
-              .select('id, user_id, name, display_name, profile_image_url, pocket_score, learning_day, learning_stage, level, account_type, verified, is_premium')
+              .select('id, user_id, name, display_name, profile_image_url, pocket_score, day, learning_day, learning_stage, level, account_type, verified, is_premium')
               .or('user_id.in.(${chunk.join(",")}),id.in.(${chunk.join(",")})');
           allProfiles.addAll(List<Map<String, dynamic>>.from(res));
         }
@@ -863,12 +870,17 @@ class PocketRankingService {
           final isMe = uid == effectiveUid || uid == myProfileId;
           final rawScore = (row['pocket_score'] as num?)?.toInt() ?? 0;
           final effectiveScore = isMe ? math.max(myScore, rawScore) : rawScore;
-          // 📚 User level is strictly determined by actual course progress (learning_day), decoupled from score!
-          final rawDay = (row['learning_day'] as num?)?.toInt() ??
+          // 📚 Level is derived from course progress (day ceiling) with minimum pass mark (score floor)
+          final rawDay = (row['day'] as num?)?.toInt() ??
+              (row['learning_day'] as num?)?.toInt() ??
               (row['learning_stage'] as num?)?.toInt() ??
               (row['level'] as num?)?.toInt() ??
               1;
-          final effectiveLevel = isMe ? myCourseDay.clamp(1, 99) : rawDay.clamp(1, 99);
+          final baseDay = isMe ? myCourseDay : rawDay;
+          final effectiveLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+            day: baseDay,
+            pocketScore: effectiveScore,
+          );
 
           final gRank = isMe ? myGlobalRank : await fetchUserGlobalRank(uid, effectiveScore, isUnder17);
           final isPrestige = effectiveLevel >= 90 || effectiveScore >= 45000;

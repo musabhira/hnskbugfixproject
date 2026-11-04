@@ -151,11 +151,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           PocketRobotService.getRobotByLevel(1);
       return PocketRobotService.getDynamicLevel(robot);
     }
-    // 📚 User Level / Stage is strictly and non-negotiably derived from actual course progress (learning_day)!
-    final lDay = (_profileData?['learning_day'] as num?)?.toInt() ??
+    // 📚 User Level is derived from course progress (day) with pass mark floor (pocket_score)
+    final lDay = (_profileData?['day'] as num?)?.toInt() ??
+        (_profileData?['learning_day'] as num?)?.toInt() ??
         (_profileData?['learning_stage'] as num?)?.toInt() ??
         _localUserStage;
-    return lDay.clamp(1, 90);
+    final score = (_profileData?['pocket_score'] as num?)?.toInt() ?? _pocketScore;
+    return PocketScoreLevelEngine.calculateEffectiveLevel(
+      day: lDay,
+      pocketScore: score,
+    );
   }
 
   Future<void> _loadLocalUserStage() async {
@@ -181,14 +186,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
       final prefs = await SharedPreferences.getInstance();
-      final courseDay = prefs.getInt('learning_day_$userId') ??
+      final courseDay = prefs.getInt('day_$userId') ??
+          prefs.getInt('learning_day_$userId') ??
+          (_profileData?['day'] as num?)?.toInt() ??
           (_profileData?['learning_day'] as num?)?.toInt() ??
           (_profileData?['learning_stage'] as num?)?.toInt() ??
           1;
+      final effectiveLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: courseDay,
+        pocketScore: score,
+      );
       if (mounted) {
         setState(() {
           _pocketScore = score;
-          _localUserStage = courseDay.clamp(1, 90);
+          _localUserStage = effectiveLevel;
         });
       }
     } catch (_) {}
@@ -659,12 +670,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final xpScore = (data['xp'] as num?)?.toInt() ?? 0;
       final score = math.max(_pocketScore, math.max(rawScore, xpScore));
       _pocketScore = score;
-      // 📚 Level is strictly determined by actual course progress (learning_day), decoupled from score!
-      final lDay = (data['learning_day'] as num?)?.toInt() ??
+      // 📚 Level is derived from course progress (day) with pass mark floor (pocket_score)
+      final lDay = (data['day'] as num?)?.toInt() ??
+          (data['learning_day'] as num?)?.toInt() ??
           (data['learning_stage'] as num?)?.toInt() ??
           (data['level'] as num?)?.toInt() ??
           _localUserStage;
-      effectiveStage = lDay.clamp(1, 90);
+      effectiveStage = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: lDay,
+        pocketScore: score,
+      );
     }
     if (!(_isTestingStage && isMe && _isAdminUser())) {
       _localUserStage = effectiveStage;
@@ -7659,6 +7674,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     setState(() {
       _isTestingStage = true;
       final updated = Map<String, dynamic>.from(_profileData ?? {});
+      updated['day'] = day;
       updated['learning_day'] = day;
       updated['learning_stage'] = stage.stageNumber;
       updated['avatar_config'] = avatar.toMap();
@@ -7702,12 +7718,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('pocket_learning_user_stage_$userId', day);
       await prefs.setInt('learning_day_$userId', day);
+      await prefs.setInt('day_$userId', day);
     } catch (_) {}
 
     try {
       final uid = _supabase.auth.currentUser?.id;
       if (uid != null) {
         await _supabase.from('profile').update({
+          'day': day,
           'learning_day': day,
           'learning_stage': stage.stageNumber,
           'avatar_config': avatar.toMap(),

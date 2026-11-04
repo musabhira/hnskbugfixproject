@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_action_chat_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 /// 🤝 PocketMateService: Central service for managing Snapchat-style Mates,
 /// connection requests, connection pinning, and 100% private interactions.
@@ -657,13 +658,14 @@ class PocketMateService {
               map['sender_profile_image'] = userRes['photo_url'] ?? userRes['avatar_url'];
               map['avatar_url'] = userRes['avatar_url'] ?? userRes['photo_url'];
               map['avatar_config'] = userRes['avatar_config'];
-              map['stage'] = userRes['learning_day'] ?? userRes['level'] ?? map['stage'] ?? 1;
+              final rawDay = (userRes['learning_day'] as num?)?.toInt() ?? (userRes['level'] as num?)?.toInt() ?? 1;
+              map['stage'] = rawDay;
             } else {
               // 2. Secondary fallback to 'profile' table
               final prof = await _supabase
                   .from('profile')
                   .select(
-                      'name, display_name, profile_picture_url, avatar_url, avatar_config, learning_day, level')
+                      'name, display_name, profile_picture_url, avatar_url, avatar_config, day, learning_day, level, pocket_score')
                   .eq('user_id', senderId)
                   .maybeSingle();
               if (prof != null) {
@@ -676,8 +678,15 @@ class PocketMateService {
                 map['avatar_url'] =
                     prof['avatar_url'] ?? prof['profile_picture_url'];
                 map['avatar_config'] = prof['avatar_config'];
-                map['stage'] =
-                    prof['learning_day'] ?? prof['level'] ?? map['stage'] ?? 1;
+                final rawDay = (prof['day'] as num?)?.toInt() ??
+                    (prof['learning_day'] as num?)?.toInt() ??
+                    (prof['level'] as num?)?.toInt() ??
+                    1;
+                final score = (prof['pocket_score'] as num?)?.toInt() ?? 0;
+                map['stage'] = PocketScoreLevelEngine.calculateEffectiveLevel(
+                  day: rawDay,
+                  pocketScore: score,
+                );
               }
             }
           } catch (_) {
@@ -818,7 +827,7 @@ class PocketMateService {
           final resolvedName = ContactsNameService().getDisplayName(userId: mateId, fallbackName: '');
           final profileRes = await _supabase
               .from('profile')
-              .select('name, display_name, profile_picture_url, profile_image_url, avatar_url, learning_day, level')
+              .select('name, display_name, profile_picture_url, profile_image_url, avatar_url, day, learning_day, level, pocket_score')
               .eq('user_id', mateId)
               .maybeSingle();
 
@@ -828,9 +837,15 @@ class PocketMateService {
           String? avatarUrl = profileRes?['profile_picture_url'] ??
               profileRes?['profile_image_url'] ??
               profileRes?['avatar_url'];
-          int level = (profileRes?['learning_day'] as num?)?.toInt() ??
+          final rawDay = (profileRes?['day'] as num?)?.toInt() ??
+              (profileRes?['learning_day'] as num?)?.toInt() ??
               (profileRes?['level'] as num?)?.toInt() ??
               1;
+          final score = (profileRes?['pocket_score'] as num?)?.toInt() ?? 0;
+          final level = PocketScoreLevelEngine.calculateEffectiveLevel(
+            day: rawDay,
+            pocketScore: score,
+          );
 
           detailedMates.add({
             'id': mateId,

@@ -126,7 +126,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     try {
       final myProfileRes = await supabase
           .from('profile')
-          .select('id, name, profile_image_url, pocket_score, learning_points, xp, level, learning_day, avatar_config')
+          .select('id, name, profile_image_url, pocket_score, learning_points, xp, day, level, learning_day, avatar_config')
           .eq('user_id', widget.currentUserId)
           .maybeSingle();
 
@@ -135,9 +135,14 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
           (myProfileRes?['learning_points'] as num?)?.toInt() ??
           (myProfileRes?['xp'] as num?)?.toInt() ??
           25;
-      final myLevel = (myProfileRes?['level'] as num?)?.toInt() ??
+      final myDay = (myProfileRes?['day'] as num?)?.toInt() ??
           (myProfileRes?['learning_day'] as num?)?.toInt() ??
+          (myProfileRes?['level'] as num?)?.toInt() ??
           1;
+      final myLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: myDay,
+        pocketScore: myScore,
+      );
 
       members.add(ChatTrailMember(
         userId: widget.currentUserId,
@@ -177,7 +182,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
       } else {
         final mateProfileRes = await supabase
             .from('profile')
-            .select('id, name, profile_image_url, pocket_score, learning_points, xp, level, learning_day, avatar_config')
+            .select('id, name, profile_image_url, pocket_score, learning_points, xp, day, level, learning_day, avatar_config')
             .eq('user_id', mateUserId)
             .maybeSingle();
 
@@ -186,9 +191,14 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
             (mateProfileRes?['learning_points'] as num?)?.toInt() ??
             (mateProfileRes?['xp'] as num?)?.toInt() ??
             20;
-        final mateLevel = (mateProfileRes?['level'] as num?)?.toInt() ??
+        final mateDay = (mateProfileRes?['day'] as num?)?.toInt() ??
             (mateProfileRes?['learning_day'] as num?)?.toInt() ??
+            (mateProfileRes?['level'] as num?)?.toInt() ??
             1;
+        final mateLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: mateDay,
+          pocketScore: mateScore,
+        );
 
         members.add(ChatTrailMember(
           userId: mateUserId,
@@ -247,7 +257,7 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
     if (rawMembers.isEmpty) {
       final response = await supabase.from('group_members').select('''
             *,
-            profile:profile!profile_id(name, profile_image_url, pocket_score, learning_points, xp, learning_day, level, stage, avatar_config)
+            profile:profile!profile_id(name, profile_image_url, pocket_score, learning_points, xp, day, learning_day, level, stage, avatar_config)
           ''').eq('group_id', widget.groupId).eq('is_active', true);
       rawMembers = response as List;
     }
@@ -274,9 +284,14 @@ class _ChatRankingTrailWidgetState extends State<ChatRankingTrailWidget>
           (p['learning_points'] as num?)?.toInt() ??
           (p['xp'] as num?)?.toInt() ??
           0;
-      final level = (p['level'] as num?)?.toInt() ??
+      final rawDay = (p['day'] as num?)?.toInt() ??
           (p['learning_day'] as num?)?.toInt() ??
+          (p['level'] as num?)?.toInt() ??
           1;
+      final level = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: rawDay,
+        pocketScore: score,
+      );
 
       members.add(ChatTrailMember(
         userId: uid,

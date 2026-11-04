@@ -254,16 +254,17 @@ class PocketCitadelAttackPage extends StatefulWidget {
           prefs.getInt('learning_day_$userId');
     } catch (_) {}
 
-    int effectiveDay = targetDay ??
+    final rawCourseDay = targetDay ??
+        (p['day'] as num?)?.toInt() ??
         (p['learning_day'] as num?)?.toInt() ??
-        (p['level'] as num?)?.toInt() ??
         (p['stage'] as num?)?.toInt() ??
-        (p['pocket_score'] != null
-            ? PocketScoreLevelEngine.getLevelFromScore(
-                (p['pocket_score'] as num).toInt())
-            : null) ??
         localCachedDay ??
         1;
+    final defenderScore = (p['pocket_score'] as num?)?.toInt() ?? 0;
+    int effectiveDay = PocketScoreLevelEngine.calculateEffectiveLevel(
+      day: rawCourseDay,
+      pocketScore: defenderScore,
+    );
     if (effectiveDay < 1) effectiveDay = 1;
     final palList = HousePalette.presets;
     final autoPal = palList[(effectiveDay - 1) % palList.length].id;
@@ -298,8 +299,14 @@ class PocketCitadelAttackPage extends StatefulWidget {
         if (myId != null && myId.isNotEmpty) {
           final myScore =
               await PocketFortressDefenseService.getUnifiedScore(myId);
-          effectiveAttackerDay =
-              PocketScoreLevelEngine.getLevelFromScore(myScore);
+          final prefs = await SharedPreferences.getInstance();
+          final myDay = prefs.getInt('day_$myId') ??
+              prefs.getInt('learning_day_$myId') ??
+              1;
+          effectiveAttackerDay = PocketScoreLevelEngine.calculateEffectiveLevel(
+            day: myDay,
+            pocketScore: myScore,
+          );
         }
       } catch (_) {}
     }

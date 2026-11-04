@@ -35,7 +35,8 @@ class PresidentVerdict {
         isWarning: false,
         isBanThreat: false,
         title: 'PRESIDENTIAL SEAL OF AUTHENTICITY',
-        feedback: 'Verified authentic English educational question. Approved for World Street defense.',
+        feedback:
+            'Verified authentic English educational question. Approved for World Street defense.',
         sealIcon: '🏅',
       );
 
@@ -100,12 +101,14 @@ class DefenseGameFormat {
   ];
 
   static String getTitle(String formatId) {
-    final item = allFormats.firstWhere((f) => f['id'] == formatId, orElse: () => allFormats.first);
+    final item = allFormats.firstWhere((f) => f['id'] == formatId,
+        orElse: () => allFormats.first);
     return item['title']!;
   }
 
   static String getIcon(String formatId) {
-    final item = allFormats.firstWhere((f) => f['id'] == formatId, orElse: () => allFormats.first);
+    final item = allFormats.firstWhere((f) => f['id'] == formatId,
+        orElse: () => allFormats.first);
     return item['icon']!;
   }
 }
@@ -117,9 +120,12 @@ class HouseShieldQuestion {
   final List<String> options;
   final int correctIndex;
   final String explanation;
-  final String category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax', 'chat', 'negative'
-  final String trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall', etc.
-  final String gameFormat; // 'sentence_builder', 'spelling_challenge', 'verb_timeline', 'chat_reply', 'negative_sentence', 'spoken_whisper', etc.
+  final String
+      category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax', 'chat', 'negative'
+  final String
+      trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall', etc.
+  final String
+      gameFormat; // 'sentence_builder', 'spelling_challenge', 'verb_timeline', 'chat_reply', 'negative_sentence', 'spoken_whisper', etc.
   final bool isPresidentApproved;
   final String difficulty; // 'easy', 'normal', 'hard'
 
@@ -149,7 +155,8 @@ class HouseShieldQuestion {
         'difficulty': difficulty,
       };
 
-  factory HouseShieldQuestion.fromJson(Map<String, dynamic> json) => HouseShieldQuestion(
+  factory HouseShieldQuestion.fromJson(Map<String, dynamic> json) =>
+      HouseShieldQuestion(
         id: json['id'] ?? '',
         question: json['question'] ?? '',
         options: List<String>.from(json['options'] ?? []),
@@ -163,7 +170,9 @@ class HouseShieldQuestion {
                     ? 'idiom_maze'
                     : (json['category'] == 'tense'
                         ? 'tense_fortress'
-                        : (json['category'] == 'syntax' ? 'syntax_wall' : 'vocab_gate')))),
+                        : (json['category'] == 'syntax'
+                            ? 'syntax_wall'
+                            : 'vocab_gate')))),
         gameFormat: json['gameFormat'] ?? 'mcq',
         isPresidentApproved: json['isPresidentApproved'] ?? true,
         difficulty: json['difficulty'] ?? 'normal',
@@ -260,7 +269,8 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
     title: 'Riddle Sphinx',
     titleMalayalam: 'Riddle Sphinx',
     icon: '🔮',
-    description: 'Clever deduction riddles dealing massive mind-breach defense.',
+    description:
+        'Clever deduction riddles dealing massive mind-breach defense.',
     category: 'riddle',
     themeColor: Color(0xFF14B8A6),
   ),
@@ -351,7 +361,8 @@ class CitadelRaidLogEntry {
   final String defenderId;
   final String attackerName;
   final String attackerAvatar;
-  final String attackerWeapon; // ⚔️ Avatar Combat Weapon / Tool (Audio directive: Cannons, Blasters, Shields)
+  final String
+      attackerWeapon; // ⚔️ Avatar Combat Weapon / Tool (Audio directive: Cannons, Blasters, Shields)
   final DateTime timestamp;
   final bool breached;
   final int coinsLooted;
@@ -383,19 +394,28 @@ class CitadelRaidLogEntry {
         'ironDomeBlocked': ironDomeBlocked,
       };
 
-  factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) => CitadelRaidLogEntry(
+  factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) =>
+      CitadelRaidLogEntry(
         id: json['id'] ?? '',
         attackerId: json['attackerId'] ?? json['attacker_id'] ?? '',
         defenderId: json['defenderId'] ?? json['defender_id'] ?? '',
-        attackerName: json['attackerName'] ?? json['attacker_name'] ?? 'Rival Raider',
-        attackerAvatar: json['attackerAvatar'] ?? json['attacker_avatar'] ?? '⚔️',
-        attackerWeapon: json['attackerWeapon'] ?? json['attacker_weapon'] ?? '💥 Heavy Cannon',
+        attackerName:
+            json['attackerName'] ?? json['attacker_name'] ?? 'Rival Raider',
+        attackerAvatar:
+            json['attackerAvatar'] ?? json['attacker_avatar'] ?? '⚔️',
+        attackerWeapon: json['attackerWeapon'] ??
+            json['attacker_weapon'] ??
+            '💥 Heavy Cannon',
         timestamp: json['timestamp'] != null
             ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
-            : (json['created_at'] != null ? DateTime.tryParse(json['created_at']) ?? DateTime.now() : DateTime.now()),
+            : (json['created_at'] != null
+                ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
+                : DateTime.now()),
         breached: json['breached'] ?? false,
-        coinsLooted: (json['coinsLooted'] ?? json['coins_looted'] as num?)?.toInt() ?? 0,
-        ironDomeBlocked: json['ironDomeBlocked'] ?? json['iron_dome_blocked'] ?? false,
+        coinsLooted:
+            (json['coinsLooted'] ?? json['coins_looted'] as num?)?.toInt() ?? 0,
+        ironDomeBlocked:
+            json['ironDomeBlocked'] ?? json['iron_dome_blocked'] ?? false,
       );
 }
 
@@ -409,15 +429,18 @@ class HouseDefenseStatus {
   final int ironDomeTier; // 1: Bronze, 2: Silver, 3: Obsidian Core
   final bool hasArmedEscorts; // Dual armed escort bikes/patrols
   final int totalCoins;
-  final int activityPoints; // ⚡ Fortress Defense Credits (FDC) from voice calls, chats, vibes
+  final int
+      activityPoints; // ⚡ Fortress Defense Credits (FDC) from voice calls, chats, vibes
   final int lifelinesCount; // 💖 Combat Lifelines for high-level raids
   final bool isBanned;
   final String? banReason;
   final bool isUnderPresidentInspection;
-  final bool isJailed; // ⛓️ Serving Presidential Jail Sentence for fake defenses
+  final bool
+      isJailed; // ⛓️ Serving Presidential Jail Sentence for fake defenses
   final int jailDaysRemaining;
   final String? jailReason;
-  final String? presidentNotice; // 📜 Official warning decree from President of Pocket World
+  final String?
+      presidentNotice; // 📜 Official warning decree from President of Pocket World
   final List<String> activeShieldTraps; // 1 up to 9 active defense gates
   final AvatarGamePerk? activePerk;
 
@@ -448,7 +471,8 @@ class HouseDefenseStatus {
 
 /// 🛡️ Central Pocket Fortress & Defense Management Service
 class PocketFortressDefenseService {
-  static const int kRaidBreachLootCoins = 15; // ⚔️ Breaching citadel loots 10-15 PS points (Audio Directive: 15 PS)
+  static const int kRaidBreachLootCoins =
+      15; // ⚔️ Breaching citadel loots 10-15 PS points (Audio Directive: 15 PS)
   static const String _trapsKey = 'user_custom_defense_traps_v2';
   static const String _activeTrapsKey = 'user_house_active_shield_traps_v2';
   static const String _hpKey = 'user_house_hp';
@@ -472,7 +496,8 @@ class PocketFortressDefenseService {
   static const String _jailedHousesListKey = 'pocket_jailed_houses_list';
 
   /// 🪙 Unified Pocket Score (Single coherent currency & progression score strictly scoped per user)
-  static Future<int> getUnifiedScore([String? uid, bool forceRefresh = false]) async {
+  static Future<int> getUnifiedScore(
+      [String? uid, bool forceRefresh = false]) async {
     final prefs = await SharedPreferences.getInstance();
     final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
     if (myId == null || myId.isEmpty) {
@@ -654,8 +679,10 @@ class PocketFortressDefenseService {
     bool forceRobot = false,
   }) async {
     final baseTargetLevel = getRecommendedTargetLevel(userDay);
-    final targetLevel = (baseTargetLevel + ((shuffleOffset ?? 0) % 5)).clamp(4, 90);
-    final preferRobot = forceRobot || (shuffleOffset != null && shuffleOffset.isOdd);
+    final targetLevel =
+        (baseTargetLevel + ((shuffleOffset ?? 0) % 5)).clamp(4, 90);
+    final preferRobot =
+        forceRobot || (shuffleOffset != null && shuffleOffset.isOdd);
 
     // 1. Try finding human player near target level (if not forced to robot)
     if (!preferRobot) {
@@ -663,7 +690,8 @@ class PocketFortressDefenseService {
         final myId = SupaFlow.client.auth.currentUser?.id;
         final res = await SupaFlow.client
             .from('profile')
-            .select('user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+            .select(
+                'user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
             .neq('user_id', myId ?? '')
             .gte('learning_day', math.max(1, targetLevel - 2))
             .lte('learning_day', math.min(90, targetLevel + 2))
@@ -689,7 +717,8 @@ class PocketFortressDefenseService {
               paletteId: p['palette_id']?.toString() ?? 'stone_castle',
               isMe: false,
               hasActiveShield: true,
-              statusMessage: p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
+              statusMessage:
+                  p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
               isPocketRobo: false,
               hp: 100,
               maxHp: 100,
@@ -750,7 +779,8 @@ class PocketFortressDefenseService {
     return names[day] ?? 'Citadel Guardian Lvl $day';
   }
 
-  static PocketNeighbor generateRivalForUser(int userDay, {int userStreak = 1}) {
+  static PocketNeighbor generateRivalForUser(int userDay,
+      {int userStreak = 1}) {
     final targetDay = getRaidTargetDay(userDay);
     final name = getRivalNameForDay(targetDay);
     final rank = targetDay >= 70
@@ -793,7 +823,9 @@ class PocketFortressDefenseService {
     final name = roboNames[(targetStage + 3) % roboNames.length];
     final palette = targetStage >= 70
         ? 'mirror_glass'
-        : (targetStage >= 45 ? 'cyber_yellow' : (targetStage >= 20 ? 'royal_gold' : 'emerald'));
+        : (targetStage >= 45
+            ? 'cyber_yellow'
+            : (targetStage >= 20 ? 'royal_gold' : 'emerald'));
 
     return PocketNeighbor(
       id: 'pocket_robo_$targetStage',
@@ -813,9 +845,18 @@ class PocketFortressDefenseService {
   /// User Audio Directive: "നാലാമത്തെ ലെവലിലുള്ള ആൾക്കാർ ആറാമത്തെ ലെവലിലുള്ള ആൾക്കാരെയാണ് അറ്റാക്ക് ചെയ്യേണ്ടത്...
   /// റാൻഡം ആയിട്ട് സെലക്ട് ചെയ്യാൻ പറ്റണം. അതും ഒറിജിനൽ ആയിരിക്കണം. ഡൈനാമിക് ആയിട്ടാണ് എല്ലാം...
   /// ഇനി ആൾക്കാരൊന്നും ഇല്ല എന്ന് പറഞ്ഞു കഴിഞ്ഞാൽ റോബോട്ട് ഹോമുകൾ ഡിഫോൾട്ട് ആയിട്ട് ഡെവലപ്പ് ചെയ്തു വെക്കണം."
-  static List<PocketNeighbor> generateDynamicTargetBracketHomes(int userDay, {int count = 6}) {
-    final baseTargetStage = userDay >= 4 ? userDay + 2 : 5; // Level 4 -> Level 6!
-    final palettes = ['terracotta', 'emerald', 'royal_gold', 'cyber_yellow', 'sakura', 'mirror_glass'];
+  static List<PocketNeighbor> generateDynamicTargetBracketHomes(int userDay,
+      {int count = 6}) {
+    final baseTargetStage =
+        userDay >= 4 ? userDay + 2 : 5; // Level 4 -> Level 6!
+    final palettes = [
+      'terracotta',
+      'emerald',
+      'royal_gold',
+      'cyber_yellow',
+      'sakura',
+      'mirror_glass'
+    ];
     final botNames = [
       'Cyber Valkyrie 🛡️',
       'Quantum Knight ⚔️',
@@ -834,7 +875,9 @@ class PocketFortressDefenseService {
       final name = '${botNames[i % botNames.length]} #0${i + 1}';
       final rank = stage >= 71
           ? 'Victorian Grandmaster'
-          : (stage >= 40 ? 'Citadel Fortress Keep' : (stage >= 20 ? 'Gabled Manor' : 'Country Residence'));
+          : (stage >= 40
+              ? 'Citadel Fortress Keep'
+              : (stage >= 20 ? 'Gabled Manor' : 'Country Residence'));
 
       bots.add(PocketNeighbor(
         id: 'robot_citadel_${stage}_$i',
@@ -845,7 +888,8 @@ class PocketFortressDefenseService {
         paletteId: palette,
         isMe: false,
         hasActiveShield: (i % 2 == 0),
-        statusMessage: '🤖 Autonomous English Fortress (Level $stage). Test your syntax against my gates!',
+        statusMessage:
+            '🤖 Autonomous English Fortress (Level $stage). Test your syntax against my gates!',
         isPocketRobo: true,
         hp: 100,
         maxHp: 100,
@@ -868,7 +912,9 @@ class PocketFortressDefenseService {
     final lastRecharge = prefs.getString(lastRechargeKey);
 
     // Default baseline score for robot at its stage
-    final baseScore = PocketScoreLevelEngine.getRequiredScoreForLevel(defaultStage) + (defaultStage * 20);
+    final baseScore =
+        PocketScoreLevelEngine.getRequiredScoreForLevel(defaultStage) +
+            (defaultStage * 20);
 
     // If day changed, robot automatically recharges / restores its score and strength!
     if (lastRecharge != todayStr) {
@@ -880,7 +926,8 @@ class PocketFortressDefenseService {
     return prefs.getInt(key) ?? baseScore;
   }
 
-  static Future<int> deductRobotScore(String robotId, int stage, int damagePoints) async {
+  static Future<int> deductRobotScore(
+      String robotId, int stage, int damagePoints) async {
     final prefs = await SharedPreferences.getInstance();
     final currentScore = await getRobotScore(robotId, stage);
     final newScore = math.max(0, currentScore - damagePoints);
@@ -890,10 +937,12 @@ class PocketFortressDefenseService {
 
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
   /// If user skips a day, stage downgrades (e.g. Day 6 -> Day 5) with a focus warning!
-  static Future<ConsistencyCheckResult> checkDailyConsistency(int currentDay, int streak) async {
+  static Future<ConsistencyCheckResult> checkDailyConsistency(
+      int currentDay, int streak) async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final lastActiveStr = prefs.getString(_lastActiveKey);
 
     if (lastActiveStr == null) {
@@ -921,8 +970,10 @@ class PocketFortressDefenseService {
           previousDay: currentDay,
           newDay: downgradedDay,
           title: '⚠️ CONSISTENCY DROPPED • FOCUS LOST',
-          message: 'You missed a day of English practice! Your journey was downgraded from Day $currentDay to Day $downgradedDay. Reclaim your focus and practice today!',
-          messageMalayalam: 'Consistency dropped from Day $currentDay to Day $downgradedDay! Practice today to rebuild momentum.',
+          message:
+              'You missed a day of English practice! Your journey was downgraded from Day $currentDay to Day $downgradedDay. Reclaim your focus and practice today!',
+          messageMalayalam:
+              'Consistency dropped from Day $currentDay to Day $downgradedDay! Practice today to rebuild momentum.',
         );
       }
     } catch (_) {}
@@ -935,7 +986,8 @@ class PocketFortressDefenseService {
   static Future<void> markActiveToday() async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     await prefs.setString(_lastActiveKey, todayStr);
   }
 
@@ -964,7 +1016,10 @@ class PocketFortressDefenseService {
     if (existingQuestions != null && normQ.isNotEmpty) {
       for (final eq in existingQuestions) {
         if (currentQuestionId != null && eq.id == currentQuestionId) continue;
-        final normEq = eq.question.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+        final normEq = eq.question
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '');
         if (normQ == normEq) {
           return PresidentVerdict.threat(
             'Duplicate question detected! Every defense trap must be a unique English challenge. Identical questions violate fair-play and are blocked by Presidential Decree.',
@@ -1000,7 +1055,8 @@ class PocketFortressDefenseService {
       }
       final target = options[0].trim();
       if (RegExp(r'[^a-zA-Z]').hasMatch(target)) {
-        return PresidentVerdict.warning('Target scramble word must contain only English letters.');
+        return PresidentVerdict.warning(
+            'Target scramble word must contain only English letters.');
       }
       return PresidentVerdict.approved();
     }
@@ -1022,23 +1078,27 @@ class PocketFortressDefenseService {
         );
       }
       if (options.any((o) => o.trim().isEmpty)) {
-        return PresidentVerdict.warning('All sentence segments must be filled.');
+        return PresidentVerdict.warning(
+            'All sentence segments must be filled.');
       }
       if (correctIdx < 0 || correctIdx >= options.length) {
-        return PresidentVerdict.warning('Select the segment that contains the grammatical error.');
+        return PresidentVerdict.warning(
+            'Select the segment that contains the grammatical error.');
       }
       return PresidentVerdict.approved();
     }
 
     // 5. Options validation (supports 2 to 4 choices, e.g. True/False or 4-choice MCQ)
     if (options.length < 2) {
-      return PresidentVerdict.warning('Every defense question must have at least 2 choices.');
+      return PresidentVerdict.warning(
+          'Every defense question must have at least 2 choices.');
     }
 
     final trimmedOptions = options.map((e) => e.trim().toLowerCase()).toList();
     final uniqueCount = trimmedOptions.toSet().length;
     if (uniqueCount < trimmedOptions.length) {
-      return PresidentVerdict.warning('Duplicate answer options detected. Please write unique, educational answers.');
+      return PresidentVerdict.warning(
+          'Duplicate answer options detected. Please write unique, educational answers.');
     }
 
     // 6. Empty option check
@@ -1084,9 +1144,12 @@ class PocketFortressDefenseService {
     // ⚡ Calculate active companion avatar perk buffs
     final perk = AvatarGamePerk.forDay(stage);
     final effectiveHasDome = hasDome || (perk.perkType == PerkType.ironDome);
-    final effectiveDomeTier = math.max(domeTier, (perk.perkType == PerkType.ironDome ? perk.bonusValue : 0));
-    final effectiveKnights = knights + (perk.perkType == PerkType.armyKnights ? perk.bonusValue : 0);
-    final bonusHp = (perk.perkType == PerkType.fortressShield ? perk.bonusValue : 0);
+    final effectiveDomeTier = math.max(
+        domeTier, (perk.perkType == PerkType.ironDome ? perk.bonusValue : 0));
+    final effectiveKnights =
+        knights + (perk.perkType == PerkType.armyKnights ? perk.bonusValue : 0);
+    final bonusHp =
+        (perk.perkType == PerkType.fortressShield ? perk.bonusValue : 0);
     final effectiveMaxHp = 100 + bonusHp;
 
     // 🛡️ House is ONLY damaged if another user actually attacked and breached it!
@@ -1106,7 +1169,9 @@ class PocketFortressDefenseService {
       activityPoints: fdc,
       lifelinesCount: lifelines,
       isBanned: banned,
-      banReason: banned ? 'Condemned by Presidential Decree: Reported fake English defenses.' : null,
+      banReason: banned
+          ? 'Condemned by Presidential Decree: Reported fake English defenses.'
+          : null,
       isUnderPresidentInspection: underInspection,
       isJailed: isJailed,
       jailDaysRemaining: jailDays,
@@ -1126,7 +1191,8 @@ class PocketFortressDefenseService {
       return stored.take(unlockedCount).toList();
     }
     // Default unlocked trap IDs
-    final defaultIds = kDefenseTrapTemplates.map((t) => t.id).take(unlockedCount).toList();
+    final defaultIds =
+        kDefenseTrapTemplates.map((t) => t.id).take(unlockedCount).toList();
     return defaultIds;
   }
 
@@ -1137,9 +1203,12 @@ class PocketFortressDefenseService {
   }
 
   /// 🛡️ Load all active shield traps and their questions for battle raid
-  static Future<List<DefenderShieldTrapData>> loadDefenderActiveShieldTraps(int stage, {bool isNeighbor = false}) async {
+  static Future<List<DefenderShieldTrapData>> loadDefenderActiveShieldTraps(
+      int stage,
+      {bool isNeighbor = false}) async {
     final activeTrapIds = await getActiveShieldTraps(stage);
-    final allCustomQuestions = await loadShieldQuestions(stage, isNeighbor: isNeighbor);
+    final allCustomQuestions =
+        await loadShieldQuestions(stage, isNeighbor: isNeighbor);
     final qPerTrap = getQuestionsPerGameForStage(stage);
 
     final List<DefenderShieldTrapData> result = [];
@@ -1196,7 +1265,12 @@ class PocketFortressDefenseService {
           HouseShieldQuestion(
             id: 'cur_vg_1',
             question: 'What is the exact synonym for "Ephemeral"?',
-            options: ['Lasting for a very short time', 'Permanent & Eternal', 'Ancient & Heavy', 'Violent'],
+            options: [
+              'Lasting for a very short time',
+              'Permanent & Eternal',
+              'Ancient & Heavy',
+              'Violent'
+            ],
             correctIndex: 0,
             explanation: '"Ephemeral" means lasting for a very short time.',
             category: 'vocab',
@@ -1205,7 +1279,12 @@ class PocketFortressDefenseService {
           HouseShieldQuestion(
             id: 'cur_vg_2',
             question: 'What is the direct antonym of "Meticulous"?',
-            options: ['Careless & Hasty', 'Precise & Thorough', 'Cautious', 'Polite'],
+            options: [
+              'Careless & Hasty',
+              'Precise & Thorough',
+              'Cautious',
+              'Polite'
+            ],
             correctIndex: 0,
             explanation: '"Careless" is the direct opposite of "Meticulous".',
             category: 'vocab',
@@ -1213,37 +1292,58 @@ class PocketFortressDefenseService {
           ),
           HouseShieldQuestion(
             id: 'cur_vg_3',
-            question: 'Which word describes someone who recovers quickly from hardship?',
+            question:
+                'Which word describes someone who recovers quickly from hardship?',
             options: ['Resilient', 'Fragile', 'Vulnerable', 'Hesitant'],
             correctIndex: 0,
-            explanation: '"Resilient" signifies being tough, adaptive, and quick to bounce back.',
+            explanation:
+                '"Resilient" signifies being tough, adaptive, and quick to bounce back.',
             category: 'vocab',
             trapType: 'vocab_gate',
           ),
           HouseShieldQuestion(
             id: 'cur_vg_4',
             question: 'What is the precise meaning of "Pragmatic"?',
-            options: ['Dealing with matters sensibly and realistically based on practical conditions', 'Obsessed with wild fantasies', 'Emotionally fragile', 'Careless and hasty'],
+            options: [
+              'Dealing with matters sensibly and realistically based on practical conditions',
+              'Obsessed with wild fantasies',
+              'Emotionally fragile',
+              'Careless and hasty'
+            ],
             correctIndex: 0,
-            explanation: '"Pragmatic" refers to prioritizing practical, workable results over theoretical ideals.',
+            explanation:
+                '"Pragmatic" refers to prioritizing practical, workable results over theoretical ideals.',
             category: 'vocab',
             trapType: 'vocab_gate',
           ),
           HouseShieldQuestion(
             id: 'cur_vg_5',
             question: 'Select the exact definition of "Quintessential":',
-            options: ['Representing the most perfect or typical example of a quality or class', 'Second-best alternative', 'Ancient and deteriorated', 'Fictional'],
+            options: [
+              'Representing the most perfect or typical example of a quality or class',
+              'Second-best alternative',
+              'Ancient and deteriorated',
+              'Fictional'
+            ],
             correctIndex: 0,
-            explanation: '"Quintessential" means the absolute embodiment or purest model of something.',
+            explanation:
+                '"Quintessential" means the absolute embodiment or purest model of something.',
             category: 'vocab',
             trapType: 'vocab_gate',
           ),
           HouseShieldQuestion(
             id: 'cur_vg_6',
-            question: 'What does "Sagacious" signify in executive statesmanship?',
-            options: ['Having keen mental discernment and good judgment; wise', 'Reckless and impulsive', 'Weak and indecisive', 'Hostile'],
+            question:
+                'What does "Sagacious" signify in executive statesmanship?',
+            options: [
+              'Having keen mental discernment and good judgment; wise',
+              'Reckless and impulsive',
+              'Weak and indecisive',
+              'Hostile'
+            ],
             correctIndex: 0,
-            explanation: '"Sagacious" means acutely insightful and deeply wise.',
+            explanation:
+                '"Sagacious" means acutely insightful and deeply wise.',
             category: 'vocab',
             trapType: 'vocab_gate',
           ),
@@ -1252,7 +1352,8 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_gs_1',
-            question: 'Spot the grammatical error: "Neither of the boys were ready for the duel."',
+            question:
+                'Spot the grammatical error: "Neither of the boys were ready for the duel."',
             options: [
               '"were" should be "was"',
               '"Neither" should be "Either"',
@@ -1266,10 +1367,12 @@ class PocketFortressDefenseService {
           ),
           HouseShieldQuestion(
             id: 'cur_gs_2',
-            question: 'Select the correct pronoun: "The general with his knights _____ defending the fortress."',
+            question:
+                'Select the correct pronoun: "The general with his knights _____ defending the fortress."',
             options: ['is', 'are', 'were', 'have been'],
             correctIndex: 0,
-            explanation: 'Intervening prepositional phrases do not change singular subject ("The general is").',
+            explanation:
+                'Intervening prepositional phrases do not change singular subject ("The general is").',
             category: 'grammar',
             trapType: 'grammar_sentry',
           ),
@@ -1283,13 +1386,15 @@ class PocketFortressDefenseService {
               'The commander demanded that he been present.'
             ],
             correctIndex: 0,
-            explanation: 'Subjunctive mood takes the base form "be" after verbs of demand.',
+            explanation:
+                'Subjunctive mood takes the base form "be" after verbs of demand.',
             category: 'grammar',
             trapType: 'grammar_sentry',
           ),
           HouseShieldQuestion(
             id: 'cur_gs_4',
-            question: 'Spot the relative pronoun error: "It was the envoy which unified the sovereign delegations."',
+            question:
+                'Spot the relative pronoun error: "It was the envoy which unified the sovereign delegations."',
             options: [
               '"which" should be "who"',
               '"was" should be "were"',
@@ -1297,13 +1402,15 @@ class PocketFortressDefenseService {
               'The sentence is grammatically flawless'
             ],
             correctIndex: 0,
-            explanation: '"Who" (not "which") must be used to refer to persons.',
+            explanation:
+                '"Who" (not "which") must be used to refer to persons.',
             category: 'grammar',
             trapType: 'grammar_sentry',
           ),
           HouseShieldQuestion(
             id: 'cur_gs_5',
-            question: 'Identify the structural parallelism defect: "A true leader excels at clear vision, listening with empathy, and to act decisively."',
+            question:
+                'Identify the structural parallelism defect: "A true leader excels at clear vision, listening with empathy, and to act decisively."',
             options: [
               '"to act decisively" should be "acting decisively"',
               '"clear vision" should be "to see clearly"',
@@ -1311,7 +1418,8 @@ class PocketFortressDefenseService {
               'No error present'
             ],
             correctIndex: 0,
-            explanation: 'Elements in a series must share matching grammatical forms (gerund: "acting decisively").',
+            explanation:
+                'Elements in a series must share matching grammatical forms (gerund: "acting decisively").',
             category: 'grammar',
             trapType: 'grammar_sentry',
           ),
@@ -1320,10 +1428,12 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_tf_1',
-            question: 'Complete the third conditional: "If the attacker _____ earlier, the gate wouldn\'t have fallen."',
+            question:
+                'Complete the third conditional: "If the attacker _____ earlier, the gate wouldn\'t have fallen."',
             options: ['had arrived', 'arrived', 'would arrive', 'has arrived'],
             correctIndex: 0,
-            explanation: 'Third conditional requires "If + past perfect" with "would have + past participle".',
+            explanation:
+                'Third conditional requires "If + past perfect" with "would have + past participle".',
             category: 'tense',
             trapType: 'tense_fortress',
           ),
@@ -1337,13 +1447,15 @@ class PocketFortressDefenseService {
               'By next week, the clan would conquer the territory.'
             ],
             correctIndex: 0,
-            explanation: '"will have conquered" expresses an action completed before a specific future time.',
+            explanation:
+                '"will have conquered" expresses an action completed before a specific future time.',
             category: 'tense',
             trapType: 'tense_fortress',
           ),
           HouseShieldQuestion(
             id: 'cur_tf_3',
-            question: 'Convert to passive voice: "The blacksmith forged the iron gate yesterday."',
+            question:
+                'Convert to passive voice: "The blacksmith forged the iron gate yesterday."',
             options: [
               'The iron gate was forged by the blacksmith yesterday.',
               'The iron gate had been forged yesterday.',
@@ -1351,13 +1463,15 @@ class PocketFortressDefenseService {
               'The iron gate was forging yesterday.'
             ],
             correctIndex: 0,
-            explanation: 'Simple past passive is "was/were + past participle (forged)".',
+            explanation:
+                'Simple past passive is "was/were + past participle (forged)".',
             category: 'tense',
             trapType: 'tense_fortress',
           ),
           HouseShieldQuestion(
             id: 'cur_tf_4',
-            question: 'Select the correct Mixed Conditional (Past Action -> Present Reality):',
+            question:
+                'Select the correct Mixed Conditional (Past Action -> Present Reality):',
             options: [
               'If the founders had fortified the citadel walls, we would live in peace today.',
               'If the founders fortified the citadel walls, we will live in peace today.',
@@ -1365,7 +1479,8 @@ class PocketFortressDefenseService {
               'If the founders would have fortified walls, we live in peace today.'
             ],
             correctIndex: 0,
-            explanation: 'Past cause ("had fortified") yielding present state ("would live today") requires a Mixed Conditional.',
+            explanation:
+                'Past cause ("had fortified") yielding present state ("would live today") requires a Mixed Conditional.',
             category: 'tense',
             trapType: 'tense_fortress',
           ),
@@ -1382,7 +1497,8 @@ class PocketFortressDefenseService {
               'Argue without any proof'
             ],
             correctIndex: 0,
-            explanation: '"Bite the bullet" means enduring an inevitable grim situation bravely.',
+            explanation:
+                '"Bite the bullet" means enduring an inevitable grim situation bravely.',
             category: 'idiom',
             trapType: 'idiom_maze',
           ),
@@ -1396,7 +1512,8 @@ class PocketFortressDefenseService {
               'Shouting loudly in frustration'
             ],
             correctIndex: 0,
-            explanation: '"Barking up the wrong tree" means following a completely false lead.',
+            explanation:
+                '"Barking up the wrong tree" means following a completely false lead.',
             category: 'idiom',
             trapType: 'idiom_maze',
           ),
@@ -1413,13 +1530,15 @@ class PocketFortressDefenseService {
               'Have I seen rarely such defense.'
             ],
             correctIndex: 0,
-            explanation: 'Negative adverbs like "Rarely" at the start invert auxiliary verb and subject.',
+            explanation:
+                'Negative adverbs like "Rarely" at the start invert auxiliary verb and subject.',
             category: 'syntax',
             trapType: 'syntax_wall',
           ),
           HouseShieldQuestion(
             id: 'cur_sw_2',
-            question: 'Which sentence has the correct correlative conjunction pairing?',
+            question:
+                'Which sentence has the correct correlative conjunction pairing?',
             options: [
               'Not only was the shield shattered, but the treasury was also looted.',
               'Not only was the shield shattered, and the treasury was looted.',
@@ -1427,13 +1546,15 @@ class PocketFortressDefenseService {
               'Either the shield shattered, but the treasury looted.'
             ],
             correctIndex: 0,
-            explanation: '"Not only... but also" is the correct correlative conjunction.',
+            explanation:
+                '"Not only... but also" is the correct correlative conjunction.',
             category: 'syntax',
             trapType: 'syntax_wall',
           ),
           HouseShieldQuestion(
             id: 'cur_sw_3',
-            question: 'Select the sentence with correct Wh-Cleft dramatic focus:',
+            question:
+                'Select the sentence with correct Wh-Cleft dramatic focus:',
             options: [
               'What impressed the assembly most was her unwavering integrity.',
               'That impressed the assembly most was her unwavering integrity.',
@@ -1441,7 +1562,8 @@ class PocketFortressDefenseService {
               'Which impressed the assembly most was her integrity.'
             ],
             correctIndex: 0,
-            explanation: 'A wh-cleft sentence ("What [clause] was [focus]") delivers elegant rhetorical emphasis.',
+            explanation:
+                'A wh-cleft sentence ("What [clause] was [focus]") delivers elegant rhetorical emphasis.',
             category: 'syntax',
             trapType: 'syntax_wall',
           ),
@@ -1455,7 +1577,8 @@ class PocketFortressDefenseService {
               'Were the envoys exhausted though, reach consensus they did.'
             ],
             correctIndex: 0,
-            explanation: 'Rhetorical fronting: [Adjective] + though + [Subject] + [Verb], followed by emphatic inversion.',
+            explanation:
+                'Rhetorical fronting: [Adjective] + though + [Subject] + [Verb], followed by emphatic inversion.',
             category: 'syntax',
             trapType: 'syntax_wall',
           ),
@@ -1464,19 +1587,23 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_wp_1',
-            question: 'Fill in the missing spoken connector: "The fortress fell, _______ the defenders fought valiantly."',
+            question:
+                'Fill in the missing spoken connector: "The fortress fell, _______ the defenders fought valiantly."',
             options: ['yet', 'because', 'so', 'despite'],
             correctIndex: 0,
-            explanation: '"Yet" expresses contrast between two independent clauses.',
+            explanation:
+                '"Yet" expresses contrast between two independent clauses.',
             category: 'listening',
             trapType: 'whisper_phantom',
           ),
           HouseShieldQuestion(
             id: 'cur_wp_2',
-            question: 'Which word completes the spoken passage: "He spoke with such _______ that everyone believed him."',
+            question:
+                'Which word completes the spoken passage: "He spoke with such _______ that everyone believed him."',
             options: ['conviction', 'confusion', 'hesitation', 'reluctance'],
             correctIndex: 0,
-            explanation: '"Conviction" means firmly held belief or persuasive certainty.',
+            explanation:
+                '"Conviction" means firmly held belief or persuasive certainty.',
             category: 'listening',
             trapType: 'whisper_phantom',
           ),
@@ -1485,10 +1612,12 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_cr_1',
-            question: 'Complete the collocation: "We must _______ our differences aside and unite."',
+            question:
+                'Complete the collocation: "We must _______ our differences aside and unite."',
             options: ['put', 'drop', 'throw', 'keep'],
             correctIndex: 0,
-            explanation: 'The natural English collocation is "put differences aside".',
+            explanation:
+                'The natural English collocation is "put differences aside".',
             category: 'collocation',
             trapType: 'collocation_ram',
           ),
@@ -1497,7 +1626,8 @@ class PocketFortressDefenseService {
             question: 'Which verb collocates with "a conclusion"?',
             options: ['draw', 'take', 'do', 'bring'],
             correctIndex: 0,
-            explanation: 'In standard English we "draw a conclusion" (or reach a conclusion).',
+            explanation:
+                'In standard English we "draw a conclusion" (or reach a conclusion).',
             category: 'collocation',
             trapType: 'collocation_ram',
           ),
@@ -1506,16 +1636,19 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_rs_1',
-            question: 'Riddle: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"',
+            question:
+                'Riddle: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"',
             options: ['An Echo', 'A Cloud', 'A Shadow', 'A River'],
             correctIndex: 0,
-            explanation: 'An echo repeats sound without having physical mouth or ears.',
+            explanation:
+                'An echo repeats sound without having physical mouth or ears.',
             category: 'riddle',
             trapType: 'riddle_sphinx',
           ),
           HouseShieldQuestion(
             id: 'cur_rs_2',
-            question: 'Riddle: "The more of this there is in a dark dungeon, the less you can see. What is it?"',
+            question:
+                'Riddle: "The more of this there is in a dark dungeon, the less you can see. What is it?"',
             options: ['Darkness', 'Light', 'Fog', 'Silence'],
             correctIndex: 0,
             explanation: 'The more darkness there is, the less you can see.',
@@ -1527,10 +1660,17 @@ class PocketFortressDefenseService {
         return const [
           HouseShieldQuestion(
             id: 'cur_pt_1',
-            question: 'Which word has the primary syllable stress on the second syllable?',
-            options: ['pho-TOG-ra-phy', 'PHO-to-graph', 'COM-fort-a-ble', 'DI-ction-ar-y'],
+            question:
+                'Which word has the primary syllable stress on the second syllable?',
+            options: [
+              'pho-TOG-ra-phy',
+              'PHO-to-graph',
+              'COM-fort-a-ble',
+              'DI-ction-ar-y'
+            ],
             correctIndex: 0,
-            explanation: '"Photography" stresses the second syllable (pho-TOG-ra-phy).',
+            explanation:
+                '"Photography" stresses the second syllable (pho-TOG-ra-phy).',
             category: 'phonetics',
             trapType: 'phonetic_thunder',
           ),
@@ -1560,7 +1700,8 @@ class PocketFortressDefenseService {
   static Day90MasterCardData generateDay90MasterCard() {
     final now = DateTime.now();
     final dateStr = '${now.day}/${now.month}/${now.year}';
-    final serial = 'MATE-90-${now.millisecondsSinceEpoch.toString().substring(7)}';
+    final serial =
+        'MATE-90-${now.millisecondsSinceEpoch.toString().substring(7)}';
 
     return Day90MasterCardData(
       cardId: 'DAY90_NFT_SOVEREIGN_PHANTOM',
@@ -1594,7 +1735,8 @@ class PocketFortressDefenseService {
   }
 
   /// 🎙️ Record activity and award Fortress Defense Credits (FDC) with optional companion avatar boost
-  static Future<int> recordActivityPoints(String activityType, {int? stage, int? customPoints}) async {
+  static Future<int> recordActivityPoints(String activityType,
+      {int? stage, int? customPoints}) async {
     final prefs = await SharedPreferences.getInstance();
     int gain = customPoints ?? 10;
     if (customPoints == null) {
@@ -1631,7 +1773,11 @@ class PocketFortressDefenseService {
   }
 
   /// Repair Damaged House (Using Coins or Activity Credits)
-  static Future<bool> repairHouse({int healAmount = 50, int coinCost = 20, int fdcCost = 40, bool useFdc = false}) async {
+  static Future<bool> repairHouse(
+      {int healAmount = 50,
+      int coinCost = 20,
+      int fdcCost = 40,
+      bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (useFdc) {
       final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
@@ -1666,7 +1812,11 @@ class PocketFortressDefenseService {
 
   /// Upgrade / Purchase Iron Dome (Using 50 Coins or 60 FDC from activities)
   /// As specified in audio: Daily mission awards 50 bonus coins, which can be spent in the Store on Iron Dome!
-  static Future<bool> purchaseIronDome({int tier = 1, int coinCost = 50, int fdcCost = 60, bool useFdc = false}) async {
+  static Future<bool> purchaseIronDome(
+      {int tier = 1,
+      int coinCost = 50,
+      int fdcCost = 60,
+      bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (useFdc) {
       final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
@@ -1684,7 +1834,11 @@ class PocketFortressDefenseService {
   }
 
   /// Enlist Army Knights (Using Coins or FDC from voice/chat/vibe activities)
-  static Future<bool> enlistArmyKnights({int count = 2, int coinCost = 40, int fdcCost = 35, bool useFdc = false}) async {
+  static Future<bool> enlistArmyKnights(
+      {int count = 2,
+      int coinCost = 40,
+      int fdcCost = 35,
+      bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (useFdc) {
       final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
@@ -1776,16 +1930,19 @@ class PocketFortressDefenseService {
     return 0;
   }
 
-  static Future<void> recordFailedAttackCooldown(String targetId, {int minutes = 30, int? hours}) async {
+  static Future<void> recordFailedAttackCooldown(String targetId,
+      {int minutes = 30, int? hours}) async {
     final prefs = await SharedPreferences.getInstance();
-    final duration = hours != null ? Duration(hours: hours) : Duration(minutes: minutes);
+    final duration =
+        hours != null ? Duration(hours: hours) : Duration(minutes: minutes);
     final expiry = DateTime.now().add(duration).millisecondsSinceEpoch;
     await prefs.setInt('failed_attack_cooldown_$targetId', expiry);
   }
 
   static Future<void> recordTargetAttacked(String targetId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('$_targetCooldownKey$targetId', DateTime.now().toIso8601String());
+    await prefs.setString(
+        '$_targetCooldownKey$targetId', DateTime.now().toIso8601String());
   }
 
   /// ⚔️ Unlimited Attacks & Fights Directive
@@ -1824,13 +1981,17 @@ class PocketFortressDefenseService {
   static Future<void> recordRaidLog(CitadelRaidLogEntry entry) async {
     final prefs = await SharedPreferences.getInstance();
     final existing = await getRecentRaids();
-    final updated = [entry, ...existing.where((e) => e.id != entry.id)].take(30).toList();
-    await prefs.setString(_raidLogKey, jsonEncode(updated.map((e) => e.toJson()).toList()));
+    final updated =
+        [entry, ...existing.where((e) => e.id != entry.id)].take(30).toList();
+    await prefs.setString(
+        _raidLogKey, jsonEncode(updated.map((e) => e.toJson()).toList()));
 
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
-      final defId = entry.defenderId.isNotEmpty ? entry.defenderId : (myId ?? 'me');
-      final atkId = entry.attackerId.isNotEmpty ? entry.attackerId : (myId ?? 'me');
+      final defId =
+          entry.defenderId.isNotEmpty ? entry.defenderId : (myId ?? 'me');
+      final atkId =
+          entry.attackerId.isNotEmpty ? entry.attackerId : (myId ?? 'me');
 
       await SupaFlow.client.from('citadel_raids').insert({
         'defender_id': defId,
@@ -1855,7 +2016,8 @@ class PocketFortressDefenseService {
         await SupaFlow.client.from('notifications').insert({
           'user_id': defId,
           'source_id': defId,
-          'sender_id': RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(atkId) ? atkId : null,
+          'sender_id':
+              RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(atkId) ? atkId : null,
           'type': 'citadel_raid',
           'message': raidMsg,
           'status': 'unread',
@@ -1881,18 +2043,23 @@ class PocketFortressDefenseService {
             .order('created_at', ascending: false)
             .limit(20);
         if (res.isNotEmpty) {
-          final entries = res.map((r) => CitadelRaidLogEntry(
-            id: r['id']?.toString() ?? '',
-            attackerId: r['attacker_id']?.toString() ?? '',
-            attackerName: r['attacker_name'] ?? 'Rival Raider',
-            attackerAvatar: r['attacker_avatar'] ?? '⚔️',
-            attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
-            timestamp: r['created_at'] != null ? DateTime.tryParse(r['created_at']) ?? DateTime.now() : DateTime.now(),
-            breached: r['breached'] ?? false,
-            coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
-            ironDomeBlocked: r['iron_dome_blocked'] ?? false,
-          )).toList();
-          await prefs.setString(_raidLogKey, jsonEncode(entries.map((e) => e.toJson()).toList()));
+          final entries = res
+              .map((r) => CitadelRaidLogEntry(
+                    id: r['id']?.toString() ?? '',
+                    attackerId: r['attacker_id']?.toString() ?? '',
+                    attackerName: r['attacker_name'] ?? 'Rival Raider',
+                    attackerAvatar: r['attacker_avatar'] ?? '⚔️',
+                    attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
+                    timestamp: r['created_at'] != null
+                        ? DateTime.tryParse(r['created_at']) ?? DateTime.now()
+                        : DateTime.now(),
+                    breached: r['breached'] ?? false,
+                    coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
+                    ironDomeBlocked: r['iron_dome_blocked'] ?? false,
+                  ))
+              .toList();
+          await prefs.setString(
+              _raidLogKey, jsonEncode(entries.map((e) => e.toJson()).toList()));
           return entries;
         }
       }
@@ -1902,7 +2069,9 @@ class PocketFortressDefenseService {
     final raw = prefs.getString(_raidLogKey);
     if (raw != null && raw.isNotEmpty) {
       try {
-        final list = (jsonDecode(raw) as List).map((e) => CitadelRaidLogEntry.fromJson(e)).toList();
+        final list = (jsonDecode(raw) as List)
+            .map((e) => CitadelRaidLogEntry.fromJson(e))
+            .toList();
         if (list.isNotEmpty) return list;
       } catch (_) {}
     }
@@ -1928,7 +2097,9 @@ class PocketFortressDefenseService {
     final currentHp = prefs.getInt(_hpKey) ?? 100;
     final currentCoins = await getUnifiedScore();
     final isSelfDefender = defenderHouseId == 'me';
-    final hasDome = isSelfDefender ? (prefs.getBool(_ironDomeKey) ?? false) : defenderHasIronDome;
+    final hasDome = isSelfDefender
+        ? (prefs.getBool(_ironDomeKey) ?? false)
+        : defenderHasIronDome;
 
     if (hasDome) {
       if (isSelfDefender) {
@@ -2000,7 +2171,8 @@ class PocketFortressDefenseService {
           final updatedHp = math.max(0, targetHp - damageHp);
           final updatedPoints = math.max(0, targetPoints - lootedCoins);
 
-          defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(updatedPoints);
+          defenderNewLevel =
+              PocketScoreLevelEngine.getLevelFromScore(updatedPoints);
           if (defenderNewLevel < defenderPreviousLevel) {
             isLevelDowngraded = true;
           }
@@ -2008,7 +2180,8 @@ class PocketFortressDefenseService {
           await SupaFlow.client.from('pocket_homes').update({
             'hp': updatedHp,
             'points': updatedPoints,
-            'stage': isLevelDowngraded ? defenderNewLevel : defenderPreviousLevel,
+            'stage':
+                isLevelDowngraded ? defenderNewLevel : defenderPreviousLevel,
             'is_damaged': true,
             'last_attacked_at': DateTime.now().toIso8601String(),
             'last_attacker_name': attackerName,
@@ -2023,12 +2196,17 @@ class PocketFortressDefenseService {
         } catch (e) {
           debugPrint('Error syncing defender damage to Supabase: $e');
         }
-      } else if (defenderHouseId.startsWith('pocket_robo') || defenderHouseId.startsWith('robot_')) {
+      } else if (defenderHouseId.startsWith('pocket_robo') ||
+          defenderHouseId.startsWith('robot_')) {
         // Robot Defender: Deduct robot score & check downgrade
-        final robotBaseStage = int.tryParse(defenderHouseId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 5;
+        final robotBaseStage =
+            int.tryParse(defenderHouseId.replaceAll(RegExp(r'[^0-9]'), '')) ??
+                5;
         defenderPreviousLevel = robotBaseStage;
-        final newRobotScore = await deductRobotScore(defenderHouseId, robotBaseStage, lootedCoins);
-        defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(newRobotScore);
+        final newRobotScore = await deductRobotScore(
+            defenderHouseId, robotBaseStage, lootedCoins);
+        defenderNewLevel =
+            PocketScoreLevelEngine.getLevelFromScore(newRobotScore);
         if (defenderNewLevel < defenderPreviousLevel) {
           isLevelDowngraded = true;
         }
@@ -2088,7 +2266,8 @@ class PocketFortressDefenseService {
     }
     final prefs = await SharedPreferences.getInstance();
     final expiryTime = DateTime.now().add(Duration(hours: hours));
-    await prefs.setInt('$_presidentialProtectionPrefix$houseId', expiryTime.millisecondsSinceEpoch);
+    await prefs.setInt('$_presidentialProtectionPrefix$houseId',
+        expiryTime.millisecondsSinceEpoch);
 
     try {
       await SupaFlow.client.from('pocket_homes').update({
@@ -2136,7 +2315,8 @@ class PocketFortressDefenseService {
   }
 
   /// Get minutes remaining in 48-hour Presidential Police Protection
-  static Future<int> getPresidentialProtectionMinutesRemaining(String houseId) async {
+  static Future<int> getPresidentialProtectionMinutesRemaining(
+      String houseId) async {
     final prefs = await SharedPreferences.getInstance();
     final expiry = prefs.getInt('$_presidentialProtectionPrefix$houseId');
     if (expiry == null) return 0;
@@ -2220,7 +2400,9 @@ class PocketFortressDefenseService {
     int effectiveStage = stage;
     if (!isNeighbor) {
       final uid = SupaFlow.client.auth.currentUser?.id;
-      final lastCompleted = (uid != null ? prefs.getInt('learning_last_completed_day_$uid') : null) ??
+      final lastCompleted = (uid != null
+              ? prefs.getInt('learning_last_completed_day_$uid')
+              : null) ??
           prefs.getInt('learning_last_completed_day') ??
           (stage - 1);
       effectiveStage = lastCompleted >= stage ? stage : math.max(1, stage - 1);
@@ -2229,7 +2411,9 @@ class PocketFortressDefenseService {
 
     if (!isNeighbor && raw != null) {
       try {
-        final list = (jsonDecode(raw) as List).map((e) => HouseShieldQuestion.fromJson(e)).toList();
+        final list = (jsonDecode(raw) as List)
+            .map((e) => HouseShieldQuestion.fromJson(e))
+            .toList();
         if (list.isNotEmpty) {
           return list.take(maxAllowed).toList();
         }
@@ -2238,7 +2422,8 @@ class PocketFortressDefenseService {
 
     // Attempt to load from Supabase profile for either targetUserId or current user
     try {
-      final queryId = targetUserId ?? (isNeighbor ? null : SupaFlow.client.auth.currentUser?.id);
+      final queryId = targetUserId ??
+          (isNeighbor ? null : SupaFlow.client.auth.currentUser?.id);
       if (queryId != null &&
           !queryId.startsWith('pocket_robo') &&
           !queryId.startsWith('kid_bot_') &&
@@ -2248,14 +2433,17 @@ class PocketFortressDefenseService {
             .select('house_shield_questions')
             .eq('user_id', queryId)
             .maybeSingle();
-        if (profileData != null && profileData['house_shield_questions'] != null) {
+        if (profileData != null &&
+            profileData['house_shield_questions'] != null) {
           final listRaw = profileData['house_shield_questions'] as List;
           final sbList = listRaw
-              .map((e) => HouseShieldQuestion.fromJson(Map<String, dynamic>.from(e)))
+              .map((e) =>
+                  HouseShieldQuestion.fromJson(Map<String, dynamic>.from(e)))
               .toList();
           if (sbList.isNotEmpty) {
             if (!isNeighbor) {
-              await prefs.setString(_trapsKey, jsonEncode(sbList.map((q) => q.toJson()).toList()));
+              await prefs.setString(_trapsKey,
+                  jsonEncode(sbList.map((q) => q.toJson()).toList()));
             }
             return sbList.take(maxAllowed).toList();
           }
@@ -2300,7 +2488,9 @@ class PocketFortressDefenseService {
     final List<HouseShieldQuestion> questions = [];
 
     // Q1: Vocabulary Meaning from Day's Lesson
-    final q1Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(effectiveDay, gateId: 'vocab_gate');
+    final q1Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(
+        effectiveDay,
+        gateId: 'vocab_gate');
     questions.add(
       HouseShieldQuestion(
         id: 'auto_day_${effectiveDay}_vocab',
@@ -2320,23 +2510,42 @@ class PocketFortressDefenseService {
     List<String> grammarWrongs;
     String grammarExp;
 
-    if (masterDay.commonMistakes.isNotEmpty && masterDay.mistakeCorrections.isNotEmpty) {
-      final mistake = masterDay.commonMistakes.first.replaceAll('❌', '').replaceAll('"', '').trim();
-      final correction = masterDay.mistakeCorrections.first.replaceAll('✅', '').replaceAll('"', '').trim();
-      grammarQ = 'Day $effectiveDay Grammar: Spot the correct sentence for "${masterDay.grammarConcept}":';
+    if (masterDay.commonMistakes.isNotEmpty &&
+        masterDay.mistakeCorrections.isNotEmpty) {
+      final mistake = masterDay.commonMistakes.first
+          .replaceAll('❌', '')
+          .replaceAll('"', '')
+          .trim();
+      final correction = masterDay.mistakeCorrections.first
+          .replaceAll('✅', '')
+          .replaceAll('"', '')
+          .trim();
+      grammarQ =
+          'Day $effectiveDay Grammar: Spot the correct sentence for "${masterDay.grammarConcept}":';
       grammarCorrect = correction;
-      grammarWrongs = [mistake, 'She do not understand this.', 'Yesterday I will go there.'];
+      grammarWrongs = [
+        mistake,
+        'She do not understand this.',
+        'Yesterday I will go there.'
+      ];
       grammarExp = masterDay.theoryExplanationEn.isNotEmpty
           ? masterDay.theoryExplanationEn
           : 'Rule: $correction is the natural, grammatically correct form.';
     } else {
-      grammarQ = 'Day $effectiveDay Grammar: Complete the sentence using the correct form of "${v1.word}":\n"She ___ English diligently."';
+      grammarQ =
+          'Day $effectiveDay Grammar: Complete the sentence using the correct form of "${v1.word}":\n"She ___ English diligently."';
       grammarCorrect = '${v1.word.toLowerCase()}s';
-      grammarWrongs = ['${v1.word.toLowerCase()}ed tomorrow', 'is ${v1.word.toLowerCase()}', 'are ${v1.word.toLowerCase()}ing'];
-      grammarExp = 'In Simple Present tense with third person singular (He/She), add "-s" or "-es" to the verb.';
+      grammarWrongs = [
+        '${v1.word.toLowerCase()}ed tomorrow',
+        'is ${v1.word.toLowerCase()}',
+        'are ${v1.word.toLowerCase()}ing'
+      ];
+      grammarExp =
+          'In Simple Present tense with third person singular (He/She), add "-s" or "-es" to the verb.';
     }
 
-    final allGrammarOpts = [grammarCorrect, ...grammarWrongs.take(3)]..shuffle(math.Random(effectiveDay * 7));
+    final allGrammarOpts = [grammarCorrect, ...grammarWrongs.take(3)]
+      ..shuffle(math.Random(effectiveDay * 7));
     questions.add(
       HouseShieldQuestion(
         id: 'auto_day_${effectiveDay}_grammar',
@@ -2351,7 +2560,9 @@ class PocketFortressDefenseService {
     );
 
     // Q3: Fill in the blank sentence context from Day's study
-    final q3Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(effectiveDay, gateId: 'speed_blitz');
+    final q3Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(
+        effectiveDay,
+        gateId: 'speed_blitz');
     questions.add(
       HouseShieldQuestion(
         id: 'auto_day_${effectiveDay}_speed',
@@ -2366,7 +2577,9 @@ class PocketFortressDefenseService {
     );
 
     // Q4: Idiom / Practical Conversational Nuance
-    final q4Challenge = PocketDefenseQuestionBank.getRandomChallenge('idiom_shield', day: effectiveDay);
+    final q4Challenge = PocketDefenseQuestionBank.getRandomChallenge(
+        'idiom_shield',
+        day: effectiveDay);
     questions.add(
       HouseShieldQuestion(
         id: 'auto_day_${effectiveDay}_idiom',
@@ -2384,7 +2597,8 @@ class PocketFortressDefenseService {
   }
 
   /// Save custom shield questions locally and sync to Supabase
-  static Future<void> saveShieldQuestions(List<HouseShieldQuestion> questions) async {
+  static Future<void> saveShieldQuestions(
+      List<HouseShieldQuestion> questions) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(questions.map((q) => q.toJson()).toList());
     await prefs.setString(_trapsKey, jsonStr);
@@ -2413,19 +2627,24 @@ class PocketFortressDefenseService {
   /// As per User Audio Directive:
   /// Defense is already pre-filled from curated questions so learners can simply review, edit or confirm,
   /// and houses are never left empty during peer raids.
-  static Future<List<HouseShieldQuestion>> ensureAutoArmedDefense(int day) async {
+  static Future<List<HouseShieldQuestion>> ensureAutoArmedDefense(
+      int day) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_trapsKey);
     List<HouseShieldQuestion> existing = [];
     if (raw != null) {
       try {
-        existing = (jsonDecode(raw) as List).map((e) => HouseShieldQuestion.fromJson(e)).toList();
+        existing = (jsonDecode(raw) as List)
+            .map((e) => HouseShieldQuestion.fromJson(e))
+            .toList();
       } catch (_) {}
     }
 
     // Determine how many days have actually been completed
     final uid = SupaFlow.client.auth.currentUser?.id;
-    final lastCompleted = (uid != null ? prefs.getInt('learning_last_completed_day_$uid') : null) ??
+    final lastCompleted = (uid != null
+            ? prefs.getInt('learning_last_completed_day_$uid')
+            : null) ??
         prefs.getInt('learning_last_completed_day') ??
         (day - 1);
 
@@ -2464,7 +2683,13 @@ class PocketFortressDefenseService {
   /// Starter default questions (Used strictly for neighbor raids)
   static List<HouseShieldQuestion> _getDefaultQuestions(int count) {
     final List<HouseShieldQuestion> result = [];
-    final gates = ['vocab_gate', 'grammar_defusal', 'speed_blitz', 'idiom_shield', 'riddle_sphinx'];
+    final gates = [
+      'vocab_gate',
+      'grammar_defusal',
+      'speed_blitz',
+      'idiom_shield',
+      'riddle_sphinx'
+    ];
     int index = 0;
     while (result.length < count) {
       final gateId = gates[index % gates.length];
@@ -2488,18 +2713,20 @@ class PocketFortressDefenseService {
   ///  രണ്ടാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്), മൂന്നാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്), നാലാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്)...
   ///  എട്ടാമത്തെ ഗെയിം ഫുൾ കംപ്ലീറ്റ് ചെയ്യണം... എട്ട് ഗെയിമുകൾ കഴിഞ്ഞു കഴിഞ്ഞാൽ 80-ആം ലെവൽ എത്തിയിട്ടുണ്ടാവും.
   ///  ഇനി 90-ആമത്തെ അറ്റാക്ക് ചെയ്യാൻ ഒമ്പതാമത്തെ ലെവലും കൂടി കഴിഞ്ഞാലാണ് ആ 90-ആമത്തെ വീട് അറ്റാക്ക് ചെയ്യാൻ പറ്റുക!"
-  static Future<List<HouseShieldQuestion>> loadGauntletQuestionsForStage(int stage, {bool isNeighbor = true}) async {
+  static Future<List<HouseShieldQuestion>> loadGauntletQuestionsForStage(
+      int stage,
+      {bool isNeighbor = true}) async {
     final gatesCount = PocketScoreLevelEngine.getGatesCountForLevel(stage);
     final trapTypes = [
-      'vocab_gate',        // Gate 1: Levels 1-10 (Vocab MCQ)
-      'collocation_ram',   // Gate 2: Levels 11-20 (Collocations & Words)
-      'syntax_wall',       // Gate 3: Levels 21-30 (Sentence Jigsaw & Inverted Syntax)
-      'grammar_sentry',    // Gate 4: Levels 31-40 (Grammar Sentry & Spot Error)
-      'word_scramble',     // Gate 5: Levels 41-50 (Alphabet Scramble / Builder)
-      'idiom_maze',        // Gate 6: Levels 51-60 (Idiom & Slang Labyrinth)
-      'tense_fortress',    // Gate 7: Levels 61-70 (Tense & Conditional Fortress)
-      'phonetic_thunder',  // Gate 8: Levels 71-80 (Phonetics & Word Stress)
-      'riddle_sphinx',     // Gate 9: Levels 81-90 (Grandmaster Riddle & Rhetoric)
+      'vocab_gate', // Gate 1: Levels 1-10 (Vocab MCQ)
+      'collocation_ram', // Gate 2: Levels 11-20 (Collocations & Words)
+      'syntax_wall', // Gate 3: Levels 21-30 (Sentence Jigsaw & Inverted Syntax)
+      'grammar_sentry', // Gate 4: Levels 31-40 (Grammar Sentry & Spot Error)
+      'word_scramble', // Gate 5: Levels 41-50 (Alphabet Scramble / Builder)
+      'idiom_maze', // Gate 6: Levels 51-60 (Idiom & Slang Labyrinth)
+      'tense_fortress', // Gate 7: Levels 61-70 (Tense & Conditional Fortress)
+      'phonetic_thunder', // Gate 8: Levels 71-80 (Phonetics & Word Stress)
+      'riddle_sphinx', // Gate 9: Levels 81-90 (Grandmaster Riddle & Rhetoric)
     ];
 
     final List<HouseShieldQuestion> gauntletQuestions = [];
@@ -2520,7 +2747,8 @@ class PocketFortressDefenseService {
         gauntletQuestions.add(
           HouseShieldQuestion(
             id: 'gate_${g + 1}_q${q + 1}_${base.id}',
-            question: '[GATE ${g + 1}: ${gateInfo['title']} • Q${q + 1}/10]\n${base.question}',
+            question:
+                '[GATE ${g + 1}: ${gateInfo['title']} • Q${q + 1}/10]\n${base.question}',
             options: base.options,
             correctIndex: base.correctIndex,
             explanation: base.explanation,
@@ -2542,7 +2770,8 @@ class PocketFortressDefenseService {
   /// Audio Directive:
   /// "പ്രസിഡന്റിന് 200 ക്വസ്റ്റ്യൻസ് ഉണ്ടാകും. 200 ക്വസ്റ്റ്യൻസ് ആൻസർ ചെയ്യണം.
   /// 90 ആമത്തെ ലെവൽ കഴിഞ്ഞതിനു ശേഷമേ അവർക്ക് അറ്റാക്ക് ചെയ്യാൻ പറ്റുള്ളൂ പ്രസിഡന്റിനെ."
-  static Future<List<HouseShieldQuestion>> loadPresidentialGauntletQuestions() async {
+  static Future<List<HouseShieldQuestion>>
+      loadPresidentialGauntletQuestions() async {
     const trapTypes = [
       'vocab_gate',
       'collocation_ram',
@@ -2573,7 +2802,8 @@ class PocketFortressDefenseService {
       presidential250.add(
         HouseShieldQuestion(
           id: 'pres_trial_${i + 1}_${base.id}',
-          question: '🏛️ [PRESIDENTIAL TRIAL ${i + 1}/250 • ${gateInfo['title']}]\n${base.question}',
+          question:
+              '🏛️ [PRESIDENTIAL TRIAL ${i + 1}/250 • ${gateInfo['title']}]\n${base.question}',
           options: List<String>.from(base.options),
           correctIndex: base.correctIndex,
           explanation: base.explanation,
@@ -2587,7 +2817,8 @@ class PocketFortressDefenseService {
   }
 
   /// 🛡️ Presidential Escort Guard: 10 Elite Outer Perimeter Defense Trials for VIP Houses
-  static Future<List<HouseShieldQuestion>> loadPresidentialEscortGuardQuestions() async {
+  static Future<List<HouseShieldQuestion>>
+      loadPresidentialEscortGuardQuestions() async {
     const trapTypes = [
       'syntax_wall',
       'grammar_sentry',
@@ -2610,7 +2841,8 @@ class PocketFortressDefenseService {
       escortQuestions.add(
         HouseShieldQuestion(
           id: 'vip_escort_guard_${i + 1}_${base.id}',
-          question: '🛡️ [POKET VIP PRESIDENTIAL ESCORT GUARD ${i + 1}/10]\n${base.question}',
+          question:
+              '🛡️ [POKET VIP PRESIDENTIAL ESCORT GUARD ${i + 1}/10]\n${base.question}',
           options: List<String>.from(base.options),
           correctIndex: base.correctIndex,
           explanation: base.explanation,
@@ -2644,7 +2876,8 @@ class PocketFortressDefenseService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final report = DefenseQuestionReport(
-      reportId: 'rep_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(999)}',
+      reportId:
+          'rep_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(999)}',
       houseId: houseId,
       houseOwnerName: houseOwnerName,
       questionId: questionId,
@@ -2668,11 +2901,14 @@ class PocketFortressDefenseService {
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(houseId);
     try {
       await SupaFlow.client.from('reports').insert({
-        'reporter_id': reporterId == 'attacker_me' ? (SupaFlow.client.auth.currentUser?.id ?? 'anonymous') : reporterId,
+        'reporter_id': reporterId == 'attacker_me'
+            ? (SupaFlow.client.auth.currentUser?.id ?? 'anonymous')
+            : reporterId,
         'report_type': 'fake_citadel_defense',
         'content_type': 'defense_question',
         'reported_user_id': isUuid ? houseId : null,
-        'description': 'Target: $houseOwnerName ($houseId) | Violation: $reason | Q: $questionText | Key: ${correctIndex < options.length ? options[correctIndex] : correctIndex} | $details',
+        'description':
+            'Target: $houseOwnerName ($houseId) | Violation: $reason | Q: $questionText | Key: ${correctIndex < options.length ? options[correctIndex] : correctIndex} | $details',
         'status': 'pending',
       });
     } catch (e) {
@@ -2681,9 +2917,13 @@ class PocketFortressDefenseService {
 
     // Auto-ban if house receives 3+ pending reports
     final allReports = await getDefenseReports();
-    final houseReports = allReports.where((r) => r.houseId == houseId && r.status == 'pending').length;
+    final houseReports = allReports
+        .where((r) => r.houseId == houseId && r.status == 'pending')
+        .length;
     if (houseReports >= 3) {
-      await banHouse(houseId, reason: 'Multiple attacking players verified fake/nonsense English defense traps.');
+      await banHouse(houseId,
+          reason:
+              'Multiple attacking players verified fake/nonsense English defense traps.');
     }
 
     return report;
@@ -2708,7 +2948,8 @@ class PocketFortressDefenseService {
           reporterId: 'scout_alex',
           reporterName: 'Alex Hunter',
           reason: 'fake_gibberish',
-          details: 'Keyboard mash question with no English educational value to cheat defense.',
+          details:
+              'Keyboard mash question with no English educational value to cheat defense.',
           reportedAt: DateTime.now().subtract(const Duration(hours: 3)),
           status: 'pending',
         ),
@@ -2723,12 +2964,14 @@ class PocketFortressDefenseService {
           reporterId: 'scout_sarah',
           reporterName: 'Sarah Jenkins',
           reason: 'wrong_answer',
-          details: 'Owner intentionally marked "Stone" as correct answer to make defense invincible.',
+          details:
+              'Owner intentionally marked "Stone" as correct answer to make defense invincible.',
           reportedAt: DateTime.now().subtract(const Duration(hours: 1)),
           status: 'pending',
         ),
       ];
-      final jsonStrings = sampleReports.map((r) => jsonEncode(r.toJson())).toList();
+      final jsonStrings =
+          sampleReports.map((r) => jsonEncode(r.toJson())).toList();
       await prefs.setStringList(_reportsKey, jsonStrings);
       return sampleReports;
     }
@@ -2776,7 +3019,8 @@ class PocketFortressDefenseService {
       return r;
     }).toList();
 
-    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+    await prefs.setStringList(
+        _reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
   }
 
   /// 🔓 Admin Action: Unban House
@@ -2816,7 +3060,8 @@ class PocketFortressDefenseService {
       return r;
     }).toList();
 
-    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+    await prefs.setStringList(
+        _reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
   }
 
   /// 🛡️ Check if any house is currently banned
@@ -2872,11 +3117,13 @@ class PocketFortressDefenseService {
       }
       return r;
     }).toList();
-    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+    await prefs.setStringList(
+        _reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
   }
 
   /// 📜 Presidential Notice: Issue official warning decree to a house
-  static Future<void> issuePresidentNotice(String houseId, {required String reason}) async {
+  static Future<void> issuePresidentNotice(String houseId,
+      {required String reason}) async {
     final prefs = await SharedPreferences.getInstance();
     if (houseId == 'me') {
       await prefs.setString(_presidentNoticeKey, reason);
@@ -2930,7 +3177,9 @@ class PocketFortressDefenseService {
           currentScore = (profileRes['pocket_score'] as num?)?.toInt() ??
               (profileRes['xp'] as num?)?.toInt() ??
               0;
-          currentLevel = (profileRes['learning_day'] as num?)?.toInt() ?? 1;
+          currentLevel = (profileRes['day'] as num?)?.toInt() ??
+              (profileRes['learning_day'] as num?)?.toInt() ??
+              1;
         }
       } catch (e) {
         debugPrint('Error fetching player score for sanction: $e');
@@ -2939,12 +3188,15 @@ class PocketFortressDefenseService {
       currentScore = await getRobotScore(houseId, currentLevel);
     }
 
-    // 2. Compute new score & level
+    // 2. Compute new score & level (Pocket score floor check: downgrade if below day pass mark)
     int newScore = 0;
     if (!resetToZero && scoreDeduction != null) {
       newScore = math.max(0, currentScore - scoreDeduction);
     }
-    final newLevel = PocketScoreLevelEngine.getLevelFromScore(newScore);
+    final newLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+      day: currentLevel,
+      pocketScore: newScore,
+    );
     final bool wasDemoted = newLevel < currentLevel;
 
     // 3. Persist new score and level
@@ -3004,14 +3256,16 @@ class PocketFortressDefenseService {
           reporterId: r.reporterId,
           reporterName: r.reporterName,
           reason: r.reason,
-          details: '${r.details} | Verdict: ${resetToZero ? "Wiped to 0 (Level 1 Demotion)" : "Deducted -$scoreDeduction PTS (Level $newLevel)"}',
+          details:
+              '${r.details} | Verdict: ${resetToZero ? "Wiped to 0 (Level 1 Demotion)" : "Deducted -$scoreDeduction PTS (Level $newLevel)"}',
           reportedAt: r.reportedAt,
           status: 'penalized',
         );
       }
       return r;
     }).toList();
-    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+    await prefs.setStringList(
+        _reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
 
     return {
       'previousScore': currentScore,
@@ -3023,7 +3277,8 @@ class PocketFortressDefenseService {
   }
 
   /// ⛓️ Sentence House to Jail (Audio directive: "ജയിൽ ആണെങ്കിൽ ആ വീടിനെ മൊത്തം ജയിൽ പോലെ ഒരു സെറ്റപ്പ് ഡെവലപ്പ് ചെയ്യണം... ഇത്ര ദിവസം ജയിലിൽ കിടക്കേണ്ടി വരും")
-  static Future<void> sentenceToJail(String houseId, {int days = 3, required String reason}) async {
+  static Future<void> sentenceToJail(String houseId,
+      {int days = 3, required String reason}) async {
     final prefs = await SharedPreferences.getInstance();
     final releaseTime = DateTime.now().add(Duration(days: days));
     if (houseId == 'me') {
@@ -3031,10 +3286,12 @@ class PocketFortressDefenseService {
       await prefs.setString(_jailUntilKey, releaseTime.toIso8601String());
       await prefs.setString(_jailReasonKey, reason);
     }
-    final jailedList = (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
+    final jailedList =
+        (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
     jailedList.add(houseId);
     await prefs.setStringList(_jailedHousesListKey, jailedList.toList());
-    await prefs.setString('${_jailUntilKey}_$houseId', releaseTime.toIso8601String());
+    await prefs.setString(
+        '${_jailUntilKey}_$houseId', releaseTime.toIso8601String());
     await prefs.setString('${_jailReasonKey}_$houseId', reason);
   }
 
@@ -3067,7 +3324,8 @@ class PocketFortressDefenseService {
       await prefs.remove(_jailUntilKey);
       await prefs.remove(_jailReasonKey);
     }
-    final jailedList = (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
+    final jailedList =
+        (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
     jailedList.remove(houseId);
     await prefs.setStringList(_jailedHousesListKey, jailedList.toList());
     await prefs.remove('${_jailUntilKey}_$houseId');
@@ -3077,14 +3335,16 @@ class PocketFortressDefenseService {
   /// 📉 Demote House Level (Audio directive: "രണ്ടു മൂന്ന് ലെവൽ ബാക്കിലോട്ട് ഇടാം")
   static Future<int> demoteHouseLevel(String houseId, {int levels = 2}) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentLastCompleted = prefs.getInt('learning_last_completed_day') ?? 1;
+    final currentLastCompleted =
+        prefs.getInt('learning_last_completed_day') ?? 1;
     final newDay = math.max(1, currentLastCompleted - levels);
     await prefs.setInt('learning_last_completed_day', newDay);
     return newDay;
   }
 
   /// 🚫 Ban House & Confiscate Coins (Audio directive: "ഫസ്റ്റിലോട്ട് തുടങ്ങണം, ഇവരുടെ കോയിൻസ് എല്ലാം ഗവൺമെന്റ് മേടിച്ചെടുക്കും")
-  static Future<void> banHouseWithAssetConfiscation(String houseId, {required String reason}) async {
+  static Future<void> banHouseWithAssetConfiscation(String houseId,
+      {required String reason}) async {
     final prefs = await SharedPreferences.getInstance();
     await banHouse(houseId, reason: reason);
     if (houseId == 'me') {
@@ -3102,14 +3362,16 @@ class PocketFortressDefenseService {
   // ============================================================
 
   /// 🏡 Sync current player's Pocket Home to Supabase
-  static Future<void> syncMyHouseToSupabase({required int day, required int streak}) async {
+  static Future<void> syncMyHouseToSupabase(
+      {required int day, required int streak}) async {
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
       if (myId == null || !isValidUuid(myId)) return;
       final prefs = await SharedPreferences.getInstance();
       final isDamaged = prefs.getBool(_isDamagedKey) ?? false;
       final hp = prefs.getInt(_hpKey) ?? 100;
-      final paletteId = prefs.getString('house_theme_palette_id') ?? 'terracotta';
+      final paletteId =
+          prefs.getString('house_theme_palette_id') ?? 'terracotta';
       final points = prefs.getInt(_pointsKey) ?? 0;
 
       await SupaFlow.client.from('pocket_homes').upsert({
@@ -3153,12 +3415,14 @@ class PocketFortressDefenseService {
   }
 
   /// 👥 Fetch real neighbors with their real Pocket Homes from Supabase
-  static Future<List<PocketNeighbor>> fetchSupabaseNeighbors({int limit = 20}) async {
+  static Future<List<PocketNeighbor>> fetchSupabaseNeighbors(
+      {int limit = 20}) async {
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
       final res = await SupaFlow.client
           .from('pocket_homes')
-          .select('user_id, day, streak, hp, max_hp, is_damaged, palette_id, shield_active')
+          .select(
+              'user_id, day, streak, hp, max_hp, is_damaged, palette_id, shield_active')
           .order('day', ascending: false)
           .limit(limit);
 
@@ -3170,14 +3434,16 @@ class PocketFortressDefenseService {
             .inFilter('user_id', userIds);
 
         final profileMap = {
-          for (var p in profileRes) p['user_id'].toString(): p['name']?.toString() ?? 'User'
+          for (var p in profileRes)
+            p['user_id'].toString(): p['name']?.toString() ?? 'User'
         };
 
         final List<PocketNeighbor> neighbors = [];
         for (var r in res) {
           final uid = r['user_id'].toString();
           final isMe = uid == myId;
-          final name = isMe ? 'You (Your Pocket Home)' : (profileMap[uid] ?? 'Explorer');
+          final name =
+              isMe ? 'You (Your Pocket Home)' : (profileMap[uid] ?? 'Explorer');
           final day = (r['day'] as num?)?.toInt() ?? 1;
           final streak = (r['streak'] as num?)?.toInt() ?? 1;
           final hp = (r['hp'] as num?)?.toInt() ?? 100;
@@ -3191,11 +3457,15 @@ class PocketFortressDefenseService {
             name: name,
             day: day,
             streak: streak,
-            rank: day >= 71 ? 'Victorian Palace' : (day >= 40 ? 'Citadel Keep' : 'Explorer Home'),
+            rank: day >= 71
+                ? 'Victorian Palace'
+                : (day >= 40 ? 'Citadel Keep' : 'Explorer Home'),
             paletteId: palette,
             isMe: isMe,
             hasActiveShield: shield,
-            statusMessage: isDamaged ? '💥 Under siege! House took damage.' : 'Practicing English daily! 🏡',
+            statusMessage: isDamaged
+                ? '💥 Under siege! House took damage.'
+                : 'Practicing English daily! 🏡',
             isDamaged: isDamaged,
             hp: hp,
             maxHp: maxHp,
@@ -3224,32 +3494,39 @@ class PocketFortressDefenseService {
     }
   }
 
-  /// 🌟 Award Points and progress level (Audio: "100 പോയിന്റ് കിട്ടിയാൽ അടുത്ത ലെവൽ... 150 പോയിന്റ്സ് ബോണസ് ആയിട്ട്")
+  /// 🌟 Award Points (Audio Directive: score increases, but does NOT skip course days)
   static Future<Map<String, dynamic>> awardPoints(int pointsToAdd) async {
     final prefs = await SharedPreferences.getInstance();
     final currentPoints = await getUnifiedScore();
     final newPoints = currentPoints + pointsToAdd;
     await setUnifiedScore(newPoints);
 
-    final oldLevel = PocketScoreLevelEngine.getLevelFromScore(currentPoints);
-    final calculatedLevel = PocketScoreLevelEngine.getLevelFromScore(newPoints);
-    final didLevelUp = calculatedLevel > oldLevel;
-    final newDay = calculatedLevel;
-    if (didLevelUp) {
-      await prefs.setInt('learning_last_completed_day', newDay);
-      final myId = SupaFlow.client.auth.currentUser?.id;
-      if (myId != null) {
-        await prefs.setInt('learning_day_$myId', newDay);
-        await prefs.setInt('pocket_learning_user_stage_$myId', newDay);
-      }
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    int userCourseDay = 1;
+    if (myId != null) {
+      userCourseDay = prefs.getInt('day_$myId') ??
+          prefs.getInt('learning_day_$myId') ??
+          prefs.getInt('learning_last_completed_day') ??
+          1;
     }
 
+    // Effective level can restore up to userCourseDay if recovering from demotion, but cannot exceed userCourseDay
+    final oldLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+      day: userCourseDay,
+      pocketScore: currentPoints,
+    );
+    final calculatedLevel = PocketScoreLevelEngine.calculateEffectiveLevel(
+      day: userCourseDay,
+      pocketScore: newPoints,
+    );
+    final didLevelUp = calculatedLevel > oldLevel;
+    final activeLevel = calculatedLevel;
+
     try {
-      final myId = SupaFlow.client.auth.currentUser?.id;
       if (myId != null) {
         final profile = await SupaFlow.client
             .from('profile')
-            .select('xp, day')
+            .select('xp, day, pocket_score')
             .eq('user_id', myId)
             .maybeSingle();
 
@@ -3258,12 +3535,12 @@ class PocketFortressDefenseService {
 
         await SupaFlow.client.from('profile').update({
           'xp': updatedXp,
-          if (didLevelUp) 'day': newDay,
+          'pocket_score': newPoints,
+          'learning_points': newPoints,
         }).eq('user_id', myId);
 
         await SupaFlow.client.from('pocket_homes').update({
           'points': updatedXp,
-          if (didLevelUp) 'day': newDay,
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', myId);
       }
@@ -3275,7 +3552,7 @@ class PocketFortressDefenseService {
       'pointsAwarded': pointsToAdd,
       'totalPoints': newPoints,
       'didLevelUp': didLevelUp,
-      'newDay': newDay,
+      'newDay': activeLevel,
     };
   }
 }
@@ -3291,7 +3568,8 @@ class DefenseQuestionReport {
   final int correctIndex;
   final String reporterId;
   final String reporterName;
-  final String reason; // 'fake_gibberish' | 'wrong_answer' | 'impossible_trap' | 'offensive_content'
+  final String
+      reason; // 'fake_gibberish' | 'wrong_answer' | 'impossible_trap' | 'offensive_content'
   final String details;
   final DateTime reportedAt;
   final String status; // 'pending' | 'banned' | 'dismissed'
@@ -3328,7 +3606,8 @@ class DefenseQuestionReport {
         'status': status,
       };
 
-  factory DefenseQuestionReport.fromJson(Map<String, dynamic> json) => DefenseQuestionReport(
+  factory DefenseQuestionReport.fromJson(Map<String, dynamic> json) =>
+      DefenseQuestionReport(
         reportId: json['reportId'] ?? '',
         houseId: json['houseId'] ?? '',
         houseOwnerName: json['houseOwnerName'] ?? 'House Resident',
@@ -3340,7 +3619,8 @@ class DefenseQuestionReport {
         reporterName: json['reporterName'] ?? 'Attacker Scout',
         reason: json['reason'] ?? 'fake_gibberish',
         details: json['details'] ?? '',
-        reportedAt: DateTime.tryParse(json['reportedAt'] ?? '') ?? DateTime.now(),
+        reportedAt:
+            DateTime.tryParse(json['reportedAt'] ?? '') ?? DateTime.now(),
         status: json['status'] ?? 'pending',
       );
 }

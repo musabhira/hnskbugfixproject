@@ -35,6 +35,32 @@ class PocketScoreLevelEngine {
     return _levelThresholds[clampedLevel];
   }
 
+  /// 🎯 Calculates the active effective level based on:
+  /// 1. Course Day (Task Ceiling): A player can NEVER exceed their completed course day.
+  ///    Completing tasks/days is the ONLY way to advance to higher levels.
+  /// 2. Pocket Score (Pass Mark / Score Floor): Each level requires a minimum Pocket Score pass mark.
+  ///    - Level 1: 0 PS
+  ///    - Level 2: 500 PS
+  ///    - Level 3: 1,020 PS
+  ///    If attacks or penalties reduce the Pocket Score below the level's pass mark,
+  ///    the player's active level is DOWNGRADED to the highest level their score satisfies.
+  ///    If the score recovers, they return to their completed day, but never beyond it.
+  static int calculateEffectiveLevel({
+    required int day,
+    required int pocketScore,
+  }) {
+    final completedDay = math.max(1, day).clamp(1, kMaxLevel);
+    if (completedDay == 1) return 1;
+
+    for (int d = completedDay; d >= 1; d--) {
+      final requiredPassMark = getRequiredScoreForLevel(d);
+      if (pocketScore >= requiredPassMark) {
+        return d;
+      }
+    }
+    return 1;
+  }
+
   /// Calculates the player's level based strictly on their current Pocket Score.
   static int getLevelFromScore(int score) {
     if (score <= 0) return 1;

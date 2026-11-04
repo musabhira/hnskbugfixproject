@@ -1179,7 +1179,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final profileRes = await _supabase
           .from('profile')
           .select(
-              'pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
+              'pocket_score, learning_points, xp, day, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
           .eq('user_id', targetId)
           .maybeSingle();
 
@@ -1188,11 +1188,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['learning_points'] as num?)?.toInt() ??
             (profileRes['xp'] as num?)?.toInt() ??
             0;
-        final stage = (profileRes['learning_day'] as num?)?.toInt() ??
+        final rawDay = (profileRes['day'] as num?)?.toInt() ??
+            (profileRes['learning_day'] as num?)?.toInt() ??
             (profileRes['learning_stage'] as num?)?.toInt() ??
             (profileRes['stage'] as num?)?.toInt() ??
             (profileRes['level'] as num?)?.toInt() ??
             1;
+        final stage = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: rawDay,
+          pocketScore: score,
+        );
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();
 
@@ -1251,11 +1256,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           (profile['learning_points'] as num?)?.toInt() ??
           (profile['xp'] as num?)?.toInt() ??
           0;
-      final lvl = (profile['learning_day'] as num?)?.toInt() ??
+      final rawDay = (profile['day'] as num?)?.toInt() ??
+          (profile['learning_day'] as num?)?.toInt() ??
           (profile['learning_stage'] as num?)?.toInt() ??
           (profile['stage'] as num?)?.toInt() ??
           (profile['level'] as num?)?.toInt() ??
           1;
+      final lvl = PocketScoreLevelEngine.calculateEffectiveLevel(
+        day: rawDay,
+        pocketScore: score,
+      );
       final talismanId = profile['equipped_talisman']?.toString() ??
           profile['talisman_id']?.toString();
       final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(
@@ -1366,7 +1376,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final profileRes = await _supabase
           .from('profile')
           .select(
-              'daily_streak, learning_day, learning_stage, stage, level, pocket_score, learning_points, xp, avatar_config, equipped_talisman, talisman_id')
+              'daily_streak, day, learning_day, learning_stage, stage, level, pocket_score, learning_points, xp, avatar_config, equipped_talisman, talisman_id')
           .eq('user_id', mateUserId)
           .maybeSingle();
 
@@ -1379,11 +1389,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             (profileRes['xp'] as num?)?.toInt() ??
             0;
 
-        final stage = (profileRes['learning_day'] as num?)?.toInt() ??
+        final rawDay = (profileRes['day'] as num?)?.toInt() ??
+            (profileRes['learning_day'] as num?)?.toInt() ??
             (profileRes['learning_stage'] as num?)?.toInt() ??
             (profileRes['stage'] as num?)?.toInt() ??
             (profileRes['level'] as num?)?.toInt() ??
             1;
+
+        final stage = PocketScoreLevelEngine.calculateEffectiveLevel(
+          day: rawDay,
+          pocketScore: score,
+        );
 
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();
@@ -11043,12 +11059,18 @@ Draft: "$draft"''';
                             final profile = member['profile'];
                             final isMemberAdmin = member['role'] == 'admin';
                             final isMe = member['user_id'] == _currentUserId;
-                            final stage = (profile?['learning_day'] ??
+                            final rawDay = (profile?['day'] ??
+                                        profile?['learning_day'] ??
                                         profile?['stage'] ??
                                         profile?['learning_stage'] ??
                                         profile?['level'] as num?)
                                     ?.toInt() ??
                                 1;
+                            final score = (profile?['pocket_score'] as num?)?.toInt() ?? 0;
+                            final stage = PocketScoreLevelEngine.calculateEffectiveLevel(
+                              day: rawDay,
+                              pocketScore: score,
+                            );
 
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
@@ -11354,12 +11376,18 @@ Draft: "$draft"''';
                             final m = filtered[i];
                             final profile = m['profile'];
                             final name = profile?['name'] ?? 'Unknown';
-                            final stage = ((profile?['learning_day'] ??
+                            final rawDay = ((profile?['day'] ??
+                                            profile?['learning_day'] ??
                                             profile?['stage'] ??
                                             profile?['learning_stage'] ??
                                             profile?['level'] as num?) ??
                                         1)
                                     .toInt();
+                            final score = (profile?['pocket_score'] as num?)?.toInt() ?? 0;
+                            final stage = PocketScoreLevelEngine.calculateEffectiveLevel(
+                              day: rawDay,
+                              pocketScore: score,
+                            );
                             final isMe = m['user_id'] == _currentUserId;
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
