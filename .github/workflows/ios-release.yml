@@ -73,8 +73,8 @@ jobs:
             if [ -n "${{ vars.IOS_BUILD_NUMBER_BASE }}" ]; then
               BASE_BUILD="${{ vars.IOS_BUILD_NUMBER_BASE }}"
             fi
-            # Count commits since anchor commit 02ede0b
-            RAW_COMMIT_COUNT=$(git rev-list --count 02ede0b..HEAD 2>/dev/null || echo 1)
+            # Count commits since anchor commit 5f6d341
+            RAW_COMMIT_COUNT=$(git rev-list --count 5f6d341..HEAD 2>/dev/null || echo 1)
             COMMIT_OFFSET=$(( RAW_COMMIT_COUNT > 0 ? RAW_COMMIT_COUNT - 1 : 0 ))
             ATTEMPT_OFFSET=$(( GITHUB_RUN_ATTEMPT - 1 ))
             BUILD_NUMBER=$(( BASE_BUILD + COMMIT_OFFSET + ATTEMPT_OFFSET ))
@@ -138,16 +138,17 @@ jobs:
           IMPORTED=0
 
           echo "Attempting standard security import..."
-          if security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" 2>/dev/null; then
+          if security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -k "$KEYCHAIN_PATH" 2>/dev/null; then
             echo "✅ Standard security import succeeded."
             IMPORTED=1
-          elif [ -n "$TRIMMED_P12_PASSWORD" ] && security import "$CERTIFICATE_PATH" -P "$TRIMMED_P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" 2>/dev/null; then
+          elif [ -n "$TRIMMED_P12_PASSWORD" ] && security import "$CERTIFICATE_PATH" -P "$TRIMMED_P12_PASSWORD" -A -k "$KEYCHAIN_PATH" 2>/dev/null; then
             echo "✅ Security import succeeded with trimmed password."
             IMPORTED=1
           fi
 
           if [ $IMPORTED -eq 0 ]; then
             echo "⚠️ Standard security import failed. Checking if certificate requires legacy OpenSSL encryption format..."
+            PEM_FILE="$RUNNER_TEMP/cert_and_key.pem"
             LEGACY_P12="$RUNNER_TEMP/legacy_cert.p12"
             ACTIVE_PASS=""
 
@@ -158,19 +159,36 @@ jobs:
             fi
 
             if [ -n "$ACTIVE_PASS" ]; then
-              echo "🔑 OpenSSL successfully verified certificate password! Converting to legacy PKCS#12 format for macOS Keychain compatibility..."
-              openssl pkcs12 -in "$CERTIFICATE_PATH" -nodes -passin pass:"$ACTIVE_PASS" 2>/dev/null | \
-                openssl pkcs12 -export -out "$LEGACY_P12" -passout pass:"$ACTIVE_PASS" -legacy 2>/dev/null
+              echo "🔑 OpenSSL verified certificate password! Converting to legacy PKCS#12 format for macOS Keychain compatibility..."
 
-              if security import "$LEGACY_P12" -P "$ACTIVE_PASS" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"; then
+              # Detect if openssl supports -legacy (OpenSSL 3.x) or defaults to legacy (LibreSSL)
+              LEGACY_FLAG=""
+              if openssl pkcs12 -help 2>&1 | grep -q -- "-legacy"; then
+                LEGACY_FLAG="-legacy"
+                echo "Using OpenSSL with -legacy flag"
+              else
+                echo "Using standard/LibreSSL legacy export (without -legacy flag)"
+              fi
+
+              # Step 1: Export decrypted key and certs to PEM
+              openssl pkcs12 -in "$CERTIFICATE_PATH" -nodes -passin pass:"$ACTIVE_PASS" -out "$PEM_FILE"
+
+              # Step 2: Export from PEM to legacy PKCS#12
+              openssl pkcs12 -export -in "$PEM_FILE" -out "$LEGACY_P12" -passout pass:"$ACTIVE_PASS" $LEGACY_FLAG
+
+              echo "Importing re-packaged legacy certificate into keychain..."
+              if security import "$LEGACY_P12" -P "$ACTIVE_PASS" -A -k "$KEYCHAIN_PATH"; then
                 echo "✅ Legacy-formatted certificate imported successfully."
                 IMPORTED=1
+              else
+                echo "❌ security import failed on legacy-formatted certificate. Diagnostic output:"
+                security import "$LEGACY_P12" -P "$ACTIVE_PASS" -A -k "$KEYCHAIN_PATH" || true
               fi
-              rm -f "$LEGACY_P12"
+              rm -f "$PEM_FILE" "$LEGACY_P12"
             else
               echo "❌ ERROR: Could not verify certificate password with OpenSSL or Keychain."
               echo "Direct security import error output:"
-              security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" || true
+              security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -k "$KEYCHAIN_PATH" || true
               exit 1
             fi
           fi
