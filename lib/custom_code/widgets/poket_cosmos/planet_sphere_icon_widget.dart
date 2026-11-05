@@ -115,7 +115,6 @@ class PlanetSphereIconPainter extends CustomPainter {
         isKepler: isKepler);
 
     // 3D Spherical Volumetric Lighting Overlay (Light source from top-left)
-    final lightSource = Offset(cx - sphereRadius * 0.35, cy - sphereRadius * 0.35);
     final sphereLightPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.40, -0.40),
@@ -205,9 +204,9 @@ class PlanetSphereIconPainter extends CustomPainter {
       canvas.drawCircle(center, r, Paint()..color = const Color(0xFFF59E0B));
       final bandPaint1 = Paint()..color = const Color(0xFFB45309);
       final bandPaint2 = Paint()..color = const Color(0xFFFEF3C7);
-      canvas.drawRect(Rect.fromCenter(center: center + const Offset(0, -r * 0.45), width: r * 2.2, height: r * 0.28), bandPaint1);
-      canvas.drawRect(Rect.fromCenter(center: center + const Offset(0, -r * 0.1), width: r * 2.2, height: r * 0.25), bandPaint2);
-      canvas.drawRect(Rect.fromCenter(center: center + const Offset(0, r * 0.35), width: r * 2.2, height: r * 0.3), bandPaint1);
+      canvas.drawRect(Rect.fromCenter(center: center + Offset(0, -r * 0.45), width: r * 2.2, height: r * 0.28), bandPaint1);
+      canvas.drawRect(Rect.fromCenter(center: center + Offset(0, -r * 0.1), width: r * 2.2, height: r * 0.25), bandPaint2);
+      canvas.drawRect(Rect.fromCenter(center: center + Offset(0, r * 0.35), width: r * 2.2, height: r * 0.3), bandPaint1);
       // Great Red Spot
       final spotPaint = Paint()..color = const Color(0xFFDC2626);
       canvas.drawOval(Rect.fromCenter(center: center + Offset(r * 0.35, r * 0.25), width: r * 0.42, height: r * 0.26), spotPaint);
@@ -229,8 +228,8 @@ class PlanetSphereIconPainter extends CustomPainter {
       // 🪐 Butterscotch Gaseous Bands
       canvas.drawCircle(center, r, Paint()..color = const Color(0xFFFDE68A));
       final bandPaint = Paint()..color = const Color(0xFFD97706).withValues(alpha: 0.65);
-      canvas.drawRect(Rect.fromCenter(center: center + const Offset(0, -r * 0.25), width: r * 2.2, height: r * 0.22), bandPaint);
-      canvas.drawRect(Rect.fromCenter(center: center + const Offset(0, r * 0.25), width: r * 2.2, height: r * 0.22), bandPaint);
+      canvas.drawRect(Rect.fromCenter(center: center + Offset(0, -r * 0.25), width: r * 2.2, height: r * 0.22), bandPaint);
+      canvas.drawRect(Rect.fromCenter(center: center + Offset(0, r * 0.25), width: r * 2.2, height: r * 0.22), bandPaint);
     } else if (isTitan) {
       // 🪐 Opaque Orange Nitrogen/Methane Smog
       canvas.drawCircle(center, r, Paint()..color = const Color(0xFFF59E0B));
@@ -330,3 +329,4 @@ class PlanetSphereIconPainter extends CustomPainter {
         oldDelegate.isMoon != isMoon;
   }
 }
+
