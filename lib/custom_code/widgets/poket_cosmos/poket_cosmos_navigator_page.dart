@@ -1971,7 +1971,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted && _aerialMapZoomController.value == Matrix4.identity()) {
                       _aerialMapZoomController.value =
-                          Matrix4.identity()..translateByDouble(initialX, 0.0);
+                          Matrix4.translationValues(initialX, 0.0, 0.0);
                     }
                   });
                 }
@@ -2155,9 +2155,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final s = (current * 1.25).clamp(1.0, 4.8);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(sH * s - sH) / 2;
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..translateByDouble(dx, dy)
-                        ..scaleByDouble(s);
+                      _aerialMapZoomController.value =
+                          Matrix4.translationValues(dx, dy, 0.0)
+                            ..scaleByDouble(s, s, 1.0, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2177,9 +2177,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final s = (current * 0.80).clamp(1.0, 4.8);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(sH * s - sH) / 2;
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..translateByDouble(dx, dy)
-                        ..scaleByDouble(s);
+                      _aerialMapZoomController.value =
+                          Matrix4.translationValues(dx, dy, 0.0)
+                            ..scaleByDouble(s, s, 1.0, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2195,8 +2195,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final sH = size.height;
                       final wW = math.max(sW * 2.2, sH * 1.85);
                       final initialX = -(wW - sW) / 2;
-                      _aerialMapZoomController.value = Matrix4.identity()
-                        ..translateByDouble(initialX, 0.0);
+                      _aerialMapZoomController.value =
+                          Matrix4.translationValues(initialX, 0.0, 0.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
