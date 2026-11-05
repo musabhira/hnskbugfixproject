@@ -8,7 +8,8 @@ import 'poket_cosmos_models.dart';
 /// 🌌 Poket Cosmos Explorer:
 /// 1. Orbit & Planets Hub: 3D Solar Orbit + Planet Directory + Horizontal Country Maps Carousel
 /// 2. Oceanic Island Map: Vast Blue Sea with Bright Lush Green Island, InteractiveViewer Zoom,
-///    Road Network, Front-Facing 90-Day Habit Manors, and Postal Identity Deeds.
+///    Road Network, Front-Facing 90-Day Habit Manors, Postal Identity Deeds,
+///    Interactive Vehicles (Drive Car 🚗 & Fly Airplane ✈️), and Civic Landmarks.
 class PoketCosmosNavigatorPage extends StatefulWidget {
   const PoketCosmosNavigatorPage({super.key});
 
@@ -27,9 +28,60 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   PoketPlanet? _selectedPlanet;
   PoketCountryMap? _selectedCountry;
   CitizenPlot? _focusedPlot;
+  IslandLandmark? _focusedLandmark;
   bool _isLoadingCitizens = false;
 
   List<CitizenPlot> _citizenPlots = [];
+
+  // 🚗 Travel Simulation Modes & Vehicles
+  TravelMode _travelMode = TravelMode.walk;
+  late AnimationController _vehicleAnimController;
+  Offset _vehicleStartPos = const Offset(200, 280);
+  Offset _vehicleEndPos = const Offset(200, 280);
+  double _vehicleHeading = 0.0;
+  bool _isVehicleInFlight = false;
+
+  late PoketVehicle _car;
+  late PoketVehicle _airplane;
+
+  final List<IslandLandmark> _landmarks = const [
+    IslandLandmark(
+      id: 'lm_citadel',
+      name: 'Presidential Citadel 👑',
+      type: LandmarkType.presidentialCitadel,
+      coordinates: Offset(180, 180),
+      icon: Icons.account_balance_rounded,
+      description: 'Supreme Council & Presidential Residence',
+      accentColor: Color(0xFFFFD700),
+    ),
+    IslandLandmark(
+      id: 'lm_airport',
+      name: 'Genesis Airport Terminal ✈️',
+      type: LandmarkType.airportTerminal,
+      coordinates: Offset(220, 1500),
+      icon: Icons.local_airport_rounded,
+      description: 'Interplanetary Flight Hangar & Runway',
+      accentColor: Color(0xFF38BDF8),
+    ),
+    IslandLandmark(
+      id: 'lm_post',
+      name: 'Central Post Office 📬',
+      type: LandmarkType.centralPostOffice,
+      coordinates: Offset(750, 640),
+      icon: Icons.markunread_mailbox_rounded,
+      description: 'Deed Registration & Postal Sorting Hub',
+      accentColor: Color(0xFFF59E0B),
+    ),
+    IslandLandmark(
+      id: 'lm_marina',
+      name: 'Azure Marina Harbor 🛥️',
+      type: LandmarkType.marinaHarbor,
+      coordinates: Offset(1380, 840),
+      icon: Icons.directions_boat_rounded,
+      description: 'Oceanic Yacht Docks & Coastal Ferry',
+      accentColor: Color(0xFF06B6D4),
+    ),
+  ];
 
   final List<PoketPlanet> _planets = const [
     PoketPlanet(
@@ -246,6 +298,42 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     _selectedPlanet = _planets.first;
     _selectedCountry = _selectedPlanet!.countryMaps.first;
 
+    // Initialize Vehicles
+    _car = PoketVehicle(
+      id: 'car_genesis',
+      name: 'Falcon Cruiser 🚗',
+      mode: TravelMode.car,
+      icon: Icons.directions_car_rounded,
+      speed: 2.5,
+      currentPosition: const Offset(200, 280),
+      headingAngle: 0.0,
+    );
+
+    _airplane = PoketVehicle(
+      id: 'plane_genesis',
+      name: 'Genesis Sky Hawk ✈️',
+      mode: TravelMode.airplane,
+      icon: Icons.flight_rounded,
+      speed: 4.0,
+      currentPosition: const Offset(220, 1500),
+      headingAngle: -math.pi / 4,
+    );
+
+    _vehicleAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..addListener(() {
+        setState(() {
+          final t = Curves.easeInOutCubic.transform(_vehicleAnimController.value);
+          final current = Offset.lerp(_vehicleStartPos, _vehicleEndPos, t)!;
+          if (_travelMode == TravelMode.car) {
+            _car.currentPosition = current;
+          } else if (_travelMode == TravelMode.airplane) {
+            _airplane.currentPosition = current;
+          }
+        });
+      });
+
     _loadRealCitizensIntoCountry();
   }
 
@@ -253,6 +341,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   void dispose() {
     _solarOrbitController.dispose();
     _mapZoomController.dispose();
+    _vehicleAnimController.dispose();
     super.dispose();
   }
 
@@ -271,10 +360,6 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       int plotIdx = 1;
 
       // 4 Avenues across the lush green island (canvas size: 1600 x 1700)
-      // Avenue 1: King's Coastal Highway (y: 280)
-      // Avenue 2: Genesis Central Boulevard (y: 640)
-      // Avenue 3: Palm Grove Avenue (y: 1000)
-      // Avenue 4: Emerald Bay Drive (y: 1360)
       final streetNames = [
         "King's Coastal Highway",
         "Genesis Central Boulevard",
@@ -298,6 +383,22 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         final double x = 240.0 + colIdx * 160.0;
         final double y = 280.0 + streetIdx * 360.0;
 
+        // Assign Deed Tier based on location and prestige
+        final PlotDeedTier tier = plotIdx == 1
+            ? PlotDeedTier.presidential
+            : (streetIdx == 0 || streetIdx == 3)
+                ? PlotDeedTier.beachfront
+                : (streetIdx == 2)
+                    ? PlotDeedTier.hilltop
+                    : PlotDeedTier.standard;
+
+        // Compute simulated activity status
+        final int inactiveDays = (plotIdx % 7 == 0) ? 4 : 0;
+        final PlotStatus status = CosmosInactivityPolicy.evaluatePlotStatus(
+          score: score,
+          inactiveDays: inactiveDays,
+        );
+
         plots.add(
           CitizenPlot(
             plotNumber: plotIdx,
@@ -313,6 +414,11 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             coordinates: Offset(x, y),
             isVip: isVip,
             isPresident: plotIdx == 1,
+            tier: tier,
+            status: status,
+            inactivityDays: inactiveDays,
+            deedValuePS: tier.baseValuationPS,
+            postalPinCode: 'PK-${plotIdx.toString().padLeft(4, '0')}',
           ),
         );
         plotIdx++;
@@ -336,7 +442,6 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       _activeViewIndex = 1;
     });
     _loadRealCitizensIntoCountry();
-    // Reset zoom to earth orbit perspective
     _mapZoomController.value = Matrix4.identity()..scale(0.75);
   }
 
@@ -352,6 +457,58 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
   void _resetZoom() {
     _mapZoomController.value = Matrix4.identity()..scale(0.8);
+  }
+
+  /// 🚗 / ✈️ Travel Navigation Trigger
+  void _travelToDestination(Offset target, {String? label}) {
+    if (_travelMode == TravelMode.car) {
+      // Find nearest avenue Y
+      final avenues = [280.0, 640.0, 1000.0, 1360.0];
+      double nearestAvenueY = avenues.first;
+      double minDiff = (target.dy - nearestAvenueY).abs();
+      for (final y in avenues) {
+        if ((target.dy - y).abs() < minDiff) {
+          minDiff = (target.dy - y).abs();
+          nearestAvenueY = y;
+        }
+      }
+      final adjustedTarget = Offset(target.dx, nearestAvenueY);
+
+      setState(() {
+        _vehicleStartPos = _car.currentPosition;
+        _vehicleEndPos = adjustedTarget;
+        _vehicleHeading = math.atan2(
+            adjustedTarget.dy - _vehicleStartPos.dy,
+            adjustedTarget.dx - _vehicleStartPos.dx);
+        _car.headingAngle = _vehicleHeading;
+      });
+      _vehicleAnimController.forward(from: 0.0);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('🚗 Cruising to ${label ?? 'destination'} along avenue...'),
+          backgroundColor: const Color(0xFF1E293B),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (_travelMode == TravelMode.airplane) {
+      setState(() {
+        _vehicleStartPos = _airplane.currentPosition;
+        _vehicleEndPos = target;
+        _vehicleHeading = math.atan2(
+            target.dy - _vehicleStartPos.dy, target.dx - _vehicleStartPos.dx);
+        _airplane.headingAngle = _vehicleHeading;
+      });
+      _vehicleAnimController.forward(from: 0.0);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✈️ Flying high altitude over island to ${label ?? 'destination'}...'),
+          backgroundColor: const Color(0xFF0284C7),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -924,7 +1081,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
     return Stack(
       children: [
-        // 🌊 Main InteractiveViewer Canvas (Ocean + Island Landmass + Roads + Houses)
+        // 🌊 Main InteractiveViewer Canvas (Ocean + Island Landmass + Roads + Houses + Vehicles)
         Positioned.fill(
           child: _isLoadingCitizens
               ? const Center(child: CircularProgressIndicator())
@@ -950,7 +1107,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     ),
                     child: Stack(
                       children: [
-                        // 🏝️ Painted Island (Ocean Wave Rims, Golden Beaches, Lush Green Land, Roads)
+                        // 🏝️ Painted Island (Ocean Wave Rims, Golden Beaches, Lush Green Land, Roads, Runway)
                         Positioned.fill(
                           child: CustomPaint(
                             painter: _OceanicIslandPainter(
@@ -960,82 +1117,131 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           ),
                         ),
 
+                        // 🏛️ Civic Landmarks (Citadel, Airport, Marina, Post Office)
+                        for (final landmark in _landmarks)
+                          _buildLandmarkNode(landmark),
+
                         // 🏷️ Painted Street Name Plaques
                         _buildStreetLabels(),
 
                         // 🏡 Citizen Front-Facing Habit Houses (Flame English House Widget)
                         for (final plot in _citizenPlots)
                           _buildCitizenPlotNode(plot),
+
+                        // 🚗 Interactive Car Driving along Avenues
+                        _buildCarVehicleWidget(),
+
+                        // ✈️ Interactive Airplane Flying High Over Island
+                        _buildAirplaneVehicleWidget(),
                       ],
                     ),
                   ),
                 ),
         ),
 
-        // 🧭 Top Island Floating Info Strip
+        // 🧭 Top Island Floating Info Strip & Mode Selector
         Positioned(
           top: 10,
           left: 12,
           right: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 10,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Text(country.islandEmoji, style: const TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${country.name} (${planet.name})',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    Text(country.islandEmoji,
+                        style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${country.name} (${planet.name})',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Pinch to Zoom • ${country.climate} • ${_citizenPlots.length} Plots',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 10.5),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Pinch to Zoom In • ${country.climate} • ${_citizenPlots.length} Houses placed',
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 10.5),
+                    ),
+                    TextButton(
+                      onPressed: _navigateToOrbit,
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.white10,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                       ),
-                    ],
-                  ),
+                      child: const Text('🪐 Orbit',
+                          style: TextStyle(color: Colors.white, fontSize: 11)),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: _navigateToOrbit,
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.white10,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  ),
-                  child: const Text('🪐 Orbit',
-                      style: TextStyle(color: Colors.white, fontSize: 11)),
+              ),
+              const SizedBox(height: 6),
+
+              // 🚗 ✈️ Travel Mode Toggle Strip (User Directive)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildModeChip(
+                      label: '🔍 Inspect Plots',
+                      mode: TravelMode.walk,
+                      icon: Icons.search_rounded,
+                    ),
+                    const SizedBox(width: 4),
+                    _buildModeChip(
+                      label: '🚗 Drive Car',
+                      mode: TravelMode.car,
+                      icon: Icons.directions_car_rounded,
+                    ),
+                    const SizedBox(width: 4),
+                    _buildModeChip(
+                      label: '✈️ Fly Airplane',
+                      mode: TravelMode.airplane,
+                      icon: Icons.flight_rounded,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
 
         // 🔍 Floating Zoom Control Buttons (+ / - / Reset)
         Positioned(
           right: 14,
-          top: 75,
+          top: 115,
           child: Column(
             children: [
               _buildZoomButton(
@@ -1068,6 +1274,62 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             child: _buildCitizenPostalCard(_focusedPlot!),
           ),
       ],
+    );
+  }
+
+  Widget _buildModeChip({
+    required String label,
+    required TravelMode mode,
+    required IconData icon,
+  }) {
+    final isSelected = _travelMode == mode;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _travelMode = mode);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              mode == TravelMode.car
+                  ? '🚗 Drive Mode Active! Tap any plot or road to cruise there.'
+                  : mode == TravelMode.airplane
+                      ? '✈️ Flight Mode Active! Tap any landmark or house to fly over.'
+                      : '🔍 Inspection Mode Active! Tap houses to inspect Postal Deeds.',
+            ),
+            duration: const Duration(milliseconds: 1400),
+            backgroundColor: isSelected
+                ? const Color(0xFFFFD700)
+                : const Color(0xFF0284C7),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFD700)
+              : Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected ? Colors.black : Colors.white70,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.black : Colors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1127,6 +1389,135 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
     );
   }
 
+  Widget _buildLandmarkNode(IslandLandmark lm) {
+    return Positioned(
+      left: lm.coordinates.dx - 45,
+      top: lm.coordinates.dy - 40,
+      child: GestureDetector(
+        onTap: () {
+          if (_travelMode != TravelMode.walk) {
+            _travelToDestination(lm.coordinates, label: lm.name);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('🏛️ ${lm.name} • ${lm.description}'),
+                backgroundColor: lm.accentColor,
+              ),
+            );
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                shape: BoxShape.circle,
+                border: Border.all(color: lm.accentColor, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: lm.accentColor.withValues(alpha: 0.6),
+                    blurRadius: 14,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Icon(lm.icon, color: lm.accentColor, size: 24),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: lm.accentColor.withValues(alpha: 0.5)),
+              ),
+              child: Text(
+                lm.name,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCarVehicleWidget() {
+    return Positioned(
+      left: _car.currentPosition.dx - 22,
+      top: _car.currentPosition.dy - 16,
+      child: Transform.rotate(
+        angle: _car.headingAngle,
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.white, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.7),
+                blurRadius: 12,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.directions_car_rounded, color: Colors.white, size: 18),
+              SizedBox(width: 2),
+              Text('🚗', style: TextStyle(fontSize: 10)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAirplaneVehicleWidget() {
+    return Positioned(
+      left: _airplane.currentPosition.dx - 30,
+      top: _airplane.currentPosition.dy - 30,
+      child: Transform.rotate(
+        angle: _airplane.headingAngle,
+        child: Container(
+          decoration: const BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black45,
+                offset: Offset(15, 20), // High altitude ground shadow
+                blurRadius: 14,
+              ),
+            ],
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0284C7),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFFD700), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.7),
+                  blurRadius: 16,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.flight_rounded, color: Colors.white, size: 26),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCitizenPlotNode(CitizenPlot plot) {
     final isFocused = plot.plotNumber == _focusedPlot?.plotNumber;
 
@@ -1135,12 +1526,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       top: plot.coordinates.dy - 60,
       child: GestureDetector(
         onTap: () {
-          setState(() => _focusedPlot = plot);
+          if (_travelMode != TravelMode.walk) {
+            _travelToDestination(plot.coordinates,
+                label: 'Plot #${plot.plotNumber} (${plot.userName})');
+          } else {
+            setState(() => _focusedPlot = plot);
+          }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Plot Badge Label
+            // Plot Badge Label with Deed Tier Tag
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
@@ -1202,7 +1598,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
               ),
             ),
 
-            // Citizen Name Tag
+            // Citizen Name & Status Tag
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
@@ -1251,7 +1647,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           Row(
             children: [
               CircleAvatar(
-                radius: 22,
+                radius: 24,
                 backgroundColor: plot.isVip
                     ? const Color(0xFFFFD700)
                     : const Color(0xFF0284C7),
@@ -1308,6 +1704,34 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         ),
                       ],
                     ),
+                    const SizedBox(height: 2),
+                    // Deed Tier & Valuation Pill
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            plot.tier.displayName,
+                            style: const TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Valuation: ⚡${plot.tier.baseValuationPS} PS',
+                          style: const TextStyle(
+                              color: Colors.white54, fontSize: 10),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '📬 ${plot.formalPostalAddress}',
@@ -1322,27 +1746,34 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD700),
-                  foregroundColor: Colors.black,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Visiting ${plot.userName}\'s Manor... 🚪'),
-                      backgroundColor: const Color(0xFF0284C7),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  );
-                },
-                child: const Text('Visit 🚪',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5)),
+                    onPressed: () {
+                      _travelToDestination(plot.coordinates,
+                          label: '${plot.userName}\'s Manor');
+                    },
+                    child: Text(
+                      _travelMode == TravelMode.car
+                          ? 'Drive 🚗'
+                          : _travelMode == TravelMode.airplane
+                              ? 'Fly ✈️'
+                              : 'Visit 🚪',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1366,7 +1797,6 @@ class _OceanicIslandPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // 1. Draw Organic Island Outline
     final islandPath = Path();
-    // Coastal boundary curves
     islandPath.moveTo(200, 220);
     islandPath.quadraticBezierTo(750, 140, 1400, 220);
     islandPath.quadraticBezierTo(1520, 800, 1420, 1480);
@@ -1441,6 +1871,24 @@ class _OceanicIslandPainter extends CustomPainter {
     final List<double> boulevards = [540, 1040];
     for (final x in boulevards) {
       canvas.drawLine(Offset(x, 260), Offset(x, 1380), roadPaint);
+    }
+
+    // 7. ✈️ Airport Runway at bottom left
+    final runwayPaint = Paint()
+      ..color = const Color(0xFF1E293B)
+      ..style = PaintingStyle.fill;
+    final rwyRect = RRect.fromRectAndRadius(
+      const Rect.fromLTWH(180, 1460, 240, 48),
+      const Radius.circular(8),
+    );
+    canvas.drawRRect(rwyRect, runwayPaint);
+
+    // Runway center markings
+    final rwyDash = Paint()
+      ..color = Colors.white.withValues(alpha: 0.8)
+      ..strokeWidth = 3;
+    for (double rx = 195; rx < 400; rx += 25) {
+      canvas.drawLine(Offset(rx, 1484), Offset(rx + 14, 1484), rwyDash);
     }
   }
 
