@@ -48,6 +48,8 @@ class PoketCountryMap {
   final String description;
   final String islandEmoji;
   final List<IslandLandmark> landmarks;
+  final bool isPresidential;
+  final int shapeSeed;
 
   const PoketCountryMap({
     required this.id,
@@ -62,6 +64,8 @@ class PoketCountryMap {
     this.description = 'Lush coastal island surrounded by oceanic waters',
     this.islandEmoji = '🏝️',
     this.landmarks = const [],
+    this.isPresidential = false,
+    this.shapeSeed = 1,
   });
 
   int get availableSlots => (totalSlots - filledSlots).clamp(0, totalSlots);
