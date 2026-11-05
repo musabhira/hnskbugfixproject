@@ -5,6 +5,7 @@ import '/backend/supabase/supabase.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
+import '../verified_switch_page.dart';
 
 /// 🌌 Poket Cosmos Explorer:
 /// - Screen 0: Fullscreen Solar System & Scientific Moons (compact 3D tilt bend button & iOS back).
@@ -384,7 +385,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 1,
         climate: 'Imperial Breeze 👑',
         climateIcon: Icons.military_tech_rounded,
-        description: 'Sovereign island sanctuary reserved solely for the Supreme President.',
+        description:
+            'Sovereign island sanctuary reserved solely for the Supreme President.',
         islandEmoji: '🏰',
         isPresidential: true,
         shapeStyle: IslandShapeStyle.citadelApex,
@@ -401,7 +403,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 44,
         climate: 'Warm Coastal 🌊',
         climateIcon: Icons.waves_rounded,
-        description: 'Curved turquoise crescent bay where daily vocabulary words are mastered.',
+        description:
+            'Curved turquoise crescent bay where daily vocabulary words are mastered.',
         islandEmoji: '📖',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
@@ -417,7 +420,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 41,
         climate: 'Tropical Breeze 🍃',
         climateIcon: Icons.air_rounded,
-        description: 'Winding dragon reef connecting clauses into powerful English sentences.',
+        description:
+            'Winding dragon reef connecting clauses into powerful English sentences.',
         islandEmoji: '✍️',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
@@ -433,7 +437,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 48,
         climate: 'Clear Skies ☀️',
         climateIcon: Icons.wb_sunny_rounded,
-        description: '5-pointed coral star island forming the foundation of English grammar.',
+        description:
+            '5-pointed coral star island forming the foundation of English grammar.',
         islandEmoji: '⭐',
         shapeStyle: IslandShapeStyle.starAtoll,
       ),
@@ -449,7 +454,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 39,
         climate: 'Ocean Mist 🌫️',
         climateIcon: Icons.cloud_rounded,
-        description: 'Circular ring atoll enclosing a tranquil inner saltwater lagoon.',
+        description:
+            'Circular ring atoll enclosing a tranquil inner saltwater lagoon.',
         islandEmoji: '💡',
         shapeStyle: IslandShapeStyle.ringAtoll,
       ),
@@ -465,7 +471,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 36,
         climate: 'Sunny Sand 🏖️',
         climateIcon: Icons.beach_access_rounded,
-        description: 'Hook-shaped peninsula with white sand beaches for pronunciation clarity.',
+        description:
+            'Hook-shaped peninsula with white sand beaches for pronunciation clarity.',
         islandEmoji: '🔊',
         shapeStyle: IslandShapeStyle.hookPeninsula,
       ),
@@ -481,7 +488,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 47,
         climate: 'Lush Mists 🌿',
         climateIcon: Icons.forest_rounded,
-        description: 'Twin islets linked by a wooden footbridge celebrating seamless speech.',
+        description:
+            'Twin islets linked by a wooden footbridge celebrating seamless speech.',
         islandEmoji: '🗣️',
         shapeStyle: IslandShapeStyle.dualIsletBridge,
       ),
@@ -497,7 +505,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 42,
         climate: 'Mild Tropical 🌴',
         climateIcon: Icons.eco_rounded,
-        description: 'Heart-shaped tropical haven where word order and sentence syntax thrive.',
+        description:
+            'Heart-shaped tropical haven where word order and sentence syntax thrive.',
         islandEmoji: '💖',
         shapeStyle: IslandShapeStyle.heartSanctuary,
       ),
@@ -513,7 +522,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 45,
         climate: 'Fresh Palms 🌴',
         climateIcon: Icons.park_rounded,
-        description: '3-leaf clover island rich with advanced vocabulary and synonym reserves.',
+        description:
+            '3-leaf clover island rich with advanced vocabulary and synonym reserves.',
         islandEmoji: '🍀',
         shapeStyle: IslandShapeStyle.cloverBays,
       ),
@@ -529,7 +539,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 49,
         climate: 'Energizing Wind ⚡',
         climateIcon: Icons.bolt_rounded,
-        description: 'High coral plateau commanding dynamic active verb formulations.',
+        description:
+            'High coral plateau commanding dynamic active verb formulations.',
         islandEmoji: '🏃',
         shapeStyle: IslandShapeStyle.fortressPlateau,
       ),
@@ -545,7 +556,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 35,
         climate: 'Gentle Bay ⛵',
         climateIcon: Icons.sailing_rounded,
-        description: 'Curved sandy peninsula with calm anchorages for subject/object pronouns.',
+        description:
+            'Curved sandy peninsula with calm anchorages for subject/object pronouns.',
         islandEmoji: '👥',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
@@ -561,7 +573,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 43,
         climate: 'Time Currents ⏳',
         climateIcon: Icons.hourglass_bottom_rounded,
-        description: 'Meandering S-curve spanning past, present, and continuous tense habit mastery.',
+        description:
+            'Meandering S-curve spanning past, present, and continuous tense habit mastery.',
         islandEmoji: '⏳',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
@@ -577,7 +590,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 37,
         climate: 'Speed Breeze 💨',
         climateIcon: Icons.speed_rounded,
-        description: 'Star-shaped coral reef refining how, when, and where actions take place.',
+        description:
+            'Star-shaped coral reef refining how, when, and where actions take place.',
         islandEmoji: '🚀',
         shapeStyle: IslandShapeStyle.starAtoll,
       ),
@@ -593,7 +607,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 40,
         climate: 'Harmonic Waters 🎵',
         climateIcon: Icons.surround_sound_rounded,
-        description: 'Ring atoll whose crystalline inner waters echo conversational dialogue.',
+        description:
+            'Ring atoll whose crystalline inner waters echo conversational dialogue.',
         islandEmoji: '🎧',
         shapeStyle: IslandShapeStyle.ringAtoll,
       ),
@@ -609,7 +624,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 38,
         climate: 'Coastal Sun ☀️',
         climateIcon: Icons.wb_sunny_rounded,
-        description: 'Hook peninsula of golden sand dunes shaping clear verbal expression.',
+        description:
+            'Hook peninsula of golden sand dunes shaping clear verbal expression.',
         islandEmoji: '🗣️',
         shapeStyle: IslandShapeStyle.hookPeninsula,
       ),
@@ -625,7 +641,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 41,
         climate: 'Warm Tide 🌊',
         climateIcon: Icons.waves_rounded,
-        description: 'Connected twin islets practicing natural English sentence melody and beat.',
+        description:
+            'Connected twin islets practicing natural English sentence melody and beat.',
         islandEmoji: '🥁',
         shapeStyle: IslandShapeStyle.dualIsletBridge,
       ),
@@ -641,7 +658,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 46,
         climate: 'Vibrant Light ✨',
         climateIcon: Icons.auto_awesome_rounded,
-        description: 'Heart sanctuary tuned for smooth international English phonetics.',
+        description:
+            'Heart sanctuary tuned for smooth international English phonetics.',
         islandEmoji: '🎙️',
         shapeStyle: IslandShapeStyle.heartSanctuary,
       ),
@@ -657,7 +675,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 39,
         climate: 'Deep Ocean Blue 🌊',
         climateIcon: Icons.water_rounded,
-        description: '3-leaf clover bay uniting independent and dependent clauses.',
+        description:
+            '3-leaf clover bay uniting independent and dependent clauses.',
         islandEmoji: '⚓',
         shapeStyle: IslandShapeStyle.cloverBays,
       ),
@@ -673,7 +692,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 44,
         climate: 'Scenic Marina ⛵',
         climateIcon: Icons.anchor_rounded,
-        description: 'Fortress harbor where idioms and figurative English expressions anchor.',
+        description:
+            'Fortress harbor where idioms and figurative English expressions anchor.',
         islandEmoji: '🎨',
         shapeStyle: IslandShapeStyle.fortressPlateau,
       ),
@@ -689,7 +709,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 48,
         climate: 'Warm Current 🌊',
         climateIcon: Icons.chat_bubble_rounded,
-        description: 'Crescent beach where daily 2-person habit conversations take root.',
+        description:
+            'Crescent beach where daily 2-person habit conversations take root.',
         islandEmoji: '💬',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
@@ -705,7 +726,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 42,
         climate: 'Sunny Trade Winds ⛵',
         climateIcon: Icons.explore_rounded,
-        description: 'S-curve trading port embodying classical English proverbs.',
+        description:
+            'S-curve trading port embodying classical English proverbs.',
         islandEmoji: '📜',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
@@ -721,7 +743,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 38,
         climate: 'Emerald Waters 💎',
         climateIcon: Icons.diamond_rounded,
-        description: 'Star-shaped shoal expanding diverse alternative word choices.',
+        description:
+            'Star-shaped shoal expanding diverse alternative word choices.',
         islandEmoji: '💎',
         shapeStyle: IslandShapeStyle.starAtoll,
       ),
@@ -737,7 +760,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 36,
         climate: 'Contrasting Winds 🌓',
         climateIcon: Icons.contrast_rounded,
-        description: 'Ring atoll contrasting antonym pairs in clear conversational contexts.',
+        description:
+            'Ring atoll contrasting antonym pairs in clear conversational contexts.',
         islandEmoji: '🌓',
         shapeStyle: IslandShapeStyle.ringAtoll,
       ),
@@ -753,7 +777,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 43,
         climate: 'Rich Forest 🌲',
         climateIcon: Icons.nature_rounded,
-        description: 'Hook peninsula reserved for professional, workplace, and tech vocabulary.',
+        description:
+            'Hook peninsula reserved for professional, workplace, and tech vocabulary.',
         islandEmoji: '💼',
         shapeStyle: IslandShapeStyle.hookPeninsula,
       ),
@@ -769,7 +794,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 41,
         climate: 'Sunset Violet 🌅',
         climateIcon: Icons.wb_twilight_rounded,
-        description: 'Twin islets honoring rhythm, rhyme, and lyrical English expression.',
+        description:
+            'Twin islets honoring rhythm, rhyme, and lyrical English expression.',
         islandEmoji: '🎭',
         shapeStyle: IslandShapeStyle.dualIsletBridge,
       ),
@@ -785,7 +811,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 45,
         climate: 'Clear Resonant Bay 🌿',
         climateIcon: Icons.hearing_rounded,
-        description: 'Heart-shaped valley perfecting short, long, and diphthong vowel sounds.',
+        description:
+            'Heart-shaped valley perfecting short, long, and diphthong vowel sounds.',
         islandEmoji: '🔤',
         shapeStyle: IslandShapeStyle.heartSanctuary,
       ),
@@ -801,7 +828,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 39,
         climate: 'Brisk Sea Air 🌊',
         climateIcon: Icons.air_rounded,
-        description: '3-leaf clover coastline training tongue, teeth, and lip articulation.',
+        description:
+            '3-leaf clover coastline training tongue, teeth, and lip articulation.',
         islandEmoji: '🔠',
         shapeStyle: IslandShapeStyle.cloverBays,
       ),
@@ -817,7 +845,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 47,
         climate: 'Vibrant Beats ⚡',
         climateIcon: Icons.flash_on_rounded,
-        description: 'Coral plateau decoding contemporary colloquial idioms and native speech.',
+        description:
+            'Coral plateau decoding contemporary colloquial idioms and native speech.',
         islandEmoji: '🔥',
         shapeStyle: IslandShapeStyle.fortressPlateau,
       ),
@@ -833,7 +862,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 40,
         climate: 'Golden Sun 🏖️',
         climateIcon: Icons.spellcheck_rounded,
-        description: 'Crescent sandbar mastering Latin/Greek prefixes, roots, and silent letters.',
+        description:
+            'Crescent sandbar mastering Latin/Greek prefixes, roots, and silent letters.',
         islandEmoji: '📝',
         shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
@@ -849,7 +879,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         filledSlots: 50,
         climate: 'High Ridge Wind 🦅',
         climateIcon: Icons.campaign_rounded,
-        description: 'Majestic S-curve ridge where masterful English debates and speeches echo.',
+        description:
+            'Majestic S-curve ridge where masterful English debates and speeches echo.',
         islandEmoji: '🏛️',
         shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
@@ -1509,7 +1540,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             child: InteractiveViewer(
               transformationController: _aerialMapZoomController,
               minScale: 0.65, // Ocean fully covers screen at min zoom
-              maxScale: 6.5,  // Deep peak zoom into 50 habit houses
+              maxScale: 6.5, // Deep peak zoom into 50 habit houses
               boundaryMargin: const EdgeInsets.all(1200),
               clipBehavior: Clip.none,
               child: SizedBox(
@@ -1673,9 +1704,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           decoration: const BoxDecoration(
             color: Color(0xFF14181B),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [
-              BoxShadow(color: Colors.black87, blurRadius: 20)
-            ],
+            boxShadow: [BoxShadow(color: Colors.black87, blurRadius: 20)],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1722,7 +1751,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white54),
                     onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
@@ -1809,18 +1839,29 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                   ),
                   onPressed: () {
                     Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Visiting ${plot.userName}\'s Profile...'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    if (plot.userId.isNotEmpty &&
+                        !plot.userId.startsWith('empty') &&
+                        !plot.userId.startsWith('vacant')) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VerfiedSwitchPage(userId: plot.userId),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Plot #${plot.plotNumber} (${plot.postalPinCode}) is available for purchase!'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.person_pin_rounded, size: 20),
                   label: const Text(
                     'View Profile 👤',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
               ),

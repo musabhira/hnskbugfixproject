@@ -800,6 +800,76 @@ class IslandAerialPainter extends CustomPainter {
         }
         break;
 
+      case IslandShapeStyle.ringAtoll:
+        // Distributed around the central circular lagoon in an aerial atoll ring
+        for (int i = 0; i < 50; i++) {
+          final angle = (i * 2 * math.pi / 50) - math.pi / 2;
+          final r = 68.0 + (i % 2) * 16.0;
+          coords.add(Offset(r * math.cos(angle) + 10, r * math.sin(angle) * 0.95 + 10));
+        }
+        break;
+
+      case IslandShapeStyle.hookPeninsula:
+        // Distributed along the J-hook peninsula and sandy coast
+        for (int i = 0; i < 50; i++) {
+          final t = i / 49.0;
+          if (t < 0.45) {
+            final subT = t / 0.45;
+            coords.add(Offset(-40.0 + subT * 85.0, -115.0 + subT * 110.0 + ((i % 2 == 0) ? -8 : 8)));
+          } else {
+            final subT = (t - 0.45) / 0.55;
+            final angle = subT * math.pi;
+            coords.add(Offset(45.0 + 55.0 * math.sin(angle), -5.0 + subT * 140.0));
+          }
+        }
+        break;
+
+      case IslandShapeStyle.heartSanctuary:
+        // Distributed along the left & right lobes and down to the point
+        for (int i = 0; i < 50; i++) {
+          final t = (i / 49.0) * 2 * math.pi;
+          // Parametric heart curve
+          final x = 70.0 * math.sin(t) * math.sin(t) * math.sin(t);
+          final y = -58.0 * math.cos(t) + 22.0 * math.cos(2 * t) + 10.0 * math.cos(3 * t) + 5.0 * math.cos(4 * t);
+          coords.add(Offset(x, y + 15));
+        }
+        break;
+
+      case IslandShapeStyle.cloverBays:
+        // 16 on Top Lobe, 17 on Bottom Right, 17 on Bottom Left
+        for (int i = 0; i < 16; i++) {
+          final r = 24.0 + (i % 3) * 10.0;
+          final a = (i / 15.0) * math.pi - math.pi;
+          coords.add(Offset(r * math.cos(a), -70.0 + r * math.sin(a)));
+        }
+        for (int i = 0; i < 17; i++) {
+          final r = 24.0 + (i % 3) * 10.0;
+          final a = (i / 16.0) * math.pi - math.pi / 4;
+          coords.add(Offset(55.0 + r * math.cos(a), 45.0 + r * math.sin(a)));
+        }
+        for (int i = 0; i < 17; i++) {
+          final r = 24.0 + (i % 3) * 10.0;
+          final a = (i / 16.0) * math.pi - 3 * math.pi / 4;
+          coords.add(Offset(-55.0 + r * math.cos(a), 45.0 + r * math.sin(a)));
+        }
+        break;
+
+      case IslandShapeStyle.fortressPlateau:
+        // Diamond / Hexagonal plateau grid
+        for (int i = 0; i < 50; i++) {
+          final row = i ~/ 7;
+          final col = i % 7;
+          final x = (col - 3) * 26.0;
+          final y = (row - 3) * 26.0;
+          // Clamp inside diamond perimeter
+          if (x.abs() + y.abs() <= 120) {
+            coords.add(Offset(x, y));
+          } else {
+            coords.add(Offset(x * 0.65, y * 0.65));
+          }
+        }
+        break;
+
       default:
         // Organic Grid (Ring / Hook / Heart / Clover / Fortress)
         // 50 carefully placed offsets around center
