@@ -20,6 +20,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -295,6 +296,24 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF0284C7),
+        foregroundColor: Colors.white,
+        elevation: 6,
+        icon: const Icon(Icons.satellite_alt_rounded, size: 20),
+        label: const Text(
+          'Poket Cosmos Map 🚀',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const PoketCosmosNavigatorPage(),
+            ),
+          );
+        },
+      ),
       body: SafeArea(
         child: Column(
           children: [
