@@ -358,31 +358,61 @@ class CosmosAddress {
 }
 
 /// 🌌 Infinite Cosmos Loop Allocation Engine
-/// Scales seamlessly from 1 user to 1 Crore (10 Million+) and 10 Crore+ users:
+/// Scales seamlessly from 1 user to 1 Crore (10 Million+) and 50 Crore+ users:
 /// - Each island holds strictly 50 habit plots.
-/// - The universe loops systematically across 9 celestial spheres:
-///   Earth Prime -> Mercury -> Venus -> Mars -> Jupiter -> Saturn -> Uranus -> Neptune -> Pluto.
+/// - The universe loops systematically across 16 major celestial spheres
+///   (8 Planets + Major Habitable Moons & Dwarf Planets):
+///   Earth Prime 🌍 -> The Moon 🌕 -> Mercury ⚪ -> Venus 🟡 -> Mars 🔴 -> Ceres 🥔 ->
+///   Jupiter 🟠 -> Europa 🧊 -> Ganymede 🪐 -> Callisto ☄️ -> Saturn 🪐 -> Titan 🪐 ->
+///   Enceladus ❄️ -> Uranus 💎 -> Neptune 🌊 -> Triton 🔱 -> Pluto ❄️.
 /// - Once Pluto's current island fills up with 50 users, the loop cycles back to Earth Prime
-///   to generate Island Cycle N+1!
+///   generating Island Cycle N+1 with CEFR linguistic progression tiers (Genesis -> Nova -> Apex -> Elite -> Mastery)!
 /// - Users are assigned a permanent initial home upon account creation.
-/// - Users can spend Pocket Score (e.g. 500 PS) to relocate to their dream planet or island!
+/// - Users can spend Pocket Score (e.g. 500 PS) to relocate to their dream planet or moon!
 class CosmosLoopAllocationService {
   static const int slotsPerIsland = 50;
-  static const int totalPlanets = 9;
 
   static const List<String> planetOrderNames = [
     'Earth Prime 🌍',
+    'The Moon 🌕',
     'Mercury ⚪',
     'Venus 🟡',
     'Mars 🔴',
+    'Ceres (Asteroid Belt) 🥔',
     'Jupiter 🟠',
+    'Europa (Jovian Ocean) 🧊',
+    'Ganymede 🪐',
+    'Callisto ☄️',
     'Saturn 🪐',
+    'Titan 🪐',
+    'Enceladus ❄️',
     'Uranus 💎',
     'Neptune 🌊',
+    'Triton 🔱',
     'Pluto ❄️',
   ];
 
-  static const List<int> planetOrderIds = [3, 1, 2, 4, 5, 6, 7, 8, 9];
+  static const List<int> planetOrderIds = [
+    3,   // Earth
+    30,  // The Moon
+    1,   // Mercury
+    2,   // Venus
+    4,   // Mars
+    45,  // Ceres
+    5,   // Jupiter
+    51,  // Europa
+    52,  // Ganymede
+    53,  // Callisto
+    6,   // Saturn
+    61,  // Titan
+    62,  // Enceladus
+    7,   // Uranus
+    8,   // Neptune
+    81,  // Triton
+    9,   // Pluto
+  ];
+
+  static int get totalCelestialSpheres => planetOrderNames.length;
 
   static const List<String> englishThemes = [
     'Vocabulary Bay',
@@ -417,7 +447,17 @@ class CosmosLoopAllocationService {
     'Mastery Cay',
   ];
 
-  /// 📍 Deterministic algorithm: Maps any user index (0 to 100,000,000+) to their exact planet, island, and slot
+  /// CEFR Epoch Progression Prefixes & Suffixes for Infinite Cycles
+  static const List<String> cycleTierPrefixes = [
+    '',               // Cycle 1: Classic (A1 Genesis)
+    'Upper ',         // Cycle 2: A2 Ascendant
+    'Nova ',          // Cycle 3: B1 Intermediate
+    'Grand ',         // Cycle 4: B2 Fluency
+    'Apex ',          // Cycle 5: C1 Advanced
+    'Mastery ',       // Cycle 6: C2 Mastery
+  ];
+
+  /// 📍 Deterministic algorithm: Maps any user index (0 to 100,000,000+) to their exact celestial sphere, island, and slot
   static CosmosAddress allocateUser({required int userIndex, String? userName}) {
     if (userIndex == 0) {
       // User #0 is Supreme President Mus'ab on Crown Apex
@@ -436,19 +476,25 @@ class CosmosLoopAllocationService {
     final int effectiveIndex = userIndex - 1; // 0-based for all regular citizens
     final int islandBatch = effectiveIndex ~/ slotsPerIsland;
     final int slotNumber = (effectiveIndex % slotsPerIsland) + 1;
-    final int planetIndex = islandBatch % totalPlanets;
-    final int cycle = islandBatch ~/ totalPlanets;
+    final int celestialIndex = islandBatch % totalCelestialSpheres;
+    final int cycle = islandBatch ~/ totalCelestialSpheres;
 
-    final planetId = planetOrderIds[planetIndex];
-    final planetName = planetOrderNames[planetIndex];
+    final planetId = planetOrderIds[celestialIndex];
+    final planetName = planetOrderNames[celestialIndex];
 
     final islandId = islandBatch + 2; // Island #1 is reserved for Crown Apex
     final themeIndex = islandBatch % englishThemes.length;
     final baseTheme = englishThemes[themeIndex];
-    final islandName = cycle == 0 ? baseTheme : '$baseTheme ${_toRoman(cycle + 1)}';
+
+    // Compute linguistic CEFR tier name for infinite scaling without collision
+    final prefixIndex = cycle.clamp(0, cycleTierPrefixes.length - 1);
+    final prefix = cycleTierPrefixes[prefixIndex];
+    final islandName = cycle < cycleTierPrefixes.length
+        ? '$prefix$baseTheme'
+        : '$baseTheme (Epoch ${_toRoman(cycle + 1)})';
 
     final pinCode =
-        'PK-P$planetId-IS${islandId.toString().padLeft(3, '0')}-SL${slotNumber.toString().padLeft(2, '0')}';
+        'PK-C$planetId-IS${islandId.toString().padLeft(3, '0')}-SL${slotNumber.toString().padLeft(2, '0')}';
 
     return CosmosAddress(
       planetId: planetId,

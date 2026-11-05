@@ -158,6 +158,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   // =========================================================================
   static List<PoketPlanet> _buildCosmosPlanets() {
     return [
+      // 🌍 APEX: Earth Prime
       PoketPlanet(
         id: 3,
         name: 'Earth Prime 🌍',
@@ -171,6 +172,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         totalPlots: 1451,
         occupiedPlots: 950,
         countryMaps: _buildEarth30EnglishIslands(),
+      ),
+
+      // 🌕 The Moon (Earth's Natural Satellite & Off-World Harbor)
+      const PoketPlanet(
+        id: 30,
+        name: 'The Moon 🌕',
+        theme: 'Earth\'s Natural Satellite & Off-World Harbor',
+        tagLine: 'Low Gravity Spire • Glass Domed Habitats',
+        primaryColor: Color(0xFFE2E8F0),
+        glowColor: Color(0xFFCBD5E1),
+        radius: 11,
+        orbitDistance: 200,
+        orbitSpeed: 0.95,
+        totalPlots: 50,
+        occupiedPlots: 36,
+        countryMaps: [
+          PoketCountryMap(
+            id: 3001,
+            name: 'Tranquility Base',
+            tag: 'First Lunar Colony',
+            landColor: Color(0xFF475569),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 36,
+            climate: 'Lunar Glow 🌕',
+            climateIcon: Icons.nightlight_round,
+            islandEmoji: '🌕',
+            shapeStyle: IslandShapeStyle.ringAtoll,
+          ),
+        ],
       ),
       const PoketPlanet(
         id: 1,
@@ -284,6 +315,37 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+
+      // 🧊 Europa (Jupiter's Ocean Moon)
+      const PoketPlanet(
+        id: 51,
+        name: 'Europa 🧊',
+        theme: 'Deep Oceanic Ice World (Jovian Moon)',
+        tagLine: 'Liquid Ocean beneath Ice • Cryo Springs',
+        primaryColor: Color(0xFFBAE6FD),
+        glowColor: Color(0xFF38BDF8),
+        radius: 12,
+        orbitDistance: 295,
+        orbitSpeed: 0.52,
+        totalPlots: 50,
+        occupiedPlots: 31,
+        countryMaps: [
+          PoketCountryMap(
+            id: 5101,
+            name: 'Conamara Chaos',
+            tag: 'Liquid Ocean Vault',
+            landColor: Color(0xFF0284C7),
+            waterColor: Color(0xFF38BDF8),
+            totalSlots: 50,
+            filledSlots: 31,
+            climate: 'Cryo Tide 🌊',
+            climateIcon: Icons.water_drop_rounded,
+            islandEmoji: '🧊',
+            shapeStyle: IslandShapeStyle.crescentLagoon,
+          ),
+        ],
+      ),
+
       const PoketPlanet(
         id: 6,
         name: 'Saturn 🪐',
@@ -309,6 +371,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             climateIcon: Icons.ac_unit_rounded,
             islandEmoji: '👑',
             shapeStyle: IslandShapeStyle.dualIsletBridge,
+          ),
+        ],
+      ),
+
+      // 🪐 Titan (Saturn's Giant Moon with Atmosphere)
+      const PoketPlanet(
+        id: 61,
+        name: 'Titan 🪐',
+        theme: 'Methane Seas & Golden Nitrogen Sky',
+        tagLine: 'Dense Atmosphere • Golden Lakes',
+        primaryColor: Color(0xFFFBBF24),
+        glowColor: Color(0xFFD97706),
+        radius: 13,
+        orbitDistance: 355,
+        orbitSpeed: 0.40,
+        totalPlots: 50,
+        occupiedPlots: 38,
+        countryMaps: [
+          PoketCountryMap(
+            id: 6101,
+            name: 'Kraken Mare Bay',
+            tag: 'Liquid Methane Sea',
+            landColor: Color(0xFF92400E),
+            waterColor: Color(0xFFD97706),
+            totalSlots: 50,
+            filledSlots: 38,
+            climate: 'Golden Rain 🌧️',
+            climateIcon: Icons.umbrella_rounded,
+            islandEmoji: '🪐',
+            shapeStyle: IslandShapeStyle.ringAtoll,
           ),
         ],
       ),
