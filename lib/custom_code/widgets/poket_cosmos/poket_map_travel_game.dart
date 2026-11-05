@@ -328,3 +328,4 @@ class PoketMapTravelGame extends FlameGame {
     canvas.restore();
   }
 }
+
