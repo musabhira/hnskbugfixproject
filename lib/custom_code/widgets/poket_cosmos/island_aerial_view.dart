@@ -171,11 +171,14 @@ class IslandAerialPainter extends CustomPainter {
     _drawWoodenPierAndBoats(canvas);
     _drawCruisingBoatsWithWakes(canvas);
 
-    // 10. Habit Houses / Plots (Strictly inside the green landmass with safe buffer)
+    // 10. Living Wildlife & Grazing Animals (Peaceful sheep & horses on meadow belt)
+    _drawGrazingAnimals(canvas);
+
+    // 11. Habit Houses / Plots (Strictly inside the green landmass with safe buffer)
     if (island.isPresidential) {
       _drawPresidentialCitadel(canvas);
     } else {
-      _draw50HabitHousePlots(canvas);
+      _drawCitizenPlots(canvas);
     }
 
     // 11. Clustered Palm Tree Canopies with Organic Shadows
@@ -921,14 +924,75 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🏡 50 HABIT HOUSE PLOTS (DEMARCATED BOUNDARY WALLS & CITIZEN PARCELS)
-  // Strictly on green land! Every citizen has their own boundary wall partition & house dot!
-  // Naturally scales with camera zoom without artificial shape swapping or clutter.
+  // 🐑 LIVING WILDLIFE & GRAZING ANIMALS (Peaceful sheep & horses on meadow belt)
   // =========================================================================
-  void _draw50HabitHousePlots(Canvas canvas) {
-    final List<Offset> positions = get50PlotCoordinates(island.shapeStyle);
+  void _drawGrazingAnimals(Canvas canvas) {
+    if (island.isPresidential) return;
 
-    for (int i = 0; i < 50; i++) {
+    // Peaceful woolly sheep grazing on meadow green spaces near sports turf
+    final sheepOffsets = [
+      const Offset(-42, 14),
+      const Offset(-50, 20),
+      const Offset(-36, 24),
+      const Offset(46, -18),
+      const Offset(54, -10),
+    ];
+
+    for (int i = 0; i < sheepOffsets.length; i++) {
+      final base = sheepOffsets[i];
+      final drift = math.sin(timeSeconds * 0.4 + i * 1.5) * 1.6;
+      final pos = base.translate(drift, drift * 0.35);
+
+      // Ground shadow
+      canvas.drawOval(
+        Rect.fromCenter(center: pos.translate(0.5, 0.7), width: 4.2, height: 2.4),
+        Paint()..color = Colors.black26,
+      );
+      // Fluffy woolly sheep body
+      canvas.drawOval(
+        Rect.fromCenter(center: pos, width: 3.6, height: 2.4),
+        Paint()..color = Colors.white.withValues(alpha: 0.95),
+      );
+      // Dark head & face
+      canvas.drawCircle(pos.translate(1.4, -0.4), 0.9, Paint()..color = const Color(0xFF1E293B));
+    }
+
+    // Majestic grazing horses on open grass
+    final horseOffsets = [
+      const Offset(-28, -26),
+      const Offset(34, 30),
+    ];
+    for (int i = 0; i < horseOffsets.length; i++) {
+      final base = horseOffsets[i];
+      final drift = math.cos(timeSeconds * 0.3 + i * 2.0) * 2.0;
+      final pos = base.translate(drift, drift * 0.25);
+
+      // Horse shadow
+      canvas.drawOval(
+        Rect.fromCenter(center: pos.translate(0.6, 1.0), width: 5.6, height: 2.8),
+        Paint()..color = Colors.black26,
+      );
+      // Horse body (chestnut brown / dark stallion)
+      final horseColor = i == 0 ? const Color(0xFF854D0E) : const Color(0xFF1C1917);
+      canvas.drawOval(
+        Rect.fromCenter(center: pos, width: 5.0, height: 2.6),
+        Paint()..color = horseColor,
+      );
+      // Horse neck and head
+      canvas.drawCircle(pos.translate(2.3, -0.9), 1.2, Paint()..color = horseColor);
+    }
+  }
+
+  // =========================================================================
+  // 🏡 35 CITIZEN HABIT PLOTS (CADASTRAL PARCEL WALLS, VILLAS & COURTYARDS)
+  // Strictly on green land! Every citizen has their own boundary wall partition (ചുറ്റുമതിൽ),
+  // private lawn, architectural hipped villa roof, courtyard pet & plunge pool.
+  // =========================================================================
+  void _drawCitizenPlots(Canvas canvas) {
+    final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
+    final int count = math.min(35, positions.length);
+
+    for (int i = 0; i < count; i++) {
       final pos = positions[i];
       final plotNumber = i + 1;
       final isSel = selectedPlotNumber == plotNumber;
@@ -949,51 +1013,123 @@ class IslandAerialPainter extends CustomPainter {
               coordinates: pos,
             );
 
-      // 1. Demarcated Property Boundary Parcel (Stone Wall & Private Lawn)
-      final parcelRect = Rect.fromCenter(center: pos, width: 17.5, height: 17.5);
+      // 1. Demarcated Property Boundary Parcel (ചുറ്റുമതിൽ / Cadastral Stone Wall & Lawn)
+      final parcelRect = Rect.fromCenter(center: pos, width: 22.0, height: 19.5);
 
       // Private Lawn Courtyard
       final lawnPaint = Paint()
         ..color = isSel
-            ? const Color(0xFFFFD700).withValues(alpha: 0.38)
-            : const Color(0xFF14532D).withValues(alpha: 0.52)
+            ? const Color(0xFFFFD700).withValues(alpha: 0.40)
+            : const Color(0xFF166534).withValues(alpha: 0.60)
         ..style = PaintingStyle.fill;
-      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(2.8)), lawnPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.2)), lawnPaint);
 
-      // Demarcated Boundary Partition Wall (Low Stone Wall / Hedge)
+      // Demarcated Boundary Partition Wall (Enclosure Wall ചുറ്റുമതിൽ)
       final boundaryWall = Paint()
         ..color = isSel
             ? const Color(0xFFFFD700)
-            : const Color(0xFFF1F5F9).withValues(alpha: 0.85)
+            : Colors.white.withValues(alpha: 0.90)
         ..style = PaintingStyle.stroke
         ..strokeWidth = isSel ? 1.8 : 0.95;
-      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(2.8)), boundaryWall);
+      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.2)), boundaryWall);
 
-      // 2. Central Homestead House (Drop Shadow & Streak Color Dot)
-      // Soft 3D aerial drop shadow
-      canvas.drawCircle(pos.translate(0.6, 0.8), 3.2, Paint()..color = Colors.black38);
+      // Corner Pillar Accents on boundary wall
+      final pillarPaint = Paint()..color = isSel ? const Color(0xFFFFD700) : Colors.white;
+      canvas.drawCircle(parcelRect.topLeft.translate(1.1, 1.1), 0.85, pillarPaint);
+      canvas.drawCircle(parcelRect.topRight.translate(-1.1, 1.1), 0.85, pillarPaint);
+      canvas.drawCircle(parcelRect.bottomLeft.translate(1.1, -1.1), 0.85, pillarPaint);
+      canvas.drawCircle(parcelRect.bottomRight.translate(-1.1, -1.1), 0.85, pillarPaint);
 
-      // House roof dot based on 90-day learning streak
-      final dotPaint = Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : (plot.day >= 90
-                ? const Color(0xFFFFD700) // 90-Day Sovereign Gold
-                : (plot.day >= 60
-                    ? const Color(0xFF38BDF8) // 60-Day Azure High Villa
-                    : (plot.day >= 30
-                        ? const Color(0xFFFB923C) // 30-Day Warm Terracotta
-                        : Colors.white.withValues(alpha: 0.95)))); // Ivory Cottage
-      canvas.drawCircle(pos, 2.7, dotPaint);
+      // Front Gate Walkway path
+      final pathPaint = Paint()
+        ..color = const Color(0xFFF1F5F9).withValues(alpha: 0.65)
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(pos.translate(0, 3.8), pos.translate(0, 9.0), pathPaint);
 
-      // Inner roof apex / chimney glint
-      canvas.drawCircle(pos, 1.0, Paint()..color = Colors.white.withValues(alpha: 0.85));
+      // 2. Private Plunge Pool / Garden Patio for streak >= 30
+      if (plot.day >= 30) {
+        final poolRect = Rect.fromCenter(center: pos.translate(6.5, -4.2), width: 5.2, height: 4.2);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(poolRect, const Radius.circular(1.2)),
+          Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.88),
+        );
+        // White coping edge
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(poolRect, const Radius.circular(1.2)),
+          Paint()
+            ..color = Colors.white70
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.5,
+        );
+      }
 
-      // 3. Golden Beacon Aura on Selected Plot
+      // 3. Architectural Top-Down Habit Villa Roof (Hipped Roof with Ridgelines)
+      // Soft ambient drop shadow underneath villa
+      final villaShadowRect = Rect.fromCenter(center: pos.translate(0.8, 1.0), width: 9.6, height: 8.4);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(villaShadowRect, const Radius.circular(1.8)),
+        Paint()..color = Colors.black45,
+      );
+
+      // Roof Base Color based on Learning Streak Day
+      final Color roofBaseColor = isSel
+          ? const Color(0xFFFFD700)
+          : (plot.day >= 90
+              ? const Color(0xFFFFC107) // 90-Day Sovereign Gold
+              : (plot.day >= 60
+                  ? const Color(0xFF38BDF8) // 60-Day Azure High Villa
+                  : (plot.day >= 30
+                      ? const Color(0xFFF97316) // 30-Day Terracotta Villa
+                      : const Color(0xFFF1F5F9)))); // Ivory / White Cottage
+
+      final Color roofRidgeColor = isSel
+          ? const Color(0xFFFFF9C4)
+          : (plot.day >= 90
+              ? const Color(0xFFFFECB3)
+              : (plot.day >= 60
+                  ? const Color(0xFFBAE6FD)
+                  : (plot.day >= 30
+                      ? const Color(0xFFFDBA74)
+                      : Colors.white)));
+
+      final villaRect = Rect.fromCenter(center: pos, width: 8.8, height: 7.8);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(villaRect, const Radius.circular(1.5)),
+        Paint()..color = roofBaseColor,
+      );
+
+      // Hipped Roof Ridge Line & Hip Rafters
+      final ridgePaint = Paint()
+        ..color = roofRidgeColor
+        ..strokeWidth = 0.85
+        ..style = PaintingStyle.stroke;
+      // Center horizontal ridge line
+      canvas.drawLine(pos.translate(-2.0, 0), pos.translate(2.0, 0), ridgePaint);
+      // Hipped rafters to corners
+      canvas.drawLine(pos.translate(-2.0, 0), villaRect.topLeft.translate(0.8, 0.8), ridgePaint);
+      canvas.drawLine(pos.translate(-2.0, 0), villaRect.bottomLeft.translate(0.8, -0.8), ridgePaint);
+      canvas.drawLine(pos.translate(2.0, 0), villaRect.topRight.translate(-0.8, 0.8), ridgePaint);
+      canvas.drawLine(pos.translate(2.0, 0), villaRect.bottomRight.translate(-0.8, -0.8), ridgePaint);
+
+      // Chimney accent on north side of roof
+      canvas.drawCircle(pos.translate(2.4, -2.2), 0.85, Paint()..color = const Color(0xFF475569));
+      canvas.drawCircle(pos.translate(2.4, -2.2), 0.45, Paint()..color = const Color(0xFF1E293B));
+
+      // 4. Courtyard Pet / Dog / Cat (Drifts peacefully in yard)
+      final petT = timeSeconds * 0.8 + i;
+      final petDriftX = math.cos(petT) * 1.8;
+      final petDriftY = math.sin(petT) * 1.3;
+      final petPos = pos.translate(-5.5 + petDriftX, 3.8 + petDriftY);
+      final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
+      canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
+      canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
+
+      // 5. Golden Selection Beacon Aura
       if (isSel) {
         canvas.drawCircle(
           pos,
-          13.0,
+          15.0,
           Paint()
             ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
             ..style = PaintingStyle.stroke
@@ -1207,32 +1343,35 @@ class IslandAerialPainter extends CustomPainter {
   // 📍 50 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
   // Houses NEVER touch the ocean or water lagoon! Guaranteed dry inland plots!
   // =========================================================================
-  static List<Offset> get50PlotCoordinates(IslandShapeStyle style) {
+  // 📍 35 CITIZEN PLOT COORDINATES (100% Strictly Inland on Solid Green Landmass)
+  // 35 generous parcels per island with cadastral boundary walls!
+  // =========================================================================
+  static List<Offset> get35PlotCoordinates(IslandShapeStyle style) {
     final List<Offset> coords = [];
 
     switch (style) {
       case IslandShapeStyle.crescentLagoon:
-        // 🌙 Crescent Green Belt: 50 plots distributed safely across the 3 thick green sectors
-        // 1. West Green Arm (16 plots: x = -180..-140, y = -110..+15)
-        for (int i = 0; i < 16; i++) {
-          final t = i / 15.0;
-          final y = -105.0 + t * 115.0;
+        // 🌙 Crescent Green Belt: 35 plots distributed safely across the 3 thick green sectors
+        // 1. West Green Arm (11 plots: x = -175..-145, y = -105..+15)
+        for (int i = 0; i < 11; i++) {
+          final t = i / 10.0;
+          final y = -100.0 + t * 110.0;
           final xBase = -165.0 - math.sin(t * math.pi) * 10.0;
-          final lane = (i % 2 == 0 ? -9.5 : 9.5);
+          final lane = (i % 2 == 0 ? -10.0 : 10.0);
           coords.add(Offset(xBase + lane, y));
         }
-        // 2. North Green Cape (18 plots: x = -105..+105, y = -185..-135)
-        for (int i = 0; i < 18; i++) {
-          final t = i / 17.0;
-          final x = -100.0 + t * 200.0;
-          final yBase = -168.0 + (x * x) / 580.0;
+        // 2. North Green Cape (13 plots: x = -100..+100, y = -180..-135)
+        for (int i = 0; i < 13; i++) {
+          final t = i / 12.0;
+          final x = -95.0 + t * 190.0;
+          final yBase = -166.0 + (x * x) / 600.0;
           final lane = (i % 2 == 0 ? -10.0 : 10.0);
           coords.add(Offset(x, yBase + lane));
         }
-        // 3. East Green Peninsula (16 plots: x = 145..195, y = -75..+125)
-        for (int i = 0; i < 16; i++) {
-          final t = i / 15.0;
-          final y = -75.0 + t * 200.0;
+        // 3. East Green Peninsula (11 plots: x = 145..195, y = -75..+120)
+        for (int i = 0; i < 11; i++) {
+          final t = i / 10.0;
+          final y = -70.0 + t * 190.0;
           final xBase = 168.0 + math.sin(t * math.pi) * 12.0;
           final lane = (i % 2 == 0 ? -10.0 : 10.0);
           coords.add(Offset(xBase + lane, y));
@@ -1240,29 +1379,29 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandShapeStyle.sCurveArchipelago:
-        // 🐉 Expansive S-Curve dragon spine: 2 parallel rows flanking central spine
-        for (int i = 0; i < 25; i++) {
-          final t = (i / 24.0) * 2.0 - 1.0;
-          final y = t * 155.0;
+        // 🐉 Expansive S-Curve dragon spine: 2 parallel lanes (17 West lane, 18 East lane = 35 total)
+        for (int i = 0; i < 17; i++) {
+          final t = (i / 16.0) * 2.0 - 1.0;
+          final y = t * 150.0;
           final xCenter = 44.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter - 14.0, y));
+          coords.add(Offset(xCenter - 16.0, y));
         }
-        for (int i = 0; i < 25; i++) {
-          final t = (i / 24.0) * 2.0 - 1.0;
-          final y = t * 155.0;
+        for (int i = 0; i < 18; i++) {
+          final t = (i / 17.0) * 2.0 - 1.0;
+          final y = t * 150.0;
           final xCenter = 44.0 * math.sin(t * math.pi);
-          coords.add(Offset(xCenter + 14.0, y));
+          coords.add(Offset(xCenter + 16.0, y));
         }
         break;
 
       case IslandShapeStyle.starAtoll:
-        // ⭐ 10 plots on each of the 5 coral star arms (firmly between r=65 and r=155, clear of central lagoon)
+        // ⭐ 7 plots on each of the 5 coral star arms = 35 plots total
         for (int k = 0; k < 5; k++) {
           final angle = (k * 2 * math.pi / 5) - math.pi / 2;
           final perp = angle + math.pi / 2;
-          for (int j = 0; j < 10; j++) {
-            final r = 65.0 + j * 9.5;
-            final offset = (j % 2 == 0 ? -9.0 : 9.0);
+          for (int j = 0; j < 7; j++) {
+            final r = 74.0 + j * 12.5;
+            final offset = (j % 2 == 0 ? -9.5 : 9.5);
             final x = r * math.cos(angle) + offset * math.cos(perp);
             final y = r * math.sin(angle) + offset * math.sin(perp);
             coords.add(Offset(x, y));
@@ -1271,36 +1410,36 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandShapeStyle.dualIsletBridge:
-        // 🏝️ 25 plots safely in West Islet core, 25 in East Islet core
-        for (int i = 0; i < 25; i++) {
-          final row = i ~/ 5;
-          final col = i % 5;
-          coords.add(Offset(-132.0 + col * 15.0, -32.0 + row * 16.0));
+        // 🏝️ 18 plots in West Islet core, 17 plots in East Islet core = 35 total
+        for (int i = 0; i < 18; i++) {
+          final row = i ~/ 6;
+          final col = i % 6;
+          coords.add(Offset(-130.0 + col * 16.0, -28.0 + row * 18.0));
         }
-        for (int i = 0; i < 25; i++) {
-          final row = i ~/ 5;
-          final col = i % 5;
-          coords.add(Offset(72.0 + col * 15.0, -32.0 + row * 16.0));
+        for (int i = 0; i < 17; i++) {
+          final row = i ~/ 6;
+          final col = i % 6;
+          coords.add(Offset(74.0 + col * 16.0, -28.0 + row * 18.0));
         }
         break;
 
       case IslandShapeStyle.ringAtoll:
-        // ⭕ Concentric rings safely within the circular green ring (outside lagoon r=48, inside outer rim r=175)
-        for (int i = 0; i < 25; i++) {
-          final angle = (i * 2 * math.pi / 25) - math.pi / 2;
+        // ⭕ Concentric rings safely within circular green body (17 inner, 18 outer = 35 total)
+        for (int i = 0; i < 17; i++) {
+          final angle = (i * 2 * math.pi / 17) - math.pi / 2;
           coords.add(Offset(118.0 * math.cos(angle) + 10, 118.0 * math.sin(angle) * 0.95 + 10));
         }
-        for (int i = 0; i < 25; i++) {
-          final angle = (i * 2 * math.pi / 25) - math.pi / 2;
-          coords.add(Offset(145.0 * math.cos(angle) + 10, 145.0 * math.sin(angle) * 0.95 + 10));
+        for (int i = 0; i < 18; i++) {
+          final angle = (i * 2 * math.pi / 18) - math.pi / 2;
+          coords.add(Offset(146.0 * math.cos(angle) + 10, 146.0 * math.sin(angle) * 0.95 + 10));
         }
         break;
 
       case IslandShapeStyle.hookPeninsula:
-        // 🪝 Firmly inside the J-hook land ridge
-        for (int i = 0; i < 50; i++) {
-          final t = i / 49.0;
-          final offsetSide = (i % 2 == 0 ? -10.0 : 10.0);
+        // 🪝 35 plots firmly inside the J-hook land ridge
+        for (int i = 0; i < 35; i++) {
+          final t = i / 34.0;
+          final offsetSide = (i % 2 == 0 ? -11.0 : 11.0);
           if (t < 0.45) {
             final subT = t / 0.45;
             coords.add(Offset(-35.0 + subT * 75.0 + offsetSide, -110.0 + subT * 105.0));
@@ -1313,61 +1452,64 @@ class IslandAerialPainter extends CustomPainter {
         break;
 
       case IslandShapeStyle.heartSanctuary:
-        // ❤️ Firmly inside the two heart lobes
-        for (int i = 0; i < 25; i++) {
-          final col = i % 5;
-          final row = i ~/ 5;
-          coords.add(Offset(-75.0 + col * 12.0, -45.0 + row * 16.0));
+        // ❤️ 18 Left atrium, 17 Right atrium = 35 total
+        for (int i = 0; i < 18; i++) {
+          final col = i % 6;
+          final row = i ~/ 6;
+          coords.add(Offset(-78.0 + col * 13.0, -42.0 + row * 18.0));
         }
-        for (int i = 0; i < 25; i++) {
-          final col = i % 5;
-          final row = i ~/ 5;
-          coords.add(Offset(25.0 + col * 12.0, -45.0 + row * 16.0));
+        for (int i = 0; i < 17; i++) {
+          final col = i % 6;
+          final row = i ~/ 6;
+          coords.add(Offset(22.0 + col * 13.0, -42.0 + row * 18.0));
         }
         break;
 
       case IslandShapeStyle.cloverBays:
-        // ☘️ Firmly inside the 3 green lobes
-        for (int i = 0; i < 16; i++) {
-          final r = 24.0 + (i % 3) * 10.0;
-          final a = (i / 15.0) * math.pi - math.pi;
+        // ☘️ 12 Top lobe, 12 Right lobe, 11 Left lobe = 35 total
+        for (int i = 0; i < 12; i++) {
+          final r = 24.0 + (i % 3) * 11.0;
+          final a = (i / 11.0) * math.pi - math.pi;
           coords.add(Offset(r * math.cos(a), -70.0 + r * math.sin(a)));
         }
-        for (int i = 0; i < 17; i++) {
-          final r = 24.0 + (i % 3) * 10.0;
-          final a = (i / 16.0) * math.pi - math.pi / 4;
+        for (int i = 0; i < 12; i++) {
+          final r = 24.0 + (i % 3) * 11.0;
+          final a = (i / 11.0) * math.pi - math.pi / 4;
           coords.add(Offset(55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
         }
-        for (int i = 0; i < 17; i++) {
-          final r = 24.0 + (i % 3) * 10.0;
-          final a = (i / 16.0) * math.pi - 3 * math.pi / 4;
+        for (int i = 0; i < 11; i++) {
+          final r = 24.0 + (i % 3) * 11.0;
+          final a = (i / 10.0) * math.pi - 3 * math.pi / 4;
           coords.add(Offset(-55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
         }
         break;
 
       case IslandShapeStyle.fortressPlateau:
-        // 💎 Diamond grid safely inside the hexagonal plateau core
-        for (int i = 0; i < 50; i++) {
+        // 💎 Diamond grid safely inside hexagonal plateau core: 35 plots in 5x7 grid
+        for (int i = 0; i < 35; i++) {
           final row = i ~/ 7;
           final col = i % 7;
-          final x = (col - 3) * 22.0;
-          final y = (row - 3) * 22.0;
+          final x = (col - 3) * 23.0;
+          final y = (row - 2) * 23.0;
           coords.add(Offset(x, y));
         }
         break;
 
       default:
-        // General safe internal grid with generous spacing
-        for (int i = 0; i < 50; i++) {
-          final row = i ~/ 8;
-          final col = i % 8;
-          coords.add(Offset(-80.0 + col * 22.0, -55.0 + row * 20.0));
+        // General safe internal grid: 35 plots in 5 rows of 7
+        for (int i = 0; i < 35; i++) {
+          final row = i ~/ 7;
+          final col = i % 7;
+          coords.add(Offset(-66.0 + col * 22.0, -44.0 + row * 22.0));
         }
         break;
     }
 
     return coords;
   }
+
+  /// Backward-compatible alias
+  static List<Offset> get50PlotCoordinates(IslandShapeStyle style) => get35PlotCoordinates(style);
 }
 
 class _CloudClusterDef {

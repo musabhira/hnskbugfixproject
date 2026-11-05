@@ -86,7 +86,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
   }
 
   // =========================================================================
-  // 👥 FETCH REAL USERS FOR THE 50 PLOTS ON THE ACTIVE ISLAND
+  // 👥 FETCH REAL USERS FOR THE 35 PLOTS ON THE ACTIVE ISLAND
   // =========================================================================
   Future<void> _loadIslandPlots(PoketCountryMap island) async {
     try {
@@ -95,16 +95,16 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
           .select(
               'id, user_id, name, day, learning_day, pocket_score, is_vip, is_premium, created_at')
           .order('pocket_score', ascending: false)
-          .limit(island.totalSlots.clamp(1, 50));
+          .limit(island.totalSlots.clamp(1, 35));
 
       final List<CitizenPlot> plots = [];
       final coords =
-          IslandAerialPainter.get50PlotCoordinates(island.shapeStyle);
+          IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
 
       if (res.isNotEmpty) {
         int idx = 0;
         for (final map in res) {
-          if (idx >= 50) break;
+          if (idx >= 35) break;
           final userName = (map['name'] as String?)?.trim().isNotEmpty == true
               ? (map['name'] as String).trim()
               : 'Citizen #${idx + 1}';
@@ -145,9 +145,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         }
       }
 
-      // Fill remaining plots up to island.totalSlots (default 50)
+      // Fill remaining plots up to island.totalSlots (35 plots per island)
       final currentCount = plots.length;
-      for (int i = currentCount; i < island.totalSlots && i < 50; i++) {
+      for (int i = currentCount; i < island.totalSlots && i < 35; i++) {
         plots.add(
           CitizenPlot(
             plotNumber: i + 1,
@@ -203,7 +203,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Crater Ridge',
             landColor: Color(0xFF64748B),
             waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 32,
             climate: 'High Heat 🔥',
             climateIcon: Icons.local_fire_department_rounded,
@@ -233,7 +233,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Golden Highlands',
             landColor: Color(0xFFB45309),
             waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 40,
             climate: 'Gold Cloud ⛅',
             climateIcon: Icons.wb_cloudy_rounded,
@@ -280,7 +280,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 tag: 'First Lunar Colony',
                 landColor: Color(0xFF475569),
                 waterColor: Color(0xFF0284C7),
-                totalSlots: 50,
+                totalSlots: 35,
                 filledSlots: 36,
                 climate: 'Lunar Glow 🌕',
                 climateIcon: Icons.nightlight_round,
@@ -312,7 +312,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Volcano Oasis',
             landColor: Color(0xFF9A3412),
             waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 38,
             climate: 'Rusty Breeze 🌪️',
             climateIcon: Icons.air_rounded,
@@ -342,7 +342,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Storm Center',
             landColor: Color(0xFF7C2D12),
             waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 42,
             climate: 'Thunder Storm ⚡',
             climateIcon: Icons.bolt_rounded,
@@ -372,7 +372,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 tag: 'Liquid Ocean Vault',
                 landColor: Color(0xFF0284C7),
                 waterColor: Color(0xFF38BDF8),
-                totalSlots: 50,
+                totalSlots: 35,
                 filledSlots: 31,
                 climate: 'Cryo Tide 🌊',
                 climateIcon: Icons.water_drop_rounded,
@@ -402,7 +402,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 tag: 'Magnetic Ocean Citadel',
                 landColor: Color(0xFF475569),
                 waterColor: Color(0xFF0284C7),
-                totalSlots: 50,
+                totalSlots: 35,
                 filledSlots: 26,
                 climate: 'Magnetic Glow ⚡',
                 climateIcon: Icons.shield_rounded,
@@ -434,7 +434,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Golden Ring Plateau',
             landColor: Color(0xFF854D0E),
             waterColor: Color(0xFF0EA5E9),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 35,
             climate: 'Cold Gold Mists ❄️',
             climateIcon: Icons.ac_unit_rounded,
@@ -464,7 +464,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 tag: 'Liquid Methane Sea',
                 landColor: Color(0xFF92400E),
                 waterColor: Color(0xFFD97706),
-                totalSlots: 50,
+                totalSlots: 35,
                 filledSlots: 38,
                 climate: 'Golden Rain 🌧️',
                 climateIcon: Icons.umbrella_rounded,
@@ -496,7 +496,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Cyan Ice Cliffs',
             landColor: Color(0xFF0E7490),
             waterColor: Color(0xFF0891B2),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 28,
             climate: 'Cryo Chill 🧊',
             climateIcon: Icons.severe_cold_rounded,
@@ -526,7 +526,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Deep Ultramarine Rim',
             landColor: Color(0xFF1E3A8A),
             waterColor: Color(0xFF1D4ED8),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 30,
             climate: 'Deep Gale 💨',
             climateIcon: Icons.cyclone_rounded,
@@ -556,7 +556,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 tag: 'Cryo Spout Basin',
                 landColor: Color(0xFF1E40AF),
                 waterColor: Color(0xFF60A5FA),
-                totalSlots: 50,
+                totalSlots: 35,
                 filledSlots: 24,
                 climate: 'Cryo Plume ❄️',
                 climateIcon: Icons.ac_unit_rounded,
@@ -589,7 +589,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Heart of Pluto',
             landColor: Color(0xFF475569),
             waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 22,
             climate: 'Glacial Calm ❄️',
             climateIcon: Icons.ac_unit_rounded,
@@ -620,7 +620,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
             tag: 'Interstellar Earth 2.0',
             landColor: Color(0xFF15803D),
             waterColor: Color(0xFF0D9488),
-            totalSlots: 50,
+            totalSlots: 35,
             filledSlots: 15,
             climate: 'Eternal Spring 🌸',
             climateIcon: Icons.eco_rounded,
@@ -660,7 +660,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Word Builders',
         landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF06B6D4), // Coral turquoise
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 44,
         climate: 'Warm Coastal 🌊',
         climateIcon: Icons.waves_rounded,
@@ -677,7 +677,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Grammar Flow',
         landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF0EA5E9), // Aquamarine
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 41,
         climate: 'Tropical Breeze 🍃',
         climateIcon: Icons.air_rounded,
@@ -694,7 +694,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Core Rules',
         landColor: Color(0xFF059669),
         waterColor: Color(0xFF0EA5E9), // Tropical Azure Sea
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 48,
         climate: 'Clear Skies ☀️',
         climateIcon: Icons.wb_sunny_rounded,
@@ -711,7 +711,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Native Expressions',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF3B82F6), // Azure Sapphire
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 39,
         climate: 'Ocean Mist 🌫️',
         climateIcon: Icons.cloud_rounded,
@@ -728,7 +728,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Sound Mastery',
         landColor: Color(0xFF166534),
         waterColor: Color(0xFF14B8A6), // Sunlit turquoise
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 36,
         climate: 'Sunny Sand 🏖️',
         climateIcon: Icons.beach_access_rounded,
@@ -745,7 +745,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Continuous Speech',
         landColor: Color(0xFF14532D),
         waterColor: Color(0xFF0284C7), // Deep lagoon
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 47,
         climate: 'Lush Mists 🌿',
         climateIcon: Icons.forest_rounded,
@@ -762,7 +762,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Structure Order',
         landColor: Color(0xFF047857),
         waterColor: Color(0xFF06B6D4),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 42,
         climate: 'Mild Tropical 🌴',
         climateIcon: Icons.eco_rounded,
@@ -779,7 +779,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Advanced Diction',
         landColor: Color(0xFF0F766E),
         waterColor: Color(0xFF0D9488),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 45,
         climate: 'Fresh Palms 🌴',
         climateIcon: Icons.park_rounded,
@@ -796,7 +796,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Action Hub',
         landColor: Color(0xFF115E59),
         waterColor: Color(0xFF6366F1), // Royal Indigo
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 49,
         climate: 'Energizing Wind ⚡',
         climateIcon: Icons.bolt_rounded,
@@ -813,7 +813,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Identity & Reference',
         landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF059669),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 35,
         climate: 'Gentle Bay ⛵',
         climateIcon: Icons.sailing_rounded,
@@ -830,7 +830,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Past Present Future',
         landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF2563EB),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 43,
         climate: 'Time Currents ⏳',
         climateIcon: Icons.hourglass_bottom_rounded,
@@ -847,7 +847,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Modifying Nuance',
         landColor: Color(0xFF059669),
         waterColor: Color(0xFF0891B2),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 37,
         climate: 'Speed Breeze 💨',
         climateIcon: Icons.speed_rounded,
@@ -864,7 +864,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Active Listening',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF4F46E5),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 40,
         climate: 'Harmonic Waters 🎵',
         climateIcon: Icons.surround_sound_rounded,
@@ -881,7 +881,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Crisp Enunciation',
         landColor: Color(0xFF166534),
         waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 38,
         climate: 'Coastal Sun ☀️',
         climateIcon: Icons.wb_sunny_rounded,
@@ -898,7 +898,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Cadence & Stress',
         landColor: Color(0xFF14532D),
         waterColor: Color(0xFF00BCD4),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 41,
         climate: 'Warm Tide 🌊',
         climateIcon: Icons.waves_rounded,
@@ -915,7 +915,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Intonation & Vibe',
         landColor: Color(0xFF047857),
         waterColor: Color(0xFF38BDF8),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 46,
         climate: 'Vibrant Light ✨',
         climateIcon: Icons.auto_awesome_rounded,
@@ -932,7 +932,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Complex Conjunctions',
         landColor: Color(0xFF0F766E),
         waterColor: Color(0xFF1D4ED8),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 39,
         climate: 'Deep Ocean Blue 🌊',
         climateIcon: Icons.water_rounded,
@@ -949,7 +949,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Poetic Figurative',
         landColor: Color(0xFF115E59),
         waterColor: Color(0xFF0F766E),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 44,
         climate: 'Scenic Marina ⛵',
         climateIcon: Icons.anchor_rounded,
@@ -966,7 +966,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Casual Chat',
         landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 48,
         climate: 'Warm Current 🌊',
         climateIcon: Icons.chat_bubble_rounded,
@@ -983,7 +983,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Timeless Wisdom',
         landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF0EA5E9),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 42,
         climate: 'Sunny Trade Winds ⛵',
         climateIcon: Icons.explore_rounded,
@@ -1000,7 +1000,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Varied Vocabulary',
         landColor: Color(0xFF059669),
         waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 38,
         climate: 'Emerald Waters 💎',
         climateIcon: Icons.diamond_rounded,
@@ -1017,7 +1017,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Opposites & Contrast',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF1E40AF),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 36,
         climate: 'Contrasting Winds 🌓',
         climateIcon: Icons.contrast_rounded,
@@ -1034,7 +1034,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Tech & Professional',
         landColor: Color(0xFF166534),
         waterColor: Color(0xFF0891B2),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 43,
         climate: 'Rich Forest 🌲',
         climateIcon: Icons.nature_rounded,
@@ -1051,7 +1051,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Rhyme & Meter',
         landColor: Color(0xFF14532D),
         waterColor: Color(0xFF0EA5E9),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 41,
         climate: 'Sunset Azure 🌅',
         climateIcon: Icons.wb_twilight_rounded,
@@ -1068,7 +1068,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'A-E-I-O-U Clarity',
         landColor: Color(0xFF047857),
         waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 45,
         climate: 'Clear Resonant Bay 🌿',
         climateIcon: Icons.hearing_rounded,
@@ -1085,7 +1085,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Sharp Articulation',
         landColor: Color(0xFF0F766E),
         waterColor: Color(0xFF0E7490),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 39,
         climate: 'Brisk Sea Air 🌊',
         climateIcon: Icons.air_rounded,
@@ -1102,7 +1102,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Modern Idiomatic',
         landColor: Color(0xFF115E59),
         waterColor: Color(0xFF2563EB),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 47,
         climate: 'Vibrant Beats ⚡',
         climateIcon: Icons.flash_on_rounded,
@@ -1119,7 +1119,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Orthography & Roots',
         landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF0D9488),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 40,
         climate: 'Golden Sun 🏖️',
         climateIcon: Icons.spellcheck_rounded,
@@ -1136,7 +1136,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         tag: 'Persuasion & Debate',
         landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF1E3A8A),
-        totalSlots: 50,
+        totalSlots: 35,
         filledSlots: 50,
         climate: 'High Ridge Wind 🦅',
         climateIcon: Icons.campaign_rounded,
@@ -1662,7 +1662,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           ),
                         ),
                         Text(
-                          '${islands.length} Distinct Islands • 50 Plots per Island',
+                          '${islands.length} Distinct Islands • 35 Plots per Island',
                           style: const TextStyle(
                               color: Colors.white60, fontSize: 11),
                         ),
@@ -1868,7 +1868,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                           Text(
                             island.isPresidential
                                 ? '1 VIP Slot (Supreme President)'
-                                : 'Filled Slots: ${island.filledSlots} / 50 Plots',
+                                : 'Filled Slots: ${island.filledSlots} / 35 Plots',
                             style: TextStyle(
                               color: island.isPresidential
                                   ? const Color(0xFFFFD700)
@@ -1965,15 +1965,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                 final worldHeight = screenHeight * 1.45;
                 final worldWidth = math.max(screenWidth * 2.8, screenHeight * 2.2);
                 final minScale = screenHeight / worldHeight;
-                final initialX = -(worldWidth * minScale - screenWidth) / 2;
+                const focusScale = 1.15;
+                final focusX = -(worldWidth * focusScale - screenWidth) / 2;
+                final focusY = -(worldHeight * focusScale - screenHeight) / 2;
 
-                // Auto-center island horizontally on entry at overview scale
+                // Auto-center island on entry at focused scale (never starts uninitialized or void)
                 if (_aerialMapZoomController.value == Matrix4.identity()) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted && _aerialMapZoomController.value == Matrix4.identity()) {
                       _aerialMapZoomController.value =
-                          Matrix4.translationValues(initialX, 0.0, 0.0)
-                            ..scaleByDouble(minScale, minScale, 1.0, 1.0);
+                          Matrix4.translationValues(focusX, focusY, 0.0)
+                            ..scaleByDouble(focusScale, focusScale, 1.0, 1.0);
                     }
                   });
                 }
@@ -1983,7 +1985,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   constrained: false,
                   boundaryMargin: EdgeInsets.zero,
                   minScale: minScale, // Strictly locked to screen height! Never shrinks into a card box!
-                  maxScale: 5.5, // Deep habit house villa inspection
+                  maxScale: 8.5, // Ultra-deep habit house & courtyard inspection
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldWidth,
@@ -2056,7 +2058,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         Text(
                           island.isPresidential
                               ? 'Imperial Palace & Sovereign Grounds'
-                              : '50 Plots • Pinch to Zoom in & Inspect Houses',
+                              : '35 Plots • Pinch to Zoom in & Inspect Houses',
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 11),
                         ),
@@ -2157,7 +2159,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final minS = sH / wH;
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.25).clamp(minS, 5.5);
+                      final s = (current * 1.25).clamp(minS, 8.5);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(wH * s - sH) / 2;
                       _aerialMapZoomController.value =
@@ -2182,7 +2184,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                       final minS = sH / wH;
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.80).clamp(minS, 5.5);
+                      final s = (current * 0.80).clamp(minS, 8.5);
                       final dx = -(wW * s - sW) / 2;
                       final dy = -(wH * s - sH) / 2;
                       _aerialMapZoomController.value =
@@ -2215,7 +2217,40 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         const BoxConstraints(minWidth: 36, minHeight: 36),
                     padding: EdgeInsets.zero,
                   ),
-                  // 4. Overview / Reset Zoom ↺ (snaps to locked height touching top & bottom)
+                  // 4. Ultra Focus Home 🏡 (zooms 7.5x directly onto selected plot or Plot #1 villa)
+                  IconButton(
+                    icon: const Icon(Icons.home_work_rounded,
+                        color: Color(0xFF4ADE80), size: 20),
+                    tooltip: 'Ultra Focus Home',
+                    onPressed: () {
+                      final size = MediaQuery.of(context).size;
+                      final sW = size.width;
+                      final sH = size.height;
+                      final wH = sH * 1.45;
+                      final wW = math.max(sW * 2.8, sH * 2.2);
+                      const targetScale = 7.5;
+
+                      final coords = IslandAerialPainter.get35PlotCoordinates(island.shapeStyle);
+                      final targetPlotCoord = (_inspectedPlot != null && coords.isNotEmpty)
+                          ? _inspectedPlot!.coordinates
+                          : (coords.isNotEmpty ? coords.first : Offset.zero);
+
+                      final painterScale = ((wH / 850.0) * 1.15).clamp(0.95, 1.50);
+                      final targetWorldX = wW / 2 + targetPlotCoord.dx * painterScale;
+                      final targetWorldY = wH / 2 + targetPlotCoord.dy * painterScale;
+
+                      final dx = -(targetWorldX * targetScale - sW / 2);
+                      final dy = -(targetWorldY * targetScale - sH / 2);
+
+                      _aerialMapZoomController.value =
+                          Matrix4.translationValues(dx, dy, 0.0)
+                            ..scaleByDouble(targetScale, targetScale, 1.0, 1.0);
+                    },
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                  // 5. Overview / Reset Zoom ↺ (snaps to locked height touching top & bottom)
                   IconButton(
                     icon: const Icon(Icons.restart_alt_rounded,
                         color: Color(0xFFFFD700), size: 20),

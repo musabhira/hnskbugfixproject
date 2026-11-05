@@ -432,7 +432,7 @@ class CosmosAddress {
 /// - Users are assigned a permanent initial home upon account creation.
 /// - Users can spend Pocket Score (e.g. 500 PS) to relocate to their dream planet or moon!
 class CosmosLoopAllocationService {
-  static const int slotsPerIsland = 50;
+  static const int slotsPerIsland = 35;
 
   static const List<String> planetOrderNames = [
     'Earth Prime 🌍',
