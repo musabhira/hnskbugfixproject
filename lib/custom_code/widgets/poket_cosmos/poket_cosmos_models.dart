@@ -34,6 +34,20 @@ class PoketPlanet {
   bool get isFull => occupiedPlots >= totalPlots;
 }
 
+/// 🏝️ Distinct Architectural Island Geometry Styles
+enum IslandShapeStyle {
+  crescentLagoon,   // C-shaped crescent wrapping around turquoise lagoon
+  sCurveArchipelago,// S-shaped winding dragon island
+  starAtoll,        // 4/5-point tropical star island with deep sea inlets
+  dualIsletBridge,  // Twin islands connected by sandbar/wooden bridge
+  ringAtoll,        // Circular atoll with large interior turquoise lagoon
+  hookPeninsula,    // J-shaped fishhook with elongated beach
+  heartSanctuary,   // Heart-shaped paradise island
+  cloverBays,       // 3-leaf clover with 3 deep lagoons
+  fortressPlateau,  // Diamond/hexagonal coral plateau
+  citadelApex,      // Royal octagonal palace island with golden domes
+}
+
 /// 🗺️ Country / Island Map inside a Planet
 class PoketCountryMap {
   final int id;
@@ -50,6 +64,7 @@ class PoketCountryMap {
   final List<IslandLandmark> landmarks;
   final bool isPresidential;
   final int shapeSeed;
+  final IslandShapeStyle shapeStyle;
 
   const PoketCountryMap({
     required this.id,
@@ -66,6 +81,7 @@ class PoketCountryMap {
     this.landmarks = const [],
     this.isPresidential = false,
     this.shapeSeed = 1,
+    this.shapeStyle = IslandShapeStyle.crescentLagoon,
   });
 
   int get availableSlots => (totalSlots - filledSlots).clamp(0, totalSlots);

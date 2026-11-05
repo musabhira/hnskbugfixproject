@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flame/game.dart';
+import 'package:flame/game.dart' hide Matrix4;
+import '/backend/supabase/supabase.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
-import 'island_street_drive_view.dart';
 
 /// 🌌 Poket Cosmos Explorer:
-/// - Screen 0: Fullscreen Solar System & Scientific Moons (with compact 3D tilt bend button & iOS back).
-/// - Screen 1: Earth Prime's 30 Islands Archipelago (Horizontal Swipeable Cards where top 70% is
-///   the aerial bird's-eye view matching user's images, with President's Sanctuary Island 👑 and 50-150 slots).
-/// - Screen 2: Fullscreen Aerial Island Map (InteractiveViewer smooth zoom in/out with ocean filling bounds).
-/// - Screen 3: 2-Point Perspective Street Drive View (drive car along street, front-facing habit houses).
+/// - Screen 0: Fullscreen Solar System & Scientific Moons (compact 3D tilt bend button & iOS back).
+/// - Screen 1: Earth Prime's 30 English Learning Archipelago Islands (Horizontal Swipeable Cards
+///   with Top 70% Aerial View matching reference photos, Title on Top, Slots underneath, distinct shapes & colors).
+/// - Screen 2: Fullscreen Infinite Ocean Island Map (Edge-to-edge seamless ocean without square box breaks,
+///   deep 6.5x zoom, 50 top-down 90-day habit house plots, and tap-to-inspect citizen profile sheet).
 class PoketCosmosNavigatorPage extends StatefulWidget {
   const PoketCosmosNavigatorPage({super.key});
 
@@ -24,7 +24,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   // Hub mode: 0 = Flame 3D Solar System, 1 = Minimal Planet Directory
   int _hubMode = 0;
 
-  // Active Screen: 0 = Solar Hub, 1 = Archipelago Carousel, 2 = Fullscreen Aerial Map, 3 = Street Drive View
+  // Active Screen: 0 = Solar Hub, 1 = Archipelago Carousel, 2 = Fullscreen Aerial Map
   int _activeScreen = 0;
 
   double _tiltAngle = 0.42;
@@ -39,235 +39,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   late PageController _islandPageController;
 
   late List<PoketPlanet> _planets;
+  List<CitizenPlot> _currentIslandPlots = [];
+  CitizenPlot? _inspectedPlot;
 
   @override
   void initState() {
     super.initState();
     _islandPageController = PageController(viewportFraction: 0.84);
-
-    _planets = [
-      // 🌍 APEX: Earth Prime (Poket World) with President's Island & 29 Diverse Islands
-      PoketPlanet(
-        id: 3,
-        name: 'Earth Prime 🌍',
-        theme: 'Cradle of Civilization & Apex Capital',
-        tagLine: 'Day 1-90 Habit Pioneers • 30 Diverse Islands',
-        primaryColor: const Color(0xFF38BDF8),
-        glowColor: const Color(0xFF0284C7),
-        radius: 17,
-        orbitDistance: 175,
-        orbitSpeed: 1.0,
-        totalPlots: 2200,
-        occupiedPlots: 1420,
-        countryMaps: _buildEarth30Islands(),
-      ),
-
-      // ⚪ Mercury
-      const PoketPlanet(
-        id: 1,
-        name: 'Mercury ⚪',
-        theme: 'Swift Iron Frontier',
-        tagLine: 'High Velocity Orbit • Sun Scorched Basins',
-        primaryColor: Color(0xFFCBD5E1),
-        glowColor: Color(0xFF94A3B8),
-        radius: 10,
-        orbitDistance: 85,
-        orbitSpeed: 2.1,
-        totalPlots: 100,
-        occupiedPlots: 45,
-        countryMaps: [
-          PoketCountryMap(
-            id: 101,
-            name: 'Caloris Basin Atoll',
-            tag: 'Crater Ridge',
-            landColor: Color(0xFF64748B),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
-            filledSlots: 32,
-            climate: 'High Heat 🔥',
-            climateIcon: Icons.local_fire_department_rounded,
-            islandEmoji: '🌋',
-          ),
-        ],
-      ),
-
-      // 🟡 Venus
-      const PoketPlanet(
-        id: 2,
-        name: 'Venus 🟡',
-        theme: 'Golden Veil',
-        tagLine: 'Amber Atmosphere & Golden Highlands',
-        primaryColor: Color(0xFFFDE047),
-        glowColor: Color(0xFFD97706),
-        radius: 14,
-        orbitDistance: 130,
-        orbitSpeed: 1.5,
-        totalPlots: 150,
-        occupiedPlots: 85,
-        countryMaps: [
-          PoketCountryMap(
-            id: 201,
-            name: 'Aphrodite Terra',
-            tag: 'Golden Highlands',
-            landColor: Color(0xFFB45309),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 75,
-            filledSlots: 45,
-            climate: 'Gold Cloud ⛅',
-            climateIcon: Icons.wb_cloudy_rounded,
-            islandEmoji: '🏺',
-          ),
-        ],
-      ),
-
-      // 🔴 Mars
-      const PoketPlanet(
-        id: 4,
-        name: 'Mars 🔴',
-        theme: 'Red Dunes Bastion',
-        tagLine: 'Iron Oxide Canyons & High Altitude Bastions',
-        primaryColor: Color(0xFFF97316),
-        glowColor: Color(0xFFEA580C),
-        radius: 13,
-        orbitDistance: 220,
-        orbitSpeed: 0.8,
-        totalPlots: 200,
-        occupiedPlots: 110,
-        countryMaps: [
-          PoketCountryMap(
-            id: 401,
-            name: 'Olympus Mons Haven',
-            tag: 'Volcano Oasis',
-            landColor: Color(0xFF9A3412),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 100,
-            filledSlots: 72,
-            climate: 'Rusty Breeze 🌪️',
-            climateIcon: Icons.air_rounded,
-            islandEmoji: '🏜️',
-          ),
-        ],
-      ),
-
-      // 🟠 Jupiter
-      const PoketPlanet(
-        id: 5,
-        name: 'Jupiter 🟠',
-        theme: 'Great Storm Giant',
-        tagLine: 'Colossal Gas Bands & Galilean Moons',
-        primaryColor: Color(0xFFFDBA74),
-        glowColor: Color(0xFFC2410C),
-        radius: 26,
-        orbitDistance: 275,
-        orbitSpeed: 0.55,
-        totalPlots: 300,
-        occupiedPlots: 180,
-        countryMaps: [
-          PoketCountryMap(
-            id: 501,
-            name: 'Red Spot Sanctuary',
-            tag: 'Storm Center',
-            landColor: Color(0xFF7C2D12),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 150,
-            filledSlots: 110,
-            climate: 'Thunder Storm ⚡',
-            climateIcon: Icons.bolt_rounded,
-            islandEmoji: '🌪️',
-          ),
-        ],
-      ),
-
-      // 🪐 Saturn
-      const PoketPlanet(
-        id: 6,
-        name: 'Saturn 🪐',
-        theme: 'Ringed Majesty',
-        tagLine: 'Golden Ice Dust Rings & Floating Palaces',
-        primaryColor: Color(0xFFFEF08A),
-        glowColor: Color(0xFFCA8A04),
-        radius: 22,
-        orbitDistance: 335,
-        orbitSpeed: 0.42,
-        totalPlots: 250,
-        occupiedPlots: 140,
-        countryMaps: [
-          PoketCountryMap(
-            id: 601,
-            name: 'Titan Atoll',
-            tag: 'Golden Horizon',
-            landColor: Color(0xFF854D0E),
-            waterColor: Color(0xFF0EA5E9),
-            totalSlots: 100,
-            filledSlots: 68,
-            climate: 'Ring Glow ✨',
-            climateIcon: Icons.auto_awesome_rounded,
-            islandEmoji: '💍',
-          ),
-        ],
-      ),
-
-      // 💠 Uranus
-      const PoketPlanet(
-        id: 7,
-        name: 'Uranus 💠',
-        theme: 'Cyan Ice Sanctuary',
-        tagLine: 'Methane Cyan Mist & Crystalline Peaks',
-        primaryColor: Color(0xFF67E8F9),
-        glowColor: Color(0xFF0891B2),
-        radius: 18,
-        orbitDistance: 395,
-        orbitSpeed: 0.32,
-        totalPlots: 150,
-        occupiedPlots: 65,
-        countryMaps: [
-          PoketCountryMap(
-            id: 701,
-            name: 'Cyan Glacier Isle',
-            tag: 'Ice Vault',
-            landColor: Color(0xFF155E75),
-            waterColor: Color(0xFF0369A1),
-            totalSlots: 75,
-            filledSlots: 36,
-            climate: 'Cyan Frost ❄️',
-            climateIcon: Icons.ac_unit_rounded,
-            islandEmoji: '🧊',
-          ),
-        ],
-      ),
-
-      // 🔵 Neptune
-      const PoketPlanet(
-        id: 8,
-        name: 'Neptune 🔵',
-        theme: 'Deep Azure Oceanic World',
-        tagLine: 'Supersonic Azure Winds & Cosmic Seas',
-        primaryColor: Color(0xFF60A5FA),
-        glowColor: Color(0xFF1D4ED8),
-        radius: 17,
-        orbitDistance: 450,
-        orbitSpeed: 0.25,
-        totalPlots: 100,
-        occupiedPlots: 45,
-        countryMaps: [
-          PoketCountryMap(
-            id: 801,
-            name: 'Triton Abyss Atoll',
-            tag: 'Deep Ocean Realm',
-            landColor: Color(0xFF1E3A8A),
-            waterColor: Color(0xFF172554),
-            totalSlots: 50,
-            filledSlots: 28,
-            climate: 'Azure Tempest 🌊',
-            climateIcon: Icons.waves_rounded,
-            islandEmoji: '🔱',
-          ),
-        ],
-      ),
-    ];
-
-    _selectedPlanet = _planets.first;
-    _selectedIsland = _selectedPlanet!.countryMaps.first;
+    _planets = _buildCosmosPlanets();
+    _loadIslandPlots(_planets.first.countryMaps.first);
   }
 
   @override
@@ -278,379 +58,800 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     super.dispose();
   }
 
-  // 🏝️ Earth Prime: 30 Islands with President's Island & Varied Sizes (50, 75, 100, 150 slots)
-  static List<PoketCountryMap> _buildEarth30Islands() {
+  // =========================================================================
+  // 👥 FETCH REAL USERS FOR THE 50 PLOTS ON THE ACTIVE ISLAND
+  // =========================================================================
+  Future<void> _loadIslandPlots(PoketCountryMap island) async {
+    try {
+      final res = await SupaFlow.client
+          .from('profile')
+          .select(
+              'id, user_id, name, day, learning_day, pocket_score, is_vip, is_premium, created_at')
+          .order('pocket_score', ascending: false)
+          .limit(island.totalSlots.clamp(1, 50));
+
+      final List<CitizenPlot> plots = [];
+      final coords =
+          IslandAerialPainter.get50PlotCoordinates(island.shapeStyle);
+
+      if (res is List && res.isNotEmpty) {
+        int idx = 0;
+        for (final row in res) {
+          if (idx >= 50) break;
+          final map = row as Map<String, dynamic>;
+          final userName = (map['name'] as String?)?.trim().isNotEmpty == true
+              ? (map['name'] as String).trim()
+              : 'Citizen #${idx + 1}';
+          final day = (map['day'] as num?)?.toInt() ??
+              (map['learning_day'] as num?)?.toInt() ??
+              1;
+          final score = (map['pocket_score'] as num?)?.toInt() ?? 500;
+          final isVip = (map['is_vip'] as bool?) ?? false;
+          final isPres = island.isPresidential || idx == 0;
+
+          plots.add(
+            CitizenPlot(
+              plotNumber: idx + 1,
+              userId: (map['user_id'] as String?) ??
+                  (map['id'] as String?) ??
+                  'user_$idx',
+              userName: userName,
+              userAvatar: '',
+              day: day.clamp(1, 90),
+              pocketScore: score,
+              streetName: '${island.name} Boulevard',
+              postOffice: island.name,
+              countryName: island.name,
+              planetName: 'Earth Prime',
+              coordinates: coords[idx % coords.length],
+              isVip: isVip,
+              isPresident: isPres,
+              tier: island.isPresidential
+                  ? PlotDeedTier.presidential
+                  : (idx <= 10
+                      ? PlotDeedTier.beachfront
+                      : PlotDeedTier.standard),
+              postalPinCode:
+                  'PK-${island.id.toString().padLeft(2, '0')}${(idx + 1).toString().padLeft(3, '0')}',
+            ),
+          );
+          idx++;
+        }
+      }
+
+      // Fill remaining plots up to island.totalSlots (default 50)
+      final currentCount = plots.length;
+      for (int i = currentCount; i < island.totalSlots && i < 50; i++) {
+        plots.add(
+          CitizenPlot(
+            plotNumber: i + 1,
+            userId: 'vacant_${i + 1}',
+            userName: 'Plot #${i + 1}',
+            userAvatar: '',
+            day: ((i + 1) * 3) % 90 + 1,
+            pocketScore: 300,
+            streetName: '${island.name} Avenue',
+            postOffice: island.name,
+            countryName: island.name,
+            planetName: 'Earth Prime',
+            coordinates: coords[i % coords.length],
+            status: PlotStatus.forSale,
+            postalPinCode:
+                'PK-${island.id.toString().padLeft(2, '0')}${(i + 1).toString().padLeft(3, '0')}',
+          ),
+        );
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentIslandPlots = plots;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading island plots: $e');
+    }
+  }
+
+  // =========================================================================
+  // 🌍 30 ENGLISH LEARNING ISLANDS (50 SLOTS, UNIQUE GEOMETRIES & THEMES)
+  // =========================================================================
+  static List<PoketPlanet> _buildCosmosPlanets() {
     return [
-      // 👑 Island #1: President's Exclusive Sanctuary
+      PoketPlanet(
+        id: 3,
+        name: 'Earth Prime 🌍',
+        theme: 'Cradle of Habit Learning & Apex Capital',
+        tagLine: 'Day 1-90 Habit Pioneers • 30 English Learning Islands',
+        primaryColor: const Color(0xFF38BDF8),
+        glowColor: const Color(0xFF0284C7),
+        radius: 17,
+        orbitDistance: 175,
+        orbitSpeed: 1.0,
+        totalPlots: 1451,
+        occupiedPlots: 950,
+        countryMaps: _buildEarth30EnglishIslands(),
+      ),
+      const PoketPlanet(
+        id: 1,
+        name: 'Mercury ⚪',
+        theme: 'Swift Iron Frontier',
+        tagLine: 'High Velocity Orbit • Scorched Basins',
+        primaryColor: Color(0xFFCBD5E1),
+        glowColor: Color(0xFF94A3B8),
+        radius: 10,
+        orbitDistance: 85,
+        orbitSpeed: 2.1,
+        totalPlots: 50,
+        occupiedPlots: 32,
+        countryMaps: [
+          PoketCountryMap(
+            id: 101,
+            name: 'Caloris Basin',
+            tag: 'Crater Ridge',
+            landColor: Color(0xFF64748B),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 32,
+            climate: 'High Heat 🔥',
+            climateIcon: Icons.local_fire_department_rounded,
+            islandEmoji: '🌋',
+            shapeStyle: IslandShapeStyle.fortressPlateau,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 2,
+        name: 'Venus 🟡',
+        theme: 'Golden Veil',
+        tagLine: 'Amber Atmosphere & Golden Highlands',
+        primaryColor: Color(0xFFFDE047),
+        glowColor: Color(0xFFD97706),
+        radius: 14,
+        orbitDistance: 130,
+        orbitSpeed: 1.5,
+        totalPlots: 50,
+        occupiedPlots: 40,
+        countryMaps: [
+          PoketCountryMap(
+            id: 201,
+            name: 'Aphrodite Terra',
+            tag: 'Golden Highlands',
+            landColor: Color(0xFFB45309),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 40,
+            climate: 'Gold Cloud ⛅',
+            climateIcon: Icons.wb_cloudy_rounded,
+            islandEmoji: '🏺',
+            shapeStyle: IslandShapeStyle.crescentLagoon,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 4,
+        name: 'Mars 🔴',
+        theme: 'Red Dunes Bastion',
+        tagLine: 'Iron Oxide Canyons & High Canyons',
+        primaryColor: Color(0xFFF97316),
+        glowColor: Color(0xFFEA580C),
+        radius: 13,
+        orbitDistance: 220,
+        orbitSpeed: 0.8,
+        totalPlots: 50,
+        occupiedPlots: 38,
+        countryMaps: [
+          PoketCountryMap(
+            id: 401,
+            name: 'Olympus Haven',
+            tag: 'Volcano Oasis',
+            landColor: Color(0xFF9A3412),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 38,
+            climate: 'Rusty Breeze 🌪️',
+            climateIcon: Icons.air_rounded,
+            islandEmoji: '🏜️',
+            shapeStyle: IslandShapeStyle.starAtoll,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 5,
+        name: 'Jupiter 🟠',
+        theme: 'Great Storm Giant',
+        tagLine: 'Colossal Gas Bands & Moons',
+        primaryColor: Color(0xFFFDBA74),
+        glowColor: Color(0xFFC2410C),
+        radius: 26,
+        orbitDistance: 275,
+        orbitSpeed: 0.55,
+        totalPlots: 50,
+        occupiedPlots: 42,
+        countryMaps: [
+          PoketCountryMap(
+            id: 501,
+            name: 'Red Spot Atoll',
+            tag: 'Storm Center',
+            landColor: Color(0xFF7C2D12),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 42,
+            climate: 'Thunder Storm ⚡',
+            climateIcon: Icons.bolt_rounded,
+            islandEmoji: '🌪️',
+            shapeStyle: IslandShapeStyle.ringAtoll,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 6,
+        name: 'Saturn 🪐',
+        theme: 'Ringed Majesty',
+        tagLine: 'Golden Ice Dust Rings & Palaces',
+        primaryColor: Color(0xFFFEF08A),
+        glowColor: Color(0xFFCA8A04),
+        radius: 22,
+        orbitDistance: 335,
+        orbitSpeed: 0.42,
+        totalPlots: 50,
+        occupiedPlots: 35,
+        countryMaps: [
+          PoketCountryMap(
+            id: 601,
+            name: 'Titan Atoll',
+            tag: 'Golden Horizon',
+            landColor: Color(0xFF854D0E),
+            waterColor: Color(0xFF0EA5E9),
+            totalSlots: 50,
+            filledSlots: 35,
+            climate: 'Cold Gold Mists ❄️',
+            climateIcon: Icons.ac_unit_rounded,
+            islandEmoji: '👑',
+            shapeStyle: IslandShapeStyle.dualIsletBridge,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 7,
+        name: 'Uranus 💎',
+        theme: 'Cyan Ice Vault',
+        tagLine: 'Tilt 98° Orbit • Diamond Rain Cryo',
+        primaryColor: Color(0xFF67E8F9),
+        glowColor: Color(0xFF06B6D4),
+        radius: 18,
+        orbitDistance: 395,
+        orbitSpeed: 0.32,
+        totalPlots: 50,
+        occupiedPlots: 28,
+        countryMaps: [
+          PoketCountryMap(
+            id: 701,
+            name: 'Miranda Glade',
+            tag: 'Cyan Ice Cliffs',
+            landColor: Color(0xFF0E7490),
+            waterColor: Color(0xFF0891B2),
+            totalSlots: 50,
+            filledSlots: 28,
+            climate: 'Cryo Chill 🧊',
+            climateIcon: Icons.severe_cold_rounded,
+            islandEmoji: '🧊',
+            shapeStyle: IslandShapeStyle.hookPeninsula,
+          ),
+        ],
+      ),
+      const PoketPlanet(
+        id: 8,
+        name: 'Neptune 🌊',
+        theme: 'Abyssal Trident',
+        tagLine: 'Supersonic Winds & Deep Ultramarine',
+        primaryColor: Color(0xFF60A5FA),
+        glowColor: Color(0xFF2563EB),
+        radius: 17,
+        orbitDistance: 450,
+        orbitSpeed: 0.22,
+        totalPlots: 50,
+        occupiedPlots: 30,
+        countryMaps: [
+          PoketCountryMap(
+            id: 801,
+            name: 'Triton Geyser',
+            tag: 'Outer Rim',
+            landColor: Color(0xFF1E3A8A),
+            waterColor: Color(0xFF1D4ED8),
+            totalSlots: 50,
+            filledSlots: 30,
+            climate: 'Deep Gale 💨',
+            climateIcon: Icons.cyclone_rounded,
+            islandEmoji: '🔱',
+            shapeStyle: IslandShapeStyle.heartSanctuary,
+          ),
+        ],
+      ),
+    ];
+  }
+
+  /// 🏝️ 30 English Learning Islands with Distinct Shapes & 50 Plots
+  static List<PoketCountryMap> _buildEarth30EnglishIslands() {
+    return [
+      // 👑 Island #0: President Mus'ab's Exclusive Sanctuary
       const PoketCountryMap(
         id: 1,
-        name: "President's Sanctuary Isle 👑",
-        tag: 'Head of State Exclusive',
+        name: 'Crown Apex 👑',
+        tag: 'Presidential Sanctuary',
         landColor: Color(0xFF15803D),
         waterColor: Color(0xFF0284C7),
-        totalSlots: 1, // Exclusive to President
+        totalSlots: 1,
         filledSlots: 1,
-        climate: 'Royal Breeze 👑',
+        climate: 'Imperial Breeze 👑',
         climateIcon: Icons.military_tech_rounded,
-        description: 'Exclusive private tropical sanctuary reserved solely for the Supreme President of Poket World.',
+        description: 'Sovereign island sanctuary reserved solely for the Supreme President.',
         islandEmoji: '🏰',
         isPresidential: true,
+        shapeStyle: IslandShapeStyle.citadelApex,
       ),
 
-      // Large Capital Islands (150 Slots)
+      // 1. Vocabulary Bay
       const PoketCountryMap(
         id: 2,
-        name: 'Genesis Central Island 🏝️',
-        tag: 'Grand Capital',
-        landColor: Color(0xFF15803D),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 150,
-        filledSlots: 142,
-        climate: 'Sunny & Lush ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description: 'The bustling metropolitan island of Poket Earth with winding avenues, central lagoon, and grand docks.',
-      ),
-      const PoketCountryMap(
-        id: 3,
-        name: 'Emerald Delta Bay 🌿',
-        tag: 'Grand River Delta',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 150,
-        filledSlots: 128,
-        climate: 'Fresh Breeze 🍃',
-        climateIcon: Icons.air_rounded,
-        description: 'Vast delta archipelago with waterways connecting elite residential estates.',
-      ),
-
-      // Medium-Large Islands (100 Slots)
-      const PoketCountryMap(
-        id: 4,
-        name: 'Palm Breeze Atoll 🏖️',
-        tag: 'Beachfront Boulevard',
+        name: 'Vocabulary Bay',
+        tag: 'Word Builders',
         landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF06B6D4),
-        totalSlots: 100,
-        filledSlots: 92,
-        climate: 'Tropical Sun 🌴',
-        climateIcon: Icons.beach_access_rounded,
-        description: 'White sandy beaches lined with sun loungers and crystal-clear swimming reefs.',
-      ),
-      const PoketCountryMap(
-        id: 5,
-        name: 'Starlight Highlands ⛰️',
-        tag: 'Mountain Shoreline',
-        landColor: Color(0xFF1E3A8A),
-        waterColor: Color(0xFF0369A1),
-        totalSlots: 100,
-        filledSlots: 85,
-        climate: 'Starry Mist ✨',
-        climateIcon: Icons.nights_stay_rounded,
-        description: 'Elevated coastal cliffs surrounded by oceanic azure waters and evening stars.',
-      ),
-      const PoketCountryMap(
-        id: 6,
-        name: 'Azure Lagoon Isle 🌊',
-        tag: 'Turquoise Ring',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 100,
-        filledSlots: 79,
-        climate: 'Calm Waves 🌊',
-        climateIcon: Icons.waves_rounded,
-        description: 'Deep circular lagoon sheltered by lush protective coral barriers.',
-      ),
-
-      // Medium Islands (75 Slots)
-      const PoketCountryMap(
-        id: 7,
-        name: 'Whispering Pines 🌲',
-        tag: 'Forest Coast',
-        landColor: Color(0xFF065F46),
-        waterColor: Color(0xFF075985),
-        totalSlots: 75,
-        filledSlots: 64,
-        climate: 'Pine Scent 🌲',
-        climateIcon: Icons.forest_rounded,
-        description: 'Cool evergreen tree canopies bordering quiet pebble shores.',
-      ),
-      const PoketCountryMap(
-        id: 8,
-        name: 'Golden Dunes Atoll 🌴',
-        tag: 'Desert Oasis',
-        landColor: Color(0xFF854D0E),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 75,
-        filledSlots: 58,
-        climate: 'Warm Sunset 🌅',
-        climateIcon: Icons.wb_twilight_rounded,
-        description: 'Sun-kissed golden sandbars surrounding a fresh spring oasis.',
-      ),
-      const PoketCountryMap(
-        id: 9,
-        name: 'Crystal Springs Bay 💧',
-        tag: 'Spring Valley',
-        landColor: Color(0xFF0284C7),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 75,
-        filledSlots: 61,
-        climate: 'Pure Springs 💧',
-        climateIcon: Icons.water_drop_rounded,
-        description: 'Freshwater rivulets flowing into calm turquoise ocean bays.',
-      ),
-      const PoketCountryMap(
-        id: 10,
-        name: 'Amber Coast 🌅',
-        tag: 'Golden Coast',
-        landColor: Color(0xFFB45309),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 75,
-        filledSlots: 54,
-        climate: 'Amber Light ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description: 'Sunset coast known for evening yacht regattas and beachside manors.',
-      ),
-      const PoketCountryMap(
-        id: 11,
-        name: 'Falcon Crest Isle 🦅',
-        tag: 'High Ridge',
-        landColor: Color(0xFF166534),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 75,
-        filledSlots: 68,
-        climate: 'Mountain Air 🦅',
-        climateIcon: Icons.terrain_rounded,
-        description: 'High vantage point overlooking the entire southern oceanic expanse.',
-      ),
-      const PoketCountryMap(
-        id: 12,
-        name: 'Breeze Harbor ⛵',
-        tag: 'Yacht Marina',
-        landColor: Color(0xFF0F766E),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 75,
-        filledSlots: 56,
-        climate: 'Coastal Wind ⛵',
-        climateIcon: Icons.sailing_rounded,
-        description: 'Full-service maritime harbor with wooden jetties and speedboats.',
-      ),
-
-      // Standard Community Islands (50 Slots)
-      const PoketCountryMap(
-        id: 13,
-        name: 'Orchid Archipelago 🌸',
-        tag: 'Flora Island',
-        landColor: Color(0xFF059669),
-        waterColor: Color(0xFF06B6D4),
+        waterColor: Color(0xFF06B6D4), // Coral turquoise
         totalSlots: 50,
         filledSlots: 44,
-        climate: 'Floral Bloom 🌸',
-        climateIcon: Icons.local_florist_rounded,
-        description: 'Vibrant flowering flora covering winding garden pathways.',
+        climate: 'Warm Coastal 🌊',
+        climateIcon: Icons.waves_rounded,
+        description: 'Curved turquoise crescent bay where daily vocabulary words are mastered.',
+        islandEmoji: '📖',
+        shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
+
+      // 2. Sentence Reef
       const PoketCountryMap(
-        id: 14,
-        name: 'Silver Lake Isle 🪙',
-        tag: 'Inland Basin',
-        landColor: Color(0xFF334155),
-        waterColor: Color(0xFF0369A1),
-        totalSlots: 50,
-        filledSlots: 38,
-        climate: 'Mirror Water 🪞',
-        climateIcon: Icons.water_rounded,
-        description: 'Calm reflective water bodies surrounded by lush habit estates.',
-      ),
-      const PoketCountryMap(
-        id: 15,
-        name: 'Moonlit Cove 🌙',
-        tag: 'Night Bay',
-        landColor: Color(0xFF1E1B4B),
-        waterColor: Color(0xFF1E3A8A),
-        totalSlots: 50,
-        filledSlots: 32,
-        climate: 'Moonlit Waves 🌙',
-        climateIcon: Icons.bedtime_rounded,
-        description: 'Serene evening cove reflecting lunar glows on tranquil waters.',
-      ),
-      const PoketCountryMap(
-        id: 16,
-        name: 'Aurora Strand 🌌',
-        tag: 'Luminous Reef',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF0EA5E9),
+        id: 3,
+        name: 'Sentence Reef',
+        tag: 'Grammar Flow',
+        landColor: Color(0xFF0D9488),
+        waterColor: Color(0xFF0EA5E9), // Aquamarine
         totalSlots: 50,
         filledSlots: 41,
-        climate: 'Aurora Glow 🌌',
-        climateIcon: Icons.auto_awesome_rounded,
-        description: 'Bioluminescent reef waters glowing gently during nighttime hours.',
+        climate: 'Tropical Breeze 🍃',
+        climateIcon: Icons.air_rounded,
+        description: 'Winding dragon reef connecting clauses into powerful English sentences.',
+        islandEmoji: '✍️',
+        shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
+
+      // 3. Grammar Isle
       const PoketCountryMap(
-        id: 17,
-        name: 'Sunstone Haven ☀️',
-        tag: 'Granite Cliffs',
-        landColor: Color(0xFF78350F),
-        waterColor: Color(0xFF0284C7),
+        id: 4,
+        name: 'Grammar Isle',
+        tag: 'Core Rules',
+        landColor: Color(0xFF059669),
+        waterColor: Color(0xFF10B981), // Emerald Mint
+        totalSlots: 50,
+        filledSlots: 48,
+        climate: 'Clear Skies ☀️',
+        climateIcon: Icons.wb_sunny_rounded,
+        description: '5-pointed coral star island forming the foundation of English grammar.',
+        islandEmoji: '⭐',
+        shapeStyle: IslandShapeStyle.starAtoll,
+      ),
+
+      // 4. Idiom Atoll
+      const PoketCountryMap(
+        id: 5,
+        name: 'Idiom Atoll',
+        tag: 'Native Expressions',
+        landColor: Color(0xFF15803D),
+        waterColor: Color(0xFF3B82F6), // Azure Sapphire
+        totalSlots: 50,
+        filledSlots: 39,
+        climate: 'Ocean Mist 🌫️',
+        climateIcon: Icons.cloud_rounded,
+        description: 'Circular ring atoll enclosing a tranquil inner saltwater lagoon.',
+        islandEmoji: '💡',
+        shapeStyle: IslandShapeStyle.ringAtoll,
+      ),
+
+      // 5. Phonics Cay
+      const PoketCountryMap(
+        id: 6,
+        name: 'Phonics Cay',
+        tag: 'Sound Mastery',
+        landColor: Color(0xFF166534),
+        waterColor: Color(0xFF14B8A6), // Sunlit turquoise
+        totalSlots: 50,
+        filledSlots: 36,
+        climate: 'Sunny Sand 🏖️',
+        climateIcon: Icons.beach_access_rounded,
+        description: 'Hook-shaped peninsula with white sand beaches for pronunciation clarity.',
+        islandEmoji: '🔊',
+        shapeStyle: IslandShapeStyle.hookPeninsula,
+      ),
+
+      // 6. Fluency Haven
+      const PoketCountryMap(
+        id: 7,
+        name: 'Fluency Haven',
+        tag: 'Continuous Speech',
+        landColor: Color(0xFF14532D),
+        waterColor: Color(0xFF0284C7), // Deep lagoon
+        totalSlots: 50,
+        filledSlots: 47,
+        climate: 'Lush Mists 🌿',
+        climateIcon: Icons.forest_rounded,
+        description: 'Twin islets linked by a wooden footbridge celebrating seamless speech.',
+        islandEmoji: '🗣️',
+        shapeStyle: IslandShapeStyle.dualIsletBridge,
+      ),
+
+      // 7. Syntax Strand
+      const PoketCountryMap(
+        id: 8,
+        name: 'Syntax Strand',
+        tag: 'Structure Order',
+        landColor: Color(0xFF047857),
+        waterColor: Color(0xFF06B6D4),
+        totalSlots: 50,
+        filledSlots: 42,
+        climate: 'Mild Tropical 🌴',
+        climateIcon: Icons.eco_rounded,
+        description: 'Heart-shaped tropical haven where word order and sentence syntax thrive.',
+        islandEmoji: '💖',
+        shapeStyle: IslandShapeStyle.heartSanctuary,
+      ),
+
+      // 8. Lexicon Oasis
+      const PoketCountryMap(
+        id: 9,
+        name: 'Lexicon Oasis',
+        tag: 'Advanced Diction',
+        landColor: Color(0xFF0F766E),
+        waterColor: Color(0xFF0D9488),
+        totalSlots: 50,
+        filledSlots: 45,
+        climate: 'Fresh Palms 🌴',
+        climateIcon: Icons.park_rounded,
+        description: '3-leaf clover island rich with advanced vocabulary and synonym reserves.',
+        islandEmoji: '🍀',
+        shapeStyle: IslandShapeStyle.cloverBays,
+      ),
+
+      // 9. Verb Vista
+      const PoketCountryMap(
+        id: 10,
+        name: 'Verb Vista',
+        tag: 'Action Hub',
+        landColor: Color(0xFF115E59),
+        waterColor: Color(0xFF6366F1), // Royal Indigo
+        totalSlots: 50,
+        filledSlots: 49,
+        climate: 'Energizing Wind ⚡',
+        climateIcon: Icons.bolt_rounded,
+        description: 'High coral plateau commanding dynamic active verb formulations.',
+        islandEmoji: '🏃',
+        shapeStyle: IslandShapeStyle.fortressPlateau,
+      ),
+
+      // 10. Pronoun Peninsula
+      const PoketCountryMap(
+        id: 11,
+        name: 'Pronoun Peninsula',
+        tag: 'Identity & Reference',
+        landColor: Color(0xFF16A34A),
+        waterColor: Color(0xFF059669),
+        totalSlots: 50,
+        filledSlots: 35,
+        climate: 'Gentle Bay ⛵',
+        climateIcon: Icons.sailing_rounded,
+        description: 'Curved sandy peninsula with calm anchorages for subject/object pronouns.',
+        islandEmoji: '👥',
+        shapeStyle: IslandShapeStyle.crescentLagoon,
+      ),
+
+      // 11. Tense Territory
+      const PoketCountryMap(
+        id: 12,
+        name: 'Tense Territory',
+        tag: 'Past Present Future',
+        landColor: Color(0xFF0D9488),
+        waterColor: Color(0xFF2563EB),
+        totalSlots: 50,
+        filledSlots: 43,
+        climate: 'Time Currents ⏳',
+        climateIcon: Icons.hourglass_bottom_rounded,
+        description: 'Meandering S-curve spanning past, present, and continuous tense habit mastery.',
+        islandEmoji: '⏳',
+        shapeStyle: IslandShapeStyle.sCurveArchipelago,
+      ),
+
+      // 12. Adverb Archipelago
+      const PoketCountryMap(
+        id: 13,
+        name: 'Adverb Atoll',
+        tag: 'Modifying Nuance',
+        landColor: Color(0xFF059669),
+        waterColor: Color(0xFF0891B2),
         totalSlots: 50,
         filledSlots: 37,
-        climate: 'Sunlit Rock ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description: 'Solid granite cliffs offering unbreakable habit house foundations.',
+        climate: 'Speed Breeze 💨',
+        climateIcon: Icons.speed_rounded,
+        description: 'Star-shaped coral reef refining how, when, and where actions take place.',
+        islandEmoji: '🚀',
+        shapeStyle: IslandShapeStyle.starAtoll,
       ),
+
+      // 13. Echo Lagoon
+      const PoketCountryMap(
+        id: 14,
+        name: 'Echo Lagoon',
+        tag: 'Active Listening',
+        landColor: Color(0xFF15803D),
+        waterColor: Color(0xFF4F46E5),
+        totalSlots: 50,
+        filledSlots: 40,
+        climate: 'Harmonic Waters 🎵',
+        climateIcon: Icons.surround_sound_rounded,
+        description: 'Ring atoll whose crystalline inner waters echo conversational dialogue.',
+        islandEmoji: '🎧',
+        shapeStyle: IslandShapeStyle.ringAtoll,
+      ),
+
+      // 14. Diction Dune
+      const PoketCountryMap(
+        id: 15,
+        name: 'Diction Dune',
+        tag: 'Crisp Enunciation',
+        landColor: Color(0xFF166534),
+        waterColor: Color(0xFF0284C7),
+        totalSlots: 50,
+        filledSlots: 38,
+        climate: 'Coastal Sun ☀️',
+        climateIcon: Icons.wb_sunny_rounded,
+        description: 'Hook peninsula of golden sand dunes shaping clear verbal expression.',
+        islandEmoji: '🗣️',
+        shapeStyle: IslandShapeStyle.hookPeninsula,
+      ),
+
+      // 15. Rhythm Reach
+      const PoketCountryMap(
+        id: 16,
+        name: 'Rhythm Reach',
+        tag: 'Cadence & Stress',
+        landColor: Color(0xFF14532D),
+        waterColor: Color(0xFF00BCD4),
+        totalSlots: 50,
+        filledSlots: 41,
+        climate: 'Warm Tide 🌊',
+        climateIcon: Icons.waves_rounded,
+        description: 'Connected twin islets practicing natural English sentence melody and beat.',
+        islandEmoji: '🥁',
+        shapeStyle: IslandShapeStyle.dualIsletBridge,
+      ),
+
+      // 16. Accent Isle
+      const PoketCountryMap(
+        id: 17,
+        name: 'Accent Isle',
+        tag: 'Intonation & Vibe',
+        landColor: Color(0xFF047857),
+        waterColor: Color(0xFF38BDF8),
+        totalSlots: 50,
+        filledSlots: 46,
+        climate: 'Vibrant Light ✨',
+        climateIcon: Icons.auto_awesome_rounded,
+        description: 'Heart sanctuary tuned for smooth international English phonetics.',
+        islandEmoji: '🎙️',
+        shapeStyle: IslandShapeStyle.heartSanctuary,
+      ),
+
+      // 17. Clause Cove
       const PoketCountryMap(
         id: 18,
-        name: 'Celeste Peninsula 🏰',
-        tag: 'Citadel Shore',
-        landColor: Color(0xFF15803D),
+        name: 'Clause Cove',
+        tag: 'Complex Conjunctions',
+        landColor: Color(0xFF0F766E),
+        waterColor: Color(0xFF1D4ED8),
+        totalSlots: 50,
+        filledSlots: 39,
+        climate: 'Deep Ocean Blue 🌊',
+        climateIcon: Icons.water_rounded,
+        description: '3-leaf clover bay uniting independent and dependent clauses.',
+        islandEmoji: '⚓',
+        shapeStyle: IslandShapeStyle.cloverBays,
+      ),
+
+      // 18. Metaphor Marina
+      const PoketCountryMap(
+        id: 19,
+        name: 'Metaphor Marina',
+        tag: 'Poetic Figurative',
+        landColor: Color(0xFF115E59),
+        waterColor: Color(0xFF0F766E),
+        totalSlots: 50,
+        filledSlots: 44,
+        climate: 'Scenic Marina ⛵',
+        climateIcon: Icons.anchor_rounded,
+        description: 'Fortress harbor where idioms and figurative English expressions anchor.',
+        islandEmoji: '🎨',
+        shapeStyle: IslandShapeStyle.fortressPlateau,
+      ),
+
+      // 19. Dialogue Drift
+      const PoketCountryMap(
+        id: 20,
+        name: 'Dialogue Drift',
+        tag: 'Casual Chat',
+        landColor: Color(0xFF16A34A),
         waterColor: Color(0xFF0284C7),
         totalSlots: 50,
         filledSlots: 48,
-        climate: 'Royal Haven 👑',
-        climateIcon: Icons.shield_rounded,
-        description: 'Historic peninsula adjacent to the presidential sea route.',
+        climate: 'Warm Current 🌊',
+        climateIcon: Icons.chat_bubble_rounded,
+        description: 'Crescent beach where daily 2-person habit conversations take root.',
+        islandEmoji: '💬',
+        shapeStyle: IslandShapeStyle.crescentLagoon,
       ),
-      const PoketCountryMap(
-        id: 19,
-        name: 'Rainforest Delta 🌴',
-        tag: 'Jungle River',
-        landColor: Color(0xFF14532D),
-        waterColor: Color(0xFF0891B2),
-        totalSlots: 50,
-        filledSlots: 29,
-        climate: 'Rain & Sun 🌧️',
-        climateIcon: Icons.umbrella_rounded,
-        description: 'Rich tropical greenery nourished by daily afternoon showers.',
-      ),
-      const PoketCountryMap(
-        id: 20,
-        name: 'Pearl Shoals 🦪',
-        tag: 'Shallow Reef',
-        landColor: Color(0xFF0D9488),
-        waterColor: Color(0xFF06B6D4),
-        totalSlots: 50,
-        filledSlots: 36,
-        climate: 'Pearl Waters 🦪',
-        climateIcon: Icons.circle_rounded,
-        description: 'Crystal shallow reef waters teeming with marine pearl banks.',
-      ),
+
+      // 20. Proverb Port
       const PoketCountryMap(
         id: 21,
-        name: 'Highland Plateau ⛰️',
-        tag: 'Green Mesa',
-        landColor: Color(0xFF16A34A),
-        waterColor: Color(0xFF0369A1),
-        totalSlots: 50,
-        filledSlots: 40,
-        climate: 'Alpine Breeze 🍃',
-        climateIcon: Icons.air_rounded,
-        description: 'Flat elevated tabletop land offering uninterrupted 360-degree ocean views.',
-      ),
-      const PoketCountryMap(
-        id: 22,
-        name: 'Mystic Grove 🌳',
-        tag: 'Ancient Trees',
-        landColor: Color(0xFF064E3B),
-        waterColor: Color(0xFF075985),
-        totalSlots: 50,
-        filledSlots: 31,
-        climate: 'Deep Forest 🌳',
-        climateIcon: Icons.park_rounded,
-        description: 'Century-old banyan canopies providing soothing natural shade.',
-      ),
-      const PoketCountryMap(
-        id: 23,
-        name: 'Solarium Atoll ☀️',
-        tag: 'Solar Fields',
-        landColor: Color(0xFF65A30D),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
-        filledSlots: 28,
-        climate: 'Golden Rays ☀️',
-        climateIcon: Icons.wb_sunny_rounded,
-        description: 'Open sunlit atoll ideal for solar-powered smart habit manors.',
-      ),
-      const PoketCountryMap(
-        id: 24,
-        name: 'Tidepool Haven 🦀',
-        tag: 'Coastal Reef',
-        landColor: Color(0xFF047857),
-        waterColor: Color(0xFF0EA5E9),
-        totalSlots: 50,
-        filledSlots: 33,
-        climate: 'Tide Pools 🦀',
-        climateIcon: Icons.waves_rounded,
-        description: 'Natural rock pools refreshed daily with warm ocean tides.',
-      ),
-      const PoketCountryMap(
-        id: 25,
-        name: 'Seafarer Coast ⚓',
-        tag: 'Harbor Town',
-        landColor: Color(0xFF1E3A8A),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
-        filledSlots: 45,
-        climate: 'Seaport ⚓',
-        climateIcon: Icons.anchor_rounded,
-        description: 'Maritime community populated by veteran oceanic voyagers.',
-      ),
-      const PoketCountryMap(
-        id: 26,
-        name: 'Biolume Bay 💡',
-        tag: 'Glowing Waters',
-        landColor: Color(0xFF0F766E),
-        waterColor: Color(0xFF06B6D4),
-        totalSlots: 50,
-        filledSlots: 27,
-        climate: 'Neon Sea 💡',
-        climateIcon: Icons.lightbulb_rounded,
-        description: 'Enchanting bay where night waves glow with natural bioluminescence.',
-      ),
-      const PoketCountryMap(
-        id: 27,
-        name: 'Canyon Springs 🏜️',
-        tag: 'River Gorge',
-        landColor: Color(0xFF854D0E),
-        waterColor: Color(0xFF0284C7),
-        totalSlots: 50,
-        filledSlots: 35,
-        climate: 'Canyon Breeze 🏞️',
-        climateIcon: Icons.landscape_rounded,
-        description: 'Dramatic carved stone gorge opening onto an expansive sandy delta.',
-      ),
-      const PoketCountryMap(
-        id: 28,
-        name: 'Echo Valley 🏔️',
-        tag: 'Glacier Stream',
-        landColor: Color(0xFF334155),
-        waterColor: Color(0xFF0369A1),
-        totalSlots: 50,
-        filledSlots: 26,
-        climate: 'Crisp Air 🏔️',
-        climateIcon: Icons.snowshoeing_rounded,
-        description: 'Peaceful coastal valley with clear acoustic soundscapes and waterfalls.',
-      ),
-      const PoketCountryMap(
-        id: 29,
-        name: 'Garden Atoll 🌷',
-        tag: 'Botanical Isles',
-        landColor: Color(0xFF15803D),
+        name: 'Proverb Port',
+        tag: 'Timeless Wisdom',
+        landColor: Color(0xFF0D9488),
         waterColor: Color(0xFF0EA5E9),
         totalSlots: 50,
         filledSlots: 42,
-        climate: 'Botanical 🌷',
-        climateIcon: Icons.yard_rounded,
-        description: 'Lush manicured hedges, flower gardens, and stone fountains.',
+        climate: 'Sunny Trade Winds ⛵',
+        climateIcon: Icons.explore_rounded,
+        description: 'S-curve trading port embodying classical English proverbs.',
+        islandEmoji: '📜',
+        shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
+
+      // 21. Synonym Shoal
+      const PoketCountryMap(
+        id: 22,
+        name: 'Synonym Shoal',
+        tag: 'Varied Vocabulary',
+        landColor: Color(0xFF059669),
+        waterColor: Color(0xFF10B981),
+        totalSlots: 50,
+        filledSlots: 38,
+        climate: 'Emerald Waters 💎',
+        climateIcon: Icons.diamond_rounded,
+        description: 'Star-shaped shoal expanding diverse alternative word choices.',
+        islandEmoji: '💎',
+        shapeStyle: IslandShapeStyle.starAtoll,
+      ),
+
+      // 22. Antonym Atoll
+      const PoketCountryMap(
+        id: 23,
+        name: 'Antonym Atoll',
+        tag: 'Opposites & Contrast',
+        landColor: Color(0xFF15803D),
+        waterColor: Color(0xFF1E40AF),
+        totalSlots: 50,
+        filledSlots: 36,
+        climate: 'Contrasting Winds 🌓',
+        climateIcon: Icons.contrast_rounded,
+        description: 'Ring atoll contrasting antonym pairs in clear conversational contexts.',
+        islandEmoji: '🌓',
+        shapeStyle: IslandShapeStyle.ringAtoll,
+      ),
+
+      // 23. Jargon Jungle
+      const PoketCountryMap(
+        id: 24,
+        name: 'Jargon Jungle',
+        tag: 'Tech & Professional',
+        landColor: Color(0xFF166534),
+        waterColor: Color(0xFF047857),
+        totalSlots: 50,
+        filledSlots: 43,
+        climate: 'Rich Forest 🌲',
+        climateIcon: Icons.nature_rounded,
+        description: 'Hook peninsula reserved for professional, workplace, and tech vocabulary.',
+        islandEmoji: '💼',
+        shapeStyle: IslandShapeStyle.hookPeninsula,
+      ),
+
+      // 24. Poetry Point
+      const PoketCountryMap(
+        id: 25,
+        name: 'Poetry Point',
+        tag: 'Rhyme & Meter',
+        landColor: Color(0xFF14532D),
+        waterColor: Color(0xFF7C3AED),
+        totalSlots: 50,
+        filledSlots: 41,
+        climate: 'Sunset Violet 🌅',
+        climateIcon: Icons.wb_twilight_rounded,
+        description: 'Twin islets honoring rhythm, rhyme, and lyrical English expression.',
+        islandEmoji: '🎭',
+        shapeStyle: IslandShapeStyle.dualIsletBridge,
+      ),
+
+      // 25. Vowel Valley
+      const PoketCountryMap(
+        id: 26,
+        name: 'Vowel Valley',
+        tag: 'A-E-I-O-U Clarity',
+        landColor: Color(0xFF047857),
+        waterColor: Color(0xFF0284C7),
+        totalSlots: 50,
+        filledSlots: 45,
+        climate: 'Clear Resonant Bay 🌿',
+        climateIcon: Icons.hearing_rounded,
+        description: 'Heart-shaped valley perfecting short, long, and diphthong vowel sounds.',
+        islandEmoji: '🔤',
+        shapeStyle: IslandShapeStyle.heartSanctuary,
+      ),
+
+      // 26. Consonant Coast
+      const PoketCountryMap(
+        id: 27,
+        name: 'Consonant Coast',
+        tag: 'Sharp Articulation',
+        landColor: Color(0xFF0F766E),
+        waterColor: Color(0xFF0E7490),
+        totalSlots: 50,
+        filledSlots: 39,
+        climate: 'Brisk Sea Air 🌊',
+        climateIcon: Icons.air_rounded,
+        description: '3-leaf clover coastline training tongue, teeth, and lip articulation.',
+        islandEmoji: '🔠',
+        shapeStyle: IslandShapeStyle.cloverBays,
+      ),
+
+      // 27. Slang Sound
+      const PoketCountryMap(
+        id: 28,
+        name: 'Slang Sound',
+        tag: 'Modern Idiomatic',
+        landColor: Color(0xFF115E59),
+        waterColor: Color(0xFF2563EB),
+        totalSlots: 50,
+        filledSlots: 47,
+        climate: 'Vibrant Beats ⚡',
+        climateIcon: Icons.flash_on_rounded,
+        description: 'Coral plateau decoding contemporary colloquial idioms and native speech.',
+        islandEmoji: '🔥',
+        shapeStyle: IslandShapeStyle.fortressPlateau,
+      ),
+
+      // 28. Spelling Sand
+      const PoketCountryMap(
+        id: 29,
+        name: 'Spelling Sand',
+        tag: 'Orthography & Roots',
+        landColor: Color(0xFF16A34A),
+        waterColor: Color(0xFF0D9488),
+        totalSlots: 50,
+        filledSlots: 40,
+        climate: 'Golden Sun 🏖️',
+        climateIcon: Icons.spellcheck_rounded,
+        description: 'Crescent sandbar mastering Latin/Greek prefixes, roots, and silent letters.',
+        islandEmoji: '📝',
+        shapeStyle: IslandShapeStyle.crescentLagoon,
+      ),
+
+      // 29. Rhetoric Ridge
       const PoketCountryMap(
         id: 30,
-        name: 'Dragonfly Marsh 🌾',
-        tag: 'Wetland Haven',
-        landColor: Color(0xFF065F46),
-        waterColor: Color(0xFF075985),
+        name: 'Rhetoric Ridge',
+        tag: 'Persuasion & Debate',
+        landColor: Color(0xFF0D9488),
+        waterColor: Color(0xFF1E3A8A),
         totalSlots: 50,
-        filledSlots: 24,
-        climate: 'Warm Marsh 🌾',
-        climateIcon: Icons.grass_rounded,
-        description: 'Biodiverse wetland sanctuary with freshwater lily ponds and boardwalks.',
+        filledSlots: 50,
+        climate: 'High Ridge Wind 🦅',
+        climateIcon: Icons.campaign_rounded,
+        description: 'Majestic S-curve ridge where masterful English debates and speeches echo.',
+        islandEmoji: '🏛️',
+        shapeStyle: IslandShapeStyle.sCurveArchipelago,
       ),
     ];
   }
@@ -661,6 +862,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       _activeScreen = 1;
       _currentIslandIndex = 0;
     });
+    _loadIslandPlots(planet.countryMaps.first);
   }
 
   void _navigateToFullscreenAerialMap(PoketCountryMap island) {
@@ -668,11 +870,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       _selectedIsland = island;
       _activeScreen = 2;
     });
+    _loadIslandPlots(island);
     _aerialMapZoomController.value = Matrix4.identity()..scale(1.0);
-  }
-
-  void _navigateToStreetDriveView() {
-    setState(() => _activeScreen = 3);
   }
 
   void _zoomOrbit(double factor) {
@@ -716,13 +915,6 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         return _buildPlanetArchipelagoView();
       case 2:
         return _buildFullscreenAerialMapView();
-      case 3:
-        return IslandStreetDriveView(
-          island: _selectedIsland ?? _planets.first.countryMaps.first,
-          onBackToAerial: () {
-            setState(() => _activeScreen = 2);
-          },
-        );
       default:
         return _buildSolarSystemHub();
     }
@@ -764,7 +956,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             ),
             child: Row(
               children: [
-                _buildIosBackButton(onTap: () => Navigator.of(context).maybePop()),
+                _buildIosBackButton(
+                    onTap: () => Navigator.of(context).maybePop()),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -818,7 +1011,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                 color: const Color(0xFF14181B).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.white12),
-                boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 12)],
+                boxShadow: const [
+                  BoxShadow(color: Colors.black54, blurRadius: 12)
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -840,10 +1035,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     tooltip: 'Reset Orbit',
                     onTap: _resetOrbitZoom,
                   ),
-                  const Divider(color: Colors.white24, height: 14, indent: 4, endIndent: 4),
+                  const Divider(
+                      color: Colors.white24,
+                      height: 14,
+                      indent: 4,
+                      endIndent: 4),
                   _buildFloatingActionBtn(
                     icon: Icons.screen_rotation_rounded,
-                    tooltip: '3D Bend Perspective (${_tiltAngle < 0.2 ? 'Top' : _tiltAngle < 0.65 ? '3D' : 'Side'})',
+                    tooltip:
+                        '3D Bend Perspective (${_tiltAngle < 0.2 ? 'Top' : _tiltAngle < 0.65 ? '3D' : 'Side'})',
                     highlightColor: const Color(0xFFFFD700),
                     onTap: _toggleTiltAngle,
                   ),
@@ -895,35 +1095,38 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
             color: const Color(0xFF14181B),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isApex ? const Color(0xFFFFD700) : Colors.white.withValues(alpha: 0.08),
-              width: isApex ? 1.5 : 1,
+              color: isApex
+                  ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                  : Colors.white12,
+              width: isApex ? 1.5 : 0.8,
             ),
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               onTap: () => _navigateToPlanetArchipelago(p),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: p.primaryColor,
-                        boxShadow: [
-                          BoxShadow(color: p.glowColor.withValues(alpha: 0.5), blurRadius: 8),
-                        ],
+                        color: p.primaryColor.withValues(alpha: 0.2),
+                        border: Border.all(color: p.primaryColor, width: 2),
                       ),
                       child: Center(
                         child: Text(
-                          isApex ? '🌍' : '${p.id}',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          isApex
+                              ? '👑'
+                              : p.name.split(' ').last.replaceAll(')', ''),
+                          style: const TextStyle(fontSize: 18),
                         ),
                       ),
                     ),
@@ -945,7 +1148,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                               if (isApex) ...[
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFFD700),
                                     borderRadius: BorderRadius.circular(4),
@@ -964,13 +1168,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${p.countryMaps.length} Islands • ${p.occupiedPlots}/${p.totalPlots} Slots',
-                            style: const TextStyle(color: Colors.white60, fontSize: 11),
+                            '${p.countryMaps.length} Islands • ${p.occupiedPlots}/${p.totalPlots} Plots',
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 11),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: Colors.white30, size: 14),
                   ],
                 ),
               ),
@@ -982,7 +1188,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   }
 
   // =========================================================================
-  // 🏝️ SCREEN 1: PLANET ARCHIPELAGO HORIZONTAL CARDS (70% AERIAL VIEW)
+  // 🏝️ SCREEN 1: ARCHIPELAGO CAROUSEL (70% AERIAL VIEW, REFINED CARD LAYOUT)
   // =========================================================================
   Widget _buildPlanetArchipelagoView() {
     final planet = _selectedPlanet ?? _planets.first;
@@ -995,8 +1201,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        currentIsland?.waterColor.withValues(alpha: 0.35) ?? const Color(0xFF0D121D),
-        currentIsland?.landColor.withValues(alpha: 0.18) ?? const Color(0xFF030712),
+        currentIsland?.waterColor.withValues(alpha: 0.35) ??
+            const Color(0xFF0D121D),
+        currentIsland?.landColor.withValues(alpha: 0.18) ??
+            const Color(0xFF030712),
         const Color(0xFF0D121D),
       ],
     );
@@ -1037,14 +1245,16 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                           ),
                         ),
                         Text(
-                          '${islands.length} Distinct Islands • 50-150 Slots per Island',
-                          style: const TextStyle(color: Colors.white60, fontSize: 11),
+                          '${islands.length} Distinct Islands • 50 Plots per Island',
+                          style: const TextStyle(
+                              color: Colors.white60, fontSize: 11),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -1063,15 +1273,16 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             ),
           ),
 
-          // Center Horizontal Swipeable Island Cards (PageView)
+          // Center Horizontal Swipeable Island Cards
           Positioned.fill(
             top: MediaQuery.of(context).padding.top + 55,
-            bottom: 30,
+            bottom: 25,
             child: PageView.builder(
               controller: _islandPageController,
               itemCount: islands.length,
               onPageChanged: (idx) {
                 setState(() => _currentIslandIndex = idx);
+                _loadIslandPlots(islands[idx]);
               },
               itemBuilder: (context, i) {
                 final island = islands[i];
@@ -1090,16 +1301,19 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     );
   }
 
-  // 🏝️ The Card with Top 70% Aerial Island View matching user reference images!
-  Widget _buildIslandAerialCard(PoketCountryMap island, PoketPlanet planet, bool isCurrent) {
+  // 🏝️ The Island Card: Top 70% Aerial View & Bottom Clean Vertical Layout
+  Widget _buildIslandAerialCard(
+      PoketCountryMap island, PoketPlanet planet, bool isCurrent) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF14181B),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isCurrent
-              ? (island.isPresidential ? const Color(0xFFFFD700) : const Color(0xFF38BDF8))
+              ? (island.isPresidential
+                  ? const Color(0xFFFFD700)
+                  : island.waterColor)
               : Colors.white12,
           width: isCurrent ? 2.0 : 1,
         ),
@@ -1118,47 +1332,49 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 🏝️ TOP 70% (മുക്കാൽ ഭാഗം): AERIAL ISLAND VIEW FROM SKY!
+          // 🏝️ TOP 70% (മുക്കാൽ ഭാഗം): AERIAL ISLAND VIEW
           Expanded(
             flex: 7,
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(22)),
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   IslandAerialViewWidget(
                     island: island,
                     isInteractive: false,
+                    plots: _currentIslandPlots,
                   ),
-                  // Tag Badge (e.g. Presidential Sanctuary or Grand Capital)
+                  // President 👑 Badge or English Tag
                   Positioned(
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(8),
+                        color: island.isPresidential
+                            ? const Color(0xFFFFD700)
+                            : Colors.black.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: island.isPresidential ? const Color(0xFFFFD700) : Colors.white24,
+                          color: island.isPresidential
+                              ? Colors.white
+                              : Colors.white24,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (island.isPresidential) ...[
-                            const Text('👑', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            island.tag,
-                            style: TextStyle(
-                              color: island.isPresidential ? const Color(0xFFFFD700) : Colors.white,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        island.isPresidential
+                            ? 'President 👑'
+                            : island.islandEmoji,
+                        style: TextStyle(
+                          color: island.isPresidential
+                              ? Colors.black
+                              : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -1167,58 +1383,83 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             ),
           ),
 
-          // 📋 BOTTOM 30%: ISLAND DETAILS & EXPLORE ACTION
+          // 📋 BOTTOM 30%: REFINED CLEAN VERTICAL COLUMN LAYOUT
           Expanded(
             flex: 3,
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               decoration: const BoxDecoration(
                 color: Color(0xFF14181B),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(22)),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(22)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  // Title on Top
+                  Text(
+                    island.name,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  // Slots underneath (cleanly aligned!)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          island.name,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            island.isPresidential
+                                ? '1 VIP Slot (Supreme President)'
+                                : 'Filled Slots: ${island.filledSlots} / 50 Plots',
+                            style: TextStyle(
+                              color: island.isPresidential
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white70,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11.5,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          if (!island.isPresidential)
+                            Text(
+                              '${(island.occupancyRatio * 100).toInt()}%',
+                              style: TextStyle(
+                                color: island.waterColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                        ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white10,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          island.isPresidential
-                              ? '1 VIP Slot'
-                              : '${island.filledSlots}/${island.totalSlots} Slots',
-                          style: TextStyle(
-                            color: island.isPresidential ? const Color(0xFFFFD700) : const Color(0xFF10B981),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                      const SizedBox(height: 5),
+                      // Progress bar
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: island.isPresidential
+                              ? 1.0
+                              : island.occupancyRatio,
+                          minHeight: 4.5,
+                          backgroundColor: Colors.white12,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            island.isPresidential
+                                ? const Color(0xFFFFD700)
+                                : island.waterColor,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    island.description,
-                    style: const TextStyle(color: Colors.white60, fontSize: 11),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+
+                  // Explore Island Button (Full Width)
                   SizedBox(
                     width: double.infinity,
                     height: 38,
@@ -1226,16 +1467,21 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: island.isPresidential
                             ? const Color(0xFFFFD700)
-                            : const Color(0xFF0284C7),
-                        foregroundColor: island.isPresidential ? Colors.black : Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            : island.waterColor,
+                        foregroundColor:
+                            island.isPresidential ? Colors.black : Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         elevation: 4,
                       ),
                       onPressed: () => _navigateToFullscreenAerialMap(island),
-                      icon: const Icon(Icons.travel_explore_rounded, size: 17),
+                      icon: const Icon(Icons.travel_explore_rounded, size: 18),
                       label: Text(
-                        island.isPresidential ? 'Enter President Sanctuary 👑' : 'Explore Island 🏝️',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        island.isPresidential
+                            ? 'Enter Crown Sanctuary 👑'
+                            : 'Explore Island 🏝️',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
                   ),
@@ -1249,189 +1495,354 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   }
 
   // =========================================================================
-  // 🗺️ SCREEN 2: FULLSCREEN AERIAL ISLAND MAP (INTERACTIVEVIEWER ZOOM)
+  // 🗺️ SCREEN 2: FULLSCREEN INFINITE OCEAN MAP (NO BOX BREAKS, DEEP 6.5X ZOOM)
   // =========================================================================
   Widget _buildFullscreenAerialMapView() {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
 
-    return Stack(
-      children: [
-        // Fullscreen Aerial View with Filled Ocean Bounds
-        Positioned.fill(
-          child: InteractiveViewer(
-            transformationController: _aerialMapZoomController,
-            minScale: 0.6, // Bound so ocean fills the screen completely
-            maxScale: 3.5, // Deep zoom into paths and villas
-            boundaryMargin: const EdgeInsets.all(250),
-            child: SizedBox(
-              width: 1200,
-              height: 1200,
-              child: IslandAerialViewWidget(
-                island: island,
-                isInteractive: true,
+    return Scaffold(
+      backgroundColor: island.waterColor, // Infinite matching ocean background
+      body: Stack(
+        children: [
+          // Infinite Ocean Canvas with Deep 6.5x Zoom InteractiveViewer
+          Positioned.fill(
+            child: InteractiveViewer(
+              transformationController: _aerialMapZoomController,
+              minScale: 0.65, // Ocean fully covers screen at min zoom
+              maxScale: 6.5,  // Deep peak zoom into 50 habit houses
+              boundaryMargin: const EdgeInsets.all(1200),
+              clipBehavior: Clip.none,
+              child: SizedBox(
+                width: 1400,
+                height: 1400,
+                child: IslandAerialViewWidget(
+                  island: island,
+                  isInteractive: true,
+                  plots: _currentIslandPlots,
+                  selectedPlotNumber: _inspectedPlot?.plotNumber,
+                  onPlotTapped: _showPlotDetailsSheet,
+                ),
               ),
             ),
           ),
-        ),
 
-        // Minimal iOS Top Bar
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 8,
-              left: 14,
-              right: 14,
-              bottom: 10,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF0D121D).withValues(alpha: 0.95),
-                  const Color(0xFF0D121D).withValues(alpha: 0.0),
-                ],
+          // Minimal Top Header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 14,
+                right: 14,
+                bottom: 10,
               ),
-            ),
-            child: Row(
-              children: [
-                _buildIosBackButton(onTap: () {
-                  setState(() => _activeScreen = 1);
-                }),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              island.name,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16.5,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (island.isPresidential) ...[
-                            const SizedBox(width: 6),
-                            const Text('👑', style: TextStyle(fontSize: 14)),
-                          ],
-                        ],
-                      ),
-                      Text(
-                        'Pinch to Zoom • ${island.totalSlots} Slots • ${island.climate}',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // 🛣️ Floating Bottom Bar: "View Street 🛣️" Button & Zoom Controls
-        Positioned(
-          left: 14,
-          right: 14,
-          bottom: 24,
-          child: Row(
-            children: [
-              // Prominent "View Street 🛣️" Button (User Requirement!)
-              Expanded(
-                child: Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 12)],
-                  ),
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 6,
-                    ),
-                    onPressed: _navigateToStreetDriveView,
-                    icon: const Icon(Icons.streetview_rounded, size: 22),
-                    label: const Text(
-                      'View Street 🛣️ (Drive Car)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-
-              // Zoom Controls Pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF14181B).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white12),
-                  boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 10)],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
-                      tooltip: 'Zoom In',
-                      onPressed: () {
-                        final current = _aerialMapZoomController.value.getMaxScaleOnAxis();
-                        _aerialMapZoomController.value = Matrix4.identity()..scale((current * 1.25).clamp(0.6, 3.5));
-                      },
-                      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-                      padding: EdgeInsets.zero,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_rounded, color: Colors.white, size: 20),
-                      tooltip: 'Zoom Out',
-                      onPressed: () {
-                        final current = _aerialMapZoomController.value.getMaxScaleOnAxis();
-                        _aerialMapZoomController.value = Matrix4.identity()..scale((current * 0.8).clamp(0.6, 3.5));
-                      },
-                      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-                      padding: EdgeInsets.zero,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.restart_alt_rounded, color: Color(0xFFFFD700), size: 19),
-                      tooltip: 'Reset Zoom',
-                      onPressed: () {
-                        _aerialMapZoomController.value = Matrix4.identity()..scale(1.0);
-                      },
-                      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-                      padding: EdgeInsets.zero,
-                    ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF0D121D).withValues(alpha: 0.95),
+                    const Color(0xFF0D121D).withValues(alpha: 0.0),
                   ],
                 ),
               ),
-            ],
+              child: Row(
+                children: [
+                  _buildIosBackButton(onTap: () {
+                    setState(() => _activeScreen = 1);
+                  }),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                island.name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16.5,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (island.isPresidential) ...[
+                              const SizedBox(width: 6),
+                              const Text('👑', style: TextStyle(fontSize: 14)),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          island.isPresidential
+                              ? 'Imperial Palace & Sovereign Grounds'
+                              : '50 Plots • Pinch to Zoom in & Inspect Houses',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
+
+          // Floating Controls Pill at Bottom Right (Zoom +, Zoom -, Reset)
+          Positioned(
+            right: 14,
+            bottom: 24,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14181B).withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white12),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black54, blurRadius: 10)
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_rounded,
+                        color: Colors.white, size: 20),
+                    tooltip: 'Zoom In',
+                    onPressed: () {
+                      final current =
+                          _aerialMapZoomController.value.getMaxScaleOnAxis();
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..scale((current * 1.3).clamp(0.65, 6.5));
+                    },
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_rounded,
+                        color: Colors.white, size: 20),
+                    tooltip: 'Zoom Out',
+                    onPressed: () {
+                      final current =
+                          _aerialMapZoomController.value.getMaxScaleOnAxis();
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..scale((current * 0.77).clamp(0.65, 6.5));
+                    },
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.restart_alt_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    tooltip: 'Reset Zoom',
+                    onPressed: () {
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..scale(1.0);
+                    },
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // =========================================================================
-  // 🔘 MINIMAL REUSABLE WIDGETS
+  // 🏡 PLOT DETAILS MODAL BOTTOM SHEET
+  // =========================================================================
+  void _showPlotDetailsSheet(CitizenPlot plot) {
+    setState(() => _inspectedPlot = plot);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF14181B),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(color: Colors.black87, blurRadius: 20)
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: plot.isPresident
+                          ? const Color(0xFFFFD700)
+                          : const Color(0xFF0284C7),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        plot.isPresident ? '👑' : '🏡',
+                        style: const TextStyle(fontSize: 22),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plot.userName,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          'Plot #${plot.plotNumber} • ${plot.postalPinCode}',
+                          style: const TextStyle(
+                              color: Color(0xFFFFD700), fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Habit Level & Streak Stats
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Habit Stage',
+                              style: TextStyle(
+                                  color: Colors.white54, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text('Day ${plot.day} / 90',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Score & Streak',
+                              style: TextStyle(
+                                  color: Colors.white54, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text('${plot.pocketScore} PS • 🔥 ${plot.day}d',
+                              style: const TextStyle(
+                                  color: Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Registered Postal Address
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Text(
+                  '📮 ${plot.formalPostalAddress}',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Visiting ${plot.userName}\'s Profile...'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.person_pin_rounded, size: 20),
+                  label: const Text(
+                    'View Profile 👤',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================================
+  // HELPER WIDGETS
   // =========================================================================
   Widget _buildIosBackButton({required VoidCallback onTap}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withValues(alpha: 0.12),
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+            color: Colors.white, size: 16),
         tooltip: 'Back',
         onPressed: onTap,
         constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
@@ -1446,21 +1857,19 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFFFD700) : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: isSelected ? Colors.black : Colors.white70,
-          ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFD700) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          icon,
+          size: 17,
+          color: isSelected ? Colors.black : Colors.white60,
         ),
       ),
     );
@@ -1472,14 +1881,12 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     required VoidCallback onTap,
     Color? highlightColor,
   }) {
-    return Tooltip(
-      message: tooltip,
-      child: IconButton(
-        icon: Icon(icon, color: highlightColor ?? Colors.white, size: 18),
-        onPressed: onTap,
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-        padding: EdgeInsets.zero,
-      ),
+    return IconButton(
+      icon: Icon(icon, color: highlightColor ?? Colors.white, size: 20),
+      tooltip: tooltip,
+      onPressed: onTap,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      padding: EdgeInsets.zero,
     );
   }
 }
