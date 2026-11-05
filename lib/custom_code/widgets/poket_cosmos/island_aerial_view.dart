@@ -510,3 +510,4 @@ class IslandAerialPainter extends CustomPainter {
         oldDelegate.selectedPlotNumber != selectedPlotNumber;
   }
 }
+

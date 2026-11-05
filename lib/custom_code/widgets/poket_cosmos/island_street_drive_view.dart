@@ -5,8 +5,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_englis
 import 'poket_cosmos_models.dart';
 
 /// 🛣️ 2-Point Perspective Front-View Street Drive View
-/// User can cruise down the street, see front-facing 90-day habit houses on both sides,
-/// drive a car smoothly, and tap any house to inspect resident postal deed.
+/// Features a paved avenue with front-facing 90-day habit houses, moving car with headlights & wheels,
+/// real-time speedometer, auto-cruise, manual steering, and postal identity deed inspection.
 class IslandStreetDriveView extends StatefulWidget {
   final PoketCountryMap island;
   final VoidCallback onBackToAerial;
@@ -52,7 +52,7 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
   void _onDriveTick() {
     if (_isAutoDriving && _streetScrollController.hasClients) {
       final max = _streetScrollController.position.maxScrollExtent;
-      final next = _streetScrollController.offset + 3.8;
+      final next = _streetScrollController.offset + 4.2;
       if (next >= max) {
         _streetScrollController.jumpTo(0.0);
       } else {
@@ -93,7 +93,7 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
             postOffice: "${widget.island.name} Post",
             countryName: widget.island.name,
             planetName: 'Earth Prime 🌍',
-            coordinates: Offset(idx * 220.0, 300),
+            coordinates: Offset(idx * 240.0, 300),
             isVip: isVip,
             isPresident: widget.island.isPresidential || idx == 1,
             tier: widget.island.isPresidential
@@ -120,13 +120,25 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
     setState(() {
       _isAutoDriving = !_isAutoDriving;
       if (_isAutoDriving) {
-        _carSpeed = 45.0;
+        _carSpeed = 52.0;
         _driveAnimController.repeat();
       } else {
         _carSpeed = 0.0;
         _driveAnimController.stop();
       }
     });
+  }
+
+  void _accelerateManual(double delta) {
+    if (_streetScrollController.hasClients) {
+      final next = (_streetScrollController.offset + delta)
+          .clamp(0.0, _streetScrollController.position.maxScrollExtent);
+      _streetScrollController.animateTo(
+        next,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -234,14 +246,30 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
             ),
           ),
 
-          // 2. Bottom Car Control Strip (Cruise & Drive button)
+          // 2. Fixed Driving Car in Forefront with Headlights & Wheels
+          Positioned(
+            left: 30,
+            bottom: _inspectedPlot != null ? 150 : 85,
+            child: _buildSportsCarWidget(),
+          ),
+
+          // 3. Bottom Car Control Strip (Cruise & Drive button + Manual Gas/Reverse)
           Positioned(
             left: 14,
             right: 14,
-            bottom: _inspectedPlot != null ? 140 : 20,
+            bottom: _inspectedPlot != null ? 140 : 16,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Reverse
+                IconButton.filled(
+                  style: IconButton.styleFrom(backgroundColor: const Color(0xFF1E293B)),
+                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  tooltip: 'Reverse Car',
+                  onPressed: () => _accelerateManual(-150.0),
+                ),
+                const SizedBox(width: 12),
+                // Auto Cruise Toggle Button
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isAutoDriving ? const Color(0xFFEF4444) : const Color(0xFFFFD700),
@@ -257,11 +285,19 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                 ),
+                const SizedBox(width: 12),
+                // Forward Gas
+                IconButton.filled(
+                  style: IconButton.styleFrom(backgroundColor: const Color(0xFF1E293B)),
+                  icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFFFD700)),
+                  tooltip: 'Drive Forward',
+                  onPressed: () => _accelerateManual(150.0),
+                ),
               ],
             ),
           ),
 
-          // 3. Bottom Postal Identity Deed Card
+          // 4. Bottom Postal Identity Deed Card
           if (_inspectedPlot != null)
             Positioned(
               left: 14,
@@ -269,6 +305,68 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
               bottom: 14,
               child: _buildPostalDeedCard(_inspectedPlot!),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSportsCarWidget() {
+    return Container(
+      width: 85,
+      height: 48,
+      decoration: BoxDecoration(
+        color: const Color(0xFFDC2626), // Flame Red Sports Car
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+            blurRadius: 14,
+            spreadRadius: 2,
+          ),
+          const BoxShadow(
+            color: Colors.black87,
+            offset: Offset(0, 10),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Car windshield
+          Positioned(
+            left: 20,
+            top: 4,
+            right: 20,
+            height: 18,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          // Headlights beam
+          Positioned(
+            right: 2,
+            top: 12,
+            child: Container(
+              width: 16,
+              height: 24,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFEF08A),
+                    const Color(0xFFFEF08A).withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Car icon label
+          const Center(
+            child: Text('🚗', style: TextStyle(fontSize: 22)),
+          ),
         ],
       ),
     );
@@ -289,123 +387,139 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
           stops: [0.0, 0.35, 0.45, 0.75],
         ),
       ),
-      child: ListView.builder(
-        controller: _streetScrollController,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        itemCount: _plots.length,
-        itemBuilder: (context, i) {
-          final plot = _plots[i];
-          final isSel = plot.plotNumber == _inspectedPlot?.plotNumber;
+      child: Stack(
+        children: [
+          // Road Yellow Dashes line
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 70,
+            height: 4,
+            child: CustomPaint(
+              painter: _StreetLanePainter(),
+            ),
+          ),
 
-          return Container(
-            width: 240,
-            margin: const EdgeInsets.symmetric(horizontal: 14),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Plot Number Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isSel ? const Color(0xFFFFD700) : const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isSel ? Colors.white : Colors.white24,
-                      width: isSel ? 1.8 : 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Plot #${plot.plotNumber}',
-                        style: TextStyle(
-                          color: isSel ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
+          // Houses along avenue
+          ListView.builder(
+            controller: _streetScrollController,
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            itemCount: _plots.length,
+            itemBuilder: (context, i) {
+              final plot = _plots[i];
+              final isSel = plot.plotNumber == _inspectedPlot?.plotNumber;
+
+              return Container(
+                width: 240,
+                margin: const EdgeInsets.symmetric(horizontal: 14),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Plot Number Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isSel ? const Color(0xFFFFD700) : const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSel ? Colors.white : Colors.white24,
+                          width: isSel ? 1.8 : 0.8,
                         ),
                       ),
-                      if (plot.isPresident) ...[
-                        const SizedBox(width: 4),
-                        const Text('👑', style: TextStyle(fontSize: 10)),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Front-Facing 90-Day Habit House
-                GestureDetector(
-                  onTap: () {
-                    setState(() => _inspectedPlot = plot);
-                  },
-                  child: Container(
-                    width: 170,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: isSel
-                          ? Border.all(color: const Color(0xFFFFD700), width: 2.5)
-                          : null,
-                      boxShadow: isSel
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.5),
-                                blurRadius: 18,
-                                spreadRadius: 3,
-                              ),
-                            ]
-                          : [
-                              const BoxShadow(color: Colors.black45, blurRadius: 10),
-                            ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: FlameEnglishHouseWidget(
-                        currentDay: plot.day,
-                        streak: plot.day,
-                        isPresident: plot.isPresident,
-                        houseId: 'plot_${plot.plotNumber}',
-                        showTestingControls: false,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Plot #${plot.plotNumber}',
+                            style: TextStyle(
+                              color: isSel ? Colors.black : Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                          if (plot.isPresident) ...[
+                            const SizedBox(width: 4),
+                            const Text('👑', style: TextStyle(fontSize: 10)),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
-                // Citizen Name & Day Badge
-                Text(
-                  plot.userName,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.5,
-                    shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Day ${plot.day} • ${plot.pocketScore} PS',
-                  style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11),
-                ),
-                const SizedBox(height: 14),
+                    // Front-Facing 90-Day Habit House
+                    GestureDetector(
+                      onTap: () {
+                        setState(() => _inspectedPlot = plot);
+                      },
+                      child: Container(
+                        width: 170,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSel
+                              ? Border.all(color: const Color(0xFFFFD700), width: 2.5)
+                              : null,
+                          boxShadow: isSel
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                                    blurRadius: 18,
+                                    spreadRadius: 3,
+                                  ),
+                                ]
+                              : [
+                                  const BoxShadow(color: Colors.black45, blurRadius: 10),
+                                ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: FlameEnglishHouseWidget(
+                            currentDay: plot.day,
+                            streak: plot.day,
+                            isPresident: plot.isPresident,
+                            houseId: 'plot_${plot.plotNumber}',
+                            showTestingControls: false,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
-                // Paved Asphalt Driveway connecting to Street
-                Container(
-                  width: 50,
-                  height: 35,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF334155),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
-                  ),
+                    // Citizen Name & Day Badge
+                    Text(
+                      plot.userName,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                        shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Day ${plot.day} • ${plot.pocketScore} PS',
+                      style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Paved Asphalt Driveway connecting to Street
+                    Container(
+                      width: 50,
+                      height: 35,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF334155),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -456,4 +570,20 @@ class _IslandStreetDriveViewState extends State<IslandStreetDriveView>
       ),
     );
   }
+}
+
+class _StreetLanePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dashPaint = Paint()
+      ..color = const Color(0xFFFCD34D)
+      ..strokeWidth = 3.0;
+
+    for (double x = 0; x < size.width; x += 36) {
+      canvas.drawLine(Offset(x, 0), Offset(x + 18, 0), dashPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
