@@ -3440,7 +3440,7 @@ class PocketFortressDefenseService {
             .select('user_id, name, day, learning_day, pocket_score')
             .inFilter('user_id', userIds);
 
-        final profileMap = {
+        final Map<String, Map<String, dynamic>> profileMap = {
           for (var p in profileRes)
             p['user_id'].toString(): {
               'name': p['name']?.toString() ?? 'User',
@@ -3459,8 +3459,8 @@ class PocketFortressDefenseService {
           final isMe = uid == myId;
           final pInfo = profileMap[uid];
           final name =
-              isMe ? 'You (Your Pocket Home)' : (pInfo?['name'] ?? 'Explorer');
-          final rawDay = (pInfo?['day'] as int?) ??
+              isMe ? 'You (Your Pocket Home)' : (pInfo?['name']?.toString() ?? 'Explorer');
+          final rawDay = (pInfo?['day'] as num?)?.toInt() ??
               (r['day'] as num?)?.toInt() ??
               1;
           final day = rawDay.clamp(1, 90);
