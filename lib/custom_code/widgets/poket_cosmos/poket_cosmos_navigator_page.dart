@@ -8,6 +8,7 @@ import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
 import 'planet_sphere_icon_widget.dart';
+import 'infinite_living_ocean_widget.dart';
 import '../verified_switch_page.dart';
 
 /// 🌌 Poket Cosmos Explorer:
@@ -24,7 +25,8 @@ class PoketCosmosNavigatorPage extends StatefulWidget {
       _PoketCosmosNavigatorPageState();
 }
 
-class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
+class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
+    with TickerProviderStateMixin {
   // Hub mode: 0 = Flame 3D Solar System, 1 = Minimal Planet Directory
   int _hubMode = 0;
 
@@ -48,10 +50,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
 
   bool _isAmbientAudioPlaying = true;
   double _currentAerialZoom = 1.0;
+  late AnimationController _ambientOceanAnimController;
 
   @override
   void initState() {
     super.initState();
+    _ambientOceanAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 40),
+    )..repeat();
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets();
     _loadIslandPlots(_planets.first.countryMaps.first);
@@ -71,6 +78,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
 
   @override
   void dispose() {
+    _ambientOceanAnimController.dispose();
     _islandPageController.dispose();
     _orbitInteractiveController.dispose();
     _aerialMapZoomController.removeListener(_onAerialZoomChanged);
@@ -1944,30 +1952,31 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF061426), // Seamless abyssal ocean navy background
+      backgroundColor: const Color(0xFF022B45),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 🌊 Infinite Edge-to-Edge Oceanic Canvas (Zero Box Breaks)
+          // 🌊 Infinite Edge-to-Edge Oceanic Canvas (100% Fullscreen, Zero Box Breaks)
           Positioned.fill(
-            child: Container(
-              color: const Color(0xFF061426),
+            child: InfiniteLivingOceanWidget(
+              waterColor: island.waterColor,
+              animation: _ambientOceanAnimController,
             ),
           ),
 
-          // 🌊 Fullscreen Living Atmosphere & Oceanic Real Estate Canvas
+          // 🏝️ Fullscreen Living Island Canvas (Pans & Zooms gracefully inside the ocean)
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final worldDim =
                     math.max(constraints.maxWidth, constraints.maxHeight) *
-                        2.8;
+                        1.75;
 
                 return InteractiveViewer(
                   transformationController: _aerialMapZoomController,
-                  minScale: 0.35, // Allows pulling back to see the open ocean
-                  maxScale: 4.5,  // Deep habit house zoom
-                  boundaryMargin: EdgeInsets.all(worldDim * 0.5),
+                  minScale: 0.82, // Natural fixed airplane / satellite overview limit!
+                  maxScale: 3.5,  // Deep habit house zoom
+                  boundaryMargin: EdgeInsets.all(worldDim * 0.45),
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldDim,
@@ -2134,7 +2143,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.3).clamp(0.85, 3.5);
+                      final s = (current * 1.25).clamp(0.82, 3.5);
                       _aerialMapZoomController.value =
                           Matrix4.diagonal3Values(s, s, 1.0);
                     },
@@ -2149,7 +2158,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.77).clamp(0.85, 3.5);
+                      final s = (current * 0.80).clamp(0.82, 3.5);
                       _aerialMapZoomController.value =
                           Matrix4.diagonal3Values(s, s, 1.0);
                     },

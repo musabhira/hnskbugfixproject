@@ -126,8 +126,12 @@ class IslandAerialPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Draw Infinite Seamless Living Ocean
-    _drawInfiniteOcean(canvas, size);
+    // 1. Draw Ocean (Card mode fills the card; Fullscreen mode uses transparent halo)
+    if (!isInteractive) {
+      _drawCardOcean(canvas, size);
+    } else {
+      _drawSoftIslandLagoonAura(canvas, size);
+    }
 
     final cx = size.width / 2;
     final cy = size.height / 2;
@@ -190,24 +194,51 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🌊 INFINITE OCEAN BACKGROUND (Prevents breaking on zoom out)
+  // 🌊 CARD MODE OCEAN BACKGROUND (Used only inside Carousel cards)
   // =========================================================================
-  void _drawInfiniteOcean(Canvas canvas, Size size) {
+  void _drawCardOcean(Canvas canvas, Size size) {
     final fullRect = Offset.zero & size;
 
     final oceanGradient = RadialGradient(
       center: Alignment.center,
-      radius: 1.15,
+      radius: 1.25,
       colors: [
         island.waterColor.withValues(alpha: 0.96),
         Color.lerp(island.waterColor, const Color(0xFF03045E), 0.55) ?? const Color(0xFF0284C7),
-        const Color(0xFF061426), // Edge blends seamlessly with scaffold ocean navy
+        const Color(0xFF022B45),
       ],
-      stops: const [0.0, 0.45, 1.0],
+      stops: const [0.0, 0.50, 1.0],
     );
 
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
     canvas.drawRect(fullRect, oceanPaint);
+  }
+
+  // =========================================================================
+  // 🏝️ FULLSCREEN LAGOON AURA (Soft circular aura fading to 100% transparent)
+  // ZERO RECTANGULAR BOX BREAKS! Blends invisibly into InfiniteLivingOceanWidget!
+  // =========================================================================
+  void _drawSoftIslandLagoonAura(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final center = Offset(cx, cy);
+    final auraRadius = math.min(size.width, size.height) * 0.46;
+
+    final auraGradient = RadialGradient(
+      center: Alignment.center,
+      radius: 1.0,
+      colors: [
+        island.waterColor.withValues(alpha: 0.70),
+        island.waterColor.withValues(alpha: 0.38),
+        island.waterColor.withValues(alpha: 0.10),
+        Colors.transparent, // Completely fades to transparent at edges!
+      ],
+      stops: const [0.0, 0.45, 0.75, 1.0],
+    );
+
+    final auraPaint = Paint()..shader = auraGradient.createShader(Rect.fromCircle(center: center, radius: auraRadius));
+    canvas.drawCircle(center, auraRadius, auraPaint);
+  }
 
     // Animated gentle drifting wave crest arcs across open waters
     final wavePaint = Paint()
