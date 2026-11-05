@@ -89,7 +89,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
     final tapPoint = Offset(islandX, islandY);
 
     CitizenPlot? hitPlot;
-    double minDistance = 22.0 * scale; // Responsive touch hit radius
+    double minDistance = 30.0 * scale; // Responsive touch hit radius for generous 34x28 parcels
 
     for (final plot in widget.plots) {
       final d = (plot.coordinates - tapPoint).distance;
@@ -985,8 +985,9 @@ class IslandAerialPainter extends CustomPainter {
 
   // =========================================================================
   // 🏡 35 CITIZEN HABIT PLOTS (CADASTRAL PARCEL WALLS, VILLAS & COURTYARDS)
-  // Strictly on green land! Every citizen has their own boundary wall partition (ചുറ്റുമതിൽ),
-  // private lawn, architectural hipped villa roof, courtyard pet & plunge pool.
+  // Strictly on green land! Every citizen has their own demarcated boundary wall (ചുറ്റുമതിൽ),
+  // private lawn, architectural hipped villa roof, driveway with parked car,
+  // swimming pool with deck & beach umbrella, garden gazebo, and 90-day progression!
   // =========================================================================
   void _drawCitizenPlots(Canvas canvas) {
     final List<Offset> positions = get35PlotCoordinates(island.shapeStyle);
@@ -1013,130 +1014,534 @@ class IslandAerialPainter extends CustomPainter {
               coordinates: pos,
             );
 
-      // 1. Demarcated Property Boundary Parcel (ചുറ്റുമതിൽ / Cadastral Stone Wall & Lawn)
-      final parcelRect = Rect.fromCenter(center: pos, width: 22.0, height: 19.5);
+      final day = plot.day;
+      // Generous Cadastral Parcel Box (34.0 x 28.0)
+      final parcelRect = Rect.fromCenter(center: pos, width: 34.0, height: 28.0);
+      final housePos = pos.translate(day >= 31 ? 1.5 : 0.0, day >= 45 ? -2.5 : 0.0);
 
-      // Private Lawn Courtyard
-      final lawnPaint = Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700).withValues(alpha: 0.40)
-            : const Color(0xFF166534).withValues(alpha: 0.60)
-        ..style = PaintingStyle.fill;
-      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.2)), lawnPaint);
+      // 1. Cadastral Demarcated Boundary Parcel (മാപ്പിൽ ജില്ലകൾ തിരിക്കുന്നതുപോലെ വരയിട്ട് തിരിച്ച ചുറ്റുമതിൽ)
+      _drawCadastralBoundaryParcel(canvas, parcelRect, isSel, day);
 
-      // Demarcated Boundary Partition Wall (Enclosure Wall ചുറ്റുമതിൽ)
-      final boundaryWall = Paint()
-        ..color = isSel
-            ? const Color(0xFFFFD700)
-            : Colors.white.withValues(alpha: 0.90)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = isSel ? 1.8 : 0.95;
-      canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.2)), boundaryWall);
+      // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും)
+      _drawDrivewayAndCar(canvas, parcelRect, day);
 
-      // Corner Pillar Accents on boundary wall
-      final pillarPaint = Paint()..color = isSel ? const Color(0xFFFFD700) : Colors.white;
-      canvas.drawCircle(parcelRect.topLeft.translate(1.1, 1.1), 0.85, pillarPaint);
-      canvas.drawCircle(parcelRect.topRight.translate(-1.1, 1.1), 0.85, pillarPaint);
-      canvas.drawCircle(parcelRect.bottomLeft.translate(1.1, -1.1), 0.85, pillarPaint);
-      canvas.drawCircle(parcelRect.bottomRight.translate(-1.1, -1.1), 0.85, pillarPaint);
-
-      // Front Gate Walkway path
-      final pathPaint = Paint()
-        ..color = const Color(0xFFF1F5F9).withValues(alpha: 0.65)
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(pos.translate(0, 3.8), pos.translate(0, 9.0), pathPaint);
-
-      // 2. Private Plunge Pool / Garden Patio for streak >= 30
-      if (plot.day >= 30) {
-        final poolRect = Rect.fromCenter(center: pos.translate(6.5, -4.2), width: 5.2, height: 4.2);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(poolRect, const Radius.circular(1.2)),
-          Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.88),
-        );
-        // White coping edge
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(poolRect, const Radius.circular(1.2)),
-          Paint()
-            ..color = Colors.white70
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 0.5,
-        );
+      // 3. Swimming Pool with Sun Deck & Striped Beach Umbrella (സ്വിമ്മിംഗ് പൂളും ഡെക്കും)
+      if (day >= 45) {
+        _drawSwimmingPoolAndDeck(canvas, parcelRect, day);
+      } else if (day >= 20) {
+        // Garden Gazebo / Shed with yellow pitched roof (Image 2)
+        _drawGardenGazebo(canvas, parcelRect, day);
       }
 
-      // 3. Architectural Top-Down Habit Villa Roof (Hipped Roof with Ridgelines)
-      // Soft ambient drop shadow underneath villa
-      final villaShadowRect = Rect.fromCenter(center: pos.translate(0.8, 1.0), width: 9.6, height: 8.4);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(villaShadowRect, const Radius.circular(1.8)),
-        Paint()..color = Colors.black45,
-      );
+      // 4. Connecting Paved Footpaths (നടപ്പാതകൾ)
+      _drawWalkwayPaths(canvas, parcelRect, housePos, day);
 
-      // Roof Base Color based on Learning Streak Day
-      final Color roofBaseColor = isSel
-          ? const Color(0xFFFFD700)
-          : (plot.day >= 90
-              ? const Color(0xFFFFC107) // 90-Day Sovereign Gold
-              : (plot.day >= 60
-                  ? const Color(0xFF38BDF8) // 60-Day Azure High Villa
-                  : (plot.day >= 30
-                      ? const Color(0xFFF97316) // 30-Day Terracotta Villa
-                      : const Color(0xFFF1F5F9)))); // Ivory / White Cottage
+      // 5. 90-Day Progression Architectural Villa Roof (റിയലിസ്റ്റിക് മേൽക്കൂരകൾ & സ്കൈലൈറ്റുകൾ)
+      _drawArchitecturalRoof(canvas, housePos, day, isSel);
 
-      final Color roofRidgeColor = isSel
-          ? const Color(0xFFFFF9C4)
-          : (plot.day >= 90
-              ? const Color(0xFFFFECB3)
-              : (plot.day >= 60
-                  ? const Color(0xFFBAE6FD)
-                  : (plot.day >= 30
-                      ? const Color(0xFFFDBA74)
-                      : Colors.white)));
-
-      final villaRect = Rect.fromCenter(center: pos, width: 8.8, height: 7.8);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(villaRect, const Radius.circular(1.5)),
-        Paint()..color = roofBaseColor,
-      );
-
-      // Hipped Roof Ridge Line & Hip Rafters
-      final ridgePaint = Paint()
-        ..color = roofRidgeColor
-        ..strokeWidth = 0.85
-        ..style = PaintingStyle.stroke;
-      // Center horizontal ridge line
-      canvas.drawLine(pos.translate(-2.0, 0), pos.translate(2.0, 0), ridgePaint);
-      // Hipped rafters to corners
-      canvas.drawLine(pos.translate(-2.0, 0), villaRect.topLeft.translate(0.8, 0.8), ridgePaint);
-      canvas.drawLine(pos.translate(-2.0, 0), villaRect.bottomLeft.translate(0.8, -0.8), ridgePaint);
-      canvas.drawLine(pos.translate(2.0, 0), villaRect.topRight.translate(-0.8, 0.8), ridgePaint);
-      canvas.drawLine(pos.translate(2.0, 0), villaRect.bottomRight.translate(-0.8, -0.8), ridgePaint);
-
-      // Chimney accent on north side of roof
-      canvas.drawCircle(pos.translate(2.4, -2.2), 0.85, Paint()..color = const Color(0xFF475569));
-      canvas.drawCircle(pos.translate(2.4, -2.2), 0.45, Paint()..color = const Color(0xFF1E293B));
-
-      // 4. Courtyard Pet / Dog / Cat (Drifts peacefully in yard)
+      // 6. Courtyard Pet / Dog / Cat (Drifts peacefully in yard)
       final petT = timeSeconds * 0.8 + i;
       final petDriftX = math.cos(petT) * 1.8;
       final petDriftY = math.sin(petT) * 1.3;
-      final petPos = pos.translate(-5.5 + petDriftX, 3.8 + petDriftY);
+      final petPos = pos.translate(-10.5 + petDriftX, 8.5 + petDriftY);
       final petColor = (i % 2 == 0) ? const Color(0xFFD97706) : const Color(0xFF475569);
       canvas.drawCircle(petPos, 0.95, Paint()..color = petColor);
       canvas.drawCircle(petPos.translate(0.5, 0.25), 0.6, Paint()..color = petColor);
 
-      // 5. Golden Selection Beacon Aura
+      // 7. Golden Selection Beacon Aura
       if (isSel) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            parcelRect.inflate(2.5),
+            const Radius.circular(5.0),
+          ),
+          Paint()
+            ..color = const Color(0xFFFFD700)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2,
+        );
         canvas.drawCircle(
           pos,
-          15.0,
+          18.0,
           Paint()
-            ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+            ..color = const Color(0xFFFFD700).withValues(alpha: 0.25)
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0,
+            ..strokeWidth = 1.5,
         );
       }
     }
+  }
+
+  // 1. Cadastral Boundary Parcel Demarcation (ചുറ്റുമതിലും സ്വകാര്യ പുൽത്തകിടിയും)
+  void _drawCadastralBoundaryParcel(Canvas canvas, Rect parcelRect, bool isSel, int day) {
+    // Ground Shadow for boundary wall
+    final wallShadow = parcelRect.translate(0.7, 0.9);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(wallShadow, const Radius.circular(3.8)),
+      Paint()..color = Colors.black26,
+    );
+
+    // Private Lawn Turf inside parcel
+    final lawnPaint = Paint()
+      ..color = isSel
+          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+          : (day >= 60 ? const Color(0xFF15803D) : const Color(0xFF16A34A))
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.5)), lawnPaint);
+
+    // Demarcated Boundary Partition Wall (Enclosure Wall ചുറ്റുമതിൽ)
+    final boundaryWall = Paint()
+      ..color = isSel
+          ? const Color(0xFFFFD700)
+          : const Color(0xFFF8FAFC) // Crisp limestone white boundary wall
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = isSel ? 2.0 : 1.15;
+    canvas.drawRRect(RRect.fromRectAndRadius(parcelRect, const Radius.circular(3.5)), boundaryWall);
+
+    // Corner Pillar Accents on boundary wall
+    final pillarPaint = Paint()..color = isSel ? const Color(0xFFFFD700) : Colors.white;
+    canvas.drawCircle(parcelRect.topLeft.translate(1.2, 1.2), 0.9, pillarPaint);
+    canvas.drawCircle(parcelRect.topRight.translate(-1.2, 1.2), 0.9, pillarPaint);
+    canvas.drawCircle(parcelRect.bottomLeft.translate(1.2, -1.2), 0.9, pillarPaint);
+    canvas.drawCircle(parcelRect.bottomRight.translate(-1.2, -1.2), 0.9, pillarPaint);
+
+    // Topiary hedge dots along outer boundary perimeter (Image 2 style)
+    final hedgePaint = Paint()..color = const Color(0xFF14532D);
+    for (double hx = parcelRect.left + 3.5; hx <= parcelRect.right - 3.5; hx += 4.5) {
+      canvas.drawCircle(Offset(hx, parcelRect.top + 1.2), 0.85, hedgePaint);
+      canvas.drawCircle(Offset(hx, parcelRect.bottom - 1.2), 0.85, hedgePaint);
+    }
+  }
+
+  // 2. Driveway & Parked Vehicle (കാർപോർച്ചും വാഹനങ്ങളും)
+  void _drawDrivewayAndCar(Canvas canvas, Rect parcelRect, int day) {
+    // Driveway on the left side of parcel
+    final drivewayRect = Rect.fromLTWH(parcelRect.left + 2.0, parcelRect.top + 3.0, 9.5, 22.0);
+
+    // Paved cobblestone driveway base
+    final drivewayPaint = Paint()..color = const Color(0xFF94A3B8).withValues(alpha: 0.85);
+    canvas.drawRRect(RRect.fromRectAndRadius(drivewayRect, const Radius.circular(1.5)), drivewayPaint);
+
+    // Cobblestone / paving joints
+    final cobblePaint = Paint()
+      ..color = const Color(0xFF64748B).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+    for (double dy = drivewayRect.top + 2.8; dy < drivewayRect.bottom; dy += 2.8) {
+      canvas.drawLine(Offset(drivewayRect.left, dy), Offset(drivewayRect.right, dy), cobblePaint);
+    }
+
+    // Parked Car on Driveway (For Day >= 25)
+    if (day >= 25) {
+      final carCenter = Offset(drivewayRect.center.dx, drivewayRect.top + 10.0);
+
+      // Car undercarriage shadow
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: carCenter.translate(0.5, 0.6), width: 6.8, height: 11.2),
+          const Radius.circular(1.8),
+        ),
+        Paint()..color = Colors.black45,
+      );
+
+      // Car body color (Blue sedan like Image 2, Crimson coupe, or Sovereign Gold GT)
+      final Color carColor = day >= 90
+          ? const Color(0xFFD97706) // Sovereign Gold GT
+          : (day >= 60
+              ? const Color(0xFF2563EB) // Royal Blue Sedan (Image 2!)
+              : const Color(0xFFDC2626)); // Crimson Coupe
+
+      // Car Body
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: carCenter, width: 6.0, height: 10.2),
+          const Radius.circular(1.6),
+        ),
+        Paint()..color = carColor,
+      );
+
+      // Windshield & Rear Window (Dark glass with blue reflection)
+      final glassPaint = Paint()..color = const Color(0xFF0F172A);
+      // Front windshield
+      canvas.drawRect(Rect.fromCenter(center: carCenter.translate(0, -1.8), width: 4.6, height: 1.4), glassPaint);
+      // Rear window
+      canvas.drawRect(Rect.fromCenter(center: carCenter.translate(0, 2.2), width: 4.6, height: 1.2), glassPaint);
+
+      // Car Roof Block
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: carCenter.translate(0, 0.2), width: 4.6, height: 3.2),
+          const Radius.circular(0.8),
+        ),
+        Paint()..color = carColor,
+      );
+
+      // Side mirrors
+      canvas.drawCircle(carCenter.translate(-2.9, -1.8), 0.5, Paint()..color = carColor);
+      canvas.drawCircle(carCenter.translate(2.9, -1.8), 0.5, Paint()..color = carColor);
+
+      // Headlights
+      final lightPaint = Paint()..color = const Color(0xFFFEF08A);
+      canvas.drawCircle(carCenter.translate(-2.0, -4.8), 0.55, lightPaint);
+      canvas.drawCircle(carCenter.translate(2.0, -4.8), 0.55, lightPaint);
+    }
+  }
+
+  // 3. Swimming Pool with Sun Deck & Beach Umbrella (സ്വിമ്മിംഗ് പൂളും ഡെക്കും)
+  void _drawSwimmingPoolAndDeck(Canvas canvas, Rect parcelRect, int day) {
+    final poolCenter = Offset(parcelRect.right - 8.5, parcelRect.bottom - 8.5);
+    final deckRect = Rect.fromCenter(center: poolCenter, width: 13.5, height: 11.5);
+
+    // Warm sandstone / teak wood sun deck
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(deckRect, const Radius.circular(2.2)),
+      Paint()..color = const Color(0xFFFDE68A),
+    );
+
+    // Pool Basin (Kidney or rounded rectangle)
+    final poolRect = Rect.fromCenter(center: poolCenter.translate(-1.8, 0), width: 8.5, height: 7.5);
+    // Deep blue bottom gradient
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(poolRect, const Radius.circular(2.5)),
+      Paint()..color = const Color(0xFF0284C7),
+    );
+    // Azure water surface
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: poolCenter.translate(-1.8, 0), width: 7.5, height: 6.5),
+        const Radius.circular(2.0),
+      ),
+      Paint()..color = const Color(0xFF38BDF8),
+    );
+
+    // Water ripple / specular glint
+    final ripplePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.75)
+      ..strokeWidth = 0.65
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(poolRect.topLeft.translate(1.8, 2.2), poolRect.topLeft.translate(3.8, 2.2), ripplePaint);
+
+    // White Sun Loungers (2 side-by-side sunbeds)
+    final bedPaint = Paint()..color = Colors.white;
+    final bed1 = Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy - 3.8, 1.8, 3.2);
+    final bed2 = Rect.fromLTWH(poolCenter.dx + 3.2, poolCenter.dy + 0.6, 1.8, 3.2);
+    canvas.drawRRect(RRect.fromRectAndRadius(bed1, const Radius.circular(0.4)), bedPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(bed2, const Radius.circular(0.4)), bedPaint);
+
+    // Striped Beach Umbrella (Red & White segments like Image 2!)
+    final umbrellaCenter = Offset(poolCenter.dx + 4.2, poolCenter.dy + 4.4);
+    // Umbrella shadow
+    canvas.drawCircle(umbrellaCenter.translate(0.5, 0.7), 2.4, Paint()..color = Colors.black26);
+
+    // Alternating red and white sectors
+    final redPaint = Paint()..color = const Color(0xFFEF4444);
+    final whitePaint = Paint()..color = Colors.white;
+    for (int s = 0; s < 6; s++) {
+      final startAngle = s * math.pi / 3;
+      canvas.drawArc(
+        Rect.fromCircle(center: umbrellaCenter, radius: 2.3),
+        startAngle,
+        math.pi / 3,
+        true,
+        s % 2 == 0 ? redPaint : whitePaint,
+      );
+    }
+    // Umbrella apex finial
+    canvas.drawCircle(umbrellaCenter, 0.5, Paint()..color = Colors.white);
+  }
+
+  // 4. Garden Gazebo (Yellow pitched roof like Image 2)
+  void _drawGardenGazebo(Canvas canvas, Rect parcelRect, int day) {
+    final gazeboCenter = Offset(parcelRect.right - 6.5, parcelRect.bottom - 6.5);
+
+    // Gazebo shadow
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: gazeboCenter.translate(0.5, 0.6), width: 6.8, height: 6.8),
+        const Radius.circular(1.0),
+      ),
+      Paint()..color = Colors.black38,
+    );
+
+    // Yellow pitched roof body (Image 2)
+    final gazeboRect = Rect.fromCenter(center: gazeboCenter, width: 6.2, height: 6.2);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(gazeboRect, const Radius.circular(0.8)),
+      Paint()..color = const Color(0xFFEAB308),
+    );
+
+    // Pyramid hip ridgelines to center
+    final gazRidge = Paint()
+      ..color = const Color(0xFFFEF08A)
+      ..strokeWidth = 0.6
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(gazeboRect.topLeft, gazeboRect.bottomRight, gazRidge);
+    canvas.drawLine(gazeboRect.topRight, gazeboRect.bottomLeft, gazRidge);
+  }
+
+  // 5. Connecting Paved Footpaths (നടപ്പാതകൾ)
+  void _drawWalkwayPaths(Canvas canvas, Rect parcelRect, Offset housePos, int day) {
+    final pathPaint = Paint()
+      ..color = const Color(0xFFFEF08A).withValues(alpha: 0.85) // Warm sandstone path
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+
+    // Path from driveway to front entrance
+    final p1 = Path();
+    p1.moveTo(parcelRect.left + 11.5, parcelRect.top + 10.0);
+    p1.lineTo(housePos.dx - 3.5, parcelRect.top + 10.0);
+    p1.lineTo(housePos.dx - 3.5, housePos.dy);
+    canvas.drawPath(p1, pathPaint);
+
+    // Path to pool / garden gazebo
+    if (day >= 20) {
+      final p2 = Path();
+      p2.moveTo(housePos.dx + 2.0, housePos.dy + 4.0);
+      p2.lineTo(housePos.dx + 2.0, parcelRect.bottom - 8.5);
+      p2.lineTo(parcelRect.right - 14.5, parcelRect.bottom - 8.5);
+      canvas.drawPath(p2, pathPaint);
+    }
+  }
+
+  // 6. Architectural Top-Down Villa Roof with 90-Day Progression (റിയലിസ്റ്റിക് മേൽക്കൂരകൾ & സ്കൈലൈറ്റുകൾ)
+  void _drawArchitecturalRoof(Canvas canvas, Offset pos, int day, bool isSel) {
+    // Soft 3D drop shadow underneath the entire roof structure
+    final roofShadowPaint = Paint()..color = Colors.black45;
+
+    // Roof tile color palette: Warm Terracotta Orange & Red (Image 1, 2, 3)
+    final Color roofBase = isSel
+        ? const Color(0xFFFFD700)
+        : (day >= 90
+            ? const Color(0xFFEA580C) // Sovereign Rich Terracotta
+            : (day >= 60
+                ? const Color(0xFFF97316) // Vibrant Orange Tiled Estate
+                : (day >= 30
+                    ? const Color(0xFFFB923C) // Warm Terracotta Villa
+                    : const Color(0xFFFDBA74)))); // Light Terracotta Cottage
+
+    final Color ridgeHighlight = isSel ? const Color(0xFFFFF9C4) : const Color(0xFFFFEDD5);
+
+    if (day <= 15) {
+      // -------------------------------------------------------------
+      // LEVEL 1 (Day 1 - 15): Compact Starter Cottage
+      // -------------------------------------------------------------
+      final roofRect = Rect.fromCenter(center: pos, width: 11.0, height: 9.0);
+      // Shadow
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(roofRect.translate(0.8, 1.0), const Radius.circular(1.4)),
+        roofShadowPaint,
+      );
+      // Roof Body
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(roofRect, const Radius.circular(1.2)),
+        Paint()..color = roofBase,
+      );
+      // Hipped Ridge Lines
+      final ridge = Paint()
+        ..color = ridgeHighlight
+        ..strokeWidth = 0.85
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(pos.translate(-2.2, 0), pos.translate(2.2, 0), ridge);
+      canvas.drawLine(pos.translate(-2.2, 0), roofRect.topLeft, ridge);
+      canvas.drawLine(pos.translate(-2.2, 0), roofRect.bottomLeft, ridge);
+      canvas.drawLine(pos.translate(2.2, 0), roofRect.topRight, ridge);
+      canvas.drawLine(pos.translate(2.2, 0), roofRect.bottomRight, ridge);
+
+      // Single Chimney
+      _drawChimney(canvas, pos.translate(2.5, -2.2));
+
+    } else if (day <= 30) {
+      // -------------------------------------------------------------
+      // LEVEL 2 (Day 16 - 30): Suburban Ranch House with Skylight
+      // -------------------------------------------------------------
+      final roofRect = Rect.fromCenter(center: pos, width: 14.0, height: 10.5);
+      // Shadow
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(roofRect.translate(0.9, 1.1), const Radius.circular(1.5)),
+        roofShadowPaint,
+      );
+      // Roof Body
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(roofRect, const Radius.circular(1.2)),
+        Paint()..color = roofBase,
+      );
+      // Hipped Ridge Lines
+      final ridge = Paint()
+        ..color = ridgeHighlight
+        ..strokeWidth = 0.9
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(pos.translate(-3.2, 0), pos.translate(3.2, 0), ridge);
+      canvas.drawLine(pos.translate(-3.2, 0), roofRect.topLeft, ridge);
+      canvas.drawLine(pos.translate(-3.2, 0), roofRect.bottomLeft, ridge);
+      canvas.drawLine(pos.translate(3.2, 0), roofRect.topRight, ridge);
+      canvas.drawLine(pos.translate(3.2, 0), roofRect.bottomRight, ridge);
+
+      // 1 Skylight Window on sunny slope (Image 2)
+      _drawSkylight(canvas, pos.translate(-1.0, -2.5));
+
+      // Chimney
+      _drawChimney(canvas, pos.translate(3.6, -2.4));
+
+    } else if (day <= 60) {
+      // -------------------------------------------------------------
+      // LEVEL 3 (Day 31 - 60): L-Shaped Executive Villa (Image 2 Iconic Shape!)
+      // -------------------------------------------------------------
+      final mainRect = Rect.fromCenter(center: pos.translate(1.0, -1.5), width: 15.0, height: 8.5);
+      final wingRect = Rect.fromCenter(center: pos.translate(-3.0, 3.5), width: 7.0, height: 11.5);
+
+      // Composite Drop Shadow
+      final shadowPath = Path()
+        ..addRRect(RRect.fromRectAndRadius(mainRect.translate(0.9, 1.1), const Radius.circular(1.4)))
+        ..addRRect(RRect.fromRectAndRadius(wingRect.translate(0.9, 1.1), const Radius.circular(1.4)));
+      canvas.drawPath(shadowPath, roofShadowPaint);
+
+      // Roof Wings
+      final roofPaint = Paint()..color = roofBase;
+      canvas.drawRRect(RRect.fromRectAndRadius(mainRect, const Radius.circular(1.2)), roofPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(wingRect, const Radius.circular(1.2)), roofPaint);
+
+      // Hipped Ridges
+      final ridge = Paint()
+        ..color = ridgeHighlight
+        ..strokeWidth = 0.9
+        ..style = PaintingStyle.stroke;
+
+      // Main Wing Ridge
+      canvas.drawLine(mainRect.center.translate(-3.0, 0), mainRect.center.translate(4.0, 0), ridge);
+      canvas.drawLine(mainRect.center.translate(4.0, 0), mainRect.topRight, ridge);
+      canvas.drawLine(mainRect.center.translate(4.0, 0), mainRect.bottomRight, ridge);
+
+      // Side Wing Ridge
+      canvas.drawLine(wingRect.center.translate(0, -2.5), wingRect.center.translate(0, 3.5), ridge);
+      canvas.drawLine(wingRect.center.translate(0, 3.5), wingRect.bottomLeft, ridge);
+      canvas.drawLine(wingRect.center.translate(0, 3.5), wingRect.bottomRight, ridge);
+
+      // 2 Blue Skylight Windows on main roof (Image 2)
+      _drawSkylight(canvas, mainRect.center.translate(0.5, -2.2));
+      _drawSkylight(canvas, mainRect.center.translate(3.5, -2.2));
+
+      // Chimney
+      _drawChimney(canvas, mainRect.center.translate(4.8, 2.2));
+
+    } else if (day <= 89) {
+      // -------------------------------------------------------------
+      // LEVEL 4 (Day 61 - 89): Luxury Multi-Wing Estate Compound (Image 1 & 2)
+      // -------------------------------------------------------------
+      final mainRect = Rect.fromCenter(center: pos.translate(0.0, -2.0), width: 17.5, height: 9.0);
+      final westWing = Rect.fromCenter(center: pos.translate(-4.5, 3.5), width: 8.5, height: 11.0);
+      final eastPorch = Rect.fromCenter(center: pos.translate(5.0, 2.0), width: 6.5, height: 6.5);
+
+      // Compound Shadow
+      final shadowPath = Path()
+        ..addRRect(RRect.fromRectAndRadius(mainRect.translate(1.0, 1.2), const Radius.circular(1.5)))
+        ..addRRect(RRect.fromRectAndRadius(westWing.translate(1.0, 1.2), const Radius.circular(1.5)))
+        ..addRRect(RRect.fromRectAndRadius(eastPorch.translate(1.0, 1.2), const Radius.circular(1.5)));
+      canvas.drawPath(shadowPath, roofShadowPaint);
+
+      // Roof Bodies
+      final roofPaint = Paint()..color = roofBase;
+      canvas.drawRRect(RRect.fromRectAndRadius(mainRect, const Radius.circular(1.2)), roofPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(westWing, const Radius.circular(1.2)), roofPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(eastPorch, const Radius.circular(1.2)), roofPaint);
+
+      // Hipped Ridge Highlights
+      final ridge = Paint()
+        ..color = ridgeHighlight
+        ..strokeWidth = 0.95
+        ..style = PaintingStyle.stroke;
+
+      // Main Ridge
+      canvas.drawLine(mainRect.center.translate(-4.0, 0), mainRect.center.translate(5.0, 0), ridge);
+      canvas.drawLine(mainRect.center.translate(5.0, 0), mainRect.topRight, ridge);
+      canvas.drawLine(mainRect.center.translate(5.0, 0), mainRect.bottomRight, ridge);
+
+      // West Wing Ridge
+      canvas.drawLine(westWing.center.translate(0, -2.5), westWing.center.translate(0, 3.5), ridge);
+      canvas.drawLine(westWing.center.translate(0, 3.5), westWing.bottomLeft, ridge);
+      canvas.drawLine(westWing.center.translate(0, 3.5), westWing.bottomRight, ridge);
+
+      // 3 Blue Skylights (Image 2)
+      _drawSkylight(canvas, mainRect.center.translate(-1.5, -2.3));
+      _drawSkylight(canvas, mainRect.center.translate(1.8, -2.3));
+      _drawSkylight(canvas, mainRect.center.translate(5.0, -2.3));
+
+      // Dual Chimneys
+      _drawChimney(canvas, mainRect.center.translate(-5.5, 2.0));
+      _drawChimney(canvas, mainRect.center.translate(6.0, 2.0));
+
+    } else {
+      // -------------------------------------------------------------
+      // LEVEL 5 (Day 90 / Max Streak): Sovereign Grand Palace Manor (U-Shape)
+      // -------------------------------------------------------------
+      final centerHall = Rect.fromCenter(center: pos.translate(0, -3.5), width: 19.0, height: 9.5);
+      final leftWing = Rect.fromCenter(center: pos.translate(-6.0, 2.5), width: 7.5, height: 13.0);
+      final rightWing = Rect.fromCenter(center: pos.translate(6.0, 2.5), width: 7.5, height: 13.0);
+
+      // Sovereign Shadow
+      final shadowPath = Path()
+        ..addRRect(RRect.fromRectAndRadius(centerHall.translate(1.2, 1.4), const Radius.circular(1.8)))
+        ..addRRect(RRect.fromRectAndRadius(leftWing.translate(1.2, 1.4), const Radius.circular(1.8)))
+        ..addRRect(RRect.fromRectAndRadius(rightWing.translate(1.2, 1.4), const Radius.circular(1.8)));
+      canvas.drawPath(shadowPath, roofShadowPaint);
+
+      // Grand Terracotta Palace Wings
+      final roofPaint = Paint()..color = roofBase;
+      canvas.drawRRect(RRect.fromRectAndRadius(centerHall, const Radius.circular(1.5)), roofPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(leftWing, const Radius.circular(1.5)), roofPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(rightWing, const Radius.circular(1.5)), roofPaint);
+
+      // Sovereign Golden Hip Ridge Lines
+      final ridge = Paint()
+        ..color = const Color(0xFFFFD700)
+        ..strokeWidth = 1.1
+        ..style = PaintingStyle.stroke;
+
+      canvas.drawLine(centerHall.center.translate(-5.5, 0), centerHall.center.translate(5.5, 0), ridge);
+      canvas.drawLine(leftWing.center.translate(0, -3.5), leftWing.center.translate(0, 4.5), ridge);
+      canvas.drawLine(rightWing.center.translate(0, -3.5), rightWing.center.translate(0, 4.5), ridge);
+
+      // 4 Cyan Skylights
+      _drawSkylight(canvas, centerHall.center.translate(-3.0, -2.5));
+      _drawSkylight(canvas, centerHall.center.translate(3.0, -2.5));
+      _drawSkylight(canvas, leftWing.center.translate(0, 3.0));
+      _drawSkylight(canvas, rightWing.center.translate(0, 3.0));
+
+      // Dual Grand Chimneys
+      _drawChimney(canvas, centerHall.center.translate(-6.5, -2.5));
+      _drawChimney(canvas, centerHall.center.translate(6.5, -2.5));
+
+      // Golden Sovereign Prestige Crest atop central ridge
+      canvas.drawCircle(centerHall.center, 1.2, Paint()..color = const Color(0xFFFFD700));
+    }
+  }
+
+  // Helper: Blue Skylight Window (Cyan Glass with White Frame, Image 2)
+  void _drawSkylight(Canvas canvas, Offset center) {
+    final lightRect = Rect.fromCenter(center: center, width: 2.6, height: 1.8);
+    // White outer frame
+    canvas.drawRect(lightRect.inflate(0.3), Paint()..color = Colors.white);
+    // Cyan reflective glass
+    canvas.drawRect(lightRect, Paint()..color = const Color(0xFF0284C7));
+    // Glass glare
+    canvas.drawLine(
+      lightRect.topLeft.translate(0.4, 0.4),
+      lightRect.bottomRight.translate(-0.4, -0.4),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.8)
+        ..strokeWidth = 0.4,
+    );
+  }
+
+  // Helper: Architectural Chimney
+  void _drawChimney(Canvas canvas, Offset center) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: center, width: 1.8, height: 1.8),
+        const Radius.circular(0.3),
+      ),
+      Paint()..color = const Color(0xFF475569),
+    );
+    canvas.drawCircle(center, 0.5, Paint()..color = const Color(0xFF0F172A));
   }
 
   // =========================================================================
