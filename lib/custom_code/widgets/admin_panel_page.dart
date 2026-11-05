@@ -30,6 +30,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_release_service.dar
 import 'package:pocket_mates_app/custom_code/services/pocket_admob_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_ads_management_tab.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poket_cosmos/poket_cosmos_navigator_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -1023,6 +1024,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         'tabIndex': 16,
         'icon': Icons.tune_rounded,
       },
+      {
+        'title': '🌌 Poket Cosmos Map (NEW)',
+        'subtitle': 'Google Maps navigation, Flame travel & plots',
+        'color': const Color(0xFF38BDF8),
+        'tabIndex': -1, // Launches standalone Poket Cosmos Master Navigator
+        'icon': Icons.satellite_alt_rounded,
+      },
     ];
 
     showModalBottomSheet(
@@ -1085,7 +1093,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       return InkWell(
                         onTap: () {
                           Navigator.pop(ctx);
-                          _tabController.animateTo(targetIndex);
+                          if (targetIndex == -1) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PoketCosmosNavigatorPage(),
+                              ),
+                            );
+                          } else {
+                            _tabController.animateTo(targetIndex);
+                          }
                         },
                         borderRadius: BorderRadius.circular(14),
                         child: Container(
