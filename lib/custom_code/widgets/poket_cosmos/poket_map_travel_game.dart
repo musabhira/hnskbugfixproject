@@ -55,7 +55,7 @@ class PoketMapTravelGame extends FlameGame {
     final distance = vehiclePosition.distanceTo(targetPosition);
 
     // Dynamic travel speed depending on vehicle mode
-    final double speed = travelMode == TravelMode.plane
+    final double speed = (travelMode == TravelMode.plane || travelMode == TravelMode.airplane)
         ? 280.0
         : travelMode == TravelMode.train
             ? 210.0
@@ -270,7 +270,7 @@ class PoketMapTravelGame extends FlameGame {
     canvas.translate(vehiclePosition.x, vehiclePosition.y);
     canvas.rotate(vehicleAngle);
 
-    if (travelMode == TravelMode.plane) {
+    if (travelMode == TravelMode.plane || travelMode == TravelMode.airplane) {
       // ✈️ Aeroplane
       final planePaint = Paint()..color = Colors.white;
       final wingPaint = Paint()..color = const Color(0xFF38BDF8);

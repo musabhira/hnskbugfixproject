@@ -219,7 +219,9 @@ enum TravelMode {
   walk,
   car,
   airplane,
+  plane,
   boat,
+  train,
 }
 
 /// 🛩️ Interactive Travel Vehicle Simulation Model
