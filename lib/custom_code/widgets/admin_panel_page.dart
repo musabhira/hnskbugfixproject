@@ -1036,7 +1036,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF111827),
-      isScrollable: true,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
