@@ -33,7 +33,7 @@ void main() {
     // Lock mobile app strictly to portrait mode
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      ]);
+    ]);
 
     // Catch synchronous framework-level errors
     FlutterError.onError = (FlutterErrorDetails details) {

@@ -8,7 +8,6 @@ import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
 import 'planet_sphere_icon_widget.dart';
-import 'infinite_living_ocean_widget.dart';
 import '../verified_switch_page.dart';
 
 /// 🌌 Poket Cosmos Explorer:
@@ -1620,10 +1619,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        currentIsland?.waterColor.withValues(alpha: 0.35) ??
+        currentIsland?.waterColor.withValues(alpha: 0.22) ??
             const Color(0xFF0D121D),
-        currentIsland?.landColor.withValues(alpha: 0.18) ??
-            const Color(0xFF030712),
+        const Color(0xFF0A111E),
         const Color(0xFF0D121D),
       ],
     );
@@ -1947,6 +1945,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
 
   // =========================================================================
   // 🗺️ SCREEN 2: FULLSCREEN EDGE-TO-EDGE LIVING ATMOSPHERE (NO BOX BREAKS)
+  // Unified living world: ocean, waves, reefs, island, houses & clouds scale together!
   // =========================================================================
   Widget _buildFullscreenAerialMapView() {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
@@ -1956,27 +1955,20 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 🌊 Infinite Edge-to-Edge Oceanic Canvas (100% Fullscreen, Zero Box Breaks)
-          Positioned.fill(
-            child: InfiniteLivingOceanWidget(
-              waterColor: island.waterColor,
-              animation: _ambientOceanAnimController,
-            ),
-          ),
-
-          // 🏝️ Fullscreen Living Island Canvas (Pans & Zooms gracefully inside the ocean)
+          // 🏝️ Fullscreen Unified Living Oceanic World Canvas
+          // Edge-to-edge ocean, island, houses & clouds all pan & zoom seamlessly as ONE entity
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final worldDim =
                     math.max(constraints.maxWidth, constraints.maxHeight) *
-                        1.75;
+                        3.4;
 
                 return InteractiveViewer(
                   transformationController: _aerialMapZoomController,
-                  minScale: 0.82, // Natural fixed airplane / satellite overview limit!
-                  maxScale: 3.5,  // Deep habit house zoom
-                  boundaryMargin: EdgeInsets.all(worldDim * 0.45),
+                  minScale: 0.38, // High-altitude satellite overview (ocean stays 100% filled!)
+                  maxScale: 4.8,  // Deep habit house villa inspection
+                  boundaryMargin: EdgeInsets.all(worldDim * 0.40),
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldDim,
@@ -2143,7 +2135,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.25).clamp(0.82, 3.5);
+                      final s = (current * 1.25).clamp(0.38, 4.8);
                       _aerialMapZoomController.value =
                           Matrix4.diagonal3Values(s, s, 1.0);
                     },
@@ -2158,7 +2150,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.80).clamp(0.82, 3.5);
+                      final s = (current * 0.80).clamp(0.38, 4.8);
                       _aerialMapZoomController.value =
                           Matrix4.diagonal3Values(s, s, 1.0);
                     },
