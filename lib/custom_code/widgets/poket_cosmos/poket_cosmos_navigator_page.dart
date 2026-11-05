@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart' hide Matrix4;
@@ -6,6 +7,7 @@ import '/backend/supabase/supabase.dart';
 import 'poket_cosmos_models.dart';
 import 'flame_solar_system_game.dart';
 import 'island_aerial_view.dart';
+import 'planet_sphere_icon_widget.dart';
 import '../verified_switch_page.dart';
 
 /// 🌌 Poket Cosmos Explorer:
@@ -44,18 +46,34 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   List<CitizenPlot> _currentIslandPlots = [];
   CitizenPlot? _inspectedPlot;
 
+  bool _isAmbientAudioPlaying = true;
+  double _currentAerialZoom = 1.0;
+
   @override
   void initState() {
     super.initState();
     _islandPageController = PageController(viewportFraction: 0.84);
     _planets = _buildCosmosPlanets();
     _loadIslandPlots(_planets.first.countryMaps.first);
+    _aerialMapZoomController.addListener(_onAerialZoomChanged);
+  }
+
+  void _onAerialZoomChanged() {
+    final scale = _aerialMapZoomController.value.getMaxScaleOnAxis();
+    if ((scale - _currentAerialZoom).abs() > 0.08) {
+      if (mounted) {
+        setState(() {
+          _currentAerialZoom = scale;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     _islandPageController.dispose();
     _orbitInteractiveController.dispose();
+    _aerialMapZoomController.removeListener(_onAerialZoomChanged);
     _aerialMapZoomController.dispose();
     super.dispose();
   }
@@ -239,7 +257,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             parentPlanetName: 'Earth Prime 🌍',
             satelliteType: 'Natural Moon of Earth',
             theme: 'Earth\'s Natural Satellite & Off-World Harbor',
-            tagLine: 'Tidally Locked • First Off-World Colony (Tranquility Base)',
+            tagLine:
+                'Tidally Locked • First Off-World Colony (Tranquility Base)',
             primaryColor: Color(0xFFE2E8F0),
             glowColor: Color(0xFFCBD5E1),
             radius: 8.5,
@@ -667,7 +686,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         name: 'Grammar Isle',
         tag: 'Core Rules',
         landColor: Color(0xFF059669),
-        waterColor: Color(0xFF10B981), // Emerald Mint
+        waterColor: Color(0xFF0EA5E9), // Tropical Azure Sea
         totalSlots: 50,
         filledSlots: 48,
         climate: 'Clear Skies ☀️',
@@ -973,7 +992,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         name: 'Synonym Shoal',
         tag: 'Varied Vocabulary',
         landColor: Color(0xFF059669),
-        waterColor: Color(0xFF10B981),
+        waterColor: Color(0xFF0284C7),
         totalSlots: 50,
         filledSlots: 38,
         climate: 'Emerald Waters 💎',
@@ -1007,7 +1026,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         name: 'Jargon Jungle',
         tag: 'Tech & Professional',
         landColor: Color(0xFF166534),
-        waterColor: Color(0xFF047857),
+        waterColor: Color(0xFF0891B2),
         totalSlots: 50,
         filledSlots: 43,
         climate: 'Rich Forest 🌲',
@@ -1024,10 +1043,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         name: 'Poetry Point',
         tag: 'Rhyme & Meter',
         landColor: Color(0xFF14532D),
-        waterColor: Color(0xFF7C3AED),
+        waterColor: Color(0xFF0EA5E9),
         totalSlots: 50,
         filledSlots: 41,
-        climate: 'Sunset Violet 🌅',
+        climate: 'Sunset Azure 🌅',
         climateIcon: Icons.wb_twilight_rounded,
         description:
             'Twin islets honoring rhythm, rhyme, and lyrical English expression.',
@@ -1143,7 +1162,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   void _zoomOrbit(double factor) {
     final currentScale = _orbitInteractiveController.value.getMaxScaleOnAxis();
     final newScale = (currentScale * factor).clamp(0.4, 3.2);
-    _orbitInteractiveController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+    _orbitInteractiveController.value =
+        Matrix4.diagonal3Values(newScale, newScale, 1.0);
   }
 
   void _resetOrbitZoom() {
@@ -1324,12 +1344,12 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   Widget _buildFlameOrbitContent() {
     return InteractiveViewer(
       transformationController: _orbitInteractiveController,
-      minScale: 0.4,
-      maxScale: 3.5,
-      boundaryMargin: const EdgeInsets.all(400),
+      minScale: 0.16, // Zoom all the way out to comfortably see Pluto and Kepler-452b
+      maxScale: 4.0,
+      boundaryMargin: const EdgeInsets.all(600),
       child: SizedBox(
-        width: 1100,
-        height: 1100,
+        width: 1300,
+        height: 1300,
         child: GameWidget(
           game: FlameSolarSystemGame(
             planets: _planets,
@@ -1357,171 +1377,222 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         final p = _planets[i];
         final isApex = p.id == 3;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF14181B),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isApex
-                  ? const Color(0xFFFFD700).withValues(alpha: 0.6)
-                  : Colors.white12,
-              width: isApex ? 1.5 : 0.8,
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _navigateToPlanetArchipelago(p),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: p.primaryColor.withValues(alpha: 0.2),
-                        border: Border.all(color: p.primaryColor, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          isApex
-                              ? '👑'
-                              : p.name.split(' ').last.replaceAll(')', ''),
-                          style: const TextStyle(fontSize: 18),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 🪐 Primary Planet Card
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14181B),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isApex
+                      ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                      : Colors.white12,
+                  width: isApex ? 1.5 : 0.8,
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => _navigateToPlanetArchipelago(p),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        // 3D Spherical Planetary Icon (with atmospheric shading & rings)
+                        PlanetSphereIconWidget(
+                          name: p.name,
+                          primaryColor: p.primaryColor,
+                          glowColor: p.glowColor,
+                          size: 46,
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                p.name,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14.5,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    p.name,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.5,
+                                    ),
+                                  ),
+                                  if (isApex) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFD700),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'APEX',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                  ] else if (p.isExoplanet) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'EARTH 2.0',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                  ] else if (p.isDwarfPlanet) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF94A3B8),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'DWARF',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              if (isApex) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD700),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'APEX',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ),
-                              ] else if (p.isExoplanet) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'EARTH 2.0',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ),
-                              ] else if (p.isDwarfPlanet) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF94A3B8),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'DWARF',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              const SizedBox(height: 2),
+                              Text(
+                                p.tagLine,
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            p.tagLine,
-                            style: const TextStyle(
-                                color: Colors.white60, fontSize: 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (p.satellites.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: p.satellites.map((sat) {
-                                return InkWell(
-                                  onTap: () => _navigateToPlanetArchipelago(sat.toPlanet()),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                    decoration: BoxDecoration(
-                                      color: sat.primaryColor.withValues(alpha: 0.16),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: sat.primaryColor.withValues(alpha: 0.4), width: 0.8),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '${sat.name} • ${sat.satelliteType}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 3),
-                                        const Icon(Icons.arrow_forward_rounded, size: 9, color: Colors.white70),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ],
-                      ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            color: Colors.white30, size: 14),
+                      ],
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        color: Colors.white30, size: 14),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+
+            // 🌕 Dedicated Independent Sub-Tiles for Natural Moons / Satellites
+            if (p.satellites.isNotEmpty)
+              ...p.satellites.map((sat) {
+                return Container(
+                  margin: const EdgeInsets.only(left: 24, bottom: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F141C),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: sat.primaryColor.withValues(alpha: 0.35),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => _navigateToPlanetArchipelago(sat.toPlanet()),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 9),
+                        child: Row(
+                          children: [
+                            // 🌕 3D Lunar Shaded Sphere Icon
+                            PlanetSphereIconWidget(
+                              name: sat.name,
+                              primaryColor: sat.primaryColor,
+                              glowColor: sat.glowColor,
+                              size: 34,
+                              isMoon: true,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        sat.name,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13.5,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: sat.primaryColor
+                                              .withValues(alpha: 0.22),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                              color: sat.primaryColor
+                                                  .withValues(alpha: 0.5),
+                                              width: 0.6),
+                                        ),
+                                        child: Text(
+                                          sat.satelliteType.toUpperCase(),
+                                          style: TextStyle(
+                                            color: sat.primaryColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 8.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    sat.tagLine,
+                                    style: const TextStyle(
+                                        color: Colors.white60, fontSize: 10.5),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded,
+                                color: Colors.white24, size: 12),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            const SizedBox(height: 4),
+          ],
         );
       },
     );
@@ -1596,16 +1667,20 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     borderRadius: BorderRadius.circular(12),
                     onTap: _showCosmosLoopDialog,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.6)),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.all_inclusive_rounded, color: Color(0xFFFFD700), size: 14),
+                          Icon(Icons.all_inclusive_rounded,
+                              color: Color(0xFFFFD700), size: 14),
                           SizedBox(width: 4),
                           Text(
                             '1 Cr+ Loop',
@@ -1869,21 +1944,30 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
 
     return Scaffold(
-      backgroundColor: island.waterColor, // Infinite matching ocean background
+      backgroundColor: const Color(0xFF061426), // Seamless abyssal ocean navy background
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // 🌊 Infinite Edge-to-Edge Oceanic Canvas (Zero Box Breaks)
+          Positioned.fill(
+            child: Container(
+              color: const Color(0xFF061426),
+            ),
+          ),
+
           // 🌊 Fullscreen Living Atmosphere & Oceanic Real Estate Canvas
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final worldDim = math.max(constraints.maxWidth, constraints.maxHeight) * 1.85;
+                final worldDim =
+                    math.max(constraints.maxWidth, constraints.maxHeight) *
+                        2.8;
 
                 return InteractiveViewer(
                   transformationController: _aerialMapZoomController,
-                  minScale: 0.55, // Allows pulling back to see the majestic island in the vast ocean
-                  maxScale: 3.2,  // Deep habit house zoom
-                  boundaryMargin: EdgeInsets.all(worldDim * 0.4),
+                  minScale: 0.35, // Allows pulling back to see the open ocean
+                  maxScale: 4.5,  // Deep habit house zoom
+                  boundaryMargin: EdgeInsets.all(worldDim * 0.5),
                   clipBehavior: Clip.none,
                   child: SizedBox(
                     width: worldDim,
@@ -1891,6 +1975,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     child: IslandAerialViewWidget(
                       island: island,
                       isInteractive: true,
+                      zoomScale: _currentAerialZoom,
                       plots: _currentIslandPlots,
                       selectedPlotNumber: _inspectedPlot?.plotNumber,
                       onPlotTapped: _showPlotDetailsSheet,
@@ -1962,25 +2047,56 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       ],
                     ),
                   ),
+                  // 🎵 Ambient Music / Audio Toggle Button
                   InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap: _showCosmosLoopDialog,
+                    onTap: () {
+                      setState(() {
+                        _isAmbientAudioPlaying = !_isAmbientAudioPlaying;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(_isAmbientAudioPlaying
+                              ? '🎵 Ambient Ocean Waves & Breeze Active'
+                              : '🔇 Audio Muted'),
+                          duration: const Duration(milliseconds: 1400),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        color: _isAmbientAudioPlaying
+                            ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                            : Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                        border: Border.all(
+                          color: _isAmbientAudioPlaying
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.6)
+                              : Colors.white24,
+                        ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.all_inclusive_rounded, color: Color(0xFFFFD700), size: 14),
-                          SizedBox(width: 4),
+                          Icon(
+                            _isAmbientAudioPlaying
+                                ? Icons.volume_up_rounded
+                                : Icons.volume_off_rounded,
+                            color: _isAmbientAudioPlaying
+                                ? const Color(0xFF38BDF8)
+                                : Colors.white60,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 5),
                           Text(
-                            '1 Cr+ Loop',
+                            _isAmbientAudioPlaying ? 'BGM' : 'Muted',
                             style: TextStyle(
-                              color: Color(0xFFFFD700),
+                              color: _isAmbientAudioPlaying
+                                  ? const Color(0xFF38BDF8)
+                                  : Colors.white60,
                               fontWeight: FontWeight.bold,
                               fontSize: 11,
                             ),
@@ -2019,7 +2135,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
                       final s = (current * 1.3).clamp(0.85, 3.5);
-                      _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
+                      _aerialMapZoomController.value =
+                          Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2033,7 +2150,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
                       final s = (current * 0.77).clamp(0.85, 3.5);
-                      _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
+                      _aerialMapZoomController.value =
+                          Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2215,7 +2333,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => VerfiedSwitchPage(userId: plot.userId),
+                          builder: (_) =>
+                              VerfiedSwitchPage(userId: plot.userId),
                         ),
                       );
                     } else {
@@ -2269,8 +2388,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
-                      border:
-                          Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700), width: 1.5),
                     ),
                     child: const Icon(Icons.all_inclusive_rounded,
                         color: Color(0xFFFFD700), size: 24),
@@ -2296,7 +2415,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.white54),
                     onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
@@ -2461,8 +2581,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel',
-                  style: TextStyle(color: Colors.white54)),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

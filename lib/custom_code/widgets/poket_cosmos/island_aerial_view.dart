@@ -12,6 +12,7 @@ import 'poket_cosmos_models.dart';
 class IslandAerialViewWidget extends StatefulWidget {
   final PoketCountryMap island;
   final bool isInteractive;
+  final double zoomScale;
   final List<CitizenPlot> plots;
   final ValueChanged<CitizenPlot>? onPlotTapped;
   final int? selectedPlotNumber;
@@ -20,6 +21,7 @@ class IslandAerialViewWidget extends StatefulWidget {
     super.key,
     required this.island,
     this.isInteractive = false,
+    this.zoomScale = 1.0,
     this.plots = const [],
     this.onPlotTapped,
     this.selectedPlotNumber,
@@ -62,6 +64,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
             painter: IslandAerialPainter(
               island: widget.island,
               isInteractive: widget.isInteractive,
+              zoomScale: widget.zoomScale,
               plots: widget.plots,
               selectedPlotNumber: widget.selectedPlotNumber,
               animation: _animController,
@@ -104,6 +107,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 class IslandAerialPainter extends CustomPainter {
   final PoketCountryMap island;
   final bool isInteractive;
+  final double zoomScale;
   final List<CitizenPlot> plots;
   final int? selectedPlotNumber;
   final Animation<double>? animation;
@@ -111,6 +115,7 @@ class IslandAerialPainter extends CustomPainter {
   IslandAerialPainter({
     required this.island,
     this.isInteractive = false,
+    this.zoomScale = 1.0,
     this.plots = const [],
     this.selectedPlotNumber,
     this.animation,
@@ -192,13 +197,13 @@ class IslandAerialPainter extends CustomPainter {
 
     final oceanGradient = RadialGradient(
       center: Alignment.center,
-      radius: 1.35,
+      radius: 1.15,
       colors: [
         island.waterColor.withValues(alpha: 0.96),
-        Color.lerp(island.waterColor, const Color(0xFF03045E), 0.52) ?? const Color(0xFF0284C7),
-        const Color(0xFF070E22), // Abyssal navy edge
+        Color.lerp(island.waterColor, const Color(0xFF03045E), 0.55) ?? const Color(0xFF0284C7),
+        const Color(0xFF061426), // Edge blends seamlessly with scaffold ocean navy
       ],
-      stops: const [0.0, 0.7, 1.0],
+      stops: const [0.0, 0.45, 1.0],
     );
 
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
@@ -810,16 +815,18 @@ class IslandAerialPainter extends CustomPainter {
               coordinates: pos,
             );
 
-      if (!isInteractive) {
-        // 🔭 FAR AWAY / OVERVIEW MODE (LOD: Elegant glowing homestead dot nestled in greenery)
+      final bool isOverview = !isInteractive || zoomScale < 1.6;
+
+      if (isOverview) {
+        // 🔭 FAR AWAY / OVERVIEW MODE (LOD: Tiny minimal glowing homestead dot nestled in greenery)
         final dotPaint = Paint()
           ..color = isSel
               ? const Color(0xFFFFD700)
               : (plot.day >= 90
                   ? const Color(0xFFFFD700)
-                  : (plot.day >= 60 ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.9)));
-        canvas.drawCircle(pos, 3.2, Paint()..color = Colors.black26); // Drop shadow
-        canvas.drawCircle(pos, 2.8, dotPaint);
+                  : (plot.day >= 60 ? const Color(0xFF38BDF8) : Colors.white.withValues(alpha: 0.95)));
+        canvas.drawCircle(pos, 2.8, Paint()..color = Colors.black26); // Drop shadow
+        canvas.drawCircle(pos, 2.2, dotPaint);
       } else {
         // 🔬 DEEP ZOOM INSPECTION MODE (LOD: Full demarcated plot lawn & 90-day house)
         // 1. Plot Demarcated Garden Lawn Boundary
@@ -1144,6 +1151,7 @@ class IslandAerialPainter extends CustomPainter {
   bool shouldRepaint(covariant IslandAerialPainter oldDelegate) {
     return oldDelegate.island.id != island.id ||
         oldDelegate.selectedPlotNumber != selectedPlotNumber ||
+        oldDelegate.zoomScale != zoomScale ||
         oldDelegate.plots != plots;
   }
 
