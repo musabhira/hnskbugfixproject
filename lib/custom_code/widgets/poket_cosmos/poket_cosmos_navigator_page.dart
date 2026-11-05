@@ -1733,7 +1733,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   }
 
   // =========================================================================
-  // 🗺️ SCREEN 2: FULLSCREEN INFINITE OCEAN MAP (NO BOX BREAKS, DEEP 6.5X ZOOM)
+  // 🗺️ SCREEN 2: FULLSCREEN INFINITE OCEAN MAP (SAFE GPU RASTERIZATION)
   // =========================================================================
   Widget _buildFullscreenAerialMapView() {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
@@ -1742,23 +1742,25 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       backgroundColor: island.waterColor, // Infinite matching ocean background
       body: Stack(
         children: [
-          // Infinite Ocean Canvas with Deep 7.5x Zoom InteractiveViewer
+          // Safe 60FPS Infinite Ocean Canvas with Bounded Memory Usage
           Positioned.fill(
             child: InteractiveViewer(
               transformationController: _aerialMapZoomController,
-              minScale: 0.85, // Bounded so ocean fully covers screen without shrinking into an empty box
-              maxScale: 7.5,  // Deep peak zoom into 50 habit houses
-              boundaryMargin: const EdgeInsets.all(600),
-              clipBehavior: Clip.none,
-              child: SizedBox(
-                width: 1500,
-                height: 1500,
-                child: IslandAerialViewWidget(
-                  island: island,
-                  isInteractive: true,
-                  plots: _currentIslandPlots,
-                  selectedPlotNumber: _inspectedPlot?.plotNumber,
-                  onPlotTapped: _showPlotDetailsSheet,
+              minScale: 0.85,
+              maxScale: 3.5,
+              boundaryMargin: const EdgeInsets.all(80),
+              clipBehavior: Clip.hardEdge,
+              child: Center(
+                child: SizedBox(
+                  width: 540,
+                  height: 540,
+                  child: IslandAerialViewWidget(
+                    island: island,
+                    isInteractive: true,
+                    plots: _currentIslandPlots,
+                    selectedPlotNumber: _inspectedPlot?.plotNumber,
+                    onPlotTapped: _showPlotDetailsSheet,
+                  ),
                 ),
               ),
             ),
@@ -1881,7 +1883,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.3).clamp(0.65, 6.5);
+                      final s = (current * 1.3).clamp(0.85, 3.5);
                       _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:
@@ -1895,7 +1897,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     onPressed: () {
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.77).clamp(0.65, 6.5);
+                      final s = (current * 0.77).clamp(0.85, 3.5);
                       _aerialMapZoomController.value = Matrix4.diagonal3Values(s, s, 1.0);
                     },
                     constraints:

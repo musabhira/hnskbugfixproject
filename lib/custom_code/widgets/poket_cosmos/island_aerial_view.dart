@@ -356,29 +356,27 @@ class IslandAerialPainter extends CustomPainter {
   void _drawShallowCoralReef(Canvas canvas) {
     final islandPath = _getIslandPath();
 
-    // Outermost translucent shallow reef contour
+    // Outermost translucent shallow reef contour (Safe GPU stroke)
     final reefPaint = Paint()
       ..color = const Color(0xFF38BDF8).withValues(alpha: 0.32)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 52
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeWidth = 36
+      ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, reefPaint);
 
     // Inner bright aquamarine shimmer
     final reefInnerPaint = Paint()
       ..color = const Color(0xFF22D3EE).withValues(alpha: 0.48)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 28
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeWidth = 18
+      ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, reefInnerPaint);
 
     // Delicate white wave surf / foam line kissing the shoreline
     final foamPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.42)
+      ..color = Colors.white.withValues(alpha: 0.45)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.2
+      ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, foamPaint);
   }
@@ -390,16 +388,15 @@ class IslandAerialPainter extends CustomPainter {
     final sandPaint = Paint()
       ..color = const Color(0xFFFDE68A) // Golden tropical sand
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 24
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeWidth = 16
+      ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, sandPaint);
 
     // Wet shoreline sand edge meeting the water
     final wetSandPaint = Paint()
       ..color = const Color(0xFFF59E0B).withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.5
+      ..strokeWidth = 5.0
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, wetSandPaint);
   }
@@ -1068,24 +1065,15 @@ class IslandAerialPainter extends CustomPainter {
       final canopyColor = isRed ? const Color(0xFFEF4444) : const Color(0xFF0284C7);
       canvas.drawCircle(pos, 5.8, Paint()..color = canopyColor);
 
-      // Alternating 4 White Radial Segments for Authentic Beach Resort Stripe Look
+      // Alternating 4 White Radial Stripes (Safe Line Primitives - No Path Tessellation)
       final stripePaint = Paint()
         ..color = Colors.white
-        ..style = PaintingStyle.fill;
-
-      for (int s = 0; s < 4; s++) {
-        final startAngle = (s * math.pi / 2) + (i * 0.3);
-        final stripePath = Path();
-        stripePath.moveTo(pos.dx, pos.dy);
-        stripePath.arcTo(
-          Rect.fromCircle(center: pos, radius: 5.8),
-          startAngle,
-          math.pi / 4,
-          false,
-        );
-        stripePath.close();
-        canvas.drawPath(stripePath, stripePaint);
-      }
+        ..strokeWidth = 1.3
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(pos.dx - 4.6, pos.dy), Offset(pos.dx + 4.6, pos.dy), stripePaint);
+      canvas.drawLine(Offset(pos.dx, pos.dy - 4.6), Offset(pos.dx, pos.dy + 4.6), stripePaint);
+      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy - 3.2), Offset(pos.dx + 3.2, pos.dy + 3.2), stripePaint);
+      canvas.drawLine(Offset(pos.dx - 3.2, pos.dy + 3.2), Offset(pos.dx + 3.2, pos.dy - 3.2), stripePaint);
 
       // Center umbrella pole cap
       canvas.drawCircle(pos, 1.4, Paint()..color = Colors.white);

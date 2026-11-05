@@ -160,12 +160,16 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
     final isSel = p.id == selectedPlanet?.id;
     final radius = p.radius;
 
-    // Planet Selection Aura
+    // Planet Selection Aura (Hardware Shader)
     if (isSel) {
       final glowPaint = Paint()
-        ..color = p.glowColor.withValues(alpha: 0.5)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
-      canvas.drawCircle(pos, radius + 6, glowPaint);
+        ..shader = RadialGradient(
+          colors: [
+            p.glowColor.withValues(alpha: 0.65),
+            p.glowColor.withValues(alpha: 0.0),
+          ],
+        ).createShader(Rect.fromCircle(center: pos, radius: radius + 10));
+      canvas.drawCircle(pos, radius + 10, glowPaint);
     }
 
     // 🪐 Saturn Rings
