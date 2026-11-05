@@ -337,36 +337,276 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   // 🏝️ Generate 30 Distinct Minimal Islands for Earth Prime (50 slots per island)
   static List<PoketCountryMap> _buildEarthArchipelago() {
     final islandThemes = [
-      ('Genesis Sanctuary 🏝️', 'Capital Valley', const Color(0xFF15803D), const Color(0xFF0284C7), 'Sunny & Lush ☀️', Icons.wb_sunny_rounded, 49),
-      ('Emerald Haven 🌿', 'River Delta', const Color(0xFF047857), const Color(0xFF0EA5E9), 'Fresh Breeze 🍃', Icons.air_rounded, 45),
-      ('Coral Palm Coast 🏖️', 'Palm Shoreline', const Color(0xFF16A34A), const Color(0xFF06B6D4), 'Tropical Coral 🌴', Icons.beach_access_rounded, 42),
-      ('Starlight Cliff ⛰️', 'Highland Ridge', const Color(0xFF1E3A8A), const Color(0xFF0369A1), 'Misty Sky ✨', Icons.nights_stay_rounded, 38),
-      ('Azure Lagoon Isle 🌊', 'Atoll Reef', const Color(0xFF0D9488), const Color(0xFF0284C7), 'Calm Ocean 🌊', Icons.waves_rounded, 35),
-      ('Whispering Pines 🌲', 'Forest Coast', const Color(0xFF065F46), const Color(0xFF075985), 'Pine Forest 🌲', Icons.forest_rounded, 30),
-      ('Golden Dunes Atoll 🌴', 'Desert Oasis', const Color(0xFF854D0E), const Color(0xFF0284C7), 'Warm Sunset 🌅', Icons.wb_twilight_rounded, 28),
-      ('Crystal Springs 💧', 'Spring Valley', const Color(0xFF0284C7), const Color(0xFF0EA5E9), 'Pure Springs 💧', Icons.water_drop_rounded, 41),
-      ('Amber Bay 🌅', 'Golden Coast', const Color(0xFFB45309), const Color(0xFF0284C7), 'Amber Light ☀️', Icons.wb_sunny_rounded, 33),
-      ('Orchid Archipelago 🌸', 'Flora Island', const Color(0xFF059669), const Color(0xFF06B6D4), 'Orchid Blossom 🌸', Icons.local_florist_rounded, 29),
-      ('Silver Lake Isle 🪙', 'Inland Basin', const Color(0xFF334155), const Color(0xFF0369A1), 'Mirror Lake 🪞', Icons.water_rounded, 25),
-      ('Falcon Crest 🦅', 'Avian Highlands', const Color(0xFF166534), const Color(0xFF0284C7), 'Mountain Air 🦅', Icons.terrain_rounded, 47),
-      ('Moonlit Cove 🌙', 'Night Bay', const Color(0xFF1E1B4B), const Color(0xFF1E3A8A), 'Moonlit Waves 🌙', Icons.bedtime_rounded, 22),
-      ('Aurora Strand 🌌', 'Luminous Reef', const Color(0xFF047857), const Color(0xFF0EA5E9), 'Aurora Glow 🌌', Icons.auto_awesome_rounded, 31),
-      ('Sunstone Isle ☀️', 'Granite Cliffs', const Color(0xFF78350F), const Color(0xFF0284C7), 'Sunlit Rock ☀️', Icons.wb_sunny_rounded, 27),
-      ('Breeze Harbor ⛵', 'Yacht Marina', const Color(0xFF0F766E), const Color(0xFF0EA5E9), 'Coastal Wind ⛵', Icons.sailing_rounded, 36),
-      ('Celeste Peninsula 🏰', 'Citadel Shore', const Color(0xFF15803D), const Color(0xFF0284C7), 'Royal Haven 👑', Icons.shield_rounded, 44),
-      ('Rainforest Delta 🌴', 'Jungle River', const Color(0xFF14532D), const Color(0xFF0891B2), 'Tropical Rain 🌧️', Icons.umbrella_rounded, 24),
-      ('Pearl Shoals 🦪', 'Shallow Reef', const Color(0xFF0D9488), const Color(0xFF06B6D4), 'Pearl Waters 🦪', Icons.circle_rounded, 26),
-      ('Highland Plateau ⛰️', 'Green Mesa', const Color(0xFF16A34A), const Color(0xFF0369A1), 'Alpine Breeze 🍃', Icons.air_rounded, 32),
-      ('Mystic Grove 🌳', 'Ancient Trees', const Color(0xFF064E3B), const Color(0xFF075985), 'Deep Forest 🌳', Icons.park_rounded, 20),
-      ('Solarium Isle ☀️', 'Solar Fields', const Color(0xFF65A30D), const Color(0xFF0284C7), 'Golden Rays ☀️', Icons.wb_sunny_rounded, 23),
-      ('Tidepool Haven 🦀', 'Coastal Reef', const Color(0xFF047857), const Color(0xFF0EA5E9), 'Tide Pools 🦀', Icons.waves_rounded, 19),
-      ('Seafarer Coast ⚓', 'Harbor Town', const Color(0xFF1E3A8A), const Color(0xFF0284C7), 'Seaport ⚓', Icons.anchor_rounded, 37),
-      ('Biolume Bay 💡', 'Glowing Waters', const Color(0xFF0F766E), const Color(0xFF06B6D4), 'Neon Plankton 💡', Icons.lightbulb_rounded, 21),
-      ('Canyon Springs 🏜️', 'River Gorge', const Color(0xFF854D0E), const Color(0xFF0284C7), 'Canyon River 🏞️', Icons.landscape_rounded, 25),
-      ('Echo Valley 🏔️', 'Glacier Stream', const Color(0xFF334155), const Color(0xFF0369A1), 'Crisp Air 🏔️', Icons.snowshoeing_rounded, 18),
-      ('Garden Atoll 🌷', 'Botanical Isles', const Color(0xFF15803D), const Color(0xFF0EA5E9), 'Botanical Haven 🌷', Icons.yard_rounded, 33),
-      ('Dragonfly Marsh 🌾', 'Wetland Haven', const Color(0xFF065F46), const Color(0xFF075985), 'Wetland Wind 🌾', Icons.grass_rounded, 17),
-      ('Genesis Apex Isle 👑', 'Presidential Rock', const Color(0xFF16A34A), const Color(0xFF0284C7), 'Apex Sovereign 👑', Icons.military_tech_rounded, 50),
+      (
+        'Genesis Sanctuary 🏝️',
+        'Capital Valley',
+        const Color(0xFF15803D),
+        const Color(0xFF0284C7),
+        'Sunny & Lush ☀️',
+        Icons.wb_sunny_rounded,
+        49
+      ),
+      (
+        'Emerald Haven 🌿',
+        'River Delta',
+        const Color(0xFF047857),
+        const Color(0xFF0EA5E9),
+        'Fresh Breeze 🍃',
+        Icons.air_rounded,
+        45
+      ),
+      (
+        'Coral Palm Coast 🏖️',
+        'Palm Shoreline',
+        const Color(0xFF16A34A),
+        const Color(0xFF06B6D4),
+        'Tropical Coral 🌴',
+        Icons.beach_access_rounded,
+        42
+      ),
+      (
+        'Starlight Cliff ⛰️',
+        'Highland Ridge',
+        const Color(0xFF1E3A8A),
+        const Color(0xFF0369A1),
+        'Misty Sky ✨',
+        Icons.nights_stay_rounded,
+        38
+      ),
+      (
+        'Azure Lagoon Isle 🌊',
+        'Atoll Reef',
+        const Color(0xFF0D9488),
+        const Color(0xFF0284C7),
+        'Calm Ocean 🌊',
+        Icons.waves_rounded,
+        35
+      ),
+      (
+        'Whispering Pines 🌲',
+        'Forest Coast',
+        const Color(0xFF065F46),
+        const Color(0xFF075985),
+        'Pine Forest 🌲',
+        Icons.forest_rounded,
+        30
+      ),
+      (
+        'Golden Dunes Atoll 🌴',
+        'Desert Oasis',
+        const Color(0xFF854D0E),
+        const Color(0xFF0284C7),
+        'Warm Sunset 🌅',
+        Icons.wb_twilight_rounded,
+        28
+      ),
+      (
+        'Crystal Springs 💧',
+        'Spring Valley',
+        const Color(0xFF0284C7),
+        const Color(0xFF0EA5E9),
+        'Pure Springs 💧',
+        Icons.water_drop_rounded,
+        41
+      ),
+      (
+        'Amber Bay 🌅',
+        'Golden Coast',
+        const Color(0xFFB45309),
+        const Color(0xFF0284C7),
+        'Amber Light ☀️',
+        Icons.wb_sunny_rounded,
+        33
+      ),
+      (
+        'Orchid Archipelago 🌸',
+        'Flora Island',
+        const Color(0xFF059669),
+        const Color(0xFF06B6D4),
+        'Orchid Blossom 🌸',
+        Icons.local_florist_rounded,
+        29
+      ),
+      (
+        'Silver Lake Isle 🪙',
+        'Inland Basin',
+        const Color(0xFF334155),
+        const Color(0xFF0369A1),
+        'Mirror Lake 🪞',
+        Icons.water_rounded,
+        25
+      ),
+      (
+        'Falcon Crest 🦅',
+        'Avian Highlands',
+        const Color(0xFF166534),
+        const Color(0xFF0284C7),
+        'Mountain Air 🦅',
+        Icons.terrain_rounded,
+        47
+      ),
+      (
+        'Moonlit Cove 🌙',
+        'Night Bay',
+        const Color(0xFF1E1B4B),
+        const Color(0xFF1E3A8A),
+        'Moonlit Waves 🌙',
+        Icons.bedtime_rounded,
+        22
+      ),
+      (
+        'Aurora Strand 🌌',
+        'Luminous Reef',
+        const Color(0xFF047857),
+        const Color(0xFF0EA5E9),
+        'Aurora Glow 🌌',
+        Icons.auto_awesome_rounded,
+        31
+      ),
+      (
+        'Sunstone Isle ☀️',
+        'Granite Cliffs',
+        const Color(0xFF78350F),
+        const Color(0xFF0284C7),
+        'Sunlit Rock ☀️',
+        Icons.wb_sunny_rounded,
+        27
+      ),
+      (
+        'Breeze Harbor ⛵',
+        'Yacht Marina',
+        const Color(0xFF0F766E),
+        const Color(0xFF0EA5E9),
+        'Coastal Wind ⛵',
+        Icons.sailing_rounded,
+        36
+      ),
+      (
+        'Celeste Peninsula 🏰',
+        'Citadel Shore',
+        const Color(0xFF15803D),
+        const Color(0xFF0284C7),
+        'Royal Haven 👑',
+        Icons.shield_rounded,
+        44
+      ),
+      (
+        'Rainforest Delta 🌴',
+        'Jungle River',
+        const Color(0xFF14532D),
+        const Color(0xFF0891B2),
+        'Tropical Rain 🌧️',
+        Icons.umbrella_rounded,
+        24
+      ),
+      (
+        'Pearl Shoals 🦪',
+        'Shallow Reef',
+        const Color(0xFF0D9488),
+        const Color(0xFF06B6D4),
+        'Pearl Waters 🦪',
+        Icons.circle_rounded,
+        26
+      ),
+      (
+        'Highland Plateau ⛰️',
+        'Green Mesa',
+        const Color(0xFF16A34A),
+        const Color(0xFF0369A1),
+        'Alpine Breeze 🍃',
+        Icons.air_rounded,
+        32
+      ),
+      (
+        'Mystic Grove 🌳',
+        'Ancient Trees',
+        const Color(0xFF064E3B),
+        const Color(0xFF075985),
+        'Deep Forest 🌳',
+        Icons.park_rounded,
+        20
+      ),
+      (
+        'Solarium Isle ☀️',
+        'Solar Fields',
+        const Color(0xFF65A30D),
+        const Color(0xFF0284C7),
+        'Golden Rays ☀️',
+        Icons.wb_sunny_rounded,
+        23
+      ),
+      (
+        'Tidepool Haven 🦀',
+        'Coastal Reef',
+        const Color(0xFF047857),
+        const Color(0xFF0EA5E9),
+        'Tide Pools 🦀',
+        Icons.waves_rounded,
+        19
+      ),
+      (
+        'Seafarer Coast ⚓',
+        'Harbor Town',
+        const Color(0xFF1E3A8A),
+        const Color(0xFF0284C7),
+        'Seaport ⚓',
+        Icons.anchor_rounded,
+        37
+      ),
+      (
+        'Biolume Bay 💡',
+        'Glowing Waters',
+        const Color(0xFF0F766E),
+        const Color(0xFF06B6D4),
+        'Neon Plankton 💡',
+        Icons.lightbulb_rounded,
+        21
+      ),
+      (
+        'Canyon Springs 🏜️',
+        'River Gorge',
+        const Color(0xFF854D0E),
+        const Color(0xFF0284C7),
+        'Canyon River 🏞️',
+        Icons.landscape_rounded,
+        25
+      ),
+      (
+        'Echo Valley 🏔️',
+        'Glacier Stream',
+        const Color(0xFF334155),
+        const Color(0xFF0369A1),
+        'Crisp Air 🏔️',
+        Icons.snowshoeing_rounded,
+        18
+      ),
+      (
+        'Garden Atoll 🌷',
+        'Botanical Isles',
+        const Color(0xFF15803D),
+        const Color(0xFF0EA5E9),
+        'Botanical Haven 🌷',
+        Icons.yard_rounded,
+        33
+      ),
+      (
+        'Dragonfly Marsh 🌾',
+        'Wetland Haven',
+        const Color(0xFF065F46),
+        const Color(0xFF075985),
+        'Wetland Wind 🌾',
+        Icons.grass_rounded,
+        17
+      ),
+      (
+        'Genesis Apex Isle 👑',
+        'Presidential Rock',
+        const Color(0xFF16A34A),
+        const Color(0xFF0284C7),
+        'Apex Sovereign 👑',
+        Icons.military_tech_rounded,
+        50
+      ),
     ];
 
     return List.generate(islandThemes.length, (i) {
@@ -468,7 +708,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             child: Row(
               children: [
                 // Minimal iOS Back Button
-                _buildIosBackButton(onTap: () => Navigator.of(context).maybePop()),
+                _buildIosBackButton(
+                    onTap: () => Navigator.of(context).maybePop()),
                 const SizedBox(width: 10),
 
                 // Title
@@ -526,7 +767,9 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                 color: const Color(0xFF14181B).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.white12),
-                boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 12)],
+                boxShadow: const [
+                  BoxShadow(color: Colors.black54, blurRadius: 12)
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -548,11 +791,16 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     tooltip: 'Reset Orbit',
                     onTap: _resetOrbitZoom,
                   ),
-                  const Divider(color: Colors.white24, height: 14, indent: 4, endIndent: 4),
+                  const Divider(
+                      color: Colors.white24,
+                      height: 14,
+                      indent: 4,
+                      endIndent: 4),
                   // 3D Tilt Bend Button (Compact Pill!)
                   _buildFloatingActionBtn(
                     icon: Icons.screen_rotation_rounded,
-                    tooltip: '3D Bend Perspective (${_tiltAngle < 0.2 ? 'Top' : _tiltAngle < 0.65 ? '3D' : 'Side'})',
+                    tooltip:
+                        '3D Bend Perspective (${_tiltAngle < 0.2 ? 'Top' : _tiltAngle < 0.65 ? '3D' : 'Side'})',
                     highlightColor: const Color(0xFFFFD700),
                     onTap: _toggleTiltAngle,
                   ),
@@ -619,7 +867,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
               borderRadius: BorderRadius.circular(14),
               onTap: () => _navigateToPlanetArchipelago(p),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
                     // Planet sphere preview
@@ -639,7 +888,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       child: Center(
                         child: Text(
                           isApex ? '🌍' : '${p.id}',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -661,7 +911,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                               if (isApex) ...[
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFFD700),
                                     borderRadius: BorderRadius.circular(4),
@@ -681,12 +932,14 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                           const SizedBox(height: 2),
                           Text(
                             '${p.countryMaps.length} Islands • ${p.occupiedPlots}/${p.totalPlots} Slots',
-                            style: const TextStyle(color: Colors.white60, fontSize: 11),
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 11),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: Colors.white30, size: 14),
                   ],
                 ),
               ),
@@ -712,8 +965,10 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        currentIsland?.waterColor.withValues(alpha: 0.35) ?? const Color(0xFF0D121D),
-        currentIsland?.landColor.withValues(alpha: 0.18) ?? const Color(0xFF030712),
+        currentIsland?.waterColor.withValues(alpha: 0.35) ??
+            const Color(0xFF0D121D),
+        currentIsland?.landColor.withValues(alpha: 0.18) ??
+            const Color(0xFF030712),
         const Color(0xFF0D121D),
       ],
     );
@@ -755,13 +1010,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                         ),
                         Text(
                           '${islands.length} Distinct Islands • 50 Slots per Island',
-                          style: const TextStyle(color: Colors.white60, fontSize: 11),
+                          style: const TextStyle(
+                              color: Colors.white60, fontSize: 11),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -807,7 +1064,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     );
   }
 
-  Widget _buildIslandDetailCard(PoketCountryMap island, PoketPlanet planet, bool isCurrent) {
+  Widget _buildIslandDetailCard(
+      PoketCountryMap island, PoketPlanet planet, bool isCurrent) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
       decoration: BoxDecoration(
@@ -843,7 +1101,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                   const Color(0xFF0F172A),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Stack(
               alignment: Alignment.center,
@@ -854,7 +1113,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                   height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2), width: 1.5),
                   ),
                 ),
                 Container(
@@ -882,14 +1142,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       island.tag,
-                      style: const TextStyle(color: Colors.white70, fontSize: 10.5, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -917,18 +1181,21 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(island.climateIcon, size: 14, color: const Color(0xFFFFD700)),
+                      Icon(island.climateIcon,
+                          size: 14, color: const Color(0xFFFFD700)),
                       const SizedBox(width: 5),
                       Text(
                         island.climate,
-                        style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 11.5),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
                     island.description,
-                    style: const TextStyle(color: Colors.white60, fontSize: 11.5),
+                    style:
+                        const TextStyle(color: Colors.white60, fontSize: 11.5),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -940,7 +1207,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     children: [
                       Text(
                         '${island.filledSlots} / ${island.totalSlots} Citizens',
-                        style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 11.5),
                       ),
                       Text(
                         '${island.availableSlots} available',
@@ -970,14 +1238,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                     height: 40,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFD700), // App primary gold
+                        backgroundColor:
+                            const Color(0xFFFFD700), // App primary gold
                         foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Exploring ${island.name} on ${planet.name}... 🏝️'),
+                            content: Text(
+                                'Exploring ${island.name} on ${planet.name}... 🏝️'),
                             backgroundColor: const Color(0xFF0F172A),
                             duration: const Duration(seconds: 2),
                           ),
@@ -986,7 +1257,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       icon: const Icon(Icons.travel_explore_rounded, size: 17),
                       label: const Text(
                         'Explore Island Plots',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12.5),
                       ),
                     ),
                   ),
@@ -1009,7 +1281,8 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+            color: Colors.white, size: 16),
         tooltip: 'Back',
         onPressed: onTap,
         constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
