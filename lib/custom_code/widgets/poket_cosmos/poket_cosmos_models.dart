@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 🌌 Poket Planet Model with Slot Limits & Realistic Visual Features
+/// 🌌 Poket Planet Model with Slot Limits, Satellites & Realistic Visual Features
 class PoketPlanet {
   final int id;
   final String name;
@@ -14,6 +14,9 @@ class PoketPlanet {
   final int totalPlots;
   final int occupiedPlots;
   final List<PoketCountryMap> countryMaps;
+  final List<PoketSatellite> satellites;
+  final bool isExoplanet;
+  final bool isDwarfPlanet;
 
   const PoketPlanet({
     required this.id,
@@ -28,10 +31,69 @@ class PoketPlanet {
     required this.totalPlots,
     required this.occupiedPlots,
     required this.countryMaps,
+    this.satellites = const [],
+    this.isExoplanet = false,
+    this.isDwarfPlanet = false,
   });
 
   int get availablePlots => (totalPlots - occupiedPlots).clamp(0, totalPlots);
   bool get isFull => occupiedPlots >= totalPlots;
+}
+
+/// 🌕 Scientific Satellite / Natural Moon Model Orbiting a Parent Planet
+class PoketSatellite {
+  final int id;
+  final String name;
+  final String parentPlanetName;
+  final String satelliteType; // e.g. "Earth's Moon", "Jupiter's Satellite"
+  final String theme;
+  final String tagLine;
+  final Color primaryColor;
+  final Color glowColor;
+  final double radius;
+  final double orbitDistance; // Distance from parent planet center (e.g. 24.0)
+  final double orbitSpeed;    // Speed of orbit around parent planet
+  final int totalPlots;
+  final int occupiedPlots;
+  final List<PoketCountryMap> countryMaps;
+
+  const PoketSatellite({
+    required this.id,
+    required this.name,
+    required this.parentPlanetName,
+    required this.satelliteType,
+    required this.theme,
+    required this.tagLine,
+    required this.primaryColor,
+    required this.glowColor,
+    required this.radius,
+    required this.orbitDistance,
+    required this.orbitSpeed,
+    required this.totalPlots,
+    required this.occupiedPlots,
+    required this.countryMaps,
+  });
+
+  int get availablePlots => (totalPlots - occupiedPlots).clamp(0, totalPlots);
+  bool get isFull => occupiedPlots >= totalPlots;
+
+  /// Converts a satellite to a PoketPlanet instance for unified navigation
+  PoketPlanet toPlanet() {
+    return PoketPlanet(
+      id: id,
+      name: '$name ($satelliteType)',
+      theme: theme,
+      tagLine: '$satelliteType • $tagLine',
+      primaryColor: primaryColor,
+      glowColor: glowColor,
+      radius: radius,
+      orbitDistance: orbitDistance,
+      orbitSpeed: orbitSpeed,
+      totalPlots: totalPlots,
+      occupiedPlots: occupiedPlots,
+      countryMaps: countryMaps,
+    );
+  }
 }
 
 /// 🏝️ Distinct Architectural Island Geometry Styles

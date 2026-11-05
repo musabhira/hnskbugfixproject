@@ -32,6 +32,10 @@ set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 
+# Force synchronous PDB writes to prevent error C1041 during parallel plugin compilation
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /FS")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /FS")
+
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 

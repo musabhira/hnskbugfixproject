@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flame/game.dart' hide Matrix4;
@@ -153,60 +154,16 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   }
 
   // =========================================================================
-  // 🌍 30 ENGLISH LEARNING ISLANDS (50 SLOTS, UNIQUE GEOMETRIES & THEMES)
+  // 🌍 SCIENTIFIC SOLAR SYSTEM: 8 MAJOR PLANETS, KUIPER DWARF, INTERSTELLAR EXOPLANET & MOONS
   // =========================================================================
   static List<PoketPlanet> _buildCosmosPlanets() {
     return [
-      // 🌍 APEX: Earth Prime
-      PoketPlanet(
-        id: 3,
-        name: 'Earth Prime 🌍',
-        theme: 'Cradle of Habit Learning & Apex Capital',
-        tagLine: 'Day 1-90 Habit Pioneers • 30 English Learning Islands',
-        primaryColor: const Color(0xFF38BDF8),
-        glowColor: const Color(0xFF0284C7),
-        radius: 17,
-        orbitDistance: 175,
-        orbitSpeed: 1.0,
-        totalPlots: 1451,
-        occupiedPlots: 950,
-        countryMaps: _buildEarth30EnglishIslands(),
-      ),
-
-      // 🌕 The Moon (Earth's Natural Satellite & Off-World Harbor)
-      const PoketPlanet(
-        id: 30,
-        name: 'The Moon 🌕',
-        theme: 'Earth\'s Natural Satellite & Off-World Harbor',
-        tagLine: 'Low Gravity Spire • Glass Domed Habitats',
-        primaryColor: Color(0xFFE2E8F0),
-        glowColor: Color(0xFFCBD5E1),
-        radius: 11,
-        orbitDistance: 200,
-        orbitSpeed: 0.95,
-        totalPlots: 50,
-        occupiedPlots: 36,
-        countryMaps: [
-          PoketCountryMap(
-            id: 3001,
-            name: 'Tranquility Base',
-            tag: 'First Lunar Colony',
-            landColor: Color(0xFF475569),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
-            filledSlots: 36,
-            climate: 'Lunar Glow 🌕',
-            climateIcon: Icons.nightlight_round,
-            islandEmoji: '🌕',
-            shapeStyle: IslandShapeStyle.ringAtoll,
-          ),
-        ],
-      ),
+      // 1. Mercury ⚪ (Innermost Scorched World)
       const PoketPlanet(
         id: 1,
         name: 'Mercury ⚪',
-        theme: 'Swift Iron Frontier',
-        tagLine: 'High Velocity Orbit • Scorched Basins',
+        theme: 'Innermost Scorched Iron World',
+        tagLine: 'High Velocity Orbit • Caloris Basin',
         primaryColor: Color(0xFFCBD5E1),
         glowColor: Color(0xFF94A3B8),
         radius: 10,
@@ -230,11 +187,13 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+
+      // 2. Venus 🟡 (Amber Cloud Greenhouse)
       const PoketPlanet(
         id: 2,
         name: 'Venus 🟡',
-        theme: 'Golden Veil',
-        tagLine: 'Amber Atmosphere & Golden Highlands',
+        theme: 'Golden Veil Greenhouse',
+        tagLine: 'Dense Amber Clouds & Sulfuric Highlands',
         primaryColor: Color(0xFFFDE047),
         glowColor: Color(0xFFD97706),
         radius: 14,
@@ -258,16 +217,66 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+
+      // 3. Earth Prime 🌍 (Cradle of Habit Learning + Natural Satellite: The Moon 🌕)
+      PoketPlanet(
+        id: 3,
+        name: 'Earth Prime 🌍',
+        theme: 'Cradle of Habit Learning & Capital World',
+        tagLine: 'Day 1-90 Habit Pioneers • 30 English Learning Islands',
+        primaryColor: const Color(0xFF38BDF8),
+        glowColor: const Color(0xFF0284C7),
+        radius: 17,
+        orbitDistance: 180,
+        orbitSpeed: 1.0,
+        totalPlots: 1451,
+        occupiedPlots: 950,
+        countryMaps: _buildEarth30EnglishIslands(),
+        satellites: const [
+          PoketSatellite(
+            id: 30,
+            name: 'The Moon 🌕',
+            parentPlanetName: 'Earth Prime 🌍',
+            satelliteType: 'Natural Moon of Earth',
+            theme: 'Earth\'s Natural Satellite & Off-World Harbor',
+            tagLine: 'Tidally Locked • First Off-World Colony (Tranquility Base)',
+            primaryColor: Color(0xFFE2E8F0),
+            glowColor: Color(0xFFCBD5E1),
+            radius: 8.5,
+            orbitDistance: 25.0,
+            orbitSpeed: 2.4,
+            totalPlots: 50,
+            occupiedPlots: 36,
+            countryMaps: [
+              PoketCountryMap(
+                id: 3001,
+                name: 'Tranquility Base',
+                tag: 'First Lunar Colony',
+                landColor: Color(0xFF475569),
+                waterColor: Color(0xFF0284C7),
+                totalSlots: 50,
+                filledSlots: 36,
+                climate: 'Lunar Glow 🌕',
+                climateIcon: Icons.nightlight_round,
+                islandEmoji: '🌕',
+                shapeStyle: IslandShapeStyle.ringAtoll,
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // 4. Mars 🔴 (The Red Planet)
       const PoketPlanet(
         id: 4,
         name: 'Mars 🔴',
         theme: 'Red Dunes Bastion',
-        tagLine: 'Iron Oxide Canyons & High Canyons',
+        tagLine: 'Iron Oxide Canyons & Olympus Mons',
         primaryColor: Color(0xFFF97316),
         glowColor: Color(0xFFEA580C),
         radius: 13,
-        orbitDistance: 220,
-        orbitSpeed: 0.8,
+        orbitDistance: 240,
+        orbitSpeed: 0.82,
         totalPlots: 50,
         occupiedPlots: 38,
         countryMaps: [
@@ -286,15 +295,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+
+      // 5. Jupiter 🟠 (The Gas Giant + Satellites: Europa 🧊 & Ganymede 🛡️)
       const PoketPlanet(
         id: 5,
         name: 'Jupiter 🟠',
         theme: 'Great Storm Giant',
-        tagLine: 'Colossal Gas Bands & Moons',
+        tagLine: 'Colossal Gas Bands & Galilean Satellites',
         primaryColor: Color(0xFFFDBA74),
         glowColor: Color(0xFFC2410C),
         radius: 26,
-        orbitDistance: 275,
+        orbitDistance: 315,
         orbitSpeed: 0.55,
         totalPlots: 50,
         occupiedPlots: 42,
@@ -313,55 +324,88 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             shapeStyle: IslandShapeStyle.ringAtoll,
           ),
         ],
-      ),
-
-      // 🧊 Europa (Jupiter's Ocean Moon)
-      const PoketPlanet(
-        id: 51,
-        name: 'Europa 🧊',
-        theme: 'Deep Oceanic Ice World (Jovian Moon)',
-        tagLine: 'Liquid Ocean beneath Ice • Cryo Springs',
-        primaryColor: Color(0xFFBAE6FD),
-        glowColor: Color(0xFF38BDF8),
-        radius: 12,
-        orbitDistance: 295,
-        orbitSpeed: 0.52,
-        totalPlots: 50,
-        occupiedPlots: 31,
-        countryMaps: [
-          PoketCountryMap(
-            id: 5101,
-            name: 'Conamara Chaos',
-            tag: 'Liquid Ocean Vault',
-            landColor: Color(0xFF0284C7),
-            waterColor: Color(0xFF38BDF8),
-            totalSlots: 50,
-            filledSlots: 31,
-            climate: 'Cryo Tide 🌊',
-            climateIcon: Icons.water_drop_rounded,
-            islandEmoji: '🧊',
-            shapeStyle: IslandShapeStyle.crescentLagoon,
+        satellites: [
+          PoketSatellite(
+            id: 51,
+            name: 'Europa 🧊',
+            parentPlanetName: 'Jupiter 🟠',
+            satelliteType: 'Jupiter\'s Oceanic Moon',
+            theme: 'Subsurface Liquid Ocean beneath Ice Shell',
+            tagLine: 'Cryo Tide Vault • Conamara Chaos',
+            primaryColor: Color(0xFFBAE6FD),
+            glowColor: Color(0xFF38BDF8),
+            radius: 8.0,
+            orbitDistance: 27.0,
+            orbitSpeed: 2.1,
+            totalPlots: 50,
+            occupiedPlots: 31,
+            countryMaps: [
+              PoketCountryMap(
+                id: 5101,
+                name: 'Conamara Chaos',
+                tag: 'Liquid Ocean Vault',
+                landColor: Color(0xFF0284C7),
+                waterColor: Color(0xFF38BDF8),
+                totalSlots: 50,
+                filledSlots: 31,
+                climate: 'Cryo Tide 🌊',
+                climateIcon: Icons.water_drop_rounded,
+                islandEmoji: '🧊',
+                shapeStyle: IslandShapeStyle.crescentLagoon,
+              ),
+            ],
+          ),
+          PoketSatellite(
+            id: 52,
+            name: 'Ganymede 🛡️',
+            parentPlanetName: 'Jupiter 🟠',
+            satelliteType: 'Jupiter\'s Super-Moon',
+            theme: 'Largest Satellite in Solar System (Bigger than Mercury)',
+            tagLine: 'Internal Magnetic Dynamo • Silicate Highlands',
+            primaryColor: Color(0xFF94A3B8),
+            glowColor: Color(0xFF64748B),
+            radius: 9.2,
+            orbitDistance: 40.0,
+            orbitSpeed: 1.5,
+            totalPlots: 50,
+            occupiedPlots: 26,
+            countryMaps: [
+              PoketCountryMap(
+                id: 5201,
+                name: 'Perrine Regio',
+                tag: 'Magnetic Ocean Citadel',
+                landColor: Color(0xFF475569),
+                waterColor: Color(0xFF0284C7),
+                totalSlots: 50,
+                filledSlots: 26,
+                climate: 'Magnetic Glow ⚡',
+                climateIcon: Icons.shield_rounded,
+                islandEmoji: '🛡️',
+                shapeStyle: IslandShapeStyle.fortressPlateau,
+              ),
+            ],
           ),
         ],
       ),
 
+      // 6. Saturn 🪐 (The Ringed Giant + Satellite: Titan 🪐)
       const PoketPlanet(
         id: 6,
         name: 'Saturn 🪐',
         theme: 'Ringed Majesty',
-        tagLine: 'Golden Ice Dust Rings & Palaces',
+        tagLine: 'Golden Ice Dust Rings & Methane Satellites',
         primaryColor: Color(0xFFFEF08A),
         glowColor: Color(0xFFCA8A04),
         radius: 22,
-        orbitDistance: 335,
+        orbitDistance: 405,
         orbitSpeed: 0.42,
         totalPlots: 50,
         occupiedPlots: 35,
         countryMaps: [
           PoketCountryMap(
             id: 601,
-            name: 'Titan Atoll',
-            tag: 'Golden Horizon',
+            name: 'Cassini Glade',
+            tag: 'Golden Ring Plateau',
             landColor: Color(0xFF854D0E),
             waterColor: Color(0xFF0EA5E9),
             totalSlots: 50,
@@ -372,37 +416,41 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             shapeStyle: IslandShapeStyle.dualIsletBridge,
           ),
         ],
-      ),
-
-      // 🪐 Titan (Saturn's Giant Moon with Atmosphere)
-      const PoketPlanet(
-        id: 61,
-        name: 'Titan 🪐',
-        theme: 'Methane Seas & Golden Nitrogen Sky',
-        tagLine: 'Dense Atmosphere • Golden Lakes',
-        primaryColor: Color(0xFFFBBF24),
-        glowColor: Color(0xFFD97706),
-        radius: 13,
-        orbitDistance: 355,
-        orbitSpeed: 0.40,
-        totalPlots: 50,
-        occupiedPlots: 38,
-        countryMaps: [
-          PoketCountryMap(
-            id: 6101,
-            name: 'Kraken Mare Bay',
-            tag: 'Liquid Methane Sea',
-            landColor: Color(0xFF92400E),
-            waterColor: Color(0xFFD97706),
-            totalSlots: 50,
-            filledSlots: 38,
-            climate: 'Golden Rain 🌧️',
-            climateIcon: Icons.umbrella_rounded,
-            islandEmoji: '🪐',
-            shapeStyle: IslandShapeStyle.ringAtoll,
+        satellites: [
+          PoketSatellite(
+            id: 61,
+            name: 'Titan 🪐',
+            parentPlanetName: 'Saturn 🪐',
+            satelliteType: 'Saturn\'s Atmospheric Moon',
+            theme: 'Dense Nitrogen Sky & Liquid Methane Seas',
+            tagLine: 'Golden Clouds • Hydrocarbon Ocean Harbor (Kraken Mare)',
+            primaryColor: Color(0xFFFBBF24),
+            glowColor: Color(0xFFD97706),
+            radius: 9.0,
+            orbitDistance: 34.0,
+            orbitSpeed: 1.8,
+            totalPlots: 50,
+            occupiedPlots: 38,
+            countryMaps: [
+              PoketCountryMap(
+                id: 6101,
+                name: 'Kraken Mare Bay',
+                tag: 'Liquid Methane Sea',
+                landColor: Color(0xFF92400E),
+                waterColor: Color(0xFFD97706),
+                totalSlots: 50,
+                filledSlots: 38,
+                climate: 'Golden Rain 🌧️',
+                climateIcon: Icons.umbrella_rounded,
+                islandEmoji: '🪐',
+                shapeStyle: IslandShapeStyle.ringAtoll,
+              ),
+            ],
           ),
         ],
       ),
+
+      // 7. Uranus 💎 (Cyan Ice Giant)
       const PoketPlanet(
         id: 7,
         name: 'Uranus 💎',
@@ -411,7 +459,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         primaryColor: Color(0xFF67E8F9),
         glowColor: Color(0xFF06B6D4),
         radius: 18,
-        orbitDistance: 395,
+        orbitDistance: 490,
         orbitSpeed: 0.32,
         totalPlots: 50,
         occupiedPlots: 28,
@@ -431,23 +479,25 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+
+      // 8. Neptune 🌊 (Supersonic Blue Giant + Satellite: Triton 🔱)
       const PoketPlanet(
         id: 8,
         name: 'Neptune 🌊',
-        theme: 'Abyssal Trident',
-        tagLine: 'Supersonic Winds & Deep Ultramarine',
+        theme: 'Abyssal Trident Giant',
+        tagLine: 'Supersonic Winds & Cryo Geyser Satellites',
         primaryColor: Color(0xFF60A5FA),
         glowColor: Color(0xFF2563EB),
         radius: 17,
-        orbitDistance: 450,
+        orbitDistance: 575,
         orbitSpeed: 0.22,
         totalPlots: 50,
         occupiedPlots: 30,
         countryMaps: [
           PoketCountryMap(
             id: 801,
-            name: 'Triton Geyser',
-            tag: 'Outer Rim',
+            name: 'Great Dark Haven',
+            tag: 'Deep Ultramarine Rim',
             landColor: Color(0xFF1E3A8A),
             waterColor: Color(0xFF1D4ED8),
             totalSlots: 50,
@@ -458,49 +508,54 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
             shapeStyle: IslandShapeStyle.heartSanctuary,
           ),
         ],
-      ),
-      // 🛡️ Ganymede (Jupiter's Super-Moon, larger than Mercury)
-      const PoketPlanet(
-        id: 52,
-        name: 'Ganymede 🛡️',
-        theme: 'Largest Moon in Solar System • Jovian Titan',
-        tagLine: 'Magnetic Ocean Vault • Silicate Highlands',
-        primaryColor: Color(0xFF94A3B8),
-        glowColor: Color(0xFF64748B),
-        radius: 13,
-        orbitDistance: 310,
-        orbitSpeed: 0.49,
-        totalPlots: 50,
-        occupiedPlots: 26,
-        countryMaps: [
-          PoketCountryMap(
-            id: 5201,
-            name: 'Perrine Regio',
-            tag: 'Magnetic Ocean Citadel',
-            landColor: Color(0xFF475569),
-            waterColor: Color(0xFF0284C7),
-            totalSlots: 50,
-            filledSlots: 26,
-            climate: 'Magnetic Glow ⚡',
-            climateIcon: Icons.shield_rounded,
-            islandEmoji: '🛡️',
-            shapeStyle: IslandShapeStyle.fortressPlateau,
+        satellites: [
+          PoketSatellite(
+            id: 81,
+            name: 'Triton 🔱',
+            parentPlanetName: 'Neptune 🌊',
+            satelliteType: 'Neptune\'s Cryo Moon',
+            theme: 'Retrograde Nitrogen Geyser Satellite',
+            tagLine: 'Sub-Zero Cryo Spouts • Kuiper Belt Capture',
+            primaryColor: Color(0xFF93C5FD),
+            glowColor: Color(0xFF3B82F6),
+            radius: 7.8,
+            orbitDistance: 27.0,
+            orbitSpeed: -1.9, // Retrograde orbit!
+            totalPlots: 50,
+            occupiedPlots: 24,
+            countryMaps: [
+              PoketCountryMap(
+                id: 8101,
+                name: 'Triton Geyser',
+                tag: 'Cryo Spout Basin',
+                landColor: Color(0xFF1E40AF),
+                waterColor: Color(0xFF60A5FA),
+                totalSlots: 50,
+                filledSlots: 24,
+                climate: 'Cryo Plume ❄️',
+                climateIcon: Icons.ac_unit_rounded,
+                islandEmoji: '🔱',
+                shapeStyle: IslandShapeStyle.crescentLagoon,
+              ),
+            ],
           ),
         ],
       ),
 
+      // 9. Pluto ❄️ (Dwarf Planet • Kuiper Belt Outer Rim)
       const PoketPlanet(
         id: 9,
         name: 'Pluto ❄️',
-        theme: 'Frozen Frontier Atoll',
-        tagLine: 'Nitrogen Ice Dunes & Cosmic Horizon',
+        theme: 'Kuiper Belt Outer Rim (Dwarf Planet)',
+        tagLine: 'Nitrogen Ice Dunes & Heart of Sputnik Planitia',
         primaryColor: Color(0xFFE2E8F0),
         glowColor: Color(0xFF94A3B8),
         radius: 9,
-        orbitDistance: 505,
+        orbitDistance: 660,
         orbitSpeed: 0.16,
         totalPlots: 50,
         occupiedPlots: 22,
+        isDwarfPlanet: true,
         countryMaps: [
           PoketCountryMap(
             id: 901,
@@ -518,17 +573,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
         ],
       ),
 
-      // 🌿 Kepler-452b (Earth 2.0 - Interstellar Habitable Frontier)
+      // 10. Kepler-452b 🌿 (Interstellar Earth 2.0 • Cygnus Constellation)
       const PoketPlanet(
         id: 452,
         name: 'Kepler-452b 🌿',
-        theme: 'Earth 2.0 • Habitable Goldilocks Exoplanet',
-        tagLine: 'Cygnus Constellation • Super-Earth Biosphere',
+        theme: 'Interstellar Habitable Frontier (Earth 2.0)',
+        tagLine: '1,400 Light-Years Away in Cygnus • Super-Earth Biosphere',
         primaryColor: Color(0xFF10B981),
         glowColor: Color(0xFF059669),
         radius: 20,
-        orbitDistance: 560,
-        orbitSpeed: 0.12,
+        orbitDistance: 765,
+        orbitSpeed: 0.11,
+        isExoplanet: true,
         totalPlots: 50,
         occupiedPlots: 15,
         countryMaps: [
@@ -1373,15 +1429,89 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                                     ),
                                   ),
                                 ),
+                              ] else if (p.isExoplanet) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'EARTH 2.0',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
+                              ] else if (p.isDwarfPlanet) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF94A3B8),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'DWARF',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ],
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${p.countryMaps.length} Islands • ${p.occupiedPlots}/${p.totalPlots} Plots',
+                            p.tagLine,
                             style: const TextStyle(
                                 color: Colors.white60, fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                          if (p.satellites.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: p.satellites.map((sat) {
+                                return InkWell(
+                                  onTap: () => _navigateToPlanetArchipelago(sat.toPlanet()),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: sat.primaryColor.withValues(alpha: 0.16),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: sat.primaryColor.withValues(alpha: 0.4), width: 0.8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${sat.name} • ${sat.satelliteType}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 3),
+                                        const Icon(Icons.arrow_forward_rounded, size: 9, color: Colors.white70),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1733,7 +1863,7 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
   }
 
   // =========================================================================
-  // 🗺️ SCREEN 2: FULLSCREEN INFINITE OCEAN MAP (SAFE GPU RASTERIZATION)
+  // 🗺️ SCREEN 2: FULLSCREEN EDGE-TO-EDGE LIVING ATMOSPHERE (NO BOX BREAKS)
   // =========================================================================
   Widget _buildFullscreenAerialMapView() {
     final island = _selectedIsland ?? _planets.first.countryMaps.first;
@@ -1741,28 +1871,33 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
     return Scaffold(
       backgroundColor: island.waterColor, // Infinite matching ocean background
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // Safe 60FPS Infinite Ocean Canvas with Bounded Memory Usage
+          // 🌊 Fullscreen Living Atmosphere & Oceanic Real Estate Canvas
           Positioned.fill(
-            child: InteractiveViewer(
-              transformationController: _aerialMapZoomController,
-              minScale: 0.85,
-              maxScale: 3.5,
-              boundaryMargin: const EdgeInsets.all(80),
-              clipBehavior: Clip.hardEdge,
-              child: Center(
-                child: SizedBox(
-                  width: 540,
-                  height: 540,
-                  child: IslandAerialViewWidget(
-                    island: island,
-                    isInteractive: true,
-                    plots: _currentIslandPlots,
-                    selectedPlotNumber: _inspectedPlot?.plotNumber,
-                    onPlotTapped: _showPlotDetailsSheet,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final worldDim = math.max(constraints.maxWidth, constraints.maxHeight) * 1.85;
+
+                return InteractiveViewer(
+                  transformationController: _aerialMapZoomController,
+                  minScale: 0.55, // Allows pulling back to see the majestic island in the vast ocean
+                  maxScale: 3.2,  // Deep habit house zoom
+                  boundaryMargin: EdgeInsets.all(worldDim * 0.4),
+                  clipBehavior: Clip.none,
+                  child: SizedBox(
+                    width: worldDim,
+                    height: worldDim,
+                    child: IslandAerialViewWidget(
+                      island: island,
+                      isInteractive: true,
+                      plots: _currentIslandPlots,
+                      selectedPlotNumber: _inspectedPlot?.plotNumber,
+                      onPlotTapped: _showPlotDetailsSheet,
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
 

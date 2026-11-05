@@ -220,46 +220,56 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       canvas.drawCircle(pos, radius + 3, selBorder);
     }
 
-    // 🌕 Scientific Moon for Earth (Earth Prime)
-    if (p.id == 3) {
-      final moonAngle = _orbitElapsedSeconds * 2.2;
-      final moonDist = radius + 11.0;
-      final mx = pos.dx + moonDist * math.cos(moonAngle);
-      final my = pos.dy + moonDist * math.sin(moonAngle) * yCompress;
+    // 🌕 Scientific Satellites / Moons Orbiting around Parent Planet (Earth's Moon, Jupiter's Moons, etc.)
+    for (final sat in p.satellites) {
+      final satAngle = _orbitElapsedSeconds * (0.8 + sat.orbitSpeed.abs() * 0.4) * (sat.orbitSpeed < 0 ? -1 : 1);
+      final satDist = sat.orbitDistance;
+      final sx = pos.dx + satDist * math.cos(satAngle);
+      final sy = pos.dy + satDist * math.sin(satAngle) * yCompress;
+      final satPos = Offset(sx, sy);
 
-      // Moon orbit track
-      final moonOrbitPaint = Paint()
-        ..color = Colors.white.withValues(alpha: 0.15)
+      // Satellite Elliptical Orbit Track around Parent Planet
+      final satOrbitPaint = Paint()
+        ..color = sat.glowColor.withValues(alpha: 0.25)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.5;
+        ..strokeWidth = 0.65;
       canvas.drawOval(
-        Rect.fromCenter(center: pos, width: moonDist * 2, height: moonDist * 2 * yCompress),
-        moonOrbitPaint,
+        Rect.fromCenter(center: pos, width: satDist * 2, height: satDist * 2 * yCompress),
+        satOrbitPaint,
       );
 
-      // Moon body
-      final moonPaint = Paint()..color = const Color(0xFFE2E8F0);
-      canvas.drawCircle(Offset(mx, my), 3.2, moonPaint);
-    }
+      // Satellite Sphere with 3D Shading
+      final satPaint = Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.35, -0.35),
+          colors: [
+            Colors.white,
+            sat.primaryColor,
+            sat.glowColor,
+          ],
+        ).createShader(Rect.fromCircle(center: satPos, radius: sat.radius));
+      canvas.drawCircle(satPos, sat.radius, satPaint);
 
-    // 🌕 Scientific Galilean Moons for Jupiter
-    if (p.id == 5) {
-      for (int mi = 0; mi < 3; mi++) {
-        final mAngle = _orbitElapsedSeconds * (1.6 + mi * 0.7) + mi * 2.0;
-        final mDist = radius + 9.0 + mi * 6.0;
-        final jmx = pos.dx + mDist * math.cos(mAngle);
-        final jmy = pos.dy + mDist * math.sin(mAngle) * yCompress;
-
-        final jMoonPaint = Paint()
-          ..color = [const Color(0xFFFED7AA), const Color(0xFFFDE68A), const Color(0xFFE2E8F0)][mi];
-        canvas.drawCircle(Offset(jmx, jmy), 2.2, jMoonPaint);
-      }
+      // Mini Moon Label (e.g. "The Moon 🌕" or "Europa 🧊")
+      final satLabel = TextPainter(
+        text: TextSpan(
+          text: sat.name,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 7.2,
+            fontWeight: FontWeight.bold,
+            shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      satLabel.paint(canvas, Offset(satPos.dx - satLabel.width / 2, satPos.dy + sat.radius + 2));
     }
 
     // Planet Label
     final namePainter = TextPainter(
       text: TextSpan(
-        text: p.name,
+        text: p.isExoplanet ? '🌌 ${p.name}' : (p.isDwarfPlanet ? '❄️ ${p.name}' : p.name),
         style: TextStyle(
           color: isSel ? const Color(0xFFFFD700) : Colors.white70,
           fontSize: isSel ? 10.5 : 9.0,
@@ -283,8 +293,23 @@ class FlameSolarSystemGame extends FlameGame with TapCallbacks {
       final angle = (_orbitElapsedSeconds * 0.35 * planet.orbitSpeed) % (2 * math.pi);
       final px = planet.orbitDistance * math.cos(angle);
       final py = planet.orbitDistance * math.sin(angle) * yCompress;
+      final planetPos = Offset(px, py);
 
-      final dist = (Offset(px, py) - Offset(localTap.x, localTap.y)).distance;
+      // 1. Check if user tapped directly on one of this planet's natural satellites (Moons)
+      for (final sat in planet.satellites) {
+        final satAngle = _orbitElapsedSeconds * (0.8 + sat.orbitSpeed.abs() * 0.4) * (sat.orbitSpeed < 0 ? -1 : 1);
+        final sx = planetPos.dx + sat.orbitDistance * math.cos(satAngle);
+        final sy = planetPos.dy + sat.orbitDistance * math.sin(satAngle) * yCompress;
+        final satDist = (Offset(sx, sy) - Offset(localTap.x, localTap.y)).distance;
+
+        if (satDist <= sat.radius + 14) {
+          onPlanetSelected(sat.toPlanet());
+          return;
+        }
+      }
+
+      // 2. Check if user tapped on the planet body
+      final dist = (planetPos - Offset(localTap.x, localTap.y)).distance;
       if (dist <= planet.radius + 18) {
         onPlanetSelected(planet);
         return;

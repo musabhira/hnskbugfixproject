@@ -29,7 +29,25 @@ class IslandAerialViewWidget extends StatefulWidget {
   State<IslandAerialViewWidget> createState() => _IslandAerialViewWidgetState();
 }
 
-class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget> {
+class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 40),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -46,6 +64,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget> {
               isInteractive: widget.isInteractive,
               plots: widget.plots,
               selectedPlotNumber: widget.selectedPlotNumber,
+              animation: _animController,
             ),
           ),
         );
@@ -58,8 +77,7 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget> {
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Scale factor calibrated for the expansive island canvas
-    final scale = math.min(size.width, size.height) / 540.0;
+    final scale = widget.isInteractive ? 1.0 : (math.min(size.width, size.height) / 540.0);
 
     final islandX = (details.localPosition.dx - cx) / scale;
     final islandY = (details.localPosition.dy - cy) / scale;
@@ -88,23 +106,28 @@ class IslandAerialPainter extends CustomPainter {
   final bool isInteractive;
   final List<CitizenPlot> plots;
   final int? selectedPlotNumber;
+  final Animation<double>? animation;
 
   IslandAerialPainter({
     required this.island,
     this.isInteractive = false,
     this.plots = const [],
     this.selectedPlotNumber,
-  });
+    this.animation,
+  }) : super(repaint: animation);
+
+  double get animProgress => animation?.value ?? 0.0;
+  double get timeSeconds => animProgress * 40.0;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Draw Infinite Seamless Ocean
+    // 1. Draw Infinite Seamless Living Ocean
     _drawInfiniteOcean(canvas, size);
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Vast island canvas scale factor
-    final scale = math.min(size.width, size.height) / 540.0;
+    // Vast island canvas scale factor: 1.0 in fullscreen world, scaled to fit in carousel cards
+    final double scale = isInteractive ? 1.0 : (math.min(size.width, size.height) / 540.0);
 
     canvas.save();
     canvas.translate(cx, cy);
@@ -152,7 +175,10 @@ class IslandAerialPainter extends CustomPainter {
     // 12. Beach Umbrellas & Sunbed Loungers along the Golden Sand
     _drawBeachUmbrellas(canvas);
 
-    // 13. Soaring Seagulls gliding over the azure ocean
+    // 13. Drifting Soft Atmospheric Clouds
+    _drawAtmosphericClouds(canvas);
+
+    // 14. Soaring Seagulls gliding over the azure ocean
     _drawSoaringSeagulls(canvas);
 
     canvas.restore();
@@ -178,15 +204,16 @@ class IslandAerialPainter extends CustomPainter {
     final oceanPaint = Paint()..shader = oceanGradient.createShader(fullRect);
     canvas.drawRect(fullRect, oceanPaint);
 
-    // Subtle gentle wave crest arcs across the open waters
+    // Animated gentle drifting wave crest arcs across open waters
     final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.15)
+      ..color = Colors.white.withValues(alpha: 0.16)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
 
     for (int i = 0; i < 9; i++) {
+      final drift = (timeSeconds * 3.5 + i * 18.0) % 90.0;
       final angle = (i * 0.85);
-      final rx = size.width * (0.15 + (i % 4) * 0.25);
+      final rx = (size.width * (0.15 + (i % 4) * 0.25) + drift) % size.width;
       final ry = size.height * (0.12 + (i ~/ 3) * 0.32);
       canvas.drawArc(
         Rect.fromCenter(center: Offset(rx, ry), width: 75, height: 26),
@@ -372,11 +399,12 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, reefInnerPaint);
 
-    // Delicate white wave surf / foam line kissing the shoreline
+    // Living rhythmic ocean surf tide breathing against the shore
+    final tide = math.sin(timeSeconds * 2.2);
     final foamPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.45)
+      ..color = Colors.white.withValues(alpha: (0.42 + 0.16 * tide).clamp(0.15, 0.75))
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
+      ..strokeWidth = 2.4 + 0.7 * tide
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(islandPath, foamPaint);
   }
@@ -532,29 +560,35 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🚤 CRUISING BOATS WITH V-SHAPED FOAM WAKES (BENCHMARKS #1, #2, #3)
+  // 🚤 CRUISING BOATS WITH V-SHAPED FOAM WAKES (LIVE 60FPS MOTION)
   // =========================================================================
   void _drawCruisingBoatsWithWakes(Canvas canvas) {
     if (island.isPresidential) return;
 
-    // 1. Northwest Cruising Speedboat with Expanding Wake
+    // 1. Moving Cruising Speedboat orbiting around the outer turquoise reef
+    final t1 = (timeSeconds * 0.14) % (2 * math.pi);
+    final pos1 = Offset(215.0 * math.cos(t1), 165.0 * math.sin(t1));
+    final angle1 = t1 + math.pi / 2;
     _drawBoatWithWake(
       canvas,
-      pos: const Offset(-175, -140),
-      angle: -0.65,
+      pos: pos1,
+      angle: angle1,
       boatLength: 14,
       boatWidth: 6,
-      wakeLength: 48,
+      wakeLength: 46,
     );
 
-    // 2. Southeast Cruising Yacht with Expanding Wake
+    // 2. Southeast Cruising Yacht traveling along southern waters
+    final t2 = (-timeSeconds * 0.10) % (2 * math.pi);
+    final pos2 = Offset(205.0 * math.cos(t2) * 0.9, 155.0 * math.sin(t2) + 25);
+    final angle2 = t2 - math.pi / 2;
     _drawBoatWithWake(
       canvas,
-      pos: const Offset(185, 170),
-      angle: 2.45,
-      boatLength: 17,
+      pos: pos2,
+      angle: angle2,
+      boatLength: 16,
       boatWidth: 7,
-      wakeLength: 55,
+      wakeLength: 52,
     );
 
     // 3. East Off-Shore Tender Boat
@@ -657,10 +691,12 @@ class IslandAerialPainter extends CustomPainter {
         canvas.drawLine(Offset(px, 15), Offset(px, 25), plankLine);
       }
 
-      // Tied boats moored along the marina pier
-      _drawYacht(canvas, const Offset(230, 0), angle: 0);
-      _drawYacht(canvas, const Offset(230, 42), angle: 0);
-      _drawYacht(canvas, const Offset(186, -32), angle: -0.42);
+      // Tied boats moored along the marina pier bobbing on gentle ocean swells
+      final bob1 = math.sin(timeSeconds * 2.8) * 1.3;
+      final bob2 = math.sin(timeSeconds * 2.8 + 1.2) * 1.3;
+      _drawYacht(canvas, Offset(230, 0 + bob1), angle: 0);
+      _drawYacht(canvas, Offset(230, 42 + bob2), angle: 0);
+      _drawYacht(canvas, Offset(186, -32 + bob1 * 0.7), angle: -0.42);
     }
   }
 
@@ -690,23 +726,35 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 🕊️ SOARING SEAGULLS GLIDING OVER AZURE WATER (BENCHMARK #3)
+  // ☁️ DRIFTING ATMOSPHERIC CLOUD SHADOWS
   // =========================================================================
-  void _drawSoaringSeagulls(Canvas canvas) {
-    final List<Offset> gulls = [
-      const Offset(-130, -210),
-      const Offset(-145, -195),
-      const Offset(160, -185),
-      const Offset(225, 120),
-      const Offset(-190, 85),
-    ];
-
-    for (final pt in gulls) {
-      _drawSingleSeagull(canvas, pt);
+  void _drawAtmosphericClouds(Canvas canvas) {
+    for (int c = 0; c < 3; c++) {
+      final cx = -260.0 + ((timeSeconds * 10.0 + c * 210.0) % 650.0);
+      final cy = -160.0 + ((timeSeconds * 5.0 + c * 130.0) % 490.0);
+      final shadow = Paint()
+        ..color = Colors.black.withValues(alpha: 0.05)
+        ..style = PaintingStyle.fill;
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 95, height: 42), shadow);
     }
   }
 
-  void _drawSingleSeagull(Canvas canvas, Offset pt) {
+  // =========================================================================
+  // 🕊️ SOARING SEAGULLS GLIDING OVER AZURE WATER (LIVE 60FPS MOTION)
+  // =========================================================================
+  void _drawSoaringSeagulls(Canvas canvas) {
+    for (int i = 0; i < 5; i++) {
+      final flightAngle = (timeSeconds * 0.16 + i * 1.25) % (2 * math.pi);
+      final radiusX = 220.0 + (i % 2 == 0 ? 15 : -15);
+      final radiusY = 170.0 + (i % 3 == 0 ? 20 : -10);
+      final gx = radiusX * math.cos(flightAngle);
+      final gy = radiusY * math.sin(flightAngle);
+      final wingFlap = math.sin(timeSeconds * 8.5 + i * 1.5);
+      _drawSingleSeagull(canvas, Offset(gx, gy), wingFlap: wingFlap);
+    }
+  }
+
+  void _drawSingleSeagull(Canvas canvas, Offset pt, {double wingFlap = 0.0}) {
     final shadowPaint = Paint()
       ..color = Colors.black26
       ..style = PaintingStyle.stroke
@@ -718,18 +766,20 @@ class IslandAerialPainter extends CustomPainter {
       ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round;
 
+    final wingY = pt.dy + wingFlap * 1.8;
+
     // Shadow
     final sp = Path();
-    sp.moveTo(pt.dx - 5.5 + 4, pt.dy - 1.5 + 5);
-    sp.quadraticBezierTo(pt.dx - 2.5 + 4, pt.dy + 1.8 + 5, pt.dx + 4, pt.dy - 0.5 + 5);
-    sp.quadraticBezierTo(pt.dx + 2.5 + 4, pt.dy + 1.8 + 5, pt.dx + 5.5 + 4, pt.dy - 1.5 + 5);
+    sp.moveTo(pt.dx - 5.5 + 4, wingY - 1.5 + 6);
+    sp.quadraticBezierTo(pt.dx - 2.5 + 4, wingY + 1.8 + 6, pt.dx + 4, pt.dy - 0.5 + 6);
+    sp.quadraticBezierTo(pt.dx + 2.5 + 4, wingY + 1.8 + 6, pt.dx + 5.5 + 4, wingY - 1.5 + 6);
     canvas.drawPath(sp, shadowPaint);
 
     // White wings
     final p = Path();
-    p.moveTo(pt.dx - 5.5, pt.dy - 1.5);
-    p.quadraticBezierTo(pt.dx - 2.5, pt.dy + 1.8, pt.dx, pt.dy - 0.5);
-    p.quadraticBezierTo(pt.dx + 2.5, pt.dy + 1.8, pt.dx + 5.5, pt.dy - 1.5);
+    p.moveTo(pt.dx - 5.5, wingY - 1.5);
+    p.quadraticBezierTo(pt.dx - 2.5, wingY + 1.8, pt.dx, pt.dy - 0.5);
+    p.quadraticBezierTo(pt.dx + 2.5, wingY + 1.8, pt.dx + 5.5, wingY - 1.5);
     canvas.drawPath(p, gullPaint);
   }
 
@@ -1098,55 +1148,55 @@ class IslandAerialPainter extends CustomPainter {
   }
 
   // =========================================================================
-  // 📍 50 PRE-CALCULATED PLOT COORDINATES (STRICTLY INSIDE GREEN LANDMASS)
-  // Houses NEVER touch the ocean or beach! Generous lawn spacing!
+  // 📍 50 PRE-CALCULATED PLOT COORDINATES (100% STRICTLY INSIDE GREEN LANDMASS)
+  // Houses NEVER touch the ocean or beach! Generous 50px+ inland safety buffer!
   // =========================================================================
   static List<Offset> get50PlotCoordinates(IslandShapeStyle style) {
     final List<Offset> coords = [];
 
     switch (style) {
       case IslandShapeStyle.crescentLagoon:
-        // Distributed safely along the deep green crescent arch
+        // Safely along the deep green crescent arch (well inside the green belt)
         for (int i = 0; i < 50; i++) {
           final t = (i / 49.0);
-          final angle = -math.pi * 0.82 + t * math.pi * 1.50;
-          final r = 90.0 + (i % 3) * 16.0;
-          coords.add(Offset(r * math.cos(angle) - 15, r * math.sin(angle) * 0.95 + 10));
+          final angle = -math.pi * 0.78 + t * math.pi * 1.42;
+          final r = 75.0 + (i % 3) * 13.0;
+          coords.add(Offset(r * math.cos(angle) - 10, r * math.sin(angle) * 0.90 + 5));
         }
         break;
 
       case IslandShapeStyle.sCurveArchipelago:
-        // Distributed safely along the deep S-curve spine
+        // Safely inside the deep green S-curve spine
         for (int i = 0; i < 50; i++) {
           final t = (i / 49.0) * 2 * math.pi - math.pi;
-          final x = 65.0 * math.sin(t) + ((i % 2 == 0) ? -14 : 14);
-          final y = (i - 25) * 6.5;
+          final x = 45.0 * math.sin(t) + ((i % 2 == 0) ? -9 : 9);
+          final y = (i - 25) * 5.0;
           coords.add(Offset(x, y));
         }
         break;
 
       case IslandShapeStyle.starAtoll:
-        // 10 plots on each of the 5 coral star arms, safely inside the green
+        // 10 plots on each of the 5 coral star arms, firmly inside the core
         for (int i = 0; i < 50; i++) {
           final arm = i % 5;
           final armIdx = i ~/ 5;
           final angle = (arm * 2 * math.pi / 5) - math.pi / 2;
-          final r = 50.0 + armIdx * 11.5;
+          final r = 40.0 + armIdx * 9.5;
           coords.add(Offset(r * math.cos(angle), r * math.sin(angle)));
         }
         break;
 
       case IslandShapeStyle.dualIsletBridge:
-        // 25 plots safely on West Islet, 25 safely on East Islet
+        // 25 plots safely in West Islet core, 25 in East Islet core
         for (int i = 0; i < 25; i++) {
           final row = i ~/ 5;
           final col = i % 5;
-          coords.add(Offset(-160.0 + col * 22.0, -55.0 + row * 24.0));
+          coords.add(Offset(-135.0 + col * 16.0, -35.0 + row * 18.0));
         }
         for (int i = 0; i < 25; i++) {
           final row = i ~/ 5;
           final col = i % 5;
-          coords.add(Offset(60.0 + col * 22.0, -55.0 + row * 24.0));
+          coords.add(Offset(55.0 + col * 16.0, -35.0 + row * 18.0));
         }
         break;
 
@@ -1154,67 +1204,63 @@ class IslandAerialPainter extends CustomPainter {
         // Circular ring well inside the green belt surrounding the central lagoon
         for (int i = 0; i < 50; i++) {
           final angle = (i * 2 * math.pi / 50) - math.pi / 2;
-          final r = 95.0 + (i % 2) * 20.0;
-          coords.add(Offset(r * math.cos(angle) + 12, r * math.sin(angle) * 0.95 + 12));
+          final r = 85.0 + (i % 2) * 14.0;
+          coords.add(Offset(r * math.cos(angle) + 10, r * math.sin(angle) * 0.95 + 10));
         }
         break;
 
       case IslandShapeStyle.hookPeninsula:
-        // Safely inside the J-hook land ridge
+        // Firmly inside the inner J-hook land ridge
         for (int i = 0; i < 50; i++) {
           final t = i / 49.0;
           if (t < 0.45) {
             final subT = t / 0.45;
-            coords.add(Offset(-55.0 + subT * 115.0, -155.0 + subT * 150.0 + ((i % 2 == 0) ? -10 : 10)));
+            coords.add(Offset(-40.0 + subT * 85.0, -115.0 + subT * 110.0 + ((i % 2 == 0) ? -8 : 8)));
           } else {
             final subT = (t - 0.45) / 0.55;
             final angle = subT * math.pi;
-            coords.add(Offset(60.0 + 75.0 * math.sin(angle), -5.0 + subT * 190.0));
+            coords.add(Offset(45.0 + 55.0 * math.sin(angle), -5.0 + subT * 140.0));
           }
         }
         break;
 
       case IslandShapeStyle.heartSanctuary:
-        // Safely inside the parametric heart lobes
+        // Firmly inside the parametric heart lobes
         for (int i = 0; i < 50; i++) {
           final t = (i / 49.0) * 2 * math.pi;
-          final x = 95.0 * math.sin(t) * math.sin(t) * math.sin(t);
-          final y = -80.0 * math.cos(t) + 30.0 * math.cos(2 * t) + 14.0 * math.cos(3 * t) + 7.0 * math.cos(4 * t);
-          coords.add(Offset(x, y + 20));
+          final x = 68.0 * math.sin(t) * math.sin(t) * math.sin(t);
+          final y = -58.0 * math.cos(t) + 22.0 * math.cos(2 * t) + 10.0 * math.cos(3 * t) + 5.0 * math.cos(4 * t);
+          coords.add(Offset(x, y + 15));
         }
         break;
 
       case IslandShapeStyle.cloverBays:
-        // 16 on Top Lobe, 17 on Bottom Right, 17 on Bottom Left
+        // Firmly inside the 3 green lobes
         for (int i = 0; i < 16; i++) {
-          final r = 32.0 + (i % 3) * 14.0;
+          final r = 24.0 + (i % 3) * 10.0;
           final a = (i / 15.0) * math.pi - math.pi;
-          coords.add(Offset(r * math.cos(a), -95.0 + r * math.sin(a)));
+          coords.add(Offset(r * math.cos(a), -70.0 + r * math.sin(a)));
         }
         for (int i = 0; i < 17; i++) {
-          final r = 32.0 + (i % 3) * 14.0;
+          final r = 24.0 + (i % 3) * 10.0;
           final a = (i / 16.0) * math.pi - math.pi / 4;
-          coords.add(Offset(75.0 + r * math.cos(a), 65.0 + r * math.sin(a)));
+          coords.add(Offset(55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
         }
         for (int i = 0; i < 17; i++) {
-          final r = 32.0 + (i % 3) * 14.0;
+          final r = 24.0 + (i % 3) * 10.0;
           final a = (i / 16.0) * math.pi - 3 * math.pi / 4;
-          coords.add(Offset(-75.0 + r * math.cos(a), 65.0 + r * math.sin(a)));
+          coords.add(Offset(-55.0 + r * math.cos(a), 48.0 + r * math.sin(a)));
         }
         break;
 
       case IslandShapeStyle.fortressPlateau:
-        // Diamond grid safely inside the plateau
+        // Diamond grid safely inside the hexagonal plateau core
         for (int i = 0; i < 50; i++) {
           final row = i ~/ 7;
           final col = i % 7;
-          final x = (col - 3) * 34.0;
-          final y = (row - 3) * 34.0;
-          if (x.abs() + y.abs() <= 160) {
-            coords.add(Offset(x, y));
-          } else {
-            coords.add(Offset(x * 0.65, y * 0.65));
-          }
+          final x = (col - 3) * 24.0;
+          final y = (row - 3) * 24.0;
+          coords.add(Offset(x, y));
         }
         break;
 
@@ -1223,7 +1269,7 @@ class IslandAerialPainter extends CustomPainter {
         for (int i = 0; i < 50; i++) {
           final row = i ~/ 8;
           final col = i % 8;
-          coords.add(Offset(-105.0 + col * 30.0, -75.0 + row * 26.0));
+          coords.add(Offset(-80.0 + col * 22.0, -55.0 + row * 20.0));
         }
         break;
     }
