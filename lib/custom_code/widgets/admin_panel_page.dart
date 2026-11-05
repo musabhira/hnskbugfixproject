@@ -834,20 +834,75 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Widget build(BuildContext context) {
     if (!isAuthenticated) return const Scaffold(backgroundColor: Colors.black);
 
+    // Human-friendly title lookup for the 20 modules
+    final tabTitles = [
+      'President Desk 🏛️',
+      'Kids Panel (Lion Desk 🦁)',
+      'Insight & Stats 📊',
+      'Citizens & Users 👥',
+      'Course Requests 🎓',
+      'Citizen Reports 🛡️',
+      'Auth Credentials 🔑',
+      'App Releases & Update 🚀',
+      'Tool Access Controls ⚙️',
+      'E-Learning Academy 📚',
+      'English Hub Groups 💬',
+      'Media Tasks & Videos 🎬',
+      'Zoyarex AI Robots 🤖',
+      'Monetization & Plans 💳',
+      'Curricula & Targets 🎯',
+      'Games Hub 🎮',
+      'Store Review Mode 🛡️',
+      'Certificates Desk 📜',
+      'VIP & Premium Users 👑',
+      'AdMob & Ads 📺',
+    ];
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Admin Dashboard',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Column(
+          children: [
+            const Text(
+              '🏛️ Poket Mates Command Center',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15.5,
+              ),
+            ),
+            AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, _) {
+                final idx = _tabController.index.clamp(0, tabTitles.length - 1);
+                return Text(
+                  tabTitles[idx],
+                  style: const TextStyle(
+                    color: Color(0xFFFFFC00),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         backgroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'All Hubs Menu',
+            icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFFFFC00)),
+            onPressed: () => _showHubsQuickLauncher(context),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Color(0xFFFFFC00),
+          labelColor: const Color(0xFFFFFC00),
           unselectedLabelColor: Colors.grey,
           isScrollable: true,
-          indicatorColor: Color(0xFFFFFC00),
+          indicatorColor: const Color(0xFFFFFC00),
           indicatorWeight: 3,
           tabs: const [
             Tab(
@@ -920,6 +975,174 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           const AdminAdsManagementTab(),
         ],
       ),
+    );
+  }
+
+  /// 🧭 Quick Hubs Launcher Modal: Solves tab clutter and confusion with a clean 6-Hub category menu
+  void _showHubsQuickLauncher(BuildContext context) {
+    final hubs = [
+      {
+        'title': '🏠 Dashboard & Insights',
+        'subtitle': 'Platform stats, overview & quick actions',
+        'color': const Color(0xFF3B82F6),
+        'tabIndex': 2,
+        'icon': Icons.dashboard_rounded,
+      },
+      {
+        'title': '👥 Citizens & Community',
+        'subtitle': 'Users, VIP status, requests & credentials',
+        'color': const Color(0xFF10B981),
+        'tabIndex': 3,
+        'icon': Icons.people_alt_rounded,
+      },
+      {
+        'title': '👑 President & Palace Hub',
+        'subtitle': 'Official decrees, Instagram & inquiries',
+        'color': const Color(0xFFFFD700),
+        'tabIndex': 0,
+        'icon': Icons.account_balance_rounded,
+      },
+      {
+        'title': '🎓 Learning Academy',
+        'subtitle': 'Curriculum (Day 1-60), videos & certificates',
+        'color': const Color(0xFF8B5CF6),
+        'tabIndex': 9,
+        'icon': Icons.school_rounded,
+      },
+      {
+        'title': '🎮 Games, Robots & Kids',
+        'subtitle': 'Village Battles, AI bots & Kids flame desk',
+        'color': const Color(0xFFEC4899),
+        'tabIndex': 15,
+        'icon': Icons.sports_esports_rounded,
+      },
+      {
+        'title': '⚙️ Controls, Ads & Releases',
+        'subtitle': 'AdMob, Store Review Mode, and force updates',
+        'color': const Color(0xFFF59E0B),
+        'tabIndex': 16,
+        'icon': Icons.tune_rounded,
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF111827),
+      isScrollable: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.hub_rounded, color: Color(0xFFFFFC00), size: 22),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Admin Command Hubs',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Select a unified hub to jump straight to that section:',
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: hubs.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, i) {
+                      final h = hubs[i];
+                      final color = h['color'] as Color;
+                      final targetIndex = h['tabIndex'] as int;
+
+                      return InkWell(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _tabController.animateTo(targetIndex);
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: color.withValues(alpha: 0.35),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(h['icon'] as IconData, color: color, size: 22),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      h['title'] as String,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      h['subtitle'] as String,
+                                      style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
