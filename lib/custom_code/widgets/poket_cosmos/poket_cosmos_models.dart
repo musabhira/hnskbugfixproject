@@ -330,3 +330,154 @@ class CosmosInactivityPolicy {
     return PlotStatus.occupied;
   }
 }
+
+/// 📮 Immutable Cosmos Address Record for any user in the 1 Crore+ Galaxy
+class CosmosAddress {
+  final int planetId;
+  final String planetName;
+  final int islandId;
+  final String islandName;
+  final int slotNumber;
+  final int cycle; // Loop iteration count (0 for initial cycle)
+  final String postalPinCode;
+  final bool isPresidential;
+
+  const CosmosAddress({
+    required this.planetId,
+    required this.planetName,
+    required this.islandId,
+    required this.islandName,
+    required this.slotNumber,
+    required this.cycle,
+    required this.postalPinCode,
+    this.isPresidential = false,
+  });
+
+  String get formattedLocation =>
+      '$islandName • Slot #$slotNumber ($planetName)';
+}
+
+/// 🌌 Infinite Cosmos Loop Allocation Engine
+/// Scales seamlessly from 1 user to 1 Crore (10 Million+) and 10 Crore+ users:
+/// - Each island holds strictly 50 habit plots.
+/// - The universe loops systematically across 9 celestial spheres:
+///   Earth Prime -> Mercury -> Venus -> Mars -> Jupiter -> Saturn -> Uranus -> Neptune -> Pluto.
+/// - Once Pluto's current island fills up with 50 users, the loop cycles back to Earth Prime
+///   to generate Island Cycle N+1!
+/// - Users are assigned a permanent initial home upon account creation.
+/// - Users can spend Pocket Score (e.g. 500 PS) to relocate to their dream planet or island!
+class CosmosLoopAllocationService {
+  static const int slotsPerIsland = 50;
+  static const int totalPlanets = 9;
+
+  static const List<String> planetOrderNames = [
+    'Earth Prime 🌍',
+    'Mercury ⚪',
+    'Venus 🟡',
+    'Mars 🔴',
+    'Jupiter 🟠',
+    'Saturn 🪐',
+    'Uranus 💎',
+    'Neptune 🌊',
+    'Pluto ❄️',
+  ];
+
+  static const List<int> planetOrderIds = [3, 1, 2, 4, 5, 6, 7, 8, 9];
+
+  static const List<String> englishThemes = [
+    'Vocabulary Bay',
+    'Sentence Reef',
+    'Grammar Isle',
+    'Idiom Atoll',
+    'Phonics Cay',
+    'Fluency Haven',
+    'Syntax Strand',
+    'Lexicon Oasis',
+    'Verb Vista',
+    'Pronoun Peninsula',
+    'Tense Territory',
+    'Adverb Atoll',
+    'Echo Lagoon',
+    'Diction Dune',
+    'Rhythm Reach',
+    'Accent Isle',
+    'Clause Cove',
+    'Metaphor Marina',
+    'Dialogue Drift',
+    'Proverb Port',
+    'Synonym Shoal',
+    'Antonym Atoll',
+    'Jargon Jungle',
+    'Poetry Point',
+    'Vowel Valley',
+    'Consonant Coast',
+    'Slang Sound',
+    'Spelling Sand',
+    'Rhetoric Ridge',
+    'Mastery Cay',
+  ];
+
+  /// 📍 Deterministic algorithm: Maps any user index (0 to 100,000,000+) to their exact planet, island, and slot
+  static CosmosAddress allocateUser({required int userIndex, String? userName}) {
+    if (userIndex == 0) {
+      // User #0 is Supreme President Mus'ab on Crown Apex
+      return const CosmosAddress(
+        planetId: 3,
+        planetName: 'Earth Prime 🌍',
+        islandId: 1,
+        islandName: 'Crown Apex 👑',
+        slotNumber: 1,
+        cycle: 0,
+        postalPinCode: 'PK-EP-CR01-001',
+        isPresidential: true,
+      );
+    }
+
+    final int effectiveIndex = userIndex - 1; // 0-based for all regular citizens
+    final int islandBatch = effectiveIndex ~/ slotsPerIsland;
+    final int slotNumber = (effectiveIndex % slotsPerIsland) + 1;
+    final int planetIndex = islandBatch % totalPlanets;
+    final int cycle = islandBatch ~/ totalPlanets;
+
+    final planetId = planetOrderIds[planetIndex];
+    final planetName = planetOrderNames[planetIndex];
+
+    final islandId = islandBatch + 2; // Island #1 is reserved for Crown Apex
+    final themeIndex = islandBatch % englishThemes.length;
+    final baseTheme = englishThemes[themeIndex];
+    final islandName = cycle == 0 ? baseTheme : '$baseTheme ${_toRoman(cycle + 1)}';
+
+    final pinCode =
+        'PK-P$planetId-IS${islandId.toString().padLeft(3, '0')}-SL${slotNumber.toString().padLeft(2, '0')}';
+
+    return CosmosAddress(
+      planetId: planetId,
+      planetName: planetName,
+      islandId: islandId,
+      islandName: islandName,
+      slotNumber: slotNumber,
+      cycle: cycle,
+      postalPinCode: pinCode,
+      isPresidential: false,
+    );
+  }
+
+  /// 🔄 Check if a citizen has sufficient Pocket Score to switch worlds
+  static bool canRelocate({required int userScore, int costPS = 500}) {
+    return userScore >= costPS;
+  }
+
+  static String _toRoman(int number) {
+    if (number <= 1) return 'I';
+    if (number == 2) return 'II';
+    if (number == 3) return 'III';
+    if (number == 4) return 'IV';
+    if (number == 5) return 'V';
+    if (number == 6) return 'VI';
+    if (number == 7) return 'VII';
+    if (number == 8) return 'VIII';
+    if (number == 9) return 'IX';
+    if (number == 10) return 'X';
+    return number.toString();
+  }
+}

@@ -368,6 +368,34 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
           ),
         ],
       ),
+      const PoketPlanet(
+        id: 9,
+        name: 'Pluto ❄️',
+        theme: 'Frozen Frontier Atoll',
+        tagLine: 'Nitrogen Ice Dunes & Cosmic Horizon',
+        primaryColor: Color(0xFFE2E8F0),
+        glowColor: Color(0xFF94A3B8),
+        radius: 9,
+        orbitDistance: 505,
+        orbitSpeed: 0.16,
+        totalPlots: 50,
+        occupiedPlots: 22,
+        countryMaps: [
+          PoketCountryMap(
+            id: 901,
+            name: 'Sputnik Planitia',
+            tag: 'Heart of Pluto',
+            landColor: Color(0xFF475569),
+            waterColor: Color(0xFF0284C7),
+            totalSlots: 50,
+            filledSlots: 22,
+            climate: 'Glacial Calm ❄️',
+            climateIcon: Icons.ac_unit_rounded,
+            islandEmoji: '🤍',
+            shapeStyle: IslandShapeStyle.heartSanctuary,
+          ),
+        ],
+      ),
     ];
   }
 
@@ -1283,6 +1311,34 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                       ],
                     ),
                   ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _showCosmosLoopDialog,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.all_inclusive_rounded, color: Color(0xFFFFD700), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            '1 Cr+ Loop',
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1535,17 +1591,17 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
       backgroundColor: island.waterColor, // Infinite matching ocean background
       body: Stack(
         children: [
-          // Infinite Ocean Canvas with Deep 6.5x Zoom InteractiveViewer
+          // Infinite Ocean Canvas with Deep 7.5x Zoom InteractiveViewer
           Positioned.fill(
             child: InteractiveViewer(
               transformationController: _aerialMapZoomController,
-              minScale: 0.65, // Ocean fully covers screen at min zoom
-              maxScale: 6.5, // Deep peak zoom into 50 habit houses
-              boundaryMargin: const EdgeInsets.all(1200),
+              minScale: 0.85, // Bounded so ocean fully covers screen without shrinking into an empty box
+              maxScale: 7.5,  // Deep peak zoom into 50 habit houses
+              boundaryMargin: const EdgeInsets.all(600),
               clipBehavior: Clip.none,
               child: SizedBox(
-                width: 1400,
-                height: 1400,
+                width: 1500,
+                height: 1500,
                 child: IslandAerialViewWidget(
                   island: island,
                   isInteractive: true,
@@ -1616,6 +1672,33 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
                               color: Colors.white70, fontSize: 11),
                         ),
                       ],
+                    ),
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _showCosmosLoopDialog,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.all_inclusive_rounded, color: Color(0xFFFFD700), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            '1 Cr+ Loop',
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1867,6 +1950,250 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  // =========================================================================
+  // 🌌 COSMOS 1 CR+ LOOP SYSTEM ALLOCATION & RELOCATION DIALOG
+  // =========================================================================
+  void _showCosmosLoopDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          decoration: const BoxDecoration(
+            color: Color(0xFF14181B),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [BoxShadow(color: Colors.black87, blurRadius: 20)],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                    ),
+                    child: const Icon(Icons.all_inclusive_rounded,
+                        color: Color(0xFFFFD700), size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cosmos 1 Cr+ Loop System',
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18),
+                        ),
+                        const Text(
+                          'Infinite Scaling: 50 Users / Island across 9 Planets',
+                          style:
+                              TextStyle(color: Colors.white60, fontSize: 11.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Loop Architecture Explainer Card
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '🪐 How Cosmic Loop Scaling Works:',
+                      style: TextStyle(
+                          color: Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '1. As new citizens join, they fill 50 plots on Island 1 of Earth Prime.\n'
+                      '2. The loop moves across: Mercury ⚪ -> Venus 🟡 -> Mars 🔴 -> Jupiter 🟠 -> Saturn 🪐 -> Uranus 💎 -> Neptune 🌊 -> Pluto ❄️.\n'
+                      '3. Once Pluto fills up, the cosmic cycle wraps back to Earth Prime generating Island Cycle II!\n'
+                      '4. This algorithm guarantees unique, permanent real estate for 1 Crore (10 Million+) to 10 Crore+ citizens!',
+                      style: TextStyle(
+                          color: Colors.white70, fontSize: 11, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+              // User's Assigned Cosmic Home
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF0284C7).withValues(alpha: 0.2),
+                      const Color(0xFF14181B),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.home_work_rounded,
+                        color: Color(0xFF38BDF8), size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Your Auto-Allocated Home Deed',
+                              style: TextStyle(
+                                  color: Colors.white54, fontSize: 11)),
+                          Text(
+                            '${_selectedPlanet?.name ?? "Earth Prime 🌍"} • ${_selectedIsland?.name ?? "Vocabulary Bay"}',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          ),
+                          const Text('Deed: Plot #14 • PIN: PK-P3-IS002-SL14',
+                              style: TextStyle(
+                                  color: Color(0xFFFFD700), fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              // World Relocation Section
+              const Text(
+                '🔄 World Relocation (Switch Planet with Pocket Score):',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+
+              SizedBox(
+                height: 48,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _planets.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) {
+                    final p = _planets[i];
+                    final isCurrent = p.id == _selectedPlanet?.id;
+
+                    return ActionChip(
+                      backgroundColor: isCurrent
+                          ? const Color(0xFFFFD700)
+                          : const Color(0xFF1E293B),
+                      label: Text(
+                        p.name.split(' ').first,
+                        style: TextStyle(
+                          color: isCurrent ? Colors.black : Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      avatar: Text(p.name.split(' ').last.replaceAll(')', '')),
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _confirmRelocationDialog(p);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmRelocationDialog(PoketPlanet targetPlanet) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF14181B),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: Colors.white12)),
+          title: Row(
+            children: [
+              const Icon(Icons.rocket_launch_rounded,
+                  color: Color(0xFFFFD700), size: 24),
+              const SizedBox(width: 10),
+              Text('Relocate to ${targetPlanet.name}?',
+                  style: const TextStyle(color: Colors.white, fontSize: 16)),
+            ],
+          ),
+          content: Text(
+            'Transferring your habit manor to ${targetPlanet.name} costs 500 Pocket Score (PS).\n\n'
+            'A new parcel deed will be issued on ${targetPlanet.countryMaps.first.name} in the cosmic registry.',
+            style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                setState(() {
+                  _selectedPlanet = targetPlanet;
+                  _selectedIsland = targetPlanet.countryMaps.first;
+                  _activeScreen = 1;
+                });
+                _loadIslandPlots(targetPlanet.countryMaps.first);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        '🚀 Relocated to ${targetPlanet.name}! New deed registered.'),
+                    backgroundColor: const Color(0xFF10B981),
+                  ),
+                );
+              },
+              child: const Text('Confirm (500 PS)',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
         );
       },
     );
