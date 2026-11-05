@@ -1956,23 +1956,36 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
         fit: StackFit.expand,
         children: [
           // 🏝️ Fullscreen Unified Living Oceanic World Canvas
-          // Edge-to-edge ocean, island, houses & clouds all pan & zoom seamlessly as ONE entity
+          // Height strictly locked to screen height (touching top & bottom); wide ocean pans horizontally!
           Positioned.fill(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final worldDim =
-                    math.max(constraints.maxWidth, constraints.maxHeight) *
-                        3.4;
+                final screenWidth = constraints.maxWidth;
+                final screenHeight = constraints.maxHeight;
+                final worldHeight = screenHeight;
+                final worldWidth = math.max(screenWidth * 2.2, screenHeight * 1.85);
+                final initialX = -(worldWidth - screenWidth) / 2;
+
+                // Auto-center island horizontally on entry
+                if (_aerialMapZoomController.value == Matrix4.identity()) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted && _aerialMapZoomController.value == Matrix4.identity()) {
+                      _aerialMapZoomController.value =
+                          Matrix4.identity()..translateByDouble(initialX, 0.0);
+                    }
+                  });
+                }
 
                 return InteractiveViewer(
                   transformationController: _aerialMapZoomController,
-                  minScale: 0.38, // High-altitude satellite overview (ocean stays 100% filled!)
-                  maxScale: 4.8,  // Deep habit house villa inspection
-                  boundaryMargin: EdgeInsets.all(worldDim * 0.40),
+                  constrained: false,
+                  boundaryMargin: EdgeInsets.zero,
+                  minScale: 1.0, // Strictly locked to screen height! Never shrinks into a card box!
+                  maxScale: 4.8, // Deep habit house villa inspection
                   clipBehavior: Clip.none,
                   child: SizedBox(
-                    width: worldDim,
-                    height: worldDim,
+                    width: worldWidth,
+                    height: worldHeight,
                     child: IslandAerialViewWidget(
                       island: island,
                       isInteractive: true,
@@ -2133,11 +2146,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         color: Colors.white, size: 20),
                     tooltip: 'Zoom In',
                     onPressed: () {
+                      final size = MediaQuery.of(context).size;
+                      final sW = size.width;
+                      final sH = size.height;
+                      final wW = math.max(sW * 2.2, sH * 1.85);
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 1.25).clamp(0.38, 4.8);
-                      _aerialMapZoomController.value =
-                          Matrix4.diagonal3Values(s, s, 1.0);
+                      final s = (current * 1.25).clamp(1.0, 4.8);
+                      final dx = -(wW * s - sW) / 2;
+                      final dy = -(sH * s - sH) / 2;
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..translateByDouble(dx, dy)
+                        ..scaleByDouble(s);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2148,11 +2168,18 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                         color: Colors.white, size: 20),
                     tooltip: 'Zoom Out',
                     onPressed: () {
+                      final size = MediaQuery.of(context).size;
+                      final sW = size.width;
+                      final sH = size.height;
+                      final wW = math.max(sW * 2.2, sH * 1.85);
                       final current =
                           _aerialMapZoomController.value.getMaxScaleOnAxis();
-                      final s = (current * 0.80).clamp(0.38, 4.8);
-                      _aerialMapZoomController.value =
-                          Matrix4.diagonal3Values(s, s, 1.0);
+                      final s = (current * 0.80).clamp(1.0, 4.8);
+                      final dx = -(wW * s - sW) / 2;
+                      final dy = -(sH * s - sH) / 2;
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..translateByDouble(dx, dy)
+                        ..scaleByDouble(s);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2161,9 +2188,15 @@ class _PoketCosmosNavigatorPageState extends State<PoketCosmosNavigatorPage>
                   IconButton(
                     icon: const Icon(Icons.restart_alt_rounded,
                         color: Color(0xFFFFD700), size: 20),
-                    tooltip: 'Reset Zoom',
+                    tooltip: 'Reset Zoom & Center',
                     onPressed: () {
-                      _aerialMapZoomController.value = Matrix4.identity();
+                      final size = MediaQuery.of(context).size;
+                      final sW = size.width;
+                      final sH = size.height;
+                      final wW = math.max(sW * 2.2, sH * 1.85);
+                      final initialX = -(wW - sW) / 2;
+                      _aerialMapZoomController.value = Matrix4.identity()
+                        ..translateByDouble(initialX, 0.0);
                     },
                     constraints:
                         const BoxConstraints(minWidth: 36, minHeight: 36),

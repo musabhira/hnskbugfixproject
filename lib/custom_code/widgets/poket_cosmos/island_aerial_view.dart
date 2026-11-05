@@ -80,7 +80,9 @@ class _IslandAerialViewWidgetState extends State<IslandAerialViewWidget>
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final scale = widget.isInteractive ? 1.0 : (math.min(size.width, size.height) / 540.0);
+    final scale = widget.isInteractive
+        ? (size.height / 700.0).clamp(0.85, 1.45)
+        : (math.min(size.width, size.height) / 540.0);
 
     final islandX = (details.localPosition.dx - cx) / scale;
     final islandY = (details.localPosition.dy - cy) / scale;
@@ -131,8 +133,10 @@ class IslandAerialPainter extends CustomPainter {
 
     final cx = size.width / 2;
     final cy = size.height / 2;
-    // Vast island canvas scale factor: 1.0 in fullscreen world, scaled to fit in carousel cards
-    final double scale = isInteractive ? 1.0 : (math.min(size.width, size.height) / 540.0);
+    // Responsive island scale: proportional to screen height in fullscreen mode, scaled to fit in carousel cards
+    final double scale = isInteractive
+        ? (size.height / 700.0).clamp(0.85, 1.45)
+        : (math.min(size.width, size.height) / 540.0);
 
     canvas.save();
     canvas.translate(cx, cy);
