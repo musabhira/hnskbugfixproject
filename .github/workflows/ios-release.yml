@@ -15,9 +15,9 @@ on:
         required: false
         default: ''
       runner:
-        description: 'macOS runner label (e.g. macos-15, macos-14, macos-latest)'
+        description: 'macOS runner label (e.g. macos-26, macos-15, macos-latest)'
         required: false
-        default: 'macos-15'
+        default: 'macos-26'
 
 concurrency:
   group: ios-native-release
@@ -26,7 +26,7 @@ concurrency:
 jobs:
   build:
     name: Build and Release iOS
-    runs-on: ${{ inputs.runner || 'macos-15' }}
+    runs-on: ${{ inputs.runner || 'macos-26' }}
 
     steps:
       - name: Checkout Repository
@@ -41,21 +41,24 @@ jobs:
           xcode-select -p
           xcodebuild -version
 
-      - name: Set up Xcode (Xcode 16+ with iOS 18 SDK)
+      - name: Set up Xcode (Xcode 26+ with iOS 26 SDK)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.x'
+          xcode-version: '26.0'
 
-      - name: Verify and Force Xcode 16+ Toolchain
+      - name: Verify and Force Xcode 26+ Toolchain
         run: |
           XCODE_MAJOR=$(xcodebuild -version 2>/dev/null | head -n 1 | awk '{print $2}' | cut -d. -f1 || echo 0)
           echo "Active Xcode Major Version: $XCODE_MAJOR"
-          if [ "$XCODE_MAJOR" -lt 16 ]; then
-            echo "Searching for installed Xcode 16 in /Applications..."
-            XCODE_16=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -n 1)
-            if [ -n "$XCODE_16" ] && [ -d "$XCODE_16" ]; then
-              echo "Switching to $XCODE_16"
-              sudo xcode-select -s "$XCODE_16/Contents/Developer"
+          if [ -d "/Applications/Xcode_26.0.app" ]; then
+            echo "Selecting /Applications/Xcode_26.0.app"
+            sudo xcode-select -s "/Applications/Xcode_26.0.app/Contents/Developer"
+          elif [ "$XCODE_MAJOR" -lt 26 ]; then
+            echo "Searching for installed Xcode 26 in /Applications..."
+            XCODE_26=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1)
+            if [ -n "$XCODE_26" ] && [ -d "$XCODE_26" ]; then
+              echo "Switching to $XCODE_26"
+              sudo xcode-select -s "$XCODE_26/Contents/Developer"
             fi
           fi
           echo "=== Final Active Xcode Toolchain ==="
@@ -281,6 +284,7 @@ jobs:
           VERSION_NAME: ${{ steps.versioning.outputs.build_name }}
           BUILD_NUMBER: ${{ steps.versioning.outputs.build_number }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD || 'app_signing_keychain_password_2026' }}
+          DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
         run: |
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts NO
 

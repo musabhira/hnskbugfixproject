@@ -498,10 +498,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Future<void> _loadProfiles() async {
     setState(() => isLoadingUsers = true);
     try {
-      // 1. Fetch profiles with created_at
+      // 1. Fetch profiles with created_at, day, pocket_score
       final res = await supabase
           .from('profile')
-          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier, created_at, bio, country')
+          .select('id, user_id, name, shop_name, phone_no, profile_image_url, verified, is_vip, is_premium, is_subscribed, subscription_tier, created_at, bio, country, day, learning_day, pocket_score')
           .order('created_at', ascending: false);
 
       // 2. Fetch users email mappings to cross-reference
@@ -1739,6 +1739,51 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                         user['phone_no'] ?? user['shop_name'] ?? 'No phone / shop',
                                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                                         overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5), width: 0.8),
+                                            ),
+                                            child: Text(
+                                              'Day ${user['day'] ?? user['learning_day'] ?? 1} 🏠',
+                                              style: const TextStyle(
+                                                color: Color(0xFFA5B4FC),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 0.8),
+                                            ),
+                                            child: Text(
+                                              '⚡ ${user['pocket_score'] ?? 0} PS',
+                                              style: const TextStyle(
+                                                color: Color(0xFFFCD34D),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                          if (user['created_at'] != null) ...[
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              user['created_at'].toString().split('T').first,
+                                              style: const TextStyle(fontSize: 10.5, color: Colors.white38),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -11872,6 +11917,102 @@ HCf76OdaDxn0Yw6/ofdmb8do2Jr0iVsekqxS
                       ),
                     );
                   },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 📱 Official Instagram Community Card for President Campaigns
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF833AB4), Color(0xFFFD1D1D), Color(0xFFFCB045)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFE1306C).withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Official Instagram Channel 📸',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Verified',
+                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Handle: @poketmates.app\nPromote official daily stories, reels, community tips, and mates leaderboards.',
+                  style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF833AB4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                        label: const Text('Open Instagram', style: TextStyle(fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          const url = 'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr';
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.35),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      label: const Text('Copy Link'),
+                      onPressed: () {
+                        Clipboard.setData(const ClipboardData(
+                            text: 'https://www.instagram.com/poketmates.app?vrfl=NTc2MWhma2p1NzF2&utm_source=qr'));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Instagram link copied to clipboard!')),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
